@@ -14,14 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.cli;
 
-package org.jkiss.dbeaver.model.qm;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 
 /**
- * Stores session-scoped Query Manager runtime state.
+ * Allows executing CLI command without validation,
+ * Should be used for utility commands like "help" or "completion" that should always be available for execution.
  */
-public interface QMRuntimeState {
-    boolean isQueryManagerUnavailable();
-
-    void setQueryManagerUnavailable();
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface AllowWithoutValidation {
 }

@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -28,20 +29,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public final class ProductConfigFeatureRegistry {
+public final class ProductConfigRegistry {
+    private static final Log log = Log.getLog(ProductConfigRegistry.class);
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.app.config";
     private static final String CONFIG_FILE = "product-config.json";
 
-    private static final Log log = Log.getLog(ProductConfigFeatureRegistry.class);
-
-    private static ProductConfigFeatureRegistry instance;
+    private static ProductConfigRegistry instance;
 
     private final List<ProductConfigFeatureDescriptor> features;
-
     private final Object stateLock = new Object();
     private volatile State state;
 
-    private ProductConfigFeatureRegistry(@NotNull IExtensionRegistry registry) {
+    private ProductConfigRegistry(@NotNull IExtensionRegistry registry) {
         var features = new ArrayList<ProductConfigFeatureDescriptor>();
 
         for (IConfigurationElement element : registry.getConfigurationElementsFor(EXTENSION_ID)) {
@@ -58,9 +57,9 @@ public final class ProductConfigFeatureRegistry {
     }
 
     @NotNull
-    public static synchronized ProductConfigFeatureRegistry getInstance() {
+    public static synchronized ProductConfigRegistry getInstance() {
         if (instance == null) {
-            instance = new ProductConfigFeatureRegistry(Platform.getExtensionRegistry());
+            instance = new ProductConfigRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
@@ -70,10 +69,28 @@ public final class ProductConfigFeatureRegistry {
         return features;
     }
 
+    public boolean hasNewFeatures() {
+        var state = currentState();
+        for (ProductConfigFeatureDescriptor feature : features) {
+            if (!state.features().containsKey(feature.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isFeatureEnabled(@NotNull ProductConfigFeatureDescriptor descriptor) {
         var state = currentState();
         var feature = state.features().get(descriptor.getId());
-        return feature != null && feature.enabled() || descriptor.isEnabledByDefault();
+        if (feature == null) {
+            var enablement = determineFeatureEnablement(descriptor);
+            return switch (enablement) {
+                case EXPLICITLY_ENABLED -> true;
+                case EXPLICITLY_DISABLED -> false;
+                case UNDEFINED -> descriptor.isEnabledByDefault();
+            };
+        }
+        return feature.enabled();
     }
 
     public void setFeatureEnabled(@NotNull ProductConfigFeatureDescriptor descriptor, boolean enabled) {
@@ -82,6 +99,19 @@ public final class ProductConfigFeatureRegistry {
                 .withFeature(descriptor.getId(), new State.Feature(enabled));
             saveState(state);
         }
+    }
+
+    @NotNull
+    private static ProductConfigFeatureTester.Enablement determineFeatureEnablement(@NotNull ProductConfigFeatureDescriptor descriptor) {
+        try {
+            var tester = descriptor.getEnablementTester();
+            if (tester != null) {
+                return tester.isFeatureEnabled();
+            }
+        } catch (DBException e) {
+            log.error("Error determining feature enablement for " + descriptor.getId(), e);
+        }
+        return ProductConfigFeatureTester.Enablement.UNDEFINED;
     }
 
     @NotNull
@@ -98,7 +128,7 @@ public final class ProductConfigFeatureRegistry {
 
     @NotNull
     private static State loadState() {
-        Path path = DBWorkbench.getPlatform().getLocalConfigurationFile(ProductConfigFeatureRegistry.CONFIG_FILE);
+        var path = getConfigFilePath();
         if (Files.exists(path)) {
             try (var reader = Files.newBufferedReader(path)) {
                 return JSONUtils.GSON.fromJson(reader, State.class);
@@ -110,12 +140,20 @@ public final class ProductConfigFeatureRegistry {
     }
 
     private static void saveState(@NotNull State state) {
-        Path path = DBWorkbench.getPlatform().getLocalConfigurationFile(ProductConfigFeatureRegistry.CONFIG_FILE);
-        try (var writer = Files.newBufferedWriter(path)) {
-            JSONUtils.GSON.toJson(state, writer);
+        var path = getConfigFilePath();
+        try {
+            Files.createDirectories(path.getParent());
+            try (var writer = Files.newBufferedWriter(path)) {
+                JSONUtils.GSON.toJson(state, writer);
+            }
         } catch (Exception e) {
             log.error("Error saving product configuration state to " + path, e);
         }
+    }
+
+    @NotNull
+    private static Path getConfigFilePath() {
+        return DBWorkbench.getPlatform().getGlobalConfigurationFile(CONFIG_FILE);
     }
 
     private record State(@NotNull Map<String, Feature> features) {

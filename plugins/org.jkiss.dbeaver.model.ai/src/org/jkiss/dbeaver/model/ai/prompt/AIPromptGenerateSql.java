@@ -79,6 +79,11 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
     }
 
     @Override
+    public boolean supportsUIAndActionFunctions() {
+        return !sqlQueriesOnly;
+    }
+
+    @Override
     protected void initializePrompt(@Nullable AIDatabaseContext context) {
         if (sqlQueriesOnly) {
             addInstructions(

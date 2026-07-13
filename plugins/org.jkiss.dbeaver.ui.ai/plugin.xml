@@ -2,6 +2,8 @@
 <?eclipse version="3.4"?>
 
 <plugin>
+    <extension-point id="chatView" name="AI Chat View" schema="schema/org.jkiss.dbeaver.ui.ai.chatView.exsd"/>
+
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.openai.OpenAiConfigurator"/>
         <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotConfigurator"/>

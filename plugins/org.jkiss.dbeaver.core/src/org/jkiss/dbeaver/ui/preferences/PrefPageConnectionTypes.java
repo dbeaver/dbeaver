@@ -99,7 +99,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_name);
             UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_description);
-            typeTable.setHeaderVisible(true);
+            //typeTable.setHeaderVisible(true);
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             typeTable.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -192,54 +192,20 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
             {
                 UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color);
-//                Composite colorGroup = UIUtils.createPlaceholder(groupSettings, 2, 5);
-//                colorGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-                colorPicker = new ColorSelector(groupSettings);
-//                colorPicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                Composite panel = UIUtils.createComposite(groupSettings, 3);
+                panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                colorPicker = new ColorSelector(panel);
                 colorPicker.addListener(event -> {
                     getSelectedType().setColorLight(StringConverter.asString(colorPicker.getColorValue()));
                     updateTableInfo();
                 });
 
-                UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color_alternative);
-                alternativeColorPicker = new ColorSelector(groupSettings);
+                UIUtils.createControlLabel(panel, CoreMessages.pref_page_connection_types_label_color_alternative);
+                alternativeColorPicker = new ColorSelector(panel);
                 alternativeColorPicker.addListener(event -> {
                     getSelectedType().setColorDark(StringConverter.asString(alternativeColorPicker.getColorValue()));
                     updateTableInfo();
                 });
-/*
-                Button pickerButton = new Button(colorGroup, SWT.PUSH);
-                pickerButton.setText("...");
-                pickerButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        DBPConnectionType connectionType = getSelectedType();
-                        ColorDialog colorDialog = new ColorDialog(parent.getShell());
-                        colorDialog.setRGB(StringConverter.asRGB(connectionType.getColor()));
-                        RGB rgb = colorDialog.open();
-                        if (rgb != null) {
-                            Color color = null;
-                            int count = colorPicker.getItemCount();
-                            for (int i = 0; i < count; i++) {
-                                Color item = colorPicker.getColorItem(i);
-                                if (item != null && item.getRGB().equals(rgb)) {
-                                    color = item;
-                                    break;
-                                }
-                            }
-                            if (color == null) {
-                                color = new Color(colorPicker.getDisplay(), rgb);
-                                colorPicker.addColor(color);
-                            }
-                            colorPicker.select(color);
-                            getSelectedType().setColor(StringConverter.asString(color.getRGB()));
-                            updateTableInfo();
-                        }
-                    }
-                });
-*/
             }
         }
 
