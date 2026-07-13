@@ -154,7 +154,7 @@ public class DataTransferJob extends AbstractJob {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
             IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
-            producer.transferData(monitor, consumer, processor, nodeSettings, task);
+            producer.transferData(monitor, consumer, processor, nodeSettings, task, -1);
 
             if (isTransferCanceled(monitor)) {
                 throw new DBInterruptedException("Data transfer was canceled");
