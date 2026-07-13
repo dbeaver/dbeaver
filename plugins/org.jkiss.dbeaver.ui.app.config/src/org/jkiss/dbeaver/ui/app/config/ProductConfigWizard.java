@@ -16,16 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.app.config;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.ui.internal.Workbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.config.pages.ProductConfigWizardPage;
 import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigPageDescriptor;
-import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigRegistry;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigWizardRegistry;
 
 public final class ProductConfigWizard extends Wizard {
     private static final Log log = Log.getLog(ProductConfigWizard.class);
@@ -38,7 +36,7 @@ public final class ProductConfigWizard extends Wizard {
 
     @Override
     public void addPages() {
-        for (ProductConfigPageDescriptor descriptor : ProductConfigRegistry.getInstance().getPages()) {
+        for (ProductConfigPageDescriptor descriptor : ProductConfigWizardRegistry.getInstance().getPages()) {
             ProductConfigWizardPage page;
             try {
                 page = descriptor.createPage();
@@ -56,24 +54,13 @@ public final class ProductConfigWizard extends Wizard {
     @Override
     public boolean performFinish() {
         applySettings();
-
-        if (restartRequired) {
-            if (UIUtils.confirmAction(
-                getShell(),
-                "Restart " + GeneralUtils.getProductName(),
-                "You need to restart " + GeneralUtils.getProductName() + " to apply some of the changes.\nDo you want to restart now?"
-            )) {
-                UIUtils.asyncExec(() -> Workbench.getInstance().restart());
-            }
-        }
-
         return true;
     }
 
     @Override
     public boolean performCancel() {
         // Can't cancel - force the user to go through, or apply defaults by pressing "Finish"
-        return false;
+        return Platform.inDevelopmentMode();
     }
 
     /**
@@ -82,6 +69,10 @@ public final class ProductConfigWizard extends Wizard {
      */
     public void markForRestart() {
         restartRequired = true;
+    }
+
+    public boolean isRestartRequired() {
+        return restartRequired;
     }
 
     private void applySettings() {
