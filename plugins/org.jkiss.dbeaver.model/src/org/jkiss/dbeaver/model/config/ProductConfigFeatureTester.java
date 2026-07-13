@@ -14,20 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.devtools.handlers;
+package org.jkiss.dbeaver.model.config;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 
-public class ShowEasyConfigHandler extends AbstractHandler {
-    @Nullable
-    @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        new ProductConfigWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event)).open();
-        return null;
+/**
+ * Determines the initial enablement state of a feature.
+ * <p>
+ * For example, a feature might be considered explicitly enabled
+ * by the user if they have a related preference key set.
+ * <p>
+ * If enablement is {@link Enablement#UNDEFINED undefined}, then
+ * the feature's {@link ProductConfigFeatureDescriptor#isEnabledByDefault()
+ * default enablement} property will be used to determine its initial state.
+ */
+public interface ProductConfigFeatureTester {
+    enum Enablement {
+        EXPLICITLY_ENABLED,
+        EXPLICITLY_DISABLED,
+        UNDEFINED
     }
+
+    @NotNull
+    Enablement isFeatureEnabled();
 }

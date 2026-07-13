@@ -287,8 +287,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private void createClientHomeGroup(@NotNull Composite bottomControls) {
         oraHomeSelector = new ClientHomesSelector(bottomControls, OracleUIMessages.dialog_connection_ora_home) {
             @Override
-            protected void handleHomeChange()
-            {
+            protected void handleHomeChange() {
                 populateTnsNameCombo();
             }
         };
@@ -318,8 +317,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    protected boolean isCustomURL()
-    {
+    protected boolean isCustomURL() {
         return this.connectionType == OracleConstants.ConnectionType.CUSTOM;
     }
 
@@ -438,10 +436,12 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         public void modifyText(@NotNull ModifyEvent e) {
             updateUI();
         }
+
         @Override
         public void widgetSelected(@NotNull SelectionEvent e) {
             updateUI();
         }
+
         @Override
         public void widgetDefaultSelected(@NotNull SelectionEvent e) {
             updateUI();
