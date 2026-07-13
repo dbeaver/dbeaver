@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
+package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.code.NotNull;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 
-public class OAIToolParameters {
-
-    public static final String TYPE_OBJECT = "object";
-
-    public String type;
-    @NotNull
-    public Map<String, OAIToolParameter> properties = new LinkedHashMap<>();
-    public String[] required;
-//    public boolean additionalProperties;
-
+/**
+ * Allows executing CLI command without validation,
+ * Should be used for utility commands like "help" or "completion" that should always be available for execution.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface AllowWithoutValidation {
 }
