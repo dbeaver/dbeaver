@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
+import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -31,14 +32,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.Map;
 
-public class OpenAIProperties implements OpenAIBaseProperties {
+public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
     private static final String GPT_BASE_URL = "gpt.base_url";
     private static final String GPT_TOKEN = "gpt.token";
     private static final String GPT_MODEL = "gpt.model";
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
-    private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    private static final String GPT_LOG_QUERY = "gpt.log.query";
-    private static final String GPT_TIMEOUT = "gpt.timeout";
 
     @Nullable
     @SerializedName(GPT_BASE_URL)
@@ -56,16 +54,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Nullable
     @SerializedName(GPT_CONTEXT_WINDOW_SIZE)
     private Integer contextWindowSize;
-
-    @SerializedName(GPT_MODEL_TEMPERATURE)
-    private Double temperature;
-
-    @SerializedName(GPT_LOG_QUERY)
-    private Boolean loggingEnabled;
-
-    @Nullable
-    @SerializedName(GPT_TIMEOUT)
-    private Integer timeout;
 
     public OpenAIProperties() {
     }
@@ -116,7 +104,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (temperature != null && Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
+        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
 
@@ -125,12 +113,8 @@ public class OpenAIProperties implements OpenAIBaseProperties {
             .getDouble(OpenAIConstants.AI_TEMPERATURE);
     }
 
-    public void setTemperature(double temperature) {
-        this.temperature = AIUtils.normalizeTemperature(temperature);
-    }
-
     @Override
-    @Property(order = 5)
+    @Property(order = 1000)
     public boolean isLoggingEnabled() {
         if (loggingEnabled != null) {
             return loggingEnabled;
@@ -139,10 +123,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         return DBWorkbench.getPlatform()
             .getPreferenceStore()
             .getBoolean(OpenAIConstants.AI_LOG_QUERY);
-    }
-
-    public void setLoggingEnabled(boolean loggingEnabled) {
-        this.loggingEnabled = loggingEnabled;
     }
 
     @Nullable
@@ -157,18 +137,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
             .map(AIModel::contextWindowSize)
             .orElse(null);
     }
-
-    @Override
-    @Property(order = 9)
-    public int getTimeout() {
-        return timeout != null && timeout > 0 ? timeout : DEFAULT_TIMEOUT;
-    }
-
-    @Override
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
         this.contextWindowSize = contextWindowSize;
