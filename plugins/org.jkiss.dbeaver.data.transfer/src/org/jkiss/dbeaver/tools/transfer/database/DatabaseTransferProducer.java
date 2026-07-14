@@ -182,8 +182,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         @NotNull IDataTransferConsumer consumer,
         @Nullable IDataTransferProcessor processor,
         @NotNull DatabaseProducerSettings settings,
-        @Nullable DBTTask task)
-            throws DBException {
+        @Nullable DBTTask task,
+        long maxRows
+    ) throws DBException {
         String contextTask = DTMessages.data_transfer_wizard_job_task_export;
 
         DBSDataContainer databaseObject = getDatabaseObject();
@@ -287,7 +288,16 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                         if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
                             checkCanceled(monitor);
                             // Just do it in single query
-                            producerStatistics.accumulate(dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, readFlags, settings.getFetchSize()));
+                            producerStatistics.accumulate(dataContainer.readData(
+                                transferSource,
+                                session,
+                                consumer,
+                                dataFilter,
+                                -1,
+                                maxRows,
+                                readFlags,
+                                settings.getFetchSize()
+                            ));
                             checkCanceled(monitor);
                         } else {
                             // Read all data by segments

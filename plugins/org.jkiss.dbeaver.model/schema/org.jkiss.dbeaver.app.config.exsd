@@ -63,6 +63,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="description" type="string" use="required">
+            <annotation>
+               <documentation>
+
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="enabledByDefault" type="string" use="required">
             <annotation>
                <documentation>
@@ -70,6 +77,17 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="enablementTester" type="string">
+            <annotation>
+               <documentation>
+
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.jkiss.dbeaver.model.config.ProductConfigFeatureTester:"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+
       </complexType>
    </element>
 

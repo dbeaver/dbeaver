@@ -62,7 +62,12 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.app.config">
-        <feature id="ai" label="AI integration" enabledByDefault="true"/>
+        <feature
+            id="ai"
+            label="AI integration"
+            description="Use AI to create and edit queries, answer questions, troubleshoot errors, or explore database objects."
+            enabledByDefault="true"
+            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
     </extension>
 
     <extension point="com.dbeaver.ai.function">
@@ -95,7 +100,7 @@
             categoryId="schema.discovery"
             description="Returns a list of tables available in the current datasource. Call it also to verify whether a table exists.">
             <parameter name="catalogName" required="false" type="string" description="Catalog or database name. Leave empty if catalog is not known."/>
-            <parameter name="schemaNames" required="false" type="string" description="Coma separated schema names. Use short name without preceding catalog name. Leave empty if schema is not known."/>
+            <parameter name="schemaNames" required="false" type="string" description="Comma-separated schema names. Use short name without preceding catalog name. Leave empty if schema is not known."/>
         </function>
 
         <function

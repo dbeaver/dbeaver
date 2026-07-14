@@ -45,7 +45,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     private final Map<String, StreamEntityMapping> entityMapping = new LinkedHashMap<>();
     private Map<String, Object> processorProperties;
-    private int maxRows;
+    private long maxRows;
 
     public StreamProducerSettings() {
     }
@@ -58,11 +58,11 @@ public class StreamProducerSettings implements IDataTransferSettings {
         this.processorProperties = processorProperties;
     }
 
-    public int getMaxRows() {
+    public long getMaxRows() {
         return maxRows;
     }
 
-    public void setMaxRows(int maxRows) {
+    public void setMaxRows(long maxRows) {
         this.maxRows = maxRows;
     }
 
