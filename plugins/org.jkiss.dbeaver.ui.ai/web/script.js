@@ -67,5 +67,6 @@ function initChat(args) {
     closeTooltip = args.close.tooltip;
     settingKeys = args.settings || {};
 
+    initA11y(args.a11y || {});
     settingsChanged();
 }

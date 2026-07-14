@@ -20,6 +20,8 @@ import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.layout.GridData;
@@ -44,10 +46,12 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
+import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -187,6 +191,12 @@ public class ContextComposite extends Composite {
             conversationNameText = new Text(conversationComposite, SWT.NONE);
             conversationNameText.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
             conversationNameText.addMouseListener(MouseListener.mouseDoubleClickAdapter(mouseEvent -> showConversationDropDown()));
+            conversationNameText.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+                @Override
+                public void getName(AccessibleEvent e) {
+                    e.result = AIChatMessages.ai_chat_a11y_conversation_name;
+                }
+            });
             conversationNameText.addFocusListener(FocusListener.focusLostAdapter(e -> {
                 AIChatConversation activeConversation = chat.getActiveConversation();
                 chat.renameConversation(
@@ -232,16 +242,6 @@ public class ContextComposite extends Composite {
         updateActions();
     }
 
-    @Nullable
-    private AIChatConversation findConversation(@NotNull String name) {
-        for (AIChatConversation conversation : contextConversations) {
-            if (conversation.getCaption().equals(name)) {
-                return conversation;
-            }
-        }
-        return null;
-    }
-
     private void updateConversation(@NotNull AIChatConversation conversation) throws DBException {
         contextConversations.clear();
         contextConversations.addAll(chat.listConversations());
@@ -275,9 +275,20 @@ public class ContextComposite extends Composite {
         showDropDown(ccc[ccc.length - 1], 0, conversationDropDown);
     }
 
-    private void showScopeDropDown() {
+    public void showScopeDropDown() {
+        if (chat.isBusy() || chat.getCompletionSettings() == null) {
+            return;
+        }
         ToolBar toolBar = toolBarManager.getControl();
         showDropDown(toolBar, toolBar.getItem(0).getBounds().width / 2, scopeDropDown);
+    }
+
+    public void openSettings() {
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            AIUIUtils.showPreferences(getShell());
+        } else {
+            showDropDown(toolBarManager.getControl(), toolBarManager.getControl().getSize().x / 2, settingsDropDown);
+        }
     }
 
     private void showDropDown(@NotNull Control origin, int shift, @NotNull MenuManager manager) {
@@ -454,20 +465,17 @@ public class ContextComposite extends Composite {
                 showScopeDropDown();
             }
         };
+        setToolTipWithShortcut(changeScopeAction, AIChatController.CMD_OPEN_FILTERS);
 
         manager.add(changeScopeAction);
-        manager.add(new Action(AIChatMessages.ai_chat_settings_label, IAction.AS_DROP_DOWN_MENU) {
+        Action settingsAction = new Action(AIChatMessages.ai_chat_settings_label, IAction.AS_DROP_DOWN_MENU) {
             {
                 setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
             }
 
             @Override
             public void run() {
-                if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
-                    AIUIUtils.showPreferences(getShell());
-                } else {
-                    showDropDown(toolBarManager.getControl(), toolBarManager.getControl().getSize().x / 2, settingsDropDown);
-                }
+                openSettings();
             }
 
             @NotNull
@@ -475,7 +483,15 @@ public class ContextComposite extends Composite {
             public IMenuCreator getMenuCreator() {
                 return new MenuCreator(widget -> settingsDropDown);
             }
-        });
+        };
+        setToolTipWithShortcut(settingsAction, AIChatController.CMD_OPEN_SETTINGS);
+        manager.add(settingsAction);
+    }
+
+    private void setToolTipWithShortcut(@NotNull IAction action, @NotNull String commandId) {
+        String tip = action.getText();
+        String shortcut = ActionUtils.findCommandDescription(commandId, chat.getController().getSite(), true);
+        action.setToolTipText(CommonUtils.isEmpty(shortcut) ? tip : tip + " (" + shortcut + ")");
     }
 
     private void contributeSettingActions(@NotNull IContributionManager manager) {
@@ -489,58 +505,24 @@ public class ContextComposite extends Composite {
     }
 
     private void contributeConversationActions(@NotNull IContributionManager manager) {
-        addConversationAction = new Action("New conversation", DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
+        addConversationAction = new Action(AIChatMessages.ai_chat_conversation_new_label, DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
             @Override
             public void run() {
-                String name = createNewConversationName();
-                try {
-                    chat.selectConversation(chat.createEmptyConversation(name, chat.getDataSourceContainer()));
-                    chat.setFocusOnPrompt();
-                } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError(
-                        "Error creating conversation",
-                        "Could not create new conversation: " + e.getMessage(),
-                        e
-                    );
-                }
+                chat.createNewConversation();
             }
         };
+        setToolTipWithShortcut(addConversationAction, AIChatController.CMD_NEW_CONVERSATION);
         manager.add(addConversationAction);
         if (chat.getChatSession().getStorage().canPersist()) {
-            deleteConversationAction = new Action("Delete conversation", DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
+            deleteConversationAction = new Action(AIChatMessages.ai_chat_conversation_delete_label, DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
                 @Override
                 public void run() {
-                    if (DBWorkbench.getPlatformUI().confirmAction(
-                        "Delete conversation",
-                        "Are you sure you want to delete conversation '" + chat.getActiveConversation().getCaption() + "'?"
-                    )) {
-                        try {
-                            chat.removeActiveConversation();
-                        } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError(
-                                "Error deleting conversation",
-                                "Could not delete conversation: " + e.getMessage(),
-                                e
-                            );
-                        }
-                    }
+                    chat.deleteActiveConversationWithConfirmation();
                 }
             };
+            setToolTipWithShortcut(deleteConversationAction, AIChatController.CMD_DELETE_CONVERSATION);
             manager.add(deleteConversationAction);
         }
-    }
-
-    @NotNull
-    private String createNewConversationName() {
-        String baseName = AIChatMessages.ai_chat_default_conversation_name;
-        String name = baseName;
-        for (int i = 1; ; i++) {
-            if (findConversation(name) == null) {
-                break;
-            }
-            name = baseName + " " + i;
-        }
-        return name;
     }
 
     private static class SettingsToggleAction extends Action {
