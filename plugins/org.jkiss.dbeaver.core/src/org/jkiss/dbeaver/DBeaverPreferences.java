@@ -51,6 +51,7 @@ public final class DBeaverPreferences
     public static final String UI_SHOW_HOLIDAY_DECORATIONS = HolidayDecorations.PREF_UI_SHOW_HOLIDAY_DECORATIONS;
     public static final String UI_STATUS_BAR_SHOW_BREADCRUMBS = DatabaseEditorPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS;
     public static final String UI_STATUS_BAR_SHOW_STATUS_LINE = "ui.statusBar.show.statusLine"; //$NON-NLS-1$
+    public static final String UI_SHOW_ZOOM_RESTART_PROMPT = "ui.showZoomRestartPrompt"; //$NON-NLS-1$
 
     // Resources
     public static final String RESOURCE_HANDLER_ROOT_PREFIX = "resource.root."; //$NON-NLS-1$

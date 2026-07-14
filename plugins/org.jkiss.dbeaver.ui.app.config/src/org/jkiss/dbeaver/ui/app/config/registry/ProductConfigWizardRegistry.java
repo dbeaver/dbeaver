@@ -25,15 +25,15 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class ProductConfigRegistry {
+public final class ProductConfigWizardRegistry {
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.app.config";
 
-    private static ProductConfigRegistry instance;
+    private static ProductConfigWizardRegistry instance;
 
     private final List<ProductConfigPageDescriptor> pages;
     private final List<ProductConfigActionDescriptor> actions;
 
-    private ProductConfigRegistry(@NotNull IExtensionRegistry registry) {
+    private ProductConfigWizardRegistry(@NotNull IExtensionRegistry registry) {
         var pages = new ArrayList<ProductConfigPageDescriptor>();
         var actions = new ArrayList<ProductConfigActionDescriptor>();
 
@@ -57,9 +57,9 @@ public final class ProductConfigRegistry {
     }
 
     @NotNull
-    public static synchronized ProductConfigRegistry getInstance() {
+    public static synchronized ProductConfigWizardRegistry getInstance() {
         if (instance == null) {
-            instance = new ProductConfigRegistry(Platform.getExtensionRegistry());
+            instance = new ProductConfigWizardRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
