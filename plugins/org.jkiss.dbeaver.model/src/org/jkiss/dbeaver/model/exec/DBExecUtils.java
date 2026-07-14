@@ -130,7 +130,8 @@ public class DBExecUtils {
         }
     }
 
-    public static DBPDataSourceContainer findConnectionContext(String host, int port, String path) {
+    @Nullable
+    public static DBPDataSourceContainer findConnectionContext(@NotNull String host, int port, @Nullable String path) {
         DBPDataSourceContainer curContext = getCurrentThreadContext();
         if (curContext != null) {
             return contextMatches(host, port, curContext) ? curContext : null;
@@ -1014,10 +1015,12 @@ public class DBExecUtils {
         return !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE);
     }
 
+    @Nullable
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
         return getAttributeReadOnlyStatus(attribute, true);
     }
 
+    @Nullable
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute, boolean checkValidKey) {
         if (attribute.getMetaAttribute() == null) {
             return "Null meta attribute";
@@ -1076,6 +1079,7 @@ public class DBExecUtils {
         return null;
     }
 
+    @NotNull
     public static List<DBEPersistAction> getActionsListFromCommandContext(@NotNull DBRProgressMonitor monitor, DBECommandContext commandContext, DBCExecutionContext executionContext, Map<String, Object> options, @Nullable List<DBEPersistAction> actions) throws DBException {
         if (actions == null) {
             actions = new ArrayList<>();
@@ -1128,6 +1132,7 @@ public class DBExecUtils {
         return false;
     }
 
+    @NotNull
     public static <CONTEXT extends AbstractExecutionContext<?,?>> CONTEXT tryOpenContext(
         @NotNull CONTEXT executionContext,
         @NotNull DBRRunnableWithParam<CONTEXT> runnable
