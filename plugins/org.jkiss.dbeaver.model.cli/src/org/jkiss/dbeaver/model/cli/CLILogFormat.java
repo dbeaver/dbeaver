@@ -19,32 +19,28 @@ package org.jkiss.dbeaver.model.cli;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.List;
-import java.util.Map;
+public enum CLILogFormat {
+    TEXT("text"),
+    JSON("json");
 
-public interface CLIContext {
+    private final String formatName;
+
+    CLILogFormat(@NotNull String formatName) {
+        this.formatName = formatName;
+    }
+
     @NotNull
-    Map<String, Object> getContextParameters();
+    public String getFormatName() {
+        return formatName;
+    }
 
     @Nullable
-    <T> T getContextParameter(String name);
-
-    void setContextParameter(@NotNull String name, @NotNull Object value);
-
-    void addResult(@NotNull String result);
-
-    @NotNull
-    List<String> getResults();
-
-    void addCloseHandler(@NotNull Runnable closeHandler);
-
-    @Nullable
-    CLIProcessResult.PostAction getPostAction();
-
-    void setPostAction(@Nullable CLIProcessResult.PostAction postAction);
-
-    @NotNull
-    CLILogFormat getLogFormat();
-
-    void setLogFormat(@NotNull CLILogFormat logFormat);
+    public static CLILogFormat byName(@Nullable String name) {
+        for (CLILogFormat format : values()) {
+            if (format.formatName.equalsIgnoreCase(name)) {
+                return format;
+            }
+        }
+        return null;
+    }
 }
