@@ -103,6 +103,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder weblink(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.LinkBuilder> handler) {
+        return link(UIObservable.of(text), e -> ShellUtils.launchProgram(e.text), handler);
+    }
+
+    @NotNull
     default UIRowBuilder weblink(@NotNull UIObservable<String> text) {
         return weblink(text, identityConsumer());
     }

@@ -60,7 +60,8 @@ public interface SMAdminController extends SMController {
         @Nullable String defaultAuthRole
     ) throws DBException;
 
-    void importUsers(@NotNull SMUserImportList userImportList) throws DBException;
+    @NotNull
+    List<SMUserProvisioning> importUsers(@NotNull SMUserImportList userImportList) throws DBException;
 
     void deleteUser(String userId) throws DBException;
 

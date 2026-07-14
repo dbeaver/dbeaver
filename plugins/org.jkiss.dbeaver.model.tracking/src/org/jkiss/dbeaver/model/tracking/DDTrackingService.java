@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 
 public interface DDTrackingService {
 
-    String API_KEY_HEADER = "DD-API-Key";
     String METERING_ENDPOINT = "/metering";
     String TRACK_START_ENDPOINT = "/track/start";
     String TRACK_STOP_ENDPOINT = "/track/stop";
