@@ -20,31 +20,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.util.List;
-import java.util.Map;
 
-public interface CLIContext {
-    @NotNull
-    Map<String, Object> getContextParameters();
+public record CLIErrorStatus(
+    @NotNull String status,
+    short code,
+    @NotNull String message,
+    @Nullable Details details
+) {
+    public CLIErrorStatus(short code, @NotNull String message, @Nullable List<String> messages) {
+        this("error", code, message, messages == null ? null : new Details(messages));
+    }
 
-    @Nullable
-    <T> T getContextParameter(String name);
-
-    void setContextParameter(@NotNull String name, @NotNull Object value);
-
-    void addResult(@NotNull String result);
-
-    @NotNull
-    List<String> getResults();
-
-    void addCloseHandler(@NotNull Runnable closeHandler);
-
-    @Nullable
-    CLIProcessResult.PostAction getPostAction();
-
-    void setPostAction(@Nullable CLIProcessResult.PostAction postAction);
-
-    @NotNull
-    CLILogFormat getLogFormat();
-
-    void setLogFormat(@NotNull CLILogFormat logFormat);
+    public record Details(@NotNull List<String> messages) {
+    }
 }
