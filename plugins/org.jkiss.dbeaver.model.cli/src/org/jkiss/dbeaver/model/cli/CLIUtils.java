@@ -68,14 +68,9 @@ public class CLIUtils {
 
     @NotNull
     public static String formatErrorStatusJson(short exitCode, @NotNull Throwable error) {
-        Map<String, Object> status = new LinkedHashMap<>();
-        status.put("status", "error");
-        status.put("code", exitCode);
         List<String> messages = collectErrorMessages(error);
-        status.put("message", messages.isEmpty() ? error.getClass().getSimpleName() : messages.getFirst());
-        if (messages.size() > 1) {
-            status.put("details", Map.of("messages", messages));
-        }
+        String message = messages.isEmpty() ? error.getClass().getSimpleName() : messages.getFirst();
+        CLIErrorStatus status = new CLIErrorStatus(exitCode, message, messages.size() > 1 ? messages : null);
         return JSONUtils.GSON.toJson(status);
     }
 
