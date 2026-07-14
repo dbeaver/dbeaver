@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net;
+package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.NotNullWhen;
@@ -33,11 +33,7 @@ import java.util.stream.Collectors;
 
 public class StringTemplate {
 
-    private static final Pattern PARAM_VALUE_PATTERN = Pattern.compile("[\\d\\w\\-\\.\\~\\%\\s]+");
-
-    private static final Object lock = new Object();
-
-    private static final WeakHashMap<String, StringTemplate> templates = new WeakHashMap<>();
+    private static final Pattern DEFAULT_PARAM_VALUE_PATTERN = Pattern.compile("[\\d\\w\\-\\.\\~\\%\\s\\_]+");
 
     private enum TermKind {
         TEXT(null),
@@ -159,7 +155,9 @@ public class StringTemplate {
     }
 
     @NotNull
-    private static List<TemplateSyntaxNode> parseTemplate(@NotNull Lexer l, @NotNull TemplateFragmentKind fragmentKind) {
+    private static List<TemplateSyntaxNode> parseTemplate(
+        @NotNull Lexer l, @NotNull TemplateFragmentKind fragmentKind
+    ) throws StringTemplateFormatException {
         int fragmentStart = l.lastTerm == null ? 0 : l.lastTerm.start();
         List<TemplateSyntaxNode> nodes = new ArrayList<>();
         Term t = l.nextTerm();
@@ -307,7 +305,9 @@ public class StringTemplate {
     }
 
     @NotNull
-    private static TemplateSyntaxNode parseParamNode(@NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind) {
+    private static TemplateSyntaxNode parseParamNode(
+        @NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind
+    ) throws StringTemplateFormatException {
         Term t2;
         do {
             t2 = l.nextTerm();
@@ -322,7 +322,9 @@ public class StringTemplate {
     }
 
     @NotNull
-    private static TemplateSyntaxNode parseParamOrSubseq(@NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind) {
+    private static TemplateSyntaxNode parseParamOrSubseq(
+        @NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind
+    ) throws StringTemplateFormatException {
         Term nameTerm = l.nextTerm();
         String groupName = null;
         if (nameTerm != null) {
@@ -623,7 +625,7 @@ public class StringTemplate {
     }
 
     @NotNull
-    private final String template;
+    private final String templateString;
     @NotNull
     private final TemplateNode root;
     @NotNull
@@ -635,15 +637,19 @@ public class StringTemplate {
     @NotNull
     private final Pattern pattern;
 
-    private StringTemplate(@NotNull String template, @NotNull TemplateNode root) {
-        this.template = template;
+    private StringTemplate(
+        @NotNull String templateString,
+        @NotNull TemplateNode root,
+        @Nullable IParameterPatternSupplier parameterPatternSupplier
+    ) {
+        this.templateString = templateString;
         this.root = root;
 
         Pair<TemplateEvalInfo, GroupEvalInfo> templateInfo = collectTemplateInfo(root);
         this.paramInfoByName = Collections.unmodifiableMap(templateInfo.getFirst().params());
         this.groupsInfo = templateInfo.getSecond().toGroupInfo("");
         this.isNotPlain = templateInfo.getFirst().hasNamedGroups || this.paramInfoByName.values().stream().anyMatch(p -> !p.isSingleton);
-        this.pattern = prepareRegexPattern(root, this.paramInfoByName);
+        this.pattern = prepareRegexPattern(root, this.paramInfoByName, parameterPatternSupplier);
     }
 
     @NotNull
@@ -833,7 +839,11 @@ public class StringTemplate {
     }
 
     @NotNull
-    private static Pattern prepareRegexPattern(@NotNull TemplateNode root, @NotNull Map<String, ParameterInfo> paramInfoByName) {
+    private static Pattern prepareRegexPattern(
+        @NotNull TemplateNode root,
+        @NotNull Map<String, ParameterInfo> paramInfoByName,
+        @Nullable IParameterPatternSupplier parameterPatternSupplier
+    ) {
         Fragment regex = root.visit(new TemplateNodeVisitor<Object, Fragment>() {
             @Nullable
             private Map<String, AtomicInteger> paramEntryCounters = null;
@@ -890,18 +900,21 @@ public class StringTemplate {
             @Override
             public Fragment visitParameter(@NotNull TemplateNode.Parameter parameter, @NotNull Object arg) {
                 ParameterInfo paramInfo = paramInfoByName.get(parameter.name);
+                String valueRegex = parameterPatternSupplier != null
+                    ? parameterPatternSupplier.getParamRegex(paramInfo)
+                    : DEFAULT_PARAM_VALUE_PATTERN.pattern();
                 return Fragment.ofSequence(
                     paramInfo.isSingleton
                         ? List.of(
                             Fragment.ofText("(?<"),
                             Fragment.ofText(parameter.name + (paramInfo.totalCases <= 1 ? "" : this.nextEntryNumber(paramInfo.name))),
                             Fragment.ofText(">"),
-                            Fragment.ofText(PARAM_VALUE_PATTERN.pattern()),
+                            Fragment.ofText(valueRegex),
                             Fragment.ofText(")")
                         )
                         : List.of(
                             Fragment.ofText("("),
-                            Fragment.ofText(PARAM_VALUE_PATTERN.pattern()),
+                            Fragment.ofText(valueRegex),
                             Fragment.ofText(")")
                         )
                 );
@@ -945,14 +958,29 @@ public class StringTemplate {
     @NotNull
     @Override
     public String toString() {
-        return super.toString() + "[\"" + this.template.replace("\"", "\\\"") + "\"]";
+        return super.toString() + "[\"" + this.templateString.replace("\"", "\\\"") + "\"]";
     }
 
     public static class ParamEntries {
         @Nullable
-        public Map<String, List<String>> parameters = null;
+        private Map<String, List<String>> parameters = null;
         @Nullable
-        public Map<String, List<ParamEntries>> groups = null;
+        private Map<String, List<ParamEntries>> groups = null;
+
+        @Nullable
+        public String getFirstParamValue(@NotNull String paramName) {
+            return this.parameters == null ? null : this.parameters.get(paramName).getFirst();
+        }
+
+        @NotNull
+        public Map<String, List<String>> getParameters() {
+            return this.parameters != null ? this.parameters : Collections.emptyMap();
+        }
+
+        @NotNull
+        public Map<String, List<ParamEntries>> getGroups() {
+            return this.groups != null ? this.groups : Collections.emptyMap();
+        }
 
         private void putParam(@NotNull String paramName, @NotNull String value) {
             if (this.parameters == null) {
@@ -1011,100 +1039,119 @@ public class StringTemplate {
         }
     }
 
-    @NotNull
+    @Nullable
     public ParamEntries extractAllParametersTree(@NotNull String string) {
-        ListNode<ParamEntries> stack = ListNode.of(new ParamEntries());
         CapturesEnumerator it = this.extractAllParametersImpl(string);
-        while (it.nextCapture()) {
-            switch (it.getCaptureKind()) {
-                case PARAMETER_VALUE -> stack.data.putParam(it.getParamName(), it.getPayload());
-                case GROUP_START -> stack = ListNode.push(stack, stack.data.newBranch(it.getPayload()));
-                case GROUP_END -> stack = stack.next;
-                default -> throw new UnsupportedOperationException();
+        if (it != null) {
+            ListNode<ParamEntries> stack = ListNode.of(new ParamEntries());
+            while (it.nextCapture()) {
+                switch (it.getCaptureKind()) {
+                    case PARAMETER_VALUE -> stack.data.putParam(it.getParamName(), it.getPayload());
+                    case GROUP_START -> stack = ListNode.push(stack, stack.data.newBranch(it.getPayload()));
+                    case GROUP_END -> stack = stack.next;
+                    default -> throw new UnsupportedOperationException();
+                }
             }
+            return stack.data;
+        } else {
+            return null;
         }
-        return stack.data;
     }
 
-    @NotNull
+    @Nullable
     public Map<String, String> extractSingletonParametersMap(@NotNull String string) {
-        Map<String, String> result = new HashMap<>();
         CapturesEnumerator it = this.extractAllParametersImpl(string);
-        while (it.nextCapture()) {
-            if (it.captureKind == CaptureKind.PARAMETER_VALUE) {
-                result.put(it.getParamName(), it.getPayload());
+        if (it != null) {
+            Map<String, String> result = new HashMap<>();
+            while (it.nextCapture()) {
+                if (it.captureKind == CaptureKind.PARAMETER_VALUE) {
+                    result.put(it.getParamName(), it.getPayload());
+                }
             }
+            return result;
+        } else {
+            return null;
         }
-        return result;
     }
 
-    @NotNull
+    @Nullable
     public Map<String, List<String>> extractAllParametersMap(@NotNull String string) {
-        Map<String, List<String>> result = new HashMap<>();
         CapturesEnumerator it = this.extractAllParametersImpl(string);
-        while (it.nextCapture()) {
-            if (it.getCaptureKind() == CaptureKind.PARAMETER_VALUE) {
-                result.computeIfAbsent(it.getParamName(), k -> new ArrayList<>()).add(it.getPayload());
+        if (it != null) {
+            Map<String, List<String>> result = new HashMap<>();
+            while (it.nextCapture()) {
+                if (it.getCaptureKind() == CaptureKind.PARAMETER_VALUE) {
+                    result.computeIfAbsent(it.getParamName(), k -> new ArrayList<>()).add(it.getPayload());
+                }
             }
+            return result;
+        } else {
+            return null;
         }
-        return result;
     }
 
-    @NotNull
+    @Nullable
     public List<Map.Entry<String, String>> extractAllParametersFlat(@NotNull String string) {
-        ArrayList<Map.Entry<String, String>> result = new ArrayList<>();
         CapturesEnumerator it = this.extractAllParametersImpl(string);
-        while (it.nextCapture()) {
-            if (it.getCaptureKind() == CaptureKind.PARAMETER_VALUE) {
-                result.add(Map.entry(it.getParamName(), it.getPayload()));
+        if (it != null) {
+            ArrayList<Map.Entry<String, String>> result = new ArrayList<>();
+            while (it.nextCapture()) {
+                if (it.getCaptureKind() == CaptureKind.PARAMETER_VALUE) {
+                    result.add(Map.entry(it.getParamName(), it.getPayload()));
+                }
             }
+            return result;
+        } else {
+            return null;
         }
-        return result;
     }
 
-    @NotNull
+    @Nullable
     private CapturesEnumerator extractAllParametersImpl(@NotNull String text) {
         if (this.isNotPlain) {
             TreeMatchStep path = this.applyTreeMatch(text);
+            if (path != null) {
+                return new CapturesEnumerator() {
+                    private TreeMatchStep step = path;
 
-            return new CapturesEnumerator() {
-                private TreeMatchStep step = path;
-
-                public boolean nextCapture() {
-                    while (this.step != null) {
-                        switch (this.step) {
-                            case TreeMatchStep.Parameter p -> {
-                                this.captureKind = CaptureKind.PARAMETER_VALUE;
-                                this.currParamName = p.paramName();
-                                this.currPayload = text.substring(p.prevPosition(), p.position());
+                    public boolean nextCapture() {
+                        while (this.step != null) {
+                            switch (this.step) {
+                                case TreeMatchStep.Parameter p -> {
+                                    this.captureKind = CaptureKind.PARAMETER_VALUE;
+                                    this.currParamName = p.paramName();
+                                    this.currPayload = text.substring(p.prevPosition(), p.position());
+                                }
+                                case TreeMatchStep.EndGroup g when g.groupName != null -> {
+                                    this.captureKind = CaptureKind.GROUP_START;
+                                    this.currParamName = null;
+                                    this.currPayload = g.groupName;
+                                }
+                                case TreeMatchStep.BeginGroup g when g.groupName != null -> {
+                                    this.captureKind = CaptureKind.GROUP_END;
+                                    this.currParamName = null;
+                                    this.currPayload = g.groupName;
+                                }
+                                default -> this.captureKind = null;
                             }
-                            case TreeMatchStep.EndGroup g when g.groupName != null -> {
-                                this.captureKind = CaptureKind.GROUP_START;
-                                this.currParamName = null;
-                                this.currPayload = g.groupName;
+                            this.step = this.step.prev();
+                            if (this.captureKind != null) {
+                                return true;
                             }
-                            case TreeMatchStep.BeginGroup g when g.groupName != null -> {
-                                this.captureKind = CaptureKind.GROUP_END;
-                                this.currParamName = null;
-                                this.currPayload = g.groupName;
-                            }
-                            default -> this.captureKind = null;
                         }
-                        this.step = this.step.prev();
-                        if (this.captureKind != null) {
-                            return true;
-                        }
+                        this.captureKind = null;
+                        this.currParamName = null;
+                        this.currPayload = null;
+                        return false;
                     }
-                    this.captureKind = null;
-                    this.currParamName = null;
-                    this.currPayload = null;
-                    return false;
-                }
-            };
+                };
+            } else {
+                return null;
+            }
         } else {
             Matcher m = this.pattern.matcher(text);
 
-            if (m.matches()) {
+            if (m.find()) {
                 return new CapturesEnumerator() {
                     private final Iterator<ParameterInfo> parameters = paramInfoByName.values().iterator();
 
@@ -1136,12 +1183,7 @@ public class StringTemplate {
                     }
                 };
             } else {
-                return new CapturesEnumerator() {
-                    @Override
-                    public boolean nextCapture() {
-                        return false;
-                    }
-                };
+                return null;
             }
         }
     }
@@ -1241,7 +1283,7 @@ public class StringTemplate {
             @Nullable
             @Override
             public TreeMatchStep visitParameter(@NotNull TemplateNode.Parameter parameter, @NotNull TreeMatchStep step) {
-                Matcher m = PARAM_VALUE_PATTERN.matcher(string);
+                Matcher m = DEFAULT_PARAM_VALUE_PATTERN.matcher(string);
                 if (m.find(step.position()) && m.start() == step.position()) {
                     return new TreeMatchStep.Parameter(step, m.end(), parameter.name);
                 } else {
@@ -1586,23 +1628,23 @@ public class StringTemplate {
         }
     }
 
-    @NotNull
-    public static StringTemplate parseTemplate(@NotNull String templateString) {
-        synchronized (lock) {
-            StringTemplate template = templates.get(templateString);
-            if (template == null) {
-                template = StringTemplate.parseTemplateImpl(templateString);
-                templates.put(templateString, template);
-            }
-            return template;
-        }
+    public interface IParameterPatternSupplier {
+        @NotNull
+        String getParamRegex(@NotNull ParameterInfo param);
     }
 
     @NotNull
-    private static StringTemplate parseTemplateImpl(@NotNull String templateString) {
+    public static StringTemplate parseTemplate(@NotNull String templateString) throws StringTemplateFormatException {
+        return parseTemplate(templateString, null);
+    }
+
+    @NotNull
+    public static StringTemplate parseTemplate(
+        @NotNull String templateString, @Nullable IParameterPatternSupplier paramPatternSupplier
+    ) throws StringTemplateFormatException {
         List<TemplateSyntaxNode> syntaxNodes = parseTemplate(new Lexer(templateString), TemplateFragmentKind.DEFAULT);
         TemplateNode root = prepareTemplateNode(null, syntaxNodes);
-        return new StringTemplate(templateString, root);
+        return new StringTemplate(templateString, root, paramPatternSupplier);
     }
 
     @NotNull
@@ -1706,7 +1748,7 @@ public class StringTemplate {
         }
     }
 
-    public static class StringTemplateFormatException extends RuntimeException {
+    public static class StringTemplateFormatException extends Exception {
 
         @Serial
         private static final long serialVersionUID = 1L;

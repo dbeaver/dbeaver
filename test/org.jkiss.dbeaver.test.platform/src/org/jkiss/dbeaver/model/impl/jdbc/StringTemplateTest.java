@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.net.StringTemplate;
+import org.jkiss.dbeaver.model.DatabaseURL;
+import org.jkiss.dbeaver.model.StringTemplate;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -113,12 +114,10 @@ public class StringTemplateTest extends DBeaverUnitTest {
         "jdbc:jkiss:cassandra://{host}[:{port}]/{database}"
     };
 
-    static final String GENERIC_URL_TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}][?{prop}={value}[&{prop}={value}...]]";
-
     @Test
-    public void testOptionals() {
+    public void testOptionals() throws StringTemplate.StringTemplateFormatException {
         evaluatePlainUrl(
-            GENERIC_URL_TEMPLATE, "wtf://user:pwd@myhost:1234", Map.of(
+            DatabaseURL.Generic.TEMPLATE, "wtf://user:pwd@myhost:1234", Map.of(
                 "user", "user",
                 "password", "pwd",
                 "driver", "wtf",
@@ -127,7 +126,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
             )
         );
         evaluatePlainUrl(
-            GENERIC_URL_TEMPLATE, "wtf://myhost/dbname", Map.of(
+            DatabaseURL.Generic.TEMPLATE, "wtf://myhost/dbname", Map.of(
                 "driver", "wtf",
                 "host", "myhost",
                 "database", "dbname"
@@ -136,27 +135,45 @@ public class StringTemplateTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void testBranching() {
+    public void testBranching() throws StringTemplate.StringTemplateFormatException {
         evaluatePlainUrl("abc{x{x}|y{y}}def", "abcx134def", Map.of("x", "134"));
         evaluatePlainUrl("abc{x{x}|y{y}}def", "abcy456def", Map.of("y", "456"));
     }
 
     @Test
-    public void testRepeatings() {
+    public void testRepeatings() throws StringTemplate.StringTemplateFormatException {
         evaluatePlainUrl(
-            GENERIC_URL_TEMPLATE, "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC", Map.of(
+            DatabaseURL.Generic.TEMPLATE_WITH_PARAMS, "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC", Map.of(
                 "driver", "mysql",
                 "host", "mysql.db.server",
                 "port", "3306",
                 "database", "my_database",
-                "prop", List.of("1useSSL", "2serverTimezone"),
-                "value", List.of("1false", "2UTC")
+                DatabaseURL.Generic.PARAM_PROP, List.of("1useSSL", "2serverTimezone"),
+                DatabaseURL.Generic.PARAM_VALUE, List.of("1false", "2UTC")
+            )
+        );
+        evaluateHierarchicalUrl(
+            DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS, "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC", Map.of(
+                "driver", "mysql",
+                "host", "mysql.db.server",
+                "port", "3306",
+                "database", "my_database",
+                DatabaseURL.Generic.PARAM_GROUP, List.of(
+                    Map.of(
+                        DatabaseURL.Generic.PARAM_PROP, "1useSSL",
+                        DatabaseURL.Generic.PARAM_VALUE, "1false"
+                    ),
+                    Map.of(
+                        DatabaseURL.Generic.PARAM_PROP, "2serverTimezone",
+                        DatabaseURL.Generic.PARAM_VALUE, "2UTC"
+                    )
+                )
             )
         );
     }
 
     @Test
-    public void testNamedGroupAndBranching() {
+    public void testNamedGroupAndBranching() throws StringTemplate.StringTemplateFormatException {
         final String msqlTemplate = "[jdbc:]{driver}://{[{user}:{password}]\\[{ep:{host}[:{port}]}[,{ep:{host}[:{port}]}...]\\]|[{user}:{password}@]{host}[:{port}]}[/{database}]";
 
         evaluateHierarchicalUrl(msqlTemplate, "jdbc:mysql://root:mypass@myhost1:3306/db_name", Map.of(
@@ -190,7 +207,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void testRandomParametrization() {
+    public void testRandomParametrization() throws StringTemplate.StringTemplateFormatException {
         Random rnd = new Random(1); // fixed seed for reproducibility
         for (String templateString : ALL_URL_TEMPLATES) {
             StringTemplate template = StringTemplate.parseTemplate(templateString);
@@ -232,7 +249,9 @@ public class StringTemplateTest extends DBeaverUnitTest {
         return sb.toString();
     }
 
-    static void evaluatePlainUrl(@NotNull String templateString, @Nullable String givenUrl, @Nullable Map<String, ?> givenParams) {
+    static void evaluatePlainUrl(
+        @NotNull String templateString, @Nullable String givenUrl, @Nullable Map<String, ?> givenParams
+    ) throws StringTemplate.StringTemplateFormatException {
         if (givenParams == null && givenUrl == null) {
             throw new IllegalArgumentException("At least one of givenUrl and givenParams should be specified");
         }
@@ -273,7 +292,9 @@ public class StringTemplateTest extends DBeaverUnitTest {
         };
     }
 
-    static void evaluateHierarchicalUrl(@NotNull String templateString, @Nullable String givenUrl, @Nullable Map<String, ?> givenParams) {
+    static void evaluateHierarchicalUrl(
+        @NotNull String templateString, @Nullable String givenUrl, @Nullable Map<String, ?> givenParams
+    ) throws StringTemplate.StringTemplateFormatException {
         if (givenParams == null && givenUrl == null) {
             throw new IllegalArgumentException("At least one of givenUrl and givenParams should be spefified");
         }
