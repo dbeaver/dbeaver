@@ -27,10 +27,10 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Map;
 
 /**
- * AI completion settings.
+ * AI context settings.
  * Datasource-specific settings. Used in prompt generators to generate context info message.
  */
-public class AIDataSourceSettings extends AIContextSettings {
+public class AIContextSettingsDataSource extends AIContextSettings {
 
     // Meta parameters
     public static final String AI_DS_EXTENSION = "ai.assistant";
@@ -38,16 +38,16 @@ public class AIDataSourceSettings extends AIContextSettings {
     public static final String AI_META_SCOPE = "ai.meta.scope";
     public static final String AI_META_CUSTOM = "ai.meta.customObjects";
 
-    private static final Log log = Log.getLog(AIDataSourceSettings.class);
+    private static final Log log = Log.getLog(AIContextSettingsDataSource.class);
 
     private final DBPDataSourceContainer dataSourceContainer;
     protected final DBPPreferenceStore preferenceStore;
 
-    public AIDataSourceSettings(@NotNull DBPDataSourceContainer dataSourceContainer) {
+    public AIContextSettingsDataSource(@NotNull DBPDataSourceContainer dataSourceContainer) {
         this(getPreferenceStore(), dataSourceContainer);
     }
 
-    private AIDataSourceSettings(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
+    private AIContextSettingsDataSource(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
         this.preferenceStore = preferenceStore;
         loadSettings();
