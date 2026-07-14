@@ -229,6 +229,10 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         return predefined;
     }
 
+    public void setPredefined(boolean predefined) {
+        this.predefined = predefined;
+    }
+
     @NotNull
     public String getId() {
         return id;

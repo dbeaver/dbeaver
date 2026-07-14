@@ -155,6 +155,8 @@ public class DBIcon implements DBPImage {
 
     public static final DBIcon DATABASE_DEFAULT = new DBIcon("database_icon_default", "connection/database_icon.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DATABASE_BIG_DEFAULT = new DBIcon("database_icon_big_default", "connection/database_icon_big.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon GLOBAL_PROFILE = new DBIcon("global_profile", "connection/profile/global_profile.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CONNECTION_PROFILE = new DBIcon("connection_profile", "connection/profile/connection_profile.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon APACHE = new DBIcon("apache", "misc/apache.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon JAR = new DBIcon("jar", "misc/jar.svg"); //$NON-NLS-1$ //$NON-NLS-2$
