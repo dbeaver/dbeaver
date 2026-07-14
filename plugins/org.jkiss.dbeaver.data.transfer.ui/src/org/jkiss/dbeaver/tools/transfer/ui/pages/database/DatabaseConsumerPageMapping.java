@@ -331,6 +331,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                                 applyMappingSkip(element);
                             }
                             updated = true;
+                        } else if (e.character == SWT.SPACE) {
+                            for (TreeItem item : mappingViewer.getTree().getSelection()) {
+                                element = item.getData();
+                                applyMappingTransfer(element);
+                            }
+                            updated = true;
                         } else if (e.keyCode == SWT.SHIFT) {
                             TreeItem[] selection = mappingViewer.getTree().getSelection();
                             if (selection.length > 0) {
@@ -386,16 +392,19 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 bottomBar,
                 null,
                 DTUIMessages.database_consumer_page_mapping_button_recreate_tip,
-                UIIcon.OBJ_REFRESH,
+                DBIcon.MAPPING,
                 SelectionListener.widgetSelectedAdapter(e -> toggleRecreateSelection()));
+            recreateButton.setLayoutData(new GridData());
             recreateButton.setEnabled(false);
             transformCheck = new Button(bottomBar, SWT.CHECK);
+            transformCheck.setLayoutData(new GridData());
             transformCheck.setText(DTUIMessages.database_consumer_page_mapping_column_transformer_text);
             transformCheck.setToolTipText(DTUIMessages.database_consumer_page_mapping_button_transform_tip);
             transformCheck.setEnabled(false);
             transformCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> onTransformCheckToggled()));
 
             transformCombo = new Combo(bottomBar, SWT.DROP_DOWN | SWT.READ_ONLY);
+            transformCombo.setLayoutData(new GridData());
             transformCombo.setToolTipText(DTUIMessages.database_consumer_page_mapping_column_transformer_tip);
             transformCombo.setEnabled(false);
             for (DataTransferAttributeTransformerDescriptor transformer :
@@ -703,9 +712,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     @Nullable
     private static Image getMappingTypeImage(@NotNull DatabaseMappingType type) {
         DBPImage icon = switch (type) {
-            case existing -> DBIcon.TREE_TABLE_LINK;
-            case create -> DBIcon.TREE_TABLE_ADD;
-            case recreate -> UIIcon.OBJ_REFRESH;
+            case existing -> DBIcon.EXISTING;
+            case create -> DBIcon.CREATE;
+            case recreate -> DBIcon.RECREATE;
             default -> null;
         };
         return icon == null ? null : DBeaverIcons.getImage(icon);
@@ -1648,13 +1657,38 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         configureButton.setEnabled(hasMappings);
         previewButton.setEnabled(hasMappings);
         mappingRules.setEnabled(hasMappings);
+        boolean isContainer = selectedMapping instanceof DatabaseMappingContainer;
+        boolean isColumn = selectedMapping instanceof DatabaseMappingAttribute;
         if (recreateButton != null && !recreateButton.isDisposed()) {
-            recreateButton.setEnabled(selectedMapping instanceof DatabaseMappingContainer
+            recreateButton.setEnabled(isContainer
                 && (selectedMapping.getMappingType() == DatabaseMappingType.existing
                     || selectedMapping.getMappingType() == DatabaseMappingType.recreate));
         }
+        setControlExcluded(recreateButton, !isContainer);
+        setControlExcluded(transformCheck, !isColumn);
+        setControlExcluded(transformCombo, !isColumn);
+        layoutBottomBar();
         updateTransformControls(selectedMapping);
         updateUpAndDownButtons();
+    }
+
+    private static void setControlExcluded(@Nullable Control control, boolean excluded) {
+        if (control == null || control.isDisposed()) {
+            return;
+        }
+        control.setVisible(!excluded);
+        if (control.getLayoutData() instanceof GridData gd) {
+            gd.exclude = excluded;
+        }
+    }
+
+    private void layoutBottomBar() {
+        if (recreateButton != null && !recreateButton.isDisposed()) {
+            Composite parent = recreateButton.getParent();
+            if (parent != null && !parent.isDisposed()) {
+                parent.layout(true);
+            }
+        }
     }
 
     protected boolean hasMappings(@Nullable DatabaseMappingObject mapping) {

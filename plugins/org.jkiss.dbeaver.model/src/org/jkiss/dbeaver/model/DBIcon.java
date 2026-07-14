@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,6 +164,11 @@ public class DBIcon implements DBPImage {
     public static final DBIcon STATUS_WARNING = new DBIcon("status_warning", "status/warning.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon STATUS_QUESTION = new DBIcon("status_question", "status/question.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon STATUS_INFO = new DBIcon("status_info", "status/info.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon RECREATE = new DBIcon("recreate", "misc/recreate.svg");
+    public static final DBIcon CREATE = new DBIcon("create", "misc/create.svg");
+    public static final DBIcon EXISTING = new DBIcon("existing", "misc/existing.svg");
+    public static final DBIcon MAPPING = new DBIcon("mapping", "misc/mapping.svg");
 
     public static final DBIcon SMALL_ERROR = new DBIcon("small_error", "status/error_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_WARNING = new DBIcon("small_warning", "status/warning_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
