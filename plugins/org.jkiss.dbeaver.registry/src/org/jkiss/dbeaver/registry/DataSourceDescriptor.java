@@ -2254,9 +2254,11 @@ public class DataSourceDescriptor
         if (secretValue == null) {
             if (DBWorkbench.isDistributed()) {
                 // In distributed mode we reset saved password in case of null secret
-                connectionInfo.getHandlers().forEach(handler ->
-                    handler.setSavePassword(false)
-                );
+                connectionInfo.getHandlers().forEach(handler -> {
+                    if (connectionInfo.getConfigProfileName() == null) {
+                        handler.setSavePassword(false);
+                    }
+                });
                 savePassword = false;
             }
             return;
