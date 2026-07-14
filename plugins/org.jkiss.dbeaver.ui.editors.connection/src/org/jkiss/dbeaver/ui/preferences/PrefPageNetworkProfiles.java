@@ -23,6 +23,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -49,8 +50,8 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageNetworkProfiles
@@ -252,13 +253,24 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
             }
         }
 
-        TableItem item = new TableItem(profilesTable, SWT.NONE);
-        item.setText(newProfile.getProfileName());
-        item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
-        item.setData(newProfile);
+        createProfileTableItem(newProfile);
 
         profilesTable.select(profilesTable.getItemCount() - 1);
         profilesTable.notifyListeners(SWT.Selection, new Event());
+    }
+
+    @NotNull
+    protected TableItem createProfileTableItem(@NotNull DBWNetworkProfile profile) {
+        TableItem item = new TableItem(profilesTable, SWT.NONE);
+        item.setText(profile.getProfileName());
+        item.setImage(getProfileImage(profile));
+        item.setData(profile);
+        return item;
+    }
+
+    @NotNull
+    protected Image getProfileImage(@NotNull DBWNetworkProfile profile) {
+        return DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT);
     }
 
     /**
@@ -428,10 +440,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                     }
                 }
 
-                TableItem item = new TableItem(profilesTable, SWT.NONE);
-                item.setText(profile.getProfileName());
-                item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
-                item.setData(profile);
+                createProfileTableItem(profile);
 
                 for (NetworkHandlerDescriptor nhd : allHandlers) {
                     HandlerBlock handlerBlock = configurations.get(nhd);
