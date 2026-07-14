@@ -378,6 +378,10 @@ public class DBExecUtils {
             return;
         }
         String script = action.getScript();
+        if (CommonUtils.isEmpty(script)) {
+            action.afterExecute(session, null);
+            return;
+        }
         boolean statementProcessed = false;
         try (DBCStatement dbStat = DBUtils.createStatement(session, script, false)) {
             action.beforeExecute(session);
