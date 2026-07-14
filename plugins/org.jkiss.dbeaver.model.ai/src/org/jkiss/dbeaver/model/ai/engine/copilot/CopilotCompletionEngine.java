@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
@@ -190,7 +190,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     public String getModelName() {
         return CommonUtils.toString(
             properties.getModel(),
-            OpenAIConstants.DEFAULT_MODEL
+            OpenAIModels.DEFAULT_MODEL
         );
     }
 
