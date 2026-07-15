@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class DBWUtils {
 
@@ -181,17 +183,17 @@ public class DBWUtils {
                 if (CommonUtils.isNotEmpty(activeUrl)) {
                     ConnectivityParameters urlConnectivityParams = null;
                     DBPConnectionConfiguration urlConfiguration = null;
-                    DatabaseURL.Pattern urlPattern = null;
+                    DatabaseURL.MetaURL metaURL = null;
                     if (CommonUtils.isNotEmpty(driver.getSampleURL())) {
                         urlConfiguration = DatabaseURL.extractConfigurationFromUrl(driver.getSampleURL(), activeUrl);
                         if (urlConfiguration != null) {
-                            urlPattern = DatabaseURL.getUrlPattern(driver.getSampleURL());
+                            metaURL = DatabaseURL.parseSampleURL(driver.getSampleURL());
                         }
                     }
                     if (urlConfiguration == null) {
-                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.Generic.TEMPLATE, activeUrl);
+                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.GENERIC_URL_TEMPLATE, activeUrl);
                         if (urlConfiguration != null) {
-                            urlPattern = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE);
+                            metaURL = DatabaseURL.parseSampleURL(DatabaseURL.GENERIC_URL_TEMPLATE);
                         }
                     }
                     if (urlConfiguration != null) {
@@ -208,13 +210,14 @@ public class DBWUtils {
                             null
                         );
                     }
+                    Set<String> requiredUrlParts = metaURL != null ? metaURL.getRequiredProperties() : Collections.emptySet();
 
-                    String databaseName = urlPattern != null && urlPattern.hasMandatoryProperty(DBConstants.PROP_DATABASE)
+                    String databaseName = requiredUrlParts.contains(DBConstants.PROP_DATABASE)
                         ? urlConnectivityParams.databaseName()
                         : CommonUtils.isNotEmpty(urlConnectivityParams.databaseName())
                             ? urlConnectivityParams.databaseName()
                             : explicitConfiguration.databaseName();
-                    String userName =  urlPattern != null && urlPattern.hasMandatoryProperty(DBConstants.PROP_USER)
+                    String userName = requiredUrlParts.contains(DBConstants.PROP_USER)
                         ? urlConnectivityParams.userName()
                         : CommonUtils.isNotEmpty(urlConnectivityParams.userName())
                             ? urlConnectivityParams.userName()
