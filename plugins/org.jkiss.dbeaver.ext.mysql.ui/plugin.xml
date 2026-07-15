@@ -43,6 +43,18 @@
             position="additions_start"
             icon="#user">
         </editor>
+        <editor
+            id="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLObjectPrivilegesEditor"
+            class="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLObjectPrivilegesEditor"
+            main="false"
+            label="%editor.object_privileges.name"
+            description="%editor.object_privileges.description"
+            position="additions_end"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/permissions.svg">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+        </editor>
 
         <configurator class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLCatalogConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
@@ -198,6 +210,47 @@
         <configurator type="mysqlDatabaseBackup" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
         <configurator type="mysqlDatabaseRestore" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
         <configurator type="mysqlScriptExecute" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode" class="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLObjectAdapter">
+            <adapter type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+            <adapter type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
+            <adapter type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+        </factory>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.ext.mysql.object.privileges" name="Privileges" description="Show users and their privileges on this object" categoryId="org.jkiss.dbeaver.core.util"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.ext.mysql.privilegesObject">
+            <with variable="selection">
+                <count value="1"/>
+                <iterate operator="and">
+                    <or>
+                        <adapt type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                        <adapt type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
+                        <adapt type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+                    </or>
+                </iterate>
+            </with>
+        </definition>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.mysql.object.privileges" class="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLObjectPrivilegesHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ext.mysql.privilegesObject"/></enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <command commandId="org.jkiss.dbeaver.ext.mysql.object.privileges" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/permissions.svg">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
     </extension>
 
 </plugin>
