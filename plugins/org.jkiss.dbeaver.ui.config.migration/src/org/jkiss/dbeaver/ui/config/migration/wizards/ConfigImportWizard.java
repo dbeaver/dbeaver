@@ -22,10 +22,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DatabaseURL;
-import org.jkiss.dbeaver.model.StringTemplate;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -43,10 +43,13 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
     private static final Log log = Log.getLog(ConfigImportWizard.class);
@@ -99,7 +102,8 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         return true;
     }
 
-    private boolean findOrCreateDriver(@NotNull ImportConnectionInfo connectionInfo) throws DBException {
+    private boolean findOrCreateDriver(ImportConnectionInfo connectionInfo) throws DBException
+    {
         final ImportDriverInfo driverInfo = connectionInfo.getDriverInfo();
         if (CommonUtils.isEmpty(driverInfo.getDriverClass())) {
             throw new DBException("Cannot create driver '" + driverInfo.getName() + "' - no driver class specified");
@@ -168,13 +172,11 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         return false;
     }
 
-    private void importConnection(@NotNull ImportData importData, @NotNull ImportConnectionInfo connectionInfo) {
+    private void importConnection(ImportData importData, ImportConnectionInfo connectionInfo) {
         try {
             adaptConnectionUrl(connectionInfo);
         } catch (DBException e) {
-            UIUtils.showMessageBox(
-                getShell(), ImportConfigMessages.config_import_wizard_extract_url_parameters, e.getMessage(), SWT.ICON_WARNING
-            );
+            UIUtils.showMessageBox(getShell(), ImportConfigMessages.config_import_wizard_extract_url_parameters, e.getMessage(), SWT.ICON_WARNING);
         }
         final DBPDataSourceRegistry dataSourceRegistry = NavigatorUtils.getSelectedProject().getDataSourceRegistry();
 
@@ -214,7 +216,10 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         }
     }
 
-    protected void adaptConnectionUrl(@NotNull ImportConnectionInfo connectionInfo) throws DBException {
+    protected void adaptConnectionUrl(ImportConnectionInfo connectionInfo) throws DBException
+    {
+
+        //connectionInfo.getDriver()
         String url = connectionInfo.getUrl();
         if (url == null) {
             if (connectionInfo.getDriver() == null) {
@@ -230,72 +235,145 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             conConfig.setDatabaseName(connectionInfo.getDatabase());
             url = connectionInfo.getDriver().getConnectionURL(conConfig);
             connectionInfo.setUrl(url);
-        } else {
-            try {
-                populateBySampleParams(connectionInfo, url);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-
-            augmentGenericParams(connectionInfo, url);
+            return;
         }
-    }
 
-    private static void populateBySampleParams(@NotNull ImportConnectionInfo connectionInfo, @NotNull String url) throws DBException {
-        String sampleURL = connectionInfo.getDriver() != null
-            ? connectionInfo.getDriver().getSampleURL()
-            : connectionInfo.getDriverInfo().getSampleURL();
-
-        if (sampleURL != null) {
-            Map<String, String> paramsBySample = DatabaseURL.getUrlPattern(sampleURL).tryRecognize(url);
-            if (paramsBySample != null) {
-                for (Map.Entry<String, String> param : paramsBySample.entrySet()) {
-                    switch (param.getKey()) {
-                        case "host" -> connectionInfo.setHost(param.getValue());
-                        case "port" -> connectionInfo.setPort(param.getValue());
-                        case "database" -> connectionInfo.setDatabase(param.getValue());
-                    }
-                }
-            } else {
-                log.debug("Sample URL pattern did not match '" + url + "', used generic JDBC URL parsing");
-            }
-        } else {
-            log.debug("Sample URL not found.");
+        try {
+            parseUrlAsDriverSampleUrl(connectionInfo);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            /*
+             * URL is not null and does not agree with sampleURL from driver.
+             * Still we proceed to import because it can be any other valid url format for the driver.
+             */
+            log.info("Import url as is it for url:" + url);
         }
-    }
 
-    private static void augmentGenericParams(@NotNull ImportConnectionInfo connectionInfo, @NotNull String url) throws DBException {
         // Extract URL query parameters as provider properties. Non-standard datasource pages
         // (e.g. Snowflake warehouse/schema/role) keep their parameters in the query string and
         // are lost otherwise because the sample URL pattern does not capture them.
-        StringTemplate.ParamEntries paramsByGenericUrl = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS)
-                                                                    .tryRecognizeHierarchical(url);
-        if (paramsByGenericUrl != null) {
-            String host = paramsByGenericUrl.getFirstParamValue("host");
-            if (CommonUtils.isNotEmpty(host) && CommonUtils.isEmpty(connectionInfo.getHost())) {
+        extractUrlQueryParams(connectionInfo);
+    }
+
+    /**
+     * Try to parse url by driver sample url.
+     * NOTE sampleURL is not the only possible way to define a valid url.
+     *
+     */
+    private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) {
+        String url = connectionInfo.getUrl();
+
+        String sampleURL = connectionInfo.getDriverInfo().getSampleURL();
+        if (connectionInfo.getDriver() != null) {
+            sampleURL = connectionInfo.getDriver().getSampleURL();
+        }
+        boolean matched = tryMatchSampleUrl(connectionInfo, url, sampleURL);
+        parseStandardJdbcUrl(connectionInfo, url);
+        if (!matched) {
+            log.debug("Sample URL pattern did not match '" + url + "', used generic JDBC URL parsing");
+        }
+    }
+
+    private boolean tryMatchSampleUrl(@NotNull ImportConnectionInfo connectionInfo, @NotNull String url, @NotNull String sampleURL) {
+        Pattern pattern = DatabaseURL.getPattern(sampleURL);
+        Matcher matcher = pattern.matcher(url);
+        if (!matcher.matches()) {
+            int queryStart = url.indexOf('?');
+            if (queryStart <= 0) {
+                return false;
+            }
+            matcher = pattern.matcher(url.substring(0, queryStart));
+            if (!matcher.matches()) {
+                return false;
+            }
+        }
+        String host = safeGroup(matcher, "host");
+        if (!CommonUtils.isEmpty(host)) {
+            connectionInfo.setHost(host);
+        }
+        String port = safeGroup(matcher, "port");
+        if (!CommonUtils.isEmpty(port)) {
+            connectionInfo.setPort(port);
+        }
+        String database = safeGroup(matcher, "database");
+        if (!CommonUtils.isEmpty(database)) {
+            connectionInfo.setDatabase(database);
+        }
+        return true;
+    }
+
+    /**
+     * Fallback parse for any standard-shape JDBC URL (jdbc:scheme://host[:port][/path][?query]).
+     * Only fills fields that were not set by the sample URL pattern match.
+     */
+    private void parseStandardJdbcUrl(@NotNull ImportConnectionInfo connectionInfo, @NotNull String url) {
+        String jdbcPrefix = "jdbc:";
+        if (!url.startsWith(jdbcPrefix)) {
+            return;
+        }
+        try {
+            URI uri = URI.create(url.substring(jdbcPrefix.length()));
+            String host = uri.getHost();
+            if (!CommonUtils.isEmpty(host) && CommonUtils.isEmpty(connectionInfo.getHost())) {
                 connectionInfo.setHost(host);
             }
-            String port = paramsByGenericUrl.getFirstParamValue("port");
-            if (CommonUtils.isNotEmpty(port) && CommonUtils.isEmpty(connectionInfo.getPort())) {
-                connectionInfo.setPort(port);
+            int port = uri.getPort();
+            if (port > 0 && CommonUtils.isEmpty(connectionInfo.getPort())) {
+                connectionInfo.setPort(String.valueOf(port));
             }
-            String database = paramsByGenericUrl.getFirstParamValue("database");
-            if (CommonUtils.isNotEmpty(database) && CommonUtils.isEmpty(connectionInfo.getDatabase())) {
-                connectionInfo.setDatabase(host);
+            String path = uri.getPath();
+            if (!CommonUtils.isEmpty(path) && path.length() > 1 && CommonUtils.isEmpty(connectionInfo.getDatabase())) {
+                connectionInfo.setDatabase(path.substring(1));
             }
-            for (Map.Entry<String, String> param : DatabaseURL.Generic.extractExtraParams(paramsByGenericUrl).entrySet()) {
-                switch (param.getKey()) {
-                    case "db", "database" -> {
-                        if (CommonUtils.isEmpty(connectionInfo.getDatabase())) {
-                            connectionInfo.setDatabase(param.getValue());
-                        }
-                    }
-                    default -> {
-                        if (!connectionInfo.getProviderProperties().containsKey(param.getKey())) {
-                            connectionInfo.setProviderProperty(param.getKey(), param.getValue());
-                        }
-                    }
+        } catch (Exception e) {
+            log.debug("Could not parse connection URL as standard JDBC URL: " + e.getMessage());
+        }
+    }
+
+    @Nullable
+    private static String safeGroup(@NotNull Matcher matcher, @NotNull String groupName) {
+        try {
+            return matcher.group(groupName);
+        } catch (IllegalArgumentException e) {
+            // Named group not present in the sample URL pattern.
+            return null;
+        }
+    }
+
+    /**
+     * Extract query string key=value pairs from the connection URL and store them as
+     * provider properties on the connection info. This makes non-standard driver
+     * parameters (e.g. Snowflake warehouse/schema/role) available when the connection is
+     * later used to rebuild the URL or shown in the driver's connection page.
+     */
+    protected void extractUrlQueryParams(@NotNull ImportConnectionInfo connectionInfo) {
+        String url = connectionInfo.getUrl();
+        if (CommonUtils.isEmpty(url)) {
+            return;
+        }
+        int queryStart = url.indexOf('?');
+        if (queryStart < 0 || queryStart == url.length() - 1) {
+            return;
+        }
+        String query = url.substring(queryStart + 1);
+        for (String param : query.split("&")) {
+            int eqIdx = param.indexOf('=');
+            if (eqIdx <= 0) {
+                continue;
+            }
+            String key = param.substring(0, eqIdx).trim();
+            String value = param.substring(eqIdx + 1).trim();
+            if (key.isEmpty()) {
+                continue;
+            }
+            if ("db".equalsIgnoreCase(key) || "database".equalsIgnoreCase(key)) {
+                if (CommonUtils.isEmpty(connectionInfo.getDatabase())) {
+                    connectionInfo.setDatabase(value);
                 }
+                continue;
+            }
+            if (!connectionInfo.getProviderProperties().containsKey(key)) {
+                connectionInfo.setProviderProperty(key, value);
             }
         }
     }

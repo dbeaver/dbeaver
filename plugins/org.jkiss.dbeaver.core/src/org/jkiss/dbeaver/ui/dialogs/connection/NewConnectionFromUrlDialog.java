@@ -31,8 +31,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
@@ -55,9 +53,6 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 public class NewConnectionFromUrlDialog extends BaseDialog {
-
-    private static final Log log = Log.getLog(NewConnectionFromUrlDialog.class);
-
     private static final int INPUT_DELAY_BEFORE_REFRESH = 300;
 
     private TreeViewer driverViewer;
@@ -177,25 +172,17 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                     continue;
                 }
 
-                try {
-                    if (DatabaseURL.getUrlPattern(driver.getSampleURL()).tryRecognize(url) != null) {
-                        drivers.add(new DriverInfo(driver, driver.getSampleURL(), true));
-                        scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
-                        continue;
-                    }
-                } catch (DBException e) {
-                    log.debug(e);
+                if (DatabaseURL.getPattern(driver.getSampleURL()).matcher(url).find()) {
+                    drivers.add(new DriverInfo(driver, driver.getSampleURL(), true));
+                    scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
+                    continue;
                 }
 
-                try {
-                    final Map<String, String> params = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE).tryRecognize(url);
+                final Matcher matcher = DatabaseURL.getPattern(DatabaseURL.GENERIC_URL_TEMPLATE).matcher(url);
 
-                    if (params != null && driver.getId().contains(params.get("driver"))) {
-                        drivers.add(new DriverInfo(driver, DatabaseURL.Generic.TEMPLATE, false));
-                        scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
-                    }
-                } catch (DBException ex) {
-                    log.debug(ex);
+                if (matcher.find() && driver.getId().contains(matcher.group("driver"))) {
+                    drivers.add(new DriverInfo(driver, DatabaseURL.GENERIC_URL_TEMPLATE, false));
+                    scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                 }
             }
 

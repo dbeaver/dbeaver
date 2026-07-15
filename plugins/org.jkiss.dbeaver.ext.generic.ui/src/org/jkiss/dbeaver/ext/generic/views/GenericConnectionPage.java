@@ -76,7 +76,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text urlText;
 
     private boolean isCustom;
-    private DatabaseURL.Pattern urlPattern;
+    private DatabaseURL.MetaURL metaURL;
     private Collection<String> controlGroupsByUrl;
     private Composite settingsGroup;
 
@@ -302,7 +302,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
     @Nullable
     private String showDatabaseFileSelectorDialog(int style) {
-        if (this.urlPattern.hasProperty(DBConstants.PROP_FILE)) {
+        if (metaURL.getAvailableProperties().contains(DBConstants.PROP_FILE)) {
             FileDialog dialog = new FileDialog(getShell(), SWT.SINGLE | style);
             String text = pathText.getText();
             dialog.setFileName(text);
@@ -360,11 +360,10 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         if (isCustomURL()) {
             return !CommonUtils.isEmpty(urlText.getText());
         } else {
-            if (this.urlPattern == null) {
+            if (metaURL == null) {
                 return false;
             }
-
-            for (String prop : this.urlPattern.getMandatoryPropertyNames()) {
+            for (String prop : metaURL.getRequiredProperties()) {
                 if (isConnectionPropertyOptional(prop)) {
                     continue;
                 }
@@ -507,7 +506,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        final Set<String> properties = this.urlPattern == null ? Collections.emptySet() : this.urlPattern.getAvailablePropertyNames();
+        final Set<String> properties = metaURL == null ? Collections.emptySet() : metaURL.getAvailableProperties();
 
         connectionInfo.setConfigurationType(
             typeURLRadio != null && typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
@@ -542,17 +541,17 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     private void parseSampleURL(DBPDriver driver) {
-        this.urlPattern = null;
+        metaURL = null;
 
         boolean useCustomUrl = CommonUtils.isEmpty(driver.getSampleURL());
 
         if (!useCustomUrl) {
             try {
-                this.urlPattern = DatabaseURL.getUrlPattern(driver.getSampleURL());
+                metaURL = DatabaseURL.parseSampleURL(driver.getSampleURL());
             } catch (DBException e) {
                 setErrorMessage(e.getMessage());
             }
-            final Set<String> properties = this.urlPattern.getAvailablePropertyNames();
+            final Set<String> properties = metaURL.getAvailableProperties();
             boolean isSampleUrlUsable = properties.contains(DBConstants.PROP_HOST) ||
                 properties.contains(DBConstants.PROP_DATABASE) ||
                 properties.contains(DBConstants.PROP_SERVER) ||

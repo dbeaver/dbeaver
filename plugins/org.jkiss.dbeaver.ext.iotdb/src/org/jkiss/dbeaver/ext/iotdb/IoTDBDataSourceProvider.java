@@ -31,8 +31,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
-
 public class IoTDBDataSourceProvider extends GenericDataSourceProvider<IoTDBDataSource> {
 
     public IoTDBDataSourceProvider() {
@@ -41,10 +39,8 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider<IoTDBData
 
     @NotNull
     @Override
-    public IoTDBDataSource openDataSource(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container
-    ) throws DBException {
+    public IoTDBDataSource openDataSource(@NotNull DBRProgressMonitor monitor,
+                                        @NotNull DBPDataSourceContainer container) throws DBException {
         String url = container.getConnectionConfiguration().getUrl();
         if (url.endsWith("?sql_dialect=table")) {
             return new IoTDBDataSource(monitor, container, new IoTDBTableMetaModel(), false);
@@ -52,15 +48,46 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider<IoTDBData
         return new IoTDBDataSource(monitor, container, new IoTDBMetaModel(), true);
     }
 
-    private boolean useRawUrl(@NotNull DBPConnectionConfiguration connectionInfo) {
+    private static String makePropPattern(String prop) {
+        return "{" + prop + "}";
+    }
+
+    private boolean useRawUrl(DBPConnectionConfiguration connectionInfo) {
         return !CommonUtils.isEmpty(connectionInfo.getUrl()) &&
                 CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
                 CommonUtils.isEmpty(connectionInfo.getHostName()) &&
                 CommonUtils.isEmpty(connectionInfo.getServerName());
     }
 
+    private String buildUrlFromTemplate(DBPConnectionConfiguration connectionInfo, String urlTemplate) throws DBException {
+        DatabaseURL.MetaURL metaURL = DatabaseURL.parseSampleURL(urlTemplate);
+        StringBuilder url = new StringBuilder();
+        for (String component : metaURL.getUrlComponents()) {
+            String newComponent = component;
+            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_HOST), connectionInfo.getHostName());
+            }
+            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PORT), connectionInfo.getHostPort());
+            }
+            if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
+                newComponent = newComponent.replace(makePropPattern("sqlDialect"), connectionInfo.getServerName());
+            }
+            newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
+
+            if (newComponent.startsWith("[")) {
+                if (!newComponent.equals(component)) {
+                    url.append(newComponent.substring(1, newComponent.length() - 1));
+                }
+            } else {
+                url.append(newComponent);
+            }
+        }
+        return url.toString();
+    }
+
     @NotNull
-    private String removeTrailingPathSlash(@NotNull String url) {
+    private String processUrl(@NotNull String url) {
         int index = url.indexOf("?");
         if (index > 0 && url.charAt(index - 1) == '/') {
             return url.substring(0, index - 1).concat(url.substring(index));
@@ -74,24 +101,18 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider<IoTDBData
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo) {
         String urlTemplate = driver.getSampleURL();
-        String connectionUrl = connectionInfo.getUrl();
-        String result;
-
-        if ((useRawUrl(connectionInfo) || CommonUtils.isEmptyTrimmed(urlTemplate)) && CommonUtils.isNotEmpty(connectionUrl)) {
-            result = removeTrailingPathSlash(connectionUrl);
-        } else if (CommonUtils.isNotEmpty(urlTemplate)) {
-            try {
-                Map<String, String> extraParams = Map.of("sqlDialect", connectionInfo.getServerName());
-                String url = DatabaseURL.generateUrlByTemplate(urlTemplate, connectionInfo, extraParams);
-                result = url == null ? null : removeTrailingPathSlash(url);
-            } catch (Throwable ex) {
-                log.error(ex);
-                result = null;
-            }
-        }  else {
-            result = null;
+        if (useRawUrl(connectionInfo)) {
+            return processUrl(connectionInfo.getUrl());
+        }
+        if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
+            return connectionInfo.getUrl();
         }
 
-        return result;
+        try {
+            return processUrl(buildUrlFromTemplate(connectionInfo, urlTemplate));
+        } catch (DBException e) {
+            log.error(e);
+            return null;
+        }
     }
 }
