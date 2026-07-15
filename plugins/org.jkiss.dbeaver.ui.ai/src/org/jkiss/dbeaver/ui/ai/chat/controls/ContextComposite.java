@@ -577,7 +577,7 @@ public class ContextComposite extends Composite {
             super(dataSourceContext ? "This connection" : "This conversation", Action.AS_RADIO_BUTTON);
             this.dataSourceContext = dataSourceContext;
 
-            boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AIDataSourceSettings;
+            boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AIContextSettingsDataSource;
             setChecked(dataSourceContext == isDataSourceSettings);
         }
 
@@ -605,9 +605,9 @@ public class ContextComposite extends Composite {
             AIContextSettings newSettings;
             // change scope
             if (dataSourceContext) {
-                newSettings = new AIDataSourceSettings(dataSourceContainer);
+                newSettings = new AIContextSettingsDataSource(dataSourceContainer);
             } else {
-                newSettings = new AIChatConversationSettings(chat.getChatSession(), chat.getActiveConversation());
+                newSettings = new AIContextSettingsChatConversation(chat.getChatSession(), chat.getActiveConversation());
             }
             if (currentSettings != null && !dataSourceContext) {
                 newSettings.setScope(currentSettings.getScope());

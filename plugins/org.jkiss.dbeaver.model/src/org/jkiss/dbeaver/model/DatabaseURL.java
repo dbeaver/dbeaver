@@ -23,11 +23,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -35,177 +32,142 @@ import java.util.stream.Collectors;
  */
 public class DatabaseURL {
 
-    public static final String GENERIC_URL_TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
+    public static class Generic {
+
+        public static final String TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
+
+        public static final String TEMPLATE_WITH_PARAMS =
+            "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}][?{prop}={value}[&{prop}={value}...]]";
+
+        public static final String TEMPLATE_WITH_PARAM_GROUPS =
+            "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}][?{param:{prop}={value}}[&{param:{prop}={value}}...]]";
+
+        public static final String PARAM_GROUP = "param";
+        public static final String PARAM_PROP = "prop";
+        public static final String PARAM_VALUE = "value";
+
+        @NotNull
+        public static Map<String, String> extractExtraParams(@NotNull StringTemplate.ParamEntries root) {
+            List<StringTemplate.ParamEntries> extraParamGroups = root.getGroups().get(PARAM_GROUP);
+            if (extraParamGroups != null) {
+                Map<String, String> params = new HashMap<>(extraParamGroups.size());
+                for (StringTemplate.ParamEntries paramGroup : extraParamGroups) {
+                    String paramName = paramGroup.getFirstParamValue(PARAM_PROP);
+                    String paramValue = paramGroup.getFirstParamValue(PARAM_VALUE);
+                    params.put(paramName, paramValue);
+                }
+                return params;
+            } else {
+                return Collections.emptyMap();
+            }
+        }
+    }
 
     private static final Log log = Log.getLog(DatabaseURL.class);
 
-    private static final char URL_GROUP_START = '{'; //$NON-NLS-1$
-    private static final char URL_GROUP_END = '}'; //$NON-NLS-1$
-    private static final char URL_OPTIONAL_START = '['; //$NON-NLS-1$
-    private static final char URL_OPTIONAL_END = ']'; //$NON-NLS-1$
+    @NotNull
+    private static final Object lock = new Object();
 
-    public static String generateUrlByTemplate(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
-        String urlTemplate = driver.getSampleURL();
-        return DatabaseURL.generateUrlByTemplate(urlTemplate, connectionInfo);
+    @NotNull
+    private static final WeakHashMap<String, StringTemplate> templates = new WeakHashMap<>();
+
+    @NotNull
+    private static StringTemplate getUrlTemplate(@NotNull String templateString) throws DBException {
+        try {
+            synchronized (lock) {
+                StringTemplate template = templates.get(templateString);
+                if (template == null) {
+                    template = StringTemplate.parseTemplate(templateString, p -> getPropertyRegex(p.name()));
+                    templates.put(templateString, template);
+                }
+                return template;
+            }
+        } catch (StringTemplate.StringTemplateFormatException e) {
+            throw new DBException("Failed to prepare database URL template based on template string " + templateString, e);
+        }
     }
 
-    public static String generateUrlByTemplate(String urlTemplate, DBPConnectionConfiguration connectionInfo) {
+    @Nullable
+    public static String generateUrlByTemplate(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration cnnInfo) {
+        String urlTemplate = driver.getSampleURL();
+        if (CommonUtils.isEmpty(urlTemplate)) {
+            throw new RuntimeException("Cannot generate database URL with empty sample URL template for " + driver.getName());
+        } else {
+            return DatabaseURL.generateUrlByTemplate(urlTemplate, cnnInfo, Collections.emptyMap());
+        }
+    }
+
+    @Nullable
+    public static String generateUrlByTemplate(@NotNull String urlTemplate, @NotNull DBPConnectionConfiguration cnnInfo) {
+        return DatabaseURL.generateUrlByTemplate(urlTemplate, cnnInfo, Collections.emptyMap());
+    }
+
+    @Nullable
+    public static String generateUrlByTemplate(
+        @NotNull String urlTemplate,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull Map<String, String> extraParams
+    ) {
         if (!CommonUtils.isEmpty(connectionInfo.getUrl()) &&
             CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
             CommonUtils.isEmpty(connectionInfo.getHostName()) &&
             CommonUtils.isEmpty(connectionInfo.getServerName()) &&
-            CommonUtils.isEmpty(connectionInfo.getDatabaseName()))
-        {
+            CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             // No parameters, just URL - so URL it is
             return connectionInfo.getUrl();
         }
-        try {
-            if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
-                return connectionInfo.getUrl();
-            }
-            MetaURL metaURL = parseSampleURL(urlTemplate);
-            StringBuilder url = new StringBuilder();
-            for (String component : metaURL.getUrlComponents()) {
-                String newComponent = component;
-                if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_HOST), connectionInfo.getHostName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PORT), connectionInfo.getHostPort());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_SERVER), connectionInfo.getServerName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_DATABASE), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FOLDER), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FILE), connectionInfo.getDatabaseName());
-                }
-                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
-                // support of {password} pattern was removed for security reasons (see dbeaver/pro#1888)
-                //newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
+        if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
+            return connectionInfo.getUrl();
+        }
 
-                if (newComponent.startsWith("[")) { //$NON-NLS-1$
-                    if (!newComponent.equals(component)) {
-                        url.append(newComponent.substring(1, newComponent.length() - 1));
-                    }
-                } else {
-                    url.append(newComponent);
-                }
-            }
-            return url.toString();
-        } catch (DBException e) {
-            log.error(e);
+        Map<String, String> params = new HashMap<>(extraParams.size() + 10); // 7 builtin prams x default load factor 0.75
+        params.putAll(extraParams);
+        if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+            params.put(DBConstants.PROP_HOST, connectionInfo.getHostName());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            params.put(DBConstants.PROP_PORT, connectionInfo.getHostPort());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
+            params.put(DBConstants.PROP_SERVER, connectionInfo.getServerName());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            params.put(DBConstants.PROP_DATABASE, connectionInfo.getDatabaseName());
+            params.put(DBConstants.PROP_FOLDER, connectionInfo.getDatabaseName());
+            params.put(DBConstants.PROP_FILE, connectionInfo.getDatabaseName());
+        }
+
+        // Old logic was always using empty string when no username presented,
+        // but this might bring unwanted tails of login-related optional fragments.
+        // Let's complain when the username is required but not presented, and get rid of unwanted optional fragments.
+        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+            params.put(DBConstants.PROP_USER, connectionInfo.getUserName());
+        }
+
+        try {
+            StringTemplate template = getUrlTemplate(urlTemplate);
+            String result = template.prepareString(params);
+            return result;
+        } catch (Throwable ex) { // not enough params
+            log.error("Failed to generate database URL by template", ex);
             return null;
         }
-    }
-
-    private static String makePropPattern(String prop)
-    {
-        return "{" + prop + "}"; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-
-    public static class MetaURL {
-
-        private List<String> urlComponents = new ArrayList<>();
-        private Set<String> availableProperties = new HashSet<>();
-        private Set<String> requiredProperties = new HashSet<>();
-
-        public List<String> getUrlComponents() {
-            return urlComponents;
-        }
-
-        public Set<String> getAvailableProperties() {
-            return availableProperties;
-        }
-
-        public Set<String> getRequiredProperties() {
-            return requiredProperties;
-        }
-    }
-
-    public static MetaURL parseSampleURL(String sampleURL) throws DBException {
-        MetaURL metaURL = new MetaURL();
-        int offsetPos = 0;
-        for (; ; ) {
-            int divPos = sampleURL.indexOf(URL_GROUP_START, offsetPos);
-            if (divPos == -1) {
-                break;
-            }
-            int divPos2 = sampleURL.indexOf(URL_GROUP_END, divPos);
-            if (divPos2 == -1) {
-                throw new DBException("Bad sample URL: " + sampleURL);
-            }
-            String propName = sampleURL.substring(divPos + 1, divPos2);
-            boolean isOptional = false;
-            int optDiv1 = sampleURL.lastIndexOf(URL_OPTIONAL_START, divPos);
-            int optDiv1c = sampleURL.lastIndexOf(URL_OPTIONAL_END, divPos);
-            int optDiv2 = sampleURL.indexOf(URL_OPTIONAL_END, divPos2);
-            int optDiv2c = sampleURL.indexOf(URL_OPTIONAL_START, divPos2);
-            if (optDiv1 != -1 && optDiv2 != -1 && (optDiv1c == -1 || optDiv1c < optDiv1) && (optDiv2c == -1 || optDiv2c > optDiv2)) {
-                divPos = optDiv1;
-                divPos2 = optDiv2;
-                isOptional = true;
-            }
-            if (divPos > offsetPos) {
-                metaURL.urlComponents.add(sampleURL.substring(offsetPos, divPos));
-            }
-            metaURL.urlComponents.add(sampleURL.substring(divPos, divPos2 + 1));
-            metaURL.availableProperties.add(propName);
-            if (!isOptional) {
-                metaURL.requiredProperties.add(propName);
-            }
-            offsetPos = divPos2 + 1;
-        }
-        if (offsetPos < sampleURL.length()) {
-            metaURL.urlComponents.add(sampleURL.substring(offsetPos));
-        }
-/*
-        // Check for required parts
-        for (String component : urlComponents) {
-            boolean isRequired = !component.startsWith("[");
-            int divPos = component.indexOf('{');
-            if (divPos != -1) {
-                int divPos2 = component.indexOf('}', divPos);
-                if (divPos2 != -1) {
-                    String propName = component.substring(divPos + 1, divPos2);
-                    availableProperties.add(propName);
-                    if (isRequired) {
-                        requiredProperties.add(propName);
-                    }
-                }
-            }
-        }
-*/
-        return metaURL;
-    }
-
-
-    @NotNull
-    public static Pattern getPattern(@NotNull String sampleUrl) {
-        String pattern = sampleUrl;
-        pattern = CommonUtils.replaceAll(pattern, "\\[(.*?)]", m -> "\\\\E(?:\\\\Q" + m.group(1) + "\\\\E)?\\\\Q");
-        pattern = CommonUtils.replaceAll(pattern, "\\{(.*?)}", m -> "\\\\E(\\?<\\\\Q" + m.group(1) + "\\\\E>" + getPropertyRegex(m.group(1)) + ")\\\\Q");
-        pattern = "^\\Q" + pattern + "\\E";
-
-        return Pattern.compile(pattern);
     }
 
     @Nullable
     public static DBPConnectionConfiguration extractConfigurationFromUrl(@NotNull String sampleUrl, @NotNull String targetUrl) {
-        final Matcher matcher = getPattern(sampleUrl).matcher(targetUrl);
-        if (!matcher.find()) {
+        Map<String, String> params;
+        try {
+            params = getUrlTemplate(sampleUrl).extractSingletonParametersMap(targetUrl);
+        } catch (DBException e) {
+            log.debug("Failed to extract configuration from the url", e);
             return null;
         }
-        final Map<String, String> properties = getProperties(sampleUrl).stream()
-            .map(x -> new Pair<>(x, matcher.group(x)))
-            .filter(x -> CommonUtils.isNotEmpty(x.getSecond()))
-            .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
-        if (properties.isEmpty()) {
+        if (params == null || params.isEmpty()) {
             return null;
         }
         final DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
+        for (Map.Entry<String, String> entry : params.entrySet()) {
             switch (entry.getKey()) {
                 case DBConstants.PROP_HOST:
                     configuration.setHostName(entry.getValue());
@@ -240,19 +202,55 @@ public class DatabaseURL {
         switch (property) {
             case DBConstants.PROP_FOLDER:
             case DBConstants.PROP_FILE:
-                return ".+?";
+                return ".+";
             default:
-                return "[\\\\w\\\\-_.~]+";
+                return "[\\w\\-_.~]+";
         }
     }
 
     @NotNull
-    private static List<String> getProperties(@NotNull String sampleUrl) {
-        final Matcher matcher = Pattern.compile("\\{(.*?)}").matcher(sampleUrl);
-        final List<String> properties = new ArrayList<>();
-        while (matcher.find()) {
-            properties.add(matcher.group(1));
+    public static Pattern getUrlPattern(@NotNull String sampleURL) throws DBException {
+        return new Pattern(getUrlTemplate(sampleURL));
+    }
+
+    public static class Pattern {
+        @NotNull
+        private final StringTemplate template;
+
+        public Pattern(@NotNull StringTemplate template) {
+            this.template = template;
         }
-        return properties;
+
+        @NotNull
+        public Set<String> getAvailablePropertyNames() {
+            return this.template.getParametersInfo().keySet();
+        }
+
+        @NotNull
+        public Set<String> getMandatoryPropertyNames() {
+            return this.template.getParametersInfo().values().stream()
+                                .filter(StringTemplate.ParameterInfo::isMandatory)
+                                .map(StringTemplate.ParameterInfo::name)
+                                .collect(Collectors.toSet());
+        }
+
+        public boolean hasProperty(@NotNull String propName) {
+            return this.template.getParametersInfo().containsKey(propName);
+        }
+
+        public boolean hasMandatoryProperty(@NotNull String propName) {
+            StringTemplate.ParameterInfo p = this.template.getParametersInfo().get(propName);
+            return p != null && p.isMandatory();
+        }
+
+        @Nullable
+        public Map<String, String> tryRecognize(@NotNull String urlString) {
+            return this.template.extractSingletonParametersMap(urlString);
+        }
+
+        @Nullable
+        public StringTemplate.ParamEntries tryRecognizeHierarchical(@NotNull String urlString) {
+            return this.template.extractAllParametersTree(urlString);
+        }
     }
 }

@@ -87,6 +87,10 @@ public class AIUIMessages extends NLS {
     public static String openai_configurator_token_required;
     public static String openai_configurator_token_placeholder;
 
+    public static String ai_engine_configurator_advanced_settings;
+    public static String ai_engine_configurator_timeout_label;
+    public static String ai_engine_configurator_timeout_tip;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, AIUIMessages.class);

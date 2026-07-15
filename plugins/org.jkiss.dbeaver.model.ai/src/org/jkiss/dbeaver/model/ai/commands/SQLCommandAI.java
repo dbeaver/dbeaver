@@ -78,7 +78,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             command.getDataSourceContainer(), "AI logical wrapper", null);
 
         DBPDataSourceContainer dataSourceContainer = lDataSource.getDataSourceContainer();
-        AIDataSourceSettings completionSettings = new AIDataSourceSettings(dataSourceContainer);
+        AIContextSettingsDataSource completionSettings = new AIContextSettingsDataSource(dataSourceContainer);
         if (!completionSettings.isMetaTransferConfirmed()) {
             if (DBWorkbench.getPlatformUI().confirmAction(
                 AIMessages.ai_command_confirm_usage_title,
