@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.navigator.actions.node;
 
-import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -28,7 +27,6 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
 
 /**
@@ -37,7 +35,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract
 public class NNAHDataSourceReadOnly extends NavigatorNodeActionHandlerAbstract {
 
     @Override
-    public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public boolean isEnabledFor(@NotNull DBNNode node) {
         if (node instanceof DBNDataSource dbnDataSource) {
             return dbnDataSource.getDataSourceContainer().isConnectionReadOnly();
         }
@@ -46,20 +44,20 @@ public class NNAHDataSourceReadOnly extends NavigatorNodeActionHandlerAbstract {
 
     @Override
     @Nullable
-    public DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public DBPImage getNodeActionIcon(@NotNull DBNNode node) {
         return UIIcon.BUTTON_READ_ONLY;
     }
 
     @Override
     @Nullable
-    public String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public String getNodeActionToolTip(@NotNull DBNNode node) {
         return "Connection is read-only.\nYou cannot change data or database structure.";
     }
 
     @Override
-    public void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction) {
-        if (node instanceof DBNDatabaseNode) {
-            DBPDataSourceContainer dataSourceContainer = ((DBNDatabaseNode) node).getDataSourceContainer();
+    public void handleNodeAction(@NotNull DBNNode node, boolean defaultAction) {
+        if (node instanceof DBNDatabaseNode dbNode) {
+            DBPDataSourceContainer dataSourceContainer = dbNode.getDataSourceContainer();
             UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
             if (serviceConnections != null) {
                 serviceConnections.openConnectionEditor(dataSourceContainer, "ConnectionPageGeneral");

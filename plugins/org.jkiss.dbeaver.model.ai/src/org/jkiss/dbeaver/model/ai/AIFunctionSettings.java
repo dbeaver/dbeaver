@@ -135,7 +135,7 @@ public final class AIFunctionSettings {
         @NotNull
         public AIFunctionAllowMode getFunctionAllowMode(@NotNull AIFunctionDescriptor function) {
             String functionId = function.getId();
-            if (alwaysAllowedFunctions.contains(functionId)) {
+            if (alwaysAllowedFunctions.contains(functionId) || function.isOmitConfirmation()) {
                 return AIFunctionAllowMode.ALWAYS_ALLOW;
             }
             if (askFunctions.contains(functionId)) {
@@ -148,6 +148,9 @@ public final class AIFunctionSettings {
             @NotNull AIFunctionDescriptor function,
             @NotNull AIFunctionAllowMode allowMode
         ) {
+            if (function.isOmitConfirmation()) {
+                return;
+            }
             String functionId = function.getId();
             alwaysAllowedFunctions.remove(functionId);
             askFunctions.remove(functionId);
