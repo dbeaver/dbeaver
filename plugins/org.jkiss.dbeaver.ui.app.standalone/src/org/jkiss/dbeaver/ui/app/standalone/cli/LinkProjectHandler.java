@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
+import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import picocli.CommandLine;
@@ -50,5 +51,6 @@ public class LinkProjectHandler extends CLIAbstractSubcommand {
             log.error("Error linking project", e);
             context().addResult("Error linking project: " + e.getMessage());
         }
+        context().setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
     }
 }

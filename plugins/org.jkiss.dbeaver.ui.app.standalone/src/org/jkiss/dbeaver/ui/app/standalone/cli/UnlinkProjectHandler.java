@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
+import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import picocli.CommandLine;
 
@@ -48,5 +49,6 @@ public class UnlinkProjectHandler extends CLIAbstractSubcommand {
             log.error("Error unlinking project", e);
             context().addResult("Error unlinking project: " + e.getMessage());
         }
+        context().setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
     }
 }
