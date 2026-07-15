@@ -86,13 +86,23 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
     }
 
     @Override
-    protected OracleView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @NotNull Object container, @Nullable
-    Object copyFrom, @NotNull Map<String, Object> options) {
+    protected OracleView createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         OracleSchema schema = (OracleSchema) container;
-        OracleView newView = new OracleView(schema, "NEW_VIEW"); //$NON-NLS-1$
+        OracleView newView = createView(schema);
         setNewObjectName(monitor, schema, newView);
         newView.setViewText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT 1 AS A FROM DUAL");
         return newView;
+    }
+
+    @NotNull
+    protected OracleView createView(@NotNull OracleSchema schema) {
+        return new OracleView(schema, "NEW_VIEW"); //$NON-NLS-1$
     }
 
     @Override

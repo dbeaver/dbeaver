@@ -56,16 +56,6 @@ import java.util.Map;
  */
 public class YashanDBSchema extends OracleSchema {
 
-    private final YashanDBTableCache yashanDBTableCache = new YashanDBTableCache();
-    private final YashanDBForeignKeyCache yashanDBForeignKeyCache = new YashanDBForeignKeyCache();
-    private final YashanDBConstraintCache yashanDBConstraintCache = new YashanDBConstraintCache();
-    private final YashanDBIndexCache yashanDBIndexCache = new YashanDBIndexCache();
-    private final YashanDBTableTriggerCache YashanDBTableTriggerCache = new YashanDBTableTriggerCache();
-    private final YashanDBDataTypeCache yashanDBDataTypeCache = new YashanDBDataTypeCache();
-    private final YashanDBPackageCache yashanDBPackageCache = new YashanDBPackageCache();
-    private final YashanDBProceduresCache yashanDBProceduresCache = new YashanDBProceduresCache();
-    private final YashanDBSchedulerJobCache yashanDBSchedulerJobCache = new YashanDBSchedulerJobCache();
-
     public YashanDBSchema(@NotNull OracleDataSource dataSource, @NotNull ResultSet dbResult) {
         super(dataSource, dbResult);
     }
@@ -76,56 +66,56 @@ public class YashanDBSchema extends OracleSchema {
 
     @NotNull
     @Override
-    public YashanDBTableCache getTableCache() {
-        return this.yashanDBTableCache;
+    protected YashanDBTableCache createTableCache() {
+        return new YashanDBTableCache();
     }
 
     @NotNull
     @Override
-    public YashanDBConstraintCache getConstraintCache() {
-        return this.yashanDBConstraintCache;
+    protected YashanDBConstraintCache createConstraintCache(TableCache tableCache) {
+        return new YashanDBConstraintCache(tableCache);
     }
 
     @NotNull
     @Override
-    public YashanDBForeignKeyCache getForeignKeyCache() {
-        return this.yashanDBForeignKeyCache;
+    protected YashanDBForeignKeyCache createForeignKeyCache(TableCache tableCache) {
+        return new YashanDBForeignKeyCache(tableCache);
     }
 
     @NotNull
     @Override
-    public YashanDBIndexCache getIndexCache() {
-        return this.yashanDBIndexCache;
+    protected YashanDBIndexCache createIndexCache(TableCache tableCache) {
+        return new YashanDBIndexCache(tableCache);
     }
 
     @NotNull
     @Override
-    public YashanDBTableTriggerCache getTableTriggerCache() {
-        return this.YashanDBTableTriggerCache;
+    protected YashanDBTableTriggerCache createTableTriggerCache(TableCache tableCache) {
+        return new YashanDBTableTriggerCache(tableCache);
     }
 
     @NotNull
     @Override
-    public YashanDBDataTypeCache getDataTypeCache() {
-        return this.yashanDBDataTypeCache;
+    protected YashanDBDataTypeCache createDataTypeCache() {
+        return new YashanDBDataTypeCache();
     }
 
     @NotNull
     @Override
-    public YashanDBPackageCache getPackageCache() {
-        return this.yashanDBPackageCache;
+    protected YashanDBPackageCache createPackageCache() {
+        return new YashanDBPackageCache();
     }
 
     @NotNull
     @Override
-    public YashanDBProceduresCache getProceduresCache() {
-        return this.yashanDBProceduresCache;
+    protected YashanDBProceduresCache createProceduresCache() {
+        return new YashanDBProceduresCache();
     }
 
     @NotNull
     @Override
-    public SchedulerJobCache getSchedulerJobCache() {
-        return this.yashanDBSchedulerJobCache;
+    protected YashanDBSchedulerJobCache createSchedulerJobCache() {
+        return new YashanDBSchedulerJobCache();
     }
 
     @Override
@@ -218,8 +208,8 @@ public class YashanDBSchema extends OracleSchema {
 
     class YashanDBForeignKeyCache extends ForeignKeyCache {
 
-        YashanDBForeignKeyCache() {
-            super(yashanDBTableCache);
+        YashanDBForeignKeyCache(@NotNull TableCache tableCache) {
+            super(tableCache);
         }
 
         @Override
@@ -258,15 +248,15 @@ public class YashanDBSchema extends OracleSchema {
 
     class YashanDBConstraintCache extends ConstraintCache {
 
-        protected YashanDBConstraintCache() {
-            super(yashanDBTableCache);
+        protected YashanDBConstraintCache(@NotNull TableCache tableCache) {
+            super(tableCache);
         }
     }
 
     class YashanDBIndexCache extends IndexCache {
 
-        protected YashanDBIndexCache() {
-            super(yashanDBTableCache);
+        protected YashanDBIndexCache(@NotNull TableCache tableCache) {
+            super(tableCache);
         }
 
         @Nullable
@@ -295,8 +285,8 @@ public class YashanDBSchema extends OracleSchema {
 
     class YashanDBTableTriggerCache extends TableTriggerCache {
 
-        protected YashanDBTableTriggerCache() {
-            super(yashanDBTableCache);
+        protected YashanDBTableTriggerCache(@NotNull TableCache tableCache) {
+            super(tableCache);
         }
 
         @Nullable

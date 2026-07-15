@@ -19,23 +19,22 @@ package org.jkiss.dbeaver.ext.yashandb.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleProcedureManager;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-
-import java.util.Map;
 
 /**
  * YashanDBProcedureManager
  */
 public class YashanDBProcedureManager extends OracleProcedureManager {
 
+    @NotNull
     @Override
-    protected OracleProcedureStandalone createDatabaseObject(@NotNull DBRProgressMonitor monitor,
-                                                             @NotNull DBECommandContext context, final Object container, Object copyFrom,
-                                                             @NotNull Map<String, Object> options) {
-        return new YashanDBProcedureStandalone((YashanDBSchema) container, "NEW_PROCEDURE", DBSProcedureType.PROCEDURE);
+    protected OracleProcedureStandalone createProcedure(@NotNull OracleSchema schema) {
+        return new YashanDBProcedureStandalone(
+            (YashanDBSchema) schema,
+            "NEW_PROCEDURE",
+            DBSProcedureType.PROCEDURE);
     }
 }

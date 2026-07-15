@@ -69,24 +69,24 @@ public class OracleSchema extends OracleGlobalObject implements
     private boolean synonymsAsChildren = false;
     private boolean sequencesAsChildren = false;
 
-    final private TableCache tableCache = new TableCache();
-    final private ConstraintCache constraintCache = new ConstraintCache(tableCache);
-    final private ForeignKeyCache foreignKeyCache = new ForeignKeyCache(tableCache);
-    final public TriggerCache triggerCache = new TriggerCache();
-    final private TableTriggerCache tableTriggerCache = new TableTriggerCache(tableCache);
-    final private IndexCache indexCache = new IndexCache(tableCache);
-    final private DataTypeCache dataTypeCache = new DataTypeCache();
-    final public SequenceCache sequenceCache = new SequenceCache();
-    final public QueueCache queueCache = new QueueCache();
-    final private PackageCache packageCache = new PackageCache();
-    final public SynonymCache synonymCache = new SynonymCache();
-    final public DBLinkCache dbLinkCache = new DBLinkCache();
-    final private ProceduresCache proceduresCache = new ProceduresCache();
-    final public JavaCache javaCache = new JavaCache();
-    final public JobCache jobCache = new JobCache();
-    final private SchedulerJobCache schedulerJobCache = new SchedulerJobCache();
-    final public SchedulerProgramCache schedulerProgramCache = new SchedulerProgramCache();
-    final public RecycleBin recycleBin = new RecycleBin();
+    final private TableCache tableCache;
+    final private ConstraintCache constraintCache;
+    final private ForeignKeyCache foreignKeyCache;
+    final public TriggerCache triggerCache;
+    final private TableTriggerCache tableTriggerCache;
+    final private IndexCache indexCache;
+    final private DataTypeCache dataTypeCache;
+    final public SequenceCache sequenceCache;
+    final public QueueCache queueCache;
+    final private PackageCache packageCache;
+    final public SynonymCache synonymCache;
+    final public DBLinkCache dbLinkCache;
+    final private ProceduresCache proceduresCache;
+    final public JavaCache javaCache;
+    final public JobCache jobCache;
+    final private SchedulerJobCache schedulerJobCache;
+    final public SchedulerProgramCache schedulerProgramCache;
+    final public RecycleBin recycleBin;
     private volatile boolean hasStatistics;
 
     private long id;
@@ -95,7 +95,7 @@ public class OracleSchema extends OracleGlobalObject implements
     private transient OracleUser user;
 
     public OracleSchema(OracleDataSource dataSource, long id, String name) {
-        super(dataSource, id > 0);
+        this(dataSource, id > 0);
         this.id = id;
         this.name = name;
         this.loadMetadataOptions();
@@ -103,7 +103,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
 
     public OracleSchema(@NotNull OracleDataSource dataSource, @NotNull ResultSet dbResult) {
-        super(dataSource, true);
+        this(dataSource, true);
         this.id = JDBCUtils.safeGetLong(dbResult, "USER_ID");
         this.name = JDBCUtils.safeGetString(dbResult, "USERNAME");
         if (CommonUtils.isEmpty(this.name)) {
@@ -112,6 +112,28 @@ public class OracleSchema extends OracleGlobalObject implements
         }
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         this.loadMetadataOptions();
+    }
+
+    private OracleSchema(@NotNull OracleDataSource dataSource, boolean persisted) {
+        super(dataSource, persisted);
+        this.tableCache = createTableCache();
+        this.constraintCache = createConstraintCache(tableCache);
+        this.foreignKeyCache = createForeignKeyCache(tableCache);
+        this.triggerCache = new TriggerCache();
+        this.tableTriggerCache = createTableTriggerCache(tableCache);
+        this.indexCache = createIndexCache(tableCache);
+        this.dataTypeCache = createDataTypeCache();
+        this.sequenceCache = new SequenceCache();
+        this.queueCache = new QueueCache();
+        this.packageCache = createPackageCache();
+        this.synonymCache = new SynonymCache();
+        this.dbLinkCache = new DBLinkCache();
+        this.proceduresCache = createProceduresCache();
+        this.javaCache = new JavaCache();
+        this.jobCache = new JobCache();
+        this.schedulerJobCache = createSchedulerJobCache();
+        this.schedulerProgramCache = new SchedulerProgramCache();
+        this.recycleBin = new RecycleBin();
     }
 
     private void loadMetadataOptions() {
@@ -252,6 +274,51 @@ public class OracleSchema extends OracleGlobalObject implements
 
     public SchedulerJobCache getSchedulerJobCache() {
         return schedulerJobCache;
+    }
+
+    @NotNull
+    protected TableCache createTableCache() {
+        return new TableCache();
+    }
+
+    @NotNull
+    protected ConstraintCache createConstraintCache(@NotNull TableCache tableCache) {
+        return new ConstraintCache(tableCache);
+    }
+
+    @NotNull
+    protected ForeignKeyCache createForeignKeyCache(@NotNull TableCache tableCache) {
+        return new ForeignKeyCache(tableCache);
+    }
+
+    @NotNull
+    protected TableTriggerCache createTableTriggerCache(@NotNull TableCache tableCache) {
+        return new TableTriggerCache(tableCache);
+    }
+
+    @NotNull
+    protected IndexCache createIndexCache(@NotNull TableCache tableCache) {
+        return new IndexCache(tableCache);
+    }
+
+    @NotNull
+    protected DataTypeCache createDataTypeCache() {
+        return new DataTypeCache();
+    }
+
+    @NotNull
+    protected PackageCache createPackageCache() {
+        return new PackageCache();
+    }
+
+    @NotNull
+    protected ProceduresCache createProceduresCache() {
+        return new ProceduresCache();
+    }
+
+    @NotNull
+    protected SchedulerJobCache createSchedulerJobCache() {
+        return new SchedulerJobCache();
     }
 
     @Association
