@@ -294,10 +294,12 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     private void updateUrl() {
         var container = site.getActiveDataSource().createCopy(site.getDataSourceRegistry());
         saveSettings(container);
+        String url;
         if (typeURLRadio != null && typeURLRadio.getSelection()) {
-            urlText.setText(container.getConnectionConfiguration().getUrl());
+            url = container.getConnectionConfiguration().getUrl();
         } else {
-            urlText.setText(container.getDriver().getConnectionURL(container.getConnectionConfiguration()));
+            url = container.getDriver().getConnectionURL(container.getConnectionConfiguration());
         }
+        urlText.setText(CommonUtils.notEmpty(url));
     }
 }
