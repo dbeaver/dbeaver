@@ -61,14 +61,19 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         @NotNull Map<String, Object> options
     ) {
         OracleSchema schema = (OracleSchema) container;
-        OracleDataType dataType = new OracleDataType(
-            schema,
-            "DataType",
-            false);
+        OracleDataType dataType = createDataType(schema);
         dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
             "(\n" + //$NON-NLS-1$
             ")"); //$NON-NLS-1$
         return dataType;
+    }
+
+    @NotNull
+    protected OracleDataType createDataType(@NotNull OracleSchema schema) {
+        return new OracleDataType(
+            schema,
+            "DataType",
+            false);
     }
 
     @Override

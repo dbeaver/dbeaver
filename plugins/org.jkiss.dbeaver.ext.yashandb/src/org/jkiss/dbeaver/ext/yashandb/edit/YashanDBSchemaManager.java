@@ -18,23 +18,22 @@ package org.jkiss.dbeaver.ext.yashandb.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleSchemaManager;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataSource;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.Map;
 
 /**
  * YashanDBSchemaManager
  */
 public class YashanDBSchemaManager extends OracleSchemaManager {
 
+    @NotNull
     @Override
-    protected YashanDBSchema createDatabaseObject(@NotNull DBRProgressMonitor monitor,
-                                                  @NotNull DBECommandContext context, final Object container, Object copyFrom,
-                                                  @NotNull Map<String, Object> options) {
-        return new YashanDBSchema((YashanDBDataSource) container, -1, "NEW_SCHEMA");
+    protected OracleSchema createSchema(@NotNull OracleDataSource dataSource) {
+        return new YashanDBSchema(
+            (YashanDBDataSource) dataSource,
+            -1,
+            "NEW_SCHEMA");
     }
-
 }

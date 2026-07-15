@@ -57,8 +57,13 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
+        return createPackage((OracleSchema) container);
+    }
+
+    @NotNull
+    protected OraclePackage createPackage(@NotNull OracleSchema schema) {
         return new OraclePackage(
-            (OracleSchema) container,
+            schema,
             "NEW_PACKAGE");
     }
 

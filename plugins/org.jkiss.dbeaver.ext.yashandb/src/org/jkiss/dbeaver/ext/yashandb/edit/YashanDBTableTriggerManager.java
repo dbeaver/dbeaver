@@ -20,23 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableTriggerManager;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableTrigger;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.Map;
-
 
 /**
  * YashanDBTableTriggerManager
  */
 public class YashanDBTableTriggerManager extends OracleTableTriggerManager {
 
+    @NotNull
     @Override
-    protected YashanDBTableTrigger createDatabaseObject(@NotNull DBRProgressMonitor monitor,
-                                                        @NotNull DBECommandContext context, final Object container, Object copyFrom,
-                                                        @NotNull Map<String, Object> options) {
-        OracleTableBase table = (OracleTableBase) container;
+    protected YashanDBTableTrigger createTableTrigger(@NotNull OracleTableBase table) {
         return new YashanDBTableTrigger(table, "NEW_TRIGGER");
     }
-
 }

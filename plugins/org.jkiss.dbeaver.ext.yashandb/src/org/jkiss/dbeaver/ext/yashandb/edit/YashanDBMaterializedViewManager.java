@@ -18,28 +18,18 @@ package org.jkiss.dbeaver.ext.yashandb.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleMaterializedViewManager;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDDLFormat;
+import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBMaterializedView;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.Map;
 
 /**
  * YashanDBMaterializedViewManager
  */
 public class YashanDBMaterializedViewManager extends OracleMaterializedViewManager {
 
+    @NotNull
     @Override
-    protected YashanDBMaterializedView createDatabaseObject(@NotNull DBRProgressMonitor monitor,
-                                                            @NotNull DBECommandContext context, Object container, Object copyFrom,
-                                                            @NotNull Map<String, Object> options) {
-        YashanDBSchema schema = (YashanDBSchema) container;
-        YashanDBMaterializedView newView = new YashanDBMaterializedView(schema, "NEW_MVIEW"); //$NON-NLS-1$
-        setNewObjectName(monitor, schema, newView);
-        newView.setObjectDefinitionText("SELECT 1 FROM DUAL");
-        newView.setCurrentDDLFormat(OracleDDLFormat.COMPACT);
-        return newView;
+    protected OracleMaterializedView createMaterializedView(@NotNull OracleSchema schema) {
+        return new YashanDBMaterializedView(schema, "NEW_MVIEW"); //$NON-NLS-1$
     }
 }
