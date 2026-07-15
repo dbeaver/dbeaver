@@ -48,6 +48,7 @@ public class AIMessages extends NLS {
     public static String ai_command_empty_response;
 
     public static String ai_error_request_timed_out;
+    public static String ai_error_request_timed_out_linked;
 
     static {
         // initialize resource bundle
