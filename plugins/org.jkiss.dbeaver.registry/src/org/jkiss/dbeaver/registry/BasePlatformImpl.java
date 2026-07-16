@@ -510,7 +510,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                     return DataSourceParser.parseProfiles(
                         new DataSourceParser.ContextParameters(
                             null,
-                            DBWorkbench.isDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                            DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
                             Map.of()
                         ),
                         json);
@@ -527,7 +527,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 List<DBWNetworkProfile> profiles = getProfiles();
                 DataSourceParser.ContextParameters contextParameters = new DataSourceParser.ContextParameters(
                     null,
-                    DBWorkbench.isDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                    DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
                     new LinkedHashMap<>()
                 );
                 StringWriter strWriter = new StringWriter();
@@ -543,7 +543,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 jsonWriter.flush();
                 String cfg = strWriter.toString();
                 DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(CONFIG_FILE_NAME, cfg);
-                if (!DBWorkbench.isDistributed()) {
+                if (!DBWorkbench.isMultiuserOrDistributed()) {
                     for (DBWNetworkProfile profile : profiles) {
                         profile.persistSecrets(DBSSecretController.getGlobalSecretController());
                     }
