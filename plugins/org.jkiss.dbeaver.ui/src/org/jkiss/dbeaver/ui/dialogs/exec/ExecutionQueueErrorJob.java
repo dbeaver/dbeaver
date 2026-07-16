@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.dialogs.exec;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
@@ -48,8 +50,12 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
     @Override
     public IStatus runInUIThread(@NotNull DBRProgressMonitor monitor)
     {
+        Shell activeShell = Display.getCurrent().getActiveShell();
+        Shell parentShell = activeShell != null && !activeShell.isDisposed()
+            ? activeShell
+            : UIUtils.getActiveWorkbenchShell();
         ExecutionQueueErrorDialog dialog = new ExecutionQueueErrorDialog(
-            UIUtils.getActiveWorkbenchShell(),
+            parentShell,
             "Execution Error",
             "Error occurred during " + errorName,
             GeneralUtils.makeExceptionStatus(error),
