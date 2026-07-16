@@ -57,6 +57,7 @@ import java.util.*;
 class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<PostgreBackupWizard> {
     private static final Log log = Log.getLog(PostgreBackupWizardPageObjects.class);
 
+    private Composite tablesPanel;
     private Table schemasTable;
     private Table tablesTable;
     private final Map<PostgreSchema, Set<PostgreTableBase>> checkedObjects = new HashMap<>();
@@ -93,9 +94,9 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite catPanel = UIUtils.createComposite(sash, 1);
-            catPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-            schemasTable = new Table(catPanel, SWT.BORDER | SWT.CHECK);
+            Composite schemasPanel = UIUtils.createComposite(sash, 1);
+            schemasPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            schemasTable = new Table(schemasPanel, SWT.BORDER | SWT.CHECK);
             schemasTable.addListener(SWT.Selection, event -> {
                 TableItem item = (TableItem) event.item;
                 PostgreSchema catalog = (PostgreSchema) item.getData();
@@ -110,13 +111,13 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             gd.heightHint = 50;
             schemasTable.setLayoutData(gd);
 
-            Composite buttonsPanel = UIUtils.createComposite(catPanel, 3);
+            Composite buttonsPanel = UIUtils.createComposite(schemasPanel, 3);
             
                         
             fullSchemaBackupCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_complete_backup, false);
             fullSchemaBackupCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 wizard.getSettings().setFullSchemaBackup(fullSchemaBackupCheck.getSelection());
-                tablesTable.setVisible(!fullSchemaBackupCheck.getSelection());
+                setTablesSectionEnabled(!fullSchemaBackupCheck.getSelection());
                 updateState();
             }));
             fullSchemaBackupCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
@@ -125,7 +126,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         }
 
         {
-            Composite tablesPanel = UIUtils.createComposite(sash, 1);
+            tablesPanel = UIUtils.createComposite(sash, 1);
             tablesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             tablesTable = new Table(tablesPanel, SWT.BORDER | SWT.CHECK);
@@ -218,7 +219,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         }
         boolean fullSchemaBackup = wizard.getSettings().isFullSchemaBackup();
         fullSchemaBackupCheck.setSelection(fullSchemaBackup);
-        tablesTable.setVisible(!fullSchemaBackup);
+        setTablesSectionEnabled(!fullSchemaBackup);
         if (dataBase != null) {
             setConnectionInfo(dataBase.getDataSource().getContainer(), dataBase.getName());
 
@@ -371,8 +372,12 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         if (!allSchemasSelected && fullSchemaBackupCheck.getSelection()) {
             fullSchemaBackupCheck.setSelection(false);
             wizard.getSettings().setFullSchemaBackup(false);
-            tablesTable.setVisible(true);
+            setTablesSectionEnabled(true);
         }
+    }
+
+    private void setTablesSectionEnabled(boolean enabled) {
+        UIUtils.enableWithChildren(tablesPanel, enabled);
     }
 
     @Override
