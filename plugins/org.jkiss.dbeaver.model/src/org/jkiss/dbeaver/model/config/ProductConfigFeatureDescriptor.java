@@ -18,19 +18,30 @@ package org.jkiss.dbeaver.model.config;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+
+import java.util.Optional;
 
 public final class ProductConfigFeatureDescriptor extends AbstractDescriptor {
     private final String id;
     private final String label;
+    private final String description;
     private final boolean enabledByDefault;
+    private final ObjectType enablementTesterType;
+    private ProductConfigFeatureTester enablementTester;
 
     ProductConfigFeatureDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
+        this.description = config.getAttribute("description");
         this.enabledByDefault = Boolean.parseBoolean(config.getAttribute("enabledByDefault"));
+        this.enablementTesterType = Optional.ofNullable(config.getAttribute("enablementTester"))
+            .map(ObjectType::new)
+            .orElse(null);
     }
 
     @NotNull
@@ -43,7 +54,23 @@ public final class ProductConfigFeatureDescriptor extends AbstractDescriptor {
         return label;
     }
 
+    @NotNull
+    public String getDescription() {
+        return description;
+    }
+
     public boolean isEnabledByDefault() {
         return enabledByDefault;
+    }
+
+    @Nullable
+    public ProductConfigFeatureTester getEnablementTester() throws DBException {
+        if (enablementTesterType == null) {
+            return null;
+        }
+        if (enablementTester == null) {
+            enablementTester = enablementTesterType.createInstance(ProductConfigFeatureTester.class);
+        }
+        return enablementTester;
     }
 }

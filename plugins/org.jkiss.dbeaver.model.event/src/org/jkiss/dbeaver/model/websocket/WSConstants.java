@@ -50,7 +50,6 @@ public interface WSConstants {
     String TOPIC_OBJECT_SETTINGS = "cb_object_settings";
 
     //TODO remove this enum
-    @Deprecated
     enum EventAction {
         CREATE,
         DELETE,

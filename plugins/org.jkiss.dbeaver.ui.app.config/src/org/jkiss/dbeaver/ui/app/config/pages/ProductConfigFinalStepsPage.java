@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigAction;
 import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigActionDescriptor;
-import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigRegistry;
+import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigWizardRegistry;
 import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class ProductConfigFinalStepsPage extends ProductConfigWizardPage {
     @NotNull
     private Consumer<UIPanelBuilder> buildActionsPanel() {
         return pb -> {
-            for (ProductConfigActionDescriptor descriptor : ProductConfigRegistry.getInstance().getActions()) {
+            for (ProductConfigActionDescriptor descriptor : ProductConfigWizardRegistry.getInstance().getActions()) {
                 ProductConfigAction.OfCheckbox action;
                 try {
                     action = (ProductConfigAction.OfCheckbox) descriptor.createAction();
