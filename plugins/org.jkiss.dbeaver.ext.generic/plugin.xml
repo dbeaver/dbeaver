@@ -876,7 +876,7 @@
                         description="Community Presto (prestosql) JDBC driver, use Trino for newer releases"
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://prestosql.io/"
-                        categories="sql,bigdata,hadoop">
+                        categories="sql,federated,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
@@ -896,7 +896,7 @@
                     description="Trino JDBC driver, newer replacement for PrestoSQL"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://trino.io/"
-                    categories="sql,bigdata,hadoop">
+                    categories="sql,federated,bigdata,hadoop">
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
@@ -1163,7 +1163,7 @@
                     description="Apache Calcite Avatica JDBC driver. Supports Apache Druid"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
-                    categories="sql">
+                    categories="sql,federated">
                     <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.23.0]" bundle="!drivers.apache_calcite"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/apache_calcite" bundle="drivers.apache_calcite"/>
