@@ -47,7 +47,9 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull
         @Override
         protected CopilotClientResponses initialize() throws DBException {
-            return createClient(getProperties().getBaseAuthUrl());
+            CopilotClientResponses newClient = createClient(getProperties().getBaseAuthUrl());
+            newClient.setTimeout(getProperties().getTimeout());
+            return newClient;
         }
 
         @Override
