@@ -142,8 +142,8 @@ public class AIChatSession {
         if (dataSource == null) {
             return null;
         }
-        AIDataSourceSettings dataSourceSettings = new AIDataSourceSettings(dataSource);
-        AIChatConversationSettings customSettings = conversation.getCustomSettings();
+        AIContextSettingsDataSource dataSourceSettings = new AIContextSettingsDataSource(dataSource);
+        AIContextSettingsChatConversation customSettings = conversation.getCustomSettings();
         if (customSettings != null && !dataSourceSettings.equalsSettings(customSettings)) {
             return customSettings;
         }
@@ -171,7 +171,7 @@ public class AIChatSession {
                         );
                         String contextJson = history.getContext().getContextJson();
                         if (contextJson != null) {
-                            AIChatConversationSettings convSettings = new AIChatConversationSettings(this, conversation);
+                            AIContextSettingsChatConversation convSettings = new AIContextSettingsChatConversation(this, conversation);
                             convSettings.loadSettingsFromString(contextJson);
                             convSettings.loadDataSourceDefaults();
                             conversation.setCustomSettings(convSettings);
@@ -405,7 +405,7 @@ public class AIChatSession {
         String sessionId = sessionIdProvider.getSessionId(monitor);
         AIConfigurationProfile configurationProfile = conversation.getProfile();
         if (configurationProfile == null) {
-            throw new DBException("No configuration attached to a conversation");
+            configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
         }
         String engineId = configurationProfile.getEngineId();
         QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(

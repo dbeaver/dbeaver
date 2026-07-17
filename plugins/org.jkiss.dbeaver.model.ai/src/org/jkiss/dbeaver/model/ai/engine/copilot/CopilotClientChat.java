@@ -61,7 +61,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
 
         String responseJson = client.send(monitor, request);
@@ -81,7 +81,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
 
         client.sendAsync(

@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -48,7 +47,9 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull
         @Override
         protected CopilotClientResponses initialize() throws DBException {
-            return createClient(getProperties().getBaseAuthUrl());
+            CopilotClientResponses newClient = createClient(getProperties().getBaseAuthUrl());
+            newClient.setTimeout(getProperties().getTimeout());
+            return newClient;
         }
 
         @Override
@@ -65,13 +66,22 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<CopilotModel> copilotModels = client.getInstance().loadModels(monitor, requestSessionToken(monitor).token());
-        List<AIModel> list = new ArrayList<>();
-        for (CopilotModel model : copilotModels) {
-            AIModel aiModel = new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT));
-            list.add(aiModel);
+        List<CopilotModel> models = client.getInstance().loadModels(monitor, requestSessionToken(monitor).token());
+        boolean isPremium = models.stream().anyMatch(CopilotModel::modelPickerEnabled);
+        return models.stream()
+            .filter(model -> isModelOffered(model, isPremium))
+            .map(model -> new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT)))
+            .toList();
+    }
+
+    private static boolean isModelOffered(@NotNull CopilotModel model, boolean isPremium) {
+        if (model.isDisabledByPolicy()) {
+            return false;
         }
-        return list;
+        if (isPremium) {
+            return model.modelPickerEnabled();
+        }
+        return !model.declaresEndpoints();
     }
 
     @NotNull
@@ -182,7 +192,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     public String getModelName() {
         return CommonUtils.toString(
             properties.getModel(),
-            OpenAIConstants.DEFAULT_MODEL
+            OpenAIModels.DEFAULT_MODEL
         );
     }
 

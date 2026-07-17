@@ -73,7 +73,7 @@ public class NavigatorExtensionsRegistry {
                 nad.appliesTo(node) ||
                     (node instanceof DBNDatabaseNode dbNode
                         && nad.appliesTo(dbNode.getObject())))
-                        && (nad.isAlwaysEnabled() || nad.getHandler().isEnabledFor(view, node)))
+                        && (nad.isAlwaysEnabled() || nad.getHandler().isEnabledFor(node)))
             .map(NavigatorNodeActionDescriptor::getHandler)
             .collect(Collectors.toList());
     }
