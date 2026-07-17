@@ -62,7 +62,7 @@ public class AIChatConversation {
     @NotNull
     private final LocalDateTime time;
     @Nullable
-    private AIChatConversationSettings customSettings;
+    private AIContextSettingsChatConversation customSettings;
     @Nullable
     private AIConfigurationProfile profile;
 
@@ -234,11 +234,11 @@ public class AIChatConversation {
     }
 
     @Nullable
-    public AIChatConversationSettings getCustomSettings() {
+    public AIContextSettingsChatConversation getCustomSettings() {
         return customSettings;
     }
 
-    public void setCustomSettings(@Nullable AIChatConversationSettings customSettings) {
+    public void setCustomSettings(@Nullable AIContextSettingsChatConversation customSettings) {
         this.customSettings = customSettings;
     }
 

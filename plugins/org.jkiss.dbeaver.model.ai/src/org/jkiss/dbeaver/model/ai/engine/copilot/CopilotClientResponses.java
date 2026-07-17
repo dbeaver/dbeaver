@@ -59,6 +59,12 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
         backupClient = createLegacyBackupClient();
     }
 
+    @Override
+    public void setTimeout(int timeoutSeconds) {
+        super.setTimeout(timeoutSeconds);
+        backupClient.setTimeout(timeoutSeconds);
+    }
+
 
     @NotNull
     public HttpClient getHttpClient() {
@@ -70,7 +76,7 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CopilotSessionToken.DEFAULT_API_ENDPOINT + RESPONSES_PATH, "models"))
             .GET()
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
 
         return CopilotUtils.GSON.fromJson(client.send(monitor, request), OAIModelList.class).data();
@@ -87,7 +93,7 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
     }
 

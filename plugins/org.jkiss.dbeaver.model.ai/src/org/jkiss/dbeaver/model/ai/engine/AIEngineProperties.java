@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 
 public interface AIEngineProperties {
 
+    int DEFAULT_TIMEOUT = 30;
+
     String getModel();
 
     Integer getContextWindowSize();
@@ -32,6 +34,12 @@ public interface AIEngineProperties {
     boolean isValidConfiguration();
 
     boolean isLoggingEnabled();
+
+    void setLoggingEnabled(boolean loggingEnabled);
+
+    int getTimeout();
+
+    void setTimeout(int timeout);
 
     void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
 

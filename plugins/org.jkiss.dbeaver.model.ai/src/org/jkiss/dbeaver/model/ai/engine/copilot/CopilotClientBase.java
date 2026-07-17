@@ -136,7 +136,7 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
         HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve(session.apiBaseUrl() + MODELS_PATH))
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + session.token()).header("Editor-Version", CHAT_EDITOR_VERSION).GET()
-            .timeout(TIMEOUT).build();
+            .timeout(timeout).build();
 
         var response = client.send(monitor, request);
         var models = CopilotUtils.GSON.fromJson(response, CopilotModelList.class);
@@ -197,7 +197,7 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
             .uri(AIHttpUtils.resolve(apiBaseURL + COPILOT_SESSION_TOKEN_URL))
             .header(HttpConstants.HEADER_AUTHORIZATION, "token " + accessToken).header("editor-version", EDITOR_VERSION)
             .header("editor-plugin-version", EDITOR_PLUGIN_VERSION).header(HttpConstants.HEADER_USER_AGENT, USER_AGENT).GET()
-            .timeout(TIMEOUT).build();
+            .timeout(timeout).build();
 
         return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotSessionToken.class);
     }
