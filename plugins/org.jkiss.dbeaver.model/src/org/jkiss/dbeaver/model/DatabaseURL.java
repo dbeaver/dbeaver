@@ -72,33 +72,33 @@ public class DatabaseURL {
     private static final WeakHashMap<String, StringTemplate> templates = new WeakHashMap<>();
 
     @NotNull
-    private static StringTemplate getUrlTemplate(@NotNull String templateString) throws DBException {
-        try {
-            synchronized (lock) {
-                StringTemplate template = templates.get(templateString);
-                if (template == null) {
-                    template = StringTemplate.parseTemplate(templateString, p -> getPropertyRegex(p.name()));
-                    templates.put(templateString, template);
-                }
-                return template;
+    private static StringTemplate getUrlTemplate(@NotNull String templateString) throws StringTemplate.StringTemplateFormatException {
+        synchronized (lock) {
+            StringTemplate template = templates.get(templateString);
+            if (template == null) {
+                template = StringTemplate.parseTemplate(templateString, p -> getPropertyRegex(p.name()));
+                templates.put(templateString, template);
             }
-        } catch (StringTemplate.StringTemplateFormatException e) {
-            throw new DBException("Failed to prepare database URL template based on template string " + templateString, e);
+            return template;
         }
     }
 
     @Nullable
-    public static String generateUrlByTemplate(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration cnnInfo) {
+    public static String generateUrlByTemplate(
+        @NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration cnnInfo
+    ) throws DBException {
         String urlTemplate = driver.getSampleURL();
         if (CommonUtils.isEmpty(urlTemplate)) {
-            throw new RuntimeException("Cannot generate database URL with empty sample URL template for " + driver.getName());
+            throw new DBException("Cannot generate database URL with empty sample URL template for " + driver.getName());
         } else {
             return DatabaseURL.generateUrlByTemplate(urlTemplate, cnnInfo, Collections.emptyMap());
         }
     }
 
     @Nullable
-    public static String generateUrlByTemplate(@NotNull String urlTemplate, @NotNull DBPConnectionConfiguration cnnInfo) {
+    public static String generateUrlByTemplate(
+        @NotNull String urlTemplate, @NotNull DBPConnectionConfiguration cnnInfo
+    ) throws DBException {
         return DatabaseURL.generateUrlByTemplate(urlTemplate, cnnInfo, Collections.emptyMap());
     }
 
@@ -107,7 +107,7 @@ public class DatabaseURL {
         @NotNull String urlTemplate,
         @NotNull DBPConnectionConfiguration connectionInfo,
         @NotNull Map<String, String> extraParams
-    ) {
+    ) throws DBException {
         if (!CommonUtils.isEmpty(connectionInfo.getUrl()) &&
             CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
             CommonUtils.isEmpty(connectionInfo.getHostName()) &&
@@ -148,9 +148,8 @@ public class DatabaseURL {
             StringTemplate template = getUrlTemplate(urlTemplate);
             String result = template.prepareString(params);
             return result;
-        } catch (Throwable ex) { // not enough params
-            log.error("Failed to generate database URL by template", ex);
-            return null;
+        } catch (StringTemplate.StringTemplateException ex) {
+            throw new DBException("Failed to generate database URL by template " + ex.getTemplateString(), ex);
         }
     }
 
@@ -209,7 +208,7 @@ public class DatabaseURL {
     }
 
     @NotNull
-    public static Pattern getUrlPattern(@NotNull String sampleURL) throws DBException {
+    public static Pattern getUrlPattern(@NotNull String sampleURL) throws StringTemplate.StringTemplateFormatException {
         return new Pattern(getUrlTemplate(sampleURL));
     }
 

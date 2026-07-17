@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -136,6 +137,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             gd.widthHint = 200;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(e -> site.updateButtons());
+            urlText.setData(URL_TEXT_DATA_ERROR_DECORATOR_KEY, new ControlDecoration(urlText, SWT.BOTTOM | SWT.LEFT));
 
             addControlToGroup(GROUP_URL, urlLabel);
             addControlToGroup(GROUP_URL, urlText);

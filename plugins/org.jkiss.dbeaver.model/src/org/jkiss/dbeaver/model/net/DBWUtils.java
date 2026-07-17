@@ -44,7 +44,7 @@ public class DBWUtils {
         @NotNull DBPConnectionConfiguration connectionInfo,
         @Nullable String localHost,
         int localPort
-    ) {
+    ) throws DBException {
         // Replace database host/port and URL
         if (CommonUtils.isNotEmpty(localHost)) {
             connectionInfo.setHostName(localHost);

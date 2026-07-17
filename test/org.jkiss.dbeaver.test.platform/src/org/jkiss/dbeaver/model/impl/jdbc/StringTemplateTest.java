@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.StringTemplate;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -115,49 +116,71 @@ public class StringTemplateTest extends DBeaverUnitTest {
     };
 
     @Test
-    public void testOptionals() throws StringTemplate.StringTemplateFormatException {
+    public void testOptionals() throws StringTemplate.StringTemplateException {
         evaluatePlainUrl(
             DatabaseURL.Generic.TEMPLATE, "wtf://user:pwd@myhost:1234", Map.of(
-                "user", "user",
-                "password", "pwd",
+                DBConstants.PROP_USER, DBConstants.PROP_USER,
+                DBConstants.PROP_PASSWORD, "pwd",
                 "driver", "wtf",
-                "host", "myhost",
-                "port", "1234"
+                DBConstants.PROP_HOST, "myhost",
+                DBConstants.PROP_PORT, "1234"
             )
         );
         evaluatePlainUrl(
             DatabaseURL.Generic.TEMPLATE, "wtf://myhost/dbname", Map.of(
                 "driver", "wtf",
-                "host", "myhost",
-                "database", "dbname"
+                DBConstants.PROP_HOST, "myhost",
+                DBConstants.PROP_DATABASE, "dbname"
             )
         );
     }
 
     @Test
-    public void testBranching() throws StringTemplate.StringTemplateFormatException {
+    public void testBranching() throws StringTemplate.StringTemplateException {
         evaluatePlainUrl("abc{x{x}|y{y}}def", "abcx134def", Map.of("x", "134"));
         evaluatePlainUrl("abc{x{x}|y{y}}def", "abcy456def", Map.of("y", "456"));
     }
 
     @Test
-    public void testRepeatings() throws StringTemplate.StringTemplateFormatException {
+    public void testRepeatingsFlat() throws StringTemplate.StringTemplateException {
         evaluatePlainUrl(
-            DatabaseURL.Generic.TEMPLATE_WITH_PARAMS, "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC", Map.of(
+            DatabaseURL.Generic.TEMPLATE_WITH_PARAMS,
+            "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC",
+            Map.of(
                 "driver", "mysql",
-                "host", "mysql.db.server",
-                "port", "3306",
-                "database", "my_database",
+                DBConstants.PROP_HOST, "mysql.db.server",
+                DBConstants.PROP_PORT, "3306",
+                DBConstants.PROP_DATABASE, "my_database",
                 DatabaseURL.Generic.PARAM_PROP, List.of("1useSSL", "2serverTimezone"),
                 DatabaseURL.Generic.PARAM_VALUE, List.of("1false", "2UTC")
             )
         );
+        evaluateFlat(
+            DatabaseURL.Generic.TEMPLATE_WITH_PARAMS,
+            "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC",
+            List.of(
+                Map.entry("driver", "mysql"),
+                Map.entry(DBConstants.PROP_HOST, "mysql.db.server"),
+                Map.entry(DBConstants.PROP_PORT, "3306"),
+                Map.entry(DBConstants.PROP_DATABASE, "my_database"),
+                Map.entry(DatabaseURL.Generic.PARAM_PROP, "1useSSL"),
+                Map.entry(DatabaseURL.Generic.PARAM_VALUE, "1false"),
+                Map.entry(DatabaseURL.Generic.PARAM_PROP, "2serverTimezone"),
+                Map.entry(DatabaseURL.Generic.PARAM_VALUE, "2UTC")
+            )
+        );
+    }
+
+    @Test
+    public void testRepeatingsWithGroups() throws StringTemplate.StringTemplateException {
         evaluateHierarchicalUrl(
-            DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS, "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC", Map.of(
+            DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS,
+            "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC",
+            Map.of(
                 "driver", "mysql",
-                "host", "mysql.db.server",
-                "port", "3306",
-                "database", "my_database",
+                DBConstants.PROP_HOST, "mysql.db.server",
+                DBConstants.PROP_PORT, "3306",
+                DBConstants.PROP_DATABASE, "my_database",
                 DatabaseURL.Generic.PARAM_GROUP, List.of(
                     Map.of(
                         DatabaseURL.Generic.PARAM_PROP, "1useSSL",
@@ -173,41 +196,77 @@ public class StringTemplateTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void testNamedGroupAndBranching() throws StringTemplate.StringTemplateFormatException {
-        final String msqlTemplate = "[jdbc:]{driver}://{[{user}:{password}]\\[{ep:{host}[:{port}]}[,{ep:{host}[:{port}]}...]\\]|[{user}:{password}@]{host}[:{port}]}[/{database}]";
+    public void testBranchingFlat() throws StringTemplate.StringTemplateException {
+        final String mysqlTemplateFlat
+            = "[jdbc:]{driver}://{[{user}:{password}]\\[{{host}[:{port}]}[,{{host}[:{port}]}...]\\]|[{user}:{password}@]{host}[:{port}]}[/{database}]";
 
-        evaluateHierarchicalUrl(msqlTemplate, "jdbc:mysql://root:mypass@myhost1:3306/db_name", Map.of(
-            "driver", "mysql",
-            "user", "root",
-            "password", "mypass",
-            "database", "db_name",
-            "host", "myhost1",
-            "port", "3306"
-        ));
-
-        evaluateHierarchicalUrl(msqlTemplate, "jdbc:mysql://root:mypass[myhost1:3306,myhost2,myhost3:3307]/db_name", Map.of(
-            "driver", "mysql",
-            "user", "root",
-            "password", "mypass",
-            "database", "db_name",
-            "ep", List.of(
-                Map.of(
-                    "host", "myhost1",
-                    "port", "3306"
-                ),
-                Map.of(
-                    "host", "myhost2"
-                ),
-                Map.of(
-                    "host", "myhost3",
-                    "port", "3307"
-                )
+        evaluateFlat(
+            mysqlTemplateFlat, "jdbc:mysql://root:mypass@myhost1:3306/db_name", List.of(
+                Map.entry("driver", "mysql"),
+                Map.entry(DBConstants.PROP_USER, "root"),
+                Map.entry(DBConstants.PROP_PASSWORD, "mypass"),
+                Map.entry(DBConstants.PROP_HOST, "myhost1"),
+                Map.entry(DBConstants.PROP_PORT, "3306"),
+                Map.entry(DBConstants.PROP_DATABASE, "db_name")
             )
-        ));
+        );
+
+        evaluateFlat(
+            mysqlTemplateFlat, "jdbc:mysql://root:mypass[myhost1:3306,myhost2,myhost3:3307]/db_name", List.of(
+                Map.entry("driver", "mysql"),
+                Map.entry(DBConstants.PROP_USER, "root"),
+                Map.entry(DBConstants.PROP_PASSWORD, "mypass"),
+                Map.entry(DBConstants.PROP_DATABASE, "db_name"),
+                Map.entry(DBConstants.PROP_HOST, "myhost1"),
+                Map.entry(DBConstants.PROP_PORT, "3306"),
+                Map.entry(DBConstants.PROP_HOST, "myhost2"),
+                Map.entry(DBConstants.PROP_HOST, "myhost3"),
+                Map.entry(DBConstants.PROP_PORT, "3307")
+            )
+        );
     }
 
     @Test
-    public void testRandomParametrization() throws StringTemplate.StringTemplateFormatException {
+    public void testBranchingWithGroups() throws StringTemplate.StringTemplateException {
+        final String mysqlTemplateHeirarhical
+            = "[jdbc:]{driver}://{[{user}:{password}]\\[{ep:{host}[:{port}]}[,{ep:{host}[:{port}]}...]\\]|[{user}:{password}@]{host}[:{port}]}[/{database}]";
+
+        evaluateHierarchicalUrl(
+            mysqlTemplateHeirarhical, "jdbc:mysql://root:mypass@myhost1:3306/db_name", Map.of(
+                "driver", "mysql",
+                DBConstants.PROP_USER, "root",
+                DBConstants.PROP_PASSWORD, "mypass",
+                DBConstants.PROP_DATABASE, "db_name",
+                DBConstants.PROP_HOST, "myhost1",
+                DBConstants.PROP_PORT, "3306"
+            )
+        );
+
+        evaluateHierarchicalUrl(
+            mysqlTemplateHeirarhical, "jdbc:mysql://root:mypass[myhost1:3306,myhost2,myhost3:3307]/db_name", Map.of(
+                "driver", "mysql",
+                DBConstants.PROP_USER, "root",
+                DBConstants.PROP_PASSWORD, "mypass",
+                DBConstants.PROP_DATABASE, "db_name",
+                "ep", List.of(
+                    Map.of(
+                        DBConstants.PROP_HOST, "myhost1",
+                        DBConstants.PROP_PORT, "3306"
+                    ),
+                    Map.of(
+                        DBConstants.PROP_HOST, "myhost2"
+                    ),
+                    Map.of(
+                        DBConstants.PROP_HOST, "myhost3",
+                        DBConstants.PROP_PORT, "3307"
+                    )
+                )
+            )
+        );
+    }
+
+    @Test
+    public void testRandomParametrization() throws StringTemplate.StringTemplateException {
         Random rnd = new Random(1); // fixed seed for reproducibility
         for (String templateString : ALL_URL_TEMPLATES) {
             StringTemplate template = StringTemplate.parseTemplate(templateString);
@@ -251,7 +310,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
 
     static void evaluatePlainUrl(
         @NotNull String templateString, @Nullable String givenUrl, @Nullable Map<String, ?> givenParams
-    ) throws StringTemplate.StringTemplateFormatException {
+    ) throws StringTemplate.StringTemplateException {
         if (givenParams == null && givenUrl == null) {
             throw new IllegalArgumentException("At least one of givenUrl and givenParams should be specified");
         }
@@ -274,27 +333,60 @@ public class StringTemplateTest extends DBeaverUnitTest {
         }
     }
 
-    static void assertParams(@NotNull Map<String, ?> given, @NotNull Map<String, ?> actual) {
+    static void assertParams(@Nullable Map<String, ?> given, @Nullable Map<String, ?> actual) {
+        String givenParams = jsonify(given);
+        String actualParams = jsonify(actual);
+        Assertions.assertEquals(givenParams, actualParams);
+    }
+
+    static void assertParamsFlat(@Nullable List<Map.Entry<String, String>> given, @Nullable List<Map.Entry<String, String>> actual) {
         String givenParams = jsonify(given);
         String actualParams = jsonify(actual);
         Assertions.assertEquals(givenParams, actualParams);
     }
 
     @NotNull
-    static String jsonify(@NotNull Object o) {
+    static String jsonify(@Nullable Object o) {
         return switch (o) {
+            case null -> "null";
             case String s -> "\"" + s.replace("\"", "\\\"") + "\"";
             case List<?> l -> l.stream().map(StringTemplateTest::jsonify).sorted().collect(Collectors.joining(", ", "[", "]"));
             case Map<?, ?> m -> m.entrySet().stream().map(kv -> jsonify(kv.getKey()) + ": " + (
                     kv.getValue() instanceof List<?> ? jsonify(kv.getValue()) : ("[" + jsonify(kv.getValue()) + "]")
                 )).sorted().collect(Collectors.joining(", ", "{", "}"));
+            case Map.Entry<?, ?> kv -> "{" + jsonify(kv.getKey()) + ": " + jsonify(kv.getValue()) + "}";
             default -> throw new IllegalStateException();
         };
     }
 
+    static void evaluateFlat(
+        @NotNull String templateString, @Nullable String givenUrl, @Nullable List<Map.Entry<String, String>> givenParams
+    ) throws StringTemplate.StringTemplateException {
+        if (givenParams == null && givenUrl == null) {
+            throw new IllegalArgumentException("At least one of givenUrl and givenParams should be spefified");
+        }
+
+        StringTemplate template = StringTemplate.parseTemplate(templateString);
+
+        List<Map.Entry<String, String>> givenUrlParams = givenUrl == null ? null : template.extractAllParametersFlat(givenUrl);
+
+        if (givenParams == null) {
+            String preparedUrl = template.prepareString(givenUrlParams);
+            List<Map.Entry<String, String>> extractedParams = template.extractAllParametersFlat(preparedUrl);
+            assertParamsFlat(givenUrlParams, extractedParams);
+        } else {
+            String preparedUrl = template.prepareString(givenParams);
+            List<Map.Entry<String, String>> extractedParams = template.extractAllParametersFlat(preparedUrl);
+            assertParamsFlat(givenParams, extractedParams);
+            if (givenUrlParams != null) {
+                assertParamsFlat(givenParams, givenUrlParams);
+            }
+        }
+    }
+
     static void evaluateHierarchicalUrl(
         @NotNull String templateString, @Nullable String givenUrl, @Nullable Map<String, ?> givenParams
-    ) throws StringTemplate.StringTemplateFormatException {
+    ) throws StringTemplate.StringTemplateException {
         if (givenParams == null && givenUrl == null) {
             throw new IllegalArgumentException("At least one of givenUrl and givenParams should be spefified");
         }

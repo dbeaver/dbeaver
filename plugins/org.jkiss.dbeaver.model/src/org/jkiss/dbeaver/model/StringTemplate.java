@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.NotNullWhen;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.Pair;
 
@@ -31,10 +32,24 @@ import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+/**
+ * <p>Implements configuration string template.
+ * Carries meta information about the string parameters (optional/mandatory, repeats, etc).</p>
+ * <p>Provides two kinds of operations: string recognition to extract presented parameters and
+ * string preparation by gluing-in given parameters.</p>
+ * <p>
+ * Two different approaches for string recognition implemented:
+ * <li>with Java regex-based pattern (applicable for non-hierarchical recognition without repeating parameter entries);</li>
+ * <li>with recursive-descent pattern tree traversing algorithm (all the rest scenarios). </li>
+ * </p>
+ * */
 public class StringTemplate {
 
     private static final Pattern DEFAULT_PARAM_VALUE_PATTERN = Pattern.compile("[\\d\\w\\-\\.\\~\\%\\s\\_]+");
 
+    /**
+     * Trivial elements of the template string.
+     */
     private enum TermKind {
         TEXT(null),
         ESCAPE_MARK("\\"),
@@ -128,6 +143,9 @@ public class StringTemplate {
         }
     }
 
+    /**
+     * Kind of the syntax tree node
+     */
     private enum TemplateSyntaxNodeKind {
         ERROR,
         TEXT,
@@ -137,6 +155,14 @@ public class StringTemplate {
         ALTERNATIVE
     }
 
+    /**
+     * Node of the template syntax tree node
+     * @param kind kind of the node
+     * @param start position where the corresponding template fragment begins
+     * @param end position where the corresponding template fragment ends
+     * @param payload text content or template entry name
+     * @param children nested nodes of the syntax subtree
+     */
     private record TemplateSyntaxNode(
         TemplateSyntaxNodeKind kind,
         int start,
@@ -152,211 +178,6 @@ public class StringTemplate {
         DEFAULT,
         OPTIONAL,
         SUBSEQUENCE
-    }
-
-    @NotNull
-    private static List<TemplateSyntaxNode> parseTemplate(
-        @NotNull Lexer l, @NotNull TemplateFragmentKind fragmentKind
-    ) throws StringTemplateFormatException {
-        int fragmentStart = l.lastTerm == null ? 0 : l.lastTerm.start();
-        List<TemplateSyntaxNode> nodes = new ArrayList<>();
-        Term t = l.nextTerm();
-        while (t != null) {
-            switch (t.kind) {
-                case TEXT, GROUP_NAME_SEPARATOR, ESCAPE_MARK -> {
-                    String text = t.kind == TermKind.ESCAPE_MARK ? t.text.substring(1) : t.text;
-                    boolean joined = false;
-                    if (!nodes.isEmpty()) {
-                        TemplateSyntaxNode lastNode = nodes.getLast();
-                        if (lastNode.kind  == TemplateSyntaxNodeKind.TEXT && lastNode.end() == t.start()) {
-                            nodes.set(nodes.size() - 1, new TemplateSyntaxNode(
-                                TemplateSyntaxNodeKind.TEXT,
-                                lastNode.start(),
-                                t.end(),
-                                lastNode.payload + text,
-                                null
-                            ));
-                            joined = true;
-                        }
-                    }
-                    if (!joined) {
-                        nodes.add(new TemplateSyntaxNode(TemplateSyntaxNodeKind.TEXT, t.start(), t.end(), text, null));
-                    }
-                }
-                case PARAM_A_START -> nodes.add(parseParamOrSubseq(l, t, TermKind.PARAM_A_END));
-                case PARAM_A_END -> {
-                    if (fragmentKind == TemplateFragmentKind.SUBSEQUENCE) {
-                        if (nodes.getFirst().kind == TemplateSyntaxNodeKind.ALTERNATIVE) {
-                            if (nodes.size() > 1) {
-                                TemplateSyntaxNode lastBranch = new TemplateSyntaxNode(
-                                    TemplateSyntaxNodeKind.TEXT,
-                                    nodes.get(1).start(),
-                                    t.start(),
-                                    null,
-                                    List.copyOf(nodes.subList(1, nodes.size()))
-                                );
-                                if (nodes.getFirst().children != null) {
-                                    nodes.getFirst().children.add(lastBranch);
-                                }
-                            }
-                            return List.of(nodes.getFirst());
-                        } else {
-                            return nodes;
-                        }
-                    } else {
-                        throw new StringTemplateFormatException(l.text, t.start(), "Unexpected parameter end mark '}' at " + t.start());
-                    }
-                }
-                case PARAM_B_START -> nodes.add(parseParamNode(l, t, TermKind.PARAM_B_END));
-                case PARAM_B_END ->
-                    throw new StringTemplateFormatException(l.text, t.start(), "Unexpected parameter end mark '>' at " + t.start());
-                case ALTERNATIVE -> {
-                    int contentsStart;
-                    if (nodes.getFirst().kind != TemplateSyntaxNodeKind.ALTERNATIVE) {
-                        contentsStart = 0;
-                    } else {
-                        contentsStart = 1;
-                    }
-                    TemplateSyntaxNode branch = new TemplateSyntaxNode(
-                        TemplateSyntaxNodeKind.TEXT,
-                        nodes.get(contentsStart).start(),
-                        t.start(),
-                        null,
-                        List.copyOf(nodes.subList(contentsStart, nodes.size()))
-                    );
-                    int lastIndex = nodes.size();
-                    List<TemplateSyntaxNode> branches;
-                    while (lastIndex-- > contentsStart) {
-                        nodes.remove(lastIndex);
-                    }
-                    if (contentsStart == 0) {
-                        branches = new ArrayList<>();
-                        nodes.add(new TemplateSyntaxNode(
-                            TemplateSyntaxNodeKind.ALTERNATIVE,
-                            branch.start(),
-                            Integer.MAX_VALUE,
-                            null,
-                            branches
-                        ));
-                    } else {
-                        branches = nodes.getFirst().children();
-                    }
-                    if (branches != null) {
-                        branches.add(branch);
-                    }
-                }
-                case REPEAT_MARK -> {
-                    t = l.nextTerm();
-                    if (t != null) {
-                        if (t.kind == TermKind.OPTIONAL_END && fragmentKind == TemplateFragmentKind.OPTIONAL) {
-                            return List.of(
-                                new TemplateSyntaxNode(
-                                    TemplateSyntaxNodeKind.REPEAT,
-                                    nodes.getFirst().start(),
-                                    l.lastTerm.end(),
-                                    null,
-                                    nodes
-                                )
-                            );
-                        } else {
-                            // consider allowing it in subsequence
-                            throw new StringTemplateFormatException(l.text, t.start(), "Unexpected repeat mark '...' at " + t.start());
-                        }
-                    }
-                }
-                case OPTIONAL_START -> {
-                    List<TemplateSyntaxNode> children = parseTemplate(l, TemplateFragmentKind.OPTIONAL);
-                    nodes.add(new TemplateSyntaxNode(TemplateSyntaxNodeKind.OPTIONAL, t.start(), l.lastTerm.end(), null, children));
-                }
-                case OPTIONAL_END -> {
-                    if (fragmentKind == TemplateFragmentKind.OPTIONAL) {
-                        if (nodes.getFirst().kind == TemplateSyntaxNodeKind.ALTERNATIVE) {
-                            if (nodes.size() > 1) {
-                                TemplateSyntaxNode lastBranch = new TemplateSyntaxNode(
-                                    TemplateSyntaxNodeKind.TEXT,
-                                    nodes.get(1).start(),
-                                    t.start(),
-                                    null,
-                                    List.copyOf(nodes.subList(1, nodes.size()))
-                                );
-                                if (nodes.getFirst().children != null) {
-                                    nodes.getFirst().children.add(lastBranch);
-                                }
-                            }
-                            return List.of(nodes.getFirst());
-                        } else {
-                            return nodes;
-                        }
-                    } else {
-                        throw new StringTemplateFormatException(l.text, t.start(), "Unexpected optional end mark ']' at " + t.start());
-                    }
-                }
-                default -> {
-                    throw new StringTemplateFormatException(l.text, t.start(), "Unexpected '" + t.text() + "' syntax at " + t.start());
-                }
-            }
-            t = l.nextTerm();
-        }
-        if (fragmentKind == TemplateFragmentKind.DEFAULT) {
-            return nodes;
-        } else {
-            throw new StringTemplateFormatException(l.text, fragmentStart, "Unclosed " + fragmentKind + " pattern at " + fragmentStart);
-        }
-    }
-
-    @NotNull
-    private static TemplateSyntaxNode parseParamNode(
-        @NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind
-    ) throws StringTemplateFormatException {
-        Term t2;
-        do {
-            t2 = l.nextTerm();
-        } while (t2 != null && t2.kind != endTermKind);
-
-        if (t2 != null) {
-            String name = l.text.substring(t.start() + 1, t2.end() - 1);
-            return new TemplateSyntaxNode(TemplateSyntaxNodeKind.PARAM, t.start(), t2.end(), name, null);
-        } else {
-            throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
-        }
-    }
-
-    @NotNull
-    private static TemplateSyntaxNode parseParamOrSubseq(
-        @NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind
-    ) throws StringTemplateFormatException {
-        Term nameTerm = l.nextTerm();
-        String groupName = null;
-        if (nameTerm != null) {
-            if (nameTerm.kind == TermKind.TEXT) {
-                Term paramEndTerm = l.nextTerm();
-                if (paramEndTerm != null) {
-                    String name = l.text.substring(t.start() + 1, paramEndTerm.end() - 1);
-                    if (paramEndTerm.kind == endTermKind) {
-                        return new TemplateSyntaxNode(TemplateSyntaxNodeKind.PARAM, t.start(), paramEndTerm.end(), name, null);
-                    } else if (paramEndTerm.kind == TermKind.GROUP_NAME_SEPARATOR) {
-                        groupName = name;
-                    } else {
-                        // fallthrough
-                    }
-                } else {
-                    throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
-                }
-                if (groupName == null) {
-                    l.pushBack(paramEndTerm);
-                }
-            } else {
-                // fallthrough
-            }
-        } else {
-            throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
-        }
-        if (groupName == null) {
-            l.pushBack(nameTerm);
-        }
-
-        List<TemplateSyntaxNode> nodes = parseTemplate(l, TemplateFragmentKind.SUBSEQUENCE);
-        return new TemplateSyntaxNode(TemplateSyntaxNodeKind.TEXT, nodes.getFirst().start(), nodes.getLast().end(), groupName, nodes);
     }
 
     private interface TemplateNodeVisitor<T, R> {
@@ -652,11 +473,17 @@ public class StringTemplate {
         this.pattern = prepareRegexPattern(root, this.paramInfoByName, parameterPatternSupplier);
     }
 
+    /**
+     * Returns meta information about template parameters.
+     */
     @NotNull
     public Map<String, ParameterInfo> getParametersInfo() {
         return this.paramInfoByName;
     }
 
+    /**
+     * Returns meta information about named groups of the template.
+     */
     @NotNull
     public GroupInfo getGroupsInfo() {
         return this.groupsInfo;
@@ -1039,6 +866,12 @@ public class StringTemplate {
         }
     }
 
+    /**
+     * Recognize and extract parameter values, including all the nested named groups.
+     *
+     * @param string corresponding to the current template.
+     * @return a tree of parameter value entries keeping subgroup entries in a separate nested collections.
+     */
     @Nullable
     public ParamEntries extractAllParametersTree(@NotNull String string) {
         CapturesEnumerator it = this.extractAllParametersImpl(string);
@@ -1058,6 +891,12 @@ public class StringTemplate {
         }
     }
 
+    /**
+     * Recognize and extract parameter values, keeping only one value for each parameter and dropping the named groups information.
+     *
+     * @param string corresponding to the current template.
+     * @return a map of immediate strings for all recognized parameter values for the corresponding parameter key.
+     */
     @Nullable
     public Map<String, String> extractSingletonParametersMap(@NotNull String string) {
         CapturesEnumerator it = this.extractAllParametersImpl(string);
@@ -1074,6 +913,12 @@ public class StringTemplate {
         }
     }
 
+    /**
+     * Recognize and extract parameter values, keeping only parameter values and dropping the named groups information.
+     *
+     * @param string corresponding to the current template.
+     * @return a map of lists containing all parameter values for the corresponding parameter key.
+     */
     @Nullable
     public Map<String, List<String>> extractAllParametersMap(@NotNull String string) {
         CapturesEnumerator it = this.extractAllParametersImpl(string);
@@ -1326,7 +1171,8 @@ public class StringTemplate {
         for (Map.Entry<String, ?> kv : parameters.entrySet()) {
             switch (kv.getValue()) {
                 case String s -> result.addParameter(kv.getKey(), ClonableEnumerator.ofValue(s));
-                case List<?> l when l.isEmpty() || l.getFirst() instanceof String ->
+                case List<?> l when l.isEmpty() -> { /* do nothing */ }
+                case List<?> l when !l.isEmpty() && l.getFirst() instanceof String ->
                     result.addParameter(kv.getKey(), ClonableEnumerator.ofList((List<String>) l));
                 case List<?> l when !l.isEmpty() && l.getFirst() instanceof Map ->
                     result.addGroup(kv.getKey(), ClonableEnumerator.ofList(
@@ -1341,13 +1187,31 @@ public class StringTemplate {
         return result;
     }
 
+    /**
+     * Prepare text string based on the current template by supplying given set of parameters
+     * and distributing them across template parameter entries.
+     *
+     * @param parameters to glue-in the template string, each value may be one of three kinds:
+     *                   <li> - an immediate plain string to supply for one and only parameter entry of the corresponding key name,</li>
+     *                   <li> - a list of strings to supply for each subsequent parameter entry having corresponding key name,</li>
+     *                   <li> - a nested map or a list of maps carrying values to supply for parameter entries of the nested named groups.</li>
+     * @return result of strings concatenation applied to the template fragments and given parameter values
+     * @throws StringTemplateMissingParametersException when there is not enough parameters to fulfill all the mandatory parameter entries
+     */
     @NotNull
-    public String prepareString(@NotNull Map<String, ?> parameters) {
+    public String prepareString(@NotNull Map<String, ?> parameters) throws StringTemplateMissingParametersException {
         return this.prepareStringImpl(this.prepareParameterSource(parameters));
     }
 
-    @NotNull
-    public String prepareString(@NotNull Collection<Map.Entry<String, String>> parameters) {
+    /**
+     * Prepare text string based on the current template by supplying given set of parameters
+     * and distributing them across template parameter entries.
+     *
+     * @param parameters to plain collection of parameter values to supply for each parameter entry having corresponding key name
+     * @return result of strings concatenation applied to the template fragments and given parameter values
+     * @throws StringTemplateMissingParametersException when there is not enough parameters to fulfill all the mandatory parameter entries
+     */    @NotNull
+    public String prepareString(@NotNull Collection<Map.Entry<String, String>> parameters) throws StringTemplateMissingParametersException {
         // it used to be
         //     Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(e -> e.getValue(), Collectors.toCollection(LinkedList::new)))
         // but we want custom finisher to turn the resulting group collection into clonable-enumerator
@@ -1401,10 +1265,6 @@ public class StringTemplate {
             return this.groups == null ? null : this.groups.get(name);
         }
 
-        public boolean containsAllParameters(@NotNull Set<String> requiredParamNames) {
-            return this.parameters != null && this.parameters.keySet().containsAll(requiredParamNames);
-        }
-
         public void updateFrom(@NotNull ParameterSource other) {
             this.parameters = other.parameters;
             this.groups = other.groups;
@@ -1433,7 +1293,7 @@ public class StringTemplate {
     }
 
     @NotNull
-    private String prepareStringImpl(@NotNull ParameterSource paramSource) {
+    private String prepareStringImpl(@NotNull ParameterSource paramSource) throws StringTemplateMissingParametersException {
 
         Fragment result = this.root.visit(new TemplateNodeVisitor<>() {
 
@@ -1522,14 +1382,17 @@ public class StringTemplate {
                     arg.updateFrom(branchState);
                     ff.add(f);
                     branchState = arg.clone();
-                    f = repeat.child.visit(this, arg);
+                    f = repeat.child.visit(this, branchState);
                 }
                 return ff.isEmpty() ? Fragment.empty() : Fragment.ofSequence(ff);
             }
         }, paramSource);
 
         if (result == null) {
-            throw new IllegalStateException("Not enough parameters to fulfill template and prepare string");
+            throw new StringTemplateMissingParametersException(
+                this.templateString,
+                "Not enough parameters to fulfill template and prepare string"
+            );
         } else {
             return result.collectString();
         }
@@ -1628,16 +1491,31 @@ public class StringTemplate {
         }
     }
 
+    /**
+     * Interface used to supply regex pattern for a given parameter of the template string.
+     */
     public interface IParameterPatternSupplier {
         @NotNull
         String getParamRegex(@NotNull ParameterInfo param);
     }
 
+    /**
+     * Recognize template string syntax structure and prepare template instance to operate with.
+     * Uses default value pattern for individual parameter values recognition.
+     *
+     * @throws StringTemplateFormatException when template syntax error detected.
+     */
     @NotNull
     public static StringTemplate parseTemplate(@NotNull String templateString) throws StringTemplateFormatException {
         return parseTemplate(templateString, null);
     }
 
+    /**
+     * Recognize template string syntax structure and prepare template instance to operate with.
+     * Uses explicitly provided pattern supplier to for individual parameter values recognition.
+     *
+     * @throws StringTemplateFormatException when template syntax error detected.
+     */
     @NotNull
     public static StringTemplate parseTemplate(
         @NotNull String templateString, @Nullable IParameterPatternSupplier paramPatternSupplier
@@ -1647,15 +1525,247 @@ public class StringTemplate {
         return new StringTemplate(templateString, root, paramPatternSupplier);
     }
 
+    /**
+     * Recognize template subsequence starting current lexer position and ending whenever the corresponding closing term found.
+     *
+     * @return syntax nodes of the current template fragment
+     *
+     * @throws StringTemplateFormatException when template syntax error detected.
+     */
+    @NotNull
+    private static List<TemplateSyntaxNode> parseTemplate(
+        @NotNull Lexer l, @NotNull TemplateFragmentKind fragmentKind
+    ) throws StringTemplateFormatException {
+        int fragmentStart = l.lastTerm == null ? 0 : l.lastTerm.start();
+        List<TemplateSyntaxNode> nodes = new ArrayList<>();
+        Term t = l.nextTerm();
+        while (t != null) {
+            switch (t.kind) {
+                case TEXT, GROUP_NAME_SEPARATOR, ESCAPE_MARK -> {
+                    String text = t.kind == TermKind.ESCAPE_MARK ? t.text.substring(1) : t.text;
+                    boolean joined = false;
+                    if (!nodes.isEmpty()) {
+                        TemplateSyntaxNode lastNode = nodes.getLast();
+                        if (lastNode.kind  == TemplateSyntaxNodeKind.TEXT && lastNode.end() == t.start()) {
+                            nodes.set(nodes.size() - 1, new TemplateSyntaxNode(
+                                TemplateSyntaxNodeKind.TEXT,
+                                lastNode.start(),
+                                t.end(),
+                                lastNode.payload + text,
+                                null
+                            ));
+                            joined = true;
+                        }
+                    }
+                    if (!joined) {
+                        nodes.add(new TemplateSyntaxNode(TemplateSyntaxNodeKind.TEXT, t.start(), t.end(), text, null));
+                    }
+                }
+                case PARAM_A_START -> nodes.add(parseParamOrSubseq(l, t, TermKind.PARAM_A_END));
+                case PARAM_A_END -> {
+                    if (fragmentKind == TemplateFragmentKind.SUBSEQUENCE) {
+                        if (nodes.getFirst().kind == TemplateSyntaxNodeKind.ALTERNATIVE) {
+                            if (nodes.size() > 1) {
+                                TemplateSyntaxNode lastBranch = new TemplateSyntaxNode(
+                                    TemplateSyntaxNodeKind.TEXT,
+                                    nodes.get(1).start(),
+                                    t.start(),
+                                    null,
+                                    List.copyOf(nodes.subList(1, nodes.size()))
+                                );
+                                if (nodes.getFirst().children != null) {
+                                    nodes.getFirst().children.add(lastBranch);
+                                }
+                            }
+                            return List.of(nodes.getFirst());
+                        } else {
+                            return nodes;
+                        }
+                    } else {
+                        throw new StringTemplateFormatException(l.text, t.start(), "Unexpected parameter end mark '}' at " + t.start());
+                    }
+                }
+                case PARAM_B_START -> nodes.add(parseParamNode(l, t, TermKind.PARAM_B_END));
+                case PARAM_B_END ->
+                    throw new StringTemplateFormatException(l.text, t.start(), "Unexpected parameter end mark '>' at " + t.start());
+                case ALTERNATIVE -> {
+                    int contentsStart;
+                    if (nodes.getFirst().kind != TemplateSyntaxNodeKind.ALTERNATIVE) {
+                        contentsStart = 0;
+                    } else {
+                        contentsStart = 1;
+                    }
+                    TemplateSyntaxNode branch = new TemplateSyntaxNode(
+                        TemplateSyntaxNodeKind.TEXT,
+                        nodes.get(contentsStart).start(),
+                        t.start(),
+                        null,
+                        List.copyOf(nodes.subList(contentsStart, nodes.size()))
+                    );
+                    int lastIndex = nodes.size();
+                    List<TemplateSyntaxNode> branches;
+                    while (lastIndex-- > contentsStart) {
+                        nodes.remove(lastIndex);
+                    }
+                    if (contentsStart == 0) {
+                        branches = new ArrayList<>();
+                        nodes.add(new TemplateSyntaxNode(
+                            TemplateSyntaxNodeKind.ALTERNATIVE,
+                            branch.start(),
+                            Integer.MAX_VALUE,
+                            null,
+                            branches
+                        ));
+                    } else {
+                        branches = nodes.getFirst().children();
+                    }
+                    if (branches != null) {
+                        branches.add(branch);
+                    }
+                }
+                case REPEAT_MARK -> {
+                    t = l.nextTerm();
+                    if (t != null) {
+                        if (t.kind == TermKind.OPTIONAL_END && fragmentKind == TemplateFragmentKind.OPTIONAL) {
+                            return List.of(
+                                new TemplateSyntaxNode(
+                                    TemplateSyntaxNodeKind.REPEAT,
+                                    nodes.getFirst().start(),
+                                    l.lastTerm.end(),
+                                    null,
+                                    nodes
+                                )
+                            );
+                        } else {
+                            // consider allowing it in subsequence
+                            throw new StringTemplateFormatException(l.text, t.start(), "Unexpected repeat mark '...' at " + t.start());
+                        }
+                    }
+                }
+                case OPTIONAL_START -> {
+                    List<TemplateSyntaxNode> children = parseTemplate(l, TemplateFragmentKind.OPTIONAL);
+                    nodes.add(new TemplateSyntaxNode(TemplateSyntaxNodeKind.OPTIONAL, t.start(), l.lastTerm.end(), null, children));
+                }
+                case OPTIONAL_END -> {
+                    if (fragmentKind == TemplateFragmentKind.OPTIONAL) {
+                        if (nodes.getFirst().kind == TemplateSyntaxNodeKind.ALTERNATIVE) {
+                            if (nodes.size() > 1) {
+                                TemplateSyntaxNode lastBranch = new TemplateSyntaxNode(
+                                    TemplateSyntaxNodeKind.TEXT,
+                                    nodes.get(1).start(),
+                                    t.start(),
+                                    null,
+                                    List.copyOf(nodes.subList(1, nodes.size()))
+                                );
+                                if (nodes.getFirst().children != null) {
+                                    nodes.getFirst().children.add(lastBranch);
+                                }
+                            }
+                            return List.of(nodes.getFirst());
+                        } else {
+                            return nodes;
+                        }
+                    } else {
+                        throw new StringTemplateFormatException(l.text, t.start(), "Unexpected optional end mark ']' at " + t.start());
+                    }
+                }
+                default -> {
+                    throw new StringTemplateFormatException(l.text, t.start(), "Unexpected '" + t.text() + "' syntax at " + t.start());
+                }
+            }
+            t = l.nextTerm();
+        }
+        if (fragmentKind == TemplateFragmentKind.DEFAULT) {
+            return nodes;
+        } else {
+            throw new StringTemplateFormatException(l.text, fragmentStart, "Unclosed " + fragmentKind + " pattern at " + fragmentStart);
+        }
+    }
+
+    /**
+     * Recognize parameter entry starting with given term t and terminated with a term of given endTermKind
+     *
+     * @return Template syntax tree node.
+     *
+     * @throws StringTemplateFormatException when template syntax error detected.
+     */
+    @NotNull
+    private static TemplateSyntaxNode parseParamNode(
+        @NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind
+    ) throws StringTemplateFormatException {
+        Term t2;
+        do {
+            t2 = l.nextTerm();
+        } while (t2 != null && t2.kind != endTermKind);
+
+        if (t2 != null) {
+            String name = l.text.substring(t.start() + 1, t2.end() - 1);
+            return new TemplateSyntaxNode(TemplateSyntaxNodeKind.PARAM, t.start(), t2.end(), name, null);
+        } else {
+            throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
+        }
+    }
+
+    /**
+     * Recognize parameter entry or optionally named subsequence starting with given term t and terminated with a term of given endTermKind
+     *
+     * @return Template syntax tree node.
+     *
+     * @throws StringTemplateFormatException when template syntax error detected.
+     */
+    @NotNull
+    private static TemplateSyntaxNode parseParamOrSubseq(
+        @NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind
+    ) throws StringTemplateFormatException {
+        Term nameTerm = l.nextTerm();
+        String groupName = null;
+        if (nameTerm != null) {
+            if (nameTerm.kind == TermKind.TEXT) {
+                Term paramEndTerm = l.nextTerm();
+                if (paramEndTerm != null) {
+                    String name = l.text.substring(t.start() + 1, paramEndTerm.end() - 1);
+                    if (paramEndTerm.kind == endTermKind) {
+                        return new TemplateSyntaxNode(TemplateSyntaxNodeKind.PARAM, t.start(), paramEndTerm.end(), name, null);
+                    } else if (paramEndTerm.kind == TermKind.GROUP_NAME_SEPARATOR) {
+                        groupName = name;
+                    } else {
+                        // fallthrough
+                    }
+                } else {
+                    throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
+                }
+                if (groupName == null) {
+                    l.pushBack(paramEndTerm);
+                }
+            } else {
+                // fallthrough
+            }
+        } else {
+            throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
+        }
+        if (groupName == null) {
+            l.pushBack(nameTerm);
+        }
+
+        List<TemplateSyntaxNode> nodes = parseTemplate(l, TemplateFragmentKind.SUBSEQUENCE);
+        return new TemplateSyntaxNode(TemplateSyntaxNodeKind.TEXT, nodes.getFirst().start(), nodes.getLast().end(), groupName, nodes);
+    }
+
+    /**
+     * Returns template node describing semantics of the given template text's syntax
+     */
     @NotNull
     private static TemplateNode prepareTemplateNode(@Nullable String groupName, @NotNull List<TemplateSyntaxNode> syntaxNodes) {
-        if (syntaxNodes.size() == 1) {
+        if (syntaxNodes.size() == 1 && groupName == null) {
             return prepareTemplateNode(syntaxNodes.getFirst());
         } else {
             return new TemplateNode.Sequence(groupName, syntaxNodes.stream().map(StringTemplate::prepareTemplateNode).toList());
         }
     }
 
+    /**
+     * Returns template node describing semantics of the given template text's syntax
+     */
     @NotNull
     private static TemplateNode prepareTemplateNode(@NotNull TemplateSyntaxNode syntaxNode) {
         return switch (syntaxNode.kind) {
@@ -1682,6 +1792,9 @@ public class StringTemplate {
         };
     }
 
+    /**
+     * Returns true if when any of subtrees has parameter nodes.
+     */
     private static boolean collectHasParameters(@NotNull List<TemplateSyntaxNode> syntaxNodes) {
         for (TemplateSyntaxNode syntaxNode : syntaxNodes) {
             if (syntaxNode.kind == TemplateSyntaxNodeKind.PARAM
@@ -1693,21 +1806,9 @@ public class StringTemplate {
         return false;
     }
 
-    @NotNull
-    private static Set<String> collectParameterNames(@NotNull List<TemplateSyntaxNode> syntaxNodes, @NotNull Set<String> names) {
-        for (TemplateSyntaxNode syntaxNode : syntaxNodes) {
-            if (syntaxNode.kind == TemplateSyntaxNodeKind.PARAM) {
-                names.add(syntaxNode.payload());
-            }
-            if (syntaxNode.kind() != TemplateSyntaxNodeKind.OPTIONAL && syntaxNode.children() != null
-                && !(syntaxNode.kind() == TemplateSyntaxNodeKind.TEXT && syntaxNode.payload() != null)
-            ) {
-                collectParameterNames(syntaxNode.children(), names);
-            }
-        }
-        return names;
-    }
-
+    /**
+     * A part of the text to concat
+     */
     private record Fragment(
         @Nullable String text,
         @Nullable List<Fragment> fragments
@@ -1748,25 +1849,46 @@ public class StringTemplate {
         }
     }
 
-    public static class StringTemplateFormatException extends Exception {
-
-        @Serial
-        private static final long serialVersionUID = 1L;
+    public abstract static class StringTemplateException extends DBException {
 
         @NotNull
         private final String templateString;
 
-        private final int position;
-
-        public StringTemplateFormatException(@NotNull String templateString, int position, @NotNull String message) {
+        public StringTemplateException(@NotNull String templateString, @NotNull String message) {
             super(message);
             this.templateString = templateString;
-            this.position = position;
+        }
+
+        public StringTemplateException(@NotNull String templateString, @NotNull String message, @NotNull Throwable cause) {
+            super(message, cause);
+            this.templateString = templateString;
         }
 
         @NotNull
         public String getTemplateString() {
             return this.templateString;
+        }
+    }
+
+    public static class StringTemplateMissingParametersException extends StringTemplateException {
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        public StringTemplateMissingParametersException(@NotNull String templateString, @NotNull String message) {
+            super(templateString, message);
+        }
+    }
+
+    public static class StringTemplateFormatException extends StringTemplateException {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        private final int position;
+
+        public StringTemplateFormatException(@NotNull String templateString, int position, @NotNull String message) {
+            super(templateString, message);
+            this.position = position;
         }
 
         public int getPosition() {
