@@ -143,7 +143,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             return false;
         }
 
-        if (!schema.isSystem() && !schema.isPublicSchema()) {
+        if (!schema.isSystem() && !(schema.isPublicSchema() && getDataSource().getServerType().isDefaultSchemaPublic())) {
             setSearchPath(monitor, schema.getName());
             addSearchPath(schema.getName());
         }
@@ -244,16 +244,16 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     private void setSearchPath(@NotNull DBRProgressMonitor monitor, @NotNull String defSchemaName) throws DBException {
         List<String> newSearchPath = new ArrayList<>(searchPath);
         int schemaIndex = newSearchPath.indexOf(defSchemaName);
-        {
-            if (schemaIndex < 0) {
-                // Remove from previous position
-                if (!getDataSource().getServerType().supportsStandardSearchPath()
-                    && getDefaultCatalog().getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME) == null
-                    && !PostgreConstants.PUBLIC_SCHEMA_NAME.equals(defSchemaName)) {
-                    newSearchPath.removeIf(PostgreConstants.PUBLIC_SCHEMA_NAME::equals);
-                }
-                newSearchPath.addFirst(defSchemaName);
+        if (schemaIndex < 0) {
+            if (!getDataSource().getServerType().supportsStandardSearchPath()
+                && getDefaultCatalog().getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME) == null
+                && !PostgreConstants.PUBLIC_SCHEMA_NAME.equals(defSchemaName)) {
+                newSearchPath.removeIf(PostgreConstants.PUBLIC_SCHEMA_NAME::equals);
             }
+            newSearchPath.addFirst(defSchemaName);
+        } else if (schemaIndex > 0) {
+            newSearchPath.remove(schemaIndex);
+            newSearchPath.addFirst(defSchemaName);
         }
         if (Objects.equals(newSearchPath, searchPath)) {
             return;

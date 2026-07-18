@@ -41,6 +41,11 @@ public class PostgreServerExtensionBaseTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void isDefaultSchemaPublic_forStandardPostgreSQL_returnsTrue() {
+        Assertions.assertTrue(serverExtension.isDefaultSchemaPublic());
+    }
+
+    @Test
     public void createWithClause_whenOidsAreSupported_shouldDisplayWithClauseWithOidsAsTrue() {
         setupGeneralWhenMocks(true);
 
