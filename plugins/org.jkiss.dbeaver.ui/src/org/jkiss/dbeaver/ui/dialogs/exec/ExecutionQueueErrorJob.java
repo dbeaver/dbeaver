@@ -49,7 +49,7 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
     public IStatus runInUIThread(@NotNull DBRProgressMonitor monitor)
     {
         ExecutionQueueErrorDialog dialog = new ExecutionQueueErrorDialog(
-            UIUtils.getActiveWorkbenchShell(),
+            UIUtils.getActiveShell(),
             "Execution Error",
             "Error occurred during " + errorName,
             GeneralUtils.makeExceptionStatus(error),
