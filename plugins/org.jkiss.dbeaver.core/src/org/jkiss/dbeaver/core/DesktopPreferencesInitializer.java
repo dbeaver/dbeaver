@@ -66,6 +66,8 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_SHOW_HOLIDAY_DECORATIONS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, BreadcrumbLocation.IN_STATUS_BAR);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, true);
+        // SWT can only rescale at runtime on Windows; elsewhere the Eclipse zoom-restart prompt never helps.
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, RuntimeUtils.isWindows());
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT, true);

@@ -71,11 +71,9 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         tableName = null;
         columns = null;
-        super.dispose();
     }
 
     private String getTableName()

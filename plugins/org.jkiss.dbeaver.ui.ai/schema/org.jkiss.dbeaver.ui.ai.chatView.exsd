@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.ui.ai" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="org.jkiss.dbeaver.ui.ai" id="org.jkiss.dbeaver.ui.ai.chatView" name="AI Chat View"/>
+      </appInfo>
+      <documentation>
+         Contributes AI chat view components, e.g. an extended message list to replace the default one.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <complexType>
+         <sequence>
+            <element ref="messageList" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="messageList">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Unique identifier of this message list contribution.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Subclass of org.jkiss.dbeaver.ui.ai.chat.controls.WebViewMessageList. It must declare a public constructor (AIChatControl, Composite).
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.jkiss.dbeaver.ui.ai.chat.controls.WebViewMessageList:"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="replaces" type="string">
+            <annotation>
+               <documentation>
+                  Id of another message list contribution that this one replaces (e.g. a PRO message list replacing the default).
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+</schema>

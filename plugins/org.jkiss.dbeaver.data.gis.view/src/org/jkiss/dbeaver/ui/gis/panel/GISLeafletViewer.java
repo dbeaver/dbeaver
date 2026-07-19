@@ -622,10 +622,12 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         for (DBDAttributeBinding binding : bindings) {
             if (binding.getEntityAttribute() != null) {
                 DBVEntity vEntity = DBVUtils.getVirtualEntity(binding, true);
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, true);
-                if (vAttr != null) {
-                    vAttr.setProperty(PROP_FLIP_COORDINATES, String.valueOf(flipCoordinates));
-                    vAttr.setProperty(PROP_SRID, String.valueOf(getValueSRID()));
+                if (vEntity != null) {
+                    DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, true);
+                    if (vAttr != null) {
+                        vAttr.setProperty(PROP_FLIP_COORDINATES, String.valueOf(flipCoordinates));
+                        vAttr.setProperty(PROP_SRID, String.valueOf(getValueSRID()));
+                    }
                 }
             }
         }

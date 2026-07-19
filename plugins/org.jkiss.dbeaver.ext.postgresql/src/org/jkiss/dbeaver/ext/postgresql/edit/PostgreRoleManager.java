@@ -159,6 +159,10 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
         if (role.getValidUntil() != null) {
             options.append(" VALID UNTIL ").append(SQLUtils.quoteString(role, TIMESTAMP_FORMATTER.format(role.getValidUntil())));
         }
+        
+        if (create || command.hasProperty("connLimit")) { 
+            options.append(" CONNECTION LIMIT ").append(role.getConnLimit()); 
+        }
 
         if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
             // FIXME: use some generic approach

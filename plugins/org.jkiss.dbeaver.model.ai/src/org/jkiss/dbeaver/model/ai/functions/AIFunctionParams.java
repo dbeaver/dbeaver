@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.ai.functions;
 
 public final class AIFunctionParams {
     public static final String CATALOG_PARAM = "catalogName";
-    public static final String SCHEMA_PARAM = "schemaName";
+    public static final String SCHEMAS_PARAM = "schemaNames";
     public static final String TABLE_NAMES_PARAM = "tableNames";
 
     public static final String DDL_CONSTRAINTS_PARAM = "ddlConstraints";
