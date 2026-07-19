@@ -1529,7 +1529,14 @@ public class SQLEditor extends SQLEditorBase implements
                     }
 
                     if (activeTab.getShowClose()) {
-                        manager.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_EDITOR_CLOSE_TAB));
+                        manager.add(new Action(ActionUtils.findCommandName(SQLEditorCommands.CMD_SQL_EDITOR_CLOSE_TAB)) {
+                            @Override
+                            public void run() {
+                                if (!activeTab.isDisposed() && activeTab.getShowClose()) {
+                                    activeTab.dispose();
+                                }
+                            }
+                        });
 
                         if (resultTabsCount - pinnedTabsCount > 1) {
                             manager.add(new Action(SQLEditorMessages.action_result_tabs_close_all_tabs) {
