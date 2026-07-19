@@ -1502,14 +1502,21 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         {
-            final CTabItem[] clickedTab = new CTabItem[1];
-            resultTabs.addMouseListener(MouseListener.mouseDownAdapter(e ->
-                clickedTab[0] = resultTabs.getItem(new Point(e.x, e.y))));
+            final CTabItem[] contextMenuTab = new CTabItem[1];
+            resultTabs.addListener(SWT.MenuDetect, event -> {
+                if (event.detail == SWT.MENU_KEYBOARD) {
+                    // Shift+F10 / keyboard menu: act on the currently selected tab
+                    contextMenuTab[0] = null;
+                } else {
+                    Point pt = resultTabs.toControl(event.x, event.y);
+                    contextMenuTab[0] = resultTabs.getItem(pt);
+                }
+            });
 
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
             menuMgr.addMenuListener(manager -> {
-                CTabItem target = clickedTab[0];
+                CTabItem target = contextMenuTab[0];
                 final CTabItem activeTab = (target != null && !target.isDisposed())
                     ? target
                     : getActiveResultsTab();
@@ -1529,7 +1536,14 @@ public class SQLEditor extends SQLEditorBase implements
                     }
 
                     if (activeTab.getShowClose()) {
-                        manager.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_EDITOR_CLOSE_TAB));
+                        manager.add(new Action(ActionUtils.findCommandName(SQLEditorCommands.CMD_SQL_EDITOR_CLOSE_TAB)) {
+                            @Override
+                            public void run() {
+                                if (!activeTab.isDisposed() && activeTab.getShowClose()) {
+                                    activeTab.dispose();
+                                }
+                            }
+                        });
 
                         if (resultTabsCount - pinnedTabsCount > 1) {
                             manager.add(new Action(SQLEditorMessages.action_result_tabs_close_all_tabs) {
