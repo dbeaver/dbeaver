@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,12 +66,6 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         showHeaderSeparator = CommonUtils.getBoolean(site.getProperties().get(PROP_SHOW_HEADER_SEPARATOR), true);
         confluenceFormat = CommonUtils.getBoolean(site.getProperties().get(PROP_CONFLUENCE_FORMAT), false);
-    }
-
-    @Override
-    public void dispose()
-    {
-        super.dispose();
     }
 
     @Override

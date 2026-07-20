@@ -515,6 +515,10 @@ public class ResultSetMessages extends NLS {
     public static String reference_value_editor_define_description_value;
     public static String reference_value_editor_search_hint_value;
 
+    public static String find_and_replace_overlay_label;
+    public static String find_and_replace_overlay_tooltip;
+    public static String find_and_replace_find_all_tooltip;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);
