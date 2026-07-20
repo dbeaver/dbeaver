@@ -68,6 +68,7 @@ public class DatabaseEditorUtils {
         }
 
         if (dsContainer == null) {
+            rootComposite.setData(CSSUtils.DATABASE_EDITOR_COMPOSITE_DATASOURCE, null);
             rootComposite.setBackground(null);
         } else {
             Color bgColor = UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
