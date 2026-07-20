@@ -20,7 +20,7 @@
                 <!-- Simba JDBC driver -->
                 <driver
                         id="google_bigquery_jdbc_simba"
-                        label="Google BigQuery"
+                        label="Google BigQuery (Legacy)"
                         icon="icons/bigquery_icon.png"
                         iconBig="icons/bigquery_icon_big.png"
                         class="com.simba.googlebigquery.jdbc42.Driver"
@@ -50,7 +50,7 @@
                 <!-- Google JDBC driver -->
                 <driver
                     id="google_bigquery_jdbc"
-                    label="Google BigQuery (Experimental)"
+                    label="Google BigQuery"
                     icon="icons/bigquery_icon.png"
                     iconBig="icons/bigquery_icon_big.png"
                     class="com.google.cloud.bigquery.jdbc.BigQueryDriver"
@@ -73,6 +73,8 @@
                     <parameter name="supports-catalog-selection" value="false"/>
                     <parameter name="supports-ddl-transactions" value="false"/>
                     <parameter name="supports-schema-selection" value="false"/>
+
+                    <replace provider="bigquery" driver="google_bigquery_jdbc_simba"/>
                 </driver>
 
                 <provider-properties drivers="*">
