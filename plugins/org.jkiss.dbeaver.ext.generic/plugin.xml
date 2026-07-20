@@ -1579,6 +1579,54 @@
 
         </datasource>
 
+        <!-- Manticore Search: MySQL wire protocol, but table aliases are not supported -->
+        <datasource
+                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
+                description="Manticore Search datasource"
+                id="manticore"
+                parent="generic"
+                label="Manticore Search"
+                icon="icons/manticore_icon.svg"
+                dialect="manticore">
+            <drivers managable="true">
+
+                <driver
+                        id="manticore"
+                        label="Manticore Search"
+                        class="com.mysql.cj.jdbc.Driver"
+                        icon="icons/manticore_icon.svg"
+                        iconBig="icons/manticore_icon_big.svg"
+                        sampleURL="jdbc:mysql://{host}:{port}/[{database}]"
+                        defaultPort="9306"
+                        description="Manticore Search (MySQL protocol on port 9306)"
+                        webURL="https://manual.manticoresearch.com/Connecting_to_the_server"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql,fulltext"
+                        allowsEmptyPassword="true">
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
+                    <file type="license" path="licenses/external/gnu3.txt"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <!-- Recommended JDBC options for Manticore + Connector/J 6+ -->
+                    <property name="characterEncoding" value="utf8"/>
+                    <property name="maxAllowedPacket" value="512000"/>
+                    <property name="serverTimezone" value="UTC"/>
+                    <property name="useSSL" value="false"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="true"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-table-constraints" value="false"/>
+                    <parameter name="supports-schema-selection" value="false"/>
+                    <parameter name="supports-catalog-selection" value="false"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
@@ -1744,6 +1792,14 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="generic" parent="basic" class="org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect" label="Generic" description="Dialect based on JDBC API information." icon="#database_icon_default" hidden="true">
+        </dialect>
+        <dialect
+                id="manticore"
+                parent="generic"
+                class="org.jkiss.dbeaver.ext.generic.model.ManticoreSQLDialect"
+                label="Manticore Search"
+                description="Manticore Search SQL dialect (table aliases are not supported)"
+                icon="icons/manticore_icon.svg">
         </dialect>
     </extension>
 
