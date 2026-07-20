@@ -34,13 +34,19 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable, COLUMN extend
     implements DBPSaveableObject {
     private boolean persisted;
 
-    protected JDBCTableConstraint(TABLE table, String name, @Nullable String description, DBSEntityConstraintType constraintType, boolean persisted) {
+    protected JDBCTableConstraint(
+        @NotNull TABLE table,
+        @Nullable String name,
+        @Nullable String description,
+        DBSEntityConstraintType constraintType,
+        boolean persisted
+    ) {
         super(table, name, description, constraintType);
         this.persisted = persisted;
     }
 
     // Copy constructor
-    protected JDBCTableConstraint(TABLE table, DBSEntityConstraint source, boolean persisted) {
+    protected JDBCTableConstraint(@NotNull TABLE table, @NotNull DBSEntityConstraint source, boolean persisted) {
         super(table, source);
         this.persisted = persisted;
     }

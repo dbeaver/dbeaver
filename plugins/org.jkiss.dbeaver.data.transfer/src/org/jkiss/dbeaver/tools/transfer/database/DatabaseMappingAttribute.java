@@ -87,6 +87,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         return parent;
     }
 
+    @NotNull
     @Override
     public DBPImage getIcon() {
         return DBValueFormatting.getObjectImage(source);
@@ -117,6 +118,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         return typeName;
     }
 
+    @NotNull
     @Override
     public String getTargetName() {
         switch (mappingType) {
@@ -125,10 +127,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 if (target != null) {
                     return DBUtils.getObjectFullName(target, DBPEvaluationContext.UI);
                 } else {
-                    return targetName;
+                    return CommonUtils.notEmpty(targetName);
                 }
             case create:
-                return targetName;
+                return CommonUtils.notEmpty(targetName);
             case skip:
                 return TARGET_NAME_SKIP;
             default:
@@ -136,6 +138,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
+    @NotNull
     @Override
     public DatabaseMappingType getMappingType() {
         return mappingType;

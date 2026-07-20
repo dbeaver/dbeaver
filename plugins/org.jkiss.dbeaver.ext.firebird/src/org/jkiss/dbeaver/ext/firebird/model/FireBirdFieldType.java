@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,45 +16,65 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
-import org.jkiss.dbeaver.model.DBPDataKind;
-
 import java.sql.Types;
+
+import org.jkiss.dbeaver.model.DBPDataKind;
 
 public enum FireBirdFieldType {
     SMALLINT(7, Types.SMALLINT, DBPDataKind.NUMERIC, "SMALLINT"),
     INTEGER(8, Types.INTEGER, DBPDataKind.NUMERIC, "INTEGER"),
     FLOAT(10, Types.FLOAT, DBPDataKind.NUMERIC, "FLOAT"),
-    DECFLOAT(11, Types.FLOAT, DBPDataKind.NUMERIC, "DECFLOAT"),
     DATE(12, Types.DATE, DBPDataKind.DATETIME, "DATE"),
     TIME(13, Types.TIME, DBPDataKind.DATETIME, "TIME"),
     CHAR(14, Types.CHAR, DBPDataKind.STRING, "CHAR"),
     BIGINT(16, Types.BIGINT, DBPDataKind.NUMERIC, "BIGINT"),
     NUMERIC(16, Types.NUMERIC, DBPDataKind.NUMERIC, "NUMERIC"), // Equal id, but another subtype - 1
     DECIMAL(16, Types.DECIMAL, DBPDataKind.NUMERIC, "DECIMAL"), // Equal id, but another subtype - 2
-    BOOLEAN(23, Types.BOOLEAN, DBPDataKind.BOOLEAN, "BOOLEAN"),
-    INT128(26, Types.BIGINT, DBPDataKind.NUMERIC, "INT128"),
     DOUBLE_PRECISION(27, Types.DOUBLE, DBPDataKind.NUMERIC, "DOUBLE PRECISION"),
-    TIME_WITH_TIMEZONE(28, Types.TIME_WITH_TIMEZONE, DBPDataKind.DATETIME, "TIME WITH TIMEZONE"),
-    TIMESTAMP_WITH_TIMEZONE(29, Types.TIMESTAMP_WITH_TIMEZONE, DBPDataKind.DATETIME, "TIMESTAMP WITH TIMEZONE"),
     TIMESTAMP(35, Types.TIMESTAMP, DBPDataKind.DATETIME, "TIMESTAMP"),
     VARCHAR(37, Types.VARCHAR, DBPDataKind.STRING, "VARCHAR"),
     CSTRING(40, Types.VARCHAR, DBPDataKind.STRING, "CSTRING"),
-    BLOB(261, Types.BLOB, DBPDataKind.CONTENT, "BLOB");
+    BLOB(261, Types.BLOB, DBPDataKind.CONTENT, "BLOB"),
+    // Since Firebird 3.0
+    // https://www.firebirdsql.org/file/documentation/release_notes/html/en/3_0/rlsnotes30.html#rnfb30-new
+    BOOLEAN(23, Types.BOOLEAN, DBPDataKind.BOOLEAN, "BOOLEAN", 3, 0),
+    // Since Firebird 4.0
+    //https://www.firebirdsql.org/file/documentation/release_notes/html/en/4_0/rlsnotes40.html
+    DECFLOAT(11, Types.FLOAT, DBPDataKind.NUMERIC, "DECFLOAT", 4, 0),
+    INT128(26, Types.BIGINT, DBPDataKind.NUMERIC, "INT128", 4, 0),
+    TIME_WITH_TIMEZONE(28, Types.TIME_WITH_TIMEZONE, DBPDataKind.DATETIME, "TIME WITH TIMEZONE", 4, 0),
+    TIMESTAMP_WITH_TIMEZONE(29, Types.TIMESTAMP_WITH_TIMEZONE, DBPDataKind.DATETIME, "TIMESTAMP WITH TIMEZONE", 4, 0);
 
     private final int typeID;
     private final int valueType;
     private final DBPDataKind dataKind;
     private final String name;
+    private final int minMajorVersion;
+    private final int minMinorVersion;
 
     FireBirdFieldType(int typeID, int valueType, DBPDataKind dataKind, String name) {
+        this(typeID, valueType, dataKind, name, 0, 0);
+    }
+
+    FireBirdFieldType(int typeID, int valueType, DBPDataKind dataKind, String name, int minMajorVersion, int minMinorVersion) {
         this.typeID = typeID;
         this.valueType = valueType;
         this.dataKind = dataKind;
         this.name = name;
+        this.minMajorVersion = minMajorVersion;
+        this.minMinorVersion = minMinorVersion;
     }
 
     public int getTypeID() {
         return typeID;
+    }
+
+    public int getMinMajorVersion() {
+        return minMajorVersion;
+    }
+
+    public int getMinMinorVersion() {
+        return minMinorVersion;
     }
 
     public int getValueType() {
