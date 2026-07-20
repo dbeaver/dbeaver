@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
@@ -410,8 +411,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
         private final Map<String, String> esSchemaMap = new HashMap<>();
-        private final String minimalPrivilegeRequired = "'USAGE'";
-        private final String currentUserAlias = "current_user";
+        private final String minimalPrivilegeRequired = SQLUtils.quoteString(dataSource, PostgrePrivilegeType.USAGE.getName());
 
         @NotNull
         @Override
@@ -442,10 +442,13 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         }
 
         private boolean addUserHasUsagePrivilege(@Nullable String currentUserName, @NotNull StringBuilder query) {
-            String quotedUserName = CommonUtils.isNotEmpty(currentUserName) ? "'" + currentUserName + "'" : currentUserAlias;
-            query.append("WHERE has_schema_privilege(")
-                .append(quotedUserName)
-                .append(", nspname, ")
+            query.append("WHERE has_schema_privilege(");
+            if (CommonUtils.isNotEmpty(currentUserName)) {
+                query.append(SQLUtils.quoteString(dataSource, currentUserName))
+                    .append(", ");
+            }
+            query
+                .append("nspname, ")
                 .append(minimalPrivilegeRequired)
                 .append(")\n");
             return true;
