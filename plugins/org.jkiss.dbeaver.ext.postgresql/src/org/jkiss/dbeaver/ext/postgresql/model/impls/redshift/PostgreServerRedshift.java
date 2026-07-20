@@ -410,6 +410,8 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
         private final Map<String, String> esSchemaMap = new HashMap<>();
+        private final String minimalPrivilegeRequired = "'USAGE'";
+        private final String currentUserAlias = "current_user";
 
         @NotNull
         @Override
@@ -431,6 +433,22 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
             // 2. Rad standard schemas
             return super.prepareLookupStatement(session, database, object, objectName);
+        }
+
+        @Override
+        protected boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
+            return session.getExecutionContext() instanceof PostgreExecutionContext postgreExecutionContext
+                && addUserHasUsagePrivilege(postgreExecutionContext.getActiveUser(), query);
+        }
+
+        private boolean addUserHasUsagePrivilege(@Nullable String currentUserName, @NotNull StringBuilder query) {
+            String quotedUserName = CommonUtils.isNotEmpty(currentUserName) ? "'" + currentUserName + "'" : currentUserAlias;
+            query.append("WHERE has_schema_privilege(")
+                .append(quotedUserName)
+                .append(", nspname, ")
+                .append(minimalPrivilegeRequired)
+                .append(")\n");
+            return true;
         }
 
         @Override
