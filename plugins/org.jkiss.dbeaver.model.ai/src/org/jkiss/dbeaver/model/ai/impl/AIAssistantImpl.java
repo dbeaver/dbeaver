@@ -277,9 +277,8 @@ public class AIAssistantImpl implements AIAssistant {
         callWithRetry(listener, () -> {
             if (isTruncated.get()) {
                 isTruncated.set(false);
-                listener.warning(AIUtils.supportsMessageLinks()
-                    ? AIMessages.ai_warning_chat_history_truncated_linked
-                    : AIMessages.ai_warning_chat_history_truncated);
+                listener.warning(DBWorkbench.getPlatform().getApplication().isHeadlessMode() ? AIMessages.ai_warning_chat_history_truncated
+                    : AIMessages.ai_warning_chat_history_truncated_linked);
             }
             int systemPromptLength = AIPromptUtils.calcSystemPromptLength(request.getMessages());
             listener.systemPromptLength(systemPromptLength);

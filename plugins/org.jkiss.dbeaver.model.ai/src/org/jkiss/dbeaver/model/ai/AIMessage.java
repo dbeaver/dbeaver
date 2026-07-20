@@ -151,7 +151,7 @@ public class AIMessage {
     private static String getErrorMessage(@NotNull Throwable error) {
         for (Throwable t = error; t != null; t = t.getCause()) {
             if (t instanceof HttpTimeoutException || t instanceof SocketTimeoutException || t instanceof TimeoutException) {
-                if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                     return AIMessages.ai_error_request_timed_out;
                 } else {
                     return AIMessages.ai_error_request_timed_out_linked;
