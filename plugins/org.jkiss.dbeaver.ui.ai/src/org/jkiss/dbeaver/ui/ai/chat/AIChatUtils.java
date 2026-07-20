@@ -140,7 +140,7 @@ public class AIChatUtils {
     ) {
         try {
             if (conversation != null) {
-                if (settings instanceof AIChatConversationSettings cs) {
+                if (settings instanceof AIContextSettingsChatConversation cs) {
                     conversation.setCustomSettings(cs);
                 } else {
                     conversation.setCustomSettings(null);

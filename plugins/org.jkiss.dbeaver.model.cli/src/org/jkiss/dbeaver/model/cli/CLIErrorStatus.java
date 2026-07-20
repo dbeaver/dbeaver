@@ -14,20 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.devtools.handlers;
+package org.jkiss.dbeaver.model.cli;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 
-public class ShowEasyConfigHandler extends AbstractHandler {
-    @Nullable
-    @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        new ProductConfigWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event)).open();
-        return null;
+import java.util.List;
+
+public record CLIErrorStatus(
+    @NotNull String status,
+    short code,
+    @NotNull String message,
+    @Nullable Details details
+) {
+    public CLIErrorStatus(short code, @NotNull String message, @Nullable List<String> messages) {
+        this("error", code, message, messages == null ? null : new Details(messages));
+    }
+
+    public record Details(@NotNull List<String> messages) {
     }
 }

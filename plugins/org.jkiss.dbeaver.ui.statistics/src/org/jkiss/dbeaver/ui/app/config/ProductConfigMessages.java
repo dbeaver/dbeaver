@@ -16,18 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.app.config;
 
-import org.jkiss.dbeaver.ui.forms.UIObservable;
-import org.jkiss.dbeaver.ui.forms.util.UIReloadableNLS;
+import org.eclipse.osgi.util.NLS;
 
-public final class ProductConfigMessages extends UIReloadableNLS {
-    public static UIObservable<String> data_collection_title;
-    public static UIObservable<String> data_collection_description;
-    public static UIObservable<String> data_collection_agreement_text;
-    public static UIObservable<String> data_collection_send_usage_statistics;
-    public static UIObservable<String> data_collection_cannot_opt_out_notice;
+public final class ProductConfigMessages extends NLS {
+    public static String data_collection_title;
+    public static String data_collection_description;
+    public static String data_collection_agreement_text;
+    public static String data_collection_send_usage_statistics;
+    public static String data_collection_cannot_opt_out_notice;
 
     static {
-        UIReloadableNLS.initializeMessages(ProductConfigMessages.class.getName(), ProductConfigMessages.class);
+        NLS.initializeMessages(ProductConfigMessages.class.getName(), ProductConfigMessages.class);
     }
 
     private ProductConfigMessages() {

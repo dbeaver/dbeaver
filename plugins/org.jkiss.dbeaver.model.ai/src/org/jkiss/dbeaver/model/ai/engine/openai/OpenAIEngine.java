@@ -38,7 +38,9 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull
         @Override
         protected OpenAIClientResponses initialize() throws DBException {
-            return createClient();
+            OpenAIClientResponses newClient = createClient();
+            newClient.setTimeout(properties.getTimeout());
+            return newClient;
         }
 
         @Override

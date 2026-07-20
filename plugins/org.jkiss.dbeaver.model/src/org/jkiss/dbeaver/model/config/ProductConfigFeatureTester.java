@@ -14,19 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.config.handler;
+package org.jkiss.dbeaver.model.config;
 
-import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
-import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 
-public final class ProductConfigWorkbenchInitializer implements IWorkbenchWindowInitializer {
-    @Override
-    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
-        if (ProductConfigUtils.isShowOnStartup()) {
-            new ProductConfigWizardDialog(configurer.getWindow()).open();
-        }
+/**
+ * Determines the initial enablement state of a feature.
+ * <p>
+ * For example, a feature might be considered explicitly enabled
+ * by the user if they have a related preference key set.
+ * <p>
+ * If enablement is {@link Enablement#UNDEFINED undefined}, then
+ * the feature's {@link ProductConfigFeatureDescriptor#isEnabledByDefault()
+ * default enablement} property will be used to determine its initial state.
+ */
+public interface ProductConfigFeatureTester {
+    enum Enablement {
+        EXPLICITLY_ENABLED,
+        EXPLICITLY_DISABLED,
+        UNDEFINED
     }
+
+    @NotNull
+    Enablement isFeatureEnabled();
 }
