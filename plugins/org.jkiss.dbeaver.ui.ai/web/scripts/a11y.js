@@ -108,12 +108,33 @@ function getInteractiveDescendants(item) {
         .filter(el => el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 }
 
+let a11yLastInputWasMouse = false;
+
 chat.addEventListener('mousedown', () => {
+    a11yLastInputWasMouse = true;
     chat.classList.remove('a11y-focus');
     for (const el of chat.querySelectorAll('.a11y-focus')) {
         el.classList.remove('a11y-focus');
     }
 }, true);
+
+document.addEventListener('keydown', () => {
+    a11yLastInputWasMouse = false;
+}, true);
+
+window.addEventListener('blur', () => {
+    a11yLastInputWasMouse = false;
+});
+
+chat.addEventListener('focusin', event => {
+    const target = event.target;
+    if (!a11yLastInputWasMouse
+        && target instanceof HTMLElement
+        && (isTranscriptItem(target) || target === chat)
+    ) {
+        target.classList.add('a11y-focus');
+    }
+});
 
 chat.addEventListener('focusout', event => {
     if (event.target instanceof HTMLElement) {

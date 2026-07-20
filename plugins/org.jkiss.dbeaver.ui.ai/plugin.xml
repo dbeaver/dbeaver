@@ -172,7 +172,7 @@
         <key commandId="com.dbeaver.ai.chat.focusPrompt" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+L"/>
         <key commandId="com.dbeaver.ai.chat.focusChat" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+M"/>
         <key commandId="com.dbeaver.ai.chat.newConversation" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+N"/>
-        <key commandId="com.dbeaver.ai.chat.deleteConversation" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+BS"/>
+        <key commandId="com.dbeaver.ai.chat.deleteConversation" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+DEL"/>
         <key commandId="com.dbeaver.ai.chat.openSettings" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+S"/>
         <key commandId="com.dbeaver.ai.chat.openFilters" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+F"/>
     </extension>

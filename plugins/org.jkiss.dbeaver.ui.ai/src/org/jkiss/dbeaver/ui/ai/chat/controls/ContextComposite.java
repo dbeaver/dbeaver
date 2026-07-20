@@ -23,7 +23,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -144,6 +146,32 @@ public class ContextComposite extends Composite {
             GridData gd = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
             contextComposite.setLayoutData(gd);
             new CompositeBorderPainter(contextComposite);
+            contextComposite.addKeyListener(KeyListener.keyPressedAdapter(e -> {
+                if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR || e.keyCode == SWT.ARROW_DOWN || e.character == ' ') {
+                    showContextDropDown();
+                } else if (e.keyCode == SWT.ESC) {
+                    chat.setFocusOnPrompt();
+                }
+            }));
+            contextComposite.addTraverseListener(e -> {
+                if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                    e.doit = true;
+                }
+            });
+            contextComposite.addFocusListener(FocusListener.focusGainedAdapter(e -> contextComposite.redraw()));
+            contextComposite.addFocusListener(FocusListener.focusLostAdapter(e -> contextComposite.redraw()));
+            contextComposite.addPaintListener(e -> {
+                if (contextComposite.isFocusControl()) {
+                    Rectangle bounds = contextComposite.getBounds();
+                    e.gc.drawFocus(1, 1, bounds.width - 2, bounds.height - 2);
+                }
+            });
+            contextComposite.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+                @Override
+                public void getName(AccessibleEvent e) {
+                    e.result = AIChatMessages.ai_chat_a11y_connection_name + ": " + contextName.getText();
+                }
+            });
 
             contextIcon = new Label(contextComposite, SWT.NONE);
             contextIcon.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
@@ -191,6 +219,11 @@ public class ContextComposite extends Composite {
             conversationNameText = new Text(conversationComposite, SWT.NONE);
             conversationNameText.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
             conversationNameText.addMouseListener(MouseListener.mouseDoubleClickAdapter(mouseEvent -> showConversationDropDown()));
+            conversationNameText.addKeyListener(KeyListener.keyPressedAdapter(e -> {
+                if (e.keyCode == SWT.ARROW_DOWN) {
+                    showConversationDropDown();
+                }
+            }));
             conversationNameText.getAccessible().addAccessibleListener(new AccessibleAdapter() {
                 @Override
                 public void getName(AccessibleEvent e) {
@@ -276,7 +309,7 @@ public class ContextComposite extends Composite {
     }
 
     public void showScopeDropDown() {
-        if (chat.isBusy() || chat.getCompletionSettings() == null) {
+        if (chat.isBusy()) {
             return;
         }
         ToolBar toolBar = toolBarManager.getControl();
@@ -377,51 +410,58 @@ public class ContextComposite extends Composite {
     private void fillScopeDropDown(@NotNull IMenuManager manager) {
         AIContextSettings settings = chat.getCompletionSettings();
         if (settings == null) {
-            return;
-        }
-        manager.add(new EmptyAction("Configure AI context"));
-        manager.add(new Separator());
-
-        manager.add(new EmptyAction("Applies to"));
-        manager.add(new ChangeContextLevelAction(true));
-        manager.add(new ChangeContextLevelAction(false));
-
-        manager.add(new Separator());
-        DBPDataSourceContainer dsContainer = chat.getDataSourceContainer();
-        DBCExecutionContext executionContext = dsContainer == null ? null : chat.getExecutionContext(dsContainer);
-        if (executionContext == null) {
-            manager.add(new EmptyAction(
-                dsContainer == null ?
-                    "No database connection selected" :
-                    (dsContainer.isConnecting() ?
-                    "Database is being connected..." :
-                    "Database is not connected")
-                    ));
-            return;
-        }
-
-        manager.add(new EmptyAction("Metadata sent to AI"));
-        DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
-        boolean showSchemas = false;
-        boolean showCatalogs = false;
-        if (contextDefaults != null) {
-            showSchemas = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
-            showCatalogs = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
-        }
-
-        for (AIDatabaseScope scope : AIDatabaseScope.values()) {
-            if ((scope == AIDatabaseScope.CURRENT_SCHEMA && !showSchemas) ||
-                scope == AIDatabaseScope.CURRENT_DATABASE && !showCatalogs
-            ) {
-                if (settings.getScope() == scope) {
-                    AIDatabaseScope newScope = scope == AIDatabaseScope.CURRENT_SCHEMA ?
-                        AIDatabaseScope.CURRENT_DATABASE : AIDatabaseScope.CURRENT_DATASOURCE;
-                    log.trace("AI scope fallback to " + newScope);
-                    settings.setScope(newScope);
+            manager.add(new EmptyAction("No database connection selected"));
+            manager.add(new Action("Select connection...") {
+                @Override
+                public void run() {
+                    showContextDropDown();
                 }
-                continue;
+            });
+        } else {
+            manager.add(new EmptyAction("Configure AI context"));
+            manager.add(new Separator());
+
+            manager.add(new EmptyAction("Applies to"));
+            manager.add(new ChangeContextLevelAction(true));
+            manager.add(new ChangeContextLevelAction(false));
+
+            manager.add(new Separator());
+            DBPDataSourceContainer dsContainer = chat.getDataSourceContainer();
+            DBCExecutionContext executionContext = dsContainer == null ? null : chat.getExecutionContext(dsContainer);
+            if (executionContext == null) {
+                manager.add(new EmptyAction(
+                    dsContainer == null ?
+                        "No database connection selected" :
+                        (dsContainer.isConnecting() ?
+                            "Database is being connected..." :
+                            "Database is not connected")
+                ));
+                return;
             }
-            manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
+
+            manager.add(new EmptyAction("Metadata sent to AI"));
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+            boolean showSchemas = false;
+            boolean showCatalogs = false;
+            if (contextDefaults != null) {
+                showSchemas = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                showCatalogs = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
+            }
+
+            for (AIDatabaseScope scope : AIDatabaseScope.values()) {
+                if ((scope == AIDatabaseScope.CURRENT_SCHEMA && !showSchemas) ||
+                    scope == AIDatabaseScope.CURRENT_DATABASE && !showCatalogs
+                ) {
+                    if (settings.getScope() == scope) {
+                        AIDatabaseScope newScope = scope == AIDatabaseScope.CURRENT_SCHEMA ?
+                            AIDatabaseScope.CURRENT_DATABASE : AIDatabaseScope.CURRENT_DATASOURCE;
+                        log.trace("AI scope fallback to " + newScope);
+                        settings.setScope(newScope);
+                    }
+                    continue;
+                }
+                manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
+            }
         }
 
         manager.add(new Separator());
@@ -451,7 +491,7 @@ public class ContextComposite extends Composite {
 
     private void updateActions() {
         boolean busy = chat.isBusy();
-        changeScopeAction.setEnabled(!busy && chat.getCompletionSettings() != null);
+        changeScopeAction.setEnabled(!busy);
         addConversationAction.setEnabled(!busy);
         if (deleteConversationAction != null) {
             deleteConversationAction.setEnabled(!busy);

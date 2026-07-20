@@ -439,6 +439,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 } catch (InvocationTargetException ex) {
                     showConnectionErrorMessage(ex.getCause(), engineId);
                 }
+                if (!connectionTestButton.isDisposed()) {
+                    connectionTestButton.setFocus();
+                }
             })
         );
 

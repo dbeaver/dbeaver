@@ -80,6 +80,7 @@ public class AIChatMessages extends NLS {
     public static String ai_chat_a11y_transcript_label;
     public static String ai_chat_a11y_prompt_name;
     public static String ai_chat_a11y_conversation_name;
+    public static String ai_chat_a11y_connection_name;
     public static String ai_chat_a11y_waiting_for_response;
 
 
