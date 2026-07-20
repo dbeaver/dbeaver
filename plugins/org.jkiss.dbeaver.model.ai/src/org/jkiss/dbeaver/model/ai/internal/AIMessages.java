@@ -40,6 +40,7 @@ public class AIMessages extends NLS {
     public static String ai_empty_engine_response;
     public static String ai_warning_chat_history_truncated;
     public static String ai_warning_chat_history_truncated_linked;
+    public static String ai_warning_chat_history_truncated_admin;
     public static String ai_command_not_connected;
     public static String ai_command_empty_prompt;
     public static String ai_command_confirm_usage_title;
@@ -51,6 +52,7 @@ public class AIMessages extends NLS {
 
     public static String ai_error_request_timed_out;
     public static String ai_error_request_timed_out_linked;
+    public static String ai_error_request_timed_out_admin;
 
     static {
         // initialize resource bundle

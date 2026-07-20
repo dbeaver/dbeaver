@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.SocketTimeoutException;
@@ -151,13 +151,12 @@ public class AIMessage {
     private static String getErrorMessage(@NotNull Throwable error) {
         for (Throwable t = error; t != null; t = t.getCause()) {
             if (t instanceof HttpTimeoutException || t instanceof SocketTimeoutException || t instanceof TimeoutException) {
-                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
-                    return AIMessages.ai_error_request_timed_out;
-                } else {
-                    return AIMessages.ai_error_request_timed_out_linked;
-                }
+                return AIUtils.getSettingsAccessMessage(
+                    AIMessages.ai_error_request_timed_out,
+                    AIMessages.ai_error_request_timed_out_linked,
+                    AIMessages.ai_error_request_timed_out_admin);
             }
-        }
+    }
         return CommonUtils.getAllExceptionMessages(error);
     }
 
