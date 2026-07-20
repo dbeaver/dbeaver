@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -370,6 +370,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_group_regional;
     public static String pref_page_ui_general_group_language;
     public static String pref_page_ui_general_group_editors;
+    public static String pref_page_ui_general_link_more_color_and_font_settings;
     public static String pref_page_ui_status_bar;
     public static String pref_page_ui_status_bar_show_breadcrumbs_check_label;
     public static String pref_page_ui_status_bar_show_breadcrumbs_check_tip;
@@ -377,6 +378,9 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_status_bar_show_breadcrumbs_editors_label;
     public static String pref_page_ui_status_bar_show_status_line_check_label;
     public static String pref_page_ui_status_bar_show_status_line_check_tip;
+    public static String pref_page_ui_general_check_zoom_restart_prompt_label;
+    public static String pref_page_ui_general_check_zoom_restart_prompt_tip;
+    public static String pref_page_ui_general_group_display;
     public static String pref_page_eclipse_ui_general_group_general;
     public static String pref_page_eclipse_ui_general_group_label;
 
@@ -512,6 +516,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_connection_types_label_name;
     public static String pref_page_connection_types_label_description;
     public static String pref_page_connection_types_label_color;
+    public static String pref_page_connection_types_label_color_alternative;
     public static String pref_page_connection_types_label_auto_commit_by_default;
     public static String pref_page_connection_types_label_auto_commit_by_default_tip;
     public static String pref_page_connection_types_label_confirm_sql_execution;
@@ -662,6 +667,10 @@ public class CoreMessages extends NLS {
 
     public static String pref_page_accessibility_force_focus_checkbox;
     public static String pref_page_accessibility_force_focus_tooltip;
+
+    public static String project_selector_tooltip;
+
+    public static String pref_page_user_interface_fonts_modify_tooltip;
 
     static {
         // initialize resource bundle

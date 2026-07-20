@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
     private final IDialogSettings dialogSettings;
     private boolean opened;
 
-    protected ValueViewDialog(IValueController valueController) {
+    protected ValueViewDialog(@NotNull IValueController valueController) {
         super(valueController.getValueSite().getShell(), "Value view", null);
         setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.MAX | SWT.RESIZE);
         this.valueController = valueController;
@@ -86,18 +86,16 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         return getValueController().isReadOnly();
     }
 
-    protected IDialogSettings getDialogSettings()
-    {
+    @NotNull
+    protected IDialogSettings getDialogSettings() {
         return dialogSettings;
     }
 
     @Nullable
-    protected IValueEditor createPanelEditor(final Composite placeholder)
-        throws DBException
-    {
+    protected IValueEditor createPanelEditor(final Composite placeholder) throws DBException {
         IValueEditor editor = valueController.getValueManager().createEditor(
-            valueController instanceof IAttributeController ?
-                new ProxyAttributeValueController((IAttributeController) valueController, placeholder) :
+            valueController instanceof IAttributeController ac ?
+                new ProxyAttributeValueController(ac, placeholder) :
                 new ProxyValueController<>(valueController, placeholder));
         if (editor != null) {
             editor.createControl();
@@ -109,6 +107,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         return editor;
     }
 
+    @NotNull
     public IValueController getValueController() {
         return valueController;
     }
@@ -129,15 +128,15 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         this.close();
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogGroup = super.createDialogArea(parent);
         if (valueController instanceof IAttributeController) {
             final Link columnHideLink = new Link(dialogGroup, SWT.NONE);
             columnHideLink.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     columnInfoVisible = !columnInfoVisible;
                     dialogSettings.put(getInfoVisiblePrefId(), columnInfoVisible);
                     initColumnInfoVisibility(columnHideLink);
@@ -147,7 +146,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
                 }
             });
 
-            columnPanel = new ColumnInfoPanel(dialogGroup, SWT.BORDER, valueController);
+            columnPanel = new ColumnInfoPanel(dialogGroup, SWT.NONE, valueController);
             columnPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             initColumnInfoVisibility(columnHideLink);
@@ -156,27 +155,26 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         return dialogGroup;
     }
 
-    private void initColumnInfoVisibility(Link columnHideLink)
-    {
+    private void initColumnInfoVisibility(Link columnHideLink) {
         columnPanel.setVisible(columnInfoVisible);
-        ((GridData)columnPanel.getLayoutData()).exclude = !columnInfoVisible;
+        ((GridData) columnPanel.getLayoutData()).exclude = !columnInfoVisible;
         columnHideLink.setText("Column Info: (<a>" + (columnInfoVisible ? "hide" : "show") + "</a>)");
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         // create OK and Cancel buttons by default
         createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_value_view_button_save, true)
             .setEnabled(!valueController.isReadOnly());
-        boolean required = false;//valueController.getValueType() instanceof DBSAttributeBase && ((DBSAttributeBase) valueController.getValueType()).isRequired();
+        boolean required
+            = false;//valueController.getValueType() instanceof DBSAttributeBase && ((DBSAttributeBase) valueController.getValueType()).isRequired();
         createButton(parent, IDialogConstants.IGNORE_ID, ResultSetMessages.dialog_value_view_button_sat_null, false)
             .setEnabled(!valueController.isReadOnly() && !DBUtils.isNullValue(valueController.getValue()) && !required);
         createButton(parent, IDialogConstants.CANCEL_ID, ResultSetMessages.dialog_value_view_button_cancel, false);
     }
 
     @Override
-    protected void initializeBounds()
-    {
+    protected void initializeBounds() {
         super.initializeBounds();
 
         Shell shell = getShell();
@@ -185,14 +183,15 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         if (!CommonUtils.isEmpty(sizeString) && sizeString.contains(":")) {
             int divPos = sizeString.indexOf(':');
             shell.setSize(new Point(
-                Integer.parseInt(sizeString.substring(0, divPos)),
-                Integer.parseInt(sizeString.substring(divPos + 1))));
+                CommonUtils.toInt(sizeString.substring(0, divPos)),
+                CommonUtils.toInt(sizeString.substring(divPos + 1))
+            ));
             shell.layout();
         }
 
         Monitor primary = shell.getMonitor();
-        Rectangle bounds = primary.getBounds ();
-        Rectangle rect = shell.getBounds ();
+        Rectangle bounds = primary.getBounds();
+        Rectangle rect = shell.getBounds();
         int x = bounds.x + (bounds.width - rect.width) / 2;
         int y = bounds.y + (bounds.height - rect.height) / 3;
         x += dialogCount * 20;
@@ -200,15 +199,15 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         shell.setLocation(x, y);
     }
 
-    private String getInfoVisiblePrefId()
-    {
+    @NotNull
+    private String getInfoVisiblePrefId() {
         return getClass().getSimpleName() + "-" +
             CommonUtils.escapeIdentifier(getValueController().getValueType().getTypeName()) +
             "-columnInfoVisible";
     }
 
-    private String getDialogSizePrefId()
-    {
+    @NotNull
+    private String getDialogSizePrefId() {
         return getClass().getSimpleName() + "-" +
             CommonUtils.escapeIdentifier(getValueController().getValueType().getTypeName()) +
             "-dialogSize";
@@ -220,8 +219,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
     }
 
     @Override
-    public final int open()
-    {
+    public final int open() {
         try {
             opened = true;
             int result = super.open();
@@ -236,15 +234,17 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
     }
 
     @Override
-    protected void okPressed()
-    {
+    protected void okPressed() {
         try {
             editedValue = extractEditorValue();
 
             super.okPressed();
-        }
-        catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(ResultSetMessages.dialog_value_view_dialog_error_updating_title, ResultSetMessages.dialog_value_view_dialog_error_updating_message, e);
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                ResultSetMessages.dialog_value_view_dialog_error_updating_title,
+                ResultSetMessages.dialog_value_view_dialog_error_updating_message,
+                e
+            );
             super.cancelPressed();
         }
     }
@@ -269,7 +269,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         if (valueController instanceof IAttributeController) {
-            DBSAttributeBase meta = ((IAttributeController)valueController).getBinding();
+            DBSAttributeBase meta = ((IAttributeController) valueController).getBinding();
             shell.setText(meta.getName());
         }
     }
@@ -283,7 +283,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         protected final VC valueController;
         protected final Composite placeholder;
 
-        ProxyValueController(VC valueController, Composite placeholder) {
+        ProxyValueController(@NotNull VC valueController, @NotNull Composite placeholder) {
             this.valueController = valueController;
             this.placeholder = placeholder;
         }
@@ -300,27 +300,25 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
             return valueController.getDataController();
         }
 
+        @NotNull
         @Override
-        public String getValueName()
-        {
+        public String getValueName() {
             return valueController.getValueName();
         }
 
+        @NotNull
         @Override
-        public DBSTypedObject getValueType()
-        {
+        public DBSTypedObject getValueType() {
             return valueController.getValueType();
         }
 
         @Override
-        public Object getValue()
-        {
+        public Object getValue() {
             return valueController.getValue();
         }
 
         @Override
-        public void updateValue(Object value, boolean updatePresentation)
-        {
+        public void updateValue(Object value, boolean updatePresentation) {
             valueController.updateValue(value, updatePresentation);
         }
 
@@ -329,38 +327,38 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
             valueController.updateSelectionValue(value);
         }
 
+        @NotNull
         @Override
-        public DBDValueHandler getValueHandler()
-        {
+        public DBDValueHandler getValueHandler() {
             return valueController.getValueHandler();
         }
 
+        @NotNull
         @Override
         public IValueManager getValueManager() {
             return valueController.getValueManager();
         }
 
+        @NotNull
         @Override
-        public EditType getEditType()
-        {
+        public EditType getEditType() {
             return EditType.PANEL;
         }
 
         @Override
-        public boolean isReadOnly()
-        {
+        public boolean isReadOnly() {
             return valueController.isReadOnly();
         }
 
+        @NotNull
         @Override
-        public IWorkbenchPartSite getValueSite()
-        {
+        public IWorkbenchPartSite getValueSite() {
             return valueController.getValueSite();
         }
 
+        @Nullable
         @Override
-        public Composite getEditPlaceholder()
-        {
+        public Composite getEditPlaceholder() {
             return placeholder;
         }
 
@@ -370,14 +368,13 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         }
 
         @Override
-        public void showMessage(String message, DBPMessageType messageType)
-        {
+        public void showMessage(@NotNull String message, @NotNull DBPMessageType messageType) {
         }
     }
 
     private static class ProxyAttributeValueController extends ProxyValueController<IAttributeController> implements IAttributeController {
 
-        public ProxyAttributeValueController(IAttributeController valueController, Composite placeholder) {
+        public ProxyAttributeValueController(@NotNull IAttributeController valueController, @NotNull Composite placeholder) {
             super(valueController, placeholder);
         }
 

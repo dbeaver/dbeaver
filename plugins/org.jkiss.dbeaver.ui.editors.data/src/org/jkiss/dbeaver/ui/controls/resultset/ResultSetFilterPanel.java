@@ -70,12 +70,14 @@ import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllPinsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllSettingsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllTransformersAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.ICSSBackgroundMimicControl;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
@@ -100,6 +102,23 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private static final int MIN_FILTER_TEXT_HEIGHT = 20;
     private static final int MAX_HISTORY_PANEL_HEIGHT = 200;
 
+    private final FindReplaceOverlay.EventListener findReplaceOverlayListener = new FindReplaceOverlay.EventListener() {
+        @Override
+        public void opened(@NotNull FindReplaceOverlay overlay) {
+            setFindReplaceButtonSelection(overlay);
+        }
+
+        @Override
+        public void closed(@NotNull FindReplaceOverlay overlay) {
+            setFindReplaceButtonSelection(overlay);
+        }
+
+        @Override
+        public void disposed(@NotNull FindReplaceOverlay overlay) {
+            setFindReplaceButtonSelection(overlay);
+        }
+    };
+
     @NotNull
     private final ResultSetViewer viewer;
 
@@ -121,6 +140,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private ToolItem filtersClearButton;
     private ToolItem historyBackButton;
     private ToolItem historyForwardButton;
+    private ToolItem openFindReplaceButton;
 
     private final Composite filterComposite;
 
@@ -328,6 +348,39 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 historyForwardButton.setEnabled(false);
                 historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
             }
+
+            UIUtils.createToolBarSeparator(filterToolbar, SWT.NONE);
+
+            this.openFindReplaceButton = new ToolItem(filterToolbar, SWT.CHECK | SWT.NO_FOCUS);
+            this.openFindReplaceButton.setImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE));
+            this.openFindReplaceButton.setToolTipText(ActionUtils.findCommandDescription(
+                IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, viewer.getSite(), false
+            ));
+            this.openFindReplaceButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                FindReplaceOverlay currentOverlay = this.viewer.getActivePresentation().getFindReplaceOverlay();
+                if (this.openFindReplaceButton.getSelection()) {
+                    if (currentOverlay != null) {
+                        UIUtils.asyncExec(currentOverlay::open);
+                    } else {
+                        ResultSetPresentationDescriptor pd = this.viewer.getAvailablePresentations().stream()
+                            .filter(p -> p.getId().equals(SpreadsheetPresentation.PRESENTATION_ID))
+                            .findFirst().orElse(null);
+                        this.viewer.switchPresentation(pd);
+
+                        // open overlay after the presentation init events for the focus to correctly go to the search-box
+                        UIUtils.asyncExec(() -> {
+                            FindReplaceOverlay spreadsheetOverlay = this.viewer.getActivePresentation().getFindReplaceOverlay();
+                            if (spreadsheetOverlay != null) {
+                                spreadsheetOverlay.open();
+                            }
+                        });
+                    }
+                } else {
+                    if (currentOverlay != null) {
+                        UIUtils.asyncExec(currentOverlay::close);
+                    }
+                }
+            }));
         }
 
         this.addControlListener(new ControlListener() {
@@ -351,6 +404,25 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         });
 
+    }
+
+    void resultsetPresentationChanged(@NotNull IResultSetPresentation activePresentation) {
+        FindReplaceOverlay findReplaceOverlay = activePresentation.getFindReplaceOverlay();
+        if (findReplaceOverlay != null) {
+            findReplaceOverlay.addEventListener(this.findReplaceOverlayListener);
+            this.setFindReplaceButtonSelection(findReplaceOverlay);
+        }
+    }
+
+    private void setFindReplaceButtonSelection(@NotNull FindReplaceOverlay overlay) {
+        if (!openFindReplaceButton.isDisposed()) {
+            boolean isOpened = overlay.isOpened();
+            if (openFindReplaceButton.getSelection() != isOpened) {
+                openFindReplaceButton.setSelection(isOpened);
+            }
+        } else {
+            overlay.removeEventListener(this.findReplaceOverlayListener);
+        }
     }
 
     private boolean isImeComposing() {
@@ -1023,21 +1095,23 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
 
             popup = new Shell(getShell(), SWT.NO_TRIM);
-            GridLayoutFactory.fillDefaults()
-                .spacing(0, 0)
-                .applyTo(popup);
+            popup.setLayout(new FillLayout());
+
+            Composite composite = new Composite(popup, SWT.NONE);
+            GridLayoutFactory.fillDefaults().margins(2, 2).applyTo(composite);
+            new CompositeBorderPainter(composite);
 
             String query = getActiveSourceQueryNormalized(false);
             if (filtersHistory.isEmpty()) {
                 loadFiltersHistory(query);
             }
 
-            Table editControl = createFilterHistoryPanel(popup, filtersHistory);
+            Table editControl = createFilterHistoryPanel(composite, filtersHistory);
 
             var context = viewer.getExecutionContext();
-            if (viewer.getFilterManager().isPersistent() && context != null) {
-                var manageButton = new Button(popup, SWT.PUSH);
-                manageButton.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+            if (viewer.getFilterManager().isPersistent() && context != null && editControl.getItemCount() > 0) {
+                var manageButton = new Button(composite, SWT.PUSH);
+                manageButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
                 manageButton.setText("Manage Filters");
                 manageButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     closeHistoryPopup();
@@ -1064,6 +1138,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         setCustomDataFilter();
                     }
                 }));
+                UIUtils.asyncExec(() -> composite.setBackground(editControl.getBackground()));
             }
 
             Point parentRect = getDisplay().map(filtersText, null, new Point(0, 0));
@@ -1079,7 +1154,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (executePanel != null) {
                 width += executePanel.getSize().x;
             }
-            int height = Math.min(MAX_HISTORY_PANEL_HEIGHT, popup.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+            int height = editControl.getItemCount() <= 0 ? editControl.getItemHeight() :
+                Math.min(MAX_HISTORY_PANEL_HEIGHT, popup.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
             int y = parentRect.y + getSize().y;
             if (y + height > displayRect.y + displayRect.height) {
                 y = parentRect.y - height;
@@ -1090,8 +1166,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (vsb != null) {
                 tableWidth -= vsb.getSize().x;
             }
-            int queryWidth = (int) (tableWidth * 0.7f);
-            int titleWidth = tableWidth - queryWidth;
+            int queryWidth = (int) (tableWidth * 0.7f) - 2;
+            int titleWidth = tableWidth - queryWidth - 2;
             editControl.getColumn(0).setWidth(queryWidth);
             editControl.getColumn(1).setWidth(titleWidth);
 
@@ -1106,12 +1182,16 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     popup.dispose();
                 }
             }));
-            for (Control child : popup.getChildren()) {
+            Control[] compChildren = composite.getChildren();
+            for (Control child : compChildren) {
                 child.addFocusListener(onFocusLost);
             }
 
             popup.setVisible(true);
-            editControl.setFocus();
+            if (compChildren.length > 1) {
+                // Set focus to button
+                compChildren[1].setFocus();
+            }
         }
 
         private void closeHistoryPopup() {
@@ -1122,12 +1202,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         @NotNull
-        private Table createFilterHistoryPanel(@NotNull Shell popup, @NotNull List<QMQueryFilter> filters) {
-            var historyViewer = new TableViewer(popup, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
+        private Table createFilterHistoryPanel(@NotNull Composite popup, @NotNull List<QMQueryFilter> filters) {
+            var historyViewer = new TableViewer(popup, SWT.FULL_SELECTION | SWT.SINGLE);
             historyViewer.setContentProvider(new ListContentProvider());
 
             var historyTable = historyViewer.getTable();
-            historyTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+            historyTable.setLayoutData(gd);
 
             var filterTextColumn = new TableViewerColumn(historyViewer, SWT.LEFT);
             filterTextColumn.setLabelProvider(new StyledCellLabelProvider() {
@@ -1164,24 +1245,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
                 if (item != null && !item.isDisposed()) {
                     switch (e.keyCode) {
-                        case SWT.DEL -> {
-                            // FIXME
-                            // final String filterValue = item.getText();
-                            // try {
-                            //     DBCExecutionContext context = viewer.getExecutionContext();
-                            //     if (context != null) {
-                            //         viewer.getFilterManager().deleteQueryFilterValue(
-                            //             context,
-                            //             filterValue
-                            //         );
-                            //     }
-                            // } catch (DBException e1) {
-                            //     log.warn("Error deleting filter value [" + filterValue + "]", e1);
-                            // }
-                            // filtersHistory.remove(filterValue);
-                            // item.dispose();
-                            // hoverItem = null;
-                        }
                         case SWT.CR, SWT.SPACE -> {
                             final String newFilter = item.getText();
                             closeHistoryPopup();
@@ -1505,6 +1568,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (viewer.getDataContainer() instanceof DBSEntity) {
                 menuManager.add(ActionUtils.makeCommandContribution(
                     viewer.getSite(), IResultSetCommands.CMD_FILTER_SAVE_SETTING));
+                menuManager.add(ActionUtils.makeCommandContribution(
+                    viewer.getSite(), IResultSetCommands.CMD_FILTER_RESET_SETTING));
             }
 
             if (showHistoryItems) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Map;
+import javax.imageio.ImageIO;
 
 /**
  * HTML Exporter
@@ -58,11 +58,6 @@ public class DataExporterHTML extends StreamExporterAbstract {
         Map<String, Object> properties = site.getProperties();
         outputHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), outputHeader);
         outputColumnHeaders = CommonUtils.getBoolean(properties.get(PROP_COLUMN_HEADERS), outputColumnHeaders);
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
     }
 
     @Override
@@ -101,9 +96,9 @@ public class DataExporterHTML extends StreamExporterAbstract {
             out.write("<tr>");
             writeTableTitle(name, columns.length);
             out.write("</tr>");
-            out.write("<tr>");
         }
         if (outputColumnHeaders) {
+            out.write("<tr>");
             for (DBDAttributeBinding column : columns) {
                 String colName = column.getLabel();
                 if (CommonUtils.isEmpty(colName)) {

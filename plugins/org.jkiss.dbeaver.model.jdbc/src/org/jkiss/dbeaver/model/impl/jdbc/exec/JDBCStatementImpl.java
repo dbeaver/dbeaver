@@ -74,9 +74,16 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
             QMUtils.getDefaultHandler().handleStatementOpen(this);
         }
 
-        // We signal statement pen BEFORE we get actual one
+        // We signal statement open BEFORE we get actual one
         // because opening a statement may take a time and we have to measure it
-        this.original = original.get();
+        try {
+            this.original = original.get();
+        } catch (SQLException e) {
+            if (isQMLoggingEnabled()) {
+                QMUtils.getDefaultHandler().handleStatementClose(this, -1);
+            }
+            throw e;
+        }
     }
 
     public STATEMENT getOriginal() {
@@ -275,6 +282,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @NotNull
     protected SQLException handleExecuteError(@NotNull Throwable ex) {
+        this.executeError = ex;
         if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR)) {
             try {
                 if (!connection.isClosed() && !connection.getAutoCommit()) {

@@ -67,6 +67,13 @@ public interface AIFunctionDescriptor {
 
     boolean isEnabledByDefault();
 
+    default boolean isOmitConfirmation() {
+        return false;
+    }
+
+    @NotNull
+    AIFunctionAllowMode getDefaultAllowMode();
+
     @NotNull
     AIFunctionParameter[] getParameters();
 
@@ -86,6 +93,7 @@ public interface AIFunctionDescriptor {
     @NotNull
     AIFunction getInstance();
 
+    @NotNull
     static String getFullFunctionId(@NotNull String toolboxId, @NotNull String toolId) {
         return toolboxId + "_" + toolId;
     }

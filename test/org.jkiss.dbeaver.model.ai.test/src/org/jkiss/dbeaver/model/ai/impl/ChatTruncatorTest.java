@@ -18,14 +18,13 @@ package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.junit.Assert.*;
 
 public class ChatTruncatorTest {
 
@@ -56,7 +55,7 @@ public class ChatTruncatorTest {
 
     private ChatTruncator truncator;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         truncator = ChatTruncator.builder()
             .maxTokens(60)
@@ -69,14 +68,14 @@ public class ChatTruncatorTest {
 
     @Test
     public void emptyInput() {
-        assertNull("Expecting null for empty input", truncator.tryTruncate(List.of()));
+        Assertions.assertNull(truncator.tryTruncate(List.of()), "Expecting null for empty input");
     }
 
 
     @Test
     public void filtersBlank() {
-        assertNull(truncator.tryTruncate(List.of(msg(AIMessageType.USER, "   "))));
-        assertNull(truncator.tryTruncate(List.of(msg(AIMessageType.USER, words(3)), msg(AIMessageType.USER, "   "))));
+        Assertions.assertNull(truncator.tryTruncate(List.of(msg(AIMessageType.USER, "   "))));
+        Assertions.assertNull(truncator.tryTruncate(List.of(msg(AIMessageType.USER, words(3)), msg(AIMessageType.USER, "   "))));
     }
 
     @Test
@@ -88,10 +87,10 @@ public class ChatTruncatorTest {
 
         List<AIMessage> out = truncator.tryTruncate(List.of(sys1, userOld, userNew, sys2));
 
-        assertNotNull("Truncation must have occurred", out);
-        assertEquals("First must be SYSTEM", AIMessageType.SYSTEM, out.getFirst().getRole());
-        assertTrue("Merged system must contain sys1 content", out.getFirst().getContent().contains(sys1.getContent()));
-        assertTrue("Merged system must contain sys2 content", out.getFirst().getContent().contains(sys2.getContent()));
+        Assertions.assertNotNull(out, "Truncation must have occurred");
+        Assertions.assertEquals(AIMessageType.SYSTEM, out.getFirst().getRole(), "First must be SYSTEM");
+        Assertions.assertTrue(out.getFirst().getContent().contains(sys1.getContent()), "Merged system must contain sys1 content");
+        Assertions.assertTrue(out.getFirst().getContent().contains(sys2.getContent()), "Merged system must contain sys2 content");
     }
 
     @Test
@@ -102,12 +101,12 @@ public class ChatTruncatorTest {
 
         List<AIMessage> out = truncator.tryTruncate(List.of(m1, m2, m3));
 
-        assertNotNull("Truncation must have occurred", out);
-        assertEquals("Expected m2-truncated + m3", 2, out.size());
-        assertNotEquals("m1 should have been truncated out", m1, out.getFirst());
-        assertSame("Newest message should be last", m3, out.getLast());
+        Assertions.assertNotNull(out, "Truncation must have occurred");
+        Assertions.assertEquals(2, out.size(), "Expected m2-truncated + m3");
+        Assertions.assertNotEquals(m1, out.getFirst(), "m1 should have been truncated out");
+        Assertions.assertSame(m3, out.getLast(), "Newest message should be last");
         int tokens = out.stream().mapToInt(m -> WORD_COUNTER.count(m.getContent())).sum();
-        assertTrue("Total tokens must fit within maxTokens window", tokens <= 60);
+        Assertions.assertTrue(tokens <= 60, "Total tokens must fit within maxTokens window");
     }
 
     @Test
@@ -117,16 +116,16 @@ public class ChatTruncatorTest {
 
         List<AIMessage> out = truncator.tryTruncate(List.of(bigSystem, user));
 
-        assertNotNull("Truncation must have occurred", out);
-        assertTrue("System content must carry the truncation marker", out.getFirst().getContent().contains("[...truncated"));
+        Assertions.assertNotNull(out, "Truncation must have occurred");
+        Assertions.assertTrue(out.getFirst().getContent().contains("[...truncated"), "System content must carry the truncation marker");
 
         String sysContent = out.getFirst().getContent();
         int suffixTokens = WORD_COUNTER.count("\n[...truncated, don't try again]");
         int sysTokens = WORD_COUNTER.count(sysContent);
-        assertTrue("System content must be within reserve + suffix overhead", sysTokens <= 15 + suffixTokens);
+        Assertions.assertTrue(sysTokens <= 15 + suffixTokens, "System content must be within reserve + suffix overhead");
 
         int totalTokens = out.stream().mapToInt(m -> WORD_COUNTER.count(m.getContent())).sum();
-        assertTrue("Total tokens must fit within maxTokens window", totalTokens <= 60);
+        Assertions.assertTrue(totalTokens <= 60, "Total tokens must fit within maxTokens window");
     }
 
     @Test
@@ -137,7 +136,7 @@ public class ChatTruncatorTest {
             msg(AIMessageType.ASSISTANT, words(5)),
             msg(AIMessageType.USER, words(5))
         ));
-        assertNull("Everything fits — no truncation should occur", out);
+        Assertions.assertNull(out, "Everything fits — no truncation should occur");
     }
 
     @Test
@@ -146,10 +145,10 @@ public class ChatTruncatorTest {
 
         List<AIMessage> out = truncator.tryTruncate(List.of(bigUser));
 
-        assertNotNull("Oversized pinned message must still be returned (truncated)", out);
-        assertEquals(1, out.size());
-        assertTrue("Truncated content must carry the marker", out.getFirst().getContent().contains("[...truncated"));
-        assertTrue("Truncated message must fit within maxTokens", WORD_COUNTER.count(out.getFirst().getContent()) <= 60);
+        Assertions.assertNotNull(out, "Oversized pinned message must still be returned (truncated)");
+        Assertions.assertEquals(1, out.size());
+        Assertions.assertTrue(out.getFirst().getContent().contains("[...truncated"), "Truncated content must carry the marker");
+        Assertions.assertTrue(WORD_COUNTER.count(out.getFirst().getContent()) <= 60, "Truncated message must fit within maxTokens");
     }
 
     @Test
@@ -160,11 +159,11 @@ public class ChatTruncatorTest {
 
         List<AIMessage> out = truncator.tryTruncate(List.of(m1, m2, m3));
 
-        assertNotNull(out);
-        assertEquals(3, out.size());
-        assertTrue("Oldest (truncated) message must be first", out.get(0).getContent().contains("[...truncated"));
-        assertSame("m2 must be in the middle", m2, out.get(1));
-        assertSame("Newest m3 must be last", m3, out.get(2));
+        Assertions.assertNotNull(out);
+        Assertions.assertEquals(3, out.size());
+        Assertions.assertTrue(out.get(0).getContent().contains("[...truncated"), "Oldest (truncated) message must be first");
+        Assertions.assertSame(m2, out.get(1), "m2 must be in the middle");
+        Assertions.assertSame(m3, out.get(2), "Newest m3 must be last");
     }
 
     @Test
@@ -174,10 +173,10 @@ public class ChatTruncatorTest {
 
         List<AIMessage> out = truncator.tryTruncate(List.of(m1, m2));
 
-        assertNotNull(out);
-        assertEquals(2, out.size());
-        assertSame("Pinned newest assistant must be last", m2, out.getLast());
-        assertTrue("Older assistant must have been truncated", out.getFirst().getContent().contains("[...truncated"));
+        Assertions.assertNotNull(out);
+        Assertions.assertEquals(2, out.size());
+        Assertions.assertSame(m2, out.getLast(), "Pinned newest assistant must be last");
+        Assertions.assertTrue(out.getFirst().getContent().contains("[...truncated"), "Older assistant must have been truncated");
     }
 
     private static AIMessage msg(AIMessageType role, String content) {

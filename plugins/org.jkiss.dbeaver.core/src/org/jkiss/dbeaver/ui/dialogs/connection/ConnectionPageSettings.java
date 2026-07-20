@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -33,10 +31,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -53,6 +48,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -70,12 +66,17 @@ import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static org.jkiss.dbeaver.ui.UIUtils.getDisplay;
 
 /**
  * Settings connection page. Hosts particular drivers' connection pages
@@ -295,7 +296,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 UIStyles.fixToolBarForeground(toolBar);
 
                 updateHandlerItem(allPages);
-                updateProfileItem();
+                updateProfileItem(getActiveProfile());
 
                 tabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
                     @Override
@@ -406,22 +407,63 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
 
             manager.add(new Separator());
+            List<DBWNetworkProfile> distinctProfiles = new ArrayList<>();
+            List<String> profileNames = new ArrayList<>();
+            for (DBWNetworkProfile profile : getProject().getDataSourceRegistry().getNetworkProfiles().getAllProfiles()) {
+                int i = profileNames.indexOf(profile.getProfileName());
+                if (i > -1) {
+                    profileNames.remove(i);
+                    distinctProfiles.remove(i);
+                }
+                profileNames.add(profile.getProfileName());
+                distinctProfiles.add(profile);
+            }
 
-            for (DBWNetworkProfile profile : getProject().getDataSourceRegistry().getNetworkProfiles()) {
+            for (DBWNetworkProfile profile : distinctProfiles) {
                 manager.add(new ChooseNetworkProfileAction(dataSource, profile, null, index++));
             }
 
             manager.add(new Separator());
-            manager.add(new Action("Edit profiles...", DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
-                @Override
-                public void run() {
-                    DBWNetworkProfile profile = getActiveProfile();
-                    PrefPageProjectNetworkProfiles.open(getShell(), getProject(), profile);
-                    if (profile != null) {
-                        selectProfile(profile);
+            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)
+                || (getProject().isPrivateProject() && DBWorkbench.getPlatform().getWorkspace()
+                .hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
+            ) {
+                manager.add(new Action("Edit profiles...", DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
+                    @Override
+                    public void run() {
+                        DBWNetworkProfile profile = getActiveProfile();
+                        PrefPageProjectNetworkProfiles.open(getShell(), getProject(), profile);
+                        if (profile != null) {
+                            selectProfile(profile);
+                        }
                     }
-                }
-            });
+                });
+            }
+
+            if (RuntimeUtils.isWindows()) {
+                // Highlight selected item
+                Consumer<IMenuManager> highlightSelectedItem = (imm) -> {
+                    if (imm instanceof MenuManager mm) {
+                        Menu swtMenu = mm.getMenu();
+                        if (swtMenu != null && !swtMenu.isDisposed()) {
+                            for (MenuItem item : swtMenu.getItems()) {
+                                if (item.getData() instanceof ActionContributionItem aci &&
+                                    aci.getAction() instanceof ChooseNetworkProfileAction cpa &&
+                                    cpa.isChecked()
+                                ) {
+                                    swtMenu.setDefaultItem(item);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                };
+                manager.addMenuListener(mm -> {
+                    getDisplay().asyncExec(() -> highlightSelectedItem.accept(mm));
+                });
+                // initial highlight
+                getDisplay().asyncExec(() -> highlightSelectedItem.accept(manager));
+            }
         });
 
         var toolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
@@ -469,15 +511,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
     }
 
-    private void updateProfileItem() {
-        String profileName = getActiveDataSource().getConnectionConfiguration().getConfigProfileName();
-        if (CommonUtils.isNotEmpty(profileName)) {
+    private void updateProfileItem(@Nullable DBWNetworkProfile profile) {
+        DBIcon icon = DBIcon.TYPE_DOCUMENT;
+        if (profile != null) {
+            String profileName = profile.getProfileName();
             profileItem.setText(NLS.bind("Profile ''{0}''", profileName));
             profileItem.setToolTipText(NLS.bind("Active profile is ''{0}''", profileName));
+            icon = profile.isGlobal() ? DBIcon.GLOBAL_PROFILE : DBIcon.CONNECTION_PROFILE;
         } else {
             profileItem.setText("No profile");
             profileItem.setToolTipText("No active profile is set");
         }
+        profileItem.setImage(DBeaverIcons.getImage(icon));
         updateFolderToolbar();
     }
 
@@ -533,7 +578,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         refreshHandlers(null);
-        updateProfileItem();
+        updateProfileItem(null);
 
         return true;
     }
@@ -581,7 +626,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         refreshHandlers(profile);
-        updateProfileItem();
+        updateProfileItem(profile);
 
         return true;
     }
@@ -678,7 +723,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             var descriptor = page.getHandlerDescriptor();
             if (unselectProfile(descriptor)) {
                 removeHandler(descriptor);
-                updateProfileItem();
+                updateProfileItem(null);
                 return true;
             }
         }
@@ -694,6 +739,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 ConfirmationDialog.INFORMATION,
                 DBeaverPreferences.CONFIRM_DISABLE_NETWORK_HANDLER,
                 ConfirmationDialog.CONFIRM,
+                descriptor.getCodeName(),
                 descriptor.getCodeName()
             );
 
@@ -1062,7 +1108,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (CommonUtils.isEmpty(configuration.getConfigProfileName())) {
             return null;
         }
-        return dataSource.getRegistry().getNetworkProfile(
+        return dataSource.getRegistry().getNetworkProfiles().getProfile(
             configuration.getConfigProfileSource(),
             configuration.getConfigProfileName()
         );
@@ -1081,7 +1127,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             if (unselectProfile(descriptor)) {
                 addHandler(descriptor, null);
                 refreshHandler(descriptor, null);
-                updateProfileItem();
+                updateProfileItem(null);
             }
         }
     }
@@ -1105,6 +1151,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             setText(ActionUtils.getLabelWithIndexMnemonic(getProfileName(profile, origin), index));
             setChecked(isProfileSelected(profile, container));
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(profile.isGlobal() ? DBIcon.GLOBAL_PROFILE : DBIcon.CONNECTION_PROFILE));
         }
 
         @Override

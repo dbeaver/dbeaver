@@ -102,8 +102,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      * @return resolved entity attribute or just meta attribute
      */
     @NotNull
-    public DBSAttributeBase getAttribute()
-    {
+    public DBSAttributeBase getAttribute() {
         DBSEntityAttribute attr = getEntityAttribute();
         return attr == null ? getMetaAttribute() : attr;
     }
@@ -357,8 +356,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     protected List<DBSEntityReferrer> findVirtualReferrers() {
         DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer instanceof DBSEntity) {
-            DBSEntity attrEntity = (DBSEntity) dataContainer;
+        if (dataContainer instanceof DBSEntity attrEntity) {
             DBVEntity vEntity = DBVUtils.getVirtualEntity(attrEntity, false);
             if (vEntity != null) {
                 List<DBVEntityForeignKey> foreignKeys = vEntity.getForeignKeys();

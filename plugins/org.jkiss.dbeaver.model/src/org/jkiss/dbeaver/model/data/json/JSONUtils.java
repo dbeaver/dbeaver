@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.data.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
@@ -50,6 +51,7 @@ public class JSONUtils {
         .withZone(ZoneId.of("UTC"));
     public static final Type MAP_TYPE_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
     public static final Type LIST_TYPE_TOKEN = TypeToken.getParameterized(List.class, MAP_TYPE_TOKEN).getType();
+
     public static final Gson GSON = new GsonBuilder().create();
     public static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -467,5 +469,27 @@ public class JSONUtils {
         }
         return result;
     }
+
+    @NotNull
+    public static Map<String, Object> convertObjectToMap(@NotNull Object object) {
+        return convertObjectToMap(GSON, object);
+    }
+
+    @NotNull
+    public static Map<String, Object> convertObjectToMap(@NotNull Gson gson, @NotNull Object object) {
+        JsonElement jsonTree = gson.toJsonTree(object);
+        return gson.fromJson(jsonTree, MAP_TYPE_TOKEN);
+    }
+
+    @NotNull
+    public static <T> T convertMapToObject(@NotNull Map<String, Object> map, @NotNull Class<T> clazz) {
+        return convertMapToObject(GSON, map, clazz);
+    }
+
+    @NotNull
+    public static <T> T convertMapToObject(@NotNull Gson gson, @NotNull Map<String, Object> map, @NotNull Class<T> clazz) {
+        return gson.fromJson(gson.toJsonTree(map), clazz);
+    }
+
 
 }
