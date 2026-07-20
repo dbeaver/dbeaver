@@ -54,10 +54,6 @@ public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
     public static final double DEFAULT_TEMPERATURE = 0.0;
 
-    public static boolean supportsMessageLinks() {
-        return !DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isHeadlessMode();
-    }
-
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         aiSettings.resolveSecrets();
