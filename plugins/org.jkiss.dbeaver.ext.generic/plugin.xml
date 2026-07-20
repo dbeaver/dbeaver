@@ -1587,7 +1587,7 @@
                 parent="generic"
                 label="Manticore Search"
                 icon="icons/manticore_icon.svg"
-                dialect="manticore">
+                dialect="generic">
             <drivers managable="true">
 
                 <driver
@@ -1614,6 +1614,8 @@
                     <property name="useSSL" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <!-- Select ManticoreMetaModel / ManticoreDataSource (not by JDBC class — shared with MySQL) -->
+                    <parameter name="meta-model" value="manticore"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="omit-schema" value="true"/>
                     <parameter name="supports-references" value="false"/>
@@ -1654,6 +1656,7 @@
 
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="gizmosql" class="org.jkiss.dbeaver.ext.generic.model.meta.gizmosql.GizmoSQLMetaModel" driverClass="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"/>
+        <meta id="manticore" class="org.jkiss.dbeaver.ext.generic.model.ManticoreMetaModel"/>
         <meta id="indexed" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel">
             <object type="catalog">
                 <column id="TABLE_CAT" index="1"/>
@@ -1792,14 +1795,6 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="generic" parent="basic" class="org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect" label="Generic" description="Dialect based on JDBC API information." icon="#database_icon_default" hidden="true">
-        </dialect>
-        <dialect
-                id="manticore"
-                parent="generic"
-                class="org.jkiss.dbeaver.ext.generic.model.ManticoreSQLDialect"
-                label="Manticore Search"
-                description="Manticore Search SQL dialect (table aliases are not supported)"
-                icon="icons/manticore_icon.svg">
         </dialect>
     </extension>
 

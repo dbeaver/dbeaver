@@ -19,13 +19,8 @@ package org.jkiss.dbeaver.ext.generic.model;
 /**
  * SQL dialect for Manticore Search.
  * <p>
- * Manticore speaks the MySQL wire protocol but does not support table aliases
- * in {@code FROM}/{@code SELECT}. Connecting via the stock MySQL driver uses
- * {@code MySQLDialect}, which enables aliases and breaks auto-generated
- * "View data" queries. This dialect keeps aliases disabled.
+ * Manticore uses the MySQL wire protocol but does not support table aliases.
  * </p>
- *
- * @see <a href="https://manual.manticoresearch.com/Connecting_to_the_server">Manticore connection docs</a>
  */
 public class ManticoreSQLDialect extends GenericSQLDialect {
 
