@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -38,7 +37,6 @@ public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, false);
 
         // OpenAI default
-        PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.GPT_MODEL, OpenAIModels.DEFAULT_MODEL);
         PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.AI_TEMPERATURE, 0.0f);
         PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.AI_LOG_QUERY, false);
 
