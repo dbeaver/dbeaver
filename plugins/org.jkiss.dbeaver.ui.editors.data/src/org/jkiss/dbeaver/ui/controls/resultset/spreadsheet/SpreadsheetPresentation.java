@@ -3190,7 +3190,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             if (item.getElement() instanceof DBDAttributeBinding attr) {
-                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr.getAttribute(), true, false));
+                boolean includeModifiers = controller.isRecordMode();
+                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr.getAttribute(), true, includeModifiers));
             } else if (item.getElement() instanceof DBSAttributeBase attrBase) {
                 return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attrBase));
             }
