@@ -61,8 +61,6 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         }
         this.settings.setAiDisabled(!enableAICheck.getSelection());
 
-        AISettingsManager.getInstance().saveSettings(this.settings);
-
         return true;
     }
 

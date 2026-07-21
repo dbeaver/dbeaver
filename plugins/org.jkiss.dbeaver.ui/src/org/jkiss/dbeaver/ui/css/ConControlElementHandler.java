@@ -53,6 +53,8 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             Color bgColor = CSSUtils.getCurrentEditorConnectionColor(widget);
             if (bgColor != null) {
                 toolBar.setBackground(bgColor);
+            } else {
+                super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
             }
             return;
         }

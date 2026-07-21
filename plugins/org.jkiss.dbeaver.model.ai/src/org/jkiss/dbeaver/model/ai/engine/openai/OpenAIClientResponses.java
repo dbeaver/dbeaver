@@ -52,6 +52,12 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         this.backupClient = createBackupClient();
     }
 
+    @Override
+    public void setTimeout(int timeoutSeconds) {
+        super.setTimeout(timeoutSeconds);
+        backupClient.setTimeout(timeoutSeconds);
+    }
+
     @NotNull
     public HttpClient getHttpClient() {
         return client.getHttpClient();
@@ -77,7 +83,7 @@ public class OpenAIClientResponses extends OpenAiClientBase {
             String responseJson = client.send(monitor, modifiedRequest);
             return GSON.fromJson(responseJson, OAIResponsesResponse.class);
         } catch (Exception exception) {
-            if (exception.getMessage().contains("is not supported via Responses API")) {
+            if (OpenAiUtils.shouldFallbackToLegacyChat(exception.getMessage())) {
                 // If the request failed due to an unsupported model, fallback to the legacy client which might support it
                 return backupClient.createChatCompletion(monitor, completionRequest);
             } else {
@@ -137,7 +143,7 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
         if (statusCode == 400) {
-            if (body.contains("is not supported via Responses API")) {
+            if (OpenAiUtils.shouldFallbackToLegacyChat(body)) {
                 // just return DBException, we will fall back to legacy client in case of this error, no need to log it as error
                 return new DBException("is not supported via Responses API");
             }

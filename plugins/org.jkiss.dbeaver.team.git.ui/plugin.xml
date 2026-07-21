@@ -116,7 +116,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.app.config">
-        <feature id="git" label="Git version control" enabledByDefault="false"/>
+        <feature
+            id="git"
+            label="Git version control"
+            description="Provides Git version control integration for projects."
+            enabledByDefault="false"/>
     </extension>
 
     <extension point="org.eclipse.ui.activities">

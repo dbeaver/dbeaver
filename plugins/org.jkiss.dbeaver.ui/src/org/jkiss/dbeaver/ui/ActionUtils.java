@@ -26,7 +26,6 @@ import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.bindings.Binding;
-import org.eclipse.jface.bindings.Scheme;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ToggleState;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -42,6 +41,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.keys.BindingService;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
@@ -302,25 +302,28 @@ public class ActionUtils {
         IBindingService bindingService = serviceLocator.getService(IBindingService.class);
         if (bindingService != null) {
             TriggerSequence sequence = null;
-            Binding[] bindings = bindingService.getBindings();
-            Scheme activeScheme = bindingService.getActiveScheme();
-            String activeSchemeId = activeScheme == null ? null : activeScheme.getId();
+            Iterable<Binding> bindings;
+            if (bindingService instanceof BindingService s) {
+                bindings = s.getBindingManager().getActiveBindingsDisregardingContextFlat();
+            } else if (bindingService.getBindings() instanceof Binding[] bb) {
+                bindings = Arrays.asList(bb);
+            } else {
+                bindings = null;
+            }
             if (bindings != null) {
                 for (Binding b : bindings) {
-                    if (activeSchemeId == null || activeSchemeId.equals(b.getSchemeId())) {
-                        ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
-                        if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
-                            if (paramName != null) {
-                                Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
-                                if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
-                                    continue;
-                                }
+                    ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
+                    if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
+                        if (paramName != null) {
+                            Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
+                            if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
+                                continue;
                             }
-                            sequence = b.getTriggerSequence();
-                            if (b.getType() == Binding.USER) {
-                                // Prefer user-defined binding over default (system)
-                                break;
-                            }
+                        }
+                        sequence = b.getTriggerSequence();
+                        if (b.getType() == Binding.USER) {
+                            // Prefer user-defined binding over default (system)
+                            break;
                         }
                     }
                 }

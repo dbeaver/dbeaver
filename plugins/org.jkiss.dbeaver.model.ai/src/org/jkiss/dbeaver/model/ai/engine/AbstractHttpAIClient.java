@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -31,12 +32,20 @@ import java.util.stream.Stream;
 public abstract class AbstractHttpAIClient implements AutoCloseable {
     protected final MonitoredHttpClient client;
 
+    protected Duration timeout = Duration.ofSeconds(AIEngineProperties.DEFAULT_TIMEOUT);
+
     public AbstractHttpAIClient() {
         this.client = new MonitoredHttpClient(
             HttpClient.newHttpClient(),
             this::mapHttpError,
             this::processErrors
         );
+    }
+
+    public void setTimeout(int timeoutSeconds) {
+        if (timeoutSeconds > 0) {
+            this.timeout = Duration.ofSeconds(timeoutSeconds);
+        }
     }
 
     @Override
