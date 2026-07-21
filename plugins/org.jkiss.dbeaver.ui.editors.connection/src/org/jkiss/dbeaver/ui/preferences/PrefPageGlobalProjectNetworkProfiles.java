@@ -160,6 +160,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         networkProfilesPage.setProjectMeta(project);
         networkProfilesPage.createControl(networkProfilesPageHolder);
         networkProfilesPage.loadSettings();
+        networkProfilesPageHolder.layout(true, true);
 
         return true;
     }
