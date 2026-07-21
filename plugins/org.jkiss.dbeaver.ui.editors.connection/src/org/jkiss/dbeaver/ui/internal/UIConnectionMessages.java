@@ -84,6 +84,10 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_auth_label_password;
     public static String dialog_connection_auth_label_username;
     public static String dialog_connection_auth_label_show_password;
+    public static String dialog_connection_auth_shell_command_label;
+    public static String dialog_connection_auth_shell_command_hint;
+    public static String dialog_connection_auth_shell_command_workdir_label;
+    public static String dialog_connection_auth_shell_command_timeout_label;
 
     public static String dialog_connection_network_socket_label_host;
     public static String dialog_connection_network_socket_label_port;
@@ -333,6 +337,10 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_no_profile_error_information;
     public static String pref_page_network_profiles_global_project_label;
     public static String pref_page_network_profiles_global_project_hint;
+    public static String pref_page_network_profiles_global_project_name_used_in_local_label;
+    public static String pref_page_network_profiles_global_project_name_used_in_local_question;
+    public static String pref_page_network_profiles_local_name_used_in_global_label;
+    public static String pref_page_network_profiles_local_name_used_in_global_question;
     public static String dialog_tunnel_checkbox_use_handler;
     public static String dialog_tunnel_title;
 
