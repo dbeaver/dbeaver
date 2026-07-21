@@ -777,11 +777,11 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        if (topBarMan != null) {
-            topBarMan.getControl().redraw();
+        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+            CSSUtils.refreshConnectionTypeToolbar(topBar);
         }
-        if (bottomBarMan != null) {
-            bottomBarMan.getControl().redraw();
+        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+            CSSUtils.refreshConnectionTypeToolbar(bottomBar);
         }
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
@@ -1307,6 +1307,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         presentationSwitchFolder = new VerticalFolder(sqlEditorPanel, SWT.RIGHT);
+        CSSUtils.markConnectionTypeColor(presentationSwitchFolder);
         presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
         SelectionListener switchListener = SelectionListener.widgetSelectedAdapter(e -> {
@@ -3342,6 +3343,22 @@ public class SQLEditor extends SQLEditorBase implements
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
 
+        // Re-apply CSS so connection-type colored widgets (side toolbars, sash, etc.)
+        // refresh immediately instead of waiting for the next CSS engine pass
+        CSSUtils.applyStyles(resultsSash);
+        CSSUtils.refreshConnectionTypeControls(resultsSash);
+
+        // Repaint the workbench editor tab folder so the custom tab renderer
+        // picks up the new connection color immediately after a connection change
+        if (resultsSash != null && !resultsSash.isDisposed()) {
+            for (Composite c = resultsSash; c != null; c = c.getParent()) {
+                if (!c.isDisposed() && c.getParent() instanceof CTabFolder tabFolder) {
+                    tabFolder.redraw();
+                    break;
+                }
+            }
+        }
+
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             EditorUtils.setInputDataSource(getEditorInput(), new SQLNavigatorContext(executionContext));
@@ -3349,6 +3366,15 @@ public class SQLEditor extends SQLEditorBase implements
         refreshActions();
 
         refreshEditorIconAndTitle();
+
+        firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
+
+        if (getSite() != null) {
+            IWorkbenchPage page = getSite().getWorkbenchWindow().getActivePage();
+            if (page != null && page.getActiveEditor() == this) {
+                DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
+            }
+        }
 
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
