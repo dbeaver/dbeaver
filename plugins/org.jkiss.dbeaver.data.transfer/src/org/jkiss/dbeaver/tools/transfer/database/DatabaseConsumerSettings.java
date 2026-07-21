@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
-import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -330,39 +329,38 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
             }
             checkContainerConnection(runnableContext);
         }
-        if (DTActivator.getDefault().getPreferences().getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE)) {
-            loadObjectContainer(runnableContext, dataTransferSettings, null);
+        loadObjectContainer(runnableContext, dataTransferSettings, null);
 
-            // Load mapping for current objects
-            Map<String, Object> mappings = (Map<String, Object>) settings.get("mappings");
-            if (mappings != null) {
-                if (!dataMappings.isEmpty()) {
-                    for (DatabaseMappingContainer dmc : dataMappings.values()) {
-                        DBSDataContainer sourceDatacontainer = dmc.getSource();
-                        if (sourceDatacontainer != null) {
-                            Map<String, Object> dmcSettings
-                                = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(sourceDatacontainer));
-                            if (dmcSettings != null) {
-                                dmc.loadSettings(runnableContext, dmcSettings);
-                            }
+        // Load mapping for current objects
+        Map<String, Object> mappings = (Map<String, Object>) settings.get("mappings");
+        if (mappings != null) {
+            if (!dataMappings.isEmpty()) {
+                for (DatabaseMappingContainer dmc : dataMappings.values()) {
+                    DBSDataContainer sourceDatacontainer = dmc.getSource();
+                    if (sourceDatacontainer != null) {
+                        Map<String, Object> dmcSettings
+                            = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(sourceDatacontainer));
+                        if (dmcSettings != null) {
+                            dmc.loadSettings(runnableContext, dmcSettings);
                         }
                     }
-                } else if (!dataPipes.isEmpty()) {
-                    for (DataTransferPipe pipe : dataPipes) {
-                        IDataTransferProducer producer = pipe.getProducer();
-                        if (producer != null) {
-                            DBSObject dbObject = producer.getDatabaseObject();
-                            if (dbObject instanceof DBSDataContainer sourceDC) {
-                                Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
-                                if (dmcSettings != null) {
-                                    DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);
-                                    dmc.loadSettings(runnableContext, dmcSettings);
-                                    dataMappings.put(sourceDC, dmc);
-                                }
+                }
+            } else if (!dataPipes.isEmpty()) {
+                for (DataTransferPipe pipe : dataPipes) {
+                    IDataTransferProducer producer = pipe.getProducer();
+                    if (producer != null) {
+                        DBSObject dbObject = producer.getDatabaseObject();
+                        if (dbObject instanceof DBSDataContainer sourceDC) {
+                            Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
+                            if (dmcSettings != null) {
+                                DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);
+                                dmc.loadSettings(runnableContext, dmcSettings);
+                                dataMappings.put(sourceDC, dmc);
                             }
                         }
                     }
                 }
+
             }
         }
 
