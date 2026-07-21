@@ -95,9 +95,9 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             UIConnectionMessages.pref_page_network_profiles_global_project_hint,
             () -> {
                 int selectionIndex = projectCombo.getSelectionIndex();
-                if (selectionIndex == 0) {
+                if (selectionIndex < 1) {
                     refreshActiveProject(null);
-                } else if (projects.get(selectionIndex + 1) instanceof RCPProject project) {
+                } else if (projects.get(selectionIndex - 1) instanceof RCPProject project) {
                     PrefPageProjectNetworkProfiles.open(getShell(), project, null);
                     refreshActiveProject(project);
                 }
