@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
  * OpenAI constants
  */
 public class OpenAIConstants {
-    public static final String DEFAULT_MODEL = "gpt-4o";
 
     public static final String OPENAI_ENGINE = "openai";
     public static final String GPT_API_TOKEN = "gpt.token";
@@ -29,8 +28,8 @@ public class OpenAIConstants {
 
     // Response endpoint
     public static final String ENDPOINT_RESPONSES = "responses";
+
     // Chat API endpoint
-    public static final String ENDPOINT_CHAT = "chat/completions";
     public static final String TOOL_RESULT_CALL_ID = "call_id";
     public static final String AI_LOG_QUERY = "gpt.log.query";
     public static final String LEGACY_FALLBACK = "legacy_fallback";
