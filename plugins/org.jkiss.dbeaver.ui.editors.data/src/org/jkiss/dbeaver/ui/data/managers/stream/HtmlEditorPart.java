@@ -27,6 +27,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -45,14 +46,14 @@ import java.io.Reader;
 /**
  * Read-only HTML content editor part
  */
-public class HTMLEditorPart extends EditorPart implements IRefreshablePart {
+public class HtmlEditorPart extends EditorPart implements IRefreshablePart {
 
-    private static final Log log = Log.getLog(HTMLEditorPart.class);
+    private static final Log log = Log.getLog(HtmlEditorPart.class);
 
     private final IValueController valueController;
     private Browser browser;
 
-    public HTMLEditorPart(@NotNull IValueController valueController) {
+    public HtmlEditorPart(@NotNull IValueController valueController) {
         this.valueController = valueController;
     }
 
@@ -64,7 +65,7 @@ public class HTMLEditorPart extends EditorPart implements IRefreshablePart {
 
     @Override
     public void createPartControl(@NotNull Composite parent) {
-        browser = HTMLPanelEditor.createBrowser(parent);
+        browser = HtmlPanelEditor.createBrowser(parent);
         loadContent();
     }
 
@@ -83,7 +84,7 @@ public class HTMLEditorPart extends EditorPart implements IRefreshablePart {
         long configuredLimit = Math.max(store.getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE), 0) * 1000L;
         int maxContentLength = (int) Math.min(configuredLimit, Integer.MAX_VALUE);
         try (Reader reader = new InputStreamReader(storage.getContents(), input.getEncoding())) {
-            browser.setText(HTMLPanelEditor.readContent(reader, maxContentLength));
+            browser.setText(HtmlPanelEditor.readContent(reader, maxContentLength));
         } catch (CoreException | IOException e) {
             log.error("Error reading HTML content", e); //$NON-NLS-1$
             browser.setText(""); //$NON-NLS-1$
@@ -97,11 +98,13 @@ public class HTMLEditorPart extends EditorPart implements IRefreshablePart {
         }
     }
 
+    @NotNull
     @Override
     public String getTitle() {
         return "HTML"; //$NON-NLS-1$
     }
 
+    @NotNull
     @Override
     public Image getTitleImage() {
         return DBeaverIcons.getImage(DBIcon.TYPE_TEXT);
@@ -125,8 +128,9 @@ public class HTMLEditorPart extends EditorPart implements IRefreshablePart {
     public void doSaveAs() {
     }
 
+    @NotNull
     @Override
-    public RefreshResult refreshPart(Object source, boolean force) {
+    public RefreshResult refreshPart(@Nullable Object source, boolean force) {
         UIUtils.asyncExec(this::loadContent);
         return RefreshResult.REFRESHED;
     }

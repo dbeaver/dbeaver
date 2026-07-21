@@ -48,20 +48,21 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Read-only HTML preview
  */
-public class HTMLPanelEditor implements IStreamValueEditor<Composite> {
+public class HtmlPanelEditor implements IStreamValueEditor<Composite> {
 
-    private static final Log log = Log.getLog(HTMLPanelEditor.class);
+    private static final Log log = Log.getLog(HtmlPanelEditor.class);
 
     private final IValueController valueController;
     private final AtomicLong updateSequence = new AtomicLong();
     private Browser browser;
 
-    public HTMLPanelEditor(@NotNull IValueController valueController) {
+    public HtmlPanelEditor(@NotNull IValueController valueController) {
         this.valueController = valueController;
     }
 
+    @NotNull
     @Override
-    public Composite createControl(IValueController valueController) {
+    public Composite createControl(@NotNull IValueController valueController) {
         Composite composite = new Composite(valueController.getEditPlaceholder(), SWT.NONE);
         composite.setLayout(new FillLayout());
         browser = createBrowser(composite);

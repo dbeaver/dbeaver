@@ -31,8 +31,9 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 /**
  * HTML preview manager
  */
-public class HTMLStreamValueManager implements IStreamValueManager {
+public class HtmlStreamValueManager implements IStreamValueManager {
 
+    @NotNull
     @Override
     public MatchType matchesTo(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
         if (value != null && MimeTypes.TEXT_HTML.equalsIgnoreCase(value.getContentType())) {
@@ -41,13 +42,15 @@ public class HTMLStreamValueManager implements IStreamValueManager {
         return ContentUtils.isTextContent(value) ? MatchType.APPLIES : MatchType.NONE;
     }
 
+    @NotNull
     @Override
     public IStreamValueEditor createPanelEditor(@NotNull IValueController controller) {
-        return new HTMLPanelEditor(controller);
+        return new HtmlPanelEditor(controller);
     }
 
+    @NotNull
     @Override
     public IEditorPart createEditorPart(@NotNull IValueController controller) {
-        return new HTMLEditorPart(controller);
+        return new HtmlEditorPart(controller);
     }
 }
