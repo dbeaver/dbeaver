@@ -39,7 +39,6 @@ import java.util.concurrent.Future;
 public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends Object> extends AbstractHttpAIClient {
     protected static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
     protected static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
-    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final Log log = Log.getLog(CopilotClientBase.class);
     private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
     private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
@@ -108,11 +107,11 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
         HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve(COPILOT_CHAT_MODELS_URL))
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token).header("Editor-Version", CHAT_EDITOR_VERSION).GET()
-            .timeout(TIMEOUT).build();
+            .timeout(timeout).build();
 
         var response = client.send(monitor, request);
         var models = CopilotUtils.GSON.fromJson(response, CopilotModelList.class);
-        return models.data().stream().filter(CopilotModel::isEnabled).toList();
+        return models.data().stream().filter(CopilotModel::isChatModel).toList();
     }
 
     /**
@@ -167,7 +166,7 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
         HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve(baseAuthURL + COPILOT_SESSION_TOKEN_URL))
             .header(HttpConstants.HEADER_AUTHORIZATION, "token " + accessToken).header("editor-version", EDITOR_VERSION)
             .header("editor-plugin-version", EDITOR_PLUGIN_VERSION).header(HttpConstants.HEADER_USER_AGENT, USER_AGENT).GET()
-            .timeout(TIMEOUT).build();
+            .timeout(timeout).build();
 
         return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotSessionToken.class);
     }

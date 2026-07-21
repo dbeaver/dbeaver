@@ -91,17 +91,19 @@ public class DBExecUtils {
         boolean recoveryFailed;
     }
 
+    @Nullable
     public static DBPDataSourceContainer getCurrentThreadContext() {
         return ACTIVE_CONTEXT.get();
     }
 
+    @NotNull
     public static List<DBPDataSourceContainer> getActiveContexts() {
         synchronized (ACTIVE_CONTEXTS) {
             return new ArrayList<>(ACTIVE_CONTEXTS);
         }
     }
 
-    public static void startContextInitiation(DBPDataSourceContainer context) {
+    public static void startContextInitiation(@NotNull DBPDataSourceContainer context) {
         ACTIVE_CONTEXT.set(context);
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.add(context);
@@ -121,14 +123,15 @@ public class DBExecUtils {
         }
     }
 
-    public static void finishContextInitiation(DBPDataSourceContainer context) {
+    public static void finishContextInitiation(@NotNull DBPDataSourceContainer context) {
         ACTIVE_CONTEXT.remove();
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.remove(context);
         }
     }
 
-    public static DBPDataSourceContainer findConnectionContext(String host, int port, String path) {
+    @Nullable
+    public static DBPDataSourceContainer findConnectionContext(@NotNull String host, int port, @Nullable String path) {
         DBPDataSourceContainer curContext = getCurrentThreadContext();
         if (curContext != null) {
             return contextMatches(host, port, curContext) ? curContext : null;
@@ -143,7 +146,7 @@ public class DBExecUtils {
         return null;
     }
 
-    private static boolean contextMatches(String host, int port, DBPDataSourceContainer ctx) {
+    private static boolean contextMatches(@NotNull String host, int port, @NotNull DBPDataSourceContainer ctx) {
         DBPConnectionConfiguration cfg = ctx.getConnectionConfiguration();
         if (CommonUtils.equalObjects(cfg.getHostName(), host) && String.valueOf(port).equals(cfg.getHostPort())) {
             return true;
@@ -188,7 +191,11 @@ public class DBExecUtils {
      * @param param DBRProgressProgress monitor or DBCSession
      *
      */
-    public static <T> boolean tryExecuteRecover(@NotNull T param, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableParametrized<T> runnable) throws DBException {
+    public static <T> boolean tryExecuteRecover(
+        @NotNull T param,
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBRRunnableParametrized<T> runnable
+    ) throws DBException {
         RecoveryState recoveryState = DBExecUtils.recoveryStack.get();
         if (recoveryState == null) {
             recoveryState = new RecoveryState();
@@ -283,7 +290,7 @@ public class DBExecUtils {
         }
     }
 
-    public static void setStatementFetchSize(DBCStatement dbStat, long firstRow, long maxRows, int fetchSize) {
+    public static void setStatementFetchSize(@NotNull DBCStatement dbStat, long firstRow, long maxRows, int fetchSize) {
         boolean useFetchSize = fetchSize > 0 || dbStat.getSession().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
         if (useFetchSize) {
             if (fetchSize <= 0) {
@@ -299,17 +306,17 @@ public class DBExecUtils {
     }
 
     public static void executeScript(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        String jobName,
-        List<DBEPersistAction> persistActions
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String jobName,
+        @NotNull List<DBEPersistAction> persistActions
     ) throws DBException {
         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
             executeScript(session, persistActions.toArray(new DBEPersistAction[0]));
         }
     }
 
-    public static void executeScript(DBCSession session, DBEPersistAction[] persistActions) {
+    public static void executeScript(@NotNull DBCSession session, @NotNull DBEPersistAction[] persistActions) {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         boolean ignoreErrors = false;
         monitor.beginTask(session.getTaskTitle(), persistActions.length);
@@ -355,7 +362,10 @@ public class DBExecUtils {
         }
     }
 
-    public static void executePersistActions(DBCSession session, DBEPersistAction[] persistActions) throws DBException {
+    public static void executePersistActions(
+        @NotNull DBCSession session,
+        @NotNull DBEPersistAction[] persistActions
+    ) throws DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask(session.getTaskTitle(), persistActions.length);
         try {
@@ -373,30 +383,38 @@ public class DBExecUtils {
         }
     }
 
-    public static void executePersistAction(DBCSession session, DBEPersistAction action) throws DBException {
+    public static void executePersistAction(@NotNull DBCSession session, @NotNull DBEPersistAction action) throws DBException {
         if (action instanceof SQLDatabasePersistActionComment) {
             return;
         }
         String script = action.getScript();
-        if (script == null) {
+        if (CommonUtils.isEmpty(script)) {
             action.afterExecute(session, null);
-        } else {
-            try (DBCStatement dbStat = DBUtils.createStatement(session, script, false)) {
-                action.beforeExecute(session);
-                dbStat.executeStatement();
-                if (action instanceof SQLDatabasePersistAction) {
-                    ((SQLDatabasePersistAction) action).afterExecute(session, dbStat, null);
-                } else {
-                    action.afterExecute(session, null);
-                }
-            } catch (DBCException e) {
-                action.afterExecute(session, e);
-                throw e;
+            return;
+        }
+        boolean statementProcessed = false;
+        try (DBCStatement dbStat = DBUtils.createStatement(session, script, false)) {
+            action.beforeExecute(session);
+            dbStat.executeStatement();
+            statementProcessed = true;
+            if (action instanceof SQLDatabasePersistAction persistAction) {
+                persistAction.afterExecute(session, dbStat, null);
+            } else {
+                action.afterExecute(session, null);
             }
+        } catch (Throwable e) {
+            if (!statementProcessed) {
+                try {
+                    action.afterExecute(session, e);
+                } catch (Throwable ex) {
+                    log.debug("Error during error handle", ex);
+                }
+            }
+            throw e;
         }
     }
 
-    public static boolean checkSmartAutoCommit(DBCSession session, String queryText) {
+    public static boolean checkSmartAutoCommit(@NotNull DBCSession session, @NotNull String queryText) {
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
         if (txnManager != null) {
             try {
@@ -421,9 +439,9 @@ public class DBExecUtils {
     }
 
     public static void setExecutionContextDefaults(
-        DBRProgressMonitor monitor,
-        DBPDataSource dataSource,
-        DBCExecutionContext executionContext,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @Nullable DBCExecutionContext executionContext,
         @Nullable String newInstanceName,
         @Nullable String curInstanceName,
         @Nullable String newObjectName
@@ -456,8 +474,8 @@ public class DBExecUtils {
 
         if (newCatalogName != null) {
             DBSObject newInstance = rootContainer.getChild(monitor, newCatalogName);
-            if (newInstance instanceof DBSCatalog) {
-                newCatalog = (DBSCatalog) newInstance;
+            if (newInstance instanceof DBSCatalog catalog) {
+                newCatalog = catalog;
             }
         }
         DBSObject newObject;
@@ -467,10 +485,10 @@ public class DBExecUtils {
             } else {
                 newObject = newCatalog.getChild(monitor, newObjectName);
             }
-            if (newObject instanceof DBSSchema) {
-                newSchema = (DBSSchema) newObject;
-            } else if (newObject instanceof DBSCatalog) {
-                newCatalog = (DBSCatalog) newObject;
+            if (newObject instanceof DBSSchema schema) {
+                newSchema = schema;
+            } else if (newObject instanceof DBSCatalog catalog) {
+                newCatalog = catalog;
             }
         }
 
@@ -485,7 +503,7 @@ public class DBExecUtils {
         }
     }
 
-    public static void recoverSmartCommit(DBCExecutionContext executionContext) {
+    public static void recoverSmartCommit(@NotNull DBCExecutionContext executionContext) {
         DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
         DBPPreferenceStore preferenceStore = container.getPreferenceStore();
         DBPConnectionType connectionType = container.getConnectionConfiguration().getConnectionType();
@@ -527,6 +545,7 @@ public class DBExecUtils {
         }
     }
 
+    @Nullable
     public static DBSEntityConstraint getBestIdentifier(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity table,
@@ -626,11 +645,14 @@ public class DBExecUtils {
         // No physical identifiers or row ids
         // Make new or use existing virtual identifier
         DBVEntity virtualEntity = DBVUtils.getVirtualEntity(table, true);
-        return virtualEntity.getBestIdentifier();
+        return virtualEntity == null ? null : virtualEntity.getBestIdentifier();
     }
 
-    private static boolean isGoodReferrer(DBRProgressMonitor monitor, DBDAttributeBinding[] bindings, DBSEntityReferrer referrer) throws DBException
-    {
+    private static boolean isGoodReferrer(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDAttributeBinding[] bindings,
+        @NotNull DBSEntityReferrer referrer
+    ) throws DBException {
         if (referrer instanceof DBDPseudoReferrer) {
             return true;
         }
@@ -653,19 +675,20 @@ public class DBExecUtils {
         return true;
     }
 
-    public static DBSEntityAssociation getAssociationByAttribute(DBDAttributeBinding attr) throws DBException {
+    @NotNull
+    public static DBSEntityAssociation getAssociationByAttribute(@NotNull DBDAttributeBinding attr) throws DBException {
         List<DBSEntityReferrer> referrers = attr.getReferrers();
         if (referrers != null) {
             for (final DBSEntityReferrer referrer : referrers) {
-                if (referrer instanceof DBSEntityAssociation) {
-                    return (DBSEntityAssociation) referrer;
+                if (referrer instanceof DBSEntityAssociation association) {
+                    return association;
                 }
             }
         }
         throw new DBException("Association not found in attribute [" + attr.getName() + "]");
     }
 
-    public static boolean equalAttributes(DBCAttributeMetaData attr1, DBCAttributeMetaData attr2) {
+    public static boolean equalAttributes(@Nullable DBCAttributeMetaData attr1, @Nullable DBCAttributeMetaData attr2) {
         return
             attr1 != null && attr2 != null &&
             SQLUtils.compareAliases(attr1.getLabel(), attr2.getLabel()) &&
@@ -703,8 +726,8 @@ public class DBExecUtils {
         @Nullable DBSEntity sourceEntity,
         @Nullable DBCResultSet resultSet,
         @NotNull DBDAttributeBinding[] bindings,
-        @Nullable List<Object[]> rows) throws DBException
-    {
+        @Nullable List<Object[]> rows
+    ) throws DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         DBPDataSource dataSource = session.getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();
@@ -930,7 +953,6 @@ public class DBExecUtils {
         @NotNull DBDAttributeBinding[] bindings,
         @NotNull DBRProgressMonitor mdMonitor
     ) throws DBException {
-
         Map<DBSEntity, DBDRowIdentifier> locatorMap = new IdentityHashMap<>();
 
         for (DBDAttributeBinding binding : bindings) {
@@ -944,21 +966,15 @@ public class DBExecUtils {
                 continue;
             }
             DBSEntity attrEntity = attr.getParentObject();
-            if (attrEntity != null) {
-                DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
-                if (rowIdentifier == null) {
-                    DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings);
-                    if (entityIdentifier != null) {
-                        rowIdentifier = new DBDRowIdentifier(
-                            attrEntity,
-                            entityIdentifier);
-                        locatorMap.put(attrEntity, rowIdentifier);
-                    } else {
-                        bindingMeta.setRowIdentifierStatus(ModelMessages.cannot_determine_unique_row_identifier_text);
-                    }
+            DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
+            if (rowIdentifier == null) {
+                DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings);
+                if (entityIdentifier != null) {
+                    rowIdentifier = new DBDRowIdentifier(attrEntity, entityIdentifier);
+                    locatorMap.put(attrEntity, rowIdentifier);
                 }
-                bindingMeta.setRowIdentifier(rowIdentifier);
             }
+            bindingMeta.setRowIdentifier(rowIdentifier);
         }
 
         return locatorMap;
@@ -999,10 +1015,12 @@ public class DBExecUtils {
         return !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE);
     }
 
+    @Nullable
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
         return getAttributeReadOnlyStatus(attribute, true);
     }
 
+    @Nullable
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute, boolean checkValidKey) {
         if (attribute.getMetaAttribute() == null) {
             return "Null meta attribute";
@@ -1061,6 +1079,7 @@ public class DBExecUtils {
         return null;
     }
 
+    @NotNull
     public static List<DBEPersistAction> getActionsListFromCommandContext(@NotNull DBRProgressMonitor monitor, DBECommandContext commandContext, DBCExecutionContext executionContext, Map<String, Object> options, @Nullable List<DBEPersistAction> actions) throws DBException {
         if (actions == null) {
             actions = new ArrayList<>();
@@ -1113,6 +1132,7 @@ public class DBExecUtils {
         return false;
     }
 
+    @NotNull
     public static <CONTEXT extends AbstractExecutionContext<?,?>> CONTEXT tryOpenContext(
         @NotNull CONTEXT executionContext,
         @NotNull DBRRunnableWithParam<CONTEXT> runnable

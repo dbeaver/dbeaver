@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.time.LocalDate;
@@ -341,7 +343,7 @@ public class ContextComposite extends Composite {
         ) {
             LocalDateTime msgTime = conversion.getTime();
             manager.add(new Action(
-                conversion.getCaption() + " - " + msgTime.format(
+                conversion.getCaption() + " / " + msgTime.format(
                         msgTime.toLocalDate().equals(today) ? CONV_TIME_FORMAT : CONV_DATE_TIME_FORMAT),
                 DBeaverIcons.getImageDescriptor(getConversationIcon(conversion))
             ) {
@@ -409,6 +411,30 @@ public class ContextComposite extends Composite {
                 continue;
             }
             manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
+        }
+
+        manager.add(new Separator());
+        manager.add(new EmptyAction("Active configuration"));
+        for (AIConfigurationProfile profile : AISettingsManager.getInstance().getSettings().getConfigurations()) {
+            manager.add(new ChangeProfileAction(profile));
+        }
+
+        if (RuntimeUtils.isWindows()) {
+            // Highlight selected item
+            manager.addMenuListener(mm -> getDisplay().asyncExec(() -> {
+                Menu swtMenu = ((MenuManager) mm).getMenu();
+                if (swtMenu != null && !swtMenu.isDisposed()) {
+                    for (MenuItem item : swtMenu.getItems()) {
+                        if (item.getData() instanceof ActionContributionItem aci &&
+                            aci.getAction() instanceof ChangeProfileAction cpa &&
+                            cpa.isChecked()
+                        ) {
+                            swtMenu.setDefaultItem(item);
+                            break;
+                        }
+                    }
+                }
+            }));
         }
     }
 
@@ -551,7 +577,7 @@ public class ContextComposite extends Composite {
             super(dataSourceContext ? "This connection" : "This conversation", Action.AS_RADIO_BUTTON);
             this.dataSourceContext = dataSourceContext;
 
-            boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AICompletionSettings;
+            boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AIContextSettingsDataSource;
             setChecked(dataSourceContext == isDataSourceSettings);
         }
 
@@ -579,9 +605,9 @@ public class ContextComposite extends Composite {
             AIContextSettings newSettings;
             // change scope
             if (dataSourceContext) {
-                newSettings = new AICompletionSettings(dataSourceContainer);
+                newSettings = new AIContextSettingsDataSource(dataSourceContainer);
             } else {
-                newSettings = new AIChatConversationSettings(chat.getChatSession(), chat.getActiveConversation());
+                newSettings = new AIContextSettingsChatConversation(chat.getChatSession(), chat.getActiveConversation());
             }
             if (currentSettings != null && !dataSourceContext) {
                 newSettings.setScope(currentSettings.getScope());
@@ -654,13 +680,62 @@ public class ContextComposite extends Composite {
 
         private void chooseCustomScope() {
             DBPDataSourceContainer container = settings.getDataSourceContainer();
+            if (container == null) {
+                return;
+            }
+            DBCExecutionContext executionContext = chat.getExecutionContext(container);
+            if (executionContext == null) {
+                return;
+            }
             AIChatUtils.chooseCustomScope(
                 getShell(),
                 settings,
                 container,
-                chat::getExecutionContext,
+                ds -> executionContext,
                 chat.getActiveConversation()
             );
+        }
+    }
+
+    private class ChangeProfileAction extends Action {
+
+        private final AIConfigurationProfile profile;
+
+        public ChangeProfileAction(
+            @NotNull AIConfigurationProfile profile
+        ) {
+            super(genProfileName(profile), AS_RADIO_BUTTON);
+            this.profile = profile;
+            try {
+                AIEngineDescriptor engine = profile.getEngineDescriptor();
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(engine.getIcon()));
+            } catch (DBException e) {
+                log.debug(e);
+            }
+            AIConfigurationProfile chatProfile = chat.getActiveConversation().getProfile();
+            if (chatProfile == null) {
+                chatProfile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
+            }
+            setChecked(chatProfile == profile);
+        }
+
+        @NotNull
+        private static String genProfileName(@NotNull AIConfigurationProfile profile) {
+            String model = null;
+            try {
+                model = profile.getConfiguration().getModel();
+            } catch (DBException e) {
+                log.debug(e);
+            }
+            return profile.getProfileName() + (model == null ? "" : " / " + model);
+        }
+
+        @Override
+        public void run() {
+            if (!isChecked()) {
+                return;
+            }
+            chat.getActiveConversation().setProfile(profile);
         }
     }
 

@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.navigator.actions.node;
 
-import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
 
 /**
@@ -40,7 +38,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract
 public class NNAHDataSourceConnectionView extends NavigatorNodeActionHandlerAbstract {
 
     @Override
-    public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public boolean isEnabledFor(@NotNull DBNNode node) {
         if (node instanceof DBNDataSource dbnDataSource) {
             DBNBrowseSettings chosenSettings = dbnDataSource.getDataSourceContainer().getNavigatorSettings();
             return !DataSourceNavigatorSettings.getProductDefaultSettings().equals(chosenSettings);
@@ -50,7 +48,7 @@ public class NNAHDataSourceConnectionView extends NavigatorNodeActionHandlerAbst
 
     @Override
     @Nullable
-    public DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public DBPImage getNodeActionIcon(@NotNull DBNNode node) {
         if (node instanceof DBNDataSource dbnDataSource) {
             DBNBrowseSettings chosenSettings = dbnDataSource.getDataSourceContainer().getNavigatorSettings();
             if (DataSourceNavigatorSettings.PRESET_SIMPLE.getSettings().equals(chosenSettings)) {
@@ -66,7 +64,7 @@ public class NNAHDataSourceConnectionView extends NavigatorNodeActionHandlerAbst
 
     @Override
     @Nullable
-    public String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public String getNodeActionToolTip(@NotNull DBNNode node) {
         if (node instanceof DBNDataSource dbnDataSource) {
             DBNBrowseSettings chosenSettings = dbnDataSource.getDataSourceContainer().getNavigatorSettings();
             if (DataSourceNavigatorSettings.PRESET_SIMPLE.getSettings().equals(chosenSettings)) {
@@ -81,7 +79,7 @@ public class NNAHDataSourceConnectionView extends NavigatorNodeActionHandlerAbst
     }
 
     @Override
-    public void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction) {
+    public void handleNodeAction(@NotNull DBNNode node, boolean defaultAction) {
         if (node instanceof DBNDatabaseNode  dbnDatabaseNode) {
             DBPDataSourceContainer dataSourceContainer = dbnDatabaseNode.getDataSourceContainer();
             UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
