@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,28 +41,26 @@ public abstract class AbstractTable<
     CONTAINER extends DBSObject>
     implements DBSTable, DBPNamedObject2
 {
-    private CONTAINER container;
+    private final CONTAINER container;
     private String tableName;
 
-    protected AbstractTable(CONTAINER container)
-    {
+    protected AbstractTable(@NotNull CONTAINER container) {
         this.container = container;
         this.tableName = "";
     }
 
     // Copy constructor
-    protected AbstractTable(CONTAINER container, DBSEntity source)
-    {
+    protected AbstractTable(@NotNull CONTAINER container, @NotNull DBSEntity source) {
         this(container);
         this.tableName = source.getName();
     }
 
-    protected AbstractTable(CONTAINER container, String tableName)
-    {
+    protected AbstractTable(@NotNull CONTAINER container, @Nullable String tableName) {
         this(container);
         this.tableName = tableName;
     }
 
+    @NotNull
     public CONTAINER getContainer()
     {
         return container;

@@ -1143,12 +1143,43 @@ public abstract class SQLQueryCompletionContext {
                         null,
                         filterOrNull
                     );
-                    resultItems = Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems, sequenceItems).flatMap(Collection::stream).toList();
+                    LinkedList<SQLQueryCompletionItem> globalPseudoColumnItems = this.prepareGlobalPseudoColumnCompletions(
+                        context,
+                        filterOrNull
+                    );
+                    resultItems = Stream.of(
+                        joinConditions,
+                        subsetColumns,
+                        tableRefs,
+                        procedureItems,
+                        sequenceItems,
+                        globalPseudoColumnItems
+                    ).flatMap(Collection::stream).toList();
                 } else {
                     resultItems = subsetColumns;
                 }
 
                 this.makeFilteredCompletionSet(filterOrNull, resultItems, results);
+            }
+
+            @NotNull
+            private LinkedList<SQLQueryCompletionItem> prepareGlobalPseudoColumnCompletions(
+                @NotNull SQLQueryDataContextInfo context,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                LinkedList<SQLQueryCompletionItem> globalPseudoColumnItems = new LinkedList<>();
+                for (SQLQueryResultPseudoColumn pseudoColumn : context.getGlobalPseudoColumnsList()) {
+                    SQLQueryWordEntry columnName = makeFilterInfo(filterOrNull, pseudoColumn.symbol.getName());
+                    int score = columnName.matches(filterOrNull, this.searchInsideWords);
+                    if (score > 0) {
+                        globalPseudoColumnItems.addLast(SQLQueryCompletionItem.forGlobalPseudoColumn(
+                            score,
+                            columnName,
+                            pseudoColumn
+                        ));
+                    }
+                }
+                return globalPseudoColumnItems;
             }
 
             @NotNull
@@ -1601,6 +1632,9 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         List<SQLQueryResultColumn> getColumnsList();
 
+        @NotNull
+        Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList();
+
         @Nullable
         SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s);
 
@@ -1651,6 +1685,12 @@ public abstract class SQLQueryCompletionContext {
         @Override
         public List<SQLQueryResultColumn> getColumnsList() {
             return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList() {
+            return this.rowsSourceContext.getConnectionInfo().getGlobalPseudoColumns();
         }
 
         @Nullable
@@ -1765,6 +1805,12 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         @Override
         public List<SQLQueryResultColumn> getColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList() {
             return Collections.emptyList();
         }
 

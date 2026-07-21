@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSVisibilityScopeProvider;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -68,6 +69,12 @@ public class SQLQueryConnectionRealContext extends SQLQueryConnectionContext {
     @NotNull
     public List<SQLQueryResultPseudoColumn> obtainRowsetPseudoColumns(@Nullable SQLQueryRowsSourceModel rowsSource) {
         return this.rowsetPseudoColumnsProvider.apply(rowsSource);
+    }
+
+    @NotNull
+    @Override
+    public Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumns() {
+        return this.globalPseudoColumnsByCanonicalName.values();
     }
 
     @Override

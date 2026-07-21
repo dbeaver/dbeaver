@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
@@ -30,21 +29,13 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class AIFunctionInternalDescriptor extends AbstractDescriptor implements AIFunctionDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
 
-    private static final AIFunction VOID_STUB = new AIFunction() {
-        @NotNull
-        @Override
-        public AIFunctionResult callFunction(
-            @NotNull AIFunctionContext context,
-            @NotNull Map<String, Object> parameters
-        ) throws DBException {
-            throw new DBCFeatureNotSupportedException("Internal error. This function mustn't be called");
-        }
+    private static final AIFunction VOID_STUB = (context, parameters) -> {
+        throw new DBCFeatureNotSupportedException("Internal error. This function mustn't be called");
     };
 
     private final AIToolboxInternalDescriptor toolbox;
@@ -55,6 +46,8 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean system;
     private final boolean ui;
     private final boolean enabledByDefault;
+    private final boolean omitConfirmation;
+    private final AIFunctionAllowMode defaultAllowMode;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
     private final String[] dependsOn;
@@ -77,6 +70,12 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
         this.system = CommonUtils.toBoolean(config.getAttribute("system"));
         this.enabledByDefault = CommonUtils.toBoolean(config.getAttribute("enabledByDefault"));
+        this.defaultAllowMode = CommonUtils.valueOf(
+            AIFunctionAllowMode.class,
+            config.getAttribute("defaultAllowMode"),
+            AIFunctionAllowMode.ALWAYS_ALLOW
+        );
+        this.omitConfirmation = CommonUtils.toBoolean(config.getAttribute("omitConfirmation"), false);
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
         this.aiDescription = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -154,6 +153,17 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     @Override
     public boolean isEnabledByDefault() {
         return enabledByDefault;
+    }
+
+    @Override
+    public boolean isOmitConfirmation() {
+        return omitConfirmation;
+    }
+
+    @NotNull
+    @Override
+    public AIFunctionAllowMode getDefaultAllowMode() {
+        return defaultAllowMode;
     }
 
     @NotNull

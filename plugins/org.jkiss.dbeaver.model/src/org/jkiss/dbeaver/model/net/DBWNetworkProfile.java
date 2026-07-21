@@ -43,6 +43,14 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
 
     private transient DBSSecretSubject secretSubject;
 
+    public DBWNetworkProfile() {
+        // Global profile
+    }
+
+    public DBWNetworkProfile(@NotNull DBPProject project) {
+        super(project);
+    }
+
     @NotNull
     private final List<DBWHandlerConfiguration> configurations = new ArrayList<>();
 
@@ -51,13 +59,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         return configurations;
     }
 
-    public DBWNetworkProfile() {
-    }
-
-    public DBWNetworkProfile(DBPProject project) {
-        super(project);
-    }
-
+    @Nullable
     @Override
     public String getProfileSource() {
         return secretSubject == null ? null : secretSubject.getSecretSubjectId();
@@ -161,11 +163,15 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         }
     }
 
+    // Global profile is the one which doesn't has a project and also doesn't belong to some subject (e.g. cloud)
+    public boolean isGlobal() {
+        return getProject() == null && secretSubject == null;
+    }
+
     private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
-        if (!(secretController instanceof DBSSecretBrowser) || getProject() == null) {
+        if (!(secretController instanceof DBSSecretBrowser secretBrowser) || getProject() == null) {
             return;
         }
-        DBSSecretBrowser secretBrowser = (DBSSecretBrowser) secretController;
         for (DBWHandlerConfiguration cfg : configurations) {
             String prefix = "projects/" + getProject().getId() + "/network/" + cfg.getId() + "/profile/" + getProfileId();
             Map<String, String> secureProps = new LinkedHashMap<>();
@@ -190,6 +196,24 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
                 cfg.setSecureProperties(secureProps);
             }
         }
+    }
+
+    public boolean equalConfigurations(@Nullable DBWNetworkProfile other) {
+        if (other == null ||
+            !Objects.equals(getProfileName(), other.getProfileName()) ||
+            !Objects.equals(getProfileDescription(), other.getProfileDescription()) ||
+            !Objects.equals(getProperties(), other.getProperties()) ||
+            this.configurations.size() != other.configurations.size()
+        ) {
+            return false;
+        }
+        for (DBWHandlerConfiguration cfg : configurations) {
+            DBWHandlerConfiguration otherCfg = other.getConfiguration(cfg.getId());
+            if (!Objects.equals(cfg, otherCfg)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

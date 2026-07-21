@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.forms;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
@@ -114,4 +115,16 @@ public sealed interface UIObservable<T> permits UIObservableImpl {
      */
     @NotNull
     Class<T> type();
+
+    /**
+     * Adds a listener that will be called when the value changes.
+     *
+     * @param listener a listener that will be called with the old and new values when the value changes
+     */
+    void addChangeListener(@NotNull BiConsumer<T, T> listener);
+
+    /**
+     * Removes a previously added change listener.
+     */
+    void removeChangeListener(@NotNull BiConsumer<T, T> listener);
 }

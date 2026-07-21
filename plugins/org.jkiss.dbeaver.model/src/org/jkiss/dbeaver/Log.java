@@ -84,7 +84,7 @@ public class Log {
 
         quietMode = ArrayUtils.containsAny(
             Platform.getApplicationArgs(),
-            "-q", "--q", "-h", "-help", "--help", "-version", "--version"
+            "-q", "--q", "-quiet", "-h", "-help", "--help", "-version", "--version"
         );
     }
 

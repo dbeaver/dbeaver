@@ -605,7 +605,43 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateTitleBar() {
-        //setTitleImage(getCurrentPage().getImage());
+        var page = getCurrentPage();
+        if (page != null) {
+            var title = CommonUtils.notEmpty(page.getTitle());
+            setTitle(title);
+
+            var item = findPageTreeItem(page);
+            if (item != null) {
+                item.setText(title);
+            }
+
+            updateMessage();
+        }
+    }
+
+    @Nullable
+    private TreeItem findPageTreeItem(@NotNull IWizardPage page) {
+        for (TreeItem parent : pagesTree.getItems()) {
+            var item = findPageTreeItem(parent, page);
+            if (item != null) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static TreeItem findPageTreeItem(@NotNull TreeItem parent, @NotNull IWizardPage page) {
+        if (parent.getData() == page) {
+            return parent;
+        }
+        for (TreeItem child : parent.getItems()) {
+            var item = findPageTreeItem(child, page);
+            if (item != null) {
+                return item;
+            }
+        }
+        return null;
     }
 
     @Override

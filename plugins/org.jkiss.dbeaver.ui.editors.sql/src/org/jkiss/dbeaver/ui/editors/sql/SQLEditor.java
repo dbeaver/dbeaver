@@ -20,6 +20,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -89,10 +90,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 import org.jkiss.dbeaver.ui.controls.*;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
-import org.jkiss.dbeaver.ui.controls.resultset.QueryResultsDecorator;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -122,10 +120,7 @@ import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.*;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.StringUtils;
+import org.jkiss.utils.*;
 
 import java.io.*;
 import java.net.URI;
@@ -500,7 +495,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        boolean connect = dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
+        boolean connect = container != null && container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
         checkConnected(connect, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
                 DBWorkbench.getPlatformUI().showError(
@@ -782,11 +777,11 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        if (topBarMan != null) {
-            topBarMan.getControl().redraw();
+        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+            CSSUtils.refreshConnectionTypeToolbar(topBar);
         }
-        if (bottomBarMan != null) {
-            bottomBarMan.getControl().redraw();
+        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+            CSSUtils.refreshConnectionTypeToolbar(bottomBar);
         }
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
@@ -985,6 +980,15 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         return null;
+    }
+
+    @NotNull
+    public List<IResultSetContainer> getResultSetContainers() {
+        List<IResultSetContainer> result = new ArrayList<>();
+        for (QueryProcessor processor : queryProcessors) {
+            result.addAll(processor.getResultContainers());
+        }
+        return List.copyOf(result);
     }
 
     @Nullable
@@ -1262,7 +1266,13 @@ public class SQLEditor extends SQLEditorBase implements
 
         ToolBar topBar = new ToolBar(leftToolPanel, SWT.VERTICAL | SWT.FLAT);
         topBar.setData(VIEW_PART_PROP_NAME, this);
-        topBarMan = new ToolBarManager(topBar);
+        topBarMan = new ToolBarManager(topBar) {
+            @Override
+            public void update(boolean force) {
+                super.update(force);
+                updateMultipleResultsPerTabToolItem();
+            }
+        };
 
         final IMenuService menuService = getSite().getService(IMenuService.class);
         if (menuService != null) {
@@ -1287,8 +1297,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         bottomBar.pack();
         bottomBarMan.update(true);
-
-        updateMultipleResultsPerTabToolItem();
     }
 
     private void createPresentationSwitchBar(Composite sqlEditorPanel) {
@@ -1299,6 +1307,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         presentationSwitchFolder = new VerticalFolder(sqlEditorPanel, SWT.RIGHT);
+        CSSUtils.markConnectionTypeColor(presentationSwitchFolder);
         presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
         SelectionListener switchListener = SelectionListener.widgetSelectedAdapter(e -> {
@@ -2028,7 +2037,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public SQLEditorPresentationPanel showPresentationPanel(String panelID) {
+    @Nullable
+    public SQLEditorPresentationPanel showPresentationPanel(@NotNull String panelID) {
         for (IContributionItem contributionItem : topBarMan.getItems()) {
             if (contributionItem instanceof ActionContributionItem) {
                 IAction action = ((ActionContributionItem) contributionItem).getAction();
@@ -3333,6 +3343,22 @@ public class SQLEditor extends SQLEditorBase implements
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
 
+        // Re-apply CSS so connection-type colored widgets (side toolbars, sash, etc.)
+        // refresh immediately instead of waiting for the next CSS engine pass
+        CSSUtils.applyStyles(resultsSash);
+        CSSUtils.refreshConnectionTypeControls(resultsSash);
+
+        // Repaint the workbench editor tab folder so the custom tab renderer
+        // picks up the new connection color immediately after a connection change
+        if (resultsSash != null && !resultsSash.isDisposed()) {
+            for (Composite c = resultsSash; c != null; c = c.getParent()) {
+                if (!c.isDisposed() && c.getParent() instanceof CTabFolder tabFolder) {
+                    tabFolder.redraw();
+                    break;
+                }
+            }
+        }
+
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             EditorUtils.setInputDataSource(getEditorInput(), new SQLNavigatorContext(executionContext));
@@ -3340,6 +3366,15 @@ public class SQLEditor extends SQLEditorBase implements
         refreshActions();
 
         refreshEditorIconAndTitle();
+
+        firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
+
+        if (getSite() != null) {
+            IWorkbenchPage page = getSite().getWorkbenchWindow().getActivePage();
+            if (page != null && page.getActiveEditor() == this) {
+                DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
+            }
+        }
 
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
@@ -3936,14 +3971,22 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        EditorPartContextualProperty contextualPropInfo = event.getProperty() == null
+            ? null
+            : EditorPartContextualProperty.findInfo(event.getProperty());
+        boolean triggersDataSourceChanged = contextualPropInfo == null || contextualPropInfo.triggersDataSourceChangedEvent;
+
         UIUtils.asyncExec(() -> {
             if (topBarMan != null) {
                 topBarMan.update(true);
             }
-            this.updateMultipleResultsPerTabToolItem();
         });
         this.setCompletionContext(new SQLEditorCompletionContext(this));
-        fireDataSourceChanged(event);
+
+        if (triggersDataSourceChanged) {
+            fireDataSourceChanged(event);
+        }
+
         super.preferenceChange(event);
     }
 
@@ -4915,4 +4958,42 @@ public class SQLEditor extends SQLEditorBase implements
             return Status.OK_STATUS;
         }
     }
+
+    public static void updateLocalCommandsState() {
+        // small delay is ok because command's updateElement(..) notification come in series for all the contribution instances
+        //     through the UI thread anyway, so they'll be effectively aggregated, and the UIJob will then update all of them contextfully
+        if (updateLocalCommandsStateJob.getState() != Job.RUNNING) {
+            updateLocalCommandsStateJob.cancel();
+        }
+        updateLocalCommandsStateJob.schedule(100);
+    }
+
+    @NotNull
+    private static final AbstractUIJob updateLocalCommandsStateJob = new AbstractUIJob("SQL Editor local commands state update") {
+        {
+            setSystem(true);
+        }
+
+        @NotNull
+        @Override
+        protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+            for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+                for (IWorkbenchPage page : window.getPages()) {
+                    for (IEditorReference editorRef : page.getEditorReferences()) {
+                        IEditorPart editor = editorRef.getEditor(false);
+                        if (editor instanceof SQLEditor sqlEditor) {
+                            sqlEditor.updateMultipleResultsPerTabToolItem();
+                        }
+                    }
+                }
+
+                IWorkbenchPage activePage = window.getActivePage();
+                if (activePage != null && activePage.getActiveEditor() instanceof SQLEditor activeEditor) {
+                    MultipleResultsPerTabMenuContribution.syncWithEditor(activeEditor);
+                }
+            }
+
+            return Status.OK_STATUS;
+        }
+    };
 }

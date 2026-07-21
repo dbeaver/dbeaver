@@ -162,7 +162,7 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
     }
 
     @Override
-    public boolean canEditObject(GenericSynonym object) {
+    public boolean canEditObject(@NotNull GenericSynonym object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
@@ -172,7 +172,7 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
     }
 
     @Override
-    public boolean canRenameObject(GenericSynonym object) {
+    public boolean canRenameObject(@NotNull GenericSynonym object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }
