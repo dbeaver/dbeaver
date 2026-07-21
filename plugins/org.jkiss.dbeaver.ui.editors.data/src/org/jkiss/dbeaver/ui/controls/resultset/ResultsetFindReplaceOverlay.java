@@ -229,6 +229,12 @@ public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
         }
 
         @Override
+        public void open() {
+            super.open();
+            this.setExtrasVisibility(false);
+        }
+
+        @Override
         protected void onClose() {
             if (this.isInteractiveFilterEnabled) {
                 this.interactiveFilterJob.cancel();
