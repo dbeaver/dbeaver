@@ -430,6 +430,15 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             return null;
         });
 
+        createFunction("openPreferencePage", arguments -> {
+            if (arguments.length < 1) {
+                throw new IllegalArgumentException("openPreferencePage requires at least one argument");
+            }
+            String pageId = String.valueOf(arguments[0]);
+            UIUtils.asyncExec(() -> UIUtils.showPreferencesFor(browser.getShell(), null, pageId));
+            return null;
+        });
+
         createFunction("confirmFunctionCalls", arguments -> {
             if (arguments.length < 2) {
                 throw new IllegalArgumentException("confirmFunctionCalls requires messageId and functionIndex");
