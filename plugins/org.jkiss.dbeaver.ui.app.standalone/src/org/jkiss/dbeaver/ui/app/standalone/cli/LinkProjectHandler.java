@@ -35,7 +35,7 @@ public class LinkProjectHandler extends CLIAbstractSubcommand {
     @CommandLine.Parameters(index = "0", arity = "1", description = "Path to the project folder")
     private String path;
 
-    @CommandLine.Option(names = "--name", description = "Project name (optional)")
+    @CommandLine.Option(names = {"--name", "-name"}, description = "Project name (optional)")
     private String name;
 
     @Override
