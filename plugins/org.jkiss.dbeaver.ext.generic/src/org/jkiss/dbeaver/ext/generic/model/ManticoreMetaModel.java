@@ -23,13 +23,12 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Meta model for Manticore Search. Selected via driver parameter {@code meta-model=manticore}
- * so MySQL Connector/J connections are not affected.
+ * Selected via driver parameter {@code meta-model=manticore}
+ * (JDBC class is shared with MySQL Connector/J).
  */
 public class ManticoreMetaModel extends GenericMetaModel {
 
     public ManticoreMetaModel() {
-        super();
     }
 
     @NotNull

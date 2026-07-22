@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 /**
- * SQL dialect for Manticore Search.
- * <p>
- * Manticore uses the MySQL wire protocol but does not support table aliases.
- * </p>
+ * Manticore Search does not support table aliases.
  */
 public class ManticoreSQLDialect extends GenericSQLDialect {
 
@@ -34,12 +31,8 @@ public class ManticoreSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public boolean supportsAliasInUpdate() {
-        return false;
-    }
-
-    @Override
     public boolean supportsAliasInConditions() {
+        // Default Generic/Abstract dialect allows aliases in conditions; Manticore does not.
         return false;
     }
 }

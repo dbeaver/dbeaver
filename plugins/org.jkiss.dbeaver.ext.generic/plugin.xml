@@ -1596,25 +1596,25 @@
                         class="com.mysql.cj.jdbc.Driver"
                         icon="icons/manticore_icon.svg"
                         iconBig="icons/manticore_icon_big.svg"
-                        sampleURL="jdbc:mysql://{host}:{port}/[{database}]"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="9306"
-                        description="Manticore Search (MySQL protocol on port 9306)"
+                        description="Manticore Search JDBC driver"
                         webURL="https://manual.manticoresearch.com/Connecting_to_the_server"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,fulltext"
                         allowsEmptyPassword="true">
-                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[9.7.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
-                    <!-- Recommended JDBC options for Manticore + Connector/J 6+ -->
+                    <!-- JDBC options recommended by Manticore for Connector/J -->
                     <property name="characterEncoding" value="utf8"/>
                     <property name="maxAllowedPacket" value="512000"/>
                     <property name="serverTimezone" value="UTC"/>
                     <property name="useSSL" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <!-- Select ManticoreMetaModel / ManticoreDataSource (not by JDBC class — shared with MySQL) -->
+                    <!-- Use ManticoreMetaModel; do not match by JDBC class (shared with MySQL) -->
                     <parameter name="meta-model" value="manticore"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="omit-schema" value="true"/>

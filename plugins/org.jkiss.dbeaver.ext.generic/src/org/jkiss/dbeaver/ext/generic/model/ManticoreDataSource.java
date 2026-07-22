@@ -22,10 +22,6 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-/**
- * Manticore Search data source. Uses {@link ManticoreSQLDialect} so generated
- * queries do not include table aliases (unsupported by Manticore).
- */
 final class ManticoreDataSource extends GenericDataSource {
 
     ManticoreDataSource(
