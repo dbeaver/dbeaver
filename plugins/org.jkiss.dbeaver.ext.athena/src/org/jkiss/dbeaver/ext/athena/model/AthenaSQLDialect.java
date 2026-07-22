@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.ext.athena.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -25,6 +28,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  * Athena SQL dialect
  */
 public class AthenaSQLDialect extends GenericSQLDialect {
+    private static final String[] ATHENA_NONKEYWORDS = {
+        "DEFAULT"
+    };
+    private static final String[] ATHENA_KEYWORDS = {
+        "SHOW"
+    };
+
     public AthenaSQLDialect() {
         super("Athena", "aws_athena");
     }
@@ -52,6 +62,18 @@ public class AthenaSQLDialect extends GenericSQLDialect {
             return "CAST(" + expression + " AS date)";
         } else {
             return super.getTypeCastClause(attribute, expression, isInCondition, exprIsAttrRef);
+        }
+    }
+
+    @Override
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(session, dataSource, metaData);
+
+        for (String word : ATHENA_NONKEYWORDS) {
+            removeSQLKeyword(word);
+        }
+        for (String word : ATHENA_KEYWORDS) {
+            addSQLKeyword(word);
         }
     }
 }

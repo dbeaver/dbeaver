@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
@@ -33,6 +34,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -106,20 +108,18 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
             if (infoTable == null || infoTable.isDisposed()) {
                 return;
             }
-            int color = -1;
+            Color themeColor = null;
             switch (type) {
                 case LOG_LEVEL_TRACE:
-                    color = SWT.COLOR_DARK_BLUE;
-                    break;
                 case LOG_LEVEL_DEBUG:
                 case LOG_LEVEL_INFO:
                     break;
                 case LOG_LEVEL_WARN:
-                    color = SWT.COLOR_DARK_YELLOW;
+                    themeColor = BaseThemeSettings.instance.colorWarningForeground;
                     break;
                 case LOG_LEVEL_ERROR:
                 case LOG_LEVEL_FATAL:
-                    color = SWT.COLOR_DARK_RED;
+                    themeColor = BaseThemeSettings.instance.colorErrorForeground;
                     break;
                 default:
                     break;
@@ -140,8 +140,8 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
                     item.setText(1, String.valueOf(((DBCCompileError) message).getLine()));
                     item.setText(2, String.valueOf(((DBCCompileError) message).getPosition()));
                 }
-                if (color != -1) {
-                    item.setForeground(infoTable.getDisplay().getSystemColor(color));
+                if (themeColor != null) {
+                    item.setForeground(themeColor);
                 }
                 item.setData(message);
                 infoTable.showItem(item);
@@ -156,7 +156,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
                     prevMessage = errorMessage;
                     TableItem stackItem = new TableItem(infoTable, SWT.NONE);
                     stackItem.setText(errorMessage);
-                    stackItem.setForeground(infoTable.getDisplay().getSystemColor(SWT.COLOR_RED));
+                    stackItem.setForeground(BaseThemeSettings.instance.colorErrorForeground);
                     infoTable.showItem(stackItem);
                 }
             }
@@ -224,3 +224,4 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     }
 
 }
+
