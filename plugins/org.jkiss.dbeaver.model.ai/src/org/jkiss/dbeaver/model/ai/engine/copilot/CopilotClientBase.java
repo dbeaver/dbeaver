@@ -175,7 +175,7 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
     @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
         log.debug("Copilot request failed: " + statusCode + ", " + body);
-        return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+        return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(statusCode, body));
     }
 
     private record DeviceCodeRequest(@SerializedName("client_id") String clientId, @SerializedName("scope") String scope) {

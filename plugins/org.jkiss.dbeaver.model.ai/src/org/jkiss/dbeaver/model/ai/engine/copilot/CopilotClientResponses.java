@@ -165,7 +165,7 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
         if (statusCode == 400) {
             if (OpenAiUtils.shouldFallbackToLegacyChat(body)) {
                 // just return DBException, we will fall back to legacy client in case of this error, no need to log it as error
-                return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+                return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(statusCode, body));
             }
         }
         return super.mapHttpError(statusCode, body);
