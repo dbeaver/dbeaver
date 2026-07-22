@@ -62,6 +62,7 @@ class AIChatSessionResponseConsumer implements AIChatResponseConsumer {
 
     @Override
     public void error(@NotNull Throwable throwable) {
+        log.debug("AI chat error", throwable);
         addConversationMessage(
             AIMessage.errorMessage(throwable)
         );
