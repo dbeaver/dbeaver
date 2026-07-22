@@ -105,4 +105,10 @@ public class WSObjectSettingsEvent extends WSAbstractEvent {
     public Set<String> getSettingIds() {
         return settingIds;
     }
+
+    //fixme remove it
+    @Override
+    public boolean isForceProcessed() {
+        return true;
+    }
 }
