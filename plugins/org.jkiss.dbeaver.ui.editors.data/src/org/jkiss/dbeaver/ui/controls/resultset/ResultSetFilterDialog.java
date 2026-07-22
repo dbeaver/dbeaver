@@ -88,7 +88,6 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
             public boolean select(@NotNull Viewer viewer, @NotNull Object parentElement, @NotNull Object element) {
                 var filter = (QMQueryFilter) element;
                 var criteria = searchText.getText().trim();
-                persistFilter(filter);
                 return criteria.isEmpty()
                     || StringUtils.containsIgnoreCase(filter.text(), criteria)
                     || (filter.title() != null && StringUtils.containsIgnoreCase(filter.title(), criteria));
@@ -97,6 +96,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         viewer.addSelectionChangedListener(e -> {
             var filter = (QMQueryFilter) e.getStructuredSelection().getFirstElement();
             selection = filters.indexOf(filter);
+            persistFilter(filter);
         });
         viewer.getTable().addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(selectionEvent ->
             okPressed()));
