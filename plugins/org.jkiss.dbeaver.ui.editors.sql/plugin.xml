@@ -1462,6 +1462,20 @@
             value="232,242,254">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.aiSuggestion.background.description</description>
         </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.warning.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.ui.general.color.warning.foreground"
+                value="COLOR_DARK_YELLOW">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.general.color.warning.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.error.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.ui.general.color.error.foreground"
+                value="COLOR_DARK_RED">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.general.color.error.foreground.description</description>
+        </colorDefinition>
         <!-- Colors for Query Plan -->
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.sql.plan.view.label" id="org.jkiss.dbeaver.sql.plan.view.colors">
             <description>%themeElementCategory.org.jkiss.dbeaver.sql.plan.view.description</description>
@@ -1650,3 +1664,5 @@
     </extension>
 
 </plugin>
+
+
