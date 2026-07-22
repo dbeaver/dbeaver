@@ -22,14 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-/**
- * Selected via driver parameter {@code meta-model=manticore}
- * (JDBC class is shared with MySQL Connector/J).
- */
 public class ManticoreMetaModel extends GenericMetaModel {
-
-    public ManticoreMetaModel() {
-    }
 
     @NotNull
     @Override

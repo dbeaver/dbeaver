@@ -1579,7 +1579,7 @@
 
         </datasource>
 
-        <!-- Manticore Search: MySQL wire protocol, but table aliases are not supported -->
+        <!-- Manticore Search -->
         <datasource
                 class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
                 description="Manticore Search datasource"
@@ -1598,7 +1598,7 @@
                         iconBig="icons/manticore_icon_big.svg"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="9306"
-                        description="Manticore Search JDBC driver"
+                        description="Manticore Search"
                         webURL="https://manual.manticoresearch.com/Connecting_to_the_server"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                         supportedConfigurationTypes="MANUAL,URL"
@@ -1607,14 +1607,12 @@
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[9.7.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
-                    <!-- JDBC options recommended by Manticore for Connector/J -->
                     <property name="characterEncoding" value="utf8"/>
                     <property name="maxAllowedPacket" value="512000"/>
                     <property name="serverTimezone" value="UTC"/>
                     <property name="useSSL" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <!-- Use ManticoreMetaModel; do not match by JDBC class (shared with MySQL) -->
                     <parameter name="meta-model" value="manticore"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="omit-schema" value="true"/>

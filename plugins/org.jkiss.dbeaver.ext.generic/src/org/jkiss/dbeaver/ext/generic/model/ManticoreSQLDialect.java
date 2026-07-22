@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-/**
- * Manticore Search does not support table aliases.
- */
 public class ManticoreSQLDialect extends GenericSQLDialect {
 
     public ManticoreSQLDialect() {
@@ -32,7 +29,6 @@ public class ManticoreSQLDialect extends GenericSQLDialect {
 
     @Override
     public boolean supportsAliasInConditions() {
-        // Default Generic/Abstract dialect allows aliases in conditions; Manticore does not.
         return false;
     }
 }
