@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
+    <!-- https://github.com/dbeaver/pro/issues/9933
+    The chat makes no network requests; forbid them so injected script (XSS) on this file:// origin can't read local files or reach the IPC server. -->
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'none'; frame-src 'none'; object-src 'none'"/>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
