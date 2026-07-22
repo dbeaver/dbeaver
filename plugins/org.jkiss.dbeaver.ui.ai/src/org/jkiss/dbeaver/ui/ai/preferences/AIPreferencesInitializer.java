@@ -35,6 +35,7 @@ public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_SEND_TYPE_INFO, true);
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_COMPLETION_MAX_CHOICES, 1);
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, false);
+        PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CHAT_EXECUTE_IN_NEW_CONSOLE, true);
 
         // OpenAI default
         PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.AI_TEMPERATURE, 0.0f);
