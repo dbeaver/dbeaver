@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -321,32 +322,35 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
             checkContainerConnection(runnableContext);
         }
 
-        loadObjectContainer(runnableContext, dataTransferSettings, null);
+        if (dataTransferSettings.isTaskRunning() || DTActivator.getDefault().getPreferences()
+            .getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE)) {
+            loadObjectContainer(runnableContext, dataTransferSettings, null);
 
-        // Load mapping for current objects
-        Map<String, Object> mappings = (Map<String, Object>) settings.get("mappings");
-        if (mappings != null) {
-            if (!dataMappings.isEmpty()) {
-                for (DatabaseMappingContainer dmc : dataMappings.values()) {
-                    DBSDataContainer sourceDatacontainer = dmc.getSource();
-                    if (sourceDatacontainer != null) {
-                        Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(sourceDatacontainer));
-                        if (dmcSettings != null) {
-                            dmc.loadSettings(runnableContext, dmcSettings);
+            // Load mapping for current objects
+            Map<String, Object> mappings = (Map<String, Object>) settings.get("mappings");
+            if (mappings != null) {
+                if (!dataMappings.isEmpty()) {
+                    for (DatabaseMappingContainer dmc : dataMappings.values()) {
+                        DBSDataContainer sourceDatacontainer = dmc.getSource();
+                        if (sourceDatacontainer != null) {
+                            Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(sourceDatacontainer));
+                            if (dmcSettings != null) {
+                                dmc.loadSettings(runnableContext, dmcSettings);
+                            }
                         }
                     }
-                }
-            } else if (!dataPipes.isEmpty()) {
-                for (DataTransferPipe pipe : dataPipes) {
-                    IDataTransferProducer producer = pipe.getProducer();
-                    if (producer != null) {
-                        DBSObject dbObject = producer.getDatabaseObject();
-                        if (dbObject instanceof DBSDataContainer sourceDC) {
-                            Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
-                            if (dmcSettings != null) {
-                                DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);
-                                dmc.loadSettings(runnableContext, dmcSettings);
-                                dataMappings.put(sourceDC, dmc);
+                } else if (!dataPipes.isEmpty()) {
+                    for (DataTransferPipe pipe : dataPipes) {
+                        IDataTransferProducer producer = pipe.getProducer();
+                        if (producer != null) {
+                            DBSObject dbObject = producer.getDatabaseObject();
+                            if (dbObject instanceof DBSDataContainer sourceDC) {
+                                Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
+                                if (dmcSettings != null) {
+                                    DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);
+                                    dmc.loadSettings(runnableContext, dmcSettings);
+                                    dataMappings.put(sourceDC, dmc);
+                                }
                             }
                         }
                     }
@@ -504,12 +508,12 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
                             dbObject = DBUtils.findObjectById(monitor, settings.getProject(), entityId);
                         } else if (!CommonUtils.isEmpty(containerNodePath)) {
                             DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, containerNodePath);
-                            if (node instanceof DBNDatabaseNode) {
-                                dbObject = ((DBNDatabaseNode) node).getObject();
+                            if (node instanceof DBNDatabaseNode dbnDatabaseNode) {
+                                dbObject = dbnDatabaseNode.getObject();
                             }
                         }
-                        if (dbObject instanceof DBPDataSourceContainer) {
-                            DBUtils.initDataSource(monitor, (DBPDataSourceContainer) dbObject, null);
+                        if (dbObject instanceof DBPDataSourceContainer dataSourceContainer) {
+                            DBUtils.initDataSource(monitor, dataSourceContainer, null);
                         }
                         container = DBUtils.getAdapter(DBSObjectContainer.class, dbObject);
                         if (container == null) {
