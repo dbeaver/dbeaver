@@ -5,7 +5,7 @@ function createContent(args) {
     if (args.role === 'attachment') {
         body.innerHTML = createAttachmentCard(args);
     } else {
-        const markdown = marked.parse(args.content);
+        const markdown = sanitizeHtml(marked.parse(args.content));
         body.innerHTML = parseSqlBlocks(markdown, args.id);
     }
 

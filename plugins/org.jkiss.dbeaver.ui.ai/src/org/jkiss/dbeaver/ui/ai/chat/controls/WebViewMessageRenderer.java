@@ -166,6 +166,11 @@ final class WebViewMessageRenderer {
     }
 
     private void addUsualMessage(@NotNull Map<String, Object> args, @NotNull AIChatMessage message) {
+        AIMessageType role = message.message().getRole();
+        if (role == AIMessageType.WARNING) {
+            args.put("content", CommonUtils.notEmpty(message.message().getDisplayMessage()));
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         String messageContent = message.message().getDisplayMessage();
         MessageChunk[] chunks = AITextUtils.splitIntoChunks(messageContent, false);
@@ -177,7 +182,7 @@ final class WebViewMessageRenderer {
                     sb.append('\n').append(chunk.toRawString()).append('\n');
                 }
             } else {
-                sb.append(AIChatHtmlEscaper.escapeMarkdown(chunk.toRawString()));
+                sb.append(AIChatHtmlEscaper.escapeText(chunk.toRawString()));
             }
         }
         args.put("content", sb.toString());

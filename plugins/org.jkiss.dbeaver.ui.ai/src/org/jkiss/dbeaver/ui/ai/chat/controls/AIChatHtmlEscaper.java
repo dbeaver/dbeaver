@@ -25,8 +25,6 @@ final class AIChatHtmlEscaper {
 
     // took they from marked.js
     private static final Pattern INLINE_CODE_SPAN = Pattern.compile("(?<!`)(`+)(?!`)([^`\n]+)\\1(?!`)");
-    private static final Pattern FENCE_OPEN = Pattern.compile(" {0,3}(?:`{3,}[^`]*|~{3,}.*)");
-    private static final Pattern FENCE_CLOSE = Pattern.compile(" {0,3}[`~]{3,} *");
 
     private AIChatHtmlEscaper() {}
 
@@ -41,36 +39,6 @@ final class AIChatHtmlEscaper {
             last = matcher.end();
         }
         appendEscaped(result, text, last, text.length());
-        return result.toString();
-    }
-
-    @NotNull
-    static String escapeMarkdown(@NotNull String markdown) {
-        StringBuilder result = new StringBuilder(markdown.length() + 16);
-        StringBuilder textSegment = new StringBuilder();
-        boolean inFence = false;
-        int pos = 0;
-        while (pos <= markdown.length()) {
-            int eol = markdown.indexOf('\n', pos);
-            int lineEnd = eol < 0 ? markdown.length() : eol;
-            String line = markdown.substring(pos, lineEnd);
-            int end = eol < 0 ? markdown.length() : eol + 1;
-            if (inFence ? FENCE_CLOSE.matcher(line).matches() : FENCE_OPEN.matcher(line).matches()) {
-                result.append(escapeText(textSegment.toString()));
-                textSegment.setLength(0);
-                inFence = !inFence;
-                result.append(markdown, pos, end);
-            } else if (inFence) {
-                result.append(markdown, pos, end);
-            } else {
-                textSegment.append(markdown, pos, end);
-            }
-            if (eol < 0) {
-                break;
-            }
-            pos = end;
-        }
-        result.append(escapeText(textSegment.toString()));
         return result.toString();
     }
 
