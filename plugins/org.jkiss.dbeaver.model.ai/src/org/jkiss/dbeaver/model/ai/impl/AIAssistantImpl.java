@@ -277,8 +277,10 @@ public class AIAssistantImpl implements AIAssistant {
         callWithRetry(listener, () -> {
             if (isTruncated.get()) {
                 isTruncated.set(false);
-                listener.warning(
-                    "Context description was truncated");
+                listener.warning(AIUtils.getSettingsAccessMessage(
+                    AIMessages.ai_warning_chat_history_truncated,
+                    AIMessages.ai_warning_chat_history_truncated_linked,
+                    AIMessages.ai_warning_chat_history_truncated_admin));
             }
             int systemPromptLength = AIPromptUtils.calcSystemPromptLength(request.getMessages());
             listener.systemPromptLength(systemPromptLength);
