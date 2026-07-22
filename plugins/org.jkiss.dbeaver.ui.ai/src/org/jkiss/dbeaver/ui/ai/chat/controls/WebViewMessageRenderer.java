@@ -177,7 +177,7 @@ final class WebViewMessageRenderer {
                     sb.append('\n').append(chunk.toRawString()).append('\n');
                 }
             } else {
-                sb.append(chunk.toRawString());
+                sb.append(AIChatHtmlEscaper.escapeMarkdown(chunk.toRawString()));
             }
         }
         args.put("content", sb.toString());
@@ -188,7 +188,9 @@ final class WebViewMessageRenderer {
     }
 
     private void addFunctionMessage(@NotNull Map<String, Object> args, @NotNull AIChatMessage message) {
-        String sb = "<a class='interactive-link' data-message-id='" + message.id() + "'>" + message.message().getDisplayMessage() + "</a>";
+        String sb = "<a class='interactive-link' data-message-id='" + message.id() + "'>"
+            + AIChatHtmlEscaper.escapeText(CommonUtils.notEmpty(message.message().getDisplayMessage()))
+            + "</a>";
         args.put("content", sb);
     }
 

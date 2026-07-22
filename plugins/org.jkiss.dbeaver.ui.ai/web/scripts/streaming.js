@@ -1,6 +1,39 @@
 const streamingMessages = new Map();
 let currentStreamingMessageId = null;
 
+const FENCE_OPEN_RE = /^ {0,3}(?:`{3,}[^`]*|~{3,}.*)$/;
+const FENCE_CLOSE_RE = /^ {0,3}[`~]{3,} *$/;
+const INLINE_CODE_SPAN_RE = /(^|[^`])(`+)([^`\n]+?)\2(?!`)/g;
+
+function escapeAmpLt(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+}
+
+function escapeStreamedText(line) {
+    let result = '';
+    let last = 0;
+    INLINE_CODE_SPAN_RE.lastIndex = 0;
+    let match;
+    while ((match = INLINE_CODE_SPAN_RE.exec(line)) !== null) {
+        const spanStart = match.index + match[1].length;
+        result += escapeAmpLt(line.slice(last, spanStart));
+        result += line.slice(spanStart, match.index + match[0].length);
+        last = match.index + match[0].length;
+    }
+    return result + escapeAmpLt(line.slice(last));
+}
+
+function escapeStreamedMarkdown(markdown) {
+    let inFence = false;
+    return markdown.split('\n').map(line => {
+        if (inFence ? FENCE_CLOSE_RE.test(line) : FENCE_OPEN_RE.test(line)) {
+            inFence = !inFence;
+            return line;
+        }
+        return inFence ? line : escapeStreamedText(line);
+    }).join('\n');
+}
+
 
 function addMessageChunk(args) {
     hideCenterText();
@@ -46,7 +79,7 @@ function addMessageChunk(args) {
         const sqlContents = message.querySelectorAll('.sql-content');
         const scrollPositions = Array.from(sqlContents).map(el => ({ left: el.scrollLeft, top: el.scrollTop }));
 
-        const markdown = marked.parse(currentContent);
+        const markdown = marked.parse(escapeStreamedMarkdown(currentContent));
         streamingContent.innerHTML = parseSqlBlocksStreaming(markdown, args.id);
 
         const newSqlContents = message.querySelectorAll('.sql-content');

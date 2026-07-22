@@ -33,6 +33,8 @@ function addMessage(args) {
         if (existingMessage.classList.contains('streaming')) {
             if (typeof args.content === 'string') {
                 streamingMessages.set(args.id, args.content);
+            } else {
+                streamingMessages.set(args.id, escapeStreamedMarkdown(streamingMessages.get(args.id) || ''));
             }
             finalizeStreamingMessage(args.id, args.meta);
             return;
@@ -45,7 +47,7 @@ function addMessage(args) {
         if (streamingMessage && streamingMessage.classList.contains('streaming')) {
             const finalContent = typeof args.content === 'string'
                 ? args.content
-                : (streamingMessages.get(currentStreamingMessageId) || '');
+                : escapeStreamedMarkdown(streamingMessages.get(currentStreamingMessageId) || '');
 
             streamingMessage.id = args.id;
             streamingMessages.set(args.id, finalContent);
