@@ -73,7 +73,9 @@ public class DDTrackingClient implements DDTrackingService {
                     .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
                     .POST(createBodyPublisher(body, MediaType.JSON));
                 if (apiKey != null) {
-                    builder.header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + apiKey);
+                    DDAccessKey accessKey = DDAccessKey.parseOrNull(apiKey);
+                    String credential = accessKey == null ? apiKey : accessKey.buildToken();
+                    builder.header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + credential);
                 }
 
                 return execute(builder, DDTracking.class);

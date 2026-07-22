@@ -24,9 +24,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.tracking.DDClientInfo;
 import org.jkiss.dbeaver.model.tracking.DDTrackStop;
 import org.jkiss.dbeaver.model.tracking.DDTracking;
@@ -57,9 +59,9 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
         if (!STARTED.compareAndSet(false, true)) {
             return;
         }
-        String key = System.getenv(ENV_KEY);
+        String key = readAccessKey();
         if (CommonUtils.isEmpty(key)) {
-            log.debug("DataDam tracking disabled (no " + ENV_KEY + ")");
+            log.debug("DataDam tracking disabled (no access key)");
             return;
         }
         String url = System.getenv(ENV_URL);
@@ -109,6 +111,20 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                 //empty
             }
         });
+    }
+
+    @Nullable
+    private static String readAccessKey() {
+        try {
+            String key = DBSSecretController.getGlobalSecretController()
+                .getPrivateSecretValue(DDSyncPreferencePage.SECRET_ACCESS_KEY);
+            if (!CommonUtils.isEmpty(key)) {
+                return key;
+            }
+        } catch (DBException e) {
+            log.debug("Error reading access key from secure storage", e);
+        }
+        return System.getenv(ENV_KEY);
     }
 
     @NotNull
