@@ -283,6 +283,10 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         long connectionTimeout = dataSourceContainer.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
         long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {
+            if (!DBUtils.resolveSharedCredentials(dataSourceContainer)) {
+                // User canceled credentials input
+                return unloadInput();
+            }
             try {
                 dataSourceContainer.connect(monitor, true, true);
             } catch (final DBException e) {

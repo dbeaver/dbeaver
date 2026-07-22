@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -702,6 +703,9 @@ public final class DBUtils {
             return dataSourceContainer;
         }
         if (!dataSourceContainer.isConnected()) {
+            if (resolveSharedCredentials(dataSourceContainer)) {
+                return null;
+            }
             try {
                 dataSourceContainer.connect(monitor, true, true);
             } catch (DBException e) {
@@ -787,6 +791,24 @@ public final class DBUtils {
             }
         }
         return null;
+    }
+
+    /**
+     *
+     * @return false if the connection was canceled
+     */
+    public static boolean resolveSharedCredentials(
+        @NotNull DBPDataSourceContainer dataSourceContainer
+    ) {
+        boolean resolved = true;
+        if (dataSourceContainer.isSharedCredentials()) {
+            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+            if (serviceConnections != null) {
+                resolved = serviceConnections.resolveSharedCredentials(dataSourceContainer, null);
+            }
+        }
+
+        return resolved;
     }
 
     @Nullable

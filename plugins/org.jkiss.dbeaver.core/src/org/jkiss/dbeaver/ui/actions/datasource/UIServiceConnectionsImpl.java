@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.DataSourceHandlerUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -83,6 +84,24 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
     public void disconnectDataSource(@NotNull DBPDataSourceContainer dataSourceContainer) {
         DataSourceHandler.disconnectDataSource(dataSourceContainer, null);
     }
+
+    @Override
+    public boolean resolveSharedCredentials(
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @Nullable DBRProgressListener onFinish
+    ) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return true;
+        }
+        if (!dataSourceContainer.isSharedCredentials()) {
+            return true;
+        }
+        return DataSourceHandlerUtils.resolveSharedCredentials(
+            dataSourceContainer,
+            onFinish
+        );
+    }
+
 
     @Override
     public void closeActiveTransaction(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, boolean commitTxn) {
