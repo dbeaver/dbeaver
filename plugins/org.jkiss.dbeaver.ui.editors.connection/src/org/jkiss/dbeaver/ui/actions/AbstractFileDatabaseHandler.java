@@ -68,12 +68,13 @@ public abstract class AbstractFileDatabaseHandler extends AbstractFileHandler {
         if (isSingleDatabaseConnection()) {
             String databaseName = createDatabaseName(fileList);
             String connectionName = createConnectionName(fileList);
-            createDatabaseConnection(connectionName, databaseName, project, driver);
+            createDatabaseConnection(connectionName, databaseName, project, driver, fileList);
         } else {
             for (Path dbFile : fileList) {
-                String databaseName = createDatabaseName(Collections.singletonList(dbFile));
-                String connectionName = createConnectionName(Collections.singletonList(dbFile));
-                createDatabaseConnection(connectionName, databaseName, project, driver);
+                List<Path> singleFileList = Collections.singletonList(dbFile);
+                String databaseName = createDatabaseName(singleFileList);
+                String connectionName = createConnectionName(singleFileList);
+                createDatabaseConnection(connectionName, databaseName, project, driver, singleFileList);
             }
         }
     }
@@ -82,10 +83,12 @@ public abstract class AbstractFileDatabaseHandler extends AbstractFileHandler {
         @NotNull String connectionName,
         @NotNull String databaseName,
         @NotNull DBPProject project,
-        @NotNull DBPDriver driver
+        @NotNull DBPDriver driver,
+        @NotNull List<Path> fileList
     ) throws DBException {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName(databaseName);
+        configureConnection(configuration, fileList);
 
         DBPDataSourceContainer dsContainer = DBFUtils.createTemporaryDataSourceContainer(connectionName, project, driver, configuration);
         if (dsContainer == null) {
@@ -130,6 +133,13 @@ public abstract class AbstractFileDatabaseHandler extends AbstractFileHandler {
     @Override
     public Set<FileTypeAction> supportedActions() {
         return Set.of(FileTypeAction.DATABASE, FileTypeAction.INTERNAL_EDITOR, FileTypeAction.EXTERNAL_EDITOR);
+    }
+
+    /**
+     * Customizes connection configuration before the connection is created.
+     */
+    protected void configureConnection(@NotNull DBPConnectionConfiguration configuration, @NotNull List<Path> fileList) {
+        // do nothing by default
     }
 
     protected abstract String getDatabaseTerm();
