@@ -53,8 +53,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 class FilterSettingsDialog extends HelpEnabledDialog {
     private static final String DIALOG_ID = "DBeaver.FilterSettingsDialog";//$NON-NLS-1$
@@ -133,7 +133,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     final DBDAttributeBinding binding = (DBDAttributeBinding) cell.getElement();
                     final DBDAttributeConstraint constraint = getBindingConstraint(binding);
                     cell.setText(constraint.getAttribute().getName());
-                    cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(binding.getMetaAttribute())));
+                    cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(binding.getAttribute())));
                 }
             });
 
