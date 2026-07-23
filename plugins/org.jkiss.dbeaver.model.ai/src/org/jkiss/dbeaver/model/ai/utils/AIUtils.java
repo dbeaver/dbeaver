@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -53,6 +54,21 @@ import java.util.stream.Stream;
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
     public static final double DEFAULT_TEMPERATURE = 0.0;
+
+    @NotNull
+    public static String getSettingsAccessMessage(
+        @NotNull String plain,
+        @NotNull String linked,
+        @NotNull String contactAdmin
+    ) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return plain;
+        }
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            return linked;
+        }
+        return contactAdmin;
+    }
 
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
