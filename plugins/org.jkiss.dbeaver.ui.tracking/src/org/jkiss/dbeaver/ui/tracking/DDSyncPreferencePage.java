@@ -104,7 +104,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         boolean present = !CommonUtils.isEmpty(key);
         DDAccessKey accessKey = present ? DDAccessKey.parseOrNull(key) : null;
         accountText.setText(accessKey == null ? "" : accessKey.accountId().toString());
-        damText.setText(accessKey == null ? "" : accessKey.damId().toString());
+        damText.setText(accessKey == null || accessKey.damId() == null ? "" : accessKey.damId().toString());
         deleteButton.setEnabled(present);
     }
 }

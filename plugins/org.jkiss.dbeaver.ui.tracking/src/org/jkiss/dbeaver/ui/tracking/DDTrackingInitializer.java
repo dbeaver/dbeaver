@@ -29,10 +29,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.tracking.DDAccessKey;
 import org.jkiss.dbeaver.model.tracking.DDClientInfo;
-import org.jkiss.dbeaver.model.tracking.DDTrackStop;
 import org.jkiss.dbeaver.model.tracking.DDTracking;
 import org.jkiss.dbeaver.model.tracking.DDTrackingClient;
+import org.jkiss.dbeaver.model.tracking.DDTrackingClientPro;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -69,7 +70,10 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             log.debug("DataDam tracking disabled (no " + ENV_URL + ")");
             return;
         }
-        DDTrackingClient client = new DDTrackingClient(url);
+        DDAccessKey accessKey = DDAccessKey.parseOrNull(key);
+        DDTrackingClient client = accessKey != null && accessKey.damId() != null
+            ? new DDTrackingClientPro(url)
+            : new DDTrackingClient(url);
         AtomicReference<String> trackingId = new AtomicReference<>();
 
         AbstractJob startJob = new AbstractJob("DataDam tracking start") {
@@ -101,7 +105,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
                 String id = trackingId.get();
                 if (id != null) {
-                    client.stop(key, new DDTrackStop(id));
+                    client.stop(key, id);
                 }
                 return true;
             }

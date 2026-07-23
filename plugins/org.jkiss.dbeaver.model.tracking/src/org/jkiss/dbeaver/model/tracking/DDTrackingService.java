@@ -22,12 +22,13 @@ import org.jkiss.code.Nullable;
 public interface DDTrackingService {
 
     String METERING_ENDPOINT = "/metering";
+    String TRACKING_ENDPOINT = "/tracking";
     String TRACK_START_ENDPOINT = "/track/start";
-    String TRACK_STOP_ENDPOINT = "/track/stop";
+    String TRACK_STOP_ENDPOINT = "/track/{trackingId}/stop";
 
     @Nullable
     DDTracking start(@Nullable String apiKey, @NotNull DDClientInfo client);
 
     @Nullable
-    DDTracking stop(@Nullable String apiKey, @NotNull DDTrackStop request);
+    DDTracking stop(@Nullable String apiKey, @NotNull String trackingId);
 }

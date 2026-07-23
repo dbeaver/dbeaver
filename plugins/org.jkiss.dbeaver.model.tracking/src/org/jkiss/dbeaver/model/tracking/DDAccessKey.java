@@ -33,7 +33,7 @@ import java.util.UUID;
 
 public record DDAccessKey(
     @NotNull UUID accountId,
-    @NotNull UUID damId,
+    @Nullable UUID damId,
     @NotNull PrivateKey privateKey
 ) {
 
@@ -63,7 +63,7 @@ public record DDAccessKey(
                 .generatePrivate(new PKCS8EncodedKeySpec(Base64.getUrlDecoder().decode(parts[2])));
             return new DDAccessKey(
                 UUID.fromString(parts[0]),
-                UUID.fromString(parts[1]),
+                parts[1].isEmpty() ? null : UUID.fromString(parts[1]),
                 privateKey
             );
         } catch (IllegalArgumentException | GeneralSecurityException e) {
@@ -85,7 +85,7 @@ public record DDAccessKey(
 
     @NotNull
     public String buildToken() throws DBException {
-        String payload = accountId + "." + damId + "." + System.currentTimeMillis();
+        String payload = accountId + "." + (damId == null ? "" : damId) + "." + System.currentTimeMillis();
         try {
             Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
             signature.setParameter(SIGNATURE_PARAMETER_SPEC);
