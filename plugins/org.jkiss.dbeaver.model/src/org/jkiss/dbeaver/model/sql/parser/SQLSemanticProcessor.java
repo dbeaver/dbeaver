@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryGenerator;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -74,7 +75,9 @@ public class SQLSemanticProcessor {
 
     @NotNull
     private static CCJSqlParser buildParser(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
-        final String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
+        final String sqlWithoutComments = dialect == null
+            ? sql
+            : SQLUtils.stripComments(dialect, hideDialectSpecificLineComments(dialect, sql));
         try {
             CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
                 .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
@@ -91,6 +94,73 @@ public class SQLSemanticProcessor {
         } catch (ParseException e) {
             throw new DBCException("Error initializing SQL parser: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * JSQLParser doesn't know about dialect specific single line comment (e.g. MySQL "#"):
+     */
+    @NotNull
+    private static String hideDialectSpecificLineComments(@NotNull SQLDialect dialect, @NotNull String sql) {
+        List<String> extraCommentPrefixes = ArrayUtils.safeArray(dialect.getSingleLineComments()).stream()
+            .filter(prefix -> !CommonUtils.isEmpty(prefix) && !prefix.startsWith(SQLConstants.SL_COMMENT))
+            .toList();
+        if (extraCommentPrefixes.isEmpty()) {
+            return sql;
+        }
+        StringBuilder result = new StringBuilder(sql);
+        int pos = 0;
+        while (pos < sql.length()) {
+            char c = sql.charAt(pos);
+            if (c == '\'' || c == '"' || c == '`') {
+                pos = skipQuoted(sql, pos, dialect.getStringEscapeCharacter());
+            } else if (sql.startsWith(SQLConstants.SL_COMMENT, pos)) {
+                pos = getLineEnd(sql, pos);
+            } else if (sql.startsWith(SQLConstants.ML_COMMENT_START, pos)) {
+                pos = skipMultiLineComment(sql, pos);
+            } else if (startsWithAny(sql, pos, extraCommentPrefixes)) {
+                int lineEnd = getLineEnd(sql, pos);
+                result.replace(pos, lineEnd, " ".repeat(lineEnd - pos));
+                pos = lineEnd;
+            } else {
+                pos++;
+            }
+        }
+        return result.toString();
+    }
+
+    private static int skipQuoted(@NotNull String sql, int openQuotePos, char escapeChar) {
+        char quote = sql.charAt(openQuotePos);
+        for (int pos = openQuotePos + 1; pos < sql.length(); pos++) {
+            char c = sql.charAt(pos);
+            if (c == escapeChar && escapeChar != 0) {
+                pos++;
+            } else if (c == quote) {
+                return pos + 1;
+            }
+        }
+        return sql.length();
+    }
+
+
+    private static int skipMultiLineComment(@NotNull String sql, int startPos) {
+        int endPos = sql.indexOf(SQLConstants.ML_COMMENT_END, startPos + SQLConstants.ML_COMMENT_START.length());
+        return endPos < 0 ? sql.length() : endPos + SQLConstants.ML_COMMENT_END.length();
+    }
+
+    private static boolean startsWithAny(@NotNull String sql, int pos, @NotNull List<String> prefixes) {
+        for (String prefix : prefixes) {
+            if (sql.startsWith(prefix, pos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int getLineEnd(@NotNull String sql, int pos) {
+        while (pos < sql.length() && sql.charAt(pos) != '\n' && sql.charAt(pos) != '\r') {
+            pos++;
+        }
+        return pos;
     }
 
     @NotNull
