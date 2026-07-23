@@ -180,7 +180,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         titleColumn.setEditingSupport(new TextGetSetEditingSupport<QMQueryFilter>(viewer,
             f -> CommonUtils.notEmpty(f.title()),
             (f, s) -> {
-                if (f != null && !CommonUtils.isEmpty(s)) {
+                if (f != null) {
                     f.setTitle(s);
                     persistFilter(f);
                 }
