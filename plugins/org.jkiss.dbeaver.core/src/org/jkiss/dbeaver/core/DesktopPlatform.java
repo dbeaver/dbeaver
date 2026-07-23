@@ -82,7 +82,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         instance = this;
     }
 
-    protected void initialize() {
+    protected void initialize() throws DBException {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize desktop platform...");
 

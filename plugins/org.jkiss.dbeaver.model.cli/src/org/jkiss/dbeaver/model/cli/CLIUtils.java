@@ -23,13 +23,16 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.help.CLIGlobalOption;
 import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceAuthOptions;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -43,13 +46,11 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
@@ -63,6 +64,26 @@ public class CLIUtils {
             return name.substring(1);
         }
         return name;
+    }
+
+    @NotNull
+    public static String formatErrorStatusJson(short exitCode, @NotNull Throwable error) {
+        List<String> messages = collectErrorMessages(error);
+        String message = messages.isEmpty() ? error.getClass().getSimpleName() : messages.getFirst();
+        CLIErrorStatus status = new CLIErrorStatus(exitCode, message, messages.size() > 1 ? messages : null);
+        return JSONUtils.GSON.toJson(status);
+    }
+
+    @NotNull
+    private static List<String> collectErrorMessages(@NotNull Throwable error) {
+        List<String> messages = new ArrayList<>();
+        for (Throwable e = error; e != null; e = e.getCause()) {
+            String message = e.getMessage();
+            if (CommonUtils.isNotEmpty(message) && !messages.contains(message)) {
+                messages.add(message);
+            }
+        }
+        return messages;
     }
 
     @Nullable
@@ -427,6 +448,9 @@ public class CLIUtils {
             var print = new PrintWriter(out)
         ) {
             var updatedCmd = new CommandLine(commandForHelp);
+            updatedCmd.setUsageHelpWidth(120);
+            //to avoid split sections between 'root' commands and subcommands
+            updatedCmd.getHelpSectionMap().remove(CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING);
             updatedCmd.usage(print);
             return out.toString();
         } catch (Exception e) {
@@ -435,6 +459,45 @@ public class CLIUtils {
                 CLIConstants.EXIT_CODE_ERROR
             );
         }
+    }
+
+    public static boolean isRequiredOption(@NotNull CommandLine.Model.ArgSpec arg) {
+        Object userObject = arg.userObject();
+        // use origin value from annotation, because picocli may mark options as required when they are in an arg group
+        if (userObject instanceof Field optionField) {
+            CommandLine.Option optionAnnotation = optionField.getAnnotation(CommandLine.Option.class);
+            if (optionAnnotation != null) {
+                return optionAnnotation.required();
+            }
+            Property propertyAnnotation = optionField.getAnnotation(Property.class);
+            if (propertyAnnotation != null) {
+                return propertyAnnotation.required();
+            }
+        }
+
+        return arg.isOption()
+            ? arg.required()
+            : arg.arity().min() > 0;
+    }
+
+    public static boolean isGlobalOption(@NotNull CommandLine.Model.OptionSpec option) {
+        Object userObject = option.userObject();
+        // use origin value from annotation, because picocli may mark options as required when they are in an arg group
+        if (userObject instanceof Field optionField) {
+            return optionField.isAnnotationPresent(CLIGlobalOption.class);
+        }
+        return false;
+    }
+
+    @NotNull
+    public static CommandLine.Model.CommandSpec findTopLevelCommand(
+        @NotNull CommandLine.Model.CommandSpec commandSpec
+    ) {
+        CommandLine.Model.CommandSpec spec = commandSpec;
+        while (spec.parent() != null) {
+            spec = spec.parent();
+        }
+        return spec;
     }
 
 }

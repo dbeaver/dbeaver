@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -33,21 +34,28 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
 
+    private static final AIFunction VOID_STUB = (context, parameters) -> {
+        throw new DBCFeatureNotSupportedException("Internal error. This function mustn't be called");
+    };
+
     private final AIToolboxInternalDescriptor toolbox;
     private final ObjectType objectType;
     private final String id;
     private final String name;
     private final DBPImage icon;
-    private final boolean global;
-    private final boolean hidden;
+    private final boolean system;
     private final boolean ui;
-    private boolean enabledByDefault;
+    private final boolean enabledByDefault;
+    private final boolean omitConfirmation;
+    private final AIFunctionAllowMode defaultAllowMode;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
     private final String[] dependsOn;
-    private final String description;
+    private final String aiDescription;
+    private final String userDescription;
     private final String categoryId;
     private final AIFunctionInternalParameter[] parameters;
+    private transient AIFunction instance;
 
     public AIFunctionInternalDescriptor(
         @NotNull AIToolboxInternalDescriptor toolbox,
@@ -60,12 +68,18 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
-        this.global = CommonUtils.toBoolean(config.getAttribute("global"));
-        this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
+        this.system = CommonUtils.toBoolean(config.getAttribute("system"));
         this.enabledByDefault = CommonUtils.toBoolean(config.getAttribute("enabledByDefault"));
+        this.defaultAllowMode = CommonUtils.valueOf(
+            AIFunctionAllowMode.class,
+            config.getAttribute("defaultAllowMode"),
+            AIFunctionAllowMode.ALWAYS_ALLOW
+        );
+        this.omitConfirmation = CommonUtils.toBoolean(config.getAttribute("omitConfirmation"), false);
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.aiDescription = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.userDescription = config.getAttribute("userDescription");
         this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
             AIFunctionType.class,
@@ -117,8 +131,13 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     }
 
     @Nullable
-    public String getDescription() {
-        return description;
+    public String getAiDescription() {
+        return aiDescription;
+    }
+
+    @Nullable
+    public String getUserDescription() {
+        return userDescription;
     }
 
     @Override
@@ -126,15 +145,9 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         return ui;
     }
 
-    /**
-     * Global functions are passed in ALL requests
-     */
-    public boolean isGlobal() {
-        return global;
-    }
-
-    public boolean isHidden() {
-        return hidden;
+    @Override
+    public boolean isSystem() {
+        return system;
     }
 
     @Override
@@ -142,9 +155,31 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         return enabledByDefault;
     }
 
+    @Override
+    public boolean isOmitConfirmation() {
+        return omitConfirmation;
+    }
+
+    @NotNull
+    @Override
+    public AIFunctionAllowMode getDefaultAllowMode() {
+        return defaultAllowMode;
+    }
+
     @NotNull
     public AIFunctionParameter[] getParameters() {
         return parameters;
+    }
+
+    @Nullable
+    @Override
+    public AIFunctionParameter getParameter(@NotNull String name) {
+        for (AIFunctionParameter p : parameters) {
+            if (p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        return null;
     }
 
     @NotNull
@@ -152,17 +187,25 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         return dependsOn;
     }
 
+
     @NotNull
-    public AIFunction createInstance() throws DBException {
-        try {
-            return objectType.createInstance(AIFunction.class);
-        } catch (Exception e) {
-            throw new DBException("Error creating AI function " + getId(), e);
+    public AIFunction getInstance() {
+        if (instance == null) {
+            if (CommonUtils.isEmpty(objectType.getImplName())) {
+                instance = VOID_STUB;
+            } else {
+                try {
+                    instance = objectType.createInstance(AIFunction.class);
+                } catch (Exception e) {
+                    throw new DBRuntimeException("Error creating AI function " + getId(), e);
+                }
+            }
         }
+        return instance;
     }
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {
-        return false;
+        return true;
     }
 
     @Override

@@ -65,15 +65,14 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (commandContext == null) {
             return true;
         }
-        DBEObjectEditor objectEditor = getObjectEditor(DBEObjectEditor.class);
+        DBEObjectEditor objectEditor = getObjectEditor(object, DBEObjectEditor.class);
         return objectEditor != null &&
             object instanceof DBPObject po && objectEditor.canEditObject(po)
             && DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
     }
 
     @Nullable
-    private <T> T getObjectEditor(@NotNull Class<T> managerType) {
-        final Object editableValue = getEditableValue();
+    private <T> T getObjectEditor(@Nullable Object editableValue, @NotNull Class<T> managerType) {
         if (editableValue == null) {
             return null;
         }
@@ -110,9 +109,9 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
                 // Do nothing
             } else if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop || !commandContext.isDirty()) {
                 // Last command is not applicable (check for isDirty because command queue might be reverted)
-                final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor(DBEObjectEditor.class);
+                final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor(editableValue, DBEObjectEditor.class);
                 if (objectEditor == null) {
-                    log.error("Can't obtain object editor for " + getEditableValue());
+                    log.error("Can't obtain object editor for " + editableValue);
                     return;
                 }
                 final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
@@ -130,7 +129,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         // If we perform rename then we should refresh object cache
         // To update name-based cache
         if (prop.isNameProperty() && editableValue instanceof DBSObject dbsObject) {
-            DBEObjectMaker objectManager = getObjectEditor(DBEObjectMaker.class);
+            DBEObjectMaker objectManager = getObjectEditor(editableValue, DBEObjectMaker.class);
             if (objectManager != null) {
                 DBSObjectCache cache = objectManager.getObjectsCache(dbsObject);
                 if (cache != null && cache.isFullyCached()) {

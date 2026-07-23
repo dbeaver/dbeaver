@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.iotdb.model.IoTDBDataSource;
 import org.jkiss.dbeaver.ext.iotdb.model.meta.IoTDBMetaModel;
 import org.jkiss.dbeaver.ext.iotdb.model.meta.IoTDBTableMetaModel;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -32,11 +31,15 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
+public class IoTDBDataSourceProvider extends GenericDataSourceProvider<IoTDBDataSource> {
+
+    public IoTDBDataSourceProvider() {
+        super(IoTDBDataSource.class);
+    }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor,
+    public IoTDBDataSource openDataSource(@NotNull DBRProgressMonitor monitor,
                                         @NotNull DBPDataSourceContainer container) throws DBException {
         String url = container.getConnectionConfiguration().getUrl();
         if (url.endsWith("?sql_dialect=table")) {

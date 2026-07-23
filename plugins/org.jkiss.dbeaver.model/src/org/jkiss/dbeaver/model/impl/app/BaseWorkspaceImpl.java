@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
-import org.jkiss.dbeaver.runtime.DBInterruptedException;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -69,6 +69,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     private final SessionContextImpl workspaceAuthContext;
 
     protected DBPProject activeProject;
+    private DBFFileSystemManager fileSystemManager;
 
     protected BaseWorkspaceImpl(@NotNull DBPPlatform platform, @NotNull Path workspacePath) {
         this.platform = platform;
@@ -82,24 +83,21 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     }
 
     @Override
-    public abstract void initializeProjects();
+    public abstract void initializeProjects() throws DBException;
 
-    public void initializeWorkspaceSession() {
-        // Acquire workspace session
-        try {
-            this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
-        } catch (DBException e) {
-            if (!(e instanceof DBInterruptedException)) {
-                log.debug(e);
-                DBWorkbench.getPlatformUI().showMessageBox(
-                    "Authentication error",
-                    "Error authenticating application user: " +
-                        "\n" + e.getMessage(),
-                    true);
+    public void initializeWorkspaceSession() throws DBException {
+        // Remove old primary session first
+        SMSessionContext authContext = getAuthContext();
+        SMAuthSpace primaryAuthSpace = authContext.getPrimaryAuthSpace();
+        if (primaryAuthSpace != null) {
+            SMSession workspaceSession = authContext.findSpaceSession(primaryAuthSpace);
+            if (workspaceSession != null) {
+                authContext.removeSession(workspaceSession);
             }
-            dispose();
-            System.exit(101);
         }
+        // Acquire new one
+        SMSession workspaceSession = acquireWorkspaceSession(new VoidProgressMonitor());
+        authContext.addSession(workspaceSession);
     }
 
     @NotNull
@@ -163,6 +161,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     @Override
     public void dispose() {
         DBVModel.checkGlobalCacheIsEmpty();
+        // Close workspace session
+        getAuthContext().dispose();
     }
 
     @Nullable
@@ -308,6 +308,19 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     @Override
     public boolean supportsRealmFeature(@NotNull String feature) {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public DBFFileSystemManager getFileSystemManager() {
+        if (fileSystemManager == null) {
+            synchronized (this) {
+                if (fileSystemManager == null) {
+                    fileSystemManager = new DBFFileSystemManager(this);
+                }
+            }
+        }
+        return fileSystemManager;
     }
 
 }

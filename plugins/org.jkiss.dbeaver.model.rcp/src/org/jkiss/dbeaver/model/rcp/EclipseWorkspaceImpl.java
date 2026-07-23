@@ -81,7 +81,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     }
 
     @Override
-    public final void initializeProjects() {
+    public final void initializeProjects() throws DBException {
         initializeWorkspaceSession();
         try {
             loadWorkspaceProjects();

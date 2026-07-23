@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class PostgreServerType extends AbstractDescriptor {
     private final boolean supportsCustomConnectionURL;
     private final boolean turnOffPreparedStatements;
 
-    PostgreServerType(IConfigurationElement config) {
+    PostgreServerType(@NotNull IConfigurationElement config) {
         super(config);
         type = new ObjectType(config.getAttribute("class"));
         id = config.getAttribute("id");
@@ -52,14 +52,17 @@ public class PostgreServerType extends AbstractDescriptor {
         turnOffPreparedStatements = CommonUtils.getBoolean(config.getAttribute("turnOffPreparedStatements"), false);
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @NotNull
     public DBPImage getIcon() {
         return icon;
     }

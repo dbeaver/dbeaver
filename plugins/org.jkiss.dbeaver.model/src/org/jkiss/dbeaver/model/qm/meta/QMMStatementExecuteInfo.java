@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.qm.meta;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -132,6 +133,13 @@ public class QMMStatementExecuteInfo extends QMMObject {
     {
         this.fetchEndTime = getTimeStamp();
         this.fetchRowCount = rowCount;
+    }
+
+    void setError(int errorCode, @Nullable String errorMessage)
+    {
+        this.errorCode = errorCode;
+        this.errorMessage = CommonUtils.nullIfEmpty(errorMessage);
+        this.update();
     }
 
     public QMMStatementInfo getStatement()

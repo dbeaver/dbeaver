@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import java.util.List;
 public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> implements
     DBSTableColumn, DBSTypedObjectEx, DBPNamedObject2, DBPOrderedObject, DBPHiddenObject,
     SQLServerObject, JDBCColumnKeyType, DBSTypedObjectExt4<SQLServerDataType>, DBPRefreshableObject,
-    SQLServerExtendedPropertyOwner {
+    SQLServerExtendedPropertyOwner, DBSDescriptionEditable {
     private static final Log log = Log.getLog(SQLServerTableColumn.class);
 
     private long objectId;
@@ -139,14 +139,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         }
         if (this.maxLength == 0) {
             this.maxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
-
-            if (maxLength > 0 && SQLServerUtils.isUnicodeCharStoredAsBytePairs(getDataSource())) {
-                final String typeName = getTypeName();
-                if (typeName.equals(SQLServerConstants.TYPE_NVARCHAR) || typeName.equals(SQLServerConstants.TYPE_NCHAR)) {
-                    // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql#arguments
-                    this.maxLength /= 2;
-                }
-            }
+            this.maxLength = SQLServerUtils.getDisplayMaxLength(getDataSource(), getTypeName(), CommonUtils.toInt(this.maxLength));
         }
         setRequired(JDBCUtils.safeGetInt(dbResult, "is_nullable") == 0);
         setScale(JDBCUtils.safeGetInteger(dbResult, "scale"));
@@ -309,7 +302,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return description;
     }
 
-    public void setDescription(String description) {
+    @Override
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 

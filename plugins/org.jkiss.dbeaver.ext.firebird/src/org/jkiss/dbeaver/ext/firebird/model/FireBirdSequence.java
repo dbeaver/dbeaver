@@ -67,7 +67,7 @@ public class FireBirdSequence extends GenericSequence implements DBPSystemObject
     public Number getLastValue(DBRProgressMonitor monitor) throws DBCException {
         if (super.getLastValue() == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read sequence last value")) {
-                try (JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT GEN_ID(\"" + getName() + "\", 0) from RDB$DATABASE",
+                try (JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT GEN_ID(" + DBUtils.getQuotedIdentifier(this) + ", 0) from RDB$DATABASE",
                     ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY,
                     ResultSet.HOLD_CURSORS_OVER_COMMIT)) {

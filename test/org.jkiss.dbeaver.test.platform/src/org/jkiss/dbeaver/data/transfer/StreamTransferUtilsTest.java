@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.data.transfer;
 
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,10 +31,10 @@ public class StreamTransferUtilsTest extends DBeaverUnitTest {
     public void testDelimiterString() {
         Map<String, Object> props = new HashMap<>();
         props.put("delimiter", " \\t\\n\\r");
-        Assert.assertEquals(" \t\n\r", StreamTransferUtils.getDelimiterString(props, "delimiter"));
+        Assertions.assertEquals(" \t\n\r", StreamTransferUtils.getDelimiterString(props, "delimiter"));
         props.put("delimiter", "");
-        Assert.assertEquals(",", StreamTransferUtils.getDelimiterString(props, "delimiter"));
+        Assertions.assertEquals(",", StreamTransferUtils.getDelimiterString(props, "delimiter"));
         props.put("delimiter", null);
-        Assert.assertEquals(",", StreamTransferUtils.getDelimiterString(props, "delimiter"));
+        Assertions.assertEquals(",", StreamTransferUtils.getDelimiterString(props, "delimiter"));
     }
 }

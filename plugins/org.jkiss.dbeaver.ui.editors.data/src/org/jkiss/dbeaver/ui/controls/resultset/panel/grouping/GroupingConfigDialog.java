@@ -76,13 +76,13 @@ public class GroupingConfigDialog extends BaseDialog {
         StringContentProposalProvider proposalProvider = new StringContentProposalProvider(new String[0]);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
 
-        columnsTable = createColumnsTable(parent, proposalProvider, resultsContainer.getGroupAttributes(), allColumnNames);
+        columnsTable = createColumnsTable(composite, proposalProvider, resultsContainer.getGroupAttributes(), allColumnNames);
 
         List<String> defaultFunctions = List.of("COUNT", "SUM", "AVG", "MAX", "MIN");
         proposals.addAll(defaultFunctions);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
         functionsTable = createFunctionsTable(
-            parent,
+            composite,
             proposalProvider, resultsContainer.getUserDefinedGroupFunctions(), defaultFunctions, allColumnNames
         );
 
@@ -175,7 +175,7 @@ public class GroupingConfigDialog extends BaseDialog {
             @NotNull List<String> allColumnNames
         ) {
             super(
-                UIUtils.createControlGroup(parent, ResultSetMessages.grouping_panel_column_panel_title, 2, GridData.FILL_BOTH, 0),
+                UIUtils.createTitledComposite(parent, ResultSetMessages.grouping_panel_column_panel_title, 2, GridData.FILL_BOTH),
                 values,
                 new GroupingAttributeValueManager(),
                 proposalProvider,
@@ -209,9 +209,10 @@ public class GroupingConfigDialog extends BaseDialog {
                 rootManager.add(new Action(columnName) {
                                     @Override
                                     public void run() {
-                                        TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                                        newItem.setText(columnName);
-                                        addTableItem(newItem);
+                                        addTableItem(SQLGroupingAttribute.makeCustom(
+                                            resultsContainer.getDataContainer().getDataSource(),
+                                            columnName
+                                        ));
                                     }
                                 }
                 );
@@ -244,7 +245,7 @@ public class GroupingConfigDialog extends BaseDialog {
             @NotNull List<String> columns
         ) {
             super(
-                UIUtils.createControlGroup(parent, ResultSetMessages.grouping_panel_function_panel_title, 2, GridData.FILL_BOTH, 0),
+                UIUtils.createTitledComposite(parent, ResultSetMessages.grouping_panel_function_panel_title, 2, GridData.FILL_BOTH),
                 values,
                 new StringEditorTableFactory.StringValuesManager(DBIcon.TREE_FUNCTION),
                 proposalProvider,
@@ -302,9 +303,7 @@ public class GroupingConfigDialog extends BaseDialog {
                 @Override
                 public void run() {
                     String functionCall = functionName + "(" + columnName + ")";
-                    TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                    newItem.setText(functionCall);
-                    addTableItem(newItem);
+                    addTableItem(functionCall);
                 }
             };
         }

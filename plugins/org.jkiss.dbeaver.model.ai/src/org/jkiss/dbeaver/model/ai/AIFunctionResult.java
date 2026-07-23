@@ -22,10 +22,14 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 
 public class AIFunctionResult {
 
+    @NotNull
     private final AIFunctionType type;
+    @NotNull
     private final Object value;
     @Nullable
-    private final DBRRunnableWithReturn<?> callback;
+    private final Throwable exception;
+    @Nullable
+    private final transient DBRRunnableWithReturn<?> callback;
 
     public AIFunctionResult(
         @NotNull AIFunctionType type,
@@ -39,9 +43,19 @@ public class AIFunctionResult {
         @NotNull Object value,
         @Nullable DBRRunnableWithReturn<?> callback
     ) {
+        this(type, value, callback, null);
+    }
+
+    public AIFunctionResult(
+        @NotNull AIFunctionType type,
+        @NotNull Object value,
+        @Nullable DBRRunnableWithReturn<?> callback,
+        @Nullable Throwable exception
+    ) {
         this.type = type;
         this.value = value;
         this.callback = callback;
+        this.exception = exception;
     }
 
     @NotNull
@@ -57,5 +71,10 @@ public class AIFunctionResult {
     @Nullable
     public DBRRunnableWithReturn<?> getCallback() {
         return callback;
+    }
+
+    @Nullable
+    public Throwable getException() {
+        return exception;
     }
 }

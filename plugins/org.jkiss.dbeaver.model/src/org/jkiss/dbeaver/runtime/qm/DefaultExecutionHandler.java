@@ -118,6 +118,11 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
     }
 
     @Override
+    public void handleFetchError(@NotNull DBCResultSet resultSet, @NotNull Throwable error) {
+
+    }
+
+    @Override
     public void handleScriptBegin(@NotNull DBCSession session) {
 
     }

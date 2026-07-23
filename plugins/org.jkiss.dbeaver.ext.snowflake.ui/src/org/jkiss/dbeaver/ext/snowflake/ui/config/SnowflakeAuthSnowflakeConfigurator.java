@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -33,13 +34,19 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurat
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 /**
  * Snowflake database native auth model config
  */
 public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelConfigurator {
 
     private Combo userRoleCombo;
-    private Combo authTypeCombo;
+
+    @Nullable
+    protected AuthTypeComboDecorator authTypeComboDecorator;
 
     @Override
     public void createControl(@NotNull Composite parent, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
@@ -58,22 +65,25 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         userRoleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         userRoleCombo = new Combo(parent, SWT.DROP_DOWN);
-        GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(userRoleCombo) * 20;
-        userRoleCombo.setLayoutData(gd);
+        userRoleCombo.setLayoutData(makeAuthControlLayoutData(parent));
         userRoleCombo.select(0);
         userRoleCombo.addModifyListener(textListener);
 
         if (needsAuthTypeSelector()) {
-            UIUtils.createControlLabel(parent, SnowflakeMessages.label_authenticator);
-            authTypeCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN);
-            authTypeCombo.add(""); //$NON-NLS-1$
-            authTypeCombo.add("snowflake"); //$NON-NLS-1$
-            authTypeCombo.add("externalbrowser"); //$NON-NLS-1$
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
-            authTypeCombo.setLayoutData(gd);
-            authTypeCombo.addModifyListener(textListener);
+            authTypeComboDecorator = createAuthTypeSelector(parent, textListener);
         }
+    }
+
+    @NotNull
+    protected AuthTypeComboDecorator createAuthTypeSelector(@NotNull Composite parent, @NotNull ModifyListener textListener) {
+        AuthTypeComboDecorator authTypeCombo = new AuthTypeComboDecorator(parent, textListener);
+        authTypeCombo.setLayoutData(makeAuthControlLayoutData(parent));
+
+        authTypeCombo.add("", "");
+        authTypeCombo.add(SnowflakeMessages.authenticator_snowflake_label, "snowflake");
+        authTypeCombo.add(SnowflakeMessages.authenticator_external_browser_label, "externalbrowser");
+
+        return authTypeCombo;
     }
 
     protected boolean needsAuthTypeSelector() {
@@ -86,15 +96,24 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
 
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         String roleName = connectionInfo.getAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE);
+        if (CommonUtils.isEmpty(roleName)) {
+            roleName = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTH_ROLE);
+        }
+        if (CommonUtils.isEmpty(roleName)) {
+            roleName = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE_LEGACY);
+        }
         if (roleName != null) {
             userRoleCombo.setText(roleName);
         }
-        if (authTypeCombo != null) {
+        if (authTypeComboDecorator != null) {
             String authName = connectionInfo.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
             if (CommonUtils.isEmpty(authName)) {
                 authName = CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY));
             }
-            authTypeCombo.setText(authName);
+            if (CommonUtils.isEmpty(authName)) {
+                authName = CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR));
+            }
+            authTypeComboDecorator.setText(authName);
         }
     }
 
@@ -111,8 +130,8 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         }
 
         // Remove legacy properties
-        if (authTypeCombo != null) {
-            configuration.setAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR, authTypeCombo.getText().trim());
+        if (authTypeComboDecorator != null) {
+            configuration.setAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR, authTypeComboDecorator.getSelectedAuthProperty());
         }
 
         configuration.removeProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY);
@@ -128,4 +147,41 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         return true;
     }
 
+    protected static class AuthTypeComboDecorator {
+        private final Combo authTypeCombo;
+
+        private final Map<String, String> uiLabelPropertyMapper = new HashMap<>();
+
+        public AuthTypeComboDecorator(@NotNull Composite parent, @NotNull ModifyListener textListener) {
+            UIUtils.createControlLabel(parent, SnowflakeMessages.label_authenticator);
+            this.authTypeCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN);
+            this.authTypeCombo.addModifyListener(textListener);
+        }
+
+        public void add(@NotNull String uiText, @NotNull String property) {
+            authTypeCombo.add(uiText); //$NON-NLS-1$
+            uiLabelPropertyMapper.put(uiText, property);
+        }
+
+        public void setText(@Nullable String propertyValue) {
+            String text = uiLabelPropertyMapper
+                .entrySet()
+                .stream()
+                .filter(e -> e.getValue().equals(propertyValue))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse("");
+            authTypeCombo.setText(text);
+        }
+
+        @NotNull
+        public String getSelectedAuthProperty() {
+            String uiText = authTypeCombo.getText();
+            return Objects.requireNonNullElse(uiLabelPropertyMapper.get(uiText), CommonUtils.notEmpty(uiText));
+        }
+
+        public void setLayoutData(@NotNull Object layoutData) {
+            this.authTypeCombo.setLayoutData(layoutData);
+        }
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -55,16 +57,16 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
      */
     @NotNull
     @Override
-    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
-    {
-        if (value instanceof JDBCComposite) {
+    public synchronized String getValueDisplayString(
+        @NotNull DBSTypedObject column,
+        @Nullable Object value,
+        @NotNull DBDDisplayFormat format
+    ) {
+        if (value instanceof JDBCComposite composite) {
             if (DBUtils.isNullValue(value)) {
                 return DBValueFormatting.getDefaultValueDisplayString(value, format);
             }
-            if (format == DBDDisplayFormat.UI) {
-
-            }
-            return ((JDBCComposite) value).getStringRepresentation();
+            return composite.getStringRepresentation();
         } else {
             return DBValueFormatting.getDefaultValueDisplayString(value, format);
         }
@@ -79,21 +81,19 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
 
     @Override
     protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
         int paramIndex,
-        Object value)
-        throws DBCException, SQLException
-    {
+        @Nullable Object value
+    ) throws DBCException, SQLException {
         if (value == null) {
             statement.setNull(paramIndex, Types.STRUCT);
-        } else if (value instanceof DBDComposite) {
-            DBDComposite struct = (DBDComposite) value;
+        } else if (value instanceof DBDComposite struct) {
             if (struct.isNull()) {
                 statement.setNull(paramIndex, Types.STRUCT);
-            } else if (struct instanceof JDBCComposite) {
-                statement.setObject(paramIndex, ((JDBCComposite) struct).getStructValue(), Types.STRUCT);
+            } else if (struct instanceof JDBCComposite composite) {
+                statement.setObject(paramIndex, composite.getStructValue(), Types.STRUCT);
             } else {
                 statement.setObject(paramIndex, struct.getRawValue());
             }
@@ -103,44 +103,52 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
-    {
-        if (object instanceof JDBCComposite) {
-            return copy ? ((JDBCComposite) object).cloneValue(session.getProgressMonitor()) : object;
+    public Object getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
+        if (object instanceof JDBCComposite composite) {
+            return copy ? composite.cloneValue(session.getProgressMonitor()) : object;
         }
 
-        String typeName;
+        String typeName = null;
         try {
-            if (object instanceof Struct) {
-                typeName = ((Struct) object).getSQLTypeName();
+            if (object instanceof Struct struct) {
+                typeName = struct.getSQLTypeName();
             } else {
                 typeName = type.getTypeName();
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, session.getExecutionContext());
+        } catch (Exception e) {
+            log.debug("Error reading SQL type name: " + GeneralUtils.makeStandardErrorMessage(e));
         }
         DBSDataType dataType = null;
-        try {
-            dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), typeName);
-        } catch (DBException e) {
-            log.debug("Error resolving data type '" + typeName + "'", e);
+        if (typeName != null) {
+            try {
+                dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), typeName);
+            } catch (DBException e) {
+                log.debug("Error resolving data type '" + typeName + "'", e);
+            }
         }
         if (dataType == null) {
-            if (object instanceof Struct) {
-                return new JDBCCompositeDynamic(session, (Struct) object, null);
+            if (object instanceof Struct struct) {
+                return new JDBCCompositeDynamic(session, struct, null);
             } else {
                 return new JDBCCompositeUnknown(session, object);
             }
         }
-        if (object == null) {
-            return new JDBCCompositeStatic(session, dataType, new JDBCStructImpl(dataType.getTypeName(), null, ""));
-        } else if (object instanceof Struct) {
-            return new JDBCCompositeStatic(session, dataType, (Struct) object);
-        } else if (object instanceof Map) {
-            return new JDBCCompositeMap(session, dataType, (Map<?,?>) object);
-        } else {
-            return new JDBCCompositeUnknown(session, object);
-        }
+        return switch (object) {
+            case null -> new JDBCCompositeStatic(
+                session,
+                dataType,
+                new JDBCStructImpl(dataType.getTypeName(), null, "")
+            );
+            case Struct struct -> new JDBCCompositeStatic(session, dataType, struct);
+            case Map<?, ?> map -> new JDBCCompositeMap(session, dataType, map);
+            default -> new JDBCCompositeUnknown(session, object);
+        };
     }
 
 }

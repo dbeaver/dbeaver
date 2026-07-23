@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 /**
  * DBeaver UI core
@@ -428,6 +429,19 @@ public class DesktopUI extends ConsoleUserInterface {
         }.execute();
     }
 
+    @Override
+    public boolean promptAuthModelCredentials(
+        @NotNull DBPDataSourceContainer dataSourceContainer
+    ) {
+        return new UITask<Boolean>() {
+            @Override
+            public Boolean runTask() {
+                final Shell shell = UIUtils.getActiveWorkbenchShell();
+                return AuthModelCredentialsDialog.openDialog(shell, dataSourceContainer);
+            }
+        }.execute();
+    }
+
     @Nullable
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordVisible) {
@@ -447,17 +461,47 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public String promptProperty(String prompt, String defValue) {
+    @Nullable
+    public String promptProperty(@NotNull String prompt, @Nullable String defValue) {
+        return promptProperty(s -> new EnterNameDialog(s, prompt, defValue));
+    }
+
+    @Override
+    @Nullable
+    public String promptProperty(@NotNull String title, @NotNull String prompt, @Nullable String defValue) {
+        return promptProperty(s -> new EnterNameDialog(s, prompt, defValue) {
+            @NotNull
+            @Override
+            protected String createTitle() {
+                return title;
+            }
+        });
+    }
+
+    @Nullable
+    private String promptProperty(@NotNull Function<Shell, EnterNameDialog> dialogFactory) {
         return new UITask<String>() {
             @Override
+            @Nullable
             public String runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
-                final EnterNameDialog dialog = new EnterNameDialog(shell, prompt, defValue);
+                final EnterNameDialog dialog = dialogFactory.apply(shell);
                 if (dialog.open() == IDialogConstants.OK_ID) {
                     return dialog.getResult();
                 } else {
                     return null;
                 }
+            }
+        }.execute();
+    }
+
+    @Override
+    public String promptText(String title, String prompt, String defValue) {
+        return new UITask<String>() {
+            @Override
+            public String runTask() {
+                final Shell shell = UIUtils.getActiveWorkbenchShell();                
+                return EditTextDialog.editText(shell, title, defValue, prompt);
             }
         }.execute();
     }
@@ -485,9 +529,7 @@ public class DesktopUI extends ConsoleUserInterface {
     @Override
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer) {
         UIUtils.syncExec(() ->
-            NavigatorHandlerObjectOpen.openConnectionEditor(
-                UIUtils.getActiveWorkbenchWindow(),
-                dataSourceContainer));
+            NavigatorHandlerObjectOpen.openConnectionEditor(dataSourceContainer));
     }
 
     @Override

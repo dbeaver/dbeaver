@@ -96,16 +96,14 @@ public class PropertySerializationUtils {
         @NotNull Map<String, ?> properties
     ) {
         PropertySourceEditable editable = new PropertySourceEditable(object, object);
-        editable.collectProperties();
-        for (Map.Entry<String, ?> entry : properties.entrySet()) {
-            String propId = entry.getKey();
-            Object propValue = entry.getValue();
-            DBPPropertyDescriptor propDesc = editable.getProperty(propId);
-            if (propDesc != null) {
+        editable.collectProperties(false);
+        for (DBPPropertyDescriptor property : editable.getProperties()) {
+            if (properties.containsKey(property.getId())) {
+                Object propValue = properties.get(property.getId());
                 try {
-                    editable.setPropertyValue(monitor, propId, propValue);
+                    editable.setPropertyValue(monitor, property.getId(), propValue);
                 } catch (Exception e) {
-                    log.error("Error setting credential property '" + propId + "'", e);
+                    log.error("Error setting credential property '" + property.getId() + "'", e);
                 }
             }
         }

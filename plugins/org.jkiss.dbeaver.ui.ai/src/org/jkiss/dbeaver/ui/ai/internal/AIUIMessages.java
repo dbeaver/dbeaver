@@ -67,8 +67,51 @@ public class AIUIMessages extends NLS {
     public static String confirm_meta_transfer_usage_title;
     public static String confirm_meta_transfer_usage_message;
 
+    public static String ai_function_allow_menu_ask_every_time;
+    public static String ai_function_allow_menu_session_only;
+    public static String ai_function_allow_menu_allow_tool_session_only;
+    public static String ai_function_allow_menu_allow_tool_always;
+    public static String ai_function_allow_menu_allow_agent_session_only;
+    public static String ai_function_allow_menu_allow_agent_always;
+    public static String ai_function_allow_menu_always;
+    public static String ai_function_allow_menu_configure;
+
     public static String ai_suggestion_popup_title;
     public static String ai_suggestion_popup_message;
+    public static String scope_selector_customize;
+    public static String scope_selector_not_available;
+    public static String scope_selector_custom_objects;
+    public static String openai_configurator_log_query_label;
+    public static String openai_configurator_log_query_tip;
+    public static String openai_configurator_temperature_tip;
+    public static String openai_configurator_token_required;
+    public static String openai_configurator_token_placeholder;
+
+    public static String ai_engine_configurator_advanced_settings;
+    public static String ai_engine_configurator_timeout_label;
+    public static String ai_engine_configurator_timeout_tip;
+
+    public static String ai_engines_page_create_profile_tip;
+    public static String ai_engines_page_delete_profile_tip;
+    public static String ai_engines_page_no_active_engine;
+    public static String ai_engines_page_group_profile;
+    public static String ai_engines_page_profile_id_label;
+    public static String ai_engines_page_profile_name_label;
+    public static String ai_engines_page_group_settings;
+    public static String ai_engines_page_column_name;
+    public static String ai_engines_page_column_model;
+    public static String ai_engines_page_create_error_title;
+    public static String ai_engines_page_create_error_message;
+    public static String ai_engines_page_delete_confirm_title;
+    public static String ai_engines_page_delete_confirm_message;
+    public static String ai_engines_page_save_error_title;
+    public static String ai_engines_page_save_error_message;
+    public static String ai_engines_page_load_error_title;
+    public static String ai_engines_page_load_error_message;
+    public static String ai_engines_page_configurator_error_title;
+    public static String ai_engines_page_configurator_error_message;
+    public static String ai_engines_page_configurator_not_found_title;
+    public static String ai_engines_page_configurator_not_found_message;
 
     static {
         // initialize resource bundle

@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.ui.forms;
 
 import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.observable.value.IValueChangeListener;
+import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+
+import java.util.function.BiConsumer;
 
 @SuppressWarnings("CheckStyle")
 record UIObservableImpl<T>(@NotNull IObservableValue<T> delegate, @NotNull Class<T> type) implements UIObservable<T> {
@@ -42,5 +46,33 @@ record UIObservableImpl<T>(@NotNull IObservableValue<T> delegate, @NotNull Class
     @Override
     public Class<T> type() {
         return type;
+    }
+
+    @Override
+    public void addChangeListener(@NotNull BiConsumer<T, T> listener) {
+        // TODO currently used to listen to changes in multiple controls.
+        //  Would be nice to introduce a generic "validation" callback
+        //  that gets invoked recursively when let's say a panel's widget
+        //  changes its validation state. Or at least gets modified without
+        //  validating anything.
+        delegate.addValueChangeListener(new ValueChangeAdapter<>(listener));
+    }
+
+    @Override
+    public void removeChangeListener(@NotNull BiConsumer<T, T> listener) {
+        delegate.removeValueChangeListener(new ValueChangeAdapter<>(listener));
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return String.format("UIObservableImpl[value=%s, type=%s]", get(), type.getName());
+    }
+
+    private record ValueChangeAdapter<T>(@NotNull BiConsumer<T, T> listener) implements IValueChangeListener<T> {
+        @Override
+        public void handleValueChange(@NotNull ValueChangeEvent<? extends T> event) {
+            listener.accept(event.diff.getOldValue(), event.diff.getNewValue());
+        }
     }
 }

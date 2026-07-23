@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -32,6 +33,8 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     private final QMMProjectInfo projectInfo;
     @Include
     private final String containerId;
+
+    private final boolean isLoggingEnabled;
 
     private String containerName;
     private final String driverId;
@@ -55,6 +58,8 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
 
         this.projectInfo = new QMMProjectInfo(context.getDataSource().getContainer().getProject());
         initFromContext(context, transactional);
+
+        this.isLoggingEnabled = context.isQMLoggingEnabled();
     }
 
     private QMMConnectionInfo(Builder builder) {
@@ -71,6 +76,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         statementStack = builder.statementStack;
         executionStack = builder.executionStack;
         transaction = builder.transaction;
+        this.isLoggingEnabled = true;
     }
 
     private void initFromContext(DBCExecutionContext context, boolean transactional) {
@@ -108,6 +114,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         this.instanceId = instanceID;
         this.contextName = contextName;
         this.transactional = transactional;
+        this.isLoggingEnabled = true;
     }
 
     @Override
@@ -275,6 +282,9 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         QMMStatementExecuteInfo exec = getExecution(statement);
         if (exec != null) {
             exec.close(rowCount, error);
+            if (isExecutionCanceled(statement, error)) {
+                markExecutionCanceled(exec, error);
+            }
         }
         return exec;
     }
@@ -296,8 +306,46 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         QMMStatementExecuteInfo exec = getExecution(resultSet.getSourceStatement());
         if (exec != null) {
             exec.endFetch(rowCount);
+            if (exec.getErrorMessage() == null && isExecutionCanceled(resultSet.getSourceStatement(), null)) {
+                markExecutionCanceled(exec, null);
+            }
         }
         return exec;
+    }
+
+    @Nullable
+    public QMMStatementExecuteInfo execution(@NotNull DBCStatement statement, @Nullable Throwable error) {
+        QMMStatementExecuteInfo execution = getExecution(statement);
+        if (execution != null) {
+            markExecutionCanceled(execution, error);
+        }
+        return execution;
+    }
+
+    private boolean isExecutionCanceled(@NotNull DBCStatement statement, @Nullable Throwable error) {
+        return statement.getSession().getProgressMonitor().isCanceled() ||
+            error != null && DBExecUtils.isExecutionCanceled(statement.getSession().getDataSource(), error);
+    }
+
+    private void markExecutionCanceled(@NotNull QMMStatementExecuteInfo exec, @Nullable Throwable error) {
+        exec.setError(exec.getErrorCode(), getCancelMessage(error));
+    }
+
+    @NotNull
+    private String getCancelMessage(@Nullable Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (CommonUtils.isNotEmpty(current.getMessage()) &&
+                !CommonUtils.equalObjects(current.getMessage(), ModelMessages.model_jdbc_exception_internal_jdbc_driver_error)) {
+                return current.getMessage();
+            }
+            Throwable cause = current.getCause();
+            if (cause == current) {
+                break;
+            }
+            current = cause;
+        }
+        return "Query execution was cancelled by user";
     }
 
     public QMMProjectInfo getProjectInfo() {
@@ -363,6 +411,10 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     @Override
     public String getConnectionUrl() {
         return connectionUrl;
+    }
+
+    public boolean isLoggingEnabled() {
+        return this.isLoggingEnabled;
     }
 
     @Override

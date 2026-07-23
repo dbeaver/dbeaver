@@ -31,7 +31,7 @@ public final class OpenAIModels {
     private OpenAIModels() {
     }
 
-    public static final String DEFAULT_MODEL = "gpt-4o";
+    public static final String DEFAULT_MODEL = "gpt-5";
 
     public static final Map<String, AIModel> KNOWN_MODELS = AIUtils.modelMap(
         new AIModel("o1-pro", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),

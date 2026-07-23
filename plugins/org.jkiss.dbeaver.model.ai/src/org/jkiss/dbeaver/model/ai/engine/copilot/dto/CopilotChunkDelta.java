@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
+import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.Nullable;
+
+import java.util.List;
+
 public record CopilotChunkDelta(
-    String content
+    @Nullable
+    String role,
+    @Nullable
+    String content,
+    @Nullable
+    @SerializedName("tool_calls")
+    List<CopilotChatResponseLegacy.ToolCall> toolCalls
 ) {
 
 }

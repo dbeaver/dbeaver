@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import com.google.gson.FormattingStyle;
+import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
@@ -29,14 +31,20 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
+import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
@@ -45,6 +53,7 @@ import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.registry.settings.GlobalSettings;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.*;
@@ -54,6 +63,7 @@ import org.osgi.framework.Bundle;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,11 +77,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
-
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
+    private static final String SETTINGS_FOLDER = "settings";
 
     public static final String CONFIG_FOLDER = ".config";
     public static final String FILES_FOLDER = ".files";
@@ -89,12 +98,17 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private final Map<Bundle, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
 
     private SQLDialectMetadataRegistry sqlDialectRegistry;
+    private final DBWNetworkProfileManager networkProfileManager;
 
     private DBPPlatformLanguage platformLanguage;
 
     protected Path tempFolder;
 
-    protected void initialize() {
+    public BasePlatformImpl() {
+        this.networkProfileManager = new GlobalNetworkProfileManager();
+    }
+
+    protected void initialize() throws DBException {
         log.debug("Initialize base platform...");
 
         DBPPreferenceStore prefStore = getPreferenceStore();
@@ -119,6 +133,13 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
         this.navigatorModel.initialize();
 
+        DBPApplication application = getApplication();
+        if (application.isHeadlessMode()) {
+            postInitialize();
+        }
+    }
+
+    public void postInitialize() {
         if (!getApplication().isExclusiveMode()) {
             // Activate plugin services
             activatePluginServices();
@@ -219,6 +240,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
+    public DBWNetworkProfileManager getNetworkProfiles() {
+        return networkProfileManager;
+    }
+
+    @NotNull
+    @Override
     public DBConfigurationController getConfigurationController() {
         return getPluginConfigurationController(null);
     }
@@ -307,12 +334,19 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
-    public Path getLocalConfigurationFile(String fileName) {
+    public Path getLocalConfigurationFile(@NotNull String fileName) {
         Path productPluginPath = RuntimeUtils.getPluginStateLocation(getProductPlugin()).resolve(fileName);
         if (Files.exists(productPluginPath)) {
             return productPluginPath;
         }
         return getLocalWorkspaceConfigFolder().resolve(fileName);
+    }
+
+    @NotNull
+    @Override
+    public Path getGlobalConfigurationFile(@NotNull String fileName) {
+        var root = RuntimeUtils.getWorkingDirectory(BaseApplicationImpl.DBEAVER_DATA_DIR);
+        return Path.of(root, SETTINGS_FOLDER, fileName);
     }
 
     @NotNull
@@ -376,6 +410,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
+    public String getDeploymentId() {
+        return DeploymentId.get();
+    }
+
+    @NotNull
+    @Override
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
     }
@@ -387,7 +427,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     @Override
-    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) {
         if (CommonUtils.equalObjects(language, this.platformLanguage)) {
             return;
         }
@@ -446,7 +486,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 }
             }
         }
-        Path localTemp = name == null ? tempFolder : tempFolder.resolve(name);
+        Path localTemp = tempFolder.resolve(name);
         if (!Files.exists(localTemp)) {
             try {
                 Files.createDirectories(localTemp);
@@ -457,4 +497,72 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return localTemp;
     }
 
+    private class GlobalNetworkProfileManager extends DBWNetworkProfileManager {
+        public static final String CONFIG_FILE_NAME = "network-profiles.json";
+
+        @NotNull
+        @Override
+        protected List<DBWNetworkProfile> loadProfiles() {
+            try {
+                String npConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
+                if (!CommonUtils.isEmpty(npConfig)) {
+                    Map<String, Object> json = JSONUtils.GSON.fromJson(npConfig, JSONUtils.MAP_TYPE_TOKEN);
+                    return DataSourceParser.parseProfiles(
+                        new DataSourceParser.ContextParameters(
+                            null,
+                            DBWorkbench.isDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                            Map.of()
+                        ),
+                        json);
+                }
+            } catch (DBException e) {
+                log.error("Error loading global network profiles", e);
+            }
+            return super.loadProfiles();
+        }
+
+        @Override
+        public void saveSettings() {
+            try {
+                List<DBWNetworkProfile> profiles = getProfiles();
+                DataSourceParser.ContextParameters contextParameters = new DataSourceParser.ContextParameters(
+                    null,
+                    DBWorkbench.isDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                    new LinkedHashMap<>()
+                );
+                StringWriter strWriter = new StringWriter();
+                JsonWriter jsonWriter = new JsonWriter(strWriter);
+                jsonWriter.setFormattingStyle(FormattingStyle.PRETTY);
+                jsonWriter.setIndent("\t");
+                jsonWriter.beginObject();
+                DataSourceParser.saveNetworkProfiles(
+                    contextParameters,
+                    jsonWriter,
+                    profiles);
+                jsonWriter.endObject();
+                jsonWriter.flush();
+                String cfg = strWriter.toString();
+                DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(CONFIG_FILE_NAME, cfg);
+                if (!DBWorkbench.isDistributed()) {
+                    for (DBWNetworkProfile profile : profiles) {
+                        profile.persistSecrets(DBSSecretController.getGlobalSecretController());
+                    }
+                }
+             } catch (IOException | DBException e) {
+                log.error("Error loading global network profiles", e);
+            }
+        }
+
+        @NotNull
+        @Override
+        protected DBSSecretController getSecretController() throws DBException {
+            return DBSSecretController.getGlobalSecretController();
+        }
+
+        @Nullable
+        @Override
+        protected DBWNetworkProfileProvider getProfileProvider() {
+            return RuntimeUtils.getObjectAdapter(BasePlatformImpl.this, DBWNetworkProfileProvider.class);
+        }
+    }
 }
