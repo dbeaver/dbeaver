@@ -96,9 +96,6 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         viewer.addSelectionChangedListener(e -> {
             var filter = (QMQueryFilter) e.getStructuredSelection().getFirstElement();
             selection = filters.indexOf(filter);
-            if (filter != null) {
-                persistFilter(filter);
-            }
         });
         viewer.getTable().addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(selectionEvent ->
             okPressed()));
