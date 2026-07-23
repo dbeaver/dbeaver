@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.layout.FillLayoutFactory;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -42,6 +44,7 @@ import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
@@ -62,7 +65,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
 
     public static final String PANEL_ID = "value-view";
 
-    private static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
+    public static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
 
     private IResultSetPresentation presentation;
     private Composite viewPlaceholder;
@@ -406,7 +409,13 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                 return adapter.cast(valueEditor);
             }
             if (valueEditor instanceof IAdaptable) {
-                return ((IAdaptable) valueEditor).getAdapter(adapter);
+                T result = ((IAdaptable) valueEditor).getAdapter(adapter);
+                if (result != null) {
+                    return result;
+                }
+            }
+            if (adapter == IFindReplaceTarget.class && valueEditor.getControl() instanceof StyledText text) {
+                return adapter.cast(new StyledTextFindReplaceTarget(text));
             }
         }
 

@@ -30,6 +30,7 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -39,6 +40,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.ISources;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -70,10 +72,12 @@ import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -415,6 +419,15 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE: {
+                if (ValueViewerPanel.VALUE_VIEW_CONTROL_ID.equals(
+                    HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_ID_NAME)
+                )) {
+                    IFindReplaceTarget target = rsv.getAdapter(IFindReplaceTarget.class);
+                    if (target != null) {
+                        StyledTextUtils.createFindReplaceAction(activeShell, target).run();
+                    }
+                    break;
+                }
                 FindReplaceOverlay findReplaceOverlay;
                 if (event.getTrigger() instanceof Event ev && ev.widget instanceof Spreadsheet s) {
                     findReplaceOverlay = s.getPresentation().getFindReplaceOverlay();
