@@ -179,7 +179,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
             (f, s) -> {
                 if (f != null) {
                     f.setTitle(s);
-                    persistFilter(f);
+                    UIUtils.asyncExec(() -> persistFilter(f));
                 }
         }));
 
