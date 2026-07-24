@@ -221,7 +221,7 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
         setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
         super.updateUrl(urlText);
 
-        activated = false;
+        activated = true;
     }
 
     @Override
