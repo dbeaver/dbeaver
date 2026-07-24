@@ -219,11 +219,11 @@ public class AIEngineRequestFactory {
             }
         }
 
-        if (!prompt.isSupportsActions(userMessageCount)) {
+        if (!prompt.isSupportsActions(userMessageCount) || !promptGenerator.supportsUIAndActionFunctions()) {
             // Filter out actions
             selectedFunctions.removeIf(fd -> fd.getType() == AIFunctionType.ACTION);
         }
-        if (!prompt.isSupportsUi(userMessageCount)) {
+        if (!prompt.isSupportsUi(userMessageCount) || !promptGenerator.supportsUIAndActionFunctions()) {
             // Filter out ui functions
             selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
         }

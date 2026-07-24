@@ -52,6 +52,12 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         this.backupClient = createBackupClient();
     }
 
+    @Override
+    public void setTimeout(int timeoutSeconds) {
+        super.setTimeout(timeoutSeconds);
+        backupClient.setTimeout(timeoutSeconds);
+    }
+
     @NotNull
     public HttpClient getHttpClient() {
         return client.getHttpClient();

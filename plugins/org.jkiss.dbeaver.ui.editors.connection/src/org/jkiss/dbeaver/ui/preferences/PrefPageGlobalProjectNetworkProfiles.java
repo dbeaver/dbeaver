@@ -28,14 +28,17 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * A preference page that shows network profiles for all projects.
@@ -92,9 +95,9 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             UIConnectionMessages.pref_page_network_profiles_global_project_hint,
             () -> {
                 int selectionIndex = projectCombo.getSelectionIndex();
-                if (selectionIndex == 0) {
+                if (selectionIndex < 1) {
                     refreshActiveProject(null);
-                } else if (projects.get(selectionIndex + 1) instanceof RCPProject project) {
+                } else if (projects.get(selectionIndex - 1) instanceof RCPProject project) {
                     PrefPageProjectNetworkProfiles.open(getShell(), project, null);
                     refreshActiveProject(project);
                 }
@@ -153,11 +156,37 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             networkProfilesPage = null;
         }
 
-        networkProfilesPage = new PrefPageProjectNetworkProfiles();
+        networkProfilesPage = createPrefPageNetworkProfiles();
         networkProfilesPage.setProjectMeta(project);
         networkProfilesPage.createControl(networkProfilesPageHolder);
         networkProfilesPage.loadSettings();
+        networkProfilesPageHolder.layout(true, true);
 
         return true;
+    }
+
+    @NotNull
+    private PrefPageProjectNetworkProfiles createPrefPageNetworkProfiles() {
+        return new PrefPageGlobalNetworkProfiles();
+    }
+
+    private class PrefPageGlobalNetworkProfiles extends PrefPageProjectNetworkProfiles {
+
+        @NotNull
+        @Override
+        protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
+            Predicate<DBPProject> projectUsingProfileAsGlobal = proj -> {
+                DBWNetworkProfile profile = proj.getDataSourceRegistry().getNetworkProfiles()
+                    .getProfile(null, selectedProfile.getProfileName());
+                return profile != null && profile.isGlobal();
+            };
+            return selectedProfile.isGlobal()
+                ? getProjects()
+                .stream()
+                .filter(projectUsingProfileAsGlobal)
+                .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
+                .toList()
+                : super.connectionsUsingProfile(selectedProfile);
+        }
     }
 }

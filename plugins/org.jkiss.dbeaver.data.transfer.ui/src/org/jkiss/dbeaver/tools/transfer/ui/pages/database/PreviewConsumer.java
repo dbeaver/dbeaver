@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 
@@ -30,38 +26,24 @@ import java.util.List;
 public class PreviewConsumer extends DatabaseTransferConsumer {
 
     private final DBRProgressMonitor ctlMonitor;
-    private final int previewRowCount;
-    private boolean fetchEnded;
 
     public PreviewConsumer(
-        DBRProgressMonitor monitor,
-        DatabaseMappingContainer mappingContainer, int previewRowCount
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DatabaseMappingContainer mappingContainer
     ) {
         super(mappingContainer.getTarget());
-        ctlMonitor = new ProxyProgressMonitor(monitor) {
-            @Override
-            public boolean isCanceled() {
-                return super.isCanceled() || fetchEnded;
-            }
-        };
-        this.previewRowCount = previewRowCount;
+        ctlMonitor = monitor;
         setPreview(true);
     }
 
+    @NotNull
     public DBRProgressMonitor getCtlMonitor() {
         return ctlMonitor;
     }
 
+    @NotNull
     public List<Object[]> getRows() {
         return getPreviewRows();
     }
 
-    @Override
-    public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
-        if (getPreviewRows().size() >= previewRowCount) {
-            fetchEnded = true;
-            return;
-        }
-        super.fetchRow(session, resultSet);
-    }
 }

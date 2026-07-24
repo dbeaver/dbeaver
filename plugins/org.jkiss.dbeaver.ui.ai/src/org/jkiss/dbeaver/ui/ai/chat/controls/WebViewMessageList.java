@@ -55,23 +55,23 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-final class WebViewMessageList extends Composite implements AISettingsEventListener {
+public class WebViewMessageList extends Composite implements AISettingsEventListener {
 
     private static final Log log = Log.getLog(WebViewMessageList.class);
     public static final String ATTACHMENT_CREATE_CONNECTION = "attachmentCreateConnection";
     public static final String ATTACHMENT_EXPORT_TO_TABLE = "attachmentExportToTable";
     public static final String ATTACHMENT_OPEN_FILE_IN_EXPLORER = "openFileInExplorer";
 
-    private final Browser browser;
+    protected final Browser browser;
     private final AISettingsManager settingsManager;
     private final AIFunctionAllowMenu functionAllowMenu;
     private final Map<Integer, PendingConfirmation> pendingConfirmations = new HashMap<>();
     private final AIMessageChunkBuffer messageChunkBuffer;
     private final WebViewMessageRenderer renderer;
-    private AIChatConversation conversation;
+    protected AIChatConversation conversation;
     private volatile boolean isInitWaiting = true;
 
-    WebViewMessageList(@NotNull AIChatControl chat, @NotNull Composite parent) throws IOException {
+    public WebViewMessageList(@NotNull AIChatControl chat, @NotNull Composite parent) throws IOException {
         super(parent, SWT.NONE);
         browser = new Browser(this, SWT.NONE);
         renderer = new WebViewMessageRenderer(browser, this::getDataSource);
@@ -167,10 +167,18 @@ final class WebViewMessageList extends Composite implements AISettingsEventListe
                 }
                 messageChunkBuffer.append(message, chunk);
             }
+
+            @Override
+            public void conversationCanceled(@NotNull AIChatConversation conversation) {
+                if (isDisposed() || conversation != WebViewMessageList.this.conversation) {
+                    return;
+                }
+                messageChunkBuffer.clear();
+                onCancel();
+            }
         });
 
         setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
 
         browser.setJavascriptEnabled(true);
         functionAllowMenu = new AIFunctionAllowMenu(
@@ -195,7 +203,7 @@ final class WebViewMessageList extends Composite implements AISettingsEventListe
         );
 
         browser.setVisible(false);
-        WebCSSInitializer cssInitializer = new WebCSSInitializer();
+        WebCSSInitializer cssInitializer = createCssInitializer();
         browser.setUrl(cssInitializer.getWebHtmlPath());
 
         browser.addProgressListener(ProgressListener.completedAdapter(e -> {
@@ -422,6 +430,15 @@ final class WebViewMessageList extends Composite implements AISettingsEventListe
             return null;
         });
 
+        createFunction("openPreferencePage", arguments -> {
+            if (arguments.length < 1) {
+                throw new IllegalArgumentException("openPreferencePage requires at least one argument");
+            }
+            String pageId = String.valueOf(arguments[0]);
+            UIUtils.asyncExec(() -> UIUtils.showPreferencesFor(browser.getShell(), null, pageId));
+            return null;
+        });
+
         createFunction("confirmFunctionCalls", arguments -> {
             if (arguments.length < 2) {
                 throw new IllegalArgumentException("confirmFunctionCalls requires messageId and functionIndex");
@@ -453,6 +470,8 @@ final class WebViewMessageList extends Composite implements AISettingsEventListe
             checkAllDecisions(chat, messageId, pending);
             return null;
         });
+
+        createCustomFunctions(chat);
     }
 
     private void createAttachmentInteractionEvent(@NotNull String attachmentCreateConnection) {
@@ -463,7 +482,7 @@ final class WebViewMessageList extends Composite implements AISettingsEventListe
         ));
     }
 
-    private void createFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
+    protected void createFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
         new BrowserFunction(browser, name) {
             @Nullable
             @Override
@@ -472,6 +491,19 @@ final class WebViewMessageList extends Composite implements AISettingsEventListe
                 return handler.apply(arguments);
             }
         };
+    }
+
+    protected void onCancel() {
+        // no-op by default
+    }
+
+    @NotNull
+    protected WebCSSInitializer createCssInitializer() throws IOException {
+        return new WebCSSInitializer();
+    }
+
+    protected void createCustomFunctions(@NotNull AIChatControl chat) {
+        // no-op by default
     }
 
     @NotNull

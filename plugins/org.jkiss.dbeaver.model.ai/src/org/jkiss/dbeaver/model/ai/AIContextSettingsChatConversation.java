@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 /**
  * AI chat conversation settings.
  */
-public class AIChatConversationSettings extends AIContextSettings {
+public class AIContextSettingsChatConversation extends AIContextSettings {
 
     private final AIChatSession session;
     private final AIChatConversation conversation;
 
-    public AIChatConversationSettings(
+    public AIContextSettingsChatConversation(
         @NotNull AIChatSession session,
         @NotNull AIChatConversation conversation
     ) {
@@ -48,7 +48,7 @@ public class AIChatConversationSettings extends AIContextSettings {
     public void saveSettings() throws DBException {
         DBPDataSourceContainer dataSource = this.conversation.getDataSource();
         if (dataSource != null) {
-            AIDataSourceSettings dsSettings = new AIDataSourceSettings(dataSource);
+            AIContextSettingsDataSource dsSettings = new AIContextSettingsDataSource(dataSource);
             if (dsSettings.isMetaTransferConfirmed() != this.isMetaTransferConfirmed()) {
                 // Update DS settings
                 dsSettings.setMetaTransferConfirmed(this.isMetaTransferConfirmed());
@@ -62,7 +62,7 @@ public class AIChatConversationSettings extends AIContextSettings {
     public void loadDataSourceDefaults() {
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
-            AIDataSourceSettings dsSettings = new AIDataSourceSettings(dataSourceContainer);
+            AIContextSettingsDataSource dsSettings = new AIContextSettingsDataSource(dataSourceContainer);
             setMetaTransferConfirmed(dsSettings.isMetaTransferConfirmed());
         }
     }

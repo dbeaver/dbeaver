@@ -277,8 +277,10 @@ public class AIAssistantImpl implements AIAssistant {
         callWithRetry(listener, () -> {
             if (isTruncated.get()) {
                 isTruncated.set(false);
-                listener.warning(
-                    "Context description was truncated");
+                listener.warning(AIUtils.getSettingsAccessMessage(
+                    AIMessages.ai_warning_chat_history_truncated,
+                    AIMessages.ai_warning_chat_history_truncated_linked,
+                    AIMessages.ai_warning_chat_history_truncated_admin));
             }
             int systemPromptLength = AIPromptUtils.calcSystemPromptLength(request.getMessages());
             listener.systemPromptLength(systemPromptLength);
@@ -357,6 +359,9 @@ public class AIAssistantImpl implements AIAssistant {
                     return;
                 }
             }
+            if (!conversation.isActive()) {
+                return;
+            }
             if (!newMessages.equals(messages)) {
                 try {
                     generateTextStream(monitor, chatSession, conversation, new AIChatRequest(context, newMessages, null), chatListener);
@@ -423,7 +428,7 @@ public class AIAssistantImpl implements AIAssistant {
             functionContext,
             messages
         );
-   }
+    }
 
     @NotNull
     protected AIFunctionResult callFunction(
@@ -445,11 +450,14 @@ public class AIAssistantImpl implements AIAssistant {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         Map<String, Object> arguments = functionCall.getArguments();
-        log.debug("Call AI function " + function.getId() + "(" +
-            arguments.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
-                .collect(Collectors.joining(",")) +
-            ")");
+
+        if (isLoggingEnabled()) {
+            log.debug("Call AI function " + function.getId() + "(" +
+                arguments.entrySet().stream()
+                    .map(e -> e.getKey() + "=" + e.getValue())
+                    .collect(Collectors.joining(",")) +
+                ")");
+        }
         DBPDataSourceContainer container = context.getContext() != null
             ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
         AIBaseFeatures.AI_CHAT_FUNCTION_CALL.use(AIBaseFeatures.buildFeatureParameters(

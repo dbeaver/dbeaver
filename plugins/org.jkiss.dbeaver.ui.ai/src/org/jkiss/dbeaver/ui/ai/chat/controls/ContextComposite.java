@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.time.LocalDate;
@@ -417,6 +418,24 @@ public class ContextComposite extends Composite {
         for (AIConfigurationProfile profile : AISettingsManager.getInstance().getSettings().getConfigurations()) {
             manager.add(new ChangeProfileAction(profile));
         }
+
+        if (RuntimeUtils.isWindows()) {
+            // Highlight selected item
+            manager.addMenuListener(mm -> getDisplay().asyncExec(() -> {
+                Menu swtMenu = ((MenuManager) mm).getMenu();
+                if (swtMenu != null && !swtMenu.isDisposed()) {
+                    for (MenuItem item : swtMenu.getItems()) {
+                        if (item.getData() instanceof ActionContributionItem aci &&
+                            aci.getAction() instanceof ChangeProfileAction cpa &&
+                            cpa.isChecked()
+                        ) {
+                            swtMenu.setDefaultItem(item);
+                            break;
+                        }
+                    }
+                }
+            }));
+        }
     }
 
     private void updateActions() {
@@ -558,7 +577,7 @@ public class ContextComposite extends Composite {
             super(dataSourceContext ? "This connection" : "This conversation", Action.AS_RADIO_BUTTON);
             this.dataSourceContext = dataSourceContext;
 
-            boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AIDataSourceSettings;
+            boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AIContextSettingsDataSource;
             setChecked(dataSourceContext == isDataSourceSettings);
         }
 
@@ -586,9 +605,9 @@ public class ContextComposite extends Composite {
             AIContextSettings newSettings;
             // change scope
             if (dataSourceContext) {
-                newSettings = new AIDataSourceSettings(dataSourceContainer);
+                newSettings = new AIContextSettingsDataSource(dataSourceContainer);
             } else {
-                newSettings = new AIChatConversationSettings(chat.getChatSession(), chat.getActiveConversation());
+                newSettings = new AIContextSettingsChatConversation(chat.getChatSession(), chat.getActiveConversation());
             }
             if (currentSettings != null && !dataSourceContext) {
                 newSettings.setScope(currentSettings.getScope());
