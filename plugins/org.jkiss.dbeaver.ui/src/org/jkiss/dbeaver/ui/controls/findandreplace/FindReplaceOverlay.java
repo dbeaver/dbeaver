@@ -89,7 +89,7 @@ public class FindReplaceOverlay {
 
     @Nullable
     private final ISelectionProvider selectionProvider;
-    private final IWorkbenchPart targetPart;
+    protected final IWorkbenchPart targetPart;
 
     @NotNull
     protected final Composite targetControl;
@@ -253,7 +253,7 @@ public class FindReplaceOverlay {
 
         private Composite replaceContainer;
         private Composite replaceBarContainer;
-        private HistoryTextWrapper replaceBar;
+        protected HistoryTextWrapper replaceBar;
         private AccessibleToolBar replaceTools;
         private ToolItem replaceButton;
         private ToolItem replaceAllButton;
@@ -814,7 +814,7 @@ public class FindReplaceOverlay {
             return commandAdapter;
         }
 
-        private void createSearchBar() {
+        protected void createSearchBar() {
             this.searchBarContainer = new FixedColorComposite(this.searchContainer, SWT.NONE, this.widgetBackgroundColor);
             GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL)
                 .applyTo(this.searchBarContainer);
@@ -865,7 +865,7 @@ public class FindReplaceOverlay {
             }
         }
 
-        private void createReplaceBar() {
+        protected void createReplaceBar() {
             this.replaceBarContainer = new FixedColorComposite(this.replaceContainer, SWT.NONE, this.widgetBackgroundColor);
             GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.END)
                 .applyTo(this.replaceBarContainer);
