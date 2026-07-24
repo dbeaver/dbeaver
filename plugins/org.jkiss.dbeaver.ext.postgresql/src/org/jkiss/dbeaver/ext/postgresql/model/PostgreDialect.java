@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -1307,7 +1308,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         }
         String namedParameterPrefix = prefStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         boolean useBrackets = useBracketsForExec(proc);
-        if (useBrackets){
+        if (useBrackets) {
             sql.append("{ ");
         }
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
@@ -1317,7 +1318,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             inParameters.addAll(parameters);
         }
         if (!inParameters.isEmpty()) {
-            processParameters(sql, castParams, inParameters, namedParameterPrefix);
+            boolean isProcedure = DBSProcedureType.PROCEDURE.equals(proc.getProcedureType());
+            processParameters(sql, castParams, inParameters, namedParameterPrefix, isProcedure);
         }
 
         sql.append(")");
@@ -1334,7 +1336,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     private void processParameters(StringBuilder sql, boolean castParams, List<DBSProcedureParameter> inParameters,
-                                   String namedParameterPrefix) {
+                                   String namedParameterPrefix, boolean isProcedure) {
         StringJoiner parametersJoiner = new StringJoiner(", ");
 
         for (DBSProcedureParameter parameter : inParameters) {
@@ -1350,7 +1352,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
                     }
                     break;
                 case OUT:
-                    parametersJoiner.add(SQLConstants.NULL_VALUE);
+                    // PostgreSQL requires OUT parameters to be passed as NULL in procedure calls
+                    if (isProcedure) {
+                        parametersJoiner.add(SQLConstants.NULL_VALUE);
+                    }
                     break;
                 case RETURN:
                     continue;
