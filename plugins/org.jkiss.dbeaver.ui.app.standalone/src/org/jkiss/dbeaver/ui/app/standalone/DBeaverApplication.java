@@ -185,6 +185,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // hide standard Eclipse exit message if exit code is not OK (otherwise it may be confusing)
         System.setProperty(ECLIPSE_EXIT_DATA, "");
 
+        // Must run before any SWT Display / dialog is created (workspace lock UI, splash, etc.)
+        if (RuntimeUtils.isWindows()) {
+            setWindowsAppUserModelID();
+        }
+
         var args = preprocessCommandLine();
         Location instanceLoc = Platform.getInstanceLocation();
         Path defaultHomePath = getDefaultInstanceLocation();
@@ -294,10 +299,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         // Write version info
         writeWorkspaceInfo();
-
-        if (RuntimeUtils.isWindows()) {
-            setWindowsAppUserModelID();
-        }
 
         // Initialize display early
         // It sets main windows name and images
@@ -515,23 +516,22 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     /**
-     * Sets an explicit AppUserModelID so Windows can group the native launcher
-     * and the JVM process under the same taskbar button.
+     * Sets an explicit AppUserModelID so Windows groups the app under one taskbar button.
      * Must be called before the first SWT Display is created.
-     * Uses reflection to avoid a compile-time dependency on the Windows-only SWT class.
+     * <p>
+     * Delegates to the Windows SWT fragment via reflection so this class stays
+     * platform-agnostic at compile time. The fragment loads through SWT's classloader.
      */
     private void setWindowsAppUserModelID() {
         try {
             ClassLoader swtClassLoader = Display.class.getClassLoader();
-            Class<?> osClass = Class.forName(
-                    "org.eclipse.swt.internal.win32.OS",
-                    true,
-                    swtClassLoader
+            Class<?> aumidClass = Class.forName(
+                "org.jkiss.dbeaver.ui.swt.windows.WindowsAppUserModelId",
+                true,
+                swtClassLoader
             );
-            java.lang.reflect.Method method = osClass.getMethod(
-                    "SetCurrentProcessExplicitAppUserModelID", char[].class
-            );
-            method.invoke(null, (Object) "DBeaverCorp.DBeaverCE".toCharArray());
+            String appId = (String) aumidClass.getField("CE_APP_ID").get(null);
+            aumidClass.getMethod("setCurrentProcessId", String.class).invoke(null, appId);
         } catch (Exception e) {
             log.debug("Failed to set Windows AppUserModelID", e);
         }
