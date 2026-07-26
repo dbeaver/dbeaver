@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -101,7 +103,8 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         return cmd;
     }
 
-    private static Path createCredentialsFile(String username, String password) throws IOException {
+    @NotNull
+    static Path createCredentialsFile(@Nullable String username, @Nullable String password) throws IOException {
         Path dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
         Path cnf = dir.resolve(".my.cnf"); //$NON-NLS-1$
         cnf.toFile().deleteOnExit();
@@ -109,7 +112,9 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         try (Writer writer = Files.newBufferedWriter(cnf)) {
             writer.write("[client]"); //$NON-NLS-1$
             writer.write("\nuser=" + CommonUtils.notEmpty(username)); //$NON-NLS-1$
-            writer.write("\npassword=" + CommonUtils.notEmpty(password)); //$NON-NLS-1$
+            writer.write("\npassword=\"" + CommonUtils.notEmpty(password)
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"") + "\""); //$NON-NLS-1$
         }
 
         return cnf;
