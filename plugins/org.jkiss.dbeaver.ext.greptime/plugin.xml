@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.greptime.GreptimeDataSourceProvider"
+                description="GreptimeDB"
+                id="greptime"
+                parent="generic"
+                dialect="greptime"
+                label="GreptimeDB"
+                icon="icons/greptime_icon.png">
+            <drivers managable="true">
+                <driver
+                        id="greptime"
+                        label="GreptimeDB"
+                        icon="icons/greptime_icon.png"
+                        iconBig="icons/greptime_icon_big.png"
+                        logoImage="icons/greptime_logo.png"
+                        class="com.mysql.cj.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        defaultPort="4002"
+                        defaultDatabase="public"
+                        webURL="https://docs.greptime.com/user-guide/integrations/dbeaver/"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
+                        description="GreptimeDB driver (MySQL Connector/J)"
+                        categories="sql,analytic,timeseries,streaming"
+                        allowsEmptyPassword="true">
+                    <replace provider="mysql" driver="greptime"/>
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE" bundle="!drivers.mysql"/>
+                    <file type="license" path="licenses/external/gnu3.txt"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <property name="useInformationSchema" value="false"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss.SSS"/>
+                    <parameter name="omit-schema" value="true"/>
+                    <parameter name="supports-schema-selection" value="false"/>
+                    <parameter name="supports-partitions" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-views" value="true"/>
+                    <parameter name="supports-truncate" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect
+                id="greptime"
+                parent="generic"
+                class="org.jkiss.dbeaver.ext.greptime.model.GreptimeDialect"
+                label="GreptimeDB"
+                description="GreptimeDB SQL dialect"
+                icon="icons/greptime_icon.png">
+            <keywords value="TQL,FLOW,FLOWS,SINK,SKIPPING,INVERTED,FULLTEXT"/>
+            <functions value="DATE_BIN,DATE_TRUNC,TIMEZONE,TO_UNIXTIME,INTERP,CLAMP"/>
+            <types value="STRING,BINARY,BOOLEAN,INT8,INT16,INT32,INT64,UINT8,UINT16,UINT32,UINT64,FLOAT32,FLOAT64,DECIMAL,DATE,DATETIME,TIMESTAMPSECOND,TIMESTAMPMILLISECOND,TIMESTAMPMICROSECOND,TIMESTAMPNANOSECOND,INTERVAL,JSON,VECTOR"/>
+        </dialect>
+    </extension>
+</plugin>

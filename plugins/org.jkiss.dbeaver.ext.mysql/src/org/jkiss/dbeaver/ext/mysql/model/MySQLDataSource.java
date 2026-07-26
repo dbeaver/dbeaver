@@ -1009,16 +1009,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-events"), true);
     }
 
-    @Association
-    public boolean supportsIndexes() {
-        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-indexes"), true);
-    }
-
-    @Association
-    public boolean supportsProcedures() {
-        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-procedures"), true);
-    }
-
     public boolean supportsAlterView() {
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-alter-view"), false);
     }

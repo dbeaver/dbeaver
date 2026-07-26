@@ -323,7 +323,7 @@ public class MySQLCatalog implements
 
     @Association
     public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-        return getDataSource().supportsIndexes() && getDataSource().supportsInformationSchema() ?
+        return getDataSource().supportsInformationSchema() ?
                 indexCache.getObjects(monitor, this, null) :
                 Collections.emptyList();
     }
@@ -354,7 +354,7 @@ public class MySQLCatalog implements
     @Override
     @Association
     public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
-        return getDataSource().supportsProcedures() && getDataSource().supportsInformationSchema() ?
+        return getDataSource().supportsInformationSchema() ?
                 getProceduresCache().getAllObjects(monitor, this) :
                 Collections.emptyList();
     }
@@ -428,7 +428,7 @@ public class MySQLCatalog implements
     {
         monitor.subTask("Cache tables");
         getTableCache().getAllObjects(monitor, this);
-        if ((scope & STRUCT_ENTITIES) != 0 && getDataSource().supportsIndexes()) {
+        if ((scope & STRUCT_ENTITIES) != 0) {
             indexCache.getAllObjects(monitor, this);
         }
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
