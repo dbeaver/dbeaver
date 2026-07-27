@@ -89,6 +89,11 @@ public class SQLSemanticProcessor {
                         break;
                     }
                 }
+                // Match MySQL-style backslash escaping so the parser agrees with hideDialectSpecificLineComments
+                // on where string literals end (e.g. 'O\'Brien'); otherwise the parser sees a stray closing quote.
+                if (dialect.getStringEscapeCharacter() == '\\') {
+                    parser.withBackslashEscapeCharacter(true);
+                }
             }
             return parser;
         } catch (ParseException e) {
@@ -107,16 +112,22 @@ public class SQLSemanticProcessor {
         if (extraCommentPrefixes.isEmpty()) {
             return sql;
         }
+        String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
+        String[][] quotes = identifierQuotes == null
+            ? dialect.getStringQuoteStrings()
+            : ArrayUtils.concatArrays(dialect.getStringQuoteStrings(), identifierQuotes);
+        char escapeChar = dialect.getStringEscapeCharacter();
         StringBuilder result = new StringBuilder(sql);
         int pos = 0;
         while (pos < sql.length()) {
-            char c = sql.charAt(pos);
-            if (c == '\'' || c == '"' || c == '`') {
-                pos = skipQuoted(sql, pos, dialect.getStringEscapeCharacter());
+            String[] quote = quoteStartingAt(sql, pos, quotes);
+            if (quote != null) {
+                pos = skipQuoted(sql, pos, quote, escapeChar);
             } else if (sql.startsWith(SQLConstants.SL_COMMENT, pos)) {
                 pos = getLineEnd(sql, pos);
             } else if (sql.startsWith(SQLConstants.ML_COMMENT_START, pos)) {
-                pos = skipMultiLineComment(sql, pos);
+                int end = sql.indexOf(SQLConstants.ML_COMMENT_END, pos + 2);
+                pos = end < 0 ? sql.length() : end + 2;
             } else if (startsWithAny(sql, pos, extraCommentPrefixes)) {
                 int lineEnd = getLineEnd(sql, pos);
                 result.replace(pos, lineEnd, " ".repeat(lineEnd - pos));
@@ -128,23 +139,29 @@ public class SQLSemanticProcessor {
         return result.toString();
     }
 
-    private static int skipQuoted(@NotNull String sql, int openQuotePos, char escapeChar) {
-        char quote = sql.charAt(openQuotePos);
-        for (int pos = openQuotePos + 1; pos < sql.length(); pos++) {
-            char c = sql.charAt(pos);
-            if (c == escapeChar && escapeChar != 0) {
+    @Nullable
+    private static String[] quoteStartingAt(@NotNull String sql, int pos, @NotNull String[][] quotes) {
+        for (String[] quote : quotes) {
+            if (sql.startsWith(quote[0], pos)) {
+                return quote;
+            }
+        }
+        return null;
+    }
+
+    private static int skipQuoted(@NotNull String sql, int openPos, @NotNull String[] quote, char escapeChar) {
+        String close = quote[1];
+        int pos = openPos + quote[0].length();
+        while (pos < sql.length()) {
+            if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
+                pos += 2;
+            } else if (sql.startsWith(close, pos)) {
+                return pos + close.length();
+            } else {
                 pos++;
-            } else if (c == quote) {
-                return pos + 1;
             }
         }
         return sql.length();
-    }
-
-
-    private static int skipMultiLineComment(@NotNull String sql, int startPos) {
-        int endPos = sql.indexOf(SQLConstants.ML_COMMENT_END, startPos + SQLConstants.ML_COMMENT_START.length());
-        return endPos < 0 ? sql.length() : endPos + SQLConstants.ML_COMMENT_END.length();
     }
 
     private static boolean startsWithAny(@NotNull String sql, int pos, @NotNull List<String> prefixes) {

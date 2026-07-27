@@ -46,9 +46,27 @@ public class SQLSemanticProcessorLineCommentsTest extends DBeaverUnitTest {
         }
     };
 
+    private static final SQLDialect BRACKET_DIALECT = new BasicSQLDialect() {
+        @NotNull
+        @Override
+        public String[] getSingleLineComments() {
+            return new String[]{"-- ", "#"};
+        }
+
+        @Override
+        public String[][] getIdentifierQuoteStrings() {
+            return new String[][]{{"[", "]"}};
+        }
+    };
+
     @NotNull
     private PlainSelect parseSelect(@NotNull String sql) throws Exception {
-        Statement statement = SQLSemanticProcessor.parseQuery(MYSQL_LIKE_DIALECT, sql);
+        return parseSelect(MYSQL_LIKE_DIALECT, sql);
+    }
+
+    @NotNull
+    private PlainSelect parseSelect(@NotNull SQLDialect dialect, @NotNull String sql) throws Exception {
+        Statement statement = SQLSemanticProcessor.parseQuery(dialect, sql);
         Assertions.assertInstanceOf(PlainSelect.class, statement, "Not a plain select: " + sql);
         return (PlainSelect) statement;
     }
@@ -97,6 +115,27 @@ public class SQLSemanticProcessorLineCommentsTest extends DBeaverUnitTest {
     public void hashInsideQuotedIdentifierIsPreserved() throws Exception {
         PlainSelect select = parseSelect("SELECT `weird#name` FROM actor # tail");
         Assertions.assertTrue(select.toString().contains("`weird#name`"));
+        Assertions.assertEquals("actor", getSourceTable(select).getName());
+    }
+
+    @Test
+    public void hashInsideBackslashEscapedStringIsPreserved() throws Exception {
+        PlainSelect select = parseSelect("SELECT 'a\\'#b' AS c FROM actor # tail");
+        Assertions.assertTrue(select.toString().contains("#b"), select.toString());
+        Assertions.assertEquals("actor", getSourceTable(select).getName());
+    }
+
+    @Test
+    public void backslashEscapedQuoteBeforeHashComment() throws Exception {
+        PlainSelect select = parseSelect("SELECT * FROM actor WHERE name = 'O\\'Brien' # tail");
+        Assertions.assertEquals("actor", getSourceTable(select).getName());
+        Assertions.assertNotNull(select.getWhere());
+    }
+
+    @Test
+    public void hashInsideBracketQuotedIdentifierIsPreserved() throws Exception {
+        PlainSelect select = parseSelect(BRACKET_DIALECT, "SELECT [weird#name] FROM actor # tail");
+        Assertions.assertTrue(select.toString().contains("[weird#name]"));
         Assertions.assertEquals("actor", getSourceTable(select).getName());
     }
 
