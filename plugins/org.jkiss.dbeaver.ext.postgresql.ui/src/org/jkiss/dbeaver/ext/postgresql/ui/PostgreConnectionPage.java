@@ -85,7 +85,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     public void createControl(Composite composite) {
         final ModifyListener textListener = e -> {
             if (activated) {
-                super.updateUrl(urlText);
+                this.updateUrl(urlText);
                 site.updateButtons();
             }
         };
@@ -103,7 +103,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createConnectionModeSwitcher(addrGroup, SelectionListener.widgetSelectedAdapter(e -> {
             super.setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
-            super.updateUrl(urlText);
+            this.updateUrl(urlText);
         }));
 
         UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
@@ -242,7 +242,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             urlText.setText(connectionInfo.getUrl());
         }
         setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
-        super.updateUrl(urlText);
+        this.updateUrl(urlText);
 
         activated = true;
     }
@@ -287,6 +287,11 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     protected void authModelPropertiesChanged() {
         super.authModelPropertiesChanged();
         // Auth models MAY change the URL. Let's reflect it
-        super.updateUrl(urlText);
+        this.updateUrl(urlText);
+    }
+
+    @Override
+    protected void updateUrl(@NotNull Text urlText) {
+        this.updateUrl(urlText, site.getActiveDataSource().createCopy(site.getDataSourceRegistry()));
     }
 }

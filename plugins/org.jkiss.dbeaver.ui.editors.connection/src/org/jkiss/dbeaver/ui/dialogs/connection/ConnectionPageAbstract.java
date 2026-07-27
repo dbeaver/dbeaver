@@ -484,12 +484,15 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     protected void updateUrl(@NotNull Text urlText) {
+        this.updateUrl(urlText, site.getActiveDataSource());
+    }
+
+    protected void updateUrl(@NotNull Text urlText, @NotNull DBPDataSourceContainer dataSourceContainer) {
         ControlDecoration decoration = urlText.getData(URL_TEXT_DATA_ERROR_DECORATOR_KEY) instanceof ControlDecoration d ? d : null;
         if (decoration != null) {
             decoration.hide();
         }
         try {
-            DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
             saveSettings(dataSourceContainer);
             if (typeURLRadio != null && typeURLRadio.getSelection()) {
                 String connectionUrl = dataSourceContainer.getConnectionConfiguration().getUrl();
