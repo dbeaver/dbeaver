@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -499,6 +500,15 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     private class GlobalNetworkProfileManager extends DBWNetworkProfileManager {
         public static final String CONFIG_FILE_NAME = "network-profiles.json";
+
+        public GlobalNetworkProfileManager() {
+            super();
+            WorkspaceConfigEventManager.addConfigChangedListener(
+                CONFIG_FILE_NAME, o -> {
+                    reloadProfiles();
+                }
+            );
+        }
 
         @NotNull
         @Override
