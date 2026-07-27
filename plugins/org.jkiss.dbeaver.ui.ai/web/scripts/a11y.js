@@ -1,5 +1,6 @@
 const A11Y_INTERACTIVE_SELECTOR =
     'button:not([disabled]), a[href], a.interactive-link, summary, input, select, textarea, [role="button"]';
+const A11Y_DISMISS_SELECTOR = '.message-clean-btn, .attachment-close-icon';
 const A11Y_ANNOUNCE_MAX_LENGTH = 4000;
 
 let a11yStrings = {roles: {}};
@@ -105,12 +106,16 @@ function focusItem(item) {
 
 function getInteractiveDescendants(item) {
     return Array.from(item.querySelectorAll(A11Y_INTERACTIVE_SELECTOR))
-        .filter(el => el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+        .filter(el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length)
+            && getComputedStyle(el).visibility !== 'hidden');
 }
 
 let a11yLastInputWasMouse = false;
 
-chat.addEventListener('mousedown', () => {
+chat.addEventListener('mousedown', event => {
+    if (event.detail === 0) {
+        return;
+    }
     a11yLastInputWasMouse = true;
     chat.classList.remove('a11y-focus');
     for (const el of chat.querySelectorAll('.a11y-focus')) {
@@ -201,6 +206,21 @@ chat.addEventListener('keydown', function(event) {
     }
 
     if (!isItem && !isChat) {
+        if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+            && target instanceof HTMLElement
+            && !isTextEntryControl(target)
+        ) {
+            const item = getEnclosingItem(target);
+            if (item) {
+                const controls = getInteractiveDescendants(item);
+                const index = controls.indexOf(target);
+                const next = index === -1 ? null : controls[index + (event.key === 'ArrowRight' ? 1 : -1)];
+                if (next) {
+                    event.preventDefault();
+                    next.focus();
+                }
+            }
+        }
         return;
     }
 
@@ -223,12 +243,21 @@ chat.addEventListener('keydown', function(event) {
                 const controls = getInteractiveDescendants(target);
                 if (controls.length) {
                     event.preventDefault();
-                    controls[0].focus();
+                    const primary = controls.find(el => !el.matches(A11Y_DISMISS_SELECTOR)) || controls[0];
+                    primary.focus();
                 }
             }
             break;
     }
 });
+
+function isTextEntryControl(element) {
+    return element.isContentEditable
+        || element instanceof HTMLTextAreaElement
+        || element instanceof HTMLSelectElement
+        || (element instanceof HTMLInputElement
+            && !['button', 'checkbox', 'radio', 'submit', 'reset'].includes(element.type));
+}
 
 function moveItemFocus(event, delta) {
     event.preventDefault();
