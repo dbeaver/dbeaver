@@ -34,21 +34,34 @@ package org.jkiss.dbeaver.model.runtime;/*
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.registry.confirmation.runtime.ConfirmedShellCommandsRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 public class ConfirmedShellCommandsManager {
 
-    public boolean isCommandApproved(@NotNull DBRShellCommand command) throws DBException {
-        String rawCommand = command.getCommand();
-        return CommonUtils.isNotEmpty(rawCommand)
-            && (getConfirmedShellCommandsRegistry().isConfirmedShellCommand(rawCommand) || userWantsToAddCommand(rawCommand));
+
+    public void validateCommand(@NotNull DBRShellCommand command, @NotNull DBPConnectionEventType eventType) throws DBException {
+        if (CommonUtils.isNotEmpty(command.getCommand())
+            && !isApprovedCommand(command.getCommand())
+        ) {
+            throw new DBException(
+                "Command:\n'" + command.getCommand() + "'\n is not approved to execute by user",
+                new DBException(
+                    "Shell command type: %s cant be executed".formatted(eventType.getTitle()))
+            );
+        }
 
     }
 
-    private boolean userWantsToAddCommand(@NotNull String command) throws DBException {
-        if (DBWorkbench.getPlatformUI().confirmAction("add cmd", "add stuff?")) {
+    private boolean isApprovedCommand(@NotNull String rawCommand) throws DBException {
+        return getConfirmedShellCommandsRegistry().isConfirmedShellCommand(rawCommand)
+            || askApproveForCommand(rawCommand);
+    }
+
+    private boolean askApproveForCommand(@NotNull String command) throws DBException {
+        if (DBWorkbench.getPlatformUI().confirmAction("CHASNGE ADD CMD TITLE", "CHANGE THIS: add stuff?: " + command)) {
             getConfirmedShellCommandsRegistry().addConfirmedShellCommand(command);
             return true;
         }

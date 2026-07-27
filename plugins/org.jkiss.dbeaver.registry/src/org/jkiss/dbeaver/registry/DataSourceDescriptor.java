@@ -1424,7 +1424,8 @@ public class DataSourceDescriptor
     private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType) throws DBException {
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
-        if (command != null && command.isEnabled() && confirmedShellCommandsManager.isCommandApproved(command)) {
+        if (command != null && command.isEnabled()) {
+            confirmedShellCommandsManager.validateCommand(command, eventType);
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
             monitor.subTask("Execute process " + processDescriptor.getName());
