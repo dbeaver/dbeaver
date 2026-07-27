@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.apache.commons.jexl3.*;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.jexl3.introspection.JexlUberspect;
 import org.eclipse.core.expressions.*;
 import org.eclipse.core.runtime.CoreException;
@@ -33,7 +34,9 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -49,14 +52,14 @@ public abstract class AbstractDescriptor {
     private static JexlEngine jexlEngine;
 
     private static final Map<String, Map<String, Boolean>> classInfoCache = new HashMap<>();
-
     private static final List<JexlUberspect.PropertyResolver> POJO = List.of(
         JexlUberspect.JexlResolver.PROPERTY,
         JexlUberspect.JexlResolver.MAP,
         JexlUberspect.JexlResolver.LIST,
         JexlUberspect.JexlResolver.DUCK,
         JexlUberspect.JexlResolver.FIELD,
-        JexlUberspect.JexlResolver.CONTAINER);
+        JexlUberspect.JexlResolver.CONTAINER
+    );
 
     private static final JexlUberspect.ResolverStrategy JEXL_STRATEGY = (op, obj) -> {
         if (op == JexlOperator.ARRAY_GET) {
@@ -76,6 +79,7 @@ public abstract class AbstractDescriptor {
         synchronized (AbstractDescriptor.class) {
             if (jexlEngine == null) {
                 jexlEngine = new JexlBuilder()
+                    .permissions(new DBeaverJexlPermissions())
                     .cache(100)
                     .strategy(JEXL_STRATEGY)
                     .create();
@@ -465,4 +469,55 @@ public abstract class AbstractDescriptor {
         return (Class<T>) objectClass;
     }
 
+    public static final class DBeaverJexlPermissions implements JexlPermissions {
+
+        private static JexlPermissions BASE = JexlPermissions.RESTRICTED;
+
+        public DBeaverJexlPermissions() {
+            BASE = JexlPermissions.RESTRICTED;
+        }
+
+        public DBeaverJexlPermissions(JexlPermissions base) {
+            BASE = base;
+        }
+
+        private static boolean isAllowedPackage(Class<?> clazz) {
+            String name = clazz.getName();
+            return checkPackage(name);
+        }
+
+        @Override
+        public boolean allow(Class<?> clazz) {
+            return isAllowedPackage(clazz) || BASE.allow(clazz);
+        }
+
+        @Override
+        public boolean allow(Method method) {
+            return isAllowedPackage(method.getDeclaringClass()) || BASE.allow(method);
+        }
+
+        @Override
+        public boolean allow(Package aPackage) {
+            return checkPackage(aPackage.getName()) || BASE.allow(aPackage);
+        }
+
+        @Override
+        public JexlPermissions compose(String... strings) {
+            return new DBeaverJexlPermissions(BASE.compose(strings));
+        }
+
+        @Override
+        public boolean allow(Field field) {
+            return isAllowedPackage(field.getDeclaringClass()) || BASE.allow(field);
+        }
+
+        @Override
+        public boolean allow(Constructor<?> ctor) {
+            return isAllowedPackage(ctor.getDeclaringClass()) || BASE.allow(ctor);
+        }
+
+        private static boolean checkPackage(String name) {
+            return name.startsWith("org.jkiss.dbeaver.") || name.startsWith("org.jkiss.utils.") || name.startsWith("com.dbeaver.");
+        }
+    }
 }
