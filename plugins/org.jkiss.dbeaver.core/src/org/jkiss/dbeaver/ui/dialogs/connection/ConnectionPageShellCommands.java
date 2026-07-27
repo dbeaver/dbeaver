@@ -272,13 +272,14 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     public void saveSettings(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
             DBRShellCommand command = entry.getValue();
-            if (approveCommand(command)) {
+            //if user never opened this page don't add command to Confirmed. its done explicitly to counter problem with project importing
+            if (!isControlCreated() || addCommandToConfirmedCommands(command)) {
                 dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), command);
             }
         }
     }
 
-    private boolean approveCommand(@Nullable DBRShellCommand command) {
+    private boolean addCommandToConfirmedCommands(@Nullable DBRShellCommand command) {
         return command == null
             || !command.isEnabled()
             || approveExistingCommand(command);
