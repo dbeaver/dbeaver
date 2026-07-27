@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigWizardRegistry;
 public final class ProductConfigWizard extends Wizard {
     private static final Log log = Log.getLog(ProductConfigWizard.class);
 
+    private final boolean canBeSkipped;
     private boolean restartRequired = false;
 
-    public ProductConfigWizard() {
+    public ProductConfigWizard(boolean canBeSkipped) {
+        this.canBeSkipped = canBeSkipped;
         setWindowTitle("Product Configuration");
     }
 
@@ -60,7 +62,7 @@ public final class ProductConfigWizard extends Wizard {
     @Override
     public boolean performCancel() {
         // Can't cancel - force the user to go through, or apply defaults by pressing "Finish"
-        return Platform.inDevelopmentMode();
+        return canBeSkipped || Platform.inDevelopmentMode();
     }
 
     /**

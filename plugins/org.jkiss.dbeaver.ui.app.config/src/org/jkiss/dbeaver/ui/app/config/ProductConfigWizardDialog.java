@@ -48,8 +48,8 @@ import java.util.function.Consumer;
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     private boolean seenLanguageChangeWarning = false;
 
-    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window) {
-        super(window, new ProductConfigWizard());
+    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, boolean canBeSkipped) {
+        super(window, new ProductConfigWizard(canBeSkipped));
     }
 
     public boolean isRestartRequired() {
