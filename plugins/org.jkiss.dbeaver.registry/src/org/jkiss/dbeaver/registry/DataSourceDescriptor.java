@@ -46,10 +46,7 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.*;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -184,6 +181,7 @@ public class DataSourceDescriptor
     private transient String clientApplicationName;
 
     private transient final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
+    private transient final ConfirmedShellCommandsManager confirmedShellCommandsManager = new ConfirmedShellCommandsManager();
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
@@ -1426,7 +1424,7 @@ public class DataSourceDescriptor
     private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType) throws DBException {
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
-        if (command != null && command.isEnabled()) {
+        if (command != null && command.isEnabled() && confirmedShellCommandsManager.isCommandApproved(command)) {
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
             monitor.subTask("Execute process " + processDescriptor.getName());
