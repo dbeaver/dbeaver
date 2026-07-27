@@ -121,7 +121,9 @@ public class SQLSemanticProcessor {
         int pos = 0;
         while (pos < sql.length()) {
             String[] quote = quoteStartingAt(sql, pos, quotes);
-            if (quote != null) {
+            if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
+                pos += 2; // skip an escaped char, so a stray "\'" can't open a phantom string
+            } else if (quote != null) {
                 pos = skipQuoted(sql, pos, quote, escapeChar);
             } else if (sql.startsWith(SQLConstants.SL_COMMENT, pos)) {
                 pos = getLineEnd(sql, pos);
