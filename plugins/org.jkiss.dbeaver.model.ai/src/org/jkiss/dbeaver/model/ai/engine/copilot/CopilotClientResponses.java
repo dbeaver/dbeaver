@@ -110,6 +110,10 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
         } catch (DBException e) {
             if (OpenAiUtils.shouldFallbackToLegacyChat(e.getMessage())) {
                 return backupClient.chat(monitor, session, chatRequest.getSecond());
+            } else if (chatRequest.getFirst().temperature != null && OpenAiUtils.isTemperatureNotSupported(e.getMessage())) {
+                chatRequest.getFirst().temperature = null;
+                MODELS_WITHOUT_TEMPERATURE.add(chatRequest.getFirst().model);
+                return chat(monitor, session, chatRequest);
             } else {
                 log.error("Error in chat request, falling back to legacy client", e);
                 throw e;
