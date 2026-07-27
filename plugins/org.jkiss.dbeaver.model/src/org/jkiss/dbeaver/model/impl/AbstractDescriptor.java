@@ -477,46 +477,46 @@ public abstract class AbstractDescriptor {
             BASE = JexlPermissions.RESTRICTED;
         }
 
-        public DBeaverJexlPermissions(JexlPermissions base) {
+        public DBeaverJexlPermissions(@NotNull JexlPermissions base) {
             BASE = base;
         }
 
-        private static boolean isAllowedPackage(Class<?> clazz) {
+        private static boolean isAllowedPackage(@NotNull Class<?> clazz) {
             String name = clazz.getName();
             return checkPackage(name);
         }
 
         @Override
-        public boolean allow(Class<?> clazz) {
+        public boolean allow(@NotNull Class<?> clazz) {
             return isAllowedPackage(clazz) || BASE.allow(clazz);
         }
 
         @Override
-        public boolean allow(Method method) {
+        public boolean allow(@NotNull Method method) {
             return isAllowedPackage(method.getDeclaringClass()) || BASE.allow(method);
         }
 
         @Override
-        public boolean allow(Package aPackage) {
+        public boolean allow(@NotNull Package aPackage) {
             return checkPackage(aPackage.getName()) || BASE.allow(aPackage);
         }
 
         @Override
-        public JexlPermissions compose(String... strings) {
-            return new DBeaverJexlPermissions(BASE.compose(strings));
-        }
-
-        @Override
-        public boolean allow(Field field) {
+        public boolean allow(@NotNull Field field) {
             return isAllowedPackage(field.getDeclaringClass()) || BASE.allow(field);
         }
 
         @Override
-        public boolean allow(Constructor<?> ctor) {
+        public boolean allow(@NotNull Constructor<?> ctor) {
             return isAllowedPackage(ctor.getDeclaringClass()) || BASE.allow(ctor);
         }
 
-        private static boolean checkPackage(String name) {
+        @Override
+        public JexlPermissions compose(@NotNull String... strings) {
+            return new DBeaverJexlPermissions(BASE.compose(strings));
+        }
+
+        private static boolean checkPackage(@NotNull String name) {
             return name.startsWith("org.jkiss.dbeaver.") || name.startsWith("org.jkiss.utils.") || name.startsWith("com.dbeaver.");
         }
     }
