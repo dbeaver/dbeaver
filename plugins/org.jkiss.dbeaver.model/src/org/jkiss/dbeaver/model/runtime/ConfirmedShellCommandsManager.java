@@ -44,7 +44,7 @@ public class ConfirmedShellCommandsManager {
 
     public void validateCommand(@NotNull DBRShellCommand command, @NotNull DBPConnectionEventType eventType) throws DBException {
         if (CommonUtils.isNotEmpty(command.getCommand())
-            && !isApprovedCommand(command.getCommand())
+            && !isApprovedCommand(command)
         ) {
             throw new DBException(
                 "Command:\n'" + command.getCommand() + "'\n is not approved to execute by user",
@@ -52,17 +52,20 @@ public class ConfirmedShellCommandsManager {
                     "Shell command type: %s cant be executed".formatted(eventType.getTitle()))
             );
         }
-
     }
 
-    private boolean isApprovedCommand(@NotNull String rawCommand) throws DBException {
-        return getConfirmedShellCommandsRegistry().isConfirmedShellCommand(rawCommand)
-            || askApproveForCommand(rawCommand);
+    public void approveCommand(@NotNull DBRShellCommand command) throws DBException {
+        getConfirmedShellCommandsRegistry().addConfirmedShellCommand(command);
     }
 
-    private boolean askApproveForCommand(@NotNull String command) throws DBException {
-        if (DBWorkbench.getPlatformUI().confirmAction("CHASNGE ADD CMD TITLE", "CHANGE THIS: add stuff?: " + command)) {
-            getConfirmedShellCommandsRegistry().addConfirmedShellCommand(command);
+    private boolean isApprovedCommand(@NotNull DBRShellCommand command) throws DBException {
+        return getConfirmedShellCommandsRegistry().isConfirmedShellCommand(command)
+            || askApproveForCommand(command);
+    }
+
+    private boolean askApproveForCommand(@NotNull DBRShellCommand command) throws DBException {
+        if (DBWorkbench.getPlatformUI().confirmAction("CHASNGE ADD CMD TITLE", "CHANGE THIS: add stuff?: " + command.getCommand())) {
+            approveCommand(command);
             return true;
         }
         return false;

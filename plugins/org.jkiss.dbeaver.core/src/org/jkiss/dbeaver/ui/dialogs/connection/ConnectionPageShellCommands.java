@@ -22,11 +22,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
+import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -60,6 +63,8 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private Table eventTypeTable;
 
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
+
+    private final ConfirmedShellCommandsManager confirmedShellCommandsManager = new ConfirmedShellCommandsManager();
 
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
@@ -266,7 +271,31 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
-            dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), entry.getValue());
+            DBRShellCommand command = entry.getValue();
+            if (approveCommand(command)) {
+                dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), command);
+            }
+        }
+    }
+
+    private boolean approveCommand(@Nullable DBRShellCommand command) {
+        return command == null
+            || !command.isEnabled()
+            || approveExistingCommand(command);
+    }
+
+    private boolean approveExistingCommand(@NotNull DBRShellCommand command) {
+        try {
+            confirmedShellCommandsManager.approveCommand(command);
+            return true;
+        } catch (DBException e) {
+            UIUtils.showMessageBox(
+                getShell(),
+                "TODO LOCALIZE Error adding command to approved",
+                "TODO LOCALIZE Cant add command to approved: " + e.getMessage() + "\n it will not be saved for connection",
+                SWT.ICON_WARNING
+            );
+            return false;
         }
     }
 

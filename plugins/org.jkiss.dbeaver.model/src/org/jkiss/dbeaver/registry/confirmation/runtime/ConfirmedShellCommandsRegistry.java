@@ -22,7 +22,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Type;
 import java.util.HashSet;
@@ -46,20 +48,25 @@ public class ConfirmedShellCommandsRegistry {
     private ConfirmedShellCommandsRegistry() {
     }
 
-    public boolean isConfirmedShellCommand(@NotNull String command) throws DBException {
-        return getConfirmedShellCommandsHolder().confirmedCommands().contains(command);
+    public boolean isConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
+        String commandText = command.getCommand();
+        return CommonUtils.isEmpty(commandText) || getConfirmedShellCommandsHolder().confirmedCommands().contains(command.getCommand());
     }
 
-    public void addConfirmedShellCommand(@NotNull String command) throws DBException {
+    public void addConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
         ConfirmedShellCommandsHolder confirmedShellCommandsHolder = getConfirmedShellCommandsHolder();
-        confirmedShellCommandsHolder.addCommand(command);
-        confirmedShellCommandsHolder.saveCommands();
+        String commandText = command.getCommand();
+        if (CommonUtils.isNotEmpty(commandText) && confirmedShellCommandsHolder.addCommand(commandText)) {
+            confirmedShellCommandsHolder.saveCommands();
+        }
     }
 
-    public void removeConfirmedShellCommand(@NotNull String command) throws DBException {
+    public void removeConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
         ConfirmedShellCommandsHolder confirmedShellCommandsHolder = getConfirmedShellCommandsHolder();
-        confirmedShellCommandsHolder.removeCommand(command);
-        confirmedShellCommandsHolder.saveCommands();
+        String commandText = command.getCommand();
+        if (CommonUtils.isNotEmpty(commandText) && confirmedShellCommandsHolder.removeCommand(commandText)) {
+            confirmedShellCommandsHolder.saveCommands();
+        }
     }
 
     @NotNull
