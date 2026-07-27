@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.controls.findandreplace.AccessibleToolItemBuilder;
 import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.findandreplace.SearchQuickFilterInfo;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
@@ -100,7 +101,7 @@ public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
         };
 
         public ResultsetFindReplaceUIControl() {
-
+            super();
         }
 
         @Override
@@ -131,6 +132,18 @@ public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
             contextMenuManager.add(enableInteractiveFilterAction);
             contextMenuManager.add(disableInteractiveFilterAction);
             buttonBuilder.withContextMenu(contextMenuManager);
+        }
+
+        @Override
+        protected void createSearchBar() {
+            super.createSearchBar();
+            TextEditorUtils.enableHostEditorKeyBindingsSupport(targetPart.getSite(), this.searchBar);
+        }
+
+        @Override
+        protected void createReplaceBar() {
+            super.createReplaceBar();
+            TextEditorUtils.enableHostEditorKeyBindingsSupport(targetPart.getSite(), this.replaceBar);
         }
 
         @Override
@@ -226,6 +239,12 @@ public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
                     }
                 }
             );
+        }
+
+        @Override
+        public void open() {
+            super.open();
+            this.setExtrasVisibility(false);
         }
 
         @Override
