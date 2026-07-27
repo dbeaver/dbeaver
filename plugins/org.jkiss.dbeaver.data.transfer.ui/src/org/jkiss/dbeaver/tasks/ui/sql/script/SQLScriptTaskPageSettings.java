@@ -456,11 +456,14 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
     @Override
     protected boolean determinePageCompletion() {
-        if (selectedScripts.isEmpty()) {
+        SQLScriptExecuteSettings settings = getWizard().getSettings();
+        boolean hasScripts = !selectedScripts.isEmpty() || !CommonUtils.isEmpty(settings.getScriptFiles());
+        boolean hasDataSources = !selectedDataSources.isEmpty() || !CommonUtils.isEmpty(settings.getDataSources());
+        if (!hasScripts) {
             setErrorMessage(DTUIMessages.sql_script_task_page_settings_error_message_you_must_select_script_execute);
             return false;
         }
-        if (selectedDataSources.isEmpty()) {
+        if (!hasDataSources) {
             setErrorMessage(DTUIMessages.sql_script_task_page_settings_error_message_you_must_select_connection);
             return false;
         }

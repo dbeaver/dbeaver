@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.tasks.ui.sql.script;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.sql.SQLTaskConstants;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -29,6 +32,8 @@ import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import java.util.Map;
 
 class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScriptExecuteSettings> {
+    private static final Log log = Log.getLog(SQLScriptTaskConfigurationWizard.class);
+
     private SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
     private SQLScriptTaskPageSettings pageSettings;
 
@@ -71,5 +76,28 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
     @Override
     public SQLScriptExecuteSettings getSettings() {
         return settings;
+    }
+
+    @Override
+    public boolean performFinish() {
+        DBTTask task = getCurrentTask();
+        if (task != null && task.isTemporary()) {
+            if (!saveConfigurationToTask(task)) {
+                return false;
+            }
+            TaskConfigurationWizardDialog container = getContainer();
+            container.disableButtonsOnProgress();
+            try {
+                TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, System.out);
+                executor.executeTask();
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Task run error", e.getMessage(), e);
+                return false;
+            } finally {
+                container.enableButtonsAfterProgress();
+            }
+            return true;
+        }
+        return super.performFinish();
     }
 }
