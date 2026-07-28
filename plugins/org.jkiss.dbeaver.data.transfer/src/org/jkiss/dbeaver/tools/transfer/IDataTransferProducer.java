@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,19 +31,22 @@ public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> e
 
     /**
      * Transfer data to consumer
+     *
      * @param monitor   progress monitor
      * @param consumer  transfer consumer
      * @param processor transfer processor (optional)
      * @param settings  settings
      * @param task      task (optional)
+     * @param maxRows   maximum rows to transfer. <= 0 means no limits.
      */
     void transferData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IDataTransferConsumer consumer,
         @Nullable IDataTransferProcessor processor,
         @NotNull SETTINGS settings,
-        @Nullable DBTTask task)
-        throws DBException;
+        @Nullable DBTTask task,
+        long maxRows
+    ) throws DBException;
 
     @NotNull
     default DBCStatistics getStatistics() {

@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -75,21 +76,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
-    private static final PostgrePrivilegeType[] SUPPORTED_PRIVILEGE_TYPES = new PostgrePrivilegeType[]{
-        PostgrePrivilegeType.SELECT,
-        PostgrePrivilegeType.INSERT,
-        PostgrePrivilegeType.UPDATE,
-        PostgrePrivilegeType.DELETE,
-        PostgrePrivilegeType.TRUNCATE,
-        PostgrePrivilegeType.REFERENCES,
-        PostgrePrivilegeType.TRIGGER,
-        PostgrePrivilegeType.CREATE,
-        PostgrePrivilegeType.CONNECT,
-        PostgrePrivilegeType.TEMPORARY,
-        PostgrePrivilegeType.EXECUTE,
-        PostgrePrivilegeType.USAGE,
-        PostgrePrivilegeType.MAINTAIN
-    };
 
     private DatabaseCache databaseCache;
     private SettingCache settingCache;
@@ -100,6 +86,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;
+    private PostgrePrivilegeType[] supportedPrivilegeTypes;
     private volatile boolean isConnectionRefreshing = false;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
@@ -558,7 +545,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     // Generate URL with new database name
                     if (CommonUtils.isEmpty(newConfig.getUrl()) || !CommonUtils.isEmpty(newConfig.getHostName())) {
                         final DBPDriver driver = getContainer().getDriver();
-                        newURL = driver.getDataSourceProvider().getConnectionURL(driver, newConfig);
+                        try {
+                            newURL = driver.getDataSourceProvider().getConnectionURL(driver, newConfig);
+                        } catch (DBException ex) {
+                            throw new DBCException("Connection URL preparation error", ex);
+                        }
                     }
                 } else {
                     // Patch connection URL with new database name
@@ -773,7 +764,32 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     public PostgrePrivilegeType[] getSupportedPrivilegeTypes() {
-        return SUPPORTED_PRIVILEGE_TYPES;
+        if (supportedPrivilegeTypes == null) {
+            supportedPrivilegeTypes = computeSupportedPrivilegeTypes();
+        }
+        return supportedPrivilegeTypes;
+    }
+
+    @NotNull
+    protected PostgrePrivilegeType[] computeSupportedPrivilegeTypes() {
+        PostgrePrivilegeType[] types = {
+            PostgrePrivilegeType.SELECT,
+            PostgrePrivilegeType.INSERT,
+            PostgrePrivilegeType.UPDATE,
+            PostgrePrivilegeType.DELETE,
+            PostgrePrivilegeType.TRUNCATE,
+            PostgrePrivilegeType.REFERENCES,
+            PostgrePrivilegeType.TRIGGER,
+            PostgrePrivilegeType.CREATE,
+            PostgrePrivilegeType.CONNECT,
+            PostgrePrivilegeType.TEMPORARY,
+            PostgrePrivilegeType.EXECUTE,
+            PostgrePrivilegeType.USAGE
+        };
+        if (isServerVersionAtLeast(16, 0)) {
+            types = ArrayUtils.add(PostgrePrivilegeType.class, types, PostgrePrivilegeType.MAINTAIN);
+        }
+        return types;
     }
 
     @Override

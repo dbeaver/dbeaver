@@ -82,6 +82,18 @@
             </propertyGroup>
 
         </authModel>
+        <authModel
+            id="shell_command"
+            label="Password from shell command"
+            description="Database authentication; the password is read from the stdout of a shell command run at connect time"
+            class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseShellCommand"
+            desktop="true">
+
+            <propertyGroup label="Database user">
+                <property id="user" label="User" type="string"/>
+            </propertyGroup>
+
+        </authModel>
     </extension>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">

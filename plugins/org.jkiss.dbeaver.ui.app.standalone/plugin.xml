@@ -492,6 +492,12 @@
         <parameter exitAfterExecute="true"
             hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.DataBaseInfoHandler"/>
+        <parameter exitAfterExecute="true"
+            hasArg="true"
+            handler="org.jkiss.dbeaver.ui.app.standalone.cli.LinkProjectHandler"/>
+        <parameter exitAfterExecute="true"
+            hasArg="true"
+            handler="org.jkiss.dbeaver.ui.app.standalone.cli.UnlinkProjectHandler"/>
     </extension>
 
     <!-- Disable Eclipse debug and refactoring in standalone applications -->
@@ -541,6 +547,13 @@
                 namespace="org.jkiss.dbeaver.ui.app.standalone.menu.configuration"
                 properties="isCommunity"
                 type="java.lang.Object"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.app.config">
+        <action
+            label="Turn on &quot;Tip of the day&quot;"
+            description="You can enable tips that will appear daily to help you get familiar with the application and learn some useful features."
+            class="org.jkiss.dbeaver.ui.app.standalone.config.ProductConfigShowTipsAction"/>
     </extension>
 
 </plugin>

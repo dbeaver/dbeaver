@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,10 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -120,6 +121,31 @@ public class CustomSashForm extends SashForm {
             ARROW_HEIGHT = 5,
             ARROW_MARGIN = 5;    // Margin on each side of arrow
 
+    private static final Set<Display> selectionFixDisplays = new HashSet<>();
+
+    private static final Listener selectionFixFilterListener = e -> {
+        if (e.widget instanceof Sash s && !s.isDisposed() && s.getParent() instanceof CustomSashForm p) {
+            Point pt = s.toControl(e.display.getCursorLocation());
+            int x = pt.x;
+            int y = pt.y;
+            for (int i = 0; i < p.currentSashInfo.sashLocs.length; i++) {
+                int[] locs = p.currentSashInfo.sashLocs[i];
+                boolean vertical = p.getOrientation() == SWT.VERTICAL;
+                int loc = vertical ? x : y;
+                int locIndex = vertical ? X_INDEX : Y_INDEX;
+                int sizeIndex = vertical ? WIDTH_INDEX : HEIGHT_INDEX;
+                if (locs[locIndex] <= loc && loc <= locs[locIndex] + locs[sizeIndex]) {
+                    // drop selection event when the mouse cursor is inside any button,
+                    // because we are handling it like a button-click event, so no need to trigger default sash logic
+                    // (which otherwise works though the underlying SashForm::sashListener, forces collapsed sash content to
+                    //  expand prematurely and disrupts so whole idea of only reacting like for buttons in this geometric area)
+                    e.type = SWT.None;
+                    break;
+                }
+            }
+        }
+    };
+
     public CustomSashForm(Composite parent, int style) {
         super(parent, style);
 
@@ -135,6 +161,12 @@ public class CustomSashForm extends SashForm {
         SASH_WIDTH = ARROW_HEIGHT + ARROW_MARGIN;
 
         arrowColor = DEFAULT_BORDER_COLOR;
+
+        Display display = this.getDisplay();
+        if (selectionFixDisplays.add(display)) {
+            display.addFilter(SWT.Selection, selectionFixFilterListener);
+            display.disposeExec(() -> display.removeFilter(SWT.Selection, selectionFixFilterListener));
+        }
     }
 
     public boolean isShowBorders() {
@@ -271,9 +303,9 @@ public class CustomSashForm extends SashForm {
         Control[] children = getChildren();
         Sash newSash = null;
         for (Control child : children) {
-            if (child instanceof Sash) {
+            if (child instanceof Sash sash) {
                 if (newSash == null) {
-                    newSash = (Sash) child;
+                    newSash = sash;
                 } else {
                     // We have more than one sash, so need to disable current sash, if we have one.
                     if (currentSashInfo != null)
@@ -283,8 +315,20 @@ public class CustomSashForm extends SashForm {
             }
         }
 
-        if (newSash == null)
-            return;    // We have no sashes at all.
+        if (newSash == null) {
+            // We have no sashes at all.
+            // Sashes are created by sash layout
+            // If SashForm is created an layouted before actual panel become visible
+            // then we cannot customize sash.
+            // Dirty hack - we try to re-layout in async hoping that it'll be ok
+            if (children.length > 1 && getData("lazyLayout") == null) {
+                UIUtils.asyncExec(() -> {
+                    setData("lazyLayout", true);
+                    layout(changed);
+                });
+            }
+            return;
+        }
 
         // Now we need to see if this is a new sash.
         if (currentSashInfo == null || currentSashInfo.sash == null) {
@@ -507,11 +551,9 @@ public class CustomSashForm extends SashForm {
         //
         if (noHideUp) {
             if (slammed == SLAMMED_TO_BOTTOM) {
-                addArrows = new int[1];
-                drawArrows = new int[1];
+                addArrows = new int[] { UP_RESTORE_ARROW };
+                drawArrows = new int[] { UP_RESTORE_ARROW };
 
-                addArrows[0] = UP_RESTORE_ARROW;
-                drawArrows[0] = UP_RESTORE_ARROW;
                 currentSashInfo.sashBorderLeft = sashBorders != null && sashBorders[0];
                 currentSashInfo.sashBorderRight = false;
             } else {
@@ -536,11 +578,9 @@ public class CustomSashForm extends SashForm {
                 currentSashInfo.sashBorderRight = sashBorders != null && sashBorders[1];
             } else {
                 //Not slammed
-                addArrows = new int[1];
-                drawArrows = new int[1];
+                addArrows = new int[] { UP_HIDE_ARROW };
+                drawArrows = new int[] { UP_RESTORE_ARROW };
 
-                addArrows[0] = UP_HIDE_ARROW;
-                drawArrows[0] = UP_RESTORE_ARROW;
                 currentSashInfo.restoreWeight = NO_WEIGHT;    // Since we are in the middle, there is no restoreWeight. We've could of been dragged here.
                 currentSashInfo.sashBorderLeft = sashBorders != null && sashBorders[0];
                 currentSashInfo.sashBorderRight = sashBorders != null && sashBorders[1];
@@ -555,22 +595,16 @@ public class CustomSashForm extends SashForm {
                 currentSashInfo.sashBorderLeft = false;
                 currentSashInfo.sashBorderRight = sashBorders != null && sashBorders[1];
             } else if (slammed == SLAMMED_TO_BOTTOM) {
-                addArrows = new int[1];
-                drawArrows = new int[1];
+                addArrows = new int[] { UP_RESTORE_ARROW };
+                drawArrows = new int[] { UP_RESTORE_ARROW };
 
-                addArrows[0] = UP_RESTORE_ARROW;
-                drawArrows[0] = UP_RESTORE_ARROW;
                 currentSashInfo.sashBorderLeft = sashBorders != null && sashBorders[0];
                 currentSashInfo.sashBorderRight = false;
             } else {
                 //Not slammed
-                addArrows = new int[2];
-                drawArrows = new int[2];
+                addArrows = new int[] { UP_HIDE_ARROW, DOWN_HIDE_ARROW };
+                drawArrows = new int[] { UP_RESTORE_ARROW, DOWN_RESTORE_ARROW };
 
-                addArrows[0] = UP_HIDE_ARROW;
-                drawArrows[0] = UP_RESTORE_ARROW;
-                addArrows[1] = DOWN_HIDE_ARROW;
-                drawArrows[1] = DOWN_RESTORE_ARROW;
                 currentSashInfo.restoreWeight = NO_WEIGHT;    // Since we are in the middle, there is no restoreWeight. We've could of been dragged here.
                 currentSashInfo.sashBorderLeft = sashBorders != null && sashBorders[0];
                 currentSashInfo.sashBorderRight = sashBorders != null && sashBorders[1];
@@ -892,7 +926,7 @@ public class CustomSashForm extends SashForm {
     }
 
     protected void fireDividerMoved() {
-        if (customSashFormListeners != null && customSashFormListeners.size() > 0) {
+        if (customSashFormListeners != null && !customSashFormListeners.isEmpty()) {
             int[] weights = getWeights();
             if (weights != null && weights.length == 2) {
                 int firstControlWeight = weights[0];

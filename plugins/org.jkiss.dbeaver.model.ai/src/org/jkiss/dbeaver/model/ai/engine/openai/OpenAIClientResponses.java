@@ -52,6 +52,12 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         this.backupClient = createBackupClient();
     }
 
+    @Override
+    public void setTimeout(int timeoutSeconds) {
+        super.setTimeout(timeoutSeconds);
+        backupClient.setTimeout(timeoutSeconds);
+    }
+
     @NotNull
     public HttpClient getHttpClient() {
         return client.getHttpClient();
@@ -77,9 +83,13 @@ public class OpenAIClientResponses extends OpenAiClientBase {
             String responseJson = client.send(monitor, modifiedRequest);
             return GSON.fromJson(responseJson, OAIResponsesResponse.class);
         } catch (Exception exception) {
-            if (exception.getMessage().contains("is not supported via Responses API")) {
+            if (OpenAiUtils.shouldFallbackToLegacyChat(exception.getMessage())) {
                 // If the request failed due to an unsupported model, fallback to the legacy client which might support it
                 return backupClient.createChatCompletion(monitor, completionRequest);
+            } else if (completionRequest.temperature != null && OpenAiUtils.isTemperatureNotSupported(exception.getMessage())) {
+                completionRequest.temperature = null;
+                MODELS_WITHOUT_TEMPERATURE.add(completionRequest.model);
+                return createChatCompletion(monitor, completionRequest);
             } else {
                 throw exception;
             }
@@ -135,9 +145,18 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
     @NotNull
     @Override
+    protected HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest) throws DBException {
+        if (completionRequest.model != null && MODELS_WITHOUT_TEMPERATURE.contains(completionRequest.model)) {
+            completionRequest.temperature = null;
+        }
+        return super.createCompletionRequest(completionRequest);
+    }
+
+    @NotNull
+    @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
         if (statusCode == 400) {
-            if (body.contains("is not supported via Responses API")) {
+            if (OpenAiUtils.shouldFallbackToLegacyChat(body)) {
                 // just return DBException, we will fall back to legacy client in case of this error, no need to log it as error
                 return new DBException("is not supported via Responses API");
             }

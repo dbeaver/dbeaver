@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -50,7 +51,6 @@ public final class SQLUtils {
 
     private static final Log log = Log.getLog(SQLUtils.class);
 
-    public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
     public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile(
@@ -171,6 +171,88 @@ public final class SQLUtils {
             multiLineComments == null ? null : multiLineComments.getSecond(),
             dialect.getSingleLineComments()
         );
+    }
+
+    /**
+     * Blanks out dialect-specific single-line comments (e.g. MySQL #) that JSQLParser doesn't recognize.
+     * Comment prefixes found inside string or identifier literals are left untouched.
+     */
+    @NotNull
+    public static String maskDialectLineComments(@NotNull SQLDialect dialect, @NotNull String sql) {
+        List<String> extraCommentPrefixes = ArrayUtils.safeArray(dialect.getSingleLineComments()).stream()
+            .filter(prefix -> !CommonUtils.isEmpty(prefix) && !prefix.startsWith(SQLConstants.SL_COMMENT))
+            .toList();
+        if (extraCommentPrefixes.isEmpty()) {
+            return sql;
+        }
+        String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
+        String[][] quotes = identifierQuotes == null
+            ? dialect.getStringQuoteStrings()
+            : ArrayUtils.concatArrays(dialect.getStringQuoteStrings(), identifierQuotes);
+        char escapeChar = dialect.getStringEscapeCharacter();
+        StringBuilder result = new StringBuilder(sql);
+        int pos = 0;
+        while (pos < sql.length()) {
+            String[] quote = quoteStartingAt(sql, pos, quotes);
+            if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
+                pos += 2; // skip an escaped char, so a stray "\'" can't open a phantom string
+            } else if (quote != null) {
+                pos = skipQuoted(sql, pos, quote, escapeChar);
+            } else if (sql.startsWith(SQLConstants.SL_COMMENT, pos)) {
+                pos = getLineEnd(sql, pos);
+            } else if (sql.startsWith(SQLConstants.ML_COMMENT_START, pos)) {
+                int end = sql.indexOf(SQLConstants.ML_COMMENT_END, pos + 2);
+                pos = end < 0 ? sql.length() : end + 2;
+            } else if (startsWithAny(sql, pos, extraCommentPrefixes)) {
+                int lineEnd = getLineEnd(sql, pos);
+                result.replace(pos, lineEnd, " ".repeat(lineEnd - pos));
+                pos = lineEnd;
+            } else {
+                pos++;
+            }
+        }
+        return result.toString();
+    }
+
+    @Nullable
+    private static String[] quoteStartingAt(@NotNull String sql, int pos, @NotNull String[][] quotes) {
+        for (String[] quote : quotes) {
+            if (sql.startsWith(quote[0], pos)) {
+                return quote;
+            }
+        }
+        return null;
+    }
+
+    private static int skipQuoted(@NotNull String sql, int openPos, @NotNull String[] quote, char escapeChar) {
+        String close = quote[1];
+        int pos = openPos + quote[0].length();
+        while (pos < sql.length()) {
+            if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
+                pos += 2;
+            } else if (sql.startsWith(close, pos)) {
+                return pos + close.length();
+            } else {
+                pos++;
+            }
+        }
+        return sql.length();
+    }
+
+    private static boolean startsWithAny(@NotNull String sql, int pos, @NotNull List<String> prefixes) {
+        for (String prefix : prefixes) {
+            if (sql.startsWith(prefix, pos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int getLineEnd(@NotNull String sql, int pos) {
+        while (pos < sql.length() && sql.charAt(pos) != '\n' && sql.charAt(pos) != '\r') {
+            pos++;
+        }
+        return pos;
     }
 
     @NotNull
@@ -470,7 +552,7 @@ public final class SQLUtils {
             sql.append(" LIKE ?");
             if (dialect instanceof SQLDialectRelational dialectRelational &&
                 dialectRelational.getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null) {
-                sql.append(((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
+                sql.append(dialectRelational.getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
             }
         } else {
             sql.append(not ? "<>?" : "=?");
@@ -747,12 +829,14 @@ public final class SQLUtils {
             case CONTENT -> {
                 if (value instanceof DBDContent contentValue) {
                     String contentType = contentValue.getContentType();
-                    if (!contentType.startsWith("text") && CommonUtils.isNotEmpty(strValue)) {
+                    if (!contentType.startsWith(MimeTypes.TEXT) && CommonUtils.isNotEmpty(strValue)) {
+                        // Non-text context. Use as-is
                         return strValue;
+                    } else if (CommonUtils.isNotEmpty(strValue)) { // Quote text/json, text/xml, etc...
+                        return sqlDialect.getQuotedString(strValue);
                     }
                 }
             }
-            // Text content. Fall down
             case STRING -> {
                 if (strValue != null) {
                     return sqlDialect.getQuotedString(strValue);
@@ -760,14 +844,13 @@ public final class SQLUtils {
             }
             case ROWID -> {
                 if (strValue != null && !sqlDialect.isQuotedString(strValue)) {
+                    // Quote ROWIDs by default
                     return sqlDialect.getQuotedString(strValue);
                 }
             }
-            default -> {
-                if (strValue != null) {
-                    return sqlDialect.escapeScriptValue(attribute, value, strValue);
-                }
-            }
+        }
+        if (strValue != null) {
+            return sqlDialect.escapeScriptValue(attribute, value, strValue);
         }
         return SQLConstants.NULL_VALUE;
     }
@@ -831,7 +914,7 @@ public final class SQLUtils {
             return name;
         }
 
-        SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
+        SQLDialect dialect = entity.getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
         boolean prevNonLetter = true;
         char prevChar = 0;
@@ -1223,9 +1306,9 @@ public final class SQLUtils {
     ) throws DBException {
         Collection<? extends DBSEntityAssociation> associations = leftTable.getAssociations(monitor);
         if (!CommonUtils.isEmpty(associations)) {
-            for (DBSEntityAssociation fk : associations) {
-                if (fk instanceof DBSTableForeignKey dbsTableForeignKey && fk.getAssociatedEntity() == rightTable) {
-                    return generateTablesJoin(monitor, dbsTableForeignKey, leftAlias, rightAlias);
+            for (DBSEntityAssociation assoc : associations) {
+                if (assoc instanceof DBSTableForeignKey fk && assoc.getAssociatedEntity() == rightTable) {
+                    return generateTablesJoin(monitor, fk, leftAlias, rightAlias);
                 }
             }
         }
@@ -1256,11 +1339,6 @@ public final class SQLUtils {
             }
         }
         return joinSQL.toString();
-    }
-
-    @Nullable
-    public static String getTableAlias(@NotNull DBSEntity table) {
-        return CommonUtils.escapeIdentifier(table.getName());
     }
 
     public static void appendQueryConditions(
