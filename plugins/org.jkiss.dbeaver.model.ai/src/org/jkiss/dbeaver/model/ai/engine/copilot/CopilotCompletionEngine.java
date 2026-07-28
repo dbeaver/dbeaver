@@ -65,7 +65,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<CopilotModel> models = client.getInstance().loadModels(monitor, requestSessionToken(monitor).token());
+        List<CopilotModel> models = client.getInstance().loadModels(monitor, requestSessionToken(monitor));
         boolean isPremium = models.stream().anyMatch(CopilotModel::modelPickerEnabled);
         return models.stream()
             .filter(model -> isModelOffered(model, isPremium))
@@ -95,7 +95,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         );
         Object chatResponse = client.getInstance().chat(
             monitor,
-            requestSessionToken(monitor).token(),
+            requestSessionToken(monitor),
             copilotChatRequestOAIResponsesRequestPair
         );
         if (chatResponse instanceof OAIResponsesResponse oaiResponse) {
@@ -151,7 +151,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         );
         client.getInstance().createChatCompletionStream(
             monitor,
-            requestSessionToken(monitor).token(),
+            requestSessionToken(monitor),
             copilotChatRequestOAIResponsesRequestPair,
             listener
         );
