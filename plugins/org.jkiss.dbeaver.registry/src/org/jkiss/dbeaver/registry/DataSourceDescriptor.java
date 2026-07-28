@@ -1337,8 +1337,8 @@ public class DataSourceDescriptor
             if (profile != null) {
                 if (secretController != null) {
                     profile.resolveSecrets(secretController);
-                } else if (profile.isGlobal() && !DBWorkbench.isDistributed()) {
-                    // Global profile secrets are stored in global secret controller
+                } else if (profile.isGlobal() && !DBWorkbench.isMultiuserOrDistributed()) {
+                    // Global profile secrets are stored in global secret controller for desktop apps
                     profile.resolveSecrets(DBSSecretController.getGlobalSecretController());
                 }
                 for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
