@@ -103,7 +103,7 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
     @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
         log.debug("OpenAI request failed: " + statusCode + ", " + body);
-        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(statusCode, body));
     }
 
     @NotNull
