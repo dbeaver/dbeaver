@@ -77,7 +77,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDat
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         DBPConnectionConfiguration configToUse = connectionInfo;
         String databaseName = connectionInfo.getDatabaseName();
 
