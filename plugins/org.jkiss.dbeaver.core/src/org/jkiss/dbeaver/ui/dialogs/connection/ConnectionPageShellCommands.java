@@ -93,12 +93,12 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        Composite root = parent;
+        Composite root = UIUtils.createPlaceholder(parent, 1, 2);
+        root.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (!isNotDistributed) {
-            root = UIUtils.createPlaceholder(parent, 1, 2);
             createWarningTELabel(root);
         }
-        Composite group = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite group = UIUtils.createPlaceholder(root, 2, 5);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -200,7 +200,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         }
 
         selectEventType(null);
-        setControl(group);
+        setControl(root);
     }
 
     @NotNull
