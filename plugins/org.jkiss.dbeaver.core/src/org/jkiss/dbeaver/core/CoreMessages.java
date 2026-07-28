@@ -537,6 +537,8 @@ public class CoreMessages extends NLS {
 
     public static String pref_page_connection_label_close_connection_on_sleep;
     public static String pref_page_connection_label_close_connection_on_sleep_tip;
+    public static String pref_page_connection_label_enable_shell_auth_model;
+    public static String pref_page_connection_label_enable_shell_auth_model_tip;
 
     public static String pref_page_network_expert_label;
     public static String pref_page_network_expert_preferred_ip_stack_label;
