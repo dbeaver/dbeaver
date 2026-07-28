@@ -4,6 +4,7 @@ const chatMetaText = document.getElementById('chat-meta-text');
 
 const statusBar = document.createElement('div');
 statusBar.className = 'status-bar';
+statusBar.setAttribute('aria-hidden', 'true');
 statusBar.innerHTML = '<span class="loader"></span><span class="status-bar-text">Waiting for response...</span>';
 let isBusy = false;
 
@@ -80,5 +81,6 @@ function initChat(args) {
     closeTooltip = args.close.tooltip;
     settingKeys = args.settings || {};
 
+    initA11y(args.a11y || {});
     settingsChanged();
 }

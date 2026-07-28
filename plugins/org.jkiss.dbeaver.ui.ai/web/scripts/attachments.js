@@ -69,7 +69,7 @@ function createAttachmentCard(args) {
             const iconSrc = `file://${f.icon}`;
             const name = f.name || (f.path ? f.path.split('/').pop() : 'Unknown');
             return `
-        <div class="attachment-item" onclick="window.openFileInExplorer(${args.id}, ${index});" style="cursor: pointer;" title="Click to show in file explorer">
+        <div class="attachment-item" role="button" tabindex="-1" onclick="window.openFileInExplorer(${args.id}, ${index});" style="cursor: pointer;" title="Click to show in file explorer">
             <img src="${iconSrc}" class="attachment-icon" alt="File"/>
             <div class="attachment-name" title="${escapeHtml(f.path)}">${escapeHtml(name)}</div>
         </div>`;
@@ -139,10 +139,13 @@ function createAttachmentCard(args) {
     const closeIconSrc = `file://${closeIcon}`;
     return `
         <div class="attachment-card">
-            <img src="${closeIconSrc}" 
-                 class="attachment-close-icon" 
-                 alt="Close" 
+            <img src="${closeIconSrc}"
+                 class="attachment-close-icon"
+                 alt="Close"
                  title="${closeTooltip}"
+                 role="button"
+                 tabindex="-1"
+                 aria-label="${closeTooltip}"
                  onclick="deleteMessage(${args.id});" />
             <div class="attachment-files">
                 ${items}

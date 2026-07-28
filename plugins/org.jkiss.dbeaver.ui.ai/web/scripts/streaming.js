@@ -51,6 +51,7 @@ function addMessageChunk(args) {
         contentHolder.appendChild(body);
         message.appendChild(contentHolder);
 
+        makeItemFocusable(message, 'assistant');
         appendChatNode(message, false);
         streamingMessages.set(messageId, '');
     }
@@ -122,5 +123,6 @@ function finalizeStreamingMessage(messageId, meta) {
     if (currentStreamingMessageId === messageId) {
         currentStreamingMessageId = null;
     }
+    announceMessage('assistant', message);
     ensureBusyIndicator();
 }

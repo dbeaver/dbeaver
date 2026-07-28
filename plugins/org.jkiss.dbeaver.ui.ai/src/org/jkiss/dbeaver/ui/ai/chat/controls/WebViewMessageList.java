@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.browser.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.program.Program;
@@ -181,6 +183,12 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         browser.setJavascriptEnabled(true);
+        browser.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            @Override
+            public void getName(AccessibleEvent e) {
+                e.result = AIChatMessages.ai_chat_a11y_transcript_label;
+            }
+        });
         functionAllowMenu = new AIFunctionAllowMenu(
             browser,
             chat.getChatSession().getAssistant().getToolboxManager(),
@@ -247,6 +255,16 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     @Override
     public void onSettingsUpdate(@NotNull AISettingsManager registry) {
         UIUtils.asyncExec(() -> renderer.execute("settingsChanged"));
+    }
+
+    public void focusChat() {
+        if (browser.isDisposed()) {
+            return;
+        }
+        browser.setFocus();
+        if (!isInitWaiting) {
+            renderer.execute("focusChat");
+        }
     }
 
     private void createFunctions(@NotNull AIChatControl chat) {
@@ -457,6 +475,23 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
             pending.approvedIndices.add(functionIndex);
             checkAllDecisions(chat, messageId, pending);
+            return null;
+        });
+
+        createFunction("traverseOut", arguments -> {
+            boolean forward = arguments.length < 1 || CommonUtils.toBoolean(arguments[0]);
+            UIUtils.asyncExec(() -> {
+                if (browser.isDisposed()) {
+                    return;
+                }
+                if (forward) {
+                    if (!chat.setFocusOnPrompt()) {
+                        browser.traverse(SWT.TRAVERSE_TAB_NEXT);
+                    }
+                } else if (!chat.focusContextBar()) {
+                    browser.traverse(SWT.TRAVERSE_TAB_PREVIOUS);
+                }
+            });
             return null;
         });
 

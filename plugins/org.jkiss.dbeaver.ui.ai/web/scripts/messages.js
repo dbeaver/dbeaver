@@ -102,7 +102,9 @@ function addMessage(args) {
         }, 0);
     }
 
+    makeItemFocusable(div, args.role);
     appendChatNode(div);
+    announceMessage(args.role, div);
 }
 
 function calculateIconsContainerOffset(messageDiv, iconsContainer) {

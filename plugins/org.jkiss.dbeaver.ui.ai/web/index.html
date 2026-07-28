@@ -13,13 +13,15 @@
         <div id="chat-meta-text">N/A</div>
         <button class="close" onclick="hideChatMeta()">✕</button>
     </div>
-    <div id="chat">
+    <div id="chat" role="listbox">
         <!-- ... -->
     </div>
+    <div id="a11y-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 </div>
 <script src="marked.umd.js"></script>
 <script src="purify.min.js"></script>
 <script src="script.js"></script>
+<script src="scripts/a11y.js"></script>
 <script src="scripts/chat-view.js"></script>
 <script src="scripts/tooltips.js"></script>
 <script src="scripts/sql-blocks.js"></script>
