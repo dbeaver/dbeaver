@@ -157,6 +157,15 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
         return false;
     }
 
+    @NotNull
+    public DBEPersistAction[] generatePostTransferDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @Nullable DatabaseMappingContainer container
+    ) throws DBException {
+        return new DBEPersistAction[0];
+    }
+
     public boolean executePostTransferActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObject targetObject
@@ -473,6 +482,20 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
         }
 
         return null;
+    }
+
+    @Nullable
+    public static String getSavedContainerPath(@NotNull DataTransferSettings dataTransferSettings) {
+        if (dataTransferSettings.getConsumer() == null) {
+            return null;
+        }
+        final Map<String, Object> settings = dataTransferSettings.getNodeSettingsMap(dataTransferSettings.getConsumer());
+        if (settings == null) {
+            return null;
+        }
+        final String entityId = CommonUtils.toString(settings.get("entityId"));
+        final int divPos = entityId.indexOf('/');
+        return divPos <= 0 || divPos == entityId.length() - 1 ? null : entityId.substring(divPos + 1);
     }
 
     private void checkContainerConnection(DBRRunnableContext runnableContext) {
