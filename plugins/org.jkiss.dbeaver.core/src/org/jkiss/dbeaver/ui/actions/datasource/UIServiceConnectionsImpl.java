@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -82,6 +84,25 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
     @Override
     public void disconnectDataSource(@NotNull DBPDataSourceContainer dataSourceContainer) {
         DataSourceHandler.disconnectDataSource(dataSourceContainer, null);
+    }
+
+    @Override
+    public void askToReconnect(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        if (!dataSourceContainer.isConnected()) {
+            return;
+        }
+        UIUtils.asyncExec(() -> {
+            if (!dataSourceContainer.isConnected()) {
+                return;
+            }
+            if (UIUtils.confirmAction(
+                UIUtils.getActiveWorkbenchShell(),
+                CoreMessages.dialog_connection_edit_wizard_conn_change_title,
+                NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dataSourceContainer.getName())
+            )) {
+                DataSourceHandler.reconnectDataSource(null, dataSourceContainer);
+            }
+        });
     }
 
     @Override
