@@ -1,6 +1,26 @@
 const streamingMessages = new Map();
 let currentStreamingMessageId = null;
 
+const INLINE_CODE_SPAN_RE = /(^|[^`])(`+)([^`\n]+?)\2(?!`)/g;
+
+function escapeAmpLt(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+}
+
+function escapeStreamedMarkdown(markdown) {
+    let result = '';
+    let last = 0;
+    INLINE_CODE_SPAN_RE.lastIndex = 0;
+    let match;
+    while ((match = INLINE_CODE_SPAN_RE.exec(markdown)) !== null) {
+        const spanStart = match.index + match[1].length;
+        result += escapeAmpLt(markdown.slice(last, spanStart));
+        result += markdown.slice(spanStart, match.index + match[0].length);
+        last = match.index + match[0].length;
+    }
+    return result + escapeAmpLt(markdown.slice(last));
+}
+
 
 function addMessageChunk(args) {
     hideCenterText();
@@ -47,7 +67,7 @@ function addMessageChunk(args) {
         const sqlContents = message.querySelectorAll('.sql-content');
         const scrollPositions = Array.from(sqlContents).map(el => ({ left: el.scrollLeft, top: el.scrollTop }));
 
-        const markdown = marked.parse(currentContent);
+        const markdown = sanitizeHtml(marked.parse(escapeStreamedMarkdown(currentContent)));
         streamingContent.innerHTML = parseSqlBlocksStreaming(markdown, args.id);
 
         const newSqlContents = message.querySelectorAll('.sql-content');
@@ -78,7 +98,7 @@ function finalizeStreamingMessage(messageId, meta) {
         if (contentHolder) {
             const body = contentHolder.querySelector('.streaming-content') || contentHolder.querySelector('p');
             if (body) {
-                const markdown = marked.parse(content);
+                const markdown = sanitizeHtml(marked.parse(content));
                 body.innerHTML = parseSqlBlocks(markdown, messageId);
                 body.className = '';
             }

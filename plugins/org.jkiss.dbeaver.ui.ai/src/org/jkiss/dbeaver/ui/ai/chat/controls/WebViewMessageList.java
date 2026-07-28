@@ -368,21 +368,26 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         });
 
         createFunction(ATTACHMENT_OPEN_FILE_IN_EXPLORER, arguments -> {
-            if (arguments.length < 1) {
-                throw new IllegalArgumentException("openFileInExplorer requires at least one argument");
+            if (arguments.length < 2) {
+                throw new IllegalArgumentException("openFileInExplorer requires message id and file index");
             }
-            String filePath = String.valueOf(arguments[0]);
             createAttachmentInteractionEvent(ATTACHMENT_OPEN_FILE_IN_EXPLORER);
+            AIMessageFiles attachment = getMessageFilesById(arguments[0]);
+            List<Path> files = attachment.getAttachment();
+            int fileIndex = CommonUtils.toInt(arguments[1], -1);
+            if (fileIndex < 0 || fileIndex >= files.size()) {
+                throw new IllegalArgumentException("Invalid attachment file index: " + arguments[1]);
+            }
+            Path file = files.get(fileIndex);
             UIUtils.asyncExec(() -> {
                 try {
-                    Path file = Path.of(filePath);
                     if (Files.exists(file)) {
                         ShellUtils.showInSystemExplorer(file.toFile());
                     } else {
-                        DBWorkbench.getPlatformUI().showError("File not found", NLS.bind("The file does not exist: {0}", filePath));
+                        DBWorkbench.getPlatformUI().showError("File not found", NLS.bind("The file does not exist: {0}", file));
                     }
                 } catch (Exception e) {
-                    log.error("Error opening file in explorer: " + filePath, e);
+                    log.error("Error opening file in explorer: " + file, e);
                     DBWorkbench.getPlatformUI().showError("Error", NLS.bind("Failed to open file in explorer: {0}", e.getMessage()));
                 }
             });

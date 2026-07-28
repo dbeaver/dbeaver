@@ -175,6 +175,11 @@ final class WebViewMessageRenderer {
     }
 
     private void addUsualMessage(@NotNull Map<String, Object> args, @NotNull AIChatMessage message) {
+        AIMessageType role = message.message().getRole();
+        if (role == AIMessageType.WARNING) {
+            args.put("content", CommonUtils.notEmpty(message.message().getDisplayMessage()));
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         String messageContent = message.message().getDisplayMessage();
         MessageChunk[] chunks = AITextUtils.splitIntoChunks(messageContent, false);
@@ -186,7 +191,7 @@ final class WebViewMessageRenderer {
                     sb.append('\n').append(chunk.toRawString()).append('\n');
                 }
             } else {
-                sb.append(chunk.toRawString());
+                sb.append(AIChatHtmlEscaper.escapeText(chunk.toRawString()));
             }
         }
         args.put("content", sb.toString());
@@ -197,7 +202,9 @@ final class WebViewMessageRenderer {
     }
 
     private void addFunctionMessage(@NotNull Map<String, Object> args, @NotNull AIChatMessage message) {
-        String sb = "<a class='interactive-link' data-message-id='" + message.id() + "'>" + message.message().getDisplayMessage() + "</a>";
+        String sb = "<a class='interactive-link' data-message-id='" + message.id() + "'>"
+            + AIChatHtmlEscaper.escapeText(CommonUtils.notEmpty(message.message().getDisplayMessage()))
+            + "</a>";
         args.put("content", sb);
     }
 

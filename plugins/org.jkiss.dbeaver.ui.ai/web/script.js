@@ -53,6 +53,19 @@ marked.use({
     }
 });
 
+
+const PREF_LINK_RE = /^javascript:openPreferencePage\('[a-zA-Z0-9_.]+'\)$/;
+
+DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
+    if (data.attrName === 'href' && PREF_LINK_RE.test(data.attrValue)) {
+        data.forceKeepAttr = true;
+    }
+});
+
+function sanitizeHtml(html) {
+    return DOMPurify.sanitize(html);
+}
+
 function initChat(args) {
     copyIcon = args.copy.icon;
     executeIcon = args.execute.icon;
