@@ -29,8 +29,6 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_completion_group;
     public static String gpt_preference_page_completion_include_source_label;
     public static String gpt_preference_page_completion_include_source_tip;
-    public static String gpt_preference_page_completion_execute_immediately_label;
-    public static String gpt_preference_page_completion_execute_immediately_tip;
     public static String gpt_preference_page_completion_send_type_label;
     public static String gpt_preference_page_completion_send_type_tip;
     public static String gpt_preference_page_completion_execute_description_label;
