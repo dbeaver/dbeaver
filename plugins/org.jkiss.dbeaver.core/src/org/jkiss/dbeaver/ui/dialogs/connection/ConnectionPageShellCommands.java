@@ -245,18 +245,28 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         return null;
     }
 
+    @Nullable
     private DBRShellCommand getActiveCommand() {
         DBPConnectionEventType eventType = getSelectedEventType();
         if (eventType != null) {
-            return eventsCache.computeIfAbsent(eventType, k -> new DBRShellCommand("")); //$NON-NLS-1$
+            return eventsCache.get(eventType);
         }
         return null;
+    }
+
+    private DBRShellCommand createNewCommand(@NotNull DBPConnectionEventType eventType) {
+        DBRShellCommand command = new DBRShellCommand("");
+        eventsCache.put(eventType, command);
+        return command;
     }
 
     private void updateEvent(boolean commandChange)
     {
         DBPConnectionEventType eventType = getSelectedEventType();
         DBRShellCommand command = getActiveCommand();
+        if (commandChange && eventType != null && command == null) {
+            createNewCommand(eventType);
+        }
         if (command != null) {
             boolean prevEnabled = command.isEnabled();
             if (commandChange) {
