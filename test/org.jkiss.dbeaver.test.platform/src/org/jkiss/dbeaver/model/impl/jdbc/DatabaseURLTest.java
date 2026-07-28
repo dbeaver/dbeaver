@@ -17,17 +17,18 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.regex.Matcher;
+import java.util.Map;
 
 public class DatabaseURLTest extends DBeaverUnitTest {
     @Test
-    public void testMatchPattern() {
-        assertMatches(
+    public void testMatchPattern() throws DBException {
+        assertRecognition(
             "jdbc:postgresql://{host}[:{port}]/[{database}]",
             "jdbc:postgresql://localhost:5432/dvdrental",
             new String[][]{
@@ -36,7 +37,7 @@ public class DatabaseURLTest extends DBeaverUnitTest {
                 {"database", "dvdrental"}
             });
 
-        assertMatches(
+        assertRecognition(
             "jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}",
             "jdbc:teradata://localhost/DATABASE=test,DBS_PORT=1234",
             new String[][]{
@@ -45,7 +46,7 @@ public class DatabaseURLTest extends DBeaverUnitTest {
                 {"port", "1234"}
             });
 
-        assertMatches(
+        assertRecognition(
             "jdbc:oracle:thin:@{host}[:{port}]/{database}",
             "jdbc:oracle:thin:@localhost/orcl",
             new String[][]{
@@ -53,7 +54,7 @@ public class DatabaseURLTest extends DBeaverUnitTest {
                 {"database", "orcl"}
             });
 
-        assertMatches(
+        assertRecognition(
             "jdbc:sqlserver://{host}[:{port}][;databaseName={database}]",
             "jdbc:sqlserver://localhost:1433;databaseName=master",
             new String[][]{
@@ -62,21 +63,21 @@ public class DatabaseURLTest extends DBeaverUnitTest {
                 {"database", "master"}
             });
 
-        assertMatches(
+        assertRecognition(
             "jdbc:sqlserver://{host}[:{port}][;databaseName={database}]",
             "jdbc:sqlserver://localhost",
             new String[][]{
                 {"host", "localhost"}
             });
 
-        assertMatches(
+        assertRecognition(
             "jdbc:sqlite:{file}",
             "jdbc:sqlite:C:\\Users\\%USERNAME%\\Documents\\Chinook.db",
             new String[][]{
                 {"file", "C:\\Users\\%USERNAME%\\Documents\\Chinook.db"}
             });
 
-        assertFind(
+        assertRecognition(
             "jdbc:mysql://{host}[:{port}]/[{database}]",
             "jdbc:mysql://mysql-rfam-public.ebi.ac.uk:4497/Rfam?useSSL=false&serverTimezone=UTC",
             new String[][]{
@@ -86,19 +87,13 @@ public class DatabaseURLTest extends DBeaverUnitTest {
             });
     }
 
-    private void assertMatches(@NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties) {
-        final Matcher matcher = DatabaseURL.getPattern(sampleUrl).matcher(targetUrl);
-        Assertions.assertTrue(matcher.matches(), sampleUrl);
+    private void assertRecognition(
+        @NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties
+    ) throws DBException {
+        final Map<String, String> params = DatabaseURL.getUrlPattern(sampleUrl).tryRecognize(targetUrl);
+        Assertions.assertTrue(params != null, sampleUrl);
         for (String[] property : properties) {
-            Assertions.assertEquals(property[1], matcher.group(property[0]), sampleUrl);
-        }
-    }
-
-    private void assertFind(@NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties) {
-        final Matcher matcher = DatabaseURL.getPattern(sampleUrl).matcher(targetUrl);
-        Assertions.assertTrue(matcher.find(), sampleUrl);
-        for (String[] property : properties) {
-            Assertions.assertEquals(property[1], matcher.group(property[0]), sampleUrl);
+            Assertions.assertEquals(property[1], params.get(property[0]), sampleUrl);
         }
     }
 }

@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <tips>
     <!--        Tips below were reviewed on 28th of November 2023   -->
-    <tip>DBeaver can be customized to suit your needs. Learn detailed information about optional extensions <a href="https://dbeaver.com/docs/dbeaver/Optional-extensions"> here</a>.</tip>
+    <tip>DBeaver can be customized to suit your needs. Learn detailed information about optional extensions <a href="https://dbeaver.com/docs/dbeaver/Eclipse-extensions/"> here</a>.</tip>
     <tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the menu bar and the list of menu items displayed</a> in the <b>Menu Visibility</b> tab.</tip>
     <tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the toolbar </a> in the <b>Toolbar Visibility</b> tab.</tip>
     <tip>You can create a keyboard shortcut for most commands in DBeaver. <a href="prefs://org.eclipse.ui.preferencePages.Keys">Existing shortcuts can also be changed</a></tip>
@@ -146,7 +146,7 @@
          in the data grid, Panels, or result set in SQL editor.</tip>
     <tip product="ce">DBeaver PRO allows you to directly change the database schema with ERD edit mode. Learn more about database development in DBeaver PRO
          <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
-    <tip product="ce">Get <a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation-in-DBeaver?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
+    <tip product="ce">Get <a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
          in DBeaver PRO when you need to create huge quantities of realistic sample data for testing purposes and want to avoid the tedious and time-consuming work of entering test data by hand.</tip>
     <tip product="ce">Get <a href="https://dbeaver.com/docs/dbeaver/Query-Execution-Plan/?utm_source=ce&amp;utm_&amp;edium=cpc&amp;utm_campaign=tips">Query Execution plan</a>
          graph mode in DBeaver PRO to view and estimate the speed of the query or script execution and to define the most expensive plan nodes.</tip>
@@ -210,7 +210,7 @@
          in the data grid, Panels, or result set in SQL editor.</tip>
     <tip product="ee">DBeaver Enterprise allows you to directly change the database schema with ERD edit mode. Learn more about database development in DBeaver Enterprise
          <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
-    <tip product="ee,ue">Use <a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation-in-DBeaver?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
+    <tip product="ee,ue">Use <a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
          when you need to create huge quantities of realistic sample data for testing purposes and want to avoid the tedious and time-consuming work of entering test data by hand.</tip>
     <tip product="ee,ue">Use <a href="https://dbeaver.com/docs/dbeaver/Query-Execution-Plan/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Query Execution plan</a>
          graph mode to view and estimate the speed of the query or script execution and to define the most expensive plan nodes.</tip>
