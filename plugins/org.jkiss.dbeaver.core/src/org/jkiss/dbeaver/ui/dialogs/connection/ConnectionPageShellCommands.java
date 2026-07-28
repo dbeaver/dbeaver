@@ -132,6 +132,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                     DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
                     boolean enabled = ((TableItem) e.item).getChecked();
                     if (enabled || (command != null && enabled != command.isEnabled())) {
+                        if (enabled && eventType != null && command == null) {
+                            createNewCommand(eventType);
+                        }
                         updateEvent(false);
                     }
                 }
@@ -222,10 +225,12 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     }
 
     @NotNull
-    private Label createWarningTELabel(@NotNull Composite parent) {
-        return UIUtils.createLabel(
+    private Control createWarningTELabel(@NotNull Composite parent) {
+        return UIUtils.createWarningLabel(
             parent,
-            "LZ:For security reasons for now shell commands are prohibited in TE. Please remove or disable them"
+            "LZ:For security reasons for now shell commands are prohibited in TE. Please remove or disable them",
+            GridData.FILL_BOTH,
+            1
         );
     }
 
@@ -264,9 +269,6 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         DBPConnectionEventType eventType = getSelectedEventType();
         DBRShellCommand command = getActiveCommand();
-        if (commandChange && eventType != null && command == null) {
-            createNewCommand(eventType);
-        }
         if (command != null) {
             boolean prevEnabled = command.isEnabled();
             if (commandChange) {
