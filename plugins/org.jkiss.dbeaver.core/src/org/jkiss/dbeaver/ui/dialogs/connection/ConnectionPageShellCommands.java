@@ -41,7 +41,9 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Events edit dialog page
@@ -63,6 +65,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private Table eventTypeTable;
 
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
+    private final Set<DBRShellCommand> originalCommands = new HashSet<>();
 
     private final ConfirmedShellCommandsManager confirmedShellCommandsManager = new ConfirmedShellCommandsManager();
 
@@ -76,6 +79,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
             DBRShellCommand command = dataSource.getConnectionConfiguration().getEvent(eventType);
             eventsCache.put(eventType, command == null ? null : new DBRShellCommand(command));
+            if (command != null) {
+                originalCommands.add(new DBRShellCommand(command));
+            }
         }
     }
 
@@ -165,7 +171,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             workingDirectory.getTextControl().addModifyListener(e -> {
                 DBRShellCommand command = getActiveCommand();
-                if (command != null) {
+                if (command != null && CommonUtils.isNotEmpty(workingDirectory.getText())) {
                     command.setWorkingDirectory(workingDirectory.getText());
                 }
             });
@@ -227,7 +233,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 command.setWaitProcessTimeoutMs(waitFinishTimeoutMs.getSelection());
                 command.setTerminateAtDisconnect(terminateCheck.getSelection());
                 command.setPauseAfterExecute(pauseAfterExecute.getSelection());
-                command.setWorkingDirectory(workingDirectory.getText());
+                if (CommonUtils.isNotEmpty(workingDirectory.getText())) {
+                    command.setWorkingDirectory(workingDirectory.getText());
+                }
                 if (prevEnabled != command.isEnabled()) {
                     selectEventType(eventType);
                 }
@@ -272,16 +280,16 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     public void saveSettings(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
             DBRShellCommand command = entry.getValue();
-            //if user never opened this page don't add command to Confirmed. its done explicitly to counter problem with project importing
-            if (!isControlCreated() || addCommandToConfirmedCommands(command)) {
+            if (canSetAsEvent(command)) {
                 dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), command);
             }
         }
     }
 
-    private boolean addCommandToConfirmedCommands(@Nullable DBRShellCommand command) {
+    private boolean canSetAsEvent(@Nullable DBRShellCommand command) {
         return command == null
             || !command.isEnabled()
+            || originalCommands.contains(command)
             || approveExistingCommand(command);
     }
 
