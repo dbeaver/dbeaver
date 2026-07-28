@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryGenerator;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -77,7 +76,7 @@ public class SQLSemanticProcessor {
     private static CCJSqlParser buildParser(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
         final String sqlWithoutComments = dialect == null
             ? sql
-            : SQLUtils.stripComments(dialect, hideDialectSpecificLineComments(dialect, sql));
+            : SQLUtils.stripComments(dialect, SQLUtils.maskDialectLineComments(dialect, sql));
         try {
             CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
                 .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
@@ -89,7 +88,7 @@ public class SQLSemanticProcessor {
                         break;
                     }
                 }
-                // Match MySQL-style backslash escaping so the parser agrees with hideDialectSpecificLineComments
+                // Match MySQL-style backslash escaping so the parser agrees with SQLUtils.maskDialectLineComments
                 // on where string literals end (e.g. 'O\'Brien'); otherwise the parser sees a stray closing quote.
                 if (dialect.getStringEscapeCharacter() == '\\') {
                     parser.withBackslashEscapeCharacter(true);
@@ -99,87 +98,6 @@ public class SQLSemanticProcessor {
         } catch (ParseException e) {
             throw new DBCException("Error initializing SQL parser: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * JSQLParser doesn't know about dialect specific single line comment (e.g. MySQL "#"):
-     */
-    @NotNull
-    private static String hideDialectSpecificLineComments(@NotNull SQLDialect dialect, @NotNull String sql) {
-        List<String> extraCommentPrefixes = ArrayUtils.safeArray(dialect.getSingleLineComments()).stream()
-            .filter(prefix -> !CommonUtils.isEmpty(prefix) && !prefix.startsWith(SQLConstants.SL_COMMENT))
-            .toList();
-        if (extraCommentPrefixes.isEmpty()) {
-            return sql;
-        }
-        String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
-        String[][] quotes = identifierQuotes == null
-            ? dialect.getStringQuoteStrings()
-            : ArrayUtils.concatArrays(dialect.getStringQuoteStrings(), identifierQuotes);
-        char escapeChar = dialect.getStringEscapeCharacter();
-        StringBuilder result = new StringBuilder(sql);
-        int pos = 0;
-        while (pos < sql.length()) {
-            String[] quote = quoteStartingAt(sql, pos, quotes);
-            if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
-                pos += 2; // skip an escaped char, so a stray "\'" can't open a phantom string
-            } else if (quote != null) {
-                pos = skipQuoted(sql, pos, quote, escapeChar);
-            } else if (sql.startsWith(SQLConstants.SL_COMMENT, pos)) {
-                pos = getLineEnd(sql, pos);
-            } else if (sql.startsWith(SQLConstants.ML_COMMENT_START, pos)) {
-                int end = sql.indexOf(SQLConstants.ML_COMMENT_END, pos + 2);
-                pos = end < 0 ? sql.length() : end + 2;
-            } else if (startsWithAny(sql, pos, extraCommentPrefixes)) {
-                int lineEnd = getLineEnd(sql, pos);
-                result.replace(pos, lineEnd, " ".repeat(lineEnd - pos));
-                pos = lineEnd;
-            } else {
-                pos++;
-            }
-        }
-        return result.toString();
-    }
-
-    @Nullable
-    private static String[] quoteStartingAt(@NotNull String sql, int pos, @NotNull String[][] quotes) {
-        for (String[] quote : quotes) {
-            if (sql.startsWith(quote[0], pos)) {
-                return quote;
-            }
-        }
-        return null;
-    }
-
-    private static int skipQuoted(@NotNull String sql, int openPos, @NotNull String[] quote, char escapeChar) {
-        String close = quote[1];
-        int pos = openPos + quote[0].length();
-        while (pos < sql.length()) {
-            if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
-                pos += 2;
-            } else if (sql.startsWith(close, pos)) {
-                return pos + close.length();
-            } else {
-                pos++;
-            }
-        }
-        return sql.length();
-    }
-
-    private static boolean startsWithAny(@NotNull String sql, int pos, @NotNull List<String> prefixes) {
-        for (String prefix : prefixes) {
-            if (sql.startsWith(prefix, pos)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static int getLineEnd(@NotNull String sql, int pos) {
-        while (pos < sql.length() && sql.charAt(pos) != '\n' && sql.charAt(pos) != '\r') {
-            pos++;
-        }
-        return pos;
     }
 
     @NotNull
