@@ -80,15 +80,15 @@ public final class SampleDatabaseUtil {
             return;
         }
 
-        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
-        connectionInfo.setDatabaseName(dbFile.getAbsolutePath());
-        connectionInfo.setConnectionType(DBPConnectionType.DEV);
-        connectionInfo.setUrl(sqliteDriver.getConnectionURL(connectionInfo));
-        dataSource = registry.createDataSource(SAMPLE_DB1_ID, sqliteDriver, connectionInfo);
-        dataSource.setSavePassword(true);
-        dataSource.getNavigatorSettings().setShowSystemObjects(true);
-        dataSource.setName("DBeaver Sample Database (SQLite)");
         try {
+            DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
+            connectionInfo.setDatabaseName(dbFile.getAbsolutePath());
+            connectionInfo.setConnectionType(DBPConnectionType.DEV);
+            connectionInfo.setUrl(sqliteDriver.getConnectionURL(connectionInfo));
+            dataSource = registry.createDataSource(SAMPLE_DB1_ID, sqliteDriver, connectionInfo);
+            dataSource.setSavePassword(true);
+            dataSource.getNavigatorSettings().setShowSystemObjects(true);
+            dataSource.setName("DBeaver Sample Database (SQLite)");
             registry.addDataSource(dataSource);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Connection create error", null, e);

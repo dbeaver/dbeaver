@@ -503,6 +503,9 @@ public class ActionUtils {
     }
 
     public static void evaluatePropertyState(String propertyName) {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return;
+        }
         IEvaluationService service = PlatformUI.getWorkbench().getService(IEvaluationService.class);
         if (service != null) {
             try {

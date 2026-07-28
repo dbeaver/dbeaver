@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -121,6 +121,31 @@ public class CustomSashForm extends SashForm {
             ARROW_HEIGHT = 5,
             ARROW_MARGIN = 5;    // Margin on each side of arrow
 
+    private static final Set<Display> selectionFixDisplays = new HashSet<>();
+
+    private static final Listener selectionFixFilterListener = e -> {
+        if (e.widget instanceof Sash s && !s.isDisposed() && s.getParent() instanceof CustomSashForm p) {
+            Point pt = s.toControl(e.display.getCursorLocation());
+            int x = pt.x;
+            int y = pt.y;
+            for (int i = 0; i < p.currentSashInfo.sashLocs.length; i++) {
+                int[] locs = p.currentSashInfo.sashLocs[i];
+                boolean vertical = p.getOrientation() == SWT.VERTICAL;
+                int loc = vertical ? x : y;
+                int locIndex = vertical ? X_INDEX : Y_INDEX;
+                int sizeIndex = vertical ? WIDTH_INDEX : HEIGHT_INDEX;
+                if (locs[locIndex] <= loc && loc <= locs[locIndex] + locs[sizeIndex]) {
+                    // drop selection event when the mouse cursor is inside any button,
+                    // because we are handling it like a button-click event, so no need to trigger default sash logic
+                    // (which otherwise works though the underlying SashForm::sashListener, forces collapsed sash content to
+                    //  expand prematurely and disrupts so whole idea of only reacting like for buttons in this geometric area)
+                    e.type = SWT.None;
+                    break;
+                }
+            }
+        }
+    };
+
     public CustomSashForm(Composite parent, int style) {
         super(parent, style);
 
@@ -136,6 +161,12 @@ public class CustomSashForm extends SashForm {
         SASH_WIDTH = ARROW_HEIGHT + ARROW_MARGIN;
 
         arrowColor = DEFAULT_BORDER_COLOR;
+
+        Display display = this.getDisplay();
+        if (selectionFixDisplays.add(display)) {
+            display.addFilter(SWT.Selection, selectionFixFilterListener);
+            display.disposeExec(() -> display.removeFilter(SWT.Selection, selectionFixFilterListener));
+        }
     }
 
     public boolean isShowBorders() {
