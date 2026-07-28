@@ -42,10 +42,12 @@ function setCurrentItem(element) {
     }
     if (a11yCurrentItem && a11yCurrentItem.isConnected) {
         a11yCurrentItem.tabIndex = -1;
+        a11yCurrentItem.setAttribute('aria-selected', 'false');
     }
     a11yCurrentItem = element;
     if (element) {
         element.tabIndex = 0;
+        element.setAttribute('aria-selected', 'true');
     }
 }
 
@@ -62,7 +64,8 @@ function makeItemFocusable(element, role) {
         return;
     }
     element.setAttribute('data-a11y-item', 'true');
-    element.setAttribute('role', 'article');
+    element.setAttribute('role', 'option');
+    element.setAttribute('aria-selected', 'false');
     element.tabIndex = -1;
     if (role) {
         element.dataset.a11yRole = role;
