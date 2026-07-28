@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -71,6 +72,8 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
 
     private final ConfirmedShellCommandsManager confirmedShellCommandsManager = new ConfirmedShellCommandsManager();
 
+    private final boolean isNotDistributed = !DBWorkbench.isDistributed();
+
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
         super(PAGE_NAME);
@@ -90,6 +93,11 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent)
     {
+        Composite root = parent;
+        if (!isNotDistributed) {
+            root = UIUtils.createPlaceholder(parent, 1, 2);
+            createWarningTELabel(root);
+        }
         Composite group = UIUtils.createPlaceholder(parent, 2, 5);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -213,6 +221,14 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         );
     }
 
+    @NotNull
+    private Label createWarningTELabel(@NotNull Composite parent) {
+        return UIUtils.createLabel(
+            parent,
+            "LZ:For security reasons for now shell commands are prohibited in TE. Please remove or disable them"
+        );
+    }
+
     private DBPConnectionEventType getSelectedEventType()
     {
         TableItem[] selection = eventTypeTable.getSelection();
@@ -271,15 +287,17 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private void selectEventType(DBPConnectionEventType eventType)
     {
         DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
-        commandText.setEnabled(command != null && command.isEnabled());
-        showProcessCheck.setEnabled(command != null && command.isEnabled());
-        waitFinishCheck.setEnabled(command != null && command.isEnabled());
+        boolean isCommandPresent = command != null && command.isEnabled();
+        boolean isCommandControlEnabled = isNotDistributed && isCommandPresent;
+        commandText.setEnabled(isCommandControlEnabled);
+        showProcessCheck.setEnabled(isCommandControlEnabled);
+        waitFinishCheck.setEnabled(isCommandControlEnabled);
         waitFinishTimeoutMs.setEnabled(waitFinishCheck.isEnabled());
-        terminateCheck.setEnabled(command != null && command.isEnabled());
-        pauseAfterExecute.setEnabled(command != null && command.isEnabled());
-        workingDirectory.setEnabled(command != null && command.isEnabled());
-        workingDirectory.getTextControl().setEnabled(command != null && command.isEnabled());
-        removeButton.setEnabled(command != null && command.isEnabled());
+        terminateCheck.setEnabled(isCommandControlEnabled);
+        pauseAfterExecute.setEnabled(isCommandControlEnabled);
+        workingDirectory.setEnabled(isCommandControlEnabled);
+        workingDirectory.getTextControl().setEnabled(isCommandControlEnabled);
+        removeButton.setEnabled(isCommandPresent);
 
         if (command != null) {
             commandText.setText(CommonUtils.toString(command.getCommand()));
