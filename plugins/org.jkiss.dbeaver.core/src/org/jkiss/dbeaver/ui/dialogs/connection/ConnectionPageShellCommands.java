@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -61,6 +62,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private Button terminateCheck;
     private Spinner pauseAfterExecute;
     private TextWithOpenFolder workingDirectory;
+    private Button removeButton;
 
     private Table eventTypeTable;
 
@@ -183,11 +185,32 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
                 dataSource.getConnectionConfiguration()));
+            removeButton = createRemoveButton(settingsGroup);
         }
 
         selectEventType(null);
-
         setControl(group);
+    }
+
+    @NotNull
+    private Button createRemoveButton(@NotNull Composite parent) {
+        return UIUtils.createPushButton(
+            parent,
+            "Remove",
+            DBeaverIcons.getImage(UIIcon.CLEAN),
+            SelectionListener.widgetSelectedAdapter(e -> {
+                DBPConnectionEventType eventType = getSelectedEventType();
+                if (eventType != null) {
+                    eventsCache.put(eventType, null); //$NON-NLS-1$
+                    cleanActiveCommand();
+                    TableItem item = getEventItem(eventType);
+                    if (item != null) {
+                        item.setChecked(false);
+                    }
+                    selectEventType(null);
+                }
+            })
+        );
     }
 
     private DBPConnectionEventType getSelectedEventType()
@@ -256,6 +279,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         pauseAfterExecute.setEnabled(command != null && command.isEnabled());
         workingDirectory.setEnabled(command != null && command.isEnabled());
         workingDirectory.getTextControl().setEnabled(command != null && command.isEnabled());
+        removeButton.setEnabled(command != null && command.isEnabled());
 
         if (command != null) {
             commandText.setText(CommonUtils.toString(command.getCommand()));
@@ -266,14 +290,18 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             pauseAfterExecute.setSelection(command.getPauseAfterExecute());
             workingDirectory.setText(CommonUtils.notEmpty(command.getWorkingDirectory()));
         } else {
-            commandText.setText(""); //$NON-NLS-1$
-            showProcessCheck.setSelection(false);
-            waitFinishCheck.setSelection(false);
-            waitFinishTimeoutMs.setSelection(DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
-            terminateCheck.setSelection(false);
-            pauseAfterExecute.setSelection(0);
-            workingDirectory.setText("");
+            cleanActiveCommand();
         }
+    }
+
+    private void cleanActiveCommand() {
+        commandText.setText(""); //$NON-NLS-1$
+        showProcessCheck.setSelection(false);
+        waitFinishCheck.setSelection(false);
+        waitFinishTimeoutMs.setSelection(DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
+        terminateCheck.setSelection(false);
+        pauseAfterExecute.setSelection(0);
+        workingDirectory.setText("");
     }
 
     @Override
