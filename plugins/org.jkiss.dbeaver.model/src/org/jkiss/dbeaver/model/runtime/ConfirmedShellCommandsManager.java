@@ -42,10 +42,13 @@ public class ConfirmedShellCommandsManager {
 
 
     public void validateCommand(@NotNull DBRShellCommand command, @NotNull DBPConnectionEventType eventType) throws DBException {
-        if (!command.isBlank()
-            && !isApprovedCommand(command)
-        ) {
-            throw new DBException("Command of type: %s is not added to approved commands".formatted(eventType.getTitle()));
+        if (!command.isBlank()) {
+            if (DBWorkbench.isDistributed()) {
+                throw new DBException(
+                    "For security reasons Shell commands are prohibited in Team Edition. Please ask your admin to remove them from connection properties");
+            } else if (!isApprovedCommand(command)) {
+                throw new DBException("Command of type: %s is not added to approved commands".formatted(eventType.getTitle()));
+            }
         }
     }
 
