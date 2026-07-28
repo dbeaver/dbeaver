@@ -36,6 +36,11 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_completion_execute_description_label;
     public static String gpt_preference_page_completion_execute_description_tip;
     public static String gpt_preference_page_schema_group;
+    public static String gpt_preference_page_chat_group;
+    public static String gpt_preference_page_chat_use_stream_mode_label;
+    public static String gpt_preference_page_chat_use_stream_mode_tip;
+    public static String gpt_preference_page_chat_execute_in_new_console_label;
+    public static String gpt_preference_page_chat_execute_in_new_console_tip;
     public static String gpt_preference_page_advanced_appearance_group;
     public static String gpt_preference_page_combo_engine;
     public static String gpt_preference_page_text_temperature;

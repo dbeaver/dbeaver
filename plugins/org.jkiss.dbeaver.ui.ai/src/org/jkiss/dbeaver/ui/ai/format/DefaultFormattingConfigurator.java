@@ -46,6 +46,9 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     private Button sendTypeInfoCheck;
     private Button sendDescriptionCheck;
 
+    private Button useStreamModeCheck;
+    private Button executeInNewConsoleCheck;
+
     protected Composite settingsPanel;
     private Combo languageText;
 
@@ -180,6 +183,14 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
             GridData.FILL_HORIZONTAL
         );
         createSchemaSettings(schemaGroup);
+
+        Composite chatGroup = UIUtils.createTitledComposite(
+            rightPanel,
+            AIUIMessages.gpt_preference_page_chat_group,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
+        createChatSettings(chatGroup);
     }
 
     protected void createCompletionSettings(Composite completionGroup, Runnable propertyChangeListener) {
@@ -209,6 +220,22 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
             2);
     }
 
+    protected void createChatSettings(Composite chatGroup) {
+        chatGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
+        useStreamModeCheck = UIUtils.createCheckbox(
+            chatGroup,
+            AIUIMessages.gpt_preference_page_chat_use_stream_mode_label,
+            AIUIMessages.gpt_preference_page_chat_use_stream_mode_tip,
+            false,
+            2);
+        executeInNewConsoleCheck = UIUtils.createCheckbox(
+            chatGroup,
+            AIUIMessages.gpt_preference_page_chat_execute_in_new_console_label,
+            AIUIMessages.gpt_preference_page_chat_execute_in_new_console_tip,
+            false,
+            2);
+    }
+
     protected void createAppearanceSettings(Composite appearanceGroup, Runnable propertyChangeListener) {
         includeSourceTextInCommentCheck = UIUtils.createCheckbox(
             appearanceGroup,
@@ -227,6 +254,8 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         executeQueryImmediatelyCheck.setSelection(store.getBoolean(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
         sendTypeInfoCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_TYPE_INFO));
         sendDescriptionCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_DESCRIPTION));
+        useStreamModeCheck.setSelection(store.getBoolean(AIConstants.AI_USE_STREAM_MODE));
+        executeInNewConsoleCheck.setSelection(store.getBoolean(AIConstants.AI_CHAT_EXECUTE_IN_NEW_CONSOLE));
 
         AIQueryConfirmationRule confirmSqlRule = CommonUtils.valueOf(
             AIQueryConfirmationRule.class,
@@ -265,6 +294,8 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         store.setValue(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
         store.setValue(AIConstants.AI_SEND_TYPE_INFO, sendTypeInfoCheck.getSelection());
         store.setValue(AIConstants.AI_SEND_DESCRIPTION, sendDescriptionCheck.getSelection());
+        store.setValue(AIConstants.AI_USE_STREAM_MODE, useStreamModeCheck.getSelection());
+        store.setValue(AIConstants.AI_CHAT_EXECUTE_IN_NEW_CONSOLE, executeInNewConsoleCheck.getSelection());
         store.setValue(
             AIConstants.AI_CONFIRM_SQL,
             CommonUtils.fromOrdinal(AIQueryConfirmationRule.class, confirmSQLCombo.getSelectionIndex()).name()
