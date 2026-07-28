@@ -34,9 +34,17 @@ public class ClickhouseConstants {
     public static final String DATA_TYPE_ARRAY = "Array";
     public static final String DATA_TYPE_TUPLE = "Tuple";
     public static final String DATA_TYPE_MAP = "Map";
+    public static final String DATA_TYPE_JSON = "JSON";
     public static final String CLICKHOUSE_SETTING_SESSION_ID = "clickhouse_setting_session_id";
     public static final String CLICKHOUSE_SETTING_SESSION_TIMEOUT = "clickhouse_setting_session_timeout";
+    // Server setting that makes the driver serialize JSON columns as canonical JSON strings (so getString()
+    // returns valid JSON instead of a flattened java.util.Map). Applied through the driver's default query
+    // settings, see ClickhouseDataSource#enableJsonStringSerialization.
+    public static final String SETTING_JSON_AS_STRING = "output_format_binary_write_json_as_string";
     public static final String DRIVER_GET_LAST_QUERY_METHOD = "getLastQueryId";
+    public static final String DRIVER_GET_DEFAULT_QUERY_SETTINGS_METHOD = "getDefaultQuerySettings";
+    public static final String DRIVER_SET_DEFAULT_QUERY_SETTINGS_METHOD = "setDefaultQuerySettings";
+    public static final String DRIVER_SERVER_SETTING_METHOD = "serverSetting";
     public static final String SESSION_BUSY_ERROR_CODE_MESSAGE = "Code: 373";
 
 }

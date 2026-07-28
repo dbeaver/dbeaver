@@ -144,7 +144,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
     ) throws DBCException {
         DBPDriver driver = container.getDriver();
         Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-        String url = getConnectionURL(connectionInfo);
+        String url;
+        try {
+            url = getConnectionURL(connectionInfo);
+        } catch (DBException ex) {
+            throw new DBCException("Connection URL preparation error", ex);
+        }
 
         url = substituteDriverIfNeeded(monitor, connectionInfo, connectProps, url);
 
@@ -394,7 +399,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Nullable
-    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         String url = connectionInfo.getUrl();
         if (CommonUtils.isEmpty(url)) {
             url = getContainer().getDriver().getConnectionURL(connectionInfo);
