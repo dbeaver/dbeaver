@@ -94,9 +94,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         token = CommonUtils.toString(configuration.getToken());
-        modelSelectorField.setSelectedModel(
-            CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
-        );
+        modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel()));
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
 
         applySettings();
