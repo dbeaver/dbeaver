@@ -527,7 +527,7 @@
                     description="Extended JDBC driver for dynamic multi-language queries with optional bridge server for federated datasource connectivity."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/jdbcx/jdbcx"
-                    categories="codeql,graphql,prompt,prql,rest,script,shell,sql"
+                    categories="sql,federated"
                     singleConnection="true"
                     propagateDriverProperties="true">
                     <file type="jar" path="maven:/io.github.jdbcx:jdbcx-driver:RELEASE" load-optional-dependencies="true"/>
