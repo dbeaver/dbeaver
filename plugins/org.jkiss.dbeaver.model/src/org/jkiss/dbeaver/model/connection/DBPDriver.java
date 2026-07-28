@@ -210,7 +210,7 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
     void resetDriverInstance();
 
     @Nullable
-    String getConnectionURL(DBPConnectionConfiguration configuration);
+    String getConnectionURL(DBPConnectionConfiguration configuration) throws DBException;
 
     /**
      * Create copy of

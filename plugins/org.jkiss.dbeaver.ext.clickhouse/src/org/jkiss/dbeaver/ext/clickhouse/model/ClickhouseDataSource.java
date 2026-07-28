@@ -49,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -61,6 +62,13 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     private static Map<String, String> dataTypeMap = new HashMap<>();
     private final TableEnginesCache engineCache = new TableEnginesCache();
+    // output_format_binary_write_json_as_string was introduced in ClickHouse 24.10.
+    private static final Version JSON_AS_STRING_MIN_VERSION = new Version(24, 10, 0);
+    // Driver methods used to enable JSON-as-string serialization. Resolved once (the driver class does not
+    // change during a data source's lifetime) and reused, so we don't re-resolve on every connection.
+    private Method getDefaultQuerySettingsMethod;
+    private Method serverSettingMethod;
+    private Method setDefaultQuerySettingsMethod;
 
     static {
         dataTypeMap.put(String.class.getName(), "String");
@@ -311,6 +319,10 @@ public class ClickhouseDataSource extends GenericDataSource {
             return DBPDataKind.ARRAY;
         } else if (typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE)) {
             return DBPDataKind.STRUCT;
+        } else if (typeName.equalsIgnoreCase(ClickhouseConstants.DATA_TYPE_JSON)) {
+            // Render JSON columns through the JSON content viewer/editor (see ClickhouseJSONValueHandler).
+            // Exact match only: parameterized JSON(...) and Nullable(JSON)/Array(JSON)/Map(_,JSON) stay UNKNOWN.
+            return DBPDataKind.CONTENT;
         }
         return super.resolveDataKind(typeName, valueType);
     }
@@ -370,6 +382,58 @@ public class ClickhouseDataSource extends GenericDataSource {
             }
         }
 
+        enableJsonStringSerialization(connection);
+
         return connection;
+    }
+
+    /**
+     * Makes the driver serialize {@code JSON} columns as canonical JSON strings, so that
+     * {@code getString()} returns valid JSON instead of a flattened {@code java.util.Map}. This is what
+     * lets the JSON content viewer/editor render those columns (see {@code ClickhouseJSONValueHandler}).
+     * <p>
+     * The {@code output_format_binary_write_json_as_string} setting is applied through the driver's own
+     * default query settings rather than a {@code SET} statement: a server-side {@code SET} changes the
+     * wire format without the driver knowing, which desynchronizes its binary reader. The setting is only
+     * applied when the server actually exposes it, so connecting to servers that predate it is unaffected.
+     */
+    private void enableJsonStringSerialization(@NotNull Connection connection) {
+        if (!isJsonStringSerializationSupported(connection)) {
+            return;
+        }
+        try {
+            if (getDefaultQuerySettingsMethod == null) {
+                getDefaultQuerySettingsMethod = connection.getClass()
+                    .getMethod(ClickhouseConstants.DRIVER_GET_DEFAULT_QUERY_SETTINGS_METHOD);
+            }
+            Object querySettings = getDefaultQuerySettingsMethod.invoke(connection);
+            if (serverSettingMethod == null) {
+                serverSettingMethod = querySettings.getClass()
+                    .getMethod(ClickhouseConstants.DRIVER_SERVER_SETTING_METHOD, String.class, String.class);
+                setDefaultQuerySettingsMethod = connection.getClass()
+                    .getMethod(ClickhouseConstants.DRIVER_SET_DEFAULT_QUERY_SETTINGS_METHOD, querySettings.getClass());
+            }
+            serverSettingMethod.invoke(querySettings, ClickhouseConstants.SETTING_JSON_AS_STRING, "1");
+            setDefaultQuerySettingsMethod.invoke(connection, querySettings);
+        } catch (Throwable e) {
+            log.debug("Can't enable JSON string serialization for ClickHouse JSON columns", e);
+        }
+    }
+
+    /**
+     * Whether the connected server is new enough to expose the
+     * {@code output_format_binary_write_json_as_string} setting (introduced in ClickHouse 24.10). The
+     * version is taken from the already-open connection, so it is available even for the very first
+     * connection (before the data source caches the server version) and needs no access to
+     * {@code system.settings}, which may be restricted or fail for some users.
+     */
+    private boolean isJsonStringSerializationSupported(@NotNull Connection connection) {
+        try {
+            String serverVersion = connection.getMetaData().getDatabaseProductVersion();
+            return new Version(serverVersion).compareTo(JSON_AS_STRING_MIN_VERSION) >= 0;
+        } catch (Throwable e) {
+            log.debug("Can't determine ClickHouse server version for JSON rendering", e);
+            return false;
+        }
     }
 }
