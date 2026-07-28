@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -40,7 +41,7 @@ public class FireBirdDataSourceProvider extends GenericDataSourceProvider<FireBi
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         // Forward nativeLibraryPath to jna.library.path for Jaybird 5.x embedded/native support.
         // Jaybird 6+ handles this natively via the JDBC connection property.
         String libPath = connectionInfo.getProviderProperty(PROP_NATIVE_LIBRARY_PATH);
