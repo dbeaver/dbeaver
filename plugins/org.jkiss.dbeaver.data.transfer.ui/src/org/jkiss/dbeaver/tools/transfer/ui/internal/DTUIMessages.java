@@ -87,7 +87,7 @@ public class DTUIMessages extends NLS {
 
     public static String database_consumer_page_mapping_name_and_title;
     public static String database_consumer_page_mapping_description;
-    public static String database_consumer_page_mapping_button_recreate_tip;
+    public static String database_consumer_page_mapping_button_recreate;
     public static String database_consumer_page_mapping_button_transform_tip;
     public static String database_consumer_page_mapping_target_unspecified;
     public static String database_consumer_page_mapping_column_source_text;
@@ -216,6 +216,8 @@ public class DTUIMessages extends NLS {
     public static String page_configure_table_properties_tab_title;
     public static String page_configure_table_DDL_button_execute;
     public static String page_configure_table_DDL_button_copy;
+    public static String page_configure_table_DDL_full_tab_title;
+    public static String page_configure_table_DDL_foreign_keys_comment;
     public static String page_configure_table_properties_text;
     public static String page_configure_table_properties_no_properties;
     public static String page_configure_table_properties_info_text;
