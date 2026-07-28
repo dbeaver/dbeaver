@@ -20,11 +20,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Type;
 import java.util.HashSet;
@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public class ConfirmedShellCommandsRegistry {
+
+    private static final Log log = Log.getLog(ConfirmedShellCommandsRegistry.class);
 
     public static final String CONFIRMED_COMMANDS_FILE_NAME = "confirmed_shell_commands.json";
 
@@ -49,22 +51,22 @@ public class ConfirmedShellCommandsRegistry {
     }
 
     public boolean isConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
-        String commandText = command.getCommand();
-        return CommonUtils.isEmpty(commandText) || getConfirmedShellCommandsHolder().confirmedCommands().contains(command.getCommand());
+        boolean result = command.isBlank() || getConfirmedShellCommandsHolder().confirmedCommands()
+            .contains(command.getCommand());
+        log.debug("Confirmed shell command: '%s' result '%s'".formatted(command.getCommand(), result));
+        return result;
     }
 
     public void addConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
         ConfirmedShellCommandsHolder confirmedShellCommandsHolder = getConfirmedShellCommandsHolder();
-        String commandText = command.getCommand();
-        if (CommonUtils.isNotEmpty(commandText) && confirmedShellCommandsHolder.addCommand(commandText)) {
+        if (!command.isBlank() && confirmedShellCommandsHolder.addCommand(command.getCommand())) {
             confirmedShellCommandsHolder.saveCommands();
         }
     }
 
     public void removeConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
         ConfirmedShellCommandsHolder confirmedShellCommandsHolder = getConfirmedShellCommandsHolder();
-        String commandText = command.getCommand();
-        if (CommonUtils.isNotEmpty(commandText) && confirmedShellCommandsHolder.removeCommand(commandText)) {
+        if (command.isBlank() && confirmedShellCommandsHolder.removeCommand(command.getCommand())) {
             confirmedShellCommandsHolder.saveCommands();
         }
     }
@@ -99,11 +101,15 @@ public class ConfirmedShellCommandsRegistry {
         }
 
         public boolean addCommand(@NotNull String command) throws DBException {
-            return confirmedCommands().add(command);
+            boolean result = confirmedCommands().add(command);
+            log.debug("ConfirmedShellCommandsRegistry: tried to add confirmed command: '%s' , result: %s".formatted(command, result));
+            return result;
         }
 
         public boolean removeCommand(@NotNull String command) throws DBException {
-            return confirmedCommands().remove(command);
+            boolean result = confirmedCommands().remove(command);
+            log.debug("ConfirmedShellCommandsRegistry: tried to remove confirmed command: '%s' , result: %s".formatted(command, result));
+            return result;
         }
 
 
@@ -119,6 +125,7 @@ public class ConfirmedShellCommandsRegistry {
 
         private void saveCommands() throws DBException {
             getConfigurationController().saveConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME, GSON.toJson(confirmedCommands));
+            log.debug("Saved confirmed commands to file '%s'".formatted(CONFIRMED_COMMANDS_FILE_NAME));
             reset();
         }
     }

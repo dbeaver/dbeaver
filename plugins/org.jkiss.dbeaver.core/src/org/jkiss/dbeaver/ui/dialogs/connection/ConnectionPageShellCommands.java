@@ -323,7 +323,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
 
     private boolean approveExistingCommand(@NotNull DBRShellCommand command) {
         try {
-            confirmedShellCommandsManager.approveCommand(command);
+            confirmedShellCommandsManager.addConfirmedShellCommand(command);
             return true;
         } catch (DBException e) {
             UIUtils.showMessageBox(

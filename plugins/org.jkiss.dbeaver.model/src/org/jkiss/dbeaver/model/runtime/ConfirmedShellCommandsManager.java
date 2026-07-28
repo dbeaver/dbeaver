@@ -37,24 +37,19 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.registry.confirmation.runtime.ConfirmedShellCommandsRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
 public class ConfirmedShellCommandsManager {
 
 
     public void validateCommand(@NotNull DBRShellCommand command, @NotNull DBPConnectionEventType eventType) throws DBException {
-        if (CommonUtils.isNotEmpty(command.getCommand())
+        if (!command.isBlank()
             && !isApprovedCommand(command)
         ) {
-            throw new DBException(
-                "Command:\n'" + command.getCommand() + "'\n is not approved to execute by user",
-                new DBException(
-                    "Shell command type: %s cant be executed".formatted(eventType.getTitle()))
-            );
+            throw new DBException("Command of type: %s is not added to approved commands".formatted(eventType.getTitle()));
         }
     }
 
-    public void approveCommand(@NotNull DBRShellCommand command) throws DBException {
+    public void addConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
         getConfirmedShellCommandsRegistry().addConfirmedShellCommand(command);
     }
 
@@ -65,7 +60,7 @@ public class ConfirmedShellCommandsManager {
 
     private boolean askApproveForCommand(@NotNull DBRShellCommand command) throws DBException {
         if (DBWorkbench.getPlatformUI().confirmAction("CHASNGE ADD CMD TITLE", "CHANGE THIS: add stuff?: " + command.getCommand())) {
-            approveCommand(command);
+            addConfirmedShellCommand(command);
             return true;
         }
         return false;

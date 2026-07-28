@@ -71,6 +71,10 @@ public class DBRShellCommand {
         this.command = command;
     }
 
+    public boolean isBlank() {
+        return CommonUtils.isEmpty(this.command);
+    }
+
     public List<String> getCommandParams() {
         return commandParams;
     }
