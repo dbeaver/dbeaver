@@ -183,8 +183,8 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             workingDirectory.getTextControl().addModifyListener(e -> {
                 DBRShellCommand command = getActiveCommand();
-                if (command != null && CommonUtils.isNotEmpty(workingDirectory.getText())) {
-                    command.setWorkingDirectory(workingDirectory.getText());
+                if (command != null) {
+                    setCmdWorkingDir(command);
                 }
             });
 
@@ -283,9 +283,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 command.setWaitProcessTimeoutMs(waitFinishTimeoutMs.getSelection());
                 command.setTerminateAtDisconnect(terminateCheck.getSelection());
                 command.setPauseAfterExecute(pauseAfterExecute.getSelection());
-                if (CommonUtils.isNotEmpty(workingDirectory.getText())) {
-                    command.setWorkingDirectory(workingDirectory.getText());
-                }
+                setCmdWorkingDir(command);
                 if (prevEnabled != command.isEnabled()) {
                     selectEventType(eventType);
                 }
@@ -293,6 +291,10 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         } else if (!commandChange) {
             selectEventType(null);
         }
+    }
+
+    private void setCmdWorkingDir(@NotNull DBRShellCommand command) {
+        command.setWorkingDirectory(CommonUtils.isNotEmpty(workingDirectory.getText()) ? workingDirectory.getText() : null);
     }
 
     private void selectEventType(DBPConnectionEventType eventType)
