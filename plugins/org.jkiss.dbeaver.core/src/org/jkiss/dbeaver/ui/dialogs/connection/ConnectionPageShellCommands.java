@@ -73,8 +73,6 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
 
     private final ConfirmedShellCommandsManager confirmedShellCommandsManager = new ConfirmedShellCommandsManager();
 
-    private final boolean isNotDistributed = !DBWorkbench.isDistributed();
-
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
         super(PAGE_NAME);
@@ -96,7 +94,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         Composite root = UIUtils.createPlaceholder(parent, 1, 2);
         root.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (!isNotDistributed) {
+        if (DBWorkbench.isDistributed()) {
             createWarningTELabel(root);
         }
         Composite group = UIUtils.createPlaceholder(root, 2, 5);
@@ -213,7 +211,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             SelectionListener.widgetSelectedAdapter(e -> {
                 DBPConnectionEventType eventType = getSelectedEventType();
                 if (eventType != null) {
-                    eventsCache.put(eventType, null); //$NON-NLS-1$
+                    eventsCache.put(eventType, null);
                     cleanActiveCommand();
                     TableItem item = getEventItem(eventType);
                     if (item != null) {
@@ -301,7 +299,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
         boolean isCommandPresent = command != null && command.isEnabled();
-        boolean isCommandControlEnabled = isNotDistributed && isCommandPresent;
+        boolean isCommandControlEnabled = !DBWorkbench.isDistributed() && isCommandPresent;
         commandText.setEnabled(isCommandControlEnabled);
         showProcessCheck.setEnabled(isCommandControlEnabled);
         waitFinishCheck.setEnabled(isCommandControlEnabled);
