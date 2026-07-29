@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,6 +32,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.crypto.SecretKey;
 
 public class DDSyncService {
 

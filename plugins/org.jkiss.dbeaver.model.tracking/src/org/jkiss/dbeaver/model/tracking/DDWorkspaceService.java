@@ -21,6 +21,9 @@ import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
 
+/**
+ * Workspace synchronization endpoints.
+ */
 public interface DDWorkspaceService {
 
     String DATA_KEY_ENDPOINT = "/data/key";
