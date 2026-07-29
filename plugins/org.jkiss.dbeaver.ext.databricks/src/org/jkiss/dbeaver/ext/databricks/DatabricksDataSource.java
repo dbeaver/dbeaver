@@ -48,7 +48,7 @@ public class DatabricksDataSource extends GenericDataSource {
 
 
     @Override
-    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         String url = super.getConnectionURL(connectionInfo);
         if (!isLegacyDriver() && url.startsWith(DatabricksConstants.JDBC_LEGACY_URL_SUBPROTOCOL)) {
             log.debug("Detected a legacy connection URL in the Databricks native driver. Updating to the native URL.");

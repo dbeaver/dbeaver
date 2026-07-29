@@ -70,6 +70,15 @@ final class WebViewMessageRenderer {
     }
 
     void showConversationMessages(@NotNull AIChatConversation conversation) {
+        execute("setAnnouncementsSuspended", true);
+        try {
+            doShowConversationMessages(conversation);
+        } finally {
+            execute("setAnnouncementsSuspended", false);
+        }
+    }
+
+    private void doShowConversationMessages(@NotNull AIChatConversation conversation) {
         List<AIChatMessage> messages = conversation.getMessages();
         for (int leftIndex = 0; leftIndex < messages.size(); leftIndex++) {
             AIChatMessage current = messages.get(leftIndex);
@@ -166,6 +175,11 @@ final class WebViewMessageRenderer {
     }
 
     private void addUsualMessage(@NotNull Map<String, Object> args, @NotNull AIChatMessage message) {
+        AIMessageType role = message.message().getRole();
+        if (role == AIMessageType.WARNING) {
+            args.put("content", CommonUtils.notEmpty(message.message().getDisplayMessage()));
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         String messageContent = message.message().getDisplayMessage();
         MessageChunk[] chunks = AITextUtils.splitIntoChunks(messageContent, false);
@@ -177,7 +191,7 @@ final class WebViewMessageRenderer {
                     sb.append('\n').append(chunk.toRawString()).append('\n');
                 }
             } else {
-                sb.append(chunk.toRawString());
+                sb.append(AIChatHtmlEscaper.escapeText(chunk.toRawString()));
             }
         }
         args.put("content", sb.toString());
@@ -188,7 +202,9 @@ final class WebViewMessageRenderer {
     }
 
     private void addFunctionMessage(@NotNull Map<String, Object> args, @NotNull AIChatMessage message) {
-        String sb = "<a class='interactive-link' data-message-id='" + message.id() + "'>" + message.message().getDisplayMessage() + "</a>";
+        String sb = "<a class='interactive-link' data-message-id='" + message.id() + "'>"
+            + AIChatHtmlEscaper.escapeText(CommonUtils.notEmpty(message.message().getDisplayMessage()))
+            + "</a>";
         args.put("content", sb);
     }
 
@@ -304,6 +320,21 @@ final class WebViewMessageRenderer {
                 "showTimeSpent", AIConstants.AI_CHAT_SHOW_TIME_SPENT,
                 "showTokensSpent", AIConstants.AI_CHAT_SHOW_TOKENS_SPENT,
                 "showTotalTokensSpent", AIConstants.AI_CHAT_SHOW_TOTAL_TOKENS_SPENT
+            ),
+            "a11y",
+            Map.of(
+                "transcriptLabel", AIChatMessages.ai_chat_a11y_transcript_label,
+                "waitingForResponse", AIChatMessages.ai_chat_a11y_waiting_for_response,
+                "roles", Map.of(
+                    "user", AIChatMessages.ai_chat_message_role_user_label,
+                    "assistant", AIChatMessages.ai_chat_message_role_assistant_label,
+                    "function", AIChatMessages.ai_chat_message_role_function_label,
+                    "system", AIChatMessages.ai_chat_message_role_system_label,
+                    "generated", AIChatMessages.ai_chat_message_role_generated_label,
+                    "warning", AIChatMessages.ai_chat_message_role_warning_label,
+                    "error", AIChatMessages.ai_chat_message_role_error_label,
+                    "attachment", AIChatMessages.ai_chat_message_role_attachment_label
+                )
             )
         );
 
