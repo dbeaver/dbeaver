@@ -53,7 +53,7 @@ public class ConfirmedShellCommandsRegistry {
     public boolean isConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
         boolean result = command.isBlank() || getConfirmedShellCommandsHolder().confirmedCommands()
             .contains(command.getCommand());
-        log.debug("Confirmed shell command: '%s' result '%s'".formatted(command.getCommand(), result));
+        log.debug("Confirmed shell command result '%s'".formatted(result));
         return result;
     }
 
@@ -102,13 +102,13 @@ public class ConfirmedShellCommandsRegistry {
 
         public boolean addCommand(@NotNull String command) throws DBException {
             boolean result = confirmedCommands().add(command);
-            log.debug("ConfirmedShellCommandsRegistry: tried to add confirmed command: '%s' , result: %s".formatted(command, result));
+            log.debug("Tried to add confirmed command result: %s".formatted(result));
             return result;
         }
 
         public boolean removeCommand(@NotNull String command) throws DBException {
             boolean result = confirmedCommands().remove(command);
-            log.debug("ConfirmedShellCommandsRegistry: tried to remove confirmed command: '%s' , result: %s".formatted(command, result));
+            log.debug("Tried to remove confirmed command result: %s".formatted(result));
             return result;
         }
 
