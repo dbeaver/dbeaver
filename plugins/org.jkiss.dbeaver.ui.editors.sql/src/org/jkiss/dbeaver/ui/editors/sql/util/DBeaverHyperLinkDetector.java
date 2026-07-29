@@ -29,6 +29,9 @@ public class DBeaverHyperLinkDetector extends URLHyperlinkDetector {
     @Override
     public IHyperlink[] detectHyperlinks(@NotNull ITextViewer textViewer, @NotNull IRegion region, boolean canShowMultipleHyperlinks) {
         IHyperlink[] hyperlinks = super.detectHyperlinks(textViewer, region, canShowMultipleHyperlinks);
+        if (hyperlinks == null || hyperlinks.length == 0) {
+            return null;
+        }
         ArrayList<IHyperlink> validHyperLinks = new ArrayList<>();
         for (IHyperlink hyperlink : hyperlinks) {
             IRegion hyperlinkRegion = hyperlink.getHyperlinkRegion();
@@ -40,6 +43,9 @@ public class DBeaverHyperLinkDetector extends URLHyperlinkDetector {
             } catch (BadLocationException e) {
             // Ignore
             }
+        }
+        if (validHyperLinks.isEmpty()) {
+            return null;
         }
         return validHyperLinks.toArray(new IHyperlink[0]);
     }
