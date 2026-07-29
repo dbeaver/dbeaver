@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -196,7 +197,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
                 dataSource.getConnectionConfiguration()));
-            removeButton = createRemoveButton(settingsGroup);
+            removeButton = createClearButton(settingsGroup);
         }
 
         selectEventType(null);
@@ -204,10 +205,10 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     }
 
     @NotNull
-    private Button createRemoveButton(@NotNull Composite parent) {
+    private Button createClearButton(@NotNull Composite parent) {
         return UIUtils.createPushButton(
             parent,
-            "Remove",
+            CoreMessages.dialog_connection_edit_wizard_shell_cmd_clear_button_label,
             DBeaverIcons.getImage(UIIcon.CLEAN),
             SelectionListener.widgetSelectedAdapter(e -> {
                 DBPConnectionEventType eventType = getSelectedEventType();
@@ -228,7 +229,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private Control createWarningTELabel(@NotNull Composite parent) {
         return UIUtils.createWarningLabel(
             parent,
-            "LZ:For security reasons for now shell commands are prohibited in TE. Please remove or disable them",
+            CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
             GridData.FILL_BOTH,
             1
         );
@@ -338,32 +339,26 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     public void saveSettings(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
             DBRShellCommand command = entry.getValue();
-            if (canSetAsEvent(command)) {
+            try {
+                if (isAddCommandToConfirmed(command)) {
+                    confirmedShellCommandsManager.addConfirmedShellCommand(command);
+                }
                 dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), command);
+            } catch (DBException e) {
+                UIUtils.showMessageBox(
+                    getShell(),
+                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_label,
+                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_text, entry.getKey(), e.getMessage()),
+                    SWT.ICON_WARNING
+                );
             }
         }
     }
 
-    private boolean canSetAsEvent(@Nullable DBRShellCommand command) {
-        return command == null
-            || !command.isEnabled()
-            || originalCommands.contains(command)
-            || approveExistingCommand(command);
-    }
-
-    private boolean approveExistingCommand(@NotNull DBRShellCommand command) {
-        try {
-            confirmedShellCommandsManager.addConfirmedShellCommand(command);
-            return true;
-        } catch (DBException e) {
-            UIUtils.showMessageBox(
-                getShell(),
-                "TODO LOCALIZE Error adding command to approved",
-                "TODO LOCALIZE Cant add command to approved: " + e.getMessage() + "\n it will not be saved for connection",
-                SWT.ICON_WARNING
-            );
-            return false;
-        }
+    private boolean isAddCommandToConfirmed(@Nullable DBRShellCommand command) {
+        return command != null
+            && command.isEnabled()
+            && !originalCommands.contains(command);
     }
 
 }
