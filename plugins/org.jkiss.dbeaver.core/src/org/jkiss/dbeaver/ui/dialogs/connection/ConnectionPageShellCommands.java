@@ -131,7 +131,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                     DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
                     boolean enabled = ((TableItem) e.item).getChecked();
                     if (enabled || (command != null && enabled != command.isEnabled())) {
-                        if (enabled && eventType != null && command == null) {
+                        if (enabled && eventType != null && command == null && !DBWorkbench.isDistributed()) {
                             createNewCommand(eventType);
                         }
                         updateEvent(false);
