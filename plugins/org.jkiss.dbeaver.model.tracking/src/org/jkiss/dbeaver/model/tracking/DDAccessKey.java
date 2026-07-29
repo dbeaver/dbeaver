@@ -30,10 +30,14 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.PSSParameterSpec;
 import java.util.Base64;
 import java.util.UUID;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
+import javax.crypto.spec.SecretKeySpec;
 
 public record DDAccessKey(
     @NotNull UUID accountId,
-    @Nullable UUID damId,
     @NotNull PrivateKey privateKey
 ) {
 
@@ -49,21 +53,29 @@ public record DDAccessKey(
         PSSParameterSpec.TRAILER_FIELD_BC
     );
 
+    private static final String KEY_TRANSFORMATION = "RSA/ECB/OAEPPadding";
+
+    private static final OAEPParameterSpec OAEP_PARAMETER_SPEC = new OAEPParameterSpec(
+        "SHA-256",
+        "MGF1",
+        MGF1ParameterSpec.SHA256,
+        PSource.PSpecified.DEFAULT
+    );
+
     @NotNull
     public static DDAccessKey parse(@NotNull String value) throws DBException {
         if (!value.startsWith(PREFIX)) {
             throw new DBException("Invalid access key format");
         }
-        String[] parts = value.substring(PREFIX.length()).split("\\.", 3);
-        if (parts.length != 3) {
+        String[] parts = value.substring(PREFIX.length()).split("\\.", 2);
+        if (parts.length != 2) {
             throw new DBException("Invalid access key format");
         }
         try {
             PrivateKey privateKey = KeyFactory.getInstance(KEY_ALGORITHM)
-                .generatePrivate(new PKCS8EncodedKeySpec(Base64.getUrlDecoder().decode(parts[2])));
+                .generatePrivate(new PKCS8EncodedKeySpec(Base64.getUrlDecoder().decode(parts[1])));
             return new DDAccessKey(
                 UUID.fromString(parts[0]),
-                parts[1].isEmpty() ? null : UUID.fromString(parts[1]),
                 privateKey
             );
         } catch (IllegalArgumentException | GeneralSecurityException e) {
@@ -85,7 +97,7 @@ public record DDAccessKey(
 
     @NotNull
     public String buildToken() throws DBException {
-        String payload = accountId + "." + (damId == null ? "" : damId) + "." + System.currentTimeMillis();
+        String payload = accountId + "." + System.currentTimeMillis();
         try {
             Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
             signature.setParameter(SIGNATURE_PARAMETER_SPEC);
@@ -95,6 +107,17 @@ public record DDAccessKey(
             return payload + "." + signatureValue;
         } catch (GeneralSecurityException e) {
             throw new DBException("Error signing tracking request", e);
+        }
+    }
+
+    @NotNull
+    public SecretKey decryptDataKey(@NotNull byte[] encryptedDataKey) throws DBException {
+        try {
+            Cipher cipher = Cipher.getInstance(KEY_TRANSFORMATION);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey, OAEP_PARAMETER_SPEC);
+            return new SecretKeySpec(cipher.doFinal(encryptedDataKey), "AES");
+        } catch (GeneralSecurityException e) {
+            throw new DBException("Error decrypting data key", e);
         }
     }
 }
