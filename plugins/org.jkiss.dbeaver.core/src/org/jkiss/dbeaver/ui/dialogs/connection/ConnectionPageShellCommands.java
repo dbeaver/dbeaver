@@ -348,7 +348,11 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 UIUtils.showMessageBox(
                     getShell(),
                     CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_label,
-                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_text, entry.getKey(), e.getMessage()),
+                    NLS.bind(
+                        CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_text,
+                        entry.getKey().getTitle(),
+                        e.getMessage()
+                    ),
                     SWT.ICON_WARNING
                 );
             }

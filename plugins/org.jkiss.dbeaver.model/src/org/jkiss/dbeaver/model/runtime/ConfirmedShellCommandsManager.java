@@ -32,9 +32,11 @@ package org.jkiss.dbeaver.model.runtime;/*
  */
 
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.registry.confirmation.runtime.ConfirmedShellCommandsRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -44,10 +46,9 @@ public class ConfirmedShellCommandsManager {
     public void validateCommand(@NotNull DBRShellCommand command, @NotNull DBPConnectionEventType eventType) throws DBException {
         if (!command.isBlank()) {
             if (DBWorkbench.isDistributed()) {
-                throw new DBException(
-                    "For security reasons Shell commands are prohibited in Team Edition. Please ask your admin to remove them from connection properties");
+                throw new DBException(ModelMessages.shell_cmd_manager_add_command_error_message_te_specific);
             } else if (!isApprovedCommand(command)) {
-                throw new DBException("Command of type: %s is not added to approved commands".formatted(eventType.getTitle()));
+                throw new DBException(NLS.bind(ModelMessages.shell_cmd_manager_add_command_error_message, eventType.getTitle()));
             }
         }
     }
@@ -62,7 +63,13 @@ public class ConfirmedShellCommandsManager {
     }
 
     private boolean askApproveForCommand(@NotNull DBRShellCommand command) throws DBException {
-        if (DBWorkbench.getPlatformUI().confirmAction("CHASNGE ADD CMD TITLE", "CHANGE THIS: add stuff?: " + command.getCommand())) {
+        if (DBWorkbench
+            .getPlatformUI()
+            .confirmAction(
+                ModelMessages.shell_cmd_manager_add_command_confirmation_label,
+                NLS.bind(ModelMessages.shell_cmd_manager_add_command_confirmation_text, command.getCommand())
+            )
+        ) {
             addConfirmedShellCommand(command);
             return true;
         }
