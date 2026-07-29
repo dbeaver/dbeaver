@@ -66,7 +66,7 @@ public class ConfirmedShellCommandsRegistry {
 
     public void removeConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
         ConfirmedShellCommandsHolder confirmedShellCommandsHolder = getConfirmedShellCommandsHolder();
-        if (command.isBlank() && confirmedShellCommandsHolder.removeCommand(command.getCommand())) {
+        if (!command.isBlank() && confirmedShellCommandsHolder.removeCommand(command.getCommand())) {
             confirmedShellCommandsHolder.saveCommands();
         }
     }

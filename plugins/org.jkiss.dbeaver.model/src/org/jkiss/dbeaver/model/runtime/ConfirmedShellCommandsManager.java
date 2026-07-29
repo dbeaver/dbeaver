@@ -54,6 +54,9 @@ public class ConfirmedShellCommandsManager {
     }
 
     public void addConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
+        if (DBWorkbench.isDistributed()) {
+            throw new DBException(ModelMessages.shell_cmd_manager_add_command_error_message_te_specific);
+        }
         getConfirmedShellCommandsRegistry().addConfirmedShellCommand(command);
     }
 
