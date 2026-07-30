@@ -95,7 +95,12 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         Composite root = UIUtils.createPlaceholder(parent, 1, 2);
         root.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (DBWorkbench.isDistributed()) {
-            createWarningTELabel(root);
+            UIUtils.createWarningLabel(
+                parent,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
+                GridData.FILL_BOTH,
+                1
+            );
         }
         Composite group = UIUtils.createPlaceholder(root, 2, 5);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -220,16 +225,6 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                     selectEventType(null);
                 }
             })
-        );
-    }
-
-    @NotNull
-    private Control createWarningTELabel(@NotNull Composite parent) {
-        return UIUtils.createWarningLabel(
-            parent,
-            CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
-            GridData.FILL_BOTH,
-            1
         );
     }
 

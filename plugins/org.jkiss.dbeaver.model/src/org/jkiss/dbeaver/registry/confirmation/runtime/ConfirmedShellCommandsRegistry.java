@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -80,8 +79,6 @@ public class ConfirmedShellCommandsRegistry {
 
 
         public static final ConfirmedShellCommandsHolder INSTANCE = new ConfirmedShellCommandsHolder();
-        Type targetClassType = new TypeToken<Set<String>>() {
-        }.getType();
 
         public static final Gson GSON = JSONUtils.PRETTY_GSON;
 
@@ -95,7 +92,14 @@ public class ConfirmedShellCommandsRegistry {
             if (confirmedCommands == null) {
                 String loaded = getConfigurationController()
                     .loadConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME);
-                confirmedCommands = Objects.requireNonNullElse(GSON.fromJson(loaded, targetClassType), new HashSet<>());
+                confirmedCommands = Objects.requireNonNullElse(
+                    GSON.fromJson(
+                        loaded,
+                        new TypeToken<Set<String>>() {
+                        }.getType()
+                    ),
+                    new HashSet<>()
+                );
             }
             return confirmedCommands;
         }
