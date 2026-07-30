@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.polardbx.PolarDBXDataSourceProvider"
+            description="PolarDB-X"
+            id="polardbx"
+            parent="mysql"
+            dialect="polardbx"
+            label="PolarDB-X"
+            inheritProviderProperties="true">
+            <drivers managable="true">
+                <driver
+                    id="polardbx"
+                    label="PolarDB-X"
+                    class="com.alibaba.polardbx.Driver"
+                    sampleURL="jdbc:polardbx://{host}[:{port}][/{database}]"
+                    promoted="1"
+                    categories="sql"
+                    webURL="https://github.com/ApsaraDB/galaxysql"
+                    description="PolarDB-X JDBC Driver"
+                    icon="icons/polardbx_icon.png"
+                    iconBig="icons/polardbx_icon_big.png"
+                    logoImage="platform:/plugin/org.jkiss.dbeaver.ext.polardbx.ui/icons/polardbx_logo.png">
+                    <!-- PolarDB-X driver: use the local driver when the drivers.polardbx bundle is present; otherwise download it from Maven -->
+                    <file type="jar" path="maven:/com/alibaba/polardbx:polardbx-connector-java:RELEASE[2.2.12]" bundle="!drivers.polardbx"/>
+                    <file type="jar" path="maven:/dnsjava:dnsjava:RELEASE[3.6.1]" bundle="!drivers.polardbx"/>
+                    <file type="jar" path="drivers/polardbx/polardbx-connector-java.jar" bundle="drivers.polardbx"/>
+                    <file type="jar" path="drivers/polardbx/dnsjava.jar" bundle="drivers.polardbx"/>
+
+                    <!-- License -->
+                    <file type="license" path="docs/root/licenses/external/asl-2.0.txt"/>
+
+                    <!-- Connection timeout settings -->
+                    <property name="connectTimeout" value="60000"/>
+                    <property name="loginTimeout" value="30"/>
+
+                    <!-- General settings -->
+                    <property name="rewriteBatchedStatements" value="true"/>
+                    <parameter name="serverType" value="polardbx"/>
+                    <property name="enabledTLSProtocols" value="TLSv1.2,TLSv1.3"/>
+
+                    <!-- Connection pool and stability settings -->
+                    <property name="autoReconnect" value="true"/>
+                    <property name="failOverReadOnly" value="false"/>
+                    <property name="maxReconnects" value="3"/>
+                    <property name="initialTimeout" value="2"/>
+
+                    <!-- DBeaver default settings -->
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider"
+            description="PolarDB-X data types provider"
+            id="PolarDBXValueHandlerProvider"
+            parent="GenericValueHandlerProvider"
+            label="PolarDB-X data types provider">
+            <datasource id="polardbx"/>
+            <type standard="TIMESTAMP"/>
+        </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="polardbx" parent="mysql" class="org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXDialect" label="PolarDB-X" icon="icons/polardbx_icon.png">
+        </dialect>
+    </extension>
+
+    <!-- Adapter factory that registers the dialect with TPRuleProvider -->
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXDialect"
+                 class="org.jkiss.dbeaver.ext.polardbx.sql.PolarDBXDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
+    </extension>
+
+    <!-- Register PolarDB-X specific object managers -->
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <!-- Use the PolarDB-X specific procedure manager, which supports automatic refresh after creation -->
+        <!-- Register the PolarDBXProcedure type -->
+        <manager class="org.jkiss.dbeaver.ext.polardbx.mysql.edit.PolarDBXProcedureManager"
+                 objectType="org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXProcedure"/>
+        <!-- Also register the MySQLProcedure type, so that the PolarDB-X manager is used when creating new procedures -->
+        <manager class="org.jkiss.dbeaver.ext.polardbx.mysql.edit.PolarDBXProcedureManager"
+                 objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+    </extension>
+</plugin>
