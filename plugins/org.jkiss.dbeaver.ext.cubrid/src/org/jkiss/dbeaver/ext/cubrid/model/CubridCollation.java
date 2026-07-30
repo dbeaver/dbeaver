@@ -41,6 +41,12 @@ public class CubridCollation implements DBSObject
         this.dataSource = charset.getDataSource();
     }
 
+    protected CubridCollation(@NotNull CubridCharset charset, @NotNull String name) {
+        this.name = name;
+        this.charset = charset;
+        this.dataSource = charset.getDataSource();
+    }
+
     @NotNull
     public CubridDataSource getDataSource() {
         return dataSource;
