@@ -158,7 +158,7 @@ public interface DBPProject extends DBFFileSystemContainer, SMAuthSpace, DBAPerm
 
     void updateProject(@Nullable String newName, @Nullable String description) throws DBException;
 
-    @Nullable
+    @NotNull
     DBNModel getNavigatorModel();
 
     /**
