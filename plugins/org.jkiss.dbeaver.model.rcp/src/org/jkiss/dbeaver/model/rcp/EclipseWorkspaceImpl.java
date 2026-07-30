@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -316,6 +317,8 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                                     activeProject = projectMetadata;
                                     fireActiveProjectChange(null, activeProject);
                                 }
+                                // ensures properties are reloaded if project is being imported
+                                projectMetadata.refreshProject(new VoidProgressMonitor());
                             }
                         } else {
                             if (delta.getKind() == IResourceDelta.REMOVED) {
