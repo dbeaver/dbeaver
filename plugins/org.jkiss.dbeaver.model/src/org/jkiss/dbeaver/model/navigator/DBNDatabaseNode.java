@@ -220,7 +220,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     public DBNDatabaseNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         boolean needsLoad;
         synchronized (this) {
-            needsLoad = childNodes == null && hasChildren(false);
+            needsLoad = (childNodes == null || childNodes.length == 0) && hasChildren(false);
         }
         if (needsLoad && !monitor.isForceCacheUsage()) {
             if (this.initializeNode(monitor, null)) {
