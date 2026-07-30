@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.registry.confirmation.runtime;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -77,10 +76,7 @@ public class ConfirmedShellCommandsRegistry {
 
     private static class ConfirmedShellCommandsHolder {
 
-
         public static final ConfirmedShellCommandsHolder INSTANCE = new ConfirmedShellCommandsHolder();
-
-        public static final Gson GSON = JSONUtils.PRETTY_GSON;
 
         private Set<String> confirmedCommands;
 
@@ -93,7 +89,7 @@ public class ConfirmedShellCommandsRegistry {
                 String loaded = getConfigurationController()
                     .loadConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME);
                 confirmedCommands = Objects.requireNonNullElse(
-                    GSON.fromJson(
+                    JSONUtils.PRETTY_GSON.fromJson(
                         loaded,
                         new TypeToken<Set<String>>() {
                         }.getType()
@@ -116,7 +112,6 @@ public class ConfirmedShellCommandsRegistry {
             return result;
         }
 
-
         public void reset() {
             this.confirmedCommands = null;
         }
@@ -128,10 +123,12 @@ public class ConfirmedShellCommandsRegistry {
         }
 
         private void saveCommands() throws DBException {
-            getConfigurationController().saveConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME, GSON.toJson(confirmedCommands));
+            getConfigurationController().saveConfigurationFile(
+                CONFIRMED_COMMANDS_FILE_NAME,
+                JSONUtils.PRETTY_GSON.toJson(confirmedCommands)
+            );
             log.debug("Saved confirmed commands to file '%s'".formatted(CONFIRMED_COMMANDS_FILE_NAME));
             reset();
         }
     }
-
 }
