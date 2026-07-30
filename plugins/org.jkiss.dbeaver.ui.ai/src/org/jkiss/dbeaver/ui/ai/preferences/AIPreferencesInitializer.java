@@ -30,7 +30,6 @@ public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
     public void initializeDefaultPreferences() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, false);
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_SEND_DESCRIPTION, false);
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_SEND_TYPE_INFO, true);
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_COMPLETION_MAX_CHOICES, 1);
