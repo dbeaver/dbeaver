@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.custom.CTabItem;
@@ -312,7 +313,7 @@ abstract class QueryResultsContainer implements
         if (!(query instanceof SQLQuery sqlQuery)) {
             throw new DBCException("Can't count rows for control command");
         }
-        if (!(sqlQuery.getStatement() instanceof PlainSelect)) {
+        if (!(sqlQuery.getStatement() instanceof PlainSelect) && !(sqlQuery.getStatement() instanceof SetOperationList)) {
             throw new DBCException("Can't count rows for non-SELECT queries");
         }
         try {

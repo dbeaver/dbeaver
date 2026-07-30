@@ -62,7 +62,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
 
     public static final String PANEL_ID = "value-view";
 
-    private static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
+    public static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
 
     private IResultSetPresentation presentation;
     private Composite viewPlaceholder;
