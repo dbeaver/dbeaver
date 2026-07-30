@@ -478,7 +478,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     @Override
     public void refreshProject(DBRProgressMonitor monitor) {
-        synchronized (this) {
+        synchronized (metadataSync) {
             properties = null;
         }
     }
