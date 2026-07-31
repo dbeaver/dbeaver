@@ -393,6 +393,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         throw new InvocationTargetException(e);
                     }
                 });
+                updatePageCompletion();
+
             } catch (InvocationTargetException e) {
                 setErrorMessage("Error loading settings: " + e.getTargetException().getMessage());
             } catch (InterruptedException e) {
@@ -403,7 +405,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
     private void refreshScripts() {
         scriptsViewer.refresh(true, true);
-        updateSelectedScripts();
+        updateSelectedScripts   ();
     }
 
     private void refreshDataSources() {
@@ -456,14 +458,11 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
     @Override
     protected boolean determinePageCompletion() {
-        SQLScriptExecuteSettings settings = getWizard().getSettings();
-        boolean hasScripts = !selectedScripts.isEmpty() || !CommonUtils.isEmpty(settings.getScriptFiles());
-        boolean hasDataSources = !selectedDataSources.isEmpty() || !CommonUtils.isEmpty(settings.getDataSources());
-        if (!hasScripts) {
+        if (selectedScripts.isEmpty()) {
             setErrorMessage(DTUIMessages.sql_script_task_page_settings_error_message_you_must_select_script_execute);
             return false;
         }
-        if (!hasDataSources) {
+        if (selectedDataSources.isEmpty()) {
             setErrorMessage(DTUIMessages.sql_script_task_page_settings_error_message_you_must_select_connection);
             return false;
         }
@@ -529,7 +528,6 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         UIUtils.syncExec(() -> {
             scriptsViewer.setInput(selectedScripts);
             dataSourceViewer.setInput(selectedDataSources);
-            determinePageCompletion();
         });
     }
 
