@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.confirmation.runtime;
+package org.jkiss.dbeaver.model.runtime;
 
 import com.google.gson.reflect.TypeToken;
 import org.eclipse.osgi.util.NLS;
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.HashSet;
