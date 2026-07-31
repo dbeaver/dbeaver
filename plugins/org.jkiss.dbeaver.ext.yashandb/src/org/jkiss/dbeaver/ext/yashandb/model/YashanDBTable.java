@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePrivTable;
@@ -47,30 +49,32 @@ public class YashanDBTable extends OracleTable {
 
     private static final Log log = Log.getLog(OracleTable.class);
 
-    public YashanDBTable(DBRProgressMonitor monitor, OracleSchema schema, ResultSet dbResult) {
+    public YashanDBTable(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(monitor, schema, dbResult);
     }
 
-    public YashanDBTable(OracleSchema schema, String name) {
+    public YashanDBTable(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name);
     }
 
+    @NotNull
     @Override
-    public Collection<OraclePrivTable> getTablePrivs(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OraclePrivTable> getTablePrivs(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support yet
         return Collections.emptyList();
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 22, editable = true, updatable = false, listProvider = TablespaceListProvider.class)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
-    public Object getTablespace(DBRProgressMonitor monitor) throws DBException {
+    public Object getTablespace(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support move table space
         return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
     @Override
-    protected void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException {
+    protected void loadAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
             return;

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.yashandb.model.session;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -46,10 +47,11 @@ public class YashanDBServerSessionManager
 
     private final OracleServerSessionManager oracleServerSessionManager;
 
-    public YashanDBServerSessionManager(OracleDataSource dataSource) {
+    public YashanDBServerSessionManager(@NotNull OracleDataSource dataSource) {
         this.oracleServerSessionManager = new OracleServerSessionManager(dataSource);
     }
 
+    @NotNull
     @Override
     public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         // YashanDB custom
@@ -67,6 +69,7 @@ public class YashanDBServerSessionManager
         return sql.toString();
     }
 
+    @Nullable
     @Override
     public List<DBAServerSessionDetails> getSessionDetails() {
         // YashanDB not support yet
@@ -78,11 +81,13 @@ public class YashanDBServerSessionManager
         return oracleServerSessionManager.canGenerateSessionReadQuery();
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return oracleServerSessionManager.getDataSource();
     }
 
+    @NotNull
     @Override
     public Collection<YashanDBServerSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options)
             throws DBException {

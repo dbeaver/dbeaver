@@ -33,7 +33,7 @@ public class YashanDBDataSourceProvider extends OracleDataSourceProvider {
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
     }
 

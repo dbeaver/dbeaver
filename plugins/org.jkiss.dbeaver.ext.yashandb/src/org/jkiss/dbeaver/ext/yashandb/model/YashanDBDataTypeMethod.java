@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeMethod;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,13 +28,14 @@ import java.sql.ResultSet;
  */
 public class YashanDBDataTypeMethod extends OracleDataTypeMethod {
 
-    public YashanDBDataTypeMethod(DBRProgressMonitor monitor, OracleDataType dataType, ResultSet dbResult) {
+    public YashanDBDataTypeMethod(@NotNull DBRProgressMonitor monitor, @NotNull OracleDataType dataType,
+                                  @NotNull ResultSet dbResult) {
         super(monitor, dataType, dbResult);
         // YashanDB not support yet
         this.parameterCache = null;
     }
 
-    public YashanDBDataTypeMethod(OracleDataType dataType) {
+    public YashanDBDataTypeMethod(@NotNull OracleDataType dataType) {
         super(dataType);
         // YashanDB not support yet
         this.parameterCache = null;

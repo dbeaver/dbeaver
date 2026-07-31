@@ -38,12 +38,12 @@ import java.util.Map;
  */
 public class YashanDBDataType extends OracleDataType {
 
-    public YashanDBDataType(DBSObject owner, ResultSet dbResult) {
+    public YashanDBDataType(@NotNull DBSObject owner, @NotNull ResultSet dbResult) {
         super(owner, dbResult);
         this.methodCache = this.hasMethods ? new YashanDBMethodCache() : null;
     }
 
-    public YashanDBDataType(DBSObject owner, String typeName, boolean persisted) {
+    public YashanDBDataType(@NotNull DBSObject owner, @NotNull String typeName, boolean persisted) {
         super(owner, typeName, persisted);
         this.methodCache = new YashanDBMethodCache();
     }
@@ -87,6 +87,7 @@ public class YashanDBDataType extends OracleDataType {
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected YashanDBDataTypeMethod fetchObject(@NotNull JDBCSession session, @NotNull OracleDataType owner,
                                                      @NotNull JDBCResultSet resultSet) throws SQLException, DBException {

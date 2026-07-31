@@ -60,7 +60,7 @@ public class YashanDBSchema extends OracleSchema {
         super(dataSource, dbResult);
     }
 
-    public YashanDBSchema(OracleDataSource dataSource, long id, String name) {
+    public YashanDBSchema(@NotNull OracleDataSource dataSource, long id, @NotNull String name) {
         super(dataSource, id, name);
     }
 
@@ -72,25 +72,25 @@ public class YashanDBSchema extends OracleSchema {
 
     @NotNull
     @Override
-    protected YashanDBConstraintCache createConstraintCache(TableCache tableCache) {
+    protected YashanDBConstraintCache createConstraintCache(@NotNull TableCache tableCache) {
         return new YashanDBConstraintCache(tableCache);
     }
 
     @NotNull
     @Override
-    protected YashanDBForeignKeyCache createForeignKeyCache(TableCache tableCache) {
+    protected YashanDBForeignKeyCache createForeignKeyCache(@NotNull TableCache tableCache) {
         return new YashanDBForeignKeyCache(tableCache);
     }
 
     @NotNull
     @Override
-    protected YashanDBIndexCache createIndexCache(TableCache tableCache) {
+    protected YashanDBIndexCache createIndexCache(@NotNull TableCache tableCache) {
         return new YashanDBIndexCache(tableCache);
     }
 
     @NotNull
     @Override
-    protected YashanDBTableTriggerCache createTableTriggerCache(TableCache tableCache) {
+    protected YashanDBTableTriggerCache createTableTriggerCache(@NotNull TableCache tableCache) {
         return new YashanDBTableTriggerCache(tableCache);
     }
 
@@ -118,36 +118,42 @@ public class YashanDBSchema extends OracleSchema {
         return new YashanDBSchedulerJobCache();
     }
 
+    @NotNull
     @Override
     public YashanDBTable createTableImpl(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner,
                                          @NotNull JDBCResultSet dbResult) {
         return new YashanDBTable(monitor, owner, dbResult);
     }
 
+    @NotNull
     @Override
-    public Collection<OracleQueue> getQueues(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleQueue> getQueues(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
-    public Collection<OracleJavaClass> getJavaClasses(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleJavaClass> getJavaClasses(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
-    public Collection<OracleSchemaTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleSchemaTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
-    public Collection<OracleSchedulerProgram> getSchedulerPrograms(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleSchedulerProgram> getSchedulerPrograms(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
             throws DBException {
@@ -161,6 +167,7 @@ public class YashanDBSchema extends OracleSchema {
             super();
         }
 
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner,
                                                     @Nullable OracleTableBase object, @Nullable String objectName) throws SQLException {
@@ -186,6 +193,7 @@ public class YashanDBSchema extends OracleSchema {
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected OracleTableBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner,
                                               @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
@@ -199,6 +207,7 @@ public class YashanDBSchema extends OracleSchema {
             }
         }
 
+        @NotNull
         @Override
         protected YashanDBTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema owner,
                                                  @NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult) throws DBException {
@@ -212,6 +221,7 @@ public class YashanDBSchema extends OracleSchema {
             super(tableCache);
         }
 
+        @Nullable
         @Override
         protected OracleTableForeignKeyColumn[] fetchObjectRow(@NotNull JDBCSession session,
                                                                @NotNull OracleTable parent, @NotNull OracleTableForeignKey object,
@@ -301,6 +311,7 @@ public class YashanDBSchema extends OracleSchema {
 
     static class YashanDBDataTypeCache extends DataTypeCache {
 
+        @NotNull
         @Override
         protected YashanDBDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner,
                                                @NotNull JDBCResultSet resultSet) throws SQLException {
@@ -310,6 +321,7 @@ public class YashanDBSchema extends OracleSchema {
 
     static class YashanDBPackageCache extends PackageCache {
 
+        @NotNull
         @Override
         protected YashanDBPackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner,
                                               @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
@@ -338,6 +350,7 @@ public class YashanDBSchema extends OracleSchema {
             return dbStat;
         }
 
+        @Nullable
         @Override
         protected YashanDBProcedureStandalone fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner,
                                                           @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
@@ -347,6 +360,7 @@ public class YashanDBSchema extends OracleSchema {
 
     static class YashanDBSchedulerJobCache extends SchedulerJobCache {
 
+        @NotNull
         @Override
         protected YashanDBSchedulerJob fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner,
                                                    @NotNull JDBCResultSet dbResult) throws SQLException, DBException {

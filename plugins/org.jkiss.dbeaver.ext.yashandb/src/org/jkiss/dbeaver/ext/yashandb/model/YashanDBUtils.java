@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
@@ -51,8 +53,10 @@ public class YashanDBUtils extends OracleUtils {
     private static final int MONITOR_TOTAL_WORK = 1;
     private static final String SUB_TASK_LINE_PREFIX = "Line ";
 
-    public static String getTableOrViewDDL(DBRProgressMonitor monitor, String objectType, OracleTableBase object,
-                                           Map<String, Object> options) throws DBException {
+    @Nullable
+    public static String getTableOrViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull String objectType,
+                                           @NotNull OracleTableBase object,
+                                           @NotNull Map<String, Object> options) throws DBException {
 
         String ddl = "";
         String objectFullName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
@@ -90,8 +94,9 @@ public class YashanDBUtils extends OracleUtils {
         }
     }
 
-    public static String getSource(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body,
-                                   boolean insertCreateReplace) throws DBCException {
+    @Nullable
+    public static String getSource(@NotNull DBRProgressMonitor monitor, @NotNull OracleSourceObject sourceObject,
+                                   boolean body, boolean insertCreateReplace) throws DBCException {
         String preCheckResult = preCheckSourceObject(sourceObject);
         if (preCheckResult != null) {
             return preCheckResult;
@@ -108,7 +113,9 @@ public class YashanDBUtils extends OracleUtils {
         }
     }
 
-    public static String insertCreateReplace(OracleSourceObject object, boolean body, String source) {
+    @Nullable
+    public static String insertCreateReplace(@NotNull OracleSourceObject object, boolean body,
+                                             @Nullable String source) {
         String sourceType = object.getSourceType().name();
         if (body) {
             sourceType += " BODY";
@@ -125,7 +132,8 @@ public class YashanDBUtils extends OracleUtils {
         return source;
     }
 
-    private static String buildSourceContent(DBRProgressMonitor monitor, JDBCResultSet dbResult) throws SQLException {
+    @Nullable
+    private static String buildSourceContent(@NotNull DBRProgressMonitor monitor, @NotNull JDBCResultSet dbResult) throws SQLException {
         StringBuilder source = null;
         int lineCount = 0;
         while (dbResult.next() && !monitor.isCanceled()) {
@@ -141,7 +149,8 @@ public class YashanDBUtils extends OracleUtils {
         return source == null ? null : source.toString();
     }
 
-    private static String preCheckSourceObject(OracleSourceObject sourceObject) {
+    @Nullable
+    private static String preCheckSourceObject(@NotNull OracleSourceObject sourceObject) {
         if (sourceObject.getSourceType().isCustom()) {
             log.warn("Can't read source for custom source objects");
             return DEFAULT_CUSTOM_SOURCE;
@@ -156,12 +165,13 @@ public class YashanDBUtils extends OracleUtils {
         return null;
     }
 
-    private static void initMonitor(DBRProgressMonitor monitor, OracleSourceObject sourceObject) {
+    private static void initMonitor(@NotNull DBRProgressMonitor monitor, @NotNull OracleSourceObject sourceObject) {
         String taskName = "Load sources for '" + sourceObject.getName() + "'...";
         monitor.beginTask(taskName, MONITOR_TOTAL_WORK);
     }
 
-    private static String getSysViewName(OracleDataSource dataSource, DBRProgressMonitor monitor) {
+    @NotNull
+    private static String getSysViewName(@NotNull OracleDataSource dataSource, @NotNull DBRProgressMonitor monitor) {
         String sysViewName = OracleConstants.VIEW_DBA_SOURCE;
         if (!dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, sysViewName)) {
             sysViewName = OracleConstants.VIEW_ALL_SOURCE;
@@ -169,8 +179,9 @@ public class YashanDBUtils extends OracleUtils {
         return sysViewName;
     }
 
-    private static String querySourceContent(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body,
-                                             String sysViewName) throws DBCException {
+    @Nullable
+    private static String querySourceContent(@NotNull DBRProgressMonitor monitor, @NotNull OracleSourceObject sourceObject, boolean body,
+                                             @NotNull String sysViewName) throws DBCException {
         OracleSchema sourceOwner = sourceObject.getSchema();
         String sourceType = getAdaptedSourceType(sourceObject.getSourceType().name());
         String sourceName = sourceObject.getName();
@@ -188,14 +199,21 @@ public class YashanDBUtils extends OracleUtils {
         }
     }
 
-    private static String getAdaptedSourceType(String originalType) {
+    @NotNull
+    private static String getAdaptedSourceType(@NotNull String originalType) {
         String sourceType = originalType.replace("_", " ");
         return sourceType.equalsIgnoreCase("FUNCTION") ? "UDF" : sourceType;
     }
 
-    private static JDBCPreparedStatement buildSourceQueryStatement(OracleSourceObject sourceObject, JDBCSession session,
-                                                                   String sysViewName, String sourceType, String ownerName,
-                                                                   String sourceName, boolean body)
+    @NotNull
+    private static JDBCPreparedStatement buildSourceQueryStatement(
+        @NotNull OracleSourceObject sourceObject,
+        @NotNull JDBCSession session,
+        @NotNull String sysViewName,
+        @NotNull String sourceType,
+        @NotNull String ownerName,
+        @NotNull String sourceName,
+        boolean body)
             throws SQLException {
         String sql = "SELECT TEXT FROM " + getSysSchemaPrefix(sourceObject.getDataSource()) + sysViewName
             + " WHERE TYPE=? AND OWNER=? AND NAME=?";

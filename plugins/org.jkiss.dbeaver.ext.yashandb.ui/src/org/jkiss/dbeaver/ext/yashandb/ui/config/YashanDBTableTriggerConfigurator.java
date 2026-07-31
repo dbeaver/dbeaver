@@ -33,6 +33,7 @@ import java.util.Map;
  */
 public class YashanDBTableTriggerConfigurator implements DBEObjectConfigurator<YashanDBTableTrigger> {
 
+    @NotNull
     @Override
     public YashanDBTableTrigger configureObject(@NotNull DBRProgressMonitor monitor,
                                                 @Nullable DBECommandContext commandContext, @Nullable Object container,

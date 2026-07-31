@@ -58,11 +58,13 @@ public class YashanDBDataSource extends OracleDataSource {
         super(monitor, container, new YashanDBSQLDialect());
     }
 
+    @NotNull
     @Override
     public YashanDBTablespaceCache getTablespaceCache() {
         return this.yashanDBTablespaceCache;
     }
 
+    @NotNull
     @Override
     public YashanDBDataTypeCache getDataTypeCache() {
         return this.yashanDBDataTypeCache;
@@ -99,7 +101,7 @@ public class YashanDBDataSource extends OracleDataSource {
 
     @Override
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          JDBCExecutionContext initFrom) throws DBException {
+                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
         if (outputReader == null) {
             outputReader = new OracleOutputReader();
         }
@@ -125,6 +127,7 @@ public class YashanDBDataSource extends OracleDataSource {
         return new YashanDBSchema(owner, resultSet);
     }
 
+    @NotNull
     @Override
     public YashanDBDataSource getDataSource() {
         return this;

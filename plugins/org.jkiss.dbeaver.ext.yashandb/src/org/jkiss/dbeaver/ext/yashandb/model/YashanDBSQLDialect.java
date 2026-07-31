@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -89,7 +90,7 @@ public class YashanDBSQLDialect extends OracleSQLDialect {
         "ZONE", "ZORDER"};
 
     @Override
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    public void initDriverSettings(@NotNull JDBCSession session,@NotNull JDBCDataSource dataSource,@NotNull JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
 
         // V$FUNCTION
@@ -150,6 +151,7 @@ public class YashanDBSQLDialect extends OracleSQLDialect {
         }
     }
 
+    @NotNull
     @Override
     public String[] getDMLKeywords() {
         return YASHANDB_ALL_KEYWORD;

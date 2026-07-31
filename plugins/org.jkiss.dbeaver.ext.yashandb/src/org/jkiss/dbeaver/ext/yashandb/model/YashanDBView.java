@@ -36,22 +36,24 @@ import java.util.Map;
  */
 public class YashanDBView extends OracleView {
 
-    public YashanDBView(OracleSchema schema, String name) {
+    public YashanDBView(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name);
     }
 
-    public YashanDBView(OracleSchema schema, ResultSet dbResult) {
+    public YashanDBView(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 
+    @NotNull
     @Override
-    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) {
+    public AdditionalInfo getAdditionalInfo(@NotNull DBRProgressMonitor monitor) {
         // YashanDB not support yet
         return new AdditionalInfo();
     }
 
+    @NotNull
     @Override
-    public Collection<OraclePrivTable> getTablePrivs(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OraclePrivTable> getTablePrivs(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support yet.
         return Collections.emptyList();
     }
@@ -68,8 +70,9 @@ public class YashanDBView extends OracleView {
         return YashanDBUtils.getTableOrViewDDL(monitor, getTableTypeName(), this, options);
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor) {
+    public DBEPersistAction[] getCompileActions(@NotNull DBRProgressMonitor monitor) {
         // YashanDB not support
         return new DBEPersistAction[] {};
     }

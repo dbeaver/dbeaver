@@ -32,11 +32,11 @@ import java.util.Map;
  */
 public class YashanDBTableTrigger extends OracleTableTrigger {
 
-    public YashanDBTableTrigger(OracleTableBase table, ResultSet dbResult) {
+    public YashanDBTableTrigger(@NotNull OracleTableBase table, @NotNull ResultSet dbResult) {
         super(table, dbResult);
     }
 
-    public YashanDBTableTrigger(OracleTableBase table, String name) {
+    public YashanDBTableTrigger(@NotNull OracleTableBase table, @NotNull String name) {
         super(table, name);
     }
 

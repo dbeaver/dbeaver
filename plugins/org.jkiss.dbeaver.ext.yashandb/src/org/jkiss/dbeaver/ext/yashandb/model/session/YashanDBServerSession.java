@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model.session;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSession;
 
 import java.sql.ResultSet;
@@ -26,16 +27,18 @@ import java.sql.ResultSet;
  */
 public class YashanDBServerSession extends OracleServerSession {
 
-    public YashanDBServerSession(ResultSet dbResult) {
+    public YashanDBServerSession(@NotNull ResultSet dbResult) {
         super(dbResult);
     }
 
+    @NotNull
     @Override
     public String getSessionId() {
         // YashanDB custom
         return this.sid + "," + this.serial;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return sid + "," + serial;

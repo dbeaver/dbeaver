@@ -33,11 +33,11 @@ import java.util.Map;
  */
 public class YashanDBPackage extends OraclePackage {
 
-    public YashanDBPackage(OracleSchema schema, ResultSet dbResult) {
+    public YashanDBPackage(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 
-    public YashanDBPackage(OracleSchema schema, String name) {
+    public YashanDBPackage(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name);
     }
 
