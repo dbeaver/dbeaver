@@ -406,20 +406,17 @@
         <handler commandId="org.jkiss.dbeaver.core.sql.script.execute" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExecuteScriptFile">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
             <enabledWhen>
-                <and>
-                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <and>
-                                <instanceof value="org.jkiss.dbeaver.model.navigator.DBNResource"/>
-                                <adapt type="org.eclipse.core.resources.IResource">
-                                    <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
-                                </adapt>
-                            </and>
-                        </iterate>
-                    </with>
-                </and>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNResource"/>
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
+                            </adapt>
+                        </and>
+                    </iterate>
+                </with>
             </enabledWhen>
         </handler>
 
