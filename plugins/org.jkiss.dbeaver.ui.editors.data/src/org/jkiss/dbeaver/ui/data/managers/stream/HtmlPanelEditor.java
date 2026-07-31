@@ -78,7 +78,7 @@ public class HtmlPanelEditor implements IStreamValueEditor<Composite> {
             browser.addLocationListener(new LocationAdapter() {
                 @Override
                 public void changing(@NotNull LocationEvent event) {
-                    if (event.top && !"about:blank".equals(event.location)) { //$NON-NLS-1$
+                    if (!event.location.startsWith("about:blank")) { //$NON-NLS-1$
                         event.doit = false;
                     }
                 }
