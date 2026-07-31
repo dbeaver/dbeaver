@@ -220,7 +220,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     public DBNDatabaseNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         boolean needsLoad;
         synchronized (this) {
-            needsLoad = (childNodes == null || childNodes.length == 0) && hasChildren(false);
+            needsLoad = childNodes == null && hasChildren(false);
         }
         if (needsLoad && !monitor.isForceCacheUsage()) {
             if (this.initializeNode(monitor, null)) {
@@ -497,8 +497,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                         }
                     }
 
-                    if (oldList == null) {
-                        // Load new folders only if there are no old ones
+                    if (oldList == null || Arrays.stream(oldList).noneMatch(oldFolder -> oldFolder.getMeta() == child)) {
+                        // Load new folders only if there are no old ones or prev saved list had some currently needed nodes filtered
                         toList.add(
                             new DBNDatabaseFolder(this, (DBXTreeFolder) child));
                     } else {
