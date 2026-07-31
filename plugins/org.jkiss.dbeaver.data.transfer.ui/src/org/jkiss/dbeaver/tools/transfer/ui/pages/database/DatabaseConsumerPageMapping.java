@@ -1749,7 +1749,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         updateRecreateCheck(selectedMapping);
         setControlExcluded(recreateCheck, !isContainer);
         setControlExcluded(transformCheck, !isColumn);
-        setControlExcluded(transformCombo, !isColumn);
+        transformCombo.setVisible(isColumn);
         layoutBottomBar();
         updateTransformControls(selectedMapping);
         updateUpAndDownButtons();
@@ -1781,7 +1781,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             return;
         }
         bottomBar.layout(true);
-        bottomBar.getParent().layout(true);
     }
 
     protected boolean hasMappings(@Nullable DatabaseMappingObject mapping) {
