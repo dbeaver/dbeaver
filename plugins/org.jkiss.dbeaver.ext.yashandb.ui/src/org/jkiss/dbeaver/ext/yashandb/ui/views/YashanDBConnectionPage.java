@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.yashandb.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -39,11 +40,13 @@ public class YashanDBConnectionPage extends GenericConnectionPage {
         UIUtils.dispose(logoImage);
     }
 
+    @Nullable
     @Override
     public Image getImage() {
         return logoImage;
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {

@@ -34,6 +34,7 @@ import java.util.Map;
  */
 public class YashanDBDataTypeConfigurator implements DBEObjectConfigurator<YashanDBDataType> {
 
+    @NotNull
     @Override
     public YashanDBDataType configureObject(@NotNull DBRProgressMonitor monitor,
                                             @Nullable DBECommandContext commandContext, @Nullable Object container,

@@ -32,12 +32,12 @@ import java.sql.ResultSet;
  */
 public class YashanDBTableColumn extends OracleTableColumn {
 
-    public YashanDBTableColumn(DBRProgressMonitor monitor, OracleTableBase table, @NotNull ResultSet dbResult)
+    public YashanDBTableColumn(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table, @NotNull ResultSet dbResult)
             throws DBException {
         super(monitor, table, dbResult);
     }
 
-    public YashanDBTableColumn(OracleTableBase table) {
+    public YashanDBTableColumn(@NotNull OracleTableBase table) {
         super(table);
     }
 

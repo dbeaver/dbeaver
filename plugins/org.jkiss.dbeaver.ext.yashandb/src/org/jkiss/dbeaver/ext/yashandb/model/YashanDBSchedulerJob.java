@@ -42,16 +42,18 @@ import java.util.Map;
  */
 public class YashanDBSchedulerJob extends OracleSchedulerJob {
 
-    public YashanDBSchedulerJob(OracleSchema schema, ResultSet dbResult) {
+    public YashanDBSchedulerJob(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 
-    public YashanDBSchedulerJob(OracleSchema schema, String name, String state, String jobAction) {
+    public YashanDBSchedulerJob(@NotNull OracleSchema schema, @NotNull String name, @NotNull String state,
+                                @NotNull String jobAction) {
         super(schema, name, state, jobAction);
     }
 
+    @NotNull
     @Override
-    public Collection<OracleSchedulerJobArgument> getArguments(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleSchedulerJobArgument> getArguments(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support yet
         return Collections.emptyList();
     }

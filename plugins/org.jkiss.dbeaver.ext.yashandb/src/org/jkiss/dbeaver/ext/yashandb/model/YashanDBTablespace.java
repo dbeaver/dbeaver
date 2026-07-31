@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.yashandb.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablespace;
@@ -38,7 +39,7 @@ public class YashanDBTablespace extends OracleTablespace {
     private final YashanDBAllocationType yashanDBAllocationType;
     private final YashanDBSegmentSpaceManagement yashanDBSegmentSpaceManagement;
 
-    public YashanDBTablespace(OracleDataSource dataSource, ResultSet dbResult) {
+    public YashanDBTablespace(@NotNull OracleDataSource dataSource, @NotNull ResultSet dbResult) {
         super(dataSource, dbResult);
         this.yashanDBContents = CommonUtils.valueOf(YashanDBContents.class,
             JDBCUtils.safeGetString(dbResult, "CONTENTS"), null, true);
@@ -48,6 +49,7 @@ public class YashanDBTablespace extends OracleTablespace {
             JDBCUtils.safeGetString(dbResult, "SEGMENT_SPACE_MANAGEMENT"), null, true);
     }
 
+    @Nullable
     @Override
     @Property(editable = true, hidden = true, order = 30)
     public Contents getContents() {
@@ -55,6 +57,7 @@ public class YashanDBTablespace extends OracleTablespace {
         return null;
     }
 
+    @Nullable
     @Override
     @Property(editable = true, hidden = true, order = 34)
     public AllocationType getAllocationType() {
@@ -62,6 +65,7 @@ public class YashanDBTablespace extends OracleTablespace {
         return null;
     }
 
+    @Nullable
     @Override
     @Property(editable = true, hidden = true, order = 36)
     public SegmentSpaceManagement getSegmentSpaceManagement() {
@@ -69,21 +73,25 @@ public class YashanDBTablespace extends OracleTablespace {
         return null;
     }
 
+    @Nullable
     @Property(editable = true, order = 30)
     public YashanDBContents getYashanDBContents() {
         return yashanDBContents;
     }
 
+    @Nullable
     @Property(editable = true, order = 34)
     public YashanDBAllocationType getYashanDBAllocationType() {
         return yashanDBAllocationType;
     }
 
+    @Nullable
     @Property(editable = true, order = 36)
     public YashanDBSegmentSpaceManagement getYashanDBSegmentSpaceManagement() {
         return yashanDBSegmentSpaceManagement;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         // YashanDB not support yet

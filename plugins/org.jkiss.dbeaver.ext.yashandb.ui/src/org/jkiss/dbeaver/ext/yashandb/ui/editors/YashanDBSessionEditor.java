@@ -21,6 +21,8 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor;
@@ -46,14 +48,15 @@ import java.util.Map;
 public class YashanDBSessionEditor extends OracleSessionEditor {
 
     @Override
-    public void createEditorControl(Composite parent) {
+    public void createEditorControl(@NotNull Composite parent) {
         // YashanDB only support kill session
         killSessionAction = new DisconnectSessionAction(true);
         super.createEditorControl(parent);
     }
 
+    @NotNull
     @Override
-    protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
+    protected SessionManagerViewer<?> createSessionViewer(@NotNull DBCExecutionContext executionContext, @NotNull Composite parent) {
         return new SessionManagerViewer<YashanDBServerSession>(this, parent,
             new YashanDBServerSessionManager((OracleDataSource) executionContext.getDataSource())) {
 
@@ -61,8 +64,8 @@ public class YashanDBSessionEditor extends OracleSessionEditor {
             private boolean showInactive;
 
             @Override
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager,
-                                               IContributionManager contributionManager) {
+            protected void contributeToToolbar(@NotNull DBAServerSessionManager<?> sessionManager,
+                                               @NotNull IContributionManager contributionManager) {
                 contributionManager.add(killSessionAction);
                 contributionManager.add(new Separator());
 
@@ -99,25 +102,26 @@ public class YashanDBSessionEditor extends OracleSessionEditor {
             }
 
             @Override
-            protected void onSessionSelect(DBAServerSession session) {
+            protected void onSessionSelect(@Nullable DBAServerSession session) {
                 super.onSessionSelect(session);
                 killSessionAction.setEnabled(session != null);
             }
 
             @Override
-            protected void loadSettings(IDialogSettings settings) {
+            protected void loadSettings(@NotNull IDialogSettings settings) {
                 showBackground = CommonUtils.toBoolean(settings.get("showBackground"));
                 showInactive = CommonUtils.toBoolean(settings.get("showInactive"));
                 super.loadSettings(settings);
             }
 
             @Override
-            protected void saveSettings(IDialogSettings settings) {
+            protected void saveSettings(@NotNull IDialogSettings settings) {
                 super.saveSettings(settings);
                 settings.put("showBackground", showBackground);
                 settings.put("showInactive", showInactive);
             }
 
+            @NotNull
             @Override
             public Map<String, Object> getSessionOptions() {
                 Map<String, Object> options = new HashMap<>();

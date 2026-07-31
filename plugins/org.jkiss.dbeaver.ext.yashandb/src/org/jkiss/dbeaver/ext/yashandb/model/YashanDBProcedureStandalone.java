@@ -32,11 +32,11 @@ import java.util.Map;
  */
 public class YashanDBProcedureStandalone extends OracleProcedureStandalone {
 
-    public YashanDBProcedureStandalone(OracleSchema schema, ResultSet dbResult) {
+    public YashanDBProcedureStandalone(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 
-    public YashanDBProcedureStandalone(OracleSchema oracleSchema, String name, DBSProcedureType procedureType) {
+    public YashanDBProcedureStandalone(@NotNull OracleSchema oracleSchema, @NotNull String name, @NotNull DBSProcedureType procedureType) {
         super(oracleSchema, name, procedureType);
     }
 

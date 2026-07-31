@@ -34,6 +34,7 @@ import java.util.Map;
  */
 public class YashanDBProcedureConfigurator implements DBEObjectConfigurator<YashanDBProcedureStandalone> {
 
+    @NotNull
     @Override
     public YashanDBProcedureStandalone configureObject(@NotNull DBRProgressMonitor monitor,
                                                        @Nullable DBECommandContext commandContext, @Nullable Object container,

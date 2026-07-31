@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.yashandb.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePrivTable;
@@ -35,21 +36,23 @@ import java.util.Map;
  */
 public class YashanDBMaterializedView extends OracleMaterializedView {
 
-    public YashanDBMaterializedView(OracleSchema schema, ResultSet dbResult) {
+    public YashanDBMaterializedView(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 
-    public YashanDBMaterializedView(OracleSchema schema, String name) {
+    public YashanDBMaterializedView(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name);
     }
 
+    @Nullable
     @Override
-    public String getComment(DBRProgressMonitor monitor) {
+    public String getComment(@NotNull DBRProgressMonitor monitor) {
         return super.getComment();
     }
 
+    @NotNull
     @Override
-    public Collection<OraclePrivTable> getTablePrivs(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OraclePrivTable> getTablePrivs(@NotNull DBRProgressMonitor monitor) throws DBException {
         // YashanDB not support yet.
         return Collections.emptyList();
     }
@@ -65,12 +68,14 @@ public class YashanDBMaterializedView extends OracleMaterializedView {
         return YashanDBUtils.getTableOrViewDDL(monitor, getTableTypeName(), this, options);
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor) {
+    public DBEPersistAction[] getCompileActions(@NotNull DBRProgressMonitor monitor) {
         // YashanDB not support
         return new DBEPersistAction[] {};
     }
 
+    @NotNull
     @Override
     protected String getTableTypeName() {
         return "MATERIALIZED VIEW";
