@@ -145,6 +145,7 @@
             <type name="IPV6"/>
             <type name="TUPLE*"/>
             <type name="MAP*"/>
+            <type name="JSON"/>
 
             <!-- https://clickhouse.com/docs/sql-reference/data-types/geo -->
             <type name="POINT"/>
