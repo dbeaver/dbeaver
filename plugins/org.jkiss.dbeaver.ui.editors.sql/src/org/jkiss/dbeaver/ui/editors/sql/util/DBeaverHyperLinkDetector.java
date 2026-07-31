@@ -22,10 +22,14 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.URLHyperlinkDetector;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
 
 public class DBeaverHyperLinkDetector extends URLHyperlinkDetector {
+    private static final Log log = Log.getLog(DBeaverHyperLinkDetector.class);
+
     @Override
     @Nullable
     public IHyperlink[] detectHyperlinks(@NotNull ITextViewer textViewer, @NotNull IRegion region, boolean canShowMultipleHyperlinks) {
@@ -42,7 +46,7 @@ public class DBeaverHyperLinkDetector extends URLHyperlinkDetector {
                     validHyperLinks.add(hyperlink);
                 }
             } catch (BadLocationException e) {
-            // Ignore
+                log.error("Error detecting hyperlink", e);
             }
         }
         if (validHyperLinks.isEmpty()) {
