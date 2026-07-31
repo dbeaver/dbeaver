@@ -93,6 +93,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private ControlEditor chooseContainerEditor;
     private Button upButton;
     private Button downButton;
+    private Composite bottomBar;
     private Button recreateCheck;
     private Button transformCheck;
     private Combo transformCombo;
@@ -402,7 +403,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
         {
             boolean withUpDown = getWizard().getSettings().getDataPipes().size() > 1;
-            Composite bottomBar = UIUtils.createComposite(composite, 5 + (withUpDown ? 2 : 0));
+            bottomBar = UIUtils.createComposite(composite, 5 + (withUpDown ? 2 : 0));
             bottomBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             Label hintInfo = new Label(bottomBar, SWT.NONE);
@@ -1776,12 +1777,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     private void layoutBottomBar() {
-        if (recreateCheck != null && !recreateCheck.isDisposed()) {
-            Composite parent = recreateCheck.getParent();
-            if (parent != null && !parent.isDisposed()) {
-                parent.layout(true);
-            }
+        if (bottomBar == null || bottomBar.isDisposed()) {
+            return;
         }
+        bottomBar.layout(true);
+        bottomBar.getParent().layout(true);
     }
 
     protected boolean hasMappings(@Nullable DatabaseMappingObject mapping) {
