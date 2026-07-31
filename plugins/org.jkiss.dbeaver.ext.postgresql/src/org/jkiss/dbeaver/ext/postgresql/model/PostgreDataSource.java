@@ -139,14 +139,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        String activeDatabaseName = PostgreUtils.getDatabaseNameFromConfiguration(configuration);
-        if (CommonUtils.isEmpty(activeDatabaseName)) {
+        String resolvedName = PostgreUtils.getDatabaseNameFromConfiguration(configuration);
+        if (CommonUtils.isEmpty(resolvedName)) {
             if (!CommonUtils.isEmpty(configuration.getUserName())) {
-                activeDatabaseName = configuration.getUserName();
+                resolvedName = configuration.getUserName();
             } else {
-                activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+                resolvedName = PostgreConstants.DEFAULT_DATABASE;
             }
         }
+        this.activeDatabaseName = resolvedName;
 
         databaseCache = new DatabaseCache();
         settingCache = new SettingCache();
@@ -460,7 +461,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         super.refreshObject(monitor);
         shutdown(monitor);
@@ -468,9 +469,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         try {
             this.isConnectionRefreshing = true;
             this.databaseCache.clearCache();
-            this.activeDatabaseName = null;
             this.hasStatistics = false;
             this.initializeRemoteInstance(monitor);
+
+            if (databaseCache.getCachedObjects().isEmpty()) {
+                log.warn("Database cache is empty after refresh, skipping initialize");
+                return this;
+            }
         } finally {
             this.isConnectionRefreshing = false;
         }
@@ -540,7 +545,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     // Generate URL with new database name
                     if (CommonUtils.isEmpty(newConfig.getUrl()) || !CommonUtils.isEmpty(newConfig.getHostName())) {
                         final DBPDriver driver = getContainer().getDriver();
-                        newURL = driver.getDataSourceProvider().getConnectionURL(driver, newConfig);
+                        try {
+                            newURL = driver.getDataSourceProvider().getConnectionURL(driver, newConfig);
+                        } catch (DBException ex) {
+                            throw new DBCException("Connection URL preparation error", ex);
+                        }
                     }
                 } else {
                     // Patch connection URL with new database name
