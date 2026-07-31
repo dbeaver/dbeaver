@@ -253,6 +253,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         return null;
     }
 
+    @NotNull
     private DBRShellCommand createNewCommand(@NotNull DBPConnectionEventType eventType) {
         DBRShellCommand command = new DBRShellCommand("");
         eventsCache.put(eventType, command);
