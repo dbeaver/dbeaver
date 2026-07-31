@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 public class DBeaverHyperLinkDetector extends URLHyperlinkDetector {
     @Override
+    @Nullable
     public IHyperlink[] detectHyperlinks(@NotNull ITextViewer textViewer, @NotNull IRegion region, boolean canShowMultipleHyperlinks) {
         IHyperlink[] hyperlinks = super.detectHyperlinks(textViewer, region, canShowMultipleHyperlinks);
         if (hyperlinks == null || hyperlinks.length == 0) {
