@@ -33,6 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -109,7 +110,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         Path cnf = dir.resolve(".my.cnf"); //$NON-NLS-1$
         cnf.toFile().deleteOnExit();
 
-        try (Writer writer = Files.newBufferedWriter(cnf)) {
+        try (Writer writer = Files.newBufferedWriter(cnf, StandardCharsets.UTF_8)) {
             writer.write("[client]"); //$NON-NLS-1$
             writer.write("\nuser=" + CommonUtils.notEmpty(username)); //$NON-NLS-1$
             writer.write("\npassword=\"" + CommonUtils.notEmpty(password)

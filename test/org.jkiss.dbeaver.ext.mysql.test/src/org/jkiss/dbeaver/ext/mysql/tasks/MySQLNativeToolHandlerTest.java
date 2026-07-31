@@ -30,12 +30,12 @@ class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
     void createCredentialsFileEscapesPasswordForMySQLOptionFile() throws IOException {
         Path credentialsFile = MySQLNativeToolHandler.createCredentialsFile(
             "root",
-            "Super#Secret;\"quote'\\path"
+            "Süper#Secret;\"quote'\\path"
         );
 
         try {
             Assertions.assertEquals(
-                "[client]\nuser=root\npassword=\"Super#Secret;\\\"quote'\\\\path\"",
+                "[client]\nuser=root\npassword=\"Süper#Secret;\\\"quote'\\\\path\"",
                 Files.readString(credentialsFile)
             );
         } finally {
