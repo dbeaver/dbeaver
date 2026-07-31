@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
-import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.confirmation.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -71,7 +71,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
     private final Set<String> originalCommands = new HashSet<>();
 
-    private final ConfirmedShellCommandsManager confirmedShellCommandsManager = new ConfirmedShellCommandsManager();
+    private final ConfirmedShellCommandsManager confirmedShellCommandsManager = ConfirmedShellCommandsManager.getInstance();
 
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
