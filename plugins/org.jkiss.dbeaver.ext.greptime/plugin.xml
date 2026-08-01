@@ -9,14 +9,14 @@
                 parent="generic"
                 dialect="greptime"
                 label="GreptimeDB"
-                icon="icons/greptime_icon.png">
+                icon="icons/greptime_icon.svg">
             <drivers managable="true">
                 <driver
                         id="greptime"
                         label="GreptimeDB"
-                        icon="icons/greptime_icon.png"
-                        iconBig="icons/greptime_icon_big.png"
-                        logoImage="icons/greptime_logo.png"
+                        icon="icons/greptime_icon.svg"
+                        iconBig="icons/greptime_icon_big.svg"
+                        logoImage="icons/greptime_logo.svg"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         supportedConfigurationTypes="MANUAL,URL"
@@ -59,7 +59,7 @@
                 class="org.jkiss.dbeaver.ext.greptime.model.GreptimeDialect"
                 label="GreptimeDB"
                 description="GreptimeDB SQL dialect"
-                icon="icons/greptime_icon.png">
+                icon="icons/greptime_icon.svg">
             <keywords value="TQL,FLOW,FLOWS,SINK,SKIPPING,INVERTED,FULLTEXT"/>
             <functions value="DATE_BIN,DATE_TRUNC,TIMEZONE,TO_UNIXTIME,INTERP,CLAMP"/>
             <types value="STRING,BINARY,BOOLEAN,INT8,INT16,INT32,INT64,UINT8,UINT16,UINT32,UINT64,FLOAT32,FLOAT64,DECIMAL,DATE,DATETIME,TIMESTAMPSECOND,TIMESTAMPMILLISECOND,TIMESTAMPMICROSECOND,TIMESTAMPNANOSECOND,INTERVAL,JSON,VECTOR"/>
