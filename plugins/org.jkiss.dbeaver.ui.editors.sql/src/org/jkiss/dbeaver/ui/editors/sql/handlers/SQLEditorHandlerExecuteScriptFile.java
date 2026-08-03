@@ -72,7 +72,7 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
     }
 
     @NotNull
-    private static List<IFile> getSelectedScripts(@Nullable ISelection selection) {
+    private List<IFile> getSelectedScripts(@Nullable ISelection selection) {
         List<IFile> scripts = new ArrayList<>();
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
             for (Object element : ((IStructuredSelection) selection).toList()) {
@@ -88,7 +88,7 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
         return scripts;
     }
 
-    private static void executeScriptFile(@NotNull Shell shell, @NotNull IWorkbenchWindow workbenchWindow, @NotNull IFile script) {
+    private void executeScriptFile(@NotNull Shell shell, @NotNull IWorkbenchWindow workbenchWindow, @NotNull IFile script) {
         DBPDataSourceContainer resolvedDataSource = EditorUtils.getFileDataSource(script);
         if (resolvedDataSource == null) {
             resolvedDataSource = chooseDataSource(shell, script);
@@ -100,24 +100,18 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
 
         DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject());
         if (!(project instanceof RCPProject rcpProject)) {
-            DBWorkbench.getPlatformUI().showError(
-                "Execute SQL script",
-                "Can't determine project of script '" + script.getName() + "'");
+            DBWorkbench.getPlatformUI().showError("Execute SQL script", "Can't determine project of script '" + script.getName() + "'");
             return;
         }
 
         DBTTaskManager taskManager = project.getTaskManager();
         DBTTaskType taskType = taskManager.getRegistry().getTaskType(SQLTaskConstants.TASK_SCRIPT_EXECUTE);
         if (taskType == null) {
-            DBWorkbench.getPlatformUI().showError(
-                "Execute SQL script",
-                "SQL script execution task type is not available");
+            DBWorkbench.getPlatformUI().showError("Execute SQL script", "SQL script execution task type is not available");
             return;
         }
         if (!TaskUIRegistry.getInstance().supportsConfigurator(taskType)) {
-            DBWorkbench.getPlatformUI().showError(
-                "Execute SQL script",
-                "Task '" + taskType.getName() + "' has no configuration UI");
+            DBWorkbench.getPlatformUI().showError("Execute SQL script", "Task '" + taskType.getName() + "' has no configuration UI");
             return;
         }
 
@@ -140,19 +134,18 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
             dialog.open();
         } catch (Exception e) {
             log.debug("Error opening execute script task for '" + script.getName() + "'", e);
-            DBWorkbench.getPlatformUI().showError(
-                "Execute SQL script",
-                "Error opening execute script task for '" + script.getName() + "'",
-                e);
+            DBWorkbench.getPlatformUI()
+                .showError("Execute SQL script", "Error opening execute script task for '" + script.getName() + "'", e);
         }
     }
 
     @Nullable
-    private static DBPDataSourceContainer chooseDataSource(@NotNull Shell shell, @NotNull IFile script) {
+    private DBPDataSourceContainer chooseDataSource(@NotNull Shell shell, @NotNull IFile script) {
         SelectDataSourceDialog dialog = new SelectDataSourceDialog(
             shell,
             DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject()),
-            null);
+            null
+        );
         if (dialog.open() == IDialogConstants.CANCEL_ID) {
             return null;
         }
