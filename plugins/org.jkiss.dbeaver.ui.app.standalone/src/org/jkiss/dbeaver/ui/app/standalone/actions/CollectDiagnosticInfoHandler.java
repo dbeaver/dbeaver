@@ -90,16 +90,35 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
 
         log.trace("Writing diagnostic info archive");
         try (var out = new ZipOutputStream(new FileOutputStream(archive))) {
-            for (var file : getDiagnosticEntries()) {
-                out.putNextEntry(new ZipEntry(file.zipEntryName));
-                try (var in = Files.newInputStream(file.path, StandardOpenOption.READ)) {
-                    in.transferTo(out);
+            try {
+                out.putNextEntry(new ZipEntry("configuration.txt"));
+                try {
+                    out.write(ConfigurationInfo.getSystemSummary().getBytes(StandardCharsets.UTF_8));
+                } catch (IOException e) {
+                    log.warn("Cannot write configuration info into archive '%s': caught exception".formatted(archive), e);
+                } finally {
+                    out.closeEntry();
                 }
-                out.closeEntry();
+            } catch (IOException e) {
+                log.warn("issues with configuration.txt entry in archive '%s': caught exception".formatted(archive), e);
             }
-            out.putNextEntry(new ZipEntry("configuration.txt"));
-            out.write(ConfigurationInfo.getSystemSummary().getBytes(StandardCharsets.UTF_8));
-            out.closeEntry();
+            for (var file : getDiagnosticEntries()) {
+                try {
+                    out.putNextEntry(new ZipEntry(file.zipEntryName));
+                    try (var in = Files.newInputStream(file.path, StandardOpenOption.READ)) {
+                        in.transferTo(out);
+                    } catch (IOException e) {
+                        log.warn(
+                            "error transferring log entry '%s' into archive '%s': caught exception".formatted(file.zipEntryName, archive),
+                            e
+                        );
+                    } finally {
+                        out.closeEntry();
+                    }
+                } catch (IOException e) {
+                    log.warn("error with log entry '%s' in archive '%s': caught exception".formatted(file.zipEntryName, archive), e);
+                }
+            }
         } catch (IOException e) {
             log.warn("Cannot collect diagnostic data into archive '%s': caught exception".formatted(archive), e);
             showError();
@@ -125,8 +144,9 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     private static Iterable<DiagnosticsEntry> getDiagnosticEntries() {
         Collection<DiagnosticsEntry> diagnosticsEntries = new ArrayList<>();
         addEclipseLog(diagnosticsEntries);
-        addDBeaverDebugLogs(diagnosticsEntries);
         addTaskLogs(diagnosticsEntries);
+        // Ensure the current debug log comes last as to capture any errors during packaging the info archive
+        addDBeaverDebugLogs(diagnosticsEntries);
         return diagnosticsEntries;
     }
 
@@ -142,34 +162,34 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         }
         logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         Path debugLog = Path.of(logLocation);
+        Path logFileLocation = debugLog.getParent();
+        if (logFileLocation != null && Files.isDirectory(logFileLocation)) {
+            String fileName = debugLog.getFileName().toString();
+            String logFileName;
+            String logFileNameExtension;
+            int fnameExtStart = fileName.lastIndexOf('.');
+            if (fnameExtStart >= 0) {
+                logFileName = fileName.substring(0, fnameExtStart);
+                logFileNameExtension = fileName.substring(fnameExtStart);
+            } else {
+                logFileName = fileName;
+                logFileNameExtension = "";
+            }
+            String logFileNameRegexStr = "^" + Pattern.quote(logFileName) + "\\-[0-9]+" + Pattern.quote(logFileNameExtension) + "$";
+            Predicate<String> logFileNamePattern = Pattern.compile(logFileNameRegexStr).asMatchPredicate();
+            try (var stream = Files.list(logFileLocation)) {
+                Collection<DiagnosticsEntry> tmp = stream
+                    .filter(path -> logFileNamePattern.test(path.getFileName().toString()))
+                    .map(path -> new DiagnosticsEntry(path, path.getFileName().toString()))
+                    .toList();
+                diagnosticsEntries.addAll(tmp);
+            } catch (IOException e) {
+                log.debug("Cannot list debug log diagnosticsEntries in '%s': caught exception".formatted(logFileLocation), e);
+            }
+        }
+        // Ensure the current debug log comes last as to capture any errors during packaging the info archive
         if (Files.isRegularFile(debugLog)) {
             diagnosticsEntries.add(new DiagnosticsEntry(debugLog, debugLog.getFileName().toString()));
-        }
-        Path logFileLocation = debugLog.getParent();
-        if (logFileLocation == null || !Files.isDirectory(logFileLocation)) {
-            return;
-        }
-        String fileName = debugLog.getFileName().toString();
-        String logFileName;
-        String logFileNameExtension;
-        int fnameExtStart = fileName.lastIndexOf('.');
-        if (fnameExtStart >= 0) {
-            logFileName = fileName.substring(0, fnameExtStart);
-            logFileNameExtension = fileName.substring(fnameExtStart);
-        } else {
-            logFileName = fileName;
-            logFileNameExtension = "";
-        }
-        String logFileNameRegexStr = "^" + Pattern.quote(logFileName) + "\\-[0-9]+" + Pattern.quote(logFileNameExtension) + "$";
-        Predicate<String> logFileNamePattern = Pattern.compile(logFileNameRegexStr).asMatchPredicate();
-        try (var stream = Files.list(logFileLocation)) {
-            Collection<DiagnosticsEntry> tmp = stream
-                .filter(path -> logFileNamePattern.test(path.getFileName().toString()))
-                .map(path -> new DiagnosticsEntry(path, path.getFileName().toString()))
-                .toList();
-            diagnosticsEntries.addAll(tmp);
-        } catch (IOException e) {
-            log.debug("Cannot list debug log diagnosticsEntries in '%s': caught exception".formatted(logFileLocation), e);
         }
     }
 
