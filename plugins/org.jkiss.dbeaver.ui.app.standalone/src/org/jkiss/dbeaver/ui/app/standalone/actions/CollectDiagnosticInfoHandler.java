@@ -130,12 +130,12 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         return zipEntryInfos;
     }
 
-    private static void addEclipseLog(Collection<ZipEntryInfo> zipEntryInfos) {
+    private static void addEclipseLog(@NotNull Collection<ZipEntryInfo> zipEntryInfos) {
         Path path = Platform.getLogFileLocation().toPath();
         zipEntryInfos.add(new ZipEntryInfo(path, path.getFileName().toString()));
     }
 
-    private static void addDBeaverDebugLogs(Collection<ZipEntryInfo> zipEntryInfos) {
+    private static void addDBeaverDebugLogs(@NotNull Collection<ZipEntryInfo> zipEntryInfos) {
         String logLocation = DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.LOGS_DEBUG_LOCATION);
         if (CommonUtils.isEmpty(logLocation)) {
             logLocation = GeneralUtils.getMetadataFolder().resolve(DBConstants.DEBUG_LOG_FILE_NAME).toAbsolutePath().toString();
@@ -164,7 +164,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         Predicate<String> logFileNamePattern = Pattern.compile(logFileNameRegexStr).asMatchPredicate();
         try (var stream = Files.list(logFileLocation)) {
             Collection<ZipEntryInfo> tmp = stream
-                .filter(path ->  logFileNamePattern.test(path.getFileName().toString()))
+                .filter(path -> logFileNamePattern.test(path.getFileName().toString()))
                 .map(path -> new ZipEntryInfo(path, path.getFileName().toString()))
                 .toList();
             zipEntryInfos.addAll(tmp);
@@ -173,7 +173,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         }
     }
 
-    private static void addTaskLogs(Collection<ZipEntryInfo> zipEntryInfos) {
+    private static void addTaskLogs(@NotNull Collection<ZipEntryInfo> zipEntryInfos) {
         for (DBPProject project: DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             String zipEntryProjectNamePrefix = "tasks/" + project.getName() + "/";
             for (DBTTask task: project.getTaskManager().getAllTasks()) {
@@ -196,7 +196,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         UIUtils.createInfoLink(parent, href, () -> ShellUtils.launchProgram(linkToDocs));
     }
 
-    private record ZipEntryInfo(Path path, String zipEntryName) {}
+    private record ZipEntryInfo(@NotNull Path path, @NotNull String zipEntryName) {}
 
     private static final class CollectDiagnosticInfoDialog extends BaseDialog {
         @Nullable
