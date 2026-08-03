@@ -90,7 +90,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
 
         log.trace("Writing diagnostic info archive");
         try (var out = new ZipOutputStream(new FileOutputStream(archive))) {
-            for (var file : getZipEntryInfos()) {
+            for (var file : getDiagnosticEntries()) {
                 out.putNextEntry(new ZipEntry(file.zipEntryName));
                 try (var in = Files.newInputStream(file.path, StandardOpenOption.READ)) {
                     in.transferTo(out);
@@ -122,7 +122,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     }
 
     @NotNull
-    private static Iterable<DiagnosticsEntry> getZipEntryInfos() {
+    private static Iterable<DiagnosticsEntry> getDiagnosticEntries() {
         Collection<DiagnosticsEntry> diagnosticsEntries = new ArrayList<>();
         addEclipseLog(diagnosticsEntries);
         addDBeaverDebugLogs(diagnosticsEntries);
