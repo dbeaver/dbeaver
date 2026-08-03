@@ -76,6 +76,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     private ConnectionNameResolver fakeConnectionNameResolver;
     private Button useWinTrustStoreCheck;
     private Button closeConnectionOnOsSleepCheck;
+    private Button enableShellAuthModelCheck;
 
     public PrefPageConnectionsGeneral() {
         super();
@@ -130,6 +131,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         }
 
         {
+            DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+
             Composite groupBehavior = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_connection_label_general,
@@ -140,7 +143,13 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
                 groupBehavior,
                 CoreMessages.pref_page_connection_label_close_connection_on_sleep,
                 CoreMessages.pref_page_connection_label_close_connection_on_sleep_tip,
-                true,
+                preferences.getBoolean(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP),
+                1);
+            enableShellAuthModelCheck = UIUtils.createCheckbox(
+                groupBehavior,
+                CoreMessages.pref_page_connection_label_enable_shell_auth_model,
+                CoreMessages.pref_page_connection_label_enable_shell_auth_model_tip,
+                preferences.getBoolean(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED),
                 1);
         }
 
@@ -275,6 +284,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         connectionNamePattern = preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
 
         closeConnectionOnOsSleepCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP));
+        enableShellAuthModelCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED));
 
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             useWinTrustStoreCheck.setSelection(
@@ -307,6 +317,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
         store.setValue(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP, closeConnectionOnOsSleepCheck.getSelection());
+        store.setValue(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED, enableShellAuthModelCheck.getSelection());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }
