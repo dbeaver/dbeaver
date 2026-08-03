@@ -122,4 +122,9 @@ public sealed interface UIObservable<T> permits UIObservableImpl {
      * @param listener a listener that will be called with the old and new values when the value changes
      */
     void addChangeListener(@NotNull BiConsumer<T, T> listener);
+
+    /**
+     * Removes a previously added change listener.
+     */
+    void removeChangeListener(@NotNull BiConsumer<T, T> listener);
 }

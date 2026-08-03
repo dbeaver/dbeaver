@@ -23,6 +23,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -49,8 +50,8 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageNetworkProfiles
@@ -86,8 +87,8 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     private Table profilesTable;
     private CTabFolder handlersFolder;
 
-    private ToolItem deleteProfileItem;
-    private ToolItem copyProfileItem;
+    private Button deleteProfileItem;
+    private Button copyProfileItem;
 
     private final List<NetworkHandlerDescriptor> allHandlers = new ArrayList<>();
     private DBWNetworkProfile selectedProfile;
@@ -182,19 +183,26 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     }
 
     private void createProfilesToolBar(Composite profilesGroup) {
-        ToolBar toolbar = new ToolBar(profilesGroup, SWT.HORIZONTAL | SWT.RIGHT);
+        Composite toolbar = UIUtils.createComposite(profilesGroup, 3);
 
-        UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_network_profiles_tool_create_title,
-                UIConnectionMessages.pref_page_network_profiles_tool_create_text, UIIcon.ROW_ADD,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        createAndShowProfile(null);
-                    }
-                });
+        UIUtils.createPushButton(
+            toolbar,
+            UIConnectionMessages.pref_page_network_profiles_tool_create_title,
+            UIConnectionMessages.pref_page_network_profiles_tool_create_text,
+            UIIcon.ROW_ADD,
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    createAndShowProfile(null);
+                }
+            }
+        );
 
-        deleteProfileItem = UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_network_profiles_tool_delete_title,
-            UIConnectionMessages.pref_page_network_profiles_tool_delete_text, UIIcon.ROW_DELETE,
+        deleteProfileItem = UIUtils.createPushButton(
+            toolbar,
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_title,
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_text,
+            UIIcon.ROW_DELETE,
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -207,9 +215,10 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                         updateControlsState();
                     }
                 }
-            });
+            }
+        );
 
-        copyProfileItem = UIUtils.createToolItem(
+        copyProfileItem = UIUtils.createPushButton(
             toolbar,
             UIConnectionMessages.pref_page_network_profiles_tool_copy_title,
             UIConnectionMessages.pref_page_network_profiles_tool_copy_text,
@@ -244,13 +253,24 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
             }
         }
 
-        TableItem item = new TableItem(profilesTable, SWT.NONE);
-        item.setText(newProfile.getProfileName());
-        item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
-        item.setData(newProfile);
+        createProfileTableItem(newProfile);
 
         profilesTable.select(profilesTable.getItemCount() - 1);
         profilesTable.notifyListeners(SWT.Selection, new Event());
+    }
+
+    @NotNull
+    protected TableItem createProfileTableItem(@NotNull DBWNetworkProfile profile) {
+        TableItem item = new TableItem(profilesTable, SWT.NONE);
+        item.setText(profile.getProfileName());
+        item.setImage(getProfileImage(profile));
+        item.setData(profile);
+        return item;
+    }
+
+    @NotNull
+    protected Image getProfileImage(@NotNull DBWNetworkProfile profile) {
+        return DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT);
     }
 
     /**
@@ -420,10 +440,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                     }
                 }
 
-                TableItem item = new TableItem(profilesTable, SWT.NONE);
-                item.setText(profile.getProfileName());
-                item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
-                item.setData(profile);
+                createProfileTableItem(profile);
 
                 for (NetworkHandlerDescriptor nhd : allHandlers) {
                     HandlerBlock handlerBlock = configurations.get(nhd);

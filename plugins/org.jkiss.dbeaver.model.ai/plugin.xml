@@ -11,6 +11,7 @@
     <extension point="com.dbeaver.ai.engine">
         <completionEngine id="openai"
             label="OpenAI"
+            icon="icons/engine_openai.svg"
             class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine"
             properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties"
             default="true"
@@ -18,6 +19,7 @@
             fallbacks="openai-pro"/>
         <completionEngine id="copilot"
             label="Github Copilot"
+            icon="icons/engine_copilot.svg"
             class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"
             properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"
             supportsFunctions="false"
@@ -47,13 +49,25 @@
     <extension point="org.eclipse.core.expressions.definitions">
         <!-- Enabled by the policy, has precedence over the user's preference -->
         <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy">
-            <not>
-                <or>
-                    <test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.disabled"/>
-                    <test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
-                </or>
-            </not>
+            <and>
+                <not>
+                    <or>
+                        <test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.disabled"/>
+                        <test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
+                    </or>
+                </not>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="ai"/>
+            </and>
         </definition>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.app.config">
+        <feature
+            id="ai"
+            label="AI integration"
+            description="Use AI to create and edit queries, answer questions, troubleshoot errors, or explore database objects."
+            enabledByDefault="true"
+            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
     </extension>
 
     <extension point="com.dbeaver.ai.function">
@@ -86,7 +100,7 @@
             categoryId="schema.discovery"
             description="Returns a list of tables available in the current datasource. Call it also to verify whether a table exists.">
             <parameter name="catalogName" required="false" type="string" description="Catalog or database name. Leave empty if catalog is not known."/>
-            <parameter name="schemaName" required="false" type="string" description="Schema name. Short name without preceding catalog name. Leave empty if schema is not known."/>
+            <parameter name="schemaNames" required="false" type="string" description="Comma-separated schema names. Use short name without preceding catalog name. Required if the database supports schemas (take the default schema from the context if unknown). Leave empty only if the database has no schemas."/>
         </function>
 
         <function

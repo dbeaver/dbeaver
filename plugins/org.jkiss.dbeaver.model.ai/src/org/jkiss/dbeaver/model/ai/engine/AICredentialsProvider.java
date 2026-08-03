@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 
 /***
  *
@@ -45,7 +46,7 @@ public interface AICredentialsProvider<CREDENTIALS> {
      * @throws DBException if there is an error while resolving secrets or retrieving credentials
      */
     @Nullable
-    CREDENTIALS resolveSecrets() throws DBException;
+    CREDENTIALS resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
 
     /**
      * Returns the currently stored credentials without resolving secrets. This method can be used to retrieve the raw credentials,

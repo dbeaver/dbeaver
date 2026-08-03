@@ -22,6 +22,7 @@ import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MouseListener;
@@ -74,6 +75,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
     private AIContextSettings activeCompletionSettings;
     private AIChatConversation activeConversation;
+    private WebViewMessageList messageList;
+    private ContextComposite contextComposite;
 
     public AIChatControl(@NotNull Composite parent, @NotNull AIChatController controller) {
         super(parent, SWT.NONE);
@@ -105,7 +108,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         int chatFeatures = controller.getChatFeatures();
 
         if (CommonUtils.isBitSet(chatFeatures, AIChatController.FEATURE_CONTEXT_VIEW)) {
-            createContextControl(this);
+            contextComposite = createContextControl(this);
             UIUtils.createLineSeparator(this, SWT.HORIZONTAL);
         }
         Control messageListComposite = createMessageListControl(this);
@@ -119,6 +122,16 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         } else {
             promptComposite = null;
         }
+
+        List<Control> tabList = new ArrayList<>();
+        tabList.add(messageListComposite);
+        if (promptComposite != null) {
+            tabList.add(promptComposite);
+        }
+        if (contextComposite != null) {
+            tabList.add(contextComposite);
+        }
+        setTabList(tabList.toArray(new Control[0]));
 
         WidgetElement.applyStyles(this, true);
 
@@ -243,6 +256,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             activeConversation.cancelConversation();
             activeConversation.addMessage(AIMessage.warningMessage(AIChatMessages.ai_chat_conversation_cancelled));
             chatSession.notifyMessageAdd(activeConversation, activeConversation.getMessages().getLast());
+            chatSession.notifyListeners(AIChatListener::conversationCanceled, activeConversation);
         }
     }
 
@@ -291,7 +305,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                         chatSession.setBusy(false);
                     });
                     return Status.OK_STATUS;
-                } catch (DBException e) {
+                } catch (Exception e) {
                     return GeneralUtils.makeExceptionStatus(e);
                 }
             }
@@ -315,8 +329,91 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return chatSession.getAssistant();
     }
 
-    public void setFocusOnPrompt() {
-        promptComposite.setFocusOnPrompt();
+    @Nullable
+    public WebViewMessageList getMessageList() {
+        return messageList;
+    }
+
+    public boolean setFocusOnPrompt() {
+        return promptComposite != null && promptComposite.setFocusOnPrompt();
+    }
+
+    public void setFocusOnMessages() {
+        if (messageList != null) {
+            messageList.focusChat();
+        }
+    }
+
+    public boolean focusContextBar() {
+        return contextComposite != null && contextComposite.setFocus();
+    }
+
+    public void createNewConversation() {
+        if (isBusy()) {
+            return;
+        }
+        try {
+            selectConversation(createEmptyConversation(createNewConversationName(), getDataSourceContainer()));
+            setFocusOnPrompt();
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                "Error creating conversation",
+                "Could not create new conversation: " + e.getMessage(),
+                e
+            );
+        }
+    }
+
+    @NotNull
+    private String createNewConversationName() throws DBException {
+        List<AIChatConversation> conversations = listConversations();
+        String baseName = AIChatMessages.ai_chat_default_conversation_name;
+        String name = baseName;
+        for (int i = 1; ; i++) {
+            String candidate = name;
+            if (conversations.stream().noneMatch(c -> c.getCaption().equals(candidate))) {
+                break;
+            }
+            name = baseName + " " + i;
+        }
+        return name;
+    }
+
+    public void deleteActiveConversationWithConfirmation() {
+        if (isBusy() || !chatSession.getStorage().canPersist()) {
+            return;
+        }
+        if (DBWorkbench.getPlatformUI().confirmAction(
+            AIChatMessages.ai_chat_conversation_delete_confirm_title,
+            NLS.bind(AIChatMessages.ai_chat_conversation_delete_confirm_message, getActiveConversation().getCaption())
+        )) {
+            try {
+                removeActiveConversation();
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError(
+                    "Error deleting conversation",
+                    "Could not delete conversation: " + e.getMessage(),
+                    e
+                );
+            }
+        }
+    }
+
+    public void openChatSettings() {
+        if (contextComposite != null) {
+            contextComposite.openSettings();
+        }
+    }
+
+    public void openScopeDropDown() {
+        if (contextComposite != null) {
+            contextComposite.showScopeDropDown();
+        }
+    }
+
+    public void setConversationProfile(@NotNull AIChatConversation conversation, @Nullable AIConfigurationProfile profile) {
+        conversation.setProfile(profile);
+        chatSession.notifyConversationProfileChanged(conversation);
     }
 
     public void renameConversation(@NotNull AIChatConversation conversation, @NotNull String newName) {
@@ -452,9 +549,13 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     @NotNull
     private Control createMessageListControl(@NotNull Composite parent) {
         try {
-            return new WebViewMessageList(this, parent);
-        } catch (IOException e) {
-            log.error("Error creating WebViewMessageList", e);
+            AIChatMessageListDescriptor descriptor = AIChatMessageListRegistry.getInstance().getMessageListDescriptor();
+            messageList = descriptor != null
+                ? descriptor.createMessageList(this, parent)
+                : new WebViewMessageList(this, parent);
+            return messageList;
+        } catch (DBException | IOException e) {
+            log.error("Error creating AI chat message list", e);
         }
 
         return UIUtils.createLabel(parent, "Internal error creating web chat. See logs.");

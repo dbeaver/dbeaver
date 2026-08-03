@@ -861,9 +861,9 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public boolean persistConfiguration() {
+    public boolean persistConfiguration(boolean forcePersistSecrets) {
         try {
-            registry.updateDataSource(this);
+            registry.updateDataSource(this, forcePersistSecrets);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Datasource update error", "Error updating datasource", e);
             return false;
@@ -1132,6 +1132,7 @@ public class DataSourceDescriptor
                     monitor.done();
                 }
             }
+            resolvePropertiesFromProfile();
 
             // 2. Get credentials from global provider
             if (!authProvidedFromOrigin) {
@@ -1152,7 +1153,6 @@ public class DataSourceDescriptor
                 }
             }
 
-            resolvePropertiesFromProfile();
             patchConnectionProperties(monitor, resolvedConnectionInfo);
 
             // Handle tunnelHandler
@@ -1337,8 +1337,8 @@ public class DataSourceDescriptor
             if (profile != null) {
                 if (secretController != null) {
                     profile.resolveSecrets(secretController);
-                } else if (profile.isGlobal() && !DBWorkbench.isDistributed()) {
-                    // Global profile secrets are stored in global secret controller
+                } else if (profile.isGlobal() && !DBWorkbench.isMultiuserOrDistributed()) {
+                    // Global profile secrets are stored in global secret controller for desktop apps
                     profile.resolveSecrets(DBSSecretController.getGlobalSecretController());
                 }
                 for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
@@ -2254,9 +2254,11 @@ public class DataSourceDescriptor
         if (secretValue == null) {
             if (DBWorkbench.isDistributed()) {
                 // In distributed mode we reset saved password in case of null secret
-                connectionInfo.getHandlers().forEach(handler ->
-                    handler.setSavePassword(false)
-                );
+                connectionInfo.getHandlers().forEach(handler -> {
+                    if (connectionInfo.getConfigProfileName() == null) {
+                        handler.setSavePassword(false);
+                    }
+                });
                 savePassword = false;
             }
             return;
@@ -2326,7 +2328,8 @@ public class DataSourceDescriptor
         if (!isSharedCredentials()) {
             connectionInfo.getHandlers().forEach(
                 handler -> {
-                    if (!handlersFromSecret.contains(handler.getId())) {
+                    // password can be stored in config profile, so we don't reset it if config profile is set
+                    if (connectionInfo.getConfigProfileName() == null && !handlersFromSecret.contains(handler.getId())) {
                         handler.setSavePassword(false);
                     }
                 }
