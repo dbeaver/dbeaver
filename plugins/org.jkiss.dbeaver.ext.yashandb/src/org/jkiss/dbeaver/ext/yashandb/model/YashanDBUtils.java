@@ -86,11 +86,8 @@ public class YashanDBUtils extends OracleUtils {
             if (object instanceof OracleTablePhysical) {
                 log.error("Error generating YashanDB DDL. Generate default.", e);
                 return DBStructUtils.generateTableDDL(monitor, object, options, true);
-            } else {
-                throw new DBException(e.getMessage());
             }
-        } finally {
-            monitor.done();
+            throw new DBException("Error generating " + objectType + " DDL for '" + objectFullName + "'", e);
         }
     }
 
@@ -160,7 +157,7 @@ public class YashanDBUtils extends OracleUtils {
         if (sourceOwner == null) {
             String warnMsg = "No source owner for object '" + sourceObject.getName() + "'";
             log.warn(warnMsg);
-            return null;
+            return "-- " + warnMsg;
         }
         return null;
     }
