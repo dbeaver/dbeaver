@@ -122,20 +122,20 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     }
 
     @NotNull
-    private static Iterable<ZipEntryInfo> getZipEntryInfos() {
-        Collection<ZipEntryInfo> zipEntryInfos = new ArrayList<>();
-        addEclipseLog(zipEntryInfos);
-        addDBeaverDebugLogs(zipEntryInfos);
-        addTaskLogs(zipEntryInfos);
-        return zipEntryInfos;
+    private static Iterable<DiagnosticsEntry> getZipEntryInfos() {
+        Collection<DiagnosticsEntry> diagnosticsEntries = new ArrayList<>();
+        addEclipseLog(diagnosticsEntries);
+        addDBeaverDebugLogs(diagnosticsEntries);
+        addTaskLogs(diagnosticsEntries);
+        return diagnosticsEntries;
     }
 
-    private static void addEclipseLog(@NotNull Collection<ZipEntryInfo> zipEntryInfos) {
+    private static void addEclipseLog(@NotNull Collection<DiagnosticsEntry> diagnosticsEntries) {
         Path path = Platform.getLogFileLocation().toPath();
-        zipEntryInfos.add(new ZipEntryInfo(path, path.getFileName().toString()));
+        diagnosticsEntries.add(new DiagnosticsEntry(path, path.getFileName().toString()));
     }
 
-    private static void addDBeaverDebugLogs(@NotNull Collection<ZipEntryInfo> zipEntryInfos) {
+    private static void addDBeaverDebugLogs(@NotNull Collection<DiagnosticsEntry> diagnosticsEntries) {
         String logLocation = DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.LOGS_DEBUG_LOCATION);
         if (CommonUtils.isEmpty(logLocation)) {
             logLocation = GeneralUtils.getMetadataFolder().resolve(DBConstants.DEBUG_LOG_FILE_NAME).toAbsolutePath().toString();
@@ -143,7 +143,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         Path debugLog = Path.of(logLocation);
         if (Files.isRegularFile(debugLog)) {
-            zipEntryInfos.add(new ZipEntryInfo(debugLog, debugLog.getFileName().toString()));
+            diagnosticsEntries.add(new DiagnosticsEntry(debugLog, debugLog.getFileName().toString()));
         }
         Path logFileLocation = debugLog.getParent();
         if (logFileLocation == null || !Files.isDirectory(logFileLocation)) {
@@ -163,17 +163,17 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         String logFileNameRegexStr = "^" + Pattern.quote(logFileName) + "\\-[0-9]+" + Pattern.quote(logFileNameExtension) + "$";
         Predicate<String> logFileNamePattern = Pattern.compile(logFileNameRegexStr).asMatchPredicate();
         try (var stream = Files.list(logFileLocation)) {
-            Collection<ZipEntryInfo> tmp = stream
+            Collection<DiagnosticsEntry> tmp = stream
                 .filter(path -> logFileNamePattern.test(path.getFileName().toString()))
-                .map(path -> new ZipEntryInfo(path, path.getFileName().toString()))
+                .map(path -> new DiagnosticsEntry(path, path.getFileName().toString()))
                 .toList();
-            zipEntryInfos.addAll(tmp);
+            diagnosticsEntries.addAll(tmp);
         } catch (IOException e) {
-            log.debug("Cannot list debug log zipEntryInfos in '%s': caught exception".formatted(logFileLocation), e);
+            log.debug("Cannot list debug log diagnosticsEntries in '%s': caught exception".formatted(logFileLocation), e);
         }
     }
 
-    private static void addTaskLogs(@NotNull Collection<ZipEntryInfo> zipEntryInfos) {
+    private static void addTaskLogs(@NotNull Collection<DiagnosticsEntry> diagnosticsEntries) {
         for (DBPProject project: DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             String zipEntryProjectNamePrefix = "tasks/" + project.getName() + "/";
             for (DBTTask task: project.getTaskManager().getAllTasks()) {
@@ -181,7 +181,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
                 for (DBTTaskRun taskRun: task.getAllRuns()) {
                     Path runLog = task.getRunLog(taskRun);
                     if (runLog != null) {
-                        zipEntryInfos.add(new ZipEntryInfo(runLog, zipEntryNamePrefix + runLog.getFileName().toString()));
+                        diagnosticsEntries.add(new DiagnosticsEntry(runLog, zipEntryNamePrefix + runLog.getFileName().toString()));
                     }
                 }
             }
@@ -196,7 +196,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         UIUtils.createInfoLink(parent, href, () -> ShellUtils.launchProgram(linkToDocs));
     }
 
-    private record ZipEntryInfo(@NotNull Path path, @NotNull String zipEntryName) {}
+    private record DiagnosticsEntry(@NotNull Path path, @NotNull String zipEntryName) {}
 
     private static final class CollectDiagnosticInfoDialog extends BaseDialog {
         @Nullable
