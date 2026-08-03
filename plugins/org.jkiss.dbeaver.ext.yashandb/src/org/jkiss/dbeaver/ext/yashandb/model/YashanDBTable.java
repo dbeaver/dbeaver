@@ -47,7 +47,7 @@ import java.util.Collections;
  */
 public class YashanDBTable extends OracleTable {
 
-    private static final Log log = Log.getLog(OracleTable.class);
+    private static final Log log = Log.getLog(YashanDBTable.class);
 
     public YashanDBTable(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(monitor, schema, dbResult);

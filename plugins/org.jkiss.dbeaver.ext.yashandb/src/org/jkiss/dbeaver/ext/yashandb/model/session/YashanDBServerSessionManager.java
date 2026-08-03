@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -69,11 +70,11 @@ public class YashanDBServerSessionManager
         return sql.toString();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public List<DBAServerSessionDetails> getSessionDetails() {
         // YashanDB not support yet
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

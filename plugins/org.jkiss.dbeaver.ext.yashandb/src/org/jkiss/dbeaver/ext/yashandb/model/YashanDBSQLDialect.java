@@ -29,7 +29,7 @@ import java.util.Arrays;
  */
 public class YashanDBSQLDialect extends OracleSQLDialect {
 
-    private static final String[] YASHANDB_ADVANCED_KEYWORDS = {"SYNONYM", "CREATE OR REPLACE", "NEXTVAL", "REPLACEex",
+    private static final String[] YASHANDB_ADVANCED_KEYWORDS = {"SYNONYM", "CREATE OR REPLACE", "NEXTVAL", "REPLACE",
         "PACKAGE", "FUNCTION", "TYPE", "BODY", "RECORD", "TRIGGER", "MATERIALIZED", "IF", "EACH", "RETURN",
         "WRAPPED", "AFTER", "BEFORE", "DATABASE", "ANALYZE", "VALIDATE", "STRUCTURE", "COMPUTE", "STATISTICS",
         "LOOP", "WHILE", "BULK", "ELSIF", "EXIT",};
