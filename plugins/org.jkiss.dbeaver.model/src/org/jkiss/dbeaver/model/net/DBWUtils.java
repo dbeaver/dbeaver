@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class DBWUtils {
 
@@ -42,11 +40,11 @@ public class DBWUtils {
     public static final String SSH_TUNNEL = "ssh_tunnel";
 
     public static void updateConfigWithTunnelInfo(
-        DBWHandlerConfiguration configuration,
-        DBPConnectionConfiguration connectionInfo,
-        String localHost,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @Nullable String localHost,
         int localPort
-    ) {
+    ) throws DBException {
         // Replace database host/port and URL
         if (CommonUtils.isNotEmpty(localHost)) {
             connectionInfo.setHostName(localHost);
@@ -62,7 +60,10 @@ public class DBWUtils {
     }
 
     @NotNull
-    public static String getTargetTunnelHostName(@Nullable DBPDataSourceContainer dataSourceContainer, @NotNull DBPConnectionConfiguration cfg) {
+    public static String getTargetTunnelHostName(
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBPConnectionConfiguration cfg
+    ) {
         String hostText = cfg.getHostName();
         // For localhost ry to get real host name from tunnel configuration
         if (isLocalAddress(hostText)) {
@@ -89,7 +90,8 @@ public class DBWUtils {
         return CommonUtils.notEmpty(hostText);
     }
 
-    public static @Nullable String getTunnelHostFromConfig(DBWHandlerConfiguration hc) {
+    @Nullable
+    public static String getTunnelHostFromConfig(@NotNull DBWHandlerConfiguration hc) {
         String host = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
         if (CommonUtils.isEmpty(host)) {
             return null;
@@ -97,7 +99,7 @@ public class DBWUtils {
         return host;
     }
 
-    public static boolean isLocalAddress(String hostText) {
+    public static boolean isLocalAddress(@Nullable String hostText) {
         return CommonUtils.isEmpty(hostText) ||
             hostText.equals(LOCALHOST_NAME) ||
             hostText.equals(LOCAL_NAME) ||
@@ -111,7 +113,8 @@ public class DBWUtils {
         DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
         return CommonUtils.isEmpty(cfg.getConfigProfileName())
             ? null
-            : dataSourceContainer.getRegistry().getNetworkProfile(cfg.getConfigProfileSource(), cfg.getConfigProfileName());
+            : dataSourceContainer.getRegistry().getNetworkProfiles().getProfile(
+                cfg.getConfigProfileSource(), cfg.getConfigProfileName());
     }
 
     /**
@@ -178,17 +181,17 @@ public class DBWUtils {
                 if (CommonUtils.isNotEmpty(activeUrl)) {
                     ConnectivityParameters urlConnectivityParams = null;
                     DBPConnectionConfiguration urlConfiguration = null;
-                    DatabaseURL.MetaURL metaURL = null;
+                    DatabaseURL.Pattern urlPattern = null;
                     if (CommonUtils.isNotEmpty(driver.getSampleURL())) {
                         urlConfiguration = DatabaseURL.extractConfigurationFromUrl(driver.getSampleURL(), activeUrl);
                         if (urlConfiguration != null) {
-                            metaURL = DatabaseURL.parseSampleURL(driver.getSampleURL());
+                            urlPattern = DatabaseURL.getUrlPattern(driver.getSampleURL());
                         }
                     }
                     if (urlConfiguration == null) {
-                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.GENERIC_URL_TEMPLATE, activeUrl);
+                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.Generic.TEMPLATE, activeUrl);
                         if (urlConfiguration != null) {
-                            metaURL = DatabaseURL.parseSampleURL(DatabaseURL.GENERIC_URL_TEMPLATE);
+                            urlPattern = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE);
                         }
                     }
                     if (urlConfiguration != null) {
@@ -205,14 +208,13 @@ public class DBWUtils {
                             null
                         );
                     }
-                    Set<String> requiredUrlParts = metaURL != null ? metaURL.getRequiredProperties() : Collections.emptySet();
 
-                    String databaseName = requiredUrlParts.contains(DBConstants.PROP_DATABASE)
+                    String databaseName = urlPattern != null && urlPattern.hasMandatoryProperty(DBConstants.PROP_DATABASE)
                         ? urlConnectivityParams.databaseName()
                         : CommonUtils.isNotEmpty(urlConnectivityParams.databaseName())
                             ? urlConnectivityParams.databaseName()
                             : explicitConfiguration.databaseName();
-                    String userName = requiredUrlParts.contains(DBConstants.PROP_USER)
+                    String userName =  urlPattern != null && urlPattern.hasMandatoryProperty(DBConstants.PROP_USER)
                         ? urlConnectivityParams.userName()
                         : CommonUtils.isNotEmpty(urlConnectivityParams.userName())
                             ? urlConnectivityParams.userName()

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.jface.text.source.ISharedTextColors;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.*;
 import org.eclipse.swt.events.*;
@@ -30,6 +31,8 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -70,6 +73,7 @@ public class TabbedFolderList extends ConComposite {
 
     private final TopNavigationElement topNavigationElement;
     private final BottomNavigationElement bottomNavigationElement;
+    private final IPropertyChangeListener themeChangeListener;
 
     private int widestLabelIndex = NONE;
     private int tabsThatFitInComposite = NONE;
@@ -467,6 +471,15 @@ public class TabbedFolderList extends ConComposite {
         bottomNavigationElement = new BottomNavigationElement(this);
 
         initColours();
+
+        themeChangeListener = event -> {
+            if (IThemeManager.CHANGE_CURRENT_THEME.equals(event.getProperty())) {
+                initColours();
+                redraw();
+            }
+        };
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+
         initAccessible();
 
         this.addFocusListener(new FocusListener() {
@@ -497,6 +510,7 @@ public class TabbedFolderList extends ConComposite {
                 UIUtils.dispose(di);
             }
             grayedImages.clear();
+            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         });
 
         UIUtils.installAndUpdateMainFont(this);
@@ -730,7 +744,9 @@ public class TabbedFolderList extends ConComposite {
         Color widgetBackground;
         if (UIStyles.isDarkTheme()) {
             // By some reason E4 sets white background in dark theme.
-            widgetBackground = UIStyles.getDefaultWidgetBackground();
+            widgetBackground = UIStyles.isDarkHighContrastTheme()
+                ? UIStyles.getDefaultWidgetBackground()
+                : UIStyles.getDefaultTextBackground();
             super.setBackground(widgetBackground);
             topNavigationElement.setBackground(widgetBackground);
             bottomNavigationElement.setBackground(widgetBackground);

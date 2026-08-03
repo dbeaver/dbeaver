@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -607,6 +608,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         }
     }
 
+    @Nullable
     public COLUMN getColumnData(int columnIndex) {
         return (COLUMN) getColumnByIndex(columnIndex).userData;
     }
@@ -879,11 +881,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 return cat1 - cat2;
             }
 
-            // NOTE: In tree viewers, only parent elements (present in input) should be sorted.
-            // If both e1 and e2 are not in the input collection, they are children — skip sorting.
-            Object input = viewer.getInput();
-            if (input instanceof Collection<?> list && !list.contains(e1) && !list.contains(e2)) {
-                return 0;
+            if (e1 instanceof DBPObjectWithOrdinalPosition p1 && e2 instanceof DBPObjectWithOrdinalPosition p2) {
+                int result = p1.compareTo(p2);
+                if (result != 0) {
+                    return result;
+                }
             }
 
             final String name1 = getLabel(viewer, e1);

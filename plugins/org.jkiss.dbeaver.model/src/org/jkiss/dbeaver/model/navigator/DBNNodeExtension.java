@@ -97,14 +97,6 @@ public class DBNNodeExtension extends DBNNode implements DBPHiddenObject {
         return null;
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        // Path doesn't include project name
-        return NodePathType.ext.getPrefix() + getNodeId();
-    }
-
     @Nullable
     public DBNNode createExtension() {
         return extender.getInstance().createNode(getParentNode());

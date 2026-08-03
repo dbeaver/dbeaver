@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.ShellUtils;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -70,6 +71,16 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder controlLabel(@NotNull UIObservable<String> text) {
+        return label(text.map(t -> t + ":"));
+    }
+
+    @NotNull
+    default UIRowBuilder controlLabel(@NotNull String text) {
+        return label(text + ":");
+    }
+
+    @NotNull
     UIRowBuilder link(
         @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
@@ -87,11 +98,35 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder weblink(@NotNull UIObservable<String> text, @NotNull Consumer<? super UIControlBuilder.LinkBuilder> handler) {
+        return link(text, e -> ShellUtils.launchProgram(e.text), handler);
+    }
+
+    @NotNull
+    default UIRowBuilder weblink(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.LinkBuilder> handler) {
+        return link(UIObservable.of(text), e -> ShellUtils.launchProgram(e.text), handler);
+    }
+
+    @NotNull
+    default UIRowBuilder weblink(@NotNull UIObservable<String> text) {
+        return weblink(text, identityConsumer());
+    }
+
+    @NotNull
     UIRowBuilder button(
-        @NotNull String text,
+        @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
         @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
     );
+
+    @NotNull
+    default UIRowBuilder button(
+        @NotNull String text,
+        @NotNull Consumer<SelectionEvent> onSelect,
+        @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
+    ) {
+        return button(UIObservable.of(text), onSelect, handler);
+    }
 
     @NotNull
     default UIRowBuilder button(
@@ -102,7 +137,12 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
-    UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
+    UIRowBuilder radioButton(@NotNull UIObservable<String> text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
+
+    @NotNull
+    default UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
+        return radioButton(UIObservable.of(text), handler);
+    }
 
     @NotNull
     default UIRowBuilder radioButton(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
@@ -110,7 +150,17 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
-    UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
+    UIRowBuilder checkBox(@NotNull UIObservable<String> text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
+
+    @NotNull
+    default UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
+        return checkBox(UIObservable.of(text), handler);
+    }
+
+    @NotNull
+    default UIRowBuilder checkBox(@NotNull UIObservable<String> text, @NotNull UIObservable<Boolean> selected) {
+        return checkBox(text, bb -> bb.selected(selected));
+    }
 
     @NotNull
     default UIRowBuilder checkBox(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
@@ -239,5 +289,15 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     default UIRowBuilder control(@NotNull Function<Composite, Control> factory) {
         return control(factory, identityConsumer());
+    }
+
+    @NotNull
+    default UIRowBuilder horizontalSpacer() {
+        return label(lb -> lb.align(UIAlignX.FILL).grow(UIGrowX.ALWAYS));
+    }
+
+    @NotNull
+    default UIRowBuilder verticalSpacer() {
+        return label(lb -> lb.align(UIAlignY.FILL).grow(UIGrowY.ALWAYS));
     }
 }

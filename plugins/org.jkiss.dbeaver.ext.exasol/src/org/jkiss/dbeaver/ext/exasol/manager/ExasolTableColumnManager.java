@@ -90,7 +90,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     protected ExasolTableColumn createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
@@ -168,7 +168,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     // -------
     // Helpers
     // -------
-    private DBEPersistAction buildCommentAction(ExasolTableColumn exasolColumn) {
+    static DBEPersistAction buildCommentAction(ExasolTableColumn exasolColumn) {
         if (CommonUtils.isNotEmpty(exasolColumn.getDescription())) {
             String tableName = exasolColumn.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
             String columnName = DBUtils.getObjectFullName(exasolColumn, DBPEvaluationContext.DDL);

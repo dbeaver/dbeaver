@@ -21,9 +21,11 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DatabaseURL;
+import org.jkiss.dbeaver.model.StringTemplate;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -45,7 +47,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
     private static final Log log = Log.getLog(ConfigImportWizard.class);
@@ -98,8 +99,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         return true;
     }
 
-    private boolean findOrCreateDriver(ImportConnectionInfo connectionInfo) throws DBException
-    {
+    private boolean findOrCreateDriver(@NotNull ImportConnectionInfo connectionInfo) throws DBException {
         final ImportDriverInfo driverInfo = connectionInfo.getDriverInfo();
         if (CommonUtils.isEmpty(driverInfo.getDriverClass())) {
             throw new DBException("Cannot create driver '" + driverInfo.getName() + "' - no driver class specified");
@@ -168,11 +168,13 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         return false;
     }
 
-    private void importConnection(ImportData importData, ImportConnectionInfo connectionInfo) {
+    private void importConnection(@NotNull ImportData importData, @NotNull ImportConnectionInfo connectionInfo) {
         try {
             adaptConnectionUrl(connectionInfo);
         } catch (DBException e) {
-            UIUtils.showMessageBox(getShell(), ImportConfigMessages.config_import_wizard_extract_url_parameters, e.getMessage(), SWT.ICON_WARNING);
+            UIUtils.showMessageBox(
+                getShell(), ImportConfigMessages.config_import_wizard_extract_url_parameters, e.getMessage(), SWT.ICON_WARNING
+            );
         }
         final DBPDataSourceRegistry dataSourceRegistry = NavigatorUtils.getSelectedProject().getDataSourceRegistry();
 
@@ -212,10 +214,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         }
     }
 
-    protected void adaptConnectionUrl(ImportConnectionInfo connectionInfo) throws DBException
-    {
-        
-        //connectionInfo.getDriver()
+    protected void adaptConnectionUrl(@NotNull ImportConnectionInfo connectionInfo) throws DBException {
         String url = connectionInfo.getUrl();
         if (url == null) {
             if (connectionInfo.getDriver() == null) {
@@ -231,42 +230,73 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             conConfig.setDatabaseName(connectionInfo.getDatabase());
             url = connectionInfo.getDriver().getConnectionURL(conConfig);
             connectionInfo.setUrl(url);
-            return;
+        } else {
+            try {
+                populateBySampleParams(connectionInfo, url);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+
+            augmentGenericParams(connectionInfo, url);
         }
-        
-        try {
-            parseUrlAsDriverSampleUrl(connectionInfo);
-            return;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        
-        /*
-         * Here parsing was not successful.
-         * URL is not null and not agree with sampleURL from drive. 
-         * Still we proceed to import cause can be any other valid url format for the driver.
-         */
-        log.info("Import url as is it for url:" + url);
-        
     }
 
-    /**
-     * Try to parse url by driver sample url. 
-     * NOTE sampleURL is not the only possible way to define a valid url.
-     *
-     */
-    private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) {
-        String url = connectionInfo.getUrl();
-        
-        String sampleURL = connectionInfo.getDriverInfo().getSampleURL();
-        if (connectionInfo.getDriver() != null) {
-            sampleURL = connectionInfo.getDriver().getSampleURL();
+    private static void populateBySampleParams(@NotNull ImportConnectionInfo connectionInfo, @NotNull String url) throws DBException {
+        String sampleURL = connectionInfo.getDriver() != null
+            ? connectionInfo.getDriver().getSampleURL()
+            : connectionInfo.getDriverInfo().getSampleURL();
+
+        if (sampleURL != null) {
+            Map<String, String> paramsBySample = DatabaseURL.getUrlPattern(sampleURL).tryRecognize(url);
+            if (paramsBySample != null) {
+                for (Map.Entry<String, String> param : paramsBySample.entrySet()) {
+                    switch (param.getKey()) {
+                        case "host" -> connectionInfo.setHost(param.getValue());
+                        case "port" -> connectionInfo.setPort(param.getValue());
+                        case "database" -> connectionInfo.setDatabase(param.getValue());
+                    }
+                }
+            } else {
+                log.debug("Sample URL pattern did not match '" + url + "', used generic JDBC URL parsing");
+            }
+        } else {
+            log.debug("Sample URL not found.");
         }
-        Matcher matcher = DatabaseURL.getPattern(sampleURL).matcher(url);
-        if (matcher.matches()) {
-            connectionInfo.setHost(matcher.group("host"));
-            connectionInfo.setPort(matcher.group("port"));
-            connectionInfo.setDatabase(matcher.group("database"));
+    }
+
+    private static void augmentGenericParams(@NotNull ImportConnectionInfo connectionInfo, @NotNull String url) throws DBException {
+        // Extract URL query parameters as provider properties. Non-standard datasource pages
+        // (e.g. Snowflake warehouse/schema/role) keep their parameters in the query string and
+        // are lost otherwise because the sample URL pattern does not capture them.
+        StringTemplate.ParamEntries paramsByGenericUrl = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS)
+                                                                    .tryRecognizeHierarchical(url);
+        if (paramsByGenericUrl != null) {
+            String host = paramsByGenericUrl.getFirstParamValue("host");
+            if (CommonUtils.isNotEmpty(host) && CommonUtils.isEmpty(connectionInfo.getHost())) {
+                connectionInfo.setHost(host);
+            }
+            String port = paramsByGenericUrl.getFirstParamValue("port");
+            if (CommonUtils.isNotEmpty(port) && CommonUtils.isEmpty(connectionInfo.getPort())) {
+                connectionInfo.setPort(port);
+            }
+            String database = paramsByGenericUrl.getFirstParamValue("database");
+            if (CommonUtils.isNotEmpty(database) && CommonUtils.isEmpty(connectionInfo.getDatabase())) {
+                connectionInfo.setDatabase(host);
+            }
+            for (Map.Entry<String, String> param : DatabaseURL.Generic.extractExtraParams(paramsByGenericUrl).entrySet()) {
+                switch (param.getKey()) {
+                    case "db", "database" -> {
+                        if (CommonUtils.isEmpty(connectionInfo.getDatabase())) {
+                            connectionInfo.setDatabase(param.getValue());
+                        }
+                    }
+                    default -> {
+                        if (!connectionInfo.getProviderProperties().containsKey(param.getKey())) {
+                            connectionInfo.setProviderProperty(param.getKey(), param.getValue());
+                        }
+                    }
+                }
+            }
         }
     }
 }

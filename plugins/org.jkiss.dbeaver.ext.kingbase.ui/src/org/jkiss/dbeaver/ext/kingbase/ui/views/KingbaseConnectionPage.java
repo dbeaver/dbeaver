@@ -18,16 +18,20 @@
 package org.jkiss.dbeaver.ext.kingbase.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -74,7 +78,7 @@ public class KingbaseConnectionPage extends ConnectionPageWithAuth implements ID
     public void createControl(Composite composite) {
         final ModifyListener textListener = e -> {
             if (activated) {
-                updateUrl();
+                super.updateUrl(urlText);
                 site.updateButtons();
             }
         };
@@ -87,14 +91,10 @@ public class KingbaseConnectionPage extends ConnectionPageWithAuth implements ID
         Composite addrGroup = UIUtils.createTitledComposite(mainGroup, UIConnectionMessages.dialog_connection_server_label, 4,
             GridData.FILL_HORIZONTAL);
 
-        SelectionAdapter typeSwitcher = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
-                updateUrl();
-            }
-        };
-        createConnectionModeSwitcher(addrGroup, typeSwitcher);
+        createConnectionModeSwitcher(addrGroup, SelectionListener.widgetSelectedAdapter(e -> {
+            super.setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
+            super.updateUrl(urlText);
+        }));
 
         UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
         urlText = new Text(addrGroup, SWT.BORDER);
@@ -104,6 +104,7 @@ public class KingbaseConnectionPage extends ConnectionPageWithAuth implements ID
         gd.widthHint = 355;
         urlText.setLayoutData(gd);
         urlText.addModifyListener(e -> site.updateButtons());
+        urlText.setData(URL_TEXT_DATA_ERROR_DECORATOR_KEY, new ControlDecoration(urlText, SWT.BOTTOM | SWT.LEFT));
 
         final DBPDriver driver = site.getDriver();
         PostgreServerType serverType = getServerType(driver);
@@ -214,13 +215,13 @@ public class KingbaseConnectionPage extends ConnectionPageWithAuth implements ID
             urlText.setText(connectionInfo.getUrl());
         }
         setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
-        updateUrl();
+        super.updateUrl(urlText);
 
         activated = false;
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
 
         if (hostText != null) {
@@ -236,15 +237,10 @@ public class KingbaseConnectionPage extends ConnectionPageWithAuth implements ID
         super.saveSettings(dataSource);
     }
     
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]
         { new PostgreConnectionPageAdvanced(null), new DriverPropertiesDialogPage(this) };
-    }
-
-    private void updateUrl() {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        saveSettings(dataSourceContainer);
-        urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
     }
 }

@@ -260,7 +260,7 @@ public class SearchDataPage extends AbstractSearchPage {
             searchLOBCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    params.searchLOBs = searchNumbersCheckbox.getSelection();
+                    params.searchLOBs = searchLOBCheckbox.getSelection();
                 }
             });
 

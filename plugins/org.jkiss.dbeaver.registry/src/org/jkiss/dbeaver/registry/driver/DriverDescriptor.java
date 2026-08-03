@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
@@ -289,9 +290,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_ID));
+        this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
+        if (CommonUtils.isEmpty(name)) {
+            // Driver with no name is just a stub from old deprecated and replaced driver
+            categories = List.of();
+            origDescription = null;
+            origClassName = null;
+            origDefaultHost = origDefaultPort = origDefaultDatabase = origDefaultServer = origDefaultUser = null;;
+            origSampleURL = null;;
+            return;
+        }
         this.category = config.getAttribute(RegistryConstants.ATTR_CATEGORY);
         this.categories = Arrays.asList(CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_CATEGORIES), ","));
-        this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
         this.origDefaultHost = this.driverDefaultHost = config.getAttribute(RegistryConstants.ATTR_DEFAULT_HOST);
@@ -1269,7 +1279,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Nullable
     @Override
-    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
             return connectionInfo.getUrl();
         } else if (isSampleURLForced()) {
@@ -1479,7 +1489,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             homeFolder = Path.of(driversHome);
         } else {
             if (platform.getWorkspace().getAbsolutePath().getParent() == null) {
-                homeFolder = platform.getApplication().getDefaultWorkingFolder();
+                homeFolder = platform.getApplication().getWorkspacePath();
                 if (homeFolder != null && homeFolder.getParent() != null) {
                     homeFolder = homeFolder.getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
                 } else {
@@ -1487,7 +1497,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     return RuntimeUtils.getUserHomeDir().toPath().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
                 }
             } else {
-                homeFolder = platform.getWorkspace().getAbsolutePath().getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+                homeFolder = platform.getApplication().getGlobalDataPath().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
             }
         }
         if (!Files.exists(homeFolder)) {

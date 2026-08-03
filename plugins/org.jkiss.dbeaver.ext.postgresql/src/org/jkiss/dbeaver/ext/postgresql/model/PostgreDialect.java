@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
@@ -30,9 +31,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -40,10 +45,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * PostgreSQL dialect
@@ -842,6 +844,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             "ANALYZE",
             "CONCURRENTLY",
             "FREEZE",
+            "MAINTAIN", // PostgreSQL 16+ table privilege (GRANT MAINTAIN ON TABLE ...)
             "LANGUAGE",
             "MODULE",
             "OFFSET",
@@ -1287,5 +1290,87 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public boolean isEscapeBackslash() {
         return serverExtension != null && serverExtension.supportsBackslashStringEscape();
+    }
+
+    @Override
+    public void generateStoredProcedureCall(
+            StringBuilder sql,
+            DBSProcedure proc,
+            Collection<? extends DBSProcedureParameter> parameters,
+            boolean castParams
+    ) {
+        DBPPreferenceStore prefStore;
+        DBPDataSource dataSource = proc.getDataSource();
+        if (dataSource != null) {
+            prefStore = dataSource.getContainer().getPreferenceStore();
+        } else {
+            prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        }
+        String namedParameterPrefix = prefStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
+        boolean useBrackets = useBracketsForExec(proc);
+        if (useBrackets) {
+            sql.append("{ ");
+        }
+        sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
+
+        List<DBSProcedureParameter> inParameters = new ArrayList<>();
+        if (parameters != null) {
+            inParameters.addAll(parameters);
+        }
+        if (!inParameters.isEmpty()) {
+            boolean isProcedure = DBSProcedureType.PROCEDURE.equals(proc.getProcedureType());
+            processParameters(sql, castParams, inParameters, namedParameterPrefix, isProcedure);
+        }
+
+        sql.append(")");
+        String callEndClause = getProcedureCallEndClause(proc);
+        if (!CommonUtils.isEmpty(callEndClause)) {
+            sql.append(" ").append(callEndClause);
+        }
+        if (!useBrackets) {
+            sql.append(";");
+        } else {
+            sql.append(" }");
+        }
+        sql.append("\n\n");
+    }
+
+    private void processParameters(StringBuilder sql, boolean castParams, List<DBSProcedureParameter> inParameters,
+                                   String namedParameterPrefix, boolean isProcedure) {
+        StringJoiner parametersJoiner = new StringJoiner(", ");
+
+        for (DBSProcedureParameter parameter : inParameters) {
+            String typeName = parameter.getParameterType().getFullTypeName();
+            switch (parameter.getParameterKind()) {
+                case INOUT:
+                case IN:
+                    if (castParams) {
+                        parametersJoiner.add("cast(" + namedParameterPrefix + CommonUtils.escapeIdentifier(parameter.getName())
+                                + " as " + typeName + ")");
+                    } else {
+                        parametersJoiner.add(namedParameterPrefix + CommonUtils.escapeIdentifier(parameter.getName()));
+                    }
+                    break;
+                case OUT:
+                    // PostgreSQL requires OUT parameters to be passed as NULL in procedure calls
+                    if (isProcedure) {
+                        parametersJoiner.add(SQLConstants.NULL_VALUE);
+                    }
+                    break;
+                case RETURN:
+                    continue;
+                default:
+                    if (isStoredProcedureCallIncludesOutParameters()) {
+                        if (castParams) {
+                            parametersJoiner.add("cast(? as " + typeName + ")");
+                        } else {
+                            parametersJoiner.add("?");
+                        }
+                    }
+                    break;
+            }
+        }
+
+        sql.append(parametersJoiner);
     }
 }

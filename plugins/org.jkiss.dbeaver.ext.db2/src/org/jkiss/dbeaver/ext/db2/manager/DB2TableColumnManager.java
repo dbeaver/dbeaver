@@ -88,7 +88,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     protected DB2TableColumn createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
@@ -181,7 +181,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
         return sb.toString();
     }
 
-    private DBEPersistAction buildCommentAction(DB2TableColumn db2Column) {
+    static DBEPersistAction buildCommentAction(DB2TableColumn db2Column) {
         String tableName = db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
         String columnName = db2Column.getName();
         String comment = db2Column.getDescription();

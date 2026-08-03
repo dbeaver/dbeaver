@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -52,6 +54,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DBFUtils {
 
     private static final Log log = Log.getLog(DBFUtils.class);
+
+    public static final String DBVFS_NODE_TYPE = "dbvfs";
     public static final String PRODUCT_FEATURE_MULTI_FS = "multi-fs";
     private static final String FILE_DATABASES_FOLDER = "File databases";
 
@@ -288,5 +292,15 @@ public class DBFUtils {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public static SMSessionContext getSessionContext(@NotNull DBFFileSystemContainer fsContainer) throws DBException {
+        if (fsContainer instanceof DBPProject project) {
+            return project.getSessionContext();
+        } else if (fsContainer instanceof DBPWorkspace workspace) {
+            return workspace.getAuthContext();
+        }
+        throw new DBException("File system container '" + fsContainer + "' doesn't support session context");
     }
 }

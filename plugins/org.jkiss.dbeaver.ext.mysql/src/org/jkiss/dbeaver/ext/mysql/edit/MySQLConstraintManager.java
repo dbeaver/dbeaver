@@ -105,7 +105,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
     protected MySQLTableConstraint createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {
@@ -141,7 +141,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
     }
 
     @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<MySQLTableConstraint> command) {
+    protected void appendConstraintDefinition(@NotNull StringBuilder decl, @NotNull DBECommandAbstract<MySQLTableConstraint> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
             decl.append(" (").append((command.getObject()).getCheckClause()).append(")");
         } else {

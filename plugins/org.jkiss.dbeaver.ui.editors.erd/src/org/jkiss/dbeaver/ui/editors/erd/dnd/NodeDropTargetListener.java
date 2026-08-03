@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.dnd.AbstractTransferDropTargetListener;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.CreationFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.erd.DiagramObjectCollector;
 import org.jkiss.dbeaver.model.erd.ERDEntity;
@@ -51,32 +52,28 @@ import java.util.List;
  */
 public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
 
-    public NodeDropTargetListener(EditPartViewer viewer)
-    {
+    public NodeDropTargetListener(@NotNull EditPartViewer viewer) {
         super(viewer, DatabaseObjectTransfer.getInstance());
     }
 
     @Override
-    protected void updateTargetRequest()
-    {
+    protected void updateTargetRequest() {
 
     }
 
     @Override
-    protected Request createTargetRequest()
-    {
+    protected Request createTargetRequest() {
         CreateRequest request = new CreateRequest();
         request.setFactory(new CreationFactory() {
             @Override
-            public Object getNewObject()
-            {
+            public Object getNewObject() {
                 Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getInstance().getObject();
                 ERDEditorPart editor = ((DiagramPart) getViewer().getRootEditPart().getContents()).getEditor();
-                if (objects == null) {
+                if (objects == null || editor == null || editor.getDiagram() == null) {
                     return null;
                 }
 
-                DBRRunnableWithResult<List<ERDEntity>> collector = new DBRRunnableWithResult<List<ERDEntity>>() {
+                DBRRunnableWithResult<List<ERDEntity>> collector = new DBRRunnableWithResult<>() {
                     @Override
                     public void run(DBRProgressMonitor monitor) {
                         result = DiagramObjectCollector.generateEntityList(
@@ -86,7 +83,8 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                             objects,
                             new DiagramCollectSettingsDefault(),
                             true,
-                            editor.isERD());
+                            editor.isERD()
+                        );
                     }
                 };
                 try {
@@ -113,8 +111,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
             }
 
             @Override
-            public Object getObjectType()
-            {
+            public Object getObjectType() {
                 return RequestConstants.REQ_CREATE;
             }
         });

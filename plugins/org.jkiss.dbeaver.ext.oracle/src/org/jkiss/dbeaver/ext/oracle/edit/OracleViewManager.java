@@ -86,7 +86,7 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
     }
 
     @Override
-    protected OracleView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @Nullable Object container, @Nullable
+    protected OracleView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @NotNull Object container, @Nullable
     Object copyFrom, @NotNull Map<String, Object> options) {
         OracleSchema schema = (OracleSchema) container;
         OracleView newView = new OracleView(schema, "NEW_VIEW"); //$NON-NLS-1$
@@ -139,7 +139,7 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
         final OracleView view = command.getObject();
         boolean hasComment = command.hasProperty("comment");
         if (!hasComment || command.getProperties().size() > 1) {
-            String viewText = view.getViewText().trim();
+            String viewText = view.getObjectDefinitionText(monitor, options).trim();
             List<SQLScriptElement> sqlScriptElements = SQLScriptParser.parseScript(view.getDataSource(), viewText);
             if (sqlScriptElements.size() > 1) {
                 // In this case we already have and view definition, and view/columns comments

@@ -120,6 +120,22 @@ public class UIIcon {
     public static final DBIcon FILTER_OBJECTS = new DBIcon("misc/filter_objects.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_CONNECTED = new DBIcon("misc/filter_connected.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_ALL = new DBIcon("misc/filter_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FIND_REPLACE = new DBIcon("misc/find_and_replace.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon FIND_REPLACE_FIND_NEXT = new DBIcon("misc/findandreplace/find_next.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_FIND_PREV = new DBIcon("misc/findandreplace/find_prev.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_MATCH_CASE = new DBIcon("misc/findandreplace/match_case.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_MATCH_WORD = new DBIcon("misc/findandreplace/match_word.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_MATCH_REGEX = new DBIcon("misc/findandreplace/march_regex.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_MATCH_IN_SELECTION = new DBIcon("misc/findandreplace/match_in_selection.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_REPLACE = new DBIcon("misc/findandreplace/replace.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_REPLACE_ALL = new DBIcon("misc/findandreplace/replace_all.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_FIND_ALL = new DBIcon("misc/findandreplace/find_all.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_FIND_ALL_FILTER = new DBIcon("misc/findandreplace/filter.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_CLOSE = new DBIcon("misc/findandreplace/close.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_CLOSE_REPLACE = new DBIcon("misc/findandreplace/close_replace.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_OPEN_REPLACE = new DBIcon("misc/findandreplace/open_replace.svg"); //$NON-NLS-1$
+    public static final DBIcon FIND_REPLACE_OPEN_HISTORY = new DBIcon("misc/findandreplace/open_history.svg"); //$NON-NLS-1$
 
     public static final DBIcon EVENT = new DBIcon("event", "misc/event.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon HOME = new DBIcon("home", "misc/home.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -146,6 +162,7 @@ public class UIIcon {
     public static final DBIcon CANCEL = new DBIcon("cancel", "misc/cancel.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PRINT = new DBIcon("print", "misc/print.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BROWSER = new DBIcon("browser", "misc/browser.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EXPAND = new DBIcon("expand", "expand.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon EDIT = new DBIcon("edit", "edit.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ADD = new DBIcon("add", "add.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -258,6 +275,10 @@ public class UIIcon {
     public static final DBIcon OPEN = new DBIcon("file/open.png"); //$NON-NLS-1$
     public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.svg"); //$NON-NLS-1$
     public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.svg"); //$NON-NLS-1$
+
+    public static final DBIcon SIMPLE_MODE = new DBIcon("misc/simple_mode.svg");
+    public static final DBIcon CUSTOM_MODE = new DBIcon("misc/custom_mode.svg");
+    public static final DBIcon ADVANCED_MODE = new DBIcon("misc/advanced_mode.svg");
 
     static  {
         DBIcon.loadIcons(UIIcon.class);

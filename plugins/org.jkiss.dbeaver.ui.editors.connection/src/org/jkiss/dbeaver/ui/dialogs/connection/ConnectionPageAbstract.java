@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ResourceLocator;
@@ -29,6 +31,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -56,6 +60,8 @@ import java.util.List;
  * ConnectionPageAbstract
  */
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor {
+    private static final Log log = Log.getLog(ConnectionPageAbstract.class);
+
     public static final String PROP_DRIVER_SUBSTITUTION = "driver-substitution";
 
     protected static final String GROUP_CONNECTION_MODE = "connectionMode"; //$NON-NLS-1$
@@ -63,12 +69,15 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected static final String GROUP_URL = "url"; //$NON-NLS-1$
     protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
     protected static final List<String> GROUP_URL_ARR = List.of(GROUP_URL);
+
+    protected static final String URL_TEXT_DATA_ERROR_DECORATOR_KEY = "decorator";
+
     @NotNull
     protected final Map<String, Set<Control>> propGroupMap = new HashMap<>();
 
     protected IDataSourceConnectionEditorSite site;
     // Driver name
-    protected Text driverText;
+    protected Label driverText;
     protected Text passwordText;
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
@@ -154,8 +163,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         saveConnectionURL(dataSource.getConnectionConfiguration());
         if (savePasswordCheck != null) {
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
@@ -178,11 +186,15 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
     }
 
-    protected void saveConnectionURL(DBPConnectionConfiguration connectionInfo)
-    {
+    protected void saveConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (!isCustomURL()) {
-            connectionInfo.setUrl(
-                site.getDriver().getConnectionURL(connectionInfo));
+            try {
+                connectionInfo.setUrl(site.getDriver().getConnectionURL(connectionInfo));
+            } catch (DBException e) {
+                // ignore url preparation errors, it'll be regenerated from template either way
+                // required params configuration errors reported with the updateUrl(..) method
+                connectionInfo.setUrl(null);
+            }
         }
     }
 
@@ -225,11 +237,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             gd.horizontalSpan = 5;
             driverInfoComp.setLayoutData(gd);
 
-            Label driverLabel = new Label(driverInfoComp, SWT.NONE);
-            driverLabel.setText(UIConnectionMessages.dialog_connection_driver);
+            Label driverLabel = UIUtils.createControlLabel(driverInfoComp, UIConnectionMessages.dialog_connection_driver);
             driverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            driverText = new Text(driverInfoComp, SWT.READ_ONLY);
+            driverText = new Label(driverInfoComp, SWT.NONE);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             //gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 2;
@@ -374,15 +385,17 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
     }
 
-    protected void createDriverSubstitutionControls(@NotNull Composite parent) {
-        createDriverSubstitutionControls(parent, 1, true);
+    @NotNull
+    protected Control createDriverSubstitutionControls(@NotNull Composite parent) {
+        return createDriverSubstitutionControls(parent, 1, true);
     }
 
-    protected void createDriverSubstitutionControls(@NotNull Composite parent, int hSpan, boolean grab) {
+    @NotNull
+    protected Control createDriverSubstitutionControls(@NotNull Composite parent, int hSpan, boolean grab) {
+        final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
         final DBPDriverSubstitutionDescriptor[] driverSubstitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
 
         if (driverSubstitutions.length > 0) {
-            final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
             GridDataFactory.fillDefaults()
                 .grab(grab, false)
                 .span(hSpan, 1)
@@ -412,6 +425,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 driverSubstitutionCombo.add(descriptor.getName());
             }
         }
+
+        return substitutionGroup;
     }
 
     protected boolean isHideNonApplicableControls() {
@@ -468,13 +483,41 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         Collections.addAll(controls, list);
     }
 
-    protected void updateUrlFromSettings(Text urlText) {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
+    protected void updateUrl(@NotNull Text urlText) {
+        this.updateUrl(urlText, site.getActiveDataSource());
+    }
+
+    protected void updateUrl(@NotNull Text urlText, @NotNull DBPDataSourceContainer dataSourceContainer) {
+        ControlDecoration decoration = urlText.getData(URL_TEXT_DATA_ERROR_DECORATOR_KEY) instanceof ControlDecoration d ? d : null;
+        if (decoration != null) {
+            decoration.hide();
+        }
+        try {
+            saveSettings(dataSourceContainer);
+            if (typeURLRadio != null && typeURLRadio.getSelection()) {
+                String connectionUrl = dataSourceContainer.getConnectionConfiguration().getUrl();
+                urlText.setText(CommonUtils.notNull(connectionUrl, ""));
+            } else {
+                String connectionUrl = dataSourceContainer.getDriver().getConnectionURL(dataSourceContainer.getConnectionConfiguration());
+                urlText.setText(CommonUtils.notNull(connectionUrl, ""));
+            }
+        } catch (DBException ex) {
+            if (decoration != null) {
+                decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR).getImage());
+                StringBuilder sb = new StringBuilder();
+                for (Throwable t = ex; t != null; t = t.getCause()) {
+                    sb.append(t.getMessage());
+                    if (t.getCause() != null) {
+                        sb.append("\n");
+                    }
+                }
+                decoration.setDescriptionText(sb.toString());
+                decoration.show();
+            }
+        }
     }
 
     protected boolean supportsDriverSubstitution() {
         return true;
     }
-
 }

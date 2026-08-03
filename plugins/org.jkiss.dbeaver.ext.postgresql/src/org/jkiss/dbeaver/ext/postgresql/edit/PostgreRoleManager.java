@@ -66,7 +66,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     protected PostgreRole createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
@@ -158,6 +158,10 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
 
         if (role.getValidUntil() != null) {
             options.append(" VALID UNTIL ").append(SQLUtils.quoteString(role, TIMESTAMP_FORMATTER.format(role.getValidUntil())));
+        }
+        
+        if (create || command.hasProperty("connLimit")) { 
+            options.append(" CONNECTION LIMIT ").append(role.getConnLimit()); 
         }
 
         if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
