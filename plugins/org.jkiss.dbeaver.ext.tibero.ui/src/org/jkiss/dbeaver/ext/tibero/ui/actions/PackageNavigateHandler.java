@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.tibero.ui.actions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -105,7 +106,7 @@ public class PackageNavigateHandler extends AbstractHandler {
             final IDocument document = sqlEditor.getDocument();
             if (document != null) {
                 String commentSkip = "^(?!\\s*--)\\s*";
-                String procRegex = commentSkip + procedure.getProcedureType().name() + "\\s+" + procedure.getName();
+                String procRegex = commentSkip + procedure.getProcedureType().name() + "\\s+" + Pattern.quote(procedure.getName());
                 final Collection<OracleProcedureArgument> parameters = procedure.getParameters(monitor);
                 if (parameters != null) {
                     List<OracleProcedureArgument> inParams = new ArrayList<>();

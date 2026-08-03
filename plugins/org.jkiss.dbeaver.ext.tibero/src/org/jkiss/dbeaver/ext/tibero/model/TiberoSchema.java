@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -56,6 +54,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.ext.tibero.TiberoConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -484,18 +483,7 @@ public class TiberoSchema extends OracleSchema {
 
     @NotNull
     List<OracleTableForeignKey> getTableForeignKeyReferences(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
-        List<OracleTableForeignKey> refs = new ArrayList<>();
-        for (OracleTable oracleTable : getTables(monitor)) {
-            if (oracleTable == table) {
-                continue;
-            }
-            for (OracleTableForeignKey fk : getTableForeignKeys(monitor, oracleTable)) {
-                if (fk.getReferencedTable() == table) {
-                    refs.add(fk);
-                }
-            }
-        }
-        return refs;
+        return loadTableForeignKeyReferences(monitor, table);
     }
 
     private List<OracleTableConstraint> loadTableConstraints(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
@@ -637,6 +625,108 @@ public class TiberoSchema extends OracleSchema {
             throw new DBDatabaseException(e, getDataSource());
         }
         return new ArrayList<>(foreignKeys.values());
+    }
+
+    private List<OracleTableForeignKey> loadTableForeignKeyReferences(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+        cacheTables(monitor);
+        Map<String, OracleTableForeignKey> foreignKeys = new LinkedHashMap<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table foreign key references")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.TABLE_NAME\n" +
+                "     , c.CONSTRAINT_NAME\n" +
+                "     , c.CONSTRAINT_TYPE\n" +
+                "     , c.STATUS\n" +
+                "     , c.R_OWNER\n" +
+                "     , c.R_CONSTRAINT_NAME\n" +
+                "     , rc.TABLE_NAME AS R_TABLE_NAME\n" +
+                "     , c.DELETE_RULE\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " c\n" +
+                "JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " rc\n" +
+                "  ON rc.OWNER = c.R_OWNER\n" +
+                " AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME\n" +
+                " AND rc.CONSTRAINT_TYPE = 'P'\n" +
+                "WHERE c.OWNER = ?\n" +
+                "  AND c.CONSTRAINT_TYPE = 'R'\n" +
+                "  AND rc.OWNER = ?\n" +
+                "  AND rc.TABLE_NAME = ?\n" +
+                "ORDER BY c.TABLE_NAME, c.CONSTRAINT_NAME"
+            )) {
+                dbStat.setString(1, getName());
+                dbStat.setString(2, table.getSchema().getName());
+                dbStat.setString(3, table.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        String referencingTableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_NAME");
+                        OracleTableBase referencingTable = CommonUtils.isEmpty(referencingTableName) ?
+                            null :
+                            tableCache.getObject(monitor, this, referencingTableName);
+                        if (!(referencingTable instanceof OracleTable oracleTable)) {
+                            continue;
+                        }
+                        OracleTableForeignKey fk = new OracleTableForeignKey(monitor, oracleTable, dbResult);
+                        foreignKeys.put(getForeignKeyCacheKey(referencingTableName, fk.getName()), fk);
+                    }
+                }
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.TABLE_NAME\n" +
+                "     , cc.CONSTRAINT_NAME\n" +
+                "     , cc.COLUMN_NAME\n" +
+                "     , cc.POSITION\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " c\n" +
+                "JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " rc\n" +
+                "  ON rc.OWNER = c.R_OWNER\n" +
+                " AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME\n" +
+                " AND rc.CONSTRAINT_TYPE = 'P'\n" +
+                "JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONS_COLUMNS") + " cc\n" +
+                "  ON cc.OWNER = c.OWNER\n" +
+                " AND cc.TABLE_NAME = c.TABLE_NAME\n" +
+                " AND cc.CONSTRAINT_NAME = c.CONSTRAINT_NAME\n" +
+                "WHERE c.OWNER = ?\n" +
+                "  AND c.CONSTRAINT_TYPE = 'R'\n" +
+                "  AND rc.OWNER = ?\n" +
+                "  AND rc.TABLE_NAME = ?\n" +
+                "ORDER BY c.TABLE_NAME, cc.CONSTRAINT_NAME, cc.POSITION"
+            )) {
+                dbStat.setString(1, getName());
+                dbStat.setString(2, table.getSchema().getName());
+                dbStat.setString(3, table.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        String referencingTableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_NAME");
+                        OracleTableForeignKey fk = foreignKeys.get(
+                            getForeignKeyCacheKey(referencingTableName, JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTRAINT_NAME")));
+                        if (fk == null) {
+                            continue;
+                        }
+                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
+                        OracleTableColumn tableColumn = columnName == null ? null : fk.getTable().getAttribute(monitor, columnName);
+                        if (tableColumn == null) {
+                            continue;
+                        }
+                        List<OracleTableConstraintColumn> refs = fk.getAttributeReferences(null);
+                        if (refs == null) {
+                            refs = new ArrayList<>();
+                            fk.setAttributeReferences(refs);
+                        }
+                        refs.add(new OracleTableForeignKeyColumn(fk, tableColumn, JDBCUtils.safeGetInt(dbResult, "POSITION")));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return new ArrayList<>(foreignKeys.values());
+    }
+
+    private String getForeignKeyCacheKey(@Nullable String tableName, @Nullable String constraintName) {
+        return tableName + "." + constraintName;
     }
 
     /**
@@ -998,21 +1088,13 @@ public class TiberoSchema extends OracleSchema {
     }
 
     private boolean isSynonymsAsChildrenEnabled() {
-        return readBooleanField("synonymsAsChildren");
+        DBPConnectionConfiguration cfg = getDataSource().getContainer().getConnectionConfiguration();
+        return CommonUtils.getBoolean(cfg.getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
     }
 
     private boolean isSequencesAsChildrenEnabled() {
-        return readBooleanField("sequencesAsChildren");
-    }
-
-    private boolean readBooleanField(String fieldName) {
-        try {
-            VarHandle handle = MethodHandles.privateLookupIn(OracleSchema.class, MethodHandles.lookup())
-                .findVarHandle(OracleSchema.class, fieldName, boolean.class);
-            return (boolean) handle.get(this);
-        } catch (ReflectiveOperationException e) {
-            return false;
-        }
+        DBPConnectionConfiguration cfg = getDataSource().getContainer().getConnectionConfiguration();
+        return CommonUtils.getBoolean(cfg.getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES));
     }
 
     private class SequenceCache extends JDBCObjectCache<OracleSchema, OracleSequence> {
