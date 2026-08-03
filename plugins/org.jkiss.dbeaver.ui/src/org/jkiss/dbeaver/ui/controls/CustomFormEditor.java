@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,14 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.HoverControlSupport;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -125,8 +128,7 @@ public class CustomFormEditor {
             propertySource.getEditableValue().getClass(), DBEObjectRenamer.class) != null;
     }
 
-    public void createPropertyEditor(Composite group, DBPPropertyDescriptor prop) {
-
+    public void createPropertyEditor(@NotNull Composite group, @Nullable DBPPropertyDescriptor prop) {
         isLoading = true;
 
         try {
@@ -317,9 +319,11 @@ public class CustomFormEditor {
         }
 
         if (DBSObject.class.isAssignableFrom(propType) || isLinkProperty(property)) {
-            UIUtils.createControlLabel(
+            Label label = UIUtils.createControlLabel(
                 parent,
-                propertyDisplayName);
+                propertyDisplayName
+            );
+            CSSUtils.setWidgetDefaultBackGround(label);
             Link link = new Link(parent, SWT.NONE);
             link.setText(getLinkTitle(value));
             link.setData(value);
@@ -330,6 +334,7 @@ public class CustomFormEditor {
             if (property instanceof ObjectPropertyDescriptor && property.getLength() == PropertyLength.MULTILINE) {
                 Label label = UIUtils.createControlLabel(parent, propertyDisplayName);
                 label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+                CSSUtils.setWidgetDefaultBackGround(label);
 
                 Text editor = new Text(parent, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 editor.setText(objectValueToString(value));
@@ -343,19 +348,19 @@ public class CustomFormEditor {
                 HoverControlSupport.install(editor, (parent1, editor1) -> {
                     ToolBar toolBar = new ToolBar(parent1, SWT.FLAT);
                     ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
-                    toolItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
-                    toolItem.setToolTipText("Edit...");
+                    toolItem.setImage(DBeaverIcons.getImage(UIIcon.EXPAND));
+                    toolItem.setToolTipText("Show as multi-line...");
                     toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         if (readOnly) {
                             EditTextDialog.showText(
                                 editor.getShell(),
-                                UIMessages.edit_text_dialog_title_edit_value,
+                                property.getDisplayName(),
                                 editor.getText()
                             );
                         } else {
                             String newValue = EditTextDialog.editText(
                                 editor.getShell(),
-                                UIMessages.edit_text_dialog_title_edit_value,
+                                property.getDisplayName(),
                                 editor.getText()
                             );
                             if (newValue != null) {
@@ -367,7 +372,8 @@ public class CustomFormEditor {
 
                 return editor;
             } else {
-                UIUtils.createControlLabel(parent, propertyDisplayName);
+                Label label = UIUtils.createControlLabel(parent, propertyDisplayName);
+                CSSUtils.setWidgetDefaultBackGround(label);
                 Text text = new Text(parent, SWT.BORDER |
                     (readOnly ? SWT.READ_ONLY : SWT.NONE) |
                     (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isPassword() ? SWT.PASSWORD : SWT.NONE));
@@ -377,8 +383,9 @@ public class CustomFormEditor {
             }
         } else if (BeanUtils.isBooleanType(propType)) {
             if (curButtonsContainer == null) {
-                UIUtils.createEmptyLabel(parent, 1, 1);
-                curButtonsContainer = new ConComposite(parent, SWT.NONE);
+                Control label = UIUtils.createEmptyLabel(parent, 1, 1);
+                CSSUtils.setWidgetDefaultBackGround(label);
+                curButtonsContainer = new Composite(parent, SWT.NONE);
                 RowLayout layout = new RowLayout(SWT.HORIZONTAL);
                 curButtonsContainer.setLayout(layout);
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -393,7 +400,9 @@ public class CustomFormEditor {
                 CommonUtils.toBoolean(value),
                 1
             );
+            CSSUtils.setWidgetDefaultBackGround(editor);
             Label label = UIUtils.createLabel(bPH, propertyDisplayName);
+            CSSUtils.setWidgetDefaultBackGround(label);
             label.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseUp(MouseEvent e) {

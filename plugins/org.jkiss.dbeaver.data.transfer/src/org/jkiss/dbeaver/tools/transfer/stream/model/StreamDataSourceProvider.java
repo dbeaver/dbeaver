@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -31,7 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * DataSourceProviderLocal
  */
-public class StreamDataSourceProvider implements DBPDataSourceProvider {
+public class StreamDataSourceProvider implements DBPDataSourceProvider<DBPDataSource> {
     public static final String PROVIDER_ID = "stream";
 
     @Override
@@ -49,9 +50,16 @@ public class StreamDataSourceProvider implements DBPDataSourceProvider {
     public DBPPropertyDescriptor[] getConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
         @NotNull DBPConnectionConfiguration connectionInfo
-    ) throws DBException {
+    ) {
         return new DBPPropertyDescriptor[0];
+    }
+
+    @NotNull
+    @Override
+    public Class<? extends DBPDataSource> getDataSourceClass() {
+        return DBPDataSource.class;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,38 +71,41 @@ public abstract class DBVUtils {
         return null;
     }
 
+    @Nullable
     public static DBVEntity getVirtualEntity(@NotNull DBDAttributeBinding binding, boolean create) {
         DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
-        DBVEntity vEntity;
         if (entityAttribute != null) {
-            vEntity = getVirtualEntity(entityAttribute.getParentObject(), create);
+            return getVirtualEntity(entityAttribute.getParentObject(), create);
         } else {
-            vEntity = getVirtualEntity(binding.getDataContainer(), create);
-
+            DBSDataContainer dataContainer = binding.getDataContainer();
+            if (dataContainer != null) {
+                return getVirtualEntity(dataContainer, create);
+            } else {
+                return null;
+            }
         }
-        return vEntity;
     }
 
     @Nullable
-    public static DBVEntity getVirtualEntity(@NotNull DBSEntity source, boolean create)
-    {
-        if (source instanceof DBVEntity) {
-            return (DBVEntity) source;
+    public static DBVEntity getVirtualEntity(@NotNull DBSEntity source, boolean create) {
+        if (source instanceof DBVEntity vEntity) {
+            return vEntity;
         }
         DBPDataSource dataSource = source.getDataSource();
         return dataSource == null ? null : dataSource.getContainer().getVirtualModel().findEntity(source, create);
     }
 
+    @Nullable
     public static DBVEntity getVirtualEntity(@NotNull DBSDataContainer dataContainer, boolean create) {
-        if (dataContainer instanceof IAdaptable) {
+        if (dataContainer instanceof IAdaptable adaptable) {
             // Data container can be a wrapper around another data container (e.g. ResultSetDataContainer). Virtual entity is linked to the nested one.
-            DBSDataContainer nestedDC = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
+            DBSDataContainer nestedDC = adaptable.getAdapter(DBSDataContainer.class);
             if (nestedDC != null) {
                 dataContainer = nestedDC;
             }
         }
-        if (dataContainer instanceof DBSEntity) {
-            return getVirtualEntity((DBSEntity)dataContainer, create);
+        if (dataContainer instanceof DBSEntity entity) {
+            return getVirtualEntity(entity, create);
         }
         // Not an entity. Most likely a custom query. Use local cache for such attributes.
         // There shouldn't be too many such settings as they are defined by user manually
@@ -204,7 +207,11 @@ public abstract class DBVUtils {
             .toList();
     }
 
-    public static String getDictionaryDescriptionColumns(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
+    @Nullable
+    public static String getDictionaryDescriptionColumns(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAttribute attribute
+    ) throws DBException {
         DBVEntity dictionary = DBVUtils.getVirtualEntity(attribute.getParentObject(), false);
         String descColumns = null;
         if (dictionary != null) {

@@ -28,6 +28,8 @@ public class BaseThemeSettings extends ThemeListener {
     public volatile Font baseFont;
     @ThemeFont(value = UIFonts.DBeaver.MAIN_FONT, bold = true)
     public volatile Font baseFontBold;
+    @ThemeFont(value = UIFonts.DBeaver.MAIN_FONT, italic = true)
+    public volatile Font baseFontItalic;
 
     @ThemeFont(value = UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS)
     public volatile Font treeAndTableFont;
@@ -50,6 +52,11 @@ public class BaseThemeSettings extends ThemeListener {
     public volatile Color colorError;
     @ThemeColor(BaseEditorColors.COLOR_WARNING)
     public volatile Color colorWarning;
+    @ThemeColor(BaseEditorColors.COLOR_WARNING_FOREGROUND)
+    public volatile Color colorWarningForeground;
+    @ThemeColor(BaseEditorColors.COLOR_ERROR_FOREGROUND)
+    public volatile Color colorErrorForeground;
+
     @ThemeColor(BaseEditorColors.COLOR_ACCENT)
     public volatile Color colorAccent;
 

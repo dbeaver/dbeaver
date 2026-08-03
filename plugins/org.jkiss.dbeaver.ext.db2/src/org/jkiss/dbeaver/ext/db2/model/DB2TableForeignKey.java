@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyEditable;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -42,7 +43,7 @@ import java.util.List;
  *
  * @author Denis Forveille
  */
-public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableForeignKeyColumn> implements DBSTableForeignKey {
+public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableForeignKeyColumn> implements DBSTableForeignKeyEditable {
 
     private static final Log log = Log.getLog(DB2TableForeignKey.class);
 
@@ -53,7 +54,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableFo
 
     private List<DB2TableForeignKeyColumn> columns;
 
-    private DB2TableUniqueKey referencedKey;
+    private DBSEntityConstraint referencedKey;
 
     // -----------------
     // Constructor
@@ -120,15 +121,26 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableFo
         return db2UpdateRule.getRule();
     }
 
+    @Override
+    public void setUpdateRule(@NotNull DBSForeignKeyModifyRule updateRule) {
+        this.db2UpdateRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule);
+    }
+
     @NotNull
     @Override
     public DBSForeignKeyModifyRule getDeleteRule() {
         return db2DeleteRule.getRule();
     }
 
+    @Override
+    public void setDeleteRule(@NotNull DBSForeignKeyModifyRule deleteRule) {
+        this.db2DeleteRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule);
+    }
+
     // -----------------
     // Columns
     // -----------------
+    @Nullable
     @Override
     public List<DB2TableForeignKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return columns;
@@ -150,12 +162,13 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableFo
     @Nullable
     @Override
     @Property(id = "reference", viewable = false)
-    public DB2TableUniqueKey getReferencedConstraint() {
+    public DBSEntityConstraint getReferencedConstraint() {
         return referencedKey;
     }
 
-    public void setReferencedConstraint(DB2TableUniqueKey referencedKey) {
-        this.referencedKey = referencedKey;
+    @Override
+    public void setReferencedConstraint(@Nullable DBSEntityConstraint referencedConstraint) {
+        this.referencedKey = referencedConstraint;
     }
 
     @Property(viewable = true, editable = true)

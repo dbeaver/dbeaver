@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 
 package org.jkiss.dbeaver.ui.navigator.actions;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 
 /**
@@ -29,22 +30,24 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 public abstract class NavigatorNodeActionHandlerAbstract implements INavigatorNodeActionHandler {
 
     @Override
-    public boolean isEnabledFor(INavigatorModelView view, DBNNode node) {
+    public boolean isEnabledFor(@NotNull DBNNode node) {
         return true;
     }
 
     @Override
-    public boolean isSticky(INavigatorModelView view, DBNNode node) {
+    public boolean isSticky(@NotNull DBNNode node) {
         return true;
     }
 
     @Override
-    public DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node) {
+    @Nullable
+    public DBPImage getNodeActionIcon(@NotNull DBNNode node) {
         return DBIcon.TYPE_UNKNOWN;
     }
 
     @Override
-    public String getNodeActionToolTip(INavigatorModelView view, DBNNode node) {
+    @Nullable
+    public String getNodeActionToolTip(@NotNull DBNNode node) {
         return null;
     }
 

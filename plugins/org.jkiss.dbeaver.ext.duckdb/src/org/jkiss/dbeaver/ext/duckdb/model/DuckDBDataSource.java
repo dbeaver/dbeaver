@@ -28,12 +28,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * DuckDB Data source
  */
 public class DuckDBDataSource extends GenericDataSource {
+    private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern.compile("\\[\\s*\\d*\\s*\\]\\s*$");
+
     public DuckDBDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel) throws DBException {
         super(monitor, container, metaModel, new DuckDBSQLDialect());
     }
@@ -41,10 +43,13 @@ public class DuckDBDataSource extends GenericDataSource {
     @NotNull
     @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
-        return switch (typeName.toUpperCase(Locale.ROOT)) {
-            case DuckDBConstants.TYPE_GEOMETRY -> DBPDataKind.OBJECT;
-            default -> super.resolveDataKind(typeName, valueType);
-        };
+        if (DuckDBConstants.isGeometryType(typeName)) {
+            return DBPDataKind.OBJECT;
+        } else if (ARRAY_TYPE_NAME_PATTERN.matcher(typeName).find()) {
+            return DBPDataKind.ARRAY;
+        } else {
+            return super.resolveDataKind(typeName, valueType);
+        }
     }
 
     @Override

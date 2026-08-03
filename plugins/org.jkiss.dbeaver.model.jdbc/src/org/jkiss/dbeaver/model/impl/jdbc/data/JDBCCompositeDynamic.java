@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.sql.Array;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -39,13 +40,18 @@ public class JDBCCompositeDynamic extends JDBCComposite {
     private static final Log log = Log.getLog(JDBCCompositeDynamic.class);
         //public static final int MAX_ITEMS_IN_STRING = 100;
 
-
-    public JDBCCompositeDynamic(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
+    public JDBCCompositeDynamic(
+        @NotNull JDBCComposite struct,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBCException {
         super(monitor, struct);
     }
 
-    public JDBCCompositeDynamic(@NotNull DBCSession session, @Nullable Struct contents, @Nullable ResultSetMetaData metaData) throws DBCException
-    {
+    public JDBCCompositeDynamic(
+        @NotNull DBCSession session,
+        @Nullable Struct contents,
+        @Nullable ResultSetMetaData metaData
+    ) throws DBCException {
         super(contents);
 
         this.type = new StructType(session.getDataSource());
@@ -60,22 +66,24 @@ public class JDBCCompositeDynamic extends JDBCComposite {
                     // Use meta data to read struct information
                     int attrCount = metaData.getColumnCount();
                     if (attrCount != attrValues.length) {
-                        log.warn("Meta column count (" + attrCount + ") differs from value count (" + attrValues.length + ")");
+                        log.debug("Meta column count (" + attrCount + ") differs from value count (" + attrValues.length + ")");
                         attrCount = Math.min(attrCount, attrValues.length);
                     }
                     for (int i = 0; i < attrCount; i++) {
                         Object value = attrValues[i];
-                        StructAttribute attr = new StructAttribute(this.type, metaData, i);
-                        value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false, modified);
+                        DBSDataType attrType = resolveAttrType(session, value);
+                        StructAttribute attr = new StructAttribute(attrType, metaData, i);
+                        value = DBUtils.findValueHandler(session, attrType).getValueFromObject(session, attr, value, false, modified);
                         attributes[i] = attr;
                         values[i] = value;
                     }
                 } else {
-                    log.warn("Data type '" + contents.getSQLTypeName() + "' isn't resolved as structured type. Use synthetic attributes.");
+                    // Data type isn't resolved as structured type. Use synthetic attributes.");
                     for (int i = 0, attrValuesLength = attrValues.length; i < attrValuesLength; i++) {
                         Object value = attrValues[i];
-                        StructAttribute attr = new StructAttribute(this.type, i, value);
-                        value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false, modified);
+                        DBSDataType attrType = resolveAttrType(session, value);
+                        StructAttribute attr = new StructAttribute(attrType, i, value);
+                        value = DBUtils.findValueHandler(session, attrType).getValueFromObject(session, attr, value, false, modified);
                         attributes[i] = attr;
                         values[i] = value;
                     }
@@ -91,15 +99,20 @@ public class JDBCCompositeDynamic extends JDBCComposite {
         }
     }
 
-    @Override
-    public DBSDataType getDataType()
-    {
-        return type;
+    @NotNull
+    private DBSDataType resolveAttrType(@NotNull DBCSession session, @NotNull Object value) {
+        if (value instanceof Struct) {
+            return new StructType(session.getDataSource());
+        } else if (value instanceof Array) {
+            return new ArrayType(session.getDataSource());
+        } else {
+            return new SimpleType(session.getDataSource(), value);
+        }
     }
 
+    @NotNull
     @Override
-    public JDBCCompositeDynamic cloneValue(DBRProgressMonitor monitor) throws DBCException
-    {
+    public JDBCCompositeDynamic cloneValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
         return new JDBCCompositeDynamic(this, monitor);
     }
 

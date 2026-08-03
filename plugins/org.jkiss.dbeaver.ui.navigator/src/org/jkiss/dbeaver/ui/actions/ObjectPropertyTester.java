@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -240,13 +241,16 @@ public class ObjectPropertyTester extends PropertyTester {
                     node = node.getParentNode();
                 }
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
-                    return true;
+                    return canNodeBeFilteredByUser(dbNode);
                 }
                 break;
             }
             case PROP_CAN_FILTER_OBJECT: {
-                if (node.getParentNode() instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
-                    return true;
+                if (!(node instanceof DBNDatabaseFolder && node.getParentNode() instanceof DBNDataSource) && // Do not show filters for root folders
+                    node.getParentNode() instanceof DBNDatabaseNode dbNode &&
+                    dbNode.getItemsMeta() != null
+                ) {
+                    return canNodeBeFilteredByUser(dbNode);
                 }
                 break;
             }
@@ -257,7 +261,7 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
                     if (filter != null) {
-                        UIServiceFilterConfig service = DBWorkbench.getService(UIServiceFilterConfig.class);
+                        UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
                         boolean isUserChangeable = service == null || service.isUserChangeable(filter);
                         if ("defined".equals(expectedValue)) {
                             return isUserChangeable && !filter.isEmpty();
@@ -290,8 +294,11 @@ public class ObjectPropertyTester extends PropertyTester {
      * Check whether the owner project of the specified node has required permissions
      */
     public static boolean nodeProjectHasPermission(@NotNull DBNNode node, @NotNull String permissionName) {
-        DBPProject ownerProject = node.getOwnerProjectOrNull();
-        return ownerProject != null && ownerProject.hasRealmPermission(permissionName);
+        DBAPermissionRealm pr = node.getOwnerProjectOrNull();
+        if (pr == null) {
+            pr = node.getOwnerWorkspace();
+        }
+        return pr.hasRealmPermission(permissionName);
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
@@ -409,5 +416,10 @@ public class ObjectPropertyTester extends PropertyTester {
             }
         }
         return false;
+    }
+
+    private boolean canNodeBeFilteredByUser(@NotNull DBNDatabaseNode dbNode) {
+        UIServiceFilterConfig serviceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
+        return serviceFilterConfig == null || serviceFilterConfig.canBeFilteredByUser(dbNode);
     }
 }

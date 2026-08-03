@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package org.jkiss.dbeaver.ext.generic;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModelDescriptor;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -32,9 +33,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class GenericDataSourceProvider extends JDBCDataSourceProvider {
+public abstract class GenericDataSourceProvider<DATASOURCE extends GenericDataSource> extends JDBCDataSourceProvider<DATASOURCE> {
 
-    public GenericDataSourceProvider() {
+    protected GenericDataSourceProvider(@NotNull Class<? extends DATASOURCE> dsClass) {
+        super(dsClass);
     }
 
     @Override
@@ -44,18 +46,18 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public DATASOURCE openDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container)
         throws DBException {
         GenericMetaModel metaModelInstance = GenericMetaModelRegistry.getInstance().getMetaModel(container);
-        return metaModelInstance.createDataSourceImpl(monitor, container);
+        return getDataSourceClass().cast(metaModelInstance.createDataSourceImpl(monitor, container));
     }
 
     protected GenericMetaModelDescriptor getStandardMetaModel() {
@@ -64,9 +66,13 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public DBPPropertyDescriptor[] getConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull DBPDriver driver, @NotNull
-    DBPConnectionConfiguration connectionInfo) throws DBException {
-        DBPPropertyDescriptor[] connectionProperties = super.getConnectionProperties(monitor, driver, connectionInfo);
+    public DBPPropertyDescriptor[] getConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException {
+        DBPPropertyDescriptor[] connectionProperties = super.getConnectionProperties(monitor, driver, dataSourceContainer, connectionInfo);
         if (connectionProperties == null || connectionProperties.length == 0) {
             // Try to get list of supported properties from custom driver config
             String driverParametersString = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_DRIVER_PROPERTIES));

@@ -122,7 +122,7 @@ public class DataSourceUtils {
 
         DBPDataSourceRegistry dsRegistry = project.getDataSourceRegistry();
 
-        String[] conParams = connectionSpec.split("\\|");
+        String[] conParams = splitConnectionSpec(connectionSpec);
         if (conParams.length == 1 && conParams[0].indexOf('=') == -1) {
             dsIdOrName = conParams[0];
         } else {
@@ -422,6 +422,38 @@ public class DataSourceUtils {
             log.error(e);
         }
         return newDS;
+    }
+
+    /**
+     * Splits a connection spec into parameters using {@code |} as a separator.
+     * A pipe character can be included in a parameter value by escaping it with a
+     * backslash ({@code \|}); a literal backslash is written as {@code \\}.
+     */
+    @NotNull
+    private static String[] splitConnectionSpec(@NotNull String connectionSpec) {
+        List<String> params = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        int i = 0;
+        while (i < connectionSpec.length()) {
+            char c = connectionSpec.charAt(i);
+            if (c == '\\' && i + 1 < connectionSpec.length()) {
+                char next = connectionSpec.charAt(i + 1);
+                if (next == '|' || next == '\\') {
+                    current.append(next);
+                    i += 2;
+                    continue;
+                }
+            }
+            if (c == '|') {
+                params.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
+            i++;
+        }
+        params.add(current.toString());
+        return params.toArray(new String[0]);
     }
 
     @NotNull

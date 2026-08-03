@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.ext.wmi.WMIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -144,7 +145,7 @@ public class WMIConnectionPage extends ConnectionPageWithAuth
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {

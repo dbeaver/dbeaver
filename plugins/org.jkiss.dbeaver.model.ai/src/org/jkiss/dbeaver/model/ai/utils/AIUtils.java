@@ -23,26 +23,23 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -56,33 +53,74 @@ import java.util.stream.Stream;
 
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
+    public static final double DEFAULT_TEMPERATURE = 0.0;
 
-    @Nullable
-    public static AIEngineDescriptor getActiveEngineDescriptor() {
-        return AIEngineRegistry.getInstance().getEngineDescriptor(
-            AISettingsManager.getInstance().getSettings().activeEngine()
-        );
+    @NotNull
+    public static String getSettingsAccessMessage(
+        @NotNull String plain,
+        @NotNull String linked,
+        @NotNull String contactAdmin
+    ) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return plain;
+        }
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            return linked;
+        }
+        return contactAdmin;
     }
 
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        AIEngineProperties configuration = aiSettings.getEngineConfiguration(aiSettings.activeEngine());
-        return configuration.isValidConfiguration();
+        aiSettings.resolveSecrets();
+        AIConfigurationProfile profile = aiSettings.getDefaultConfigurationOrNull();
+        return profile != null && profile.getConfiguration().isValidConfiguration();
     }
+
     /**
      * Retrieves a secret value from the global secret controller.
      * If the secret value is empty, it returns the provided default value.
      */
     public static String getSecretValueOrDefault(
+        @NotNull AIConfigurationProfile profile,
         @NotNull String secretId,
         @Nullable String defaultValue
     ) throws DBException {
-        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(secretId);
+        String suffix = getSecretSuffix(profile);
+        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(
+            secretId + suffix);
         if (CommonUtils.isEmpty(secretValue)) {
             return defaultValue;
         }
 
         return secretValue;
+    }
+
+    public static void setSecretValue(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secret,
+        @Nullable String value
+    ) throws DBException {
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            secret + getSecretSuffix(profile), value);
+    }
+
+    public static void deleteSecretValue(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secret
+    ) throws DBException {
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            secret + getSecretSuffix(profile),
+            null);
+    }
+
+    @NotNull
+    private static String getSecretSuffix(@NotNull AIConfigurationProfile profile) {
+        if (!profile.isMigrated()) {
+            return  "_" + profile.getProfileId();
+        }
+        // Legacy configurations didn't have a prefix
+        return "";
     }
 
     /**
@@ -109,6 +147,7 @@ public final class AIUtils {
      * @param object  the DBSObject from which to retrieve the DDL
      * @param monitor the progress monitor
      */
+    @Nullable
     public static String getObjectDDL(@Nullable DBSObject object, @NotNull DBRProgressMonitor monitor) {
         if (object instanceof DBSProcedure
             || object instanceof DBSTrigger
@@ -300,7 +339,7 @@ public final class AIUtils {
     ) {
         switch (context.getScope()) {
             case CURRENT_DATABASE, CURRENT_SCHEMA -> {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults == null) {
                     return false;
                 }
@@ -338,7 +377,7 @@ public final class AIUtils {
                 return true;
             }
             case CURRENT_SCHEMA -> {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults == null) {
                     return false;
                 }
@@ -394,6 +433,223 @@ public final class AIUtils {
                 return parentObject != null && isObjectInScope(context, executionContext, parentObject);
             }
         }
+    }
+
+    /**
+     * Normalizes a temperature value used for AI model inference.
+     * If the supplied value is not a finite number (e.g. {@code NaN} or {@code Infinity})
+     * it is replaced with {@link #DEFAULT_TEMPERATURE}.
+     */
+    public static double normalizeTemperature(double temperature) {
+        return Double.isFinite(temperature) ? temperature : DEFAULT_TEMPERATURE;
+    }
+
+    public static boolean hasInformationFunctions(@NotNull AIToolboxManager toolboxManager, @NotNull List<AIFunctionCall> functionCalls) {
+        for (AIFunctionCall fc : functionCalls) {
+            AIFunctionDescriptor function = fc.getOrResolveFunction(toolboxManager);
+            if (function != null && function.getType() == AIFunctionType.INFORMATION) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a formatted string with the type and full name of the DBSObject.
+     *
+     * @param dbsObject the DBSObject to format
+     */
+    @NotNull
+    public static String getDatabaseObjectInfo(@NotNull DBSObject dbsObject, boolean isPromptInfo) {
+        String objectInfo;
+        String objectFullName = DBUtils.getObjectFullName(dbsObject, DBPEvaluationContext.DDL);
+        if (dbsObject instanceof DataSourceDescriptor) {
+            objectInfo = isPromptInfo ? "database with following tables" : "listed database tables";
+        } else if (dbsObject instanceof DBSSchema) {
+            objectInfo = "schema '" + objectFullName + "'";
+        } else if (dbsObject instanceof DBSEntity) {
+            objectInfo = "table '" + objectFullName + "'";
+        } else if (dbsObject instanceof DBSEntityAttribute) {
+            objectInfo = "column '" + objectFullName + "' in the table '" +
+                DBUtils.getObjectFullName(dbsObject.getParentObject(), DBPEvaluationContext.DDL) + "'";
+        } else {
+            objectInfo = DBUtils.getObjectTypeName(dbsObject) + " '" + objectFullName + "'";
+        }
+        return objectInfo;
+    }
+
+    /**
+     * Finds a schema within the given function context and schema name.
+     * The method identifies and retrieves the schema from the specified database or schema scope
+     * based on the provided context and schema name.
+     *
+     * @param context the function context containing the database connection and related settings; must not be null
+     * @param schemaName the full or partial name of the schema to search; must not be null
+     * @return the schema object if found
+     * @throws DBException if the schema cannot be found or if there are issues with database access or scope determination
+     */
+    @NotNull
+    public static DBSSchema findSchemaInContext(
+        @NotNull AIFunctionContext context,
+        @NotNull String schemaName
+    ) throws DBException {
+        AIDatabaseContext dbContext = context.getContext();
+        if (dbContext == null) {
+            throw new DBException("Not connected to database");
+        }
+        DBCExecutionContext executionContext = dbContext.getExecutionContext();
+        if (!(executionContext.getDataSource() instanceof DBSObjectContainer dsObjectContainer)) {
+            throw new DBException("Cannot determine object container in data source " + executionContext.getDataSource());
+        }
+        SQLDialect dialect = dsObjectContainer.getDataSource().getSQLDialect();
+        var contextDefaults = executionContext.getContextDefaults();
+        DBSCatalog defaultCatalog = null;
+        if (contextDefaults != null) {
+            defaultCatalog = contextDefaults.getDefaultCatalog();
+        }
+
+        String[] nameParts = schemaName.split("\\.");
+        DBSObjectContainer searchContainer;
+        String actualSchemaName;
+
+        if (nameParts.length == 2) {
+            String databaseName = nameParts[0];
+            actualSchemaName = nameParts[1];
+
+            DBSObject database = dsObjectContainer.getChild(context.getMonitor(), databaseName);
+            if (database instanceof DBSObjectContainer databaseContainer) {
+                searchContainer = databaseContainer;
+            } else {
+                throw new DBException("Database '" + databaseName + "' not found");
+            }
+        } else {
+            actualSchemaName = schemaName;
+            searchContainer = defaultCatalog != null ? defaultCatalog : dsObjectContainer;
+        }
+
+        actualSchemaName = dialect.getUnquotedIdentifier(actualSchemaName);
+        DBSObject schema = searchContainer.getChild(context.getMonitor(), actualSchemaName);
+
+        if (schema == null) {
+            throw new DBException("Cannot find schema '" + schemaName + "' in current scope");
+        } else if (schema instanceof DBSSchema dbsSchema) {
+            return dbsSchema;
+        } else {
+            throw new DBException("Schema '" + schemaName + "' is not a valid schema object");
+        }
+    }
+
+    /**
+     * Finds a database table within the given function context and table name.
+     * Searches the table in the current database or schema scope based on the context settings and the provided table name.
+     *
+     * @param context the function context containing database-related information; must not be null
+     * @param tableName the full or partial name of the table to search; must not be null
+     * @return the data container representing the table if found
+     * @throws DBException if the table cannot be found or other database-related errors occur
+     */
+    @NotNull
+    public static DBSDataContainer findTableInContext(
+        @NotNull AIFunctionContext context,
+        @NotNull String tableName
+    ) throws DBException {
+        return findTableInContext(context, null, null, tableName);
+    }
+
+    @NotNull
+    public static DBSDataContainer findTableInContext(
+        @NotNull AIFunctionContext context,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @NotNull String tableName
+    ) throws DBException {
+        AIDatabaseContext dbContext = context.getContext();
+        if (dbContext == null) {
+            throw new DBException("Not connected to database");
+        }
+        DBCExecutionContext executionContext = dbContext.getExecutionContext();
+        DBPDataSource dataSource = executionContext.getDataSource();
+        if (!(dataSource instanceof DBSObjectContainer dsObjectContainer)) {
+            throw new DBException("Cannot determine object container in data source " + dataSource);
+        }
+        SQLDialect dialect = dataSource.getSQLDialect();
+
+        SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(dialect);
+        String[] nameParts = wordDetector.splitIdentifier(tableName);
+        if (nameParts.length == 1) {
+            if (!CommonUtils.isEmpty(schemaName)) {
+                if (!CommonUtils.isEmpty(catalogName)) {
+                    nameParts = new String[] { catalogName, schemaName, nameParts[0] };
+                } else {
+                    nameParts = new String[] { schemaName, nameParts[0] };
+                }
+            } else if (!CommonUtils.isEmpty(catalogName)) {
+                nameParts = new String[] { catalogName, nameParts[0] };
+            }
+        }
+        DBSObject table = findObjectByFQN(
+            context.getMonitor(),
+            executionContext,
+            dsObjectContainer,
+            nameParts
+        );
+
+        if (table == null) {
+            throw new DBException("Table '" + tableName + "' not found");
+        } else if (table instanceof DBSDataContainer entity) {
+            return entity;
+        } else {
+            throw new DBException("Table '" + tableName + "' is not a data container (" + table + ")");
+        }
+    }
+
+    /**
+     * Find object by FQN.
+     * This is tricky. We may receive short name (just a table) or partial FQN
+     * schema.table or full FQN catalog.schema.table.
+     * We need to guess what each part means.
+     */
+    @Nullable
+    public static DBSObject findObjectByFQN(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootContainer,
+        @NotNull String[] nameParts
+    ) throws DBException {
+        SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
+        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+        boolean supportsSchemas = contextDefaults != null &&
+            (contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange());
+        String objectName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 1]);
+        String schemaName = null;
+        String catalogName = null;
+
+        if (nameParts.length > 2) {
+            // Full FQN
+            catalogName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 3]);
+            schemaName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 2]);
+        } else if (nameParts.length > 1) {
+            // Full or partial
+            // First part is schema or catalog
+            String parentName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 2]);
+            if (supportsSchemas) {
+                schemaName = parentName;
+            } else {
+                catalogName = parentName;
+            }
+        }
+
+        DBSObject object = DBUtils.getObjectByPath(
+            monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true);
+        if (object == null) {
+            object = DBUtils.getObjectByPath(
+                monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true, false);
+        }
+        return object;
+    }
+
+    public static boolean useStreamMode() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_USE_STREAM_MODE);
     }
 
 }

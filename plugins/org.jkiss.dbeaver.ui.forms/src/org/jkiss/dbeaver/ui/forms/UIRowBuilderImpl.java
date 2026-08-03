@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.forms;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.forms.UIControlBuilder.*;
 import org.jkiss.dbeaver.ui.forms.UIControlBuilderImpl.*;
@@ -114,7 +116,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @NotNull
     @Override
     public UIRowBuilder button(
-        @NotNull String text,
+        @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
         @NotNull Consumer<? super ButtonBuilder> handler
     ) {
@@ -126,7 +128,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super ButtonBuilder> handler) {
+    public UIRowBuilder radioButton(@NotNull UIObservable<String> text, @NotNull Consumer<? super ButtonBuilder> handler) {
         var builder = new ButtonBuilderImpl(text, null, Kind.RADIO);
         handler.accept(builder);
         controls.add(builder);
@@ -135,7 +137,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super ButtonBuilder> handler) {
+    public UIRowBuilder checkBox(@NotNull UIObservable<String> text, @NotNull Consumer<? super ButtonBuilder> handler) {
         var builder = new ButtonBuilderImpl(text, null, Kind.CHECK);
         handler.accept(builder);
         controls.add(builder);
@@ -180,6 +182,15 @@ final class UIRowBuilderImpl implements UIRowBuilder {
             converter,
             SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY
         );
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder control(@NotNull Function<Composite, Control> factory, @NotNull Consumer<? super ControlBuilder> handler) {
+        var builder = new ControlBuilderImpl(factory);
         handler.accept(builder);
         controls.add(builder);
         return this;

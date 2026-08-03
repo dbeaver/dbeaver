@@ -40,8 +40,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     private final String description;
     private final DBPImage icon;
     private final List<Uses> uses;
-    private final boolean supportsActions;
-    private final boolean supportsUi;
+    private final UIFunctionSupport uiFunctions;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -53,8 +52,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         this.uses = Stream.of(config.getChildren("uses"))
             .map(Uses::new)
             .toList();
-        this.supportsActions = CommonUtils.toBoolean(config.getAttribute("supportsActions"), false);
-        this.supportsUi = CommonUtils.toBoolean(config.getAttribute("supportsUi"), false);
+        this.uiFunctions = CommonUtils.valueOf(UIFunctionSupport.class, config.getAttribute("uiFunctions"), UIFunctionSupport.NONE);
     }
 
     @NotNull
@@ -82,12 +80,12 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         return uses;
     }
 
-    public boolean isSupportsActions() {
-        return supportsActions;
+    public boolean isSupportsActions(long messageUserCount) {
+        return uiFunctions.supportsActions(messageUserCount);
     }
 
-    public boolean isSupportsUi() {
-        return supportsUi;
+    public boolean isSupportsUi(long messageUserCount) {
+        return uiFunctions.supportsUi(messageUserCount);
     }
 
     @NotNull

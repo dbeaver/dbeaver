@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,14 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.AbstractTextPanelEditor;
 import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
 import org.jkiss.utils.CommonUtils;
-import org.w3c.dom.CDATASection;
+import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -80,6 +81,11 @@ public class XMLPanelEditor extends AbstractTextPanelEditor<XMLEditor> {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setIgnoringElementContentWhitespace(true);
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setFeature(XMLUtils.FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
+            factory.setFeature(XMLUtils.FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
+            factory.setFeature(XMLUtils.FEATURE_DISALLOW_DOCTYPE_DECL, true);
+
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(new org.xml.sax.InputSource(new StringReader(value)));
 

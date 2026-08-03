@@ -75,6 +75,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnEx
 import org.jkiss.dbeaver.ui.editors.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -268,7 +269,8 @@ public class SQLQueryJob extends DataSourceJob {
                         log.error(lastError);
                         boolean isQueue = isQueue();
                         DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
-                            isQueue ? "SQL script execution" : "SQL query execution",
+                            (isQueue ? "SQL script execution" : "SQL query execution") +
+                                "\n" +  GeneralUtils.getFirstMessage(lastError),
                             lastError,
                             isQueue);
 
@@ -988,6 +990,22 @@ public class SQLQueryJob extends DataSourceJob {
                                 // Multiple source entities
                                 sourceName += "(+)";
                                 break;
+                            }
+                        }
+                    }
+                    // Fallback: extract table name from parsed SQL query AST.
+                    // Some drivers (e.g. Oracle JDBC thin) do not return table names
+                    // from ResultSetMetaData.getTableName(), so we use JSQLParser results instead.
+                    if (CommonUtils.isEmpty(sourceName)) {
+                        SQLQuery sqlQuery = result.getStatement();
+                        DBCEntityMetaData entityMeta = sqlQuery.getEntityMetadata(false);
+                        if (entityMeta != null) {
+                            sourceName = entityMeta.getEntityName();
+                        } else if (!sqlQuery.getAllSelectEntitiesNames().isEmpty()) {
+                            // Query has JOINs - use first table name with (+) marker
+                            sourceName = sqlQuery.getAllSelectEntitiesNames().getFirst();
+                            if (sqlQuery.getAllSelectEntitiesNames().size() > 1) {
+                                sourceName += "(+)";
                             }
                         }
                     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,72 +16,572 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.jkiss.junit.osgi.annotation.RunnerProxy;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.jkiss.util.ParametrizedTestsUtil;
+import org.jkiss.utils.ArrayUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
+import org.mockito.Mock;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashMap;
+import java.io.*;
+import java.util.*;
+import java.util.stream.Stream;
 
-@RunnerProxy(MockitoJUnitRunner.Silent.class)
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class DataExporterCSVTest extends DBeaverUnitTest {
+    // must be used in expectedTemplate as separator
+    private static final String DEFAULT_VALUE_SEPARATOR = ",";
+    // must be used in expectedTemplate as quote
+    private static final String DEFAULT_QUOTE = "\"";
+
+    private static final String ALTERNATIVE_VALUE_SEPARATOR = ";";
+    private static final String ALTERNATIVE_QUOTE = "~";
 
     private DataExporterCSV dataExporterCSV;
     private StringWriter stringWriter;
+
+    @Mock
     private IStreamDataExporterSite site;
 
-    @Before
+    @Mock
+    private DBCSession dbcSession;
+
+    @Mock
+    private DBCResultSet resultSetMock;
+
+    private Map<String, Object> properties;
+
+    private String rowsSeparator;
+
+    private DBDAttributeBinding[] columns;
+
+    @BeforeEach
     public void setUp() {
+        properties = new HashMap<>();
+
+        columns = new DBDAttributeBinding[]{};
+        rowsSeparator = "\n";
+
+        when(site.getProperties()).thenReturn(properties);
+        when(site.getAttributes()).thenReturn(columns);
+        writerReset();
+    }
+
+    private void writerReset() {
         stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
-
-        site = Mockito.mock(IStreamDataExporterSite.class);
-        Mockito.when(site.getWriter()).thenReturn(printWriter);
-
-        dataExporterCSV = new DataExporterCSV();
-        try {
-            dataExporterCSV.init(site);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        when(site.getWriter()).thenReturn(printWriter);
     }
 
     @Test
-    public void testExportHeader() {
-        // Mocking attributes
-        DBDAttributeBinding[] columns = new DBDAttributeBinding[3];
-        columns[0] = Mockito.mock(DBDAttributeBinding.class);
-        Mockito.when(columns[0].getName()).thenReturn("ID");
-        Mockito.when(columns[0].getLabel()).thenReturn("Identifier");
+    public void testExportHeader() throws DBException, IOException {
+        // given
+        addColumn("ID", "Identifier", JDBCStringValueHandler.INSTANCE);
+        addColumn("NAME", "Name", JDBCStringValueHandler.INSTANCE);
+        addColumn("AGE", "Age", JDBCStringValueHandler.INSTANCE);
+        // when
+        initExporter();
+        dataExporterCSV.exportHeader(dbcSession);
+        // then
+        String expectedHeader = "\"IDENTIFIER\",\"NAME\",\"AGE\"" + rowsSeparator;
+        assertEquals(expectedHeader, stringWriter.toString());
+    }
 
-        columns[1] = Mockito.mock(DBDAttributeBinding.class);
-        Mockito.when(columns[1].getName()).thenReturn("NAME");
-        Mockito.when(columns[1].getLabel()).thenReturn("Name");
+    @Test
+    public void testNotThrowsIfQuoteAndSeparatorAreSameCharAndQuoteNever() throws DBException {
+        // given
+        properties.put(DataExporterCSV.PROP_DELIMITER, ALTERNATIVE_VALUE_SEPARATOR);
+        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_VALUE_SEPARATOR);
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+        dataExporterCSV = new DataExporterCSV();
 
-        columns[2] = Mockito.mock(DBDAttributeBinding.class);
-        Mockito.when(columns[2].getName()).thenReturn("AGE");
-        Mockito.when(columns[2].getLabel()).thenReturn("Age");
+        // then
+        assertDoesNotThrow(() -> dataExporterCSV.init(site));
+    }
 
-        Mockito.when(site.getAttributes()).thenReturn(columns);
-        Mockito.when(site.getProperties()).thenReturn(new HashMap<>());
+    @Test
+    public void testThrowsIfQuoteAndSeparatorAreSameChar() {
+        // given
+        properties.put(DataExporterCSV.PROP_DELIMITER, ALTERNATIVE_VALUE_SEPARATOR);
+        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_VALUE_SEPARATOR);
+        // then
+        dataExporterCSV = new DataExporterCSV();
+        assertThrows(DBException.class, () -> dataExporterCSV.init(site));
+    }
 
-        try {
-            dataExporterCSV.exportHeader(Mockito.mock(DBCSession.class));
+    @Test
+    public void testThrowsIfQuoteAndSeparatorStartsWithQuote() {
+        // given
+        properties.put(DataExporterCSV.PROP_DELIMITER, ALTERNATIVE_QUOTE.repeat(2));
+        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_QUOTE);
+        // then
+        dataExporterCSV = new DataExporterCSV();
+        assertThrows(DBException.class, () -> dataExporterCSV.init(site));
+    }
 
-            String expectedHeader = "\"IDENTIFIER\",\"NAME\",\"AGE\",";
-            Assert.assertEquals(expectedHeader, stringWriter.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail("Exception occurred: " + e.getMessage());
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testOneRowExport(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    )
+    throws DBException, IOException {
+        // given
+        String[][] rows = {{"a", "b", "c"}};
+        // then
+        assertRowsEquals("a,b,c", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testMultipleRowsExport(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] rows = {
+            {"a", "b", "c"},
+            {"d", "e", "f"},
+            {"g", "h", "i"}
+        };
+
+        assertRowsEquals(
+            """
+                a,b,c
+                d,e,f
+                g,h,i""", valueSeparator, quoteSeparator, rowContentCreator, rows
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testEmptyFields(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] rows = {
+            {"", "", ""}
+        };
+
+        assertRowsEquals(
+            "\"\",\"\",\"\"", valueSeparator, quoteSeparator, rowContentCreator, rows
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuotedComma(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] rows = {
+            {"a,b", "c", "d"}
+        };
+
+        assertRowsEquals("\"a,b\",c,d", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuotedQuote(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] rows = {
+            {"a\"b", "c", "d"}
+        };
+
+        assertRowsEquals("\"a\"\"b\",c,d", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuotedNewLine(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        // middle new line
+        assertRowsEquals(
+            """
+                "a
+                b",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"a\nb", "c", "d"}
+            }
+        );
+        // trailing new line
+        assertRowsEquals(
+            "\"\nab\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\nab\n", "c", "d"}
+            }
+        );
+
+        // middle cr line
+        assertRowsEquals(
+            """
+                "a\rb",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"a\rb", "c", "d"}
+            }
+        );
+
+        // trailing cr
+        assertRowsEquals(
+            """
+                "\rab\r",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\rab\r", "c", "d"}
+            }
+        );
+
+        // all new line
+        assertRowsEquals(
+            "\"\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\n", "c", "d"}
+            }
+        );
+        assertRowsEquals(
+            "\"\n\n\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\n\n\n", "c", "d"}
+            }
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuotedNewLineNotEmptyLineFeedSeparator(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String lineFeedSeparator = "\t";
+        properties.put(DataExporterCSV.PROP_LINE_FEED_ESCAPE_STRING, lineFeedSeparator);
+        // middle new line
+        assertRowsEquals(
+            """
+                "a\tb",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"a\nb", "c", "d"}
+            }
+        );
+        // trailing new line
+        assertRowsEquals(
+            "\"\tab\t\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\nab\n", "c", "d"}
+            }
+        );
+    }
+
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuoteAndComma(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] rows = {
+            {"a,\"b", "c", "d"}
+        };
+
+        assertRowsEquals("\"a,\"\"b\",c,d", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testOnlyQuote(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] rows = {
+            {"\""}
+        };
+
+        assertRowsEquals("\"\"\"\"", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testOnlyComma(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] rows = {
+            {","}
+        };
+
+        assertRowsEquals("\",\"", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuoteNever(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+        // then
+        assertRowsEquals(
+            "a,b,c", valueSeparator, quoteSeparator, rowContentCreator,
+            new String[][] {{"a", "b", "c"}}
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuoteNeverComma(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+
+        // then
+        assertRowsEquals(
+            "a,b,c",
+            valueSeparator,
+            quoteSeparator,
+            rowContentCreator,
+            new String[][] {{"a,b", "c"}}
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuoteNeverQuote(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+
+        // then
+        assertRowsEquals(
+            "a\"b,c",
+            valueSeparator,
+            quoteSeparator,
+            rowContentCreator,
+            new String[][] {{"a\"b", "c"}}
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuoteNeverNewLine(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+
+        // then
+        assertRowsEquals(
+            """
+                a
+                b,c""",
+            valueSeparator,
+            quoteSeparator,
+            rowContentCreator,
+            new String[][] {{"a\nb", "c"}}
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuoteNeverMultipleRows(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+
+        // then
+        assertRowsEquals(
+            """
+                a,b,c
+                d,e,f""",
+            valueSeparator,
+            quoteSeparator,
+            rowContentCreator,
+            new String[][] {
+                {"a", "b", "c"},
+                {"d", "e", "f"}
+            }
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testLeadingAndTrailingSpaces(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    )
+    throws DBException, IOException {
+        String[][] rows = {
+            {" a ", "b ", " c"}
+        };
+
+        assertRowsEquals(" a ,b , c", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testUnicode(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] rows = {
+            {"Привет", "こんにちは", "😀"}
+        };
+
+        assertRowsEquals("Привет,こんにちは,😀", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    private void assertRowsEquals(
+        @NotNull String expectedRowsTemplate,
+        @NotNull String customSeparator,
+        @NotNull String customQuote,
+        @NotNull RowContentCreator rowContentCreator,
+        @NotNull String[][] rowsTemplates,
+        @NotNull DBDValueHandler... handlers
+    )
+    throws DBException, IOException {
+        // given
+        writerReset();
+        properties.put(DataExporterCSV.PROP_DELIMITER, customSeparator);
+        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, customQuote);
+
+        if (handlers.length == 0) {
+            handlers = new DBDValueHandler[rowsTemplates[0].length];
+            Arrays.fill(handlers, JDBCStringValueHandler.INSTANCE);
         }
+        for (int i = 0; i < handlers.length; i++) {
+            addColumn("Col" + i, "Label" + i, handlers[i]);
+        }
+
+        String expectedResult = replaceTemplateQuotesAndSeparator(expectedRowsTemplate, customSeparator, customQuote);
+        // when
+        initExporter();
+        dataExporterCSV.exportHeader(dbcSession);
+        List<String> preparedRows = new ArrayList<>();
+        for (String[] rowsTemplate : rowsTemplates) {
+            Object[] row = new Object[rowsTemplate.length];
+            for (int i = 0; i < rowsTemplate.length; i++) {
+                String preparedRow = replaceTemplateQuotesAndSeparator(rowsTemplate[i], customSeparator, customQuote);
+                preparedRows.add(preparedRow);
+                if (rowContentCreator == RowContentCreator.TEXT_CONTENT) {
+                    row[i] = createTextContent(preparedRow);
+                } else {
+                    row[i] = preparedRow;
+                }
+            }
+
+            dataExporterCSV.exportRow(
+                dbcSession,
+                resultSetMock,
+                row
+            );
+        }
+        // then
+        // strip header and following empty line
+        String resultOnlyRows = stringWriter.toString().replaceFirst(".*" + rowsSeparator, "");
+        resultOnlyRows = getResultOnlyRows(resultOnlyRows);
+        assertEquals(expectedResult, resultOnlyRows, "Prepared rows input: " + preparedRows);
+    }
+
+    @NotNull
+    private String getResultOnlyRows(@NotNull String resultOnlyRows) {
+        return resultOnlyRows.endsWith(rowsSeparator)
+            ? resultOnlyRows.substring(0, resultOnlyRows.length() - 1)
+            : resultOnlyRows;
+    }
+
+    @NotNull
+    private DBDContent createTextContent(@NotNull String row) throws IOException, DBCException {
+        Reader stringReader = new StringReader(row);
+        DBDContentStorage cs = mock(DBDContentStorage.class);
+        when(cs.getContentReader()).thenReturn(stringReader);
+        DBDContent content = mock(DBDContent.class);
+        when(content.getContents(any())).thenReturn(cs);
+        when(content.getContentType()).thenReturn("text/text");
+        return content;
+    }
+
+    @NotNull
+    private String replaceTemplateQuotesAndSeparator(
+        @NotNull String template,
+        @NotNull String customSeparator,
+        @NotNull String customQuote
+    ) {
+        return template.replace(DEFAULT_VALUE_SEPARATOR, customSeparator).replace(DEFAULT_QUOTE, customQuote);
+    }
+
+    @NotNull
+    private DBDAttributeBinding addColumn(@NotNull String name, @NotNull String label, @NotNull DBDValueHandler handler) {
+        DBDAttributeBinding dbdAttributeBinding = mock(DBDAttributeBinding.class);
+        when(dbdAttributeBinding.getName()).thenReturn(name);
+        when(dbdAttributeBinding.getLabel()).thenReturn(label);
+        when(dbdAttributeBinding.getValueHandler()).thenReturn(handler);
+        columns = ArrayUtils.add(DBDAttributeBinding.class, columns, dbdAttributeBinding);
+        when(site.getAttributes()).thenReturn(columns);
+        return dbdAttributeBinding;
+    }
+
+
+    private void initExporter() throws DBException {
+        dataExporterCSV = new DataExporterCSV();
+        properties.put(DataExporterCSV.PROP_ROW_DELIMITER, rowsSeparator);
+        dataExporterCSV.init(site);
+    }
+
+    public static class SeparatorsAndContentCreatorProvider implements ArgumentsProvider {
+
+        private final List<? extends Arguments> separators = List.of(
+                Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE),
+                Arguments.of(ALTERNATIVE_VALUE_SEPARATOR, ALTERNATIVE_QUOTE),
+            // multichars separator. Multichar quotes are processed differently
+            Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE)
+            );
+
+        private final List<? extends Arguments> rowContentCreators = Arrays
+            .stream(RowContentCreator.values())
+            .map(Arguments::of)
+            .toList();
+
+        @NotNull
+        @Override
+        public Stream<? extends Arguments> provideArguments(@Nullable ParameterDeclarations parameters, @Nullable ExtensionContext context)
+        throws Exception {
+            return ParametrizedTestsUtil.cartesianArguments(separators, rowContentCreators);
+        }
+    }
+
+    public enum RowContentCreator {
+        PLAIN_STRING,
+        TEXT_CONTENT
     }
 }

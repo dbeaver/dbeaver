@@ -94,7 +94,7 @@ public class DBWorkbench {
     }
 
     /**
-     * Service management
+     * Get service by class. Writes warning in log iuf service not found
      */
     @Nullable
     public static <T> T getService(@NotNull Class<T> serviceType) {
@@ -105,12 +105,21 @@ public class DBWorkbench {
         return service;
     }
 
+    @Nullable
+    public static <T> T findService(@NotNull Class<T> serviceType) {
+        return ServiceRegistry.getInstance().getService(serviceType);
+    }
+
     /**
      * Distributed platform.
      * All configurations and resources are stored on remote servers.
      */
     public static boolean isDistributed() {
         return getPlatform().getApplication().isDistributed();
+    }
+
+    public static boolean isMultiuserOrDistributed() {
+        return getPlatform().getApplication().isMultiuser() || isDistributed();
     }
 
     public static boolean hasFeature(@NotNull String feature) {
