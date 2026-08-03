@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.ui.editors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -89,10 +90,13 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
     private void showGrantsScript() {
         final MySQLUser user = getDatabaseObject();
         final StringBuilder script = new StringBuilder();
+        // Escape the account name (single quotes in user/host must be doubled)
+        final String accountName = "'" + user.getUserName().replace("'", "''") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            + "'@'" + user.getHost().replace("'", "''") + "'"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         try {
             UIUtils.runInProgressService(monitor -> {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, user, "Read user grants")) {
-                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + user.getFullName())) { //$NON-NLS-1$
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + accountName)) { //$NON-NLS-1$
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             while (dbResult.next()) {
                                 String grant = JDBCUtils.safeGetString(dbResult, 1);
@@ -109,7 +113,7 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
                 MySQLUIMessages.editors_user_editor_abstract_dialog_grants_script_title,
-                "Error reading grants of user " + user.getName(),
+                NLS.bind(MySQLUIMessages.editors_user_editor_abstract_grants_script_error, user.getName()),
                 e.getTargetException());
             return;
         } catch (InterruptedException e) {

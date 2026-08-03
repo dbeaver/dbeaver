@@ -574,13 +574,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         boolean found = false;
         for (MySQLGrant grant : grants) {
             if (grant.matches(curCatalog) && grant.matches(curTable)) {
-                grant.setGrantOption(withGrantOption);
-                if (!privilege.isGrantOption()) {
-                    if (isGrant) {
-                        grant.addColumnPrivilege(privilege, curColumn.getName());
-                    } else {
-                        grant.removeColumnPrivilege(privilege, curColumn.getName());
-                    }
+                if (privilege.isGrantOption()) {
+                    grant.setGrantOption(withGrantOption);
+                } else if (isGrant) {
+                    grant.addColumnPrivilege(privilege, curColumn.getName());
+                } else {
+                    grant.removeColumnPrivilege(privilege, curColumn.getName());
                 }
                 found = true;
                 break;
@@ -655,8 +654,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         boolean found = false;
         for (MySQLGrant grant : grants) {
             if (grant.matches(curCatalog) && grant.matchesProcedure(curProcedure)) {
-                grant.setGrantOption(withGrantOption);
-                if (isGrant) {
+                if (privilege.isGrantOption()) {
+                    grant.setGrantOption(withGrantOption);
+                } else if (isGrant) {
                     if (!ArrayUtils.contains(grant.getPrivileges(), privilege)) {
                         grant.addPrivilege(privilege);
                     }
@@ -693,10 +693,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         boolean found = false;
         for (MySQLGrant grant : grants) {
             if (grant.matches(curCatalog) && grant.matches(curTable)) {
-                //if (privilege.isGrantOption()) {
+                if (privilege.isGrantOption()) {
                     grant.setGrantOption(withGrantOption);
-                //} else
-                if (isGrant) {
+                } else if (isGrant) {
                     if (!ArrayUtils.contains(grant.getPrivileges(), privilege)) {
                         grant.addPrivilege(privilege);
                     }
