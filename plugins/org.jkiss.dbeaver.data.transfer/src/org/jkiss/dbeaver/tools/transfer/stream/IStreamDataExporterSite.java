@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -52,6 +53,8 @@ public interface IStreamDataExporterSite {
     void flush() throws IOException;
 
     void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException;
+
+    void writeBinaryData(@NotNull DBDContentStorage cs, @NotNull Writer writer) throws IOException;
 
     @NotNull
     String getOutputEncoding();
