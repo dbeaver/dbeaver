@@ -405,7 +405,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
     private void refreshScripts() {
         scriptsViewer.refresh(true, true);
-        updateSelectedScripts   ();
+        updateSelectedScripts();
     }
 
     private void refreshDataSources() {
