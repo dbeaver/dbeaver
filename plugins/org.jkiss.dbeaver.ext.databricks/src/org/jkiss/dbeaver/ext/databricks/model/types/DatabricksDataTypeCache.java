@@ -23,15 +23,18 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.databricks.DataBricksDataTypesLexer;
-import org.jkiss.dbeaver.ext.databricks.DataBricksDataTypesParser;
+import org.jkiss.dbeaver.ext.databricks.DatabricksDataTypesLexer;
+import org.jkiss.dbeaver.ext.databricks.DatabricksDataTypesParser;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataTypeCache;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class DatabricksDataTypeCache extends GenericDataTypeCache {
 
@@ -63,8 +66,8 @@ public class DatabricksDataTypeCache extends GenericDataTypeCache {
     @Nullable
     private DatabricksDataType parseBuiltinDataType(@NotNull String typeSpec) {
         try {
-            var lexer = new DataBricksDataTypesLexer(CharStreams.fromString(typeSpec));
-            var parser = new DataBricksDataTypesParser(new CommonTokenStream(lexer));
+            var lexer = new DatabricksDataTypesLexer(CharStreams.fromString(typeSpec));
+            var parser = new DatabricksDataTypesParser(new CommonTokenStream(lexer));
             return recognizeDataType(parser.anyType());
         } catch (Throwable ex) {
             log.debug(ex);
@@ -76,30 +79,30 @@ public class DatabricksDataTypeCache extends GenericDataTypeCache {
     private DatabricksDataType recognizeDataType(@Nullable ParseTree node) {
         return switch (node) {
             case null -> null;
-            case DataBricksDataTypesParser.BigIntTypeContext n -> this.obtainTrivialType(n, Types.BIGINT, "BIGINT");
-            case DataBricksDataTypesParser.BinaryTypeContext n -> this.obtainTrivialType(n, Types.BINARY, "BINARY");
-            case DataBricksDataTypesParser.DateTypeContext n -> this.obtainTrivialType(n, Types.DATE, "DATE");
-            case DataBricksDataTypesParser.DoubleTypeContext n -> this.obtainTrivialType(n, Types.DOUBLE, "DOUBLE");
-            case DataBricksDataTypesParser.FloatTypeContext n -> this.obtainTrivialType(n, Types.FLOAT, "FLOAT");
-            case DataBricksDataTypesParser.IntTypeContext n -> this.obtainTrivialType(n, Types.INTEGER, "INT");
-            case DataBricksDataTypesParser.SmallintTypeContext n -> this.obtainTrivialType(n, Types.SMALLINT, "SMALLINT");
-            case DataBricksDataTypesParser.StringTypeContext n -> this.obtainTrivialType(n, Types.VARCHAR, "STRING");
-            case DataBricksDataTypesParser.TimestampTypeContext n -> this.obtainTrivialType(n, Types.TIMESTAMP, "TIMESTAMP");
-            case DataBricksDataTypesParser.TimestampNtzTypeContext n -> this.obtainTrivialType(n, Types.TIMESTAMP, "TIMESTAMP_NTZ");
-            case DataBricksDataTypesParser.TinyIntTypeContext n -> this.obtainTrivialType(n, Types.TINYINT, "TINYINT");
-            case DataBricksDataTypesParser.VariantTypeContext n -> this.obtainTrivialType(n, Types.OTHER, "VARIANT");
-            case DataBricksDataTypesParser.VoidTypeContext n -> this.obtainTrivialType(n, Types.OTHER, "VOID");
+            case DatabricksDataTypesParser.BigIntTypeContext n -> this.obtainTrivialType(n, Types.BIGINT, "BIGINT");
+            case DatabricksDataTypesParser.BinaryTypeContext n -> this.obtainTrivialType(n, Types.BINARY, "BINARY");
+            case DatabricksDataTypesParser.DateTypeContext n -> this.obtainTrivialType(n, Types.DATE, "DATE");
+            case DatabricksDataTypesParser.DoubleTypeContext n -> this.obtainTrivialType(n, Types.DOUBLE, "DOUBLE");
+            case DatabricksDataTypesParser.FloatTypeContext n -> this.obtainTrivialType(n, Types.FLOAT, "FLOAT");
+            case DatabricksDataTypesParser.IntTypeContext n -> this.obtainTrivialType(n, Types.INTEGER, "INT");
+            case DatabricksDataTypesParser.SmallintTypeContext n -> this.obtainTrivialType(n, Types.SMALLINT, "SMALLINT");
+            case DatabricksDataTypesParser.StringTypeContext n -> this.obtainTrivialType(n, Types.VARCHAR, "STRING");
+            case DatabricksDataTypesParser.TimestampTypeContext n -> this.obtainTrivialType(n, Types.TIMESTAMP, "TIMESTAMP");
+            case DatabricksDataTypesParser.TimestampNtzTypeContext n -> this.obtainTrivialType(n, Types.TIMESTAMP, "TIMESTAMP_NTZ");
+            case DatabricksDataTypesParser.TinyIntTypeContext n -> this.obtainTrivialType(n, Types.TINYINT, "TINYINT");
+            case DatabricksDataTypesParser.VariantTypeContext n -> this.obtainTrivialType(n, Types.OTHER, "VARIANT");
+            case DatabricksDataTypesParser.VoidTypeContext n -> this.obtainTrivialType(n, Types.OTHER, "VOID");
 
-            case DataBricksDataTypesParser.GeographyTypeContext n -> this.recognizeSridBasedTypeSpec(n, "GEOGRAPHY");
-            case DataBricksDataTypesParser.GeometryTypeContext n -> this.recognizeSridBasedTypeSpec(n, "GEOMETRY");
+            case DatabricksDataTypesParser.GeographyTypeContext n -> this.recognizeSridBasedTypeSpec(n, "GEOGRAPHY");
+            case DatabricksDataTypesParser.GeometryTypeContext n -> this.recognizeSridBasedTypeSpec(n, "GEOMETRY");
 
-            case DataBricksDataTypesParser.DecimalTypeContext n -> this.recognizeDecimalTypeSpec(n);
-            case DataBricksDataTypesParser.IntervalTypeContext n -> new DatabricksDataType(this.owner, Types.OTHER, n.getText(), 0, 0);
-            case DataBricksDataTypesParser.TimeTypeContext n -> this.recognizeTimeTypeSpec(n, n.getText());
-            case DataBricksDataTypesParser.ArrayTypeContext n -> this.recognizeArrayTypeSpec(n);
-            case DataBricksDataTypesParser.MapTypeContext n -> this.recognizeMapTypeSpec(n);
-            case DataBricksDataTypesParser.StructTypeContext n -> this.recognizeStructTypeSpec(n, false);
-            case DataBricksDataTypesParser.ObjectTypeContext n -> this.recognizeStructTypeSpec(n, true);
+            case DatabricksDataTypesParser.DecimalTypeContext n -> this.recognizeDecimalTypeSpec(n);
+            case DatabricksDataTypesParser.IntervalTypeContext n -> new DatabricksDataType(this.owner, Types.OTHER, n.getText(), 0, 0);
+            case DatabricksDataTypesParser.TimeTypeContext n -> this.recognizeTimeTypeSpec(n, n.getText());
+            case DatabricksDataTypesParser.ArrayTypeContext n -> this.recognizeArrayTypeSpec(n);
+            case DatabricksDataTypesParser.MapTypeContext n -> this.recognizeMapTypeSpec(n);
+            case DatabricksDataTypesParser.StructTypeContext n -> this.recognizeStructTypeSpec(n, false);
+            case DatabricksDataTypesParser.ObjectTypeContext n -> this.recognizeStructTypeSpec(n, true);
 
             default -> node.getChildCount() == 1 ? recognizeDataType(node.getChild(0)) : null;
         };
