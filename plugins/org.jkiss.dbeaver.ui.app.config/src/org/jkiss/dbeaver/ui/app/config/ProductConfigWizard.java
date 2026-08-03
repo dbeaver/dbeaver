@@ -62,7 +62,7 @@ public final class ProductConfigWizard extends Wizard {
     @Override
     public boolean performCancel() {
         // Can't cancel - force the user to go through, or apply defaults by pressing "Finish"
-        return canBeSkipped || Platform.inDevelopmentMode();
+        return isCanBeSkipped();
     }
 
     /**
@@ -75,6 +75,10 @@ public final class ProductConfigWizard extends Wizard {
 
     public boolean isRestartRequired() {
         return restartRequired;
+    }
+
+    public boolean isCanBeSkipped() {
+        return canBeSkipped || Platform.inDevelopmentMode();
     }
 
     private void applySettings() {
