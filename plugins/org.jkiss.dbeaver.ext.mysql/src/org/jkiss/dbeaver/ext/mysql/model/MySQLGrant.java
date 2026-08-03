@@ -61,7 +61,8 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     private boolean grantOption;
     @NotNull
     private final ObjectType objectType;
-    // Column-level privileges: privilege -> column names (lower case), e.g. GRANT SELECT (col1, col2) ON db.tbl
+    // Column-level privileges: privilege -> column names (original case, matched case-insensitively),
+    // e.g. GRANT SELECT (col1, col2) ON db.tbl
     private final Map<MySQLPrivilege, Set<String>> columnPrivileges = new LinkedHashMap<>();
 
     public MySQLGrant(MySQLUser user, List<MySQLPrivilege> privileges, @Nullable String catalogName, @Nullable String tableName, boolean allPrivileges, boolean grantOption)

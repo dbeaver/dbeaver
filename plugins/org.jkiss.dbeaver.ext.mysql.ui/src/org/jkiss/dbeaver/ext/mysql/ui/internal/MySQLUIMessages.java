@@ -86,6 +86,7 @@ public final class MySQLUIMessages extends NLS {
     public static String dialog_object_privileges_add_user;
     public static String editors_user_editor_abstract_action_grants_script;
     public static String editors_user_editor_abstract_dialog_grants_script_title;
+    public static String editors_user_editor_abstract_grants_script_error;
     public static String editors_user_editor_privileges_dialog_add_column_title;
     public static String editors_user_editor_privileges_dialog_add_column_message;
     public static String editors_user_editor_privileges_column_column;

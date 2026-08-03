@@ -299,7 +299,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             procedurePanel.setLayoutData(new GridData(GridData.FILL_BOTH));
             otherPanel = new PrivilegeTableControl(panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_other_privileges, false);
             otherPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-            // Read-only view of schema-wide (db.*) privileges that also apply to the selected object
+            // Editable panel for schema-wide (db.*) privileges that also apply to the selected object
             inheritedPanel = new PrivilegeTableControl(panelsPane, MySQLUIMessages.editors_object_privileges_control_schema_inherited, false);
             inheritedPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -722,7 +722,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         MySQLTableBase table = rootTable != null ? rootTable : selectedTable;
         if (procedure != null) {
             // Only routine-specific grants are editable here. Schema-wide (db.*) privileges are
-            // shown in a separate read-only panel below.
+            // shown in a separate editable panel below.
             List<MySQLGrant> matched = new ArrayList<>();
             for (MySQLGrant grant : grants) {
                 if (grant.matchesProcedure(procedure)) {
@@ -777,7 +777,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             showPanels(true, false, false, true, false);
         } else {
             // Only table-specific grants are editable here; schema-wide (db.*) privileges that also
-            // apply to this table are shown in the separate read-only panel below.
+            // apply to this table are shown in the separate editable panel below.
             tablePanel.fillGrants(matched, editable);
             boolean hasInherited = fillInherited(grants, tablePrivTypes, editable);
             showPanels(true, false, false, false, hasInherited);
@@ -955,19 +955,19 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             target = new MySQLGrant(user, new ArrayList<>(), catalog.getName(), objName, false, false, type);
             grants.add(target);
         }
-        target.setGrantOption(withGrantOption);
-        if (!privilege.isGrantOption()) {
-            if (column != null) {
-                if (isGrant) {
-                    target.addColumnPrivilege(privilege, column.getName());
-                } else {
-                    target.removeColumnPrivilege(privilege, column.getName());
-                }
-            } else if (isGrant) {
-                target.addPrivilege(privilege);
+        if (privilege.isGrantOption()) {
+            // Only the grant-option pseudo-privilege changes the WITH GRANT OPTION flag
+            target.setGrantOption(withGrantOption);
+        } else if (column != null) {
+            if (isGrant) {
+                target.addColumnPrivilege(privilege, column.getName());
             } else {
-                target.removePrivilege(privilege);
+                target.removeColumnPrivilege(privilege, column.getName());
             }
+        } else if (isGrant) {
+            target.addPrivilege(privilege);
+        } else {
+            target.removePrivilege(privilege);
         }
         user.clearGrantsCache();
     }
