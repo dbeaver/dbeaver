@@ -44,9 +44,13 @@ function getClassName(role) {
 function setBusy(args) {
     hideCenterText();
 
+    const wasBusy = isBusy;
     isBusy = Boolean(args.busy);
     ensureBusyIndicator();
     if (isBusy) {
+        if (!wasBusy) {
+            announceWaiting();
+        }
         chat.scrollTop = chat.scrollHeight;
     }
 }

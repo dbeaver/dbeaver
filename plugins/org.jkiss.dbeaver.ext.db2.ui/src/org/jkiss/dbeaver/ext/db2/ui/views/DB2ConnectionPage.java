@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.ext.db2.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -80,7 +82,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
         ModifyListener textListener = e -> {
             if (activated) {
-                updateUrl();
+                super.updateUrl(urlText);
                 site.updateButtons();
             }
         };
@@ -93,14 +95,10 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
                 GridData.FILL_HORIZONTAL
             );
 
-            SelectionAdapter typeSwitcher = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
-                    updateUrl();
-                }
-            };
-            createConnectionModeSwitcher(addrGroup, typeSwitcher);
+            createConnectionModeSwitcher(addrGroup, SelectionListener.widgetSelectedAdapter(e -> {
+                super.setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
+                super.updateUrl(urlText);
+            }));
 
             UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
             urlText = new Text(addrGroup, SWT.BORDER);
@@ -110,6 +108,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
             gd.widthHint = 355;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(e -> site.updateButtons());
+            urlText.setData(URL_TEXT_DATA_ERROR_DECORATOR_KEY, new ControlDecoration(urlText, SWT.BOTTOM | SWT.LEFT));
 
             Label hostLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_host);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -156,16 +155,6 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         setControl(control);
     }
 
-    private void updateUrl() {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        saveSettings(dataSourceContainer);
-        if (typeURLRadio != null && typeURLRadio.getSelection()) {
-            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
-        } else {
-            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
-        }
-    }
-
     @Override
     public boolean isComplete()
     {
@@ -205,7 +194,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
             urlText.setText(connectionInfo.getUrl());
         }
         setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
-        updateUrl();
+        updateUrl(urlText);
         activated = true;
     }
 

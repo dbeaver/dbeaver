@@ -32,14 +32,12 @@ import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -70,15 +68,19 @@ import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -415,14 +417,32 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE: {
-                FindReplaceOverlay findReplaceOverlay;
-                if (event.getTrigger() instanceof Event ev && ev.widget instanceof Spreadsheet s) {
-                    findReplaceOverlay = s.getPresentation().getFindReplaceOverlay();
-                } else {
-                    findReplaceOverlay = rsv.getActivePresentation().getFindReplaceOverlay();
-                }
-                if (findReplaceOverlay != null) {
-                    findReplaceOverlay.open();
+                FindReplaceOverlay findReplaceOverlay = null;
+                boolean openOverlay;
+                if (event.getTrigger() instanceof Event ev) {
+                    Widget widget = ev.widget instanceof MenuItem m
+                        && ActionUtils.getHostingObject(m.getParent()) instanceof BaseTextEditor editor
+                            ? editor.getEditorControl()
+                            : ev.widget;
+                    if (widget instanceof Spreadsheet s) { // any spreadsheet is active, use its overlay
+                        findReplaceOverlay = s.getPresentation().getFindReplaceOverlay();
+                        openOverlay = true;
+                    } else if (widget instanceof StyledText t && ValueViewerPanel.VALUE_VIEW_CONTROL_ID.equals(
+                        HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_ID_NAME)
+                    )) {
+                        StyledTextUtils.createFindReplaceAction(activeShell, new StyledTextFindReplaceTarget(t)).run();
+                        openOverlay = false;
+                    } else {
+                        openOverlay = true;
+                    }
+                    if (openOverlay) {
+                        if (findReplaceOverlay == null) { // fallback to the primary presentation
+                            findReplaceOverlay = rsv.getActivePresentation().getFindReplaceOverlay();
+                        }
+                        if (findReplaceOverlay != null) {
+                            findReplaceOverlay.open();
+                        }
+                    }
                 }
                 break;
             }

@@ -141,7 +141,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         // Recreate URL from parameters
         // Driver settings and URL template may have change since connection creation
         String connectionURL = getContainer().getDriver().getConnectionURL(connectionInfo);
