@@ -340,6 +340,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
                 @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.character == SWT.SPACE) {
+                        e.doit = false;
+                    }
+                }
+
+                @Override
                 public void keyReleased(KeyEvent e) {
                     try {
                         boolean updated = false;
@@ -355,10 +362,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             updated = true;
                         } else if (e.character == SWT.SPACE) {
                             for (TreeItem item : mappingViewer.getTree().getSelection()) {
-                                element = item.getData();
-                                applyMappingTransfer(element);
+                                if (item.getData() instanceof DatabaseMappingObject mapping
+                                    && !isConfigurationRow(mapping)) {
+                                    toggleMappingTransfer(mapping);
+                                }
                             }
-                            updated = true;
                         } else if (e.keyCode == SWT.SHIFT) {
                             TreeItem[] selection = mappingViewer.getTree().getSelection();
                             if (selection.length > 0) {
