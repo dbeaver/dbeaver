@@ -50,16 +50,28 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private static final String SYNC_TITLE = "Synchronization";
     private static final String ENV_URL = "DATADAM_URL";
+    private static final String PREF_SERVER_URL = "datadam.server-url";
 
     private Text accountText;
+    private Text urlText;
     private Text workspaceText;
     private Button deleteButton;
     private Button uploadButton;
     private Button downloadButton;
 
+    private String savedUrl = "";
+
     @Override
     public void init(@NotNull IWorkbench workbench) {
         //empty
+    }
+
+    @NotNull
+    @Override
+    protected Control createContents(@NotNull Composite parent) {
+        Control contents = super.createContents(parent);
+        updateApplyState();
+        return contents;
     }
 
     @NotNull
@@ -72,6 +84,17 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             2,
             GridData.FILL_HORIZONTAL,
             SWT.DEFAULT);
+        UIUtils.createControlLabel(group, "Server URL");
+        Composite urlPanel = UIUtils.createComposite(group, 2);
+        urlPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        urlText = new Text(urlPanel, SWT.BORDER);
+        urlText.setLayoutData(idFieldLayout());
+        urlText.addModifyListener(e -> updateApplyState());
+        UIUtils.createPushButton(urlPanel, "Default", null, SelectionListener.widgetSelectedAdapter(e -> {
+            urlText.setText(CommonUtils.notEmpty(System.getenv(ENV_URL)));
+            updateApplyState();
+        }));
+
         accountText = UIUtils.createLabelText(group, "Account", "", SWT.READ_ONLY, idFieldLayout());
 
         Composite buttons = UIUtils.createComposite(group, 2);
@@ -178,7 +201,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "Import an access key first", true);
             return null;
         }
-        String url = System.getenv(ENV_URL);
+        String url = getServerUrl();
         if (CommonUtils.isEmpty(url)) {
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "DataDam URL is not configured", true);
             return null;
@@ -224,9 +247,38 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return (DDWorkspace) dialog.getFirstResult();
     }
 
+    @NotNull
+    public static String getServerUrl() {
+        String url = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SERVER_URL);
+        return CommonUtils.isEmpty(url) ? CommonUtils.notEmpty(System.getenv(ENV_URL)) : url;
+    }
+
+    private void updateApplyState() {
+        Button applyButton = getApplyButton();
+        if (applyButton != null && !applyButton.isDisposed()) {
+            applyButton.setEnabled(!savedUrl.equals(urlText.getText().trim()));
+        }
+    }
+
+    @Override
+    protected void performApply() {
+        String url = urlText.getText().trim();
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SERVER_URL, url);
+        savedUrl = url;
+        updateApplyState();
+    }
+
+    @Override
+    public boolean performOk() {
+        performApply();
+        return super.performOk();
+    }
+
     private void saveKey(@Nullable String key) {
         try {
-            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(SECRET_ACCESS_KEY, key);
+            DBSSecretController controller = DBSSecretController.getGlobalSecretController();
+            controller.setPrivateSecretValue(SECRET_ACCESS_KEY, key);
+            controller.flushChanges();
         } catch (DBException e) {
             log.error("Error saving access key", e);
         }
@@ -246,6 +298,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             : CommonUtils.isEmpty(binding.label()) ? binding.workspaceId() : binding.label());
         uploadButton.setEnabled(present);
         downloadButton.setEnabled(present);
+
+        savedUrl = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SERVER_URL);
+        if (savedUrl == null) {
+            savedUrl = "";
+        }
+        urlText.setText(CommonUtils.isEmpty(savedUrl)
+            ? CommonUtils.notEmpty(System.getenv(ENV_URL))
+            : savedUrl);
     }
 
     @Nullable

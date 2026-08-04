@@ -49,7 +49,6 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
     private static final Log log = Log.getLog(DDTrackingInitializer.class);
 
     private static final String ENV_KEY = "DATADAM_KEY";
-    private static final String ENV_URL = "DATADAM_URL";
 
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
 
@@ -63,9 +62,9 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             log.debug("DataDam tracking disabled (no access key)");
             return;
         }
-        String url = System.getenv(ENV_URL);
+        String url = DDSyncPreferencePage.getServerUrl();
         if (CommonUtils.isEmpty(url)) {
-            log.debug("DataDam tracking disabled (no " + ENV_URL + ")");
+            log.debug("DataDam tracking disabled (no server URL)");
             return;
         }
         DDTrackingClient client = new DDTrackingClient(url);
