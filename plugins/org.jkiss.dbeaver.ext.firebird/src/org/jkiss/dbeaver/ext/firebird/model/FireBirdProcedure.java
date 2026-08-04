@@ -37,6 +37,8 @@ import java.util.Map;
 
 public class FireBirdProcedure extends GenericProcedure implements DBSObjectWithScript {
 
+    private FireBirdProcedureType fireBirdProcedureType;
+
     @Override
     public GenericCatalog getCatalog() {
         return super.getCatalog();
@@ -211,5 +213,13 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
     @Override
     public void setObjectDefinitionText(String source) {
         setSource(source);
+    }
+
+    public void setFireBirdProcedureType(FireBirdProcedureType fireBirdProcedureType) {
+        this.fireBirdProcedureType = fireBirdProcedureType;
+    }
+
+    public FireBirdProcedureType getFireBirdProcedureType() {
+        return fireBirdProcedureType;
     }
 }
