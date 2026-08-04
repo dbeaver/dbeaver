@@ -30,8 +30,8 @@ import java.util.regex.Pattern;
 
 public class LogOutputStream extends OutputStream {
 
-    public static final long DEFAULT_MAX_LOG_SIZE = 1024 * 1024 * 10; // 10Mb    
-    public static final int DEFAULT_MAX_LOG_FILES_COUNT = 3;
+    public static final long DEFAULT_MAX_LOG_SIZE = 1024 * 1024 * 10; // 10 MiB
+    public static final int DEFAULT_MAX_LOG_FILES_COUNT = 7;
     
     public static final String LOGS_MAX_FILE_SIZE = "logs.files.output.maxSize";
     public static final String LOGS_MAX_FILES_COUNT = "logs.files.output.maxCount";
