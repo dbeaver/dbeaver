@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,5 +17,14 @@
 package org.jkiss.dbeaver.model.qm;
 
 public interface QMConfigurationProvider {
-    long getEventDispatchPeriod();
+
+    long DEFAULT_EVENT_DISPATCH_PERIOD = 250;
+
+    default long getEventDispatchPeriod() {
+        return DEFAULT_EVENT_DISPATCH_PERIOD;
+    }
+
+    default boolean isSaveMetadataEvents() {
+        return true;
+    }
 }

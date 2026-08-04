@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -41,7 +42,7 @@ import java.util.List;
 /**
  * Query manager execution handler implementation
  */
-public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMCollector {
+public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMCollector, DBPPreferenceListener {
 
     private static final Log log = Log.getLog(QMMCollectorImpl.class);
 
@@ -62,18 +63,36 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     // History (may be purged when limit reached)
     private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
-    private long eventDispatchPeriod = 250;
+    private long eventDispatchPeriod = QMConfigurationProvider.DEFAULT_EVENT_DISPATCH_PERIOD;
+    private boolean applicationSaveMetadataEvents = true;
+    private volatile boolean saveMetadataEvents = true;
 
     public QMMCollectorImpl() {
         var application = DBWorkbench.getPlatform().getApplication();
         var qmConfigurationProvider = DBUtils.getAdapter(QMConfigurationProvider.class, application);
         if (qmConfigurationProvider != null) {
             eventDispatchPeriod = qmConfigurationProvider.getEventDispatchPeriod();
+            applicationSaveMetadataEvents = qmConfigurationProvider.isSaveMetadataEvents();
         }
+        refreshMetadataEventsSetting();
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
         new EventDispatcher().schedule(eventDispatchPeriod);
     }
 
+    @Override
+    public void preferenceChange(@NotNull PreferenceChangeEvent event) {
+        if (QMConstants.PROP_SAVE_METADATA_QUERIES.equals(event.getProperty())) {
+            refreshMetadataEventsSetting();
+        }
+    }
+
+    private void refreshMetadataEventsSetting() {
+        saveMetadataEvents = applicationSaveMetadataEvents
+            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(QMConstants.PROP_SAVE_METADATA_QUERIES);
+    }
+
     public void dispose() {
+        DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
         synchronized (connectionMap) {
             if (!connectionMap.isEmpty()) {
                 List<QMMConnectionInfo> openSessions = new ArrayList<>();
@@ -159,6 +178,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         final long timestamp,
         final @NotNull DBPDataSource dataSource
     ) {
+        if (!saveMetadataEvents && isMetadataQuery(object)) {
+            return;
+        }
         try {
             String sessionId = QMUtils.getQmSessionId(dataSource);
             synchronized (eventPool) {
@@ -168,6 +190,15 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
+    }
+
+    private static boolean isMetadataQuery(@NotNull QMMObject object) {
+        DBCExecutionPurpose purpose = switch (object) {
+            case QMMStatementExecuteInfo execute -> execute.getStatement().getPurpose();
+            case QMMStatementInfo statement -> statement.getPurpose();
+            default -> null;
+        };
+        return purpose == DBCExecutionPurpose.META;
     }
 
     @NotNull

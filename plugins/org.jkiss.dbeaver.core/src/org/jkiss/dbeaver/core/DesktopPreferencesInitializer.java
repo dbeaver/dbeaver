@@ -81,6 +81,7 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
             QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query)));
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
             DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_FILTERED + "," + DBCExecutionPurpose.USER_SCRIPT);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_SAVE_METADATA_QUERIES, true);
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
 
         // Logs

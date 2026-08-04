@@ -63,6 +63,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
     private Button checkQueryTypeDDL;
     private Text textHistoryDays;
     private Text textEntriesPerPage;
+    private Button checkSaveMetadataQueries;
     private Button checkStoreLog;
     private Text textOutputFolder;
 
@@ -101,6 +102,16 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkObjectTypeTxn = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_transactions, false);
         //checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_scripts, false);
         checkObjectTypeQueries = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_queries, false);
+
+        Composite groupHistory = UIUtils.createTitledComposite(
+            composite,
+            CoreMessages.pref_page_query_manager_group_history,
+            1,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
+        checkSaveMetadataQueries = UIUtils.createCheckbox(
+            groupHistory,
+            CoreMessages.pref_page_query_manager_checkbox_save_metadata_queries,
+            store.getBoolean(QMConstants.PROP_SAVE_METADATA_QUERIES));
 
         {
             Composite viewSettings = UIUtils.createTitledComposite(
@@ -196,6 +207,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         textHistoryDays.setText(store.getDefaultString(QMConstants.PROP_HISTORY_DAYS));
         textEntriesPerPage.setText(store.getDefaultString(QMConstants.PROP_ENTRIES_PER_PAGE));
 
+        checkSaveMetadataQueries.setSelection(store.getDefaultBoolean(QMConstants.PROP_SAVE_METADATA_QUERIES));
         checkStoreLog.setSelection(store.getDefaultBoolean(QMConstants.PROP_STORE_LOG_FILE));
         textOutputFolder.setText(store.getDefaultString(QMConstants.PROP_LOG_DIRECTORY));
         UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
@@ -232,6 +244,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         if (entriesPerPage != null) {
             store.setValue(QMConstants.PROP_ENTRIES_PER_PAGE, Math.max(1, entriesPerPage));
         }
+        store.setValue(QMConstants.PROP_SAVE_METADATA_QUERIES, checkSaveMetadataQueries.getSelection());
         store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
         store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());
         PrefUtils.savePreferenceStore(store);
