@@ -181,15 +181,14 @@ public class DatabricksMapValueHandler extends BaseValueHandler {
 
         @Override
         public int compareTo(@Nullable EntryComposite other) {
-            return other == null
-                ? 1
-                : (
-                    this.key instanceof Comparable<?> thisKey &&
-                    other.key instanceof Comparable<?> otherKey &&
-                    other.key.getClass() == this.key.getClass()
-                        ? ((Comparable<Object>) thisKey).compareTo(otherKey)
-                        : this.key.getClass().getName().compareTo(other.key.getClass().getName())
-                );
+            if (other == null) {
+                return 1;
+            }
+            return this.key instanceof Comparable<?> thisKey &&
+                other.key instanceof Comparable<?> otherKey &&
+                other.key.getClass() == this.key.getClass()
+                ? ((Comparable<Object>) thisKey).compareTo(otherKey)
+                : this.key.getClass().getName().compareTo(other.key.getClass().getName());
         }
     }
 }

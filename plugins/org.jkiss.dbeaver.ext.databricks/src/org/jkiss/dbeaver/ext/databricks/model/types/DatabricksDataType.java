@@ -29,16 +29,12 @@ import java.util.Objects;
 
 public class DatabricksDataType extends GenericDataType {
 
-    @Nullable
-    private final Integer srid;
-
     protected DatabricksDataType(
         @NotNull GenericStructContainer owner,
         int jdbcTypeKind,
         @NotNull String name
     ) {
         super(owner, jdbcTypeKind, name, null, false, false, 0, 0, 0);
-        this.srid = null;
     }
 
     DatabricksDataType(
@@ -47,25 +43,17 @@ public class DatabricksDataType extends GenericDataType {
         @NotNull String name,
         int precision, int scale
     ) {
-        super(owner, jdbcTypeKind, jdbcTypeKind != Types.DECIMAL
-            ? name
-            : (name + "(" + precision + ", " + scale + ")"), null, false, false, precision, scale, scale);
-        this.srid = null;
+        super(owner, jdbcTypeKind, prepareName(jdbcTypeKind, name, precision, scale), null, false, false, precision, scale, scale);
     }
 
-    DatabricksDataType(
-        @NotNull GenericStructContainer owner,
-        @NotNull String name,
-        int srid
-    ) {
-        super(owner, Types.OTHER, name + "(" + (srid == 0 ? "ANY" : srid) + ")", null, false, false, 0, 0, 0);
-        this.srid = srid;
+    @NotNull
+    private static String prepareName(int jdbcTypeKind, @NotNull String name, int precision, int scale) {
+        return jdbcTypeKind != Types.DECIMAL ? name : (name + "(" + precision + ", " + scale + ")");
     }
 
     @Override
     public boolean equals(@Nullable Object obj) {
         return obj instanceof DatabricksDataType other &&
-            Objects.equals(this.srid, other.srid) &&
             Objects.equals(this.getPrecision(), other.getPrecision()) &&
             this.getMaxScale() == other.getMaxScale() &&
             this.getMinScale() == other.getMinScale() &&

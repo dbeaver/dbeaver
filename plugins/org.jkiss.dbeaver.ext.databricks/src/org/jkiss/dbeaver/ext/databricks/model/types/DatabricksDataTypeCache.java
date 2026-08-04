@@ -93,8 +93,8 @@ public class DatabricksDataTypeCache extends GenericDataTypeCache {
             case DatabricksDataTypesParser.VariantTypeContext n -> this.obtainTrivialType(n, Types.OTHER, "VARIANT");
             case DatabricksDataTypesParser.VoidTypeContext n -> this.obtainTrivialType(n, Types.OTHER, "VOID");
 
-            case DatabricksDataTypesParser.GeographyTypeContext n -> this.recognizeSridBasedTypeSpec(n, "GEOGRAPHY");
-            case DatabricksDataTypesParser.GeometryTypeContext n -> this.recognizeSridBasedTypeSpec(n, "GEOMETRY");
+            case DatabricksDataTypesParser.GeographyTypeContext n -> this.recognizeSridBasedTypeSpec(n, DatabricksSridBasedDataType.Kind.GEOGRAPHY);
+            case DatabricksDataTypesParser.GeometryTypeContext n -> this.recognizeSridBasedTypeSpec(n, DatabricksSridBasedDataType.Kind.GEOMETRY);
 
             case DatabricksDataTypesParser.DecimalTypeContext n -> this.recognizeDecimalTypeSpec(n);
             case DatabricksDataTypesParser.IntervalTypeContext n -> new DatabricksDataType(this.owner, Types.OTHER, n.getText(), 0, 0);
@@ -114,13 +114,13 @@ public class DatabricksDataTypeCache extends GenericDataTypeCache {
     }
 
     @Nullable
-    private DatabricksDataType recognizeSridBasedTypeSpec(@NotNull ParseTree node, @NotNull String name) {
+    private DatabricksDataType recognizeSridBasedTypeSpec(@NotNull ParseTree node, @NotNull DatabricksSridBasedDataType.Kind kind) {
         // name(srid)
         if (node.getChildCount() < 3) {
             return null;
         } else {
             String sridSpec = node.getChild(2).getText();
-            return new DatabricksDataType(this.owner, name, sridSpec.equalsIgnoreCase("ANY") ? 0 : Integer.parseInt(sridSpec));
+            return new DatabricksSridBasedDataType(this.owner, kind, sridSpec.equalsIgnoreCase("ANY") ? 0 : Integer.parseInt(sridSpec));
         }
     }
 
