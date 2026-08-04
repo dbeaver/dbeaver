@@ -22,6 +22,8 @@ import org.eclipse.jface.layout.FillLayoutFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -30,6 +32,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
@@ -102,10 +105,12 @@ public class PromptComposite extends Composite {
 
         setLayout(GridLayoutFactory.fillDefaults().margins(1, 1).numColumns(3).create());
         Composite leftControls = UIUtils.createComposite(this, 1);
+        String shortcut1 = ActionUtils.findCommandDescription(AIChatController.CMD_ATTACH, site, true);
         attachButton = UIUtils.createPushButton(
             leftControls,
             null,
-            AIChatMessages.ai_chat_attach_button_tip,
+            CommonUtils.isEmpty(shortcut1) ? AIChatMessages.ai_chat_attach_button_tip
+                : AIChatMessages.ai_chat_attach_button_tip + " (" + shortcut1 + ")",
             AIChatIcons.ATTACH,
             SelectionListener.widgetSelectedAdapter(e -> ActionUtils.runCommand(
                 AIChatController.CMD_ATTACH,
@@ -120,6 +125,20 @@ public class PromptComposite extends Composite {
         promptText = new StyledText(promptBorder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         promptText.setLayoutData(new GridData(GridData.FILL_BOTH));
         promptText.addKeyListener(new PromptKeyAdapter(chat));
+        promptText.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                e.doit = true;
+                if (e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                    UIUtils.asyncExec(chat::setFocusOnMessages);
+                }
+            }
+        });
+        promptText.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            @Override
+            public void getName(AccessibleEvent e) {
+                e.result = AIChatMessages.ai_chat_a11y_prompt_name;
+            }
+        });
         updatePromptEditorSize();
         promptText.addModifyListener(e -> updatePromptEditorSize());
 
@@ -138,18 +157,18 @@ public class PromptComposite extends Composite {
             // Toolbar
             Composite buttonsBar = UIUtils.createComposite(rightControls, 1);
             buttonsBar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
+            String shortcut = ActionUtils.findCommandDescription(AIChatController.CMD_SEND_PROMPT, site, true);
             sendButton = UIUtils.createPushButton(
                 buttonsBar,
                 null,
-                AIChatMessages.ai_chat_send_button_tip + " (" + ActionUtils.findCommandDescription(
-                    AIChatController.CMD_SEND_PROMPT,
-                    site,
-                    true
-                ) + ")",
+                CommonUtils.isEmpty(shortcut) ? AIChatMessages.ai_chat_send_button_tip
+                    : AIChatMessages.ai_chat_send_button_tip + " (" + shortcut + ")",
                 AIChatIcons.SEND,
                 SelectionListener.widgetSelectedAdapter(e -> submitPrompt())
             );
         }
+
+        setTabList(new Control[]{promptBorder, leftControls, rightControls});
     }
 
     public void submitPrompt() {
@@ -205,9 +224,10 @@ public class PromptComposite extends Composite {
         updatePromptEditorSize();
     }
 
-    public void setFocusOnPrompt() {
-        promptText.setFocus();
+    public boolean setFocusOnPrompt() {
+        boolean focused = promptText.setFocus();
         promptText.notifyListeners(SWT.Modify, new Event());
+        return focused;
     }
 
     private class PromptKeyAdapter extends KeyAdapter {

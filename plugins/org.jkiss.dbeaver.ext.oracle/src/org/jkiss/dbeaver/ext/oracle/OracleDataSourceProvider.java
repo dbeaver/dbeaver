@@ -65,7 +65,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider<OracleDataS
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
         if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
@@ -228,7 +228,12 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider<OracleDataS
             DBPConnectionConfiguration connectionInfo = ds.getConnectionConfiguration();
             OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
             if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
-                return DatabaseURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
+                try {
+                    return this.getConnectionURL(ds.getDriver(), connectionInfo);
+                } catch (DBException e) {
+                    log.error("Failed to obtain object information on target address of the oracle datasource container", e);
+                    return null;
+                }
             }
             String databaseName = CommonUtils.notEmpty(connectionInfo.getDatabaseName());
             if (connectionType == OracleConstants.ConnectionType.TNS) {
