@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,13 +42,19 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
         List<MavenArtifactReference> exclusions = source.getExclusions();
         if (exclusions != null) {
             for (MavenArtifactReference exReference : exclusions) {
-                if (exReference.getGroupId().equals(dependency.getGroupId()) && exReference.getArtifactId().equals(dependency.getArtifactId())) {
+                if (matchesExclusionPart(exReference.getGroupId(), dependency.getGroupId())
+                    && matchesExclusionPart(exReference.getArtifactId(), dependency.getArtifactId())) {
                     return true;
                 }
             }
         }
 
         return parent.isDependencyExcluded(monitor, dependency);
+    }
+
+    // Maven allows '*' wildcard in exclusions to exclude all dependencies
+    private boolean matchesExclusionPart(String exclusionPart, String dependencyPart) {
+        return "*".equals(exclusionPart) || exclusionPart.equals(dependencyPart);
     }
 
 }
