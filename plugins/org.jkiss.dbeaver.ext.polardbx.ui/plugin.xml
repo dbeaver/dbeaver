@@ -8,13 +8,13 @@
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                 label="%dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.polardbx.ui.views.PolarDBXConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.polardbx/icons/polardbx_icon.png"/>
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.polardbx/icons/polardbx_icon.svg"/>
         <view
                 id="org.jkiss.dbeaver.ext.polardbx.dataSourceEditorView"
                 dataSource="polardbx"
                 targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
                 label="%dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.polardbx.ui.views.PolarDBXConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.polardbx/icons/polardbx_icon.png"/>
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.polardbx/icons/polardbx_icon.svg"/>
     </extension>
 </plugin>

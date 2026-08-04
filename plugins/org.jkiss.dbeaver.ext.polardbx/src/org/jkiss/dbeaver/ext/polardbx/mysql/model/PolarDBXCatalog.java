@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.polardbx.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
@@ -66,6 +67,7 @@ import java.util.Locale;
 import java.util.Set;
 
 public class PolarDBXCatalog extends MySQLCatalog {
+    private static final Log log = Log.getLog(PolarDBXCatalog.class);
 
     private static final Set<String> INFO_SCHEMA_VIEW_BLACKLIST = Set.of(
         "INNODB_SYS_TABLESPACES",
@@ -238,7 +240,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
                     }
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.debug("Error reading function definition", e);
             }
 
             // Return an empty map as a fallback.
@@ -339,9 +341,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
                 JDBCPreparedStatement stmt = session.prepareStatement(sql);
                 stmt.setString(1, "mysql." + procedure.getName());
 
-                // Store the parsed parameter information in an instance variable for EnhancedFunctionParameterResultSet to use.
-                // Note: here we first return the original statement; the actual
-                // enhancement logic needs to be implemented in a suitable place.
+                // Parsed parameter information is cached for fetchChild(), which supplies missing lengths.
                 return stmt;
             } else {
                 // For stored procedures: use the standard JDBC approach.
@@ -428,8 +428,8 @@ public class PolarDBXCatalog extends MySQLCatalog {
         }
 
         /**
-         * Get the enhanced parameter length: prefer the length parsed from SHOW CREATE FUNCTION,
-         * falling back to a smart default value.
+         * Gets the parameter length from information_schema when available, then falls back to the
+         * SHOW CREATE FUNCTION declaration and finally to a Connector/J-compatible type default.
          */
         private int getEnhancedParameterLength(Map<String, FunctionDefinitionParser.ParameterInfo> functionParams,
                                                String paramName, String typeName, int originalPrecision) {
@@ -443,16 +443,14 @@ public class PolarDBXCatalog extends MySQLCatalog {
                 lookupKey = paramName.replaceAll("`", "").toLowerCase();
             }
 
-            // Prefer the parsed length.
-            FunctionDefinitionParser.ParameterInfo paramInfo = functionParams.get(lookupKey);
-
-            if (paramInfo != null && paramInfo.getLength() > 0) {
-                return paramInfo.getLength();
-            }
-
-            // If the original precision is valid, use it.
+            // Prefer metadata returned by information_schema.PARAMETERS.
             if (originalPrecision > 0) {
                 return originalPrecision;
+            }
+
+            FunctionDefinitionParser.ParameterInfo paramInfo = functionParams.get(lookupKey);
+            if (paramInfo != null && paramInfo.getLength() > 0) {
+                return paramInfo.getLength();
             }
 
             // Fall back to the basic default length.

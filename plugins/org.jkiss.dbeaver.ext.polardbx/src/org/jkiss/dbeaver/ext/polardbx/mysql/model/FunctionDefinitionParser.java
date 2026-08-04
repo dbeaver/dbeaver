@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.polardbx.mysql.model;
 
+import org.jkiss.dbeaver.Log;
+
 import java.util.*;
 
 /**
@@ -28,6 +30,7 @@ import java.util.*;
  * @author DBeaver Team
  */
 public class FunctionDefinitionParser {
+    private static final Log log = Log.getLog(FunctionDefinitionParser.class);
 
     /**
      * Function parameter information class
@@ -105,7 +108,7 @@ public class FunctionDefinitionParser {
             
         } catch (Exception e) {
             // Log error but don't throw exception to maintain compatibility
-            System.err.println("Error parsing function definition: " + e.getMessage());
+            log.debug("Error parsing function definition", e);
         }
 
         return parameters;
@@ -482,34 +485,28 @@ public class FunctionDefinitionParser {
     }
 
     /**
-     * Get default column size - based on DatabaseMetaData default values
-     * Based on DatabaseMetaData.TypeDescriptor default value logic
+     * Returns the Connector/J-compatible size for declarations that omit an explicit size.
+     * Database metadata is preferred by {@link PolarDBXCatalog}; these values are only a fallback because
+     * PolarDB-X can return zero for function parameter precision and length.
      */
     private static int getDefaultColumnSize(String typeName) {
-        if (typeName.equals("TINYINT")) return 3;
-        if (typeName.equals("SMALLINT")) return 5;
-        if (typeName.equals("MEDIUMINT")) return 7;
-        if (typeName.equals("INT") || typeName.equals("INTEGER")) return 10;
-        if (typeName.equals("BIGINT")) return 19;
-        if (typeName.equals("FLOAT")) return 12;
-        if (typeName.equals("DOUBLE")) return 22;
-        if (typeName.equals("DECIMAL")) return 65;
-        if (typeName.equals("CHAR")) return 1;
-        if (typeName.equals("VARCHAR")) return 65535;
-        if (typeName.equals("TEXT")) return 65535;
-        if (typeName.equals("TINYTEXT")) return 255;
-        if (typeName.equals("MEDIUMTEXT")) return 16777215;
-        if (typeName.equals("LONGTEXT")) return 2147483647;
-        if (typeName.equals("BINARY")) return 255;
-        if (typeName.equals("VARBINARY")) return 65535;
-        if (typeName.equals("BLOB")) return 65535;
-        if (typeName.equals("TINYBLOB")) return 255;
-        if (typeName.equals("MEDIUMBLOB")) return 16777215;
-        if (typeName.equals("LONGBLOB")) return 2147483647;
-        if (typeName.equals("BIT")) return 1;
-        if (typeName.equals("JSON")) return 1073741824;
-        
-        return 255; // Default value
+        return switch (typeName) {
+            case "TINYINT" -> 3;
+            case "SMALLINT" -> 5;
+            case "MEDIUMINT" -> 7;
+            case "INT", "INTEGER" -> 10;
+            case "BIGINT" -> 19;
+            case "FLOAT" -> 12;
+            case "DOUBLE" -> 22;
+            case "DECIMAL" -> 65;
+            case "CHAR", "BIT" -> 1;
+            case "VARCHAR", "TEXT", "VARBINARY", "BLOB" -> 65535;
+            case "TINYTEXT", "BINARY", "TINYBLOB" -> 255;
+            case "MEDIUMTEXT", "MEDIUMBLOB" -> 16777215;
+            case "LONGTEXT", "LONGBLOB" -> 2147483647;
+            case "JSON" -> 1073741824;
+            default -> 255;
+        };
     }
 
     /**

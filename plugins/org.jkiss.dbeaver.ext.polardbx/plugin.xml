@@ -20,9 +20,9 @@
                     categories="sql"
                     webURL="https://github.com/ApsaraDB/galaxysql"
                     description="PolarDB-X JDBC Driver"
-                    icon="icons/polardbx_icon.png"
-                    iconBig="icons/polardbx_icon_big.png"
-                    logoImage="platform:/plugin/org.jkiss.dbeaver.ext.polardbx.ui/icons/polardbx_logo.png">
+                    icon="icons/polardbx_icon.svg"
+                    iconBig="icons/polardbx_icon_big.svg"
+                    logoImage="platform:/plugin/org.jkiss.dbeaver.ext.polardbx.ui/icons/polardbx_logo.svg">
                     <!-- PolarDB-X driver: use the local driver when the drivers.polardbx bundle is present; otherwise download it from Maven -->
                     <file type="jar" path="maven:/com/alibaba/polardbx:polardbx-connector-java:RELEASE[2.2.12]" bundle="!drivers.polardbx"/>
                     <file type="jar" path="maven:/dnsjava:dnsjava:RELEASE[3.6.1]" bundle="!drivers.polardbx"/>
@@ -69,7 +69,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="polardbx" parent="mysql" class="org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXDialect" label="PolarDB-X" icon="icons/polardbx_icon.png">
+        <dialect id="polardbx" parent="mysql" class="org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXDialect" label="PolarDB-X" icon="icons/polardbx_icon.svg">
         </dialect>
     </extension>
 

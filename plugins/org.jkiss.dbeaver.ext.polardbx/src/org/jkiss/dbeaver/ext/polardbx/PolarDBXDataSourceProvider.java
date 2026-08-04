@@ -7,6 +7,12 @@
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.polardbx;
 
@@ -37,7 +43,7 @@ public class PolarDBXDataSourceProvider extends MySQLDataSourceProvider {
         String connectionUrl = DatabaseURL.generateUrlByTemplate(polardbxUrlTemplate, connectionInfo);
 
         // Add PolarDB-X default parameters, compatible with both the Standard Edition and the Enterprise Edition.
-        // socketTimeout is set to 60 seconds to avoid long queries being interrupted.
+        // socketTimeout is set to 60 seconds to prevent network reads from hanging indefinitely.
         String defaultParams = "ignoreVip=false&socketTimeout=60000&useSSL=false&characterEncoding=UTF-8";
 
         // Check whether the URL already contains parameters.
