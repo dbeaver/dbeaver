@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.ext.mysql.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -95,7 +97,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     public void createControl(Composite composite) {
         ModifyListener textListener = e -> {
             if (activated) {
-                updateUrl();
+                super.updateUrl(urlText);
                 site.updateButtons();
             }
         };
@@ -112,14 +114,10 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             GridData.FILL_HORIZONTAL
         );
 
-        SelectionAdapter typeSwitcher = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
-                updateUrl();
-            }
-        };
-        createConnectionModeSwitcher(serverGroup, typeSwitcher);
+        createConnectionModeSwitcher(serverGroup, SelectionListener.widgetSelectedAdapter(e -> {
+            super.setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
+            super.updateUrl(urlText);
+        }));
 
         UIUtils.createControlLabel(serverGroup, UIConnectionMessages.dialog_connection_url_label);
         urlText = new Text(serverGroup, SWT.BORDER);
@@ -129,6 +127,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         gd.widthHint = 355;
         urlText.setLayoutData(gd);
         urlText.addModifyListener(e -> site.updateButtons());
+        urlText.setData(URL_TEXT_DATA_ERROR_DECORATOR_KEY, new ControlDecoration(urlText, SWT.BOTTOM | SWT.LEFT));
 
         DBPDriver driver = getSite().getDriver();
         needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
@@ -178,16 +177,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
-    }
-
-    private void updateUrl() {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        saveSettings(dataSourceContainer);
-        if (typeURLRadio != null && typeURLRadio.getSelection()) {
-            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
-        } else {
-            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
-        }
     }
 
     @Override
@@ -240,8 +229,8 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
         }
-        setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
-        updateUrl();
+        super.setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
+        super.updateUrl(urlText);
 
         activated = true;
     }

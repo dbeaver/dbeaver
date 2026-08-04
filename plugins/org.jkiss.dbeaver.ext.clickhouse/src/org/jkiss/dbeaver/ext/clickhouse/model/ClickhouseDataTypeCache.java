@@ -159,7 +159,9 @@ class ClickhouseDataTypeCache extends GenericDataTypeCache {
             new Entry("Ring", 0, true, 0, 0, 0),
             new Entry("LineString", 0, true, 0, 0, 0),
             new Entry("MultiLineString", 0, true, 0, 0, 0),
-            new Entry("JSON", 0, false, 0, 0, 0),
+            // CLOB -> DBPDataKind.CONTENT, so JSON columns resolve to the JSON content viewer in
+            // result-set grids too (not only in the table data editor, which goes via resolveDataKind).
+            new Entry("JSON", 0, false, 0, 0, Types.CLOB),
             new Entry("Object", 0, false, 0, 0, 0),
             new Entry("String", 0, false, 0, 0, Types.VARCHAR),
             new Entry("Array", 0, false, 0, 0, Types.ARRAY),
