@@ -95,6 +95,7 @@ public class AIUIMessages extends NLS {
     public static String ai_engine_configurator_timeout_tip;
 
     public static String ai_engines_page_create_profile_tip;
+    public static String ai_engines_page_duplicate_profile_tip;
     public static String ai_engines_page_delete_profile_tip;
     public static String ai_engines_page_no_active_engine;
     public static String ai_engines_page_group_profile;
@@ -105,6 +106,8 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_column_model;
     public static String ai_engines_page_create_error_title;
     public static String ai_engines_page_create_error_message;
+    public static String ai_engines_page_duplicate_error_title;
+    public static String ai_engines_page_duplicate_error_message;
     public static String ai_engines_page_delete_confirm_title;
     public static String ai_engines_page_delete_confirm_message;
     public static String ai_engines_page_save_error_title;
