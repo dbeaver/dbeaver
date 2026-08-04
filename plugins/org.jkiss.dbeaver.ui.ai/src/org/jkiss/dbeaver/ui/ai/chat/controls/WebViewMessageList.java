@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.browser.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.program.Program;
@@ -181,6 +183,12 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         browser.setJavascriptEnabled(true);
+        browser.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            @Override
+            public void getName(AccessibleEvent e) {
+                e.result = AIChatMessages.ai_chat_a11y_transcript_label;
+            }
+        });
         functionAllowMenu = new AIFunctionAllowMenu(
             browser,
             chat.getChatSession().getAssistant().getToolboxManager(),
@@ -247,6 +255,16 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     @Override
     public void onSettingsUpdate(@NotNull AISettingsManager registry) {
         UIUtils.asyncExec(() -> renderer.execute("settingsChanged"));
+    }
+
+    public void focusChat() {
+        if (browser.isDisposed()) {
+            return;
+        }
+        browser.setFocus();
+        if (!isInitWaiting) {
+            renderer.execute("focusChat");
+        }
     }
 
     private void createFunctions(@NotNull AIChatControl chat) {
@@ -350,21 +368,26 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         });
 
         createFunction(ATTACHMENT_OPEN_FILE_IN_EXPLORER, arguments -> {
-            if (arguments.length < 1) {
-                throw new IllegalArgumentException("openFileInExplorer requires at least one argument");
+            if (arguments.length < 2) {
+                throw new IllegalArgumentException("openFileInExplorer requires message id and file index");
             }
-            String filePath = String.valueOf(arguments[0]);
             createAttachmentInteractionEvent(ATTACHMENT_OPEN_FILE_IN_EXPLORER);
+            AIMessageFiles attachment = getMessageFilesById(arguments[0]);
+            List<Path> files = attachment.getAttachment();
+            int fileIndex = CommonUtils.toInt(arguments[1], -1);
+            if (fileIndex < 0 || fileIndex >= files.size()) {
+                throw new IllegalArgumentException("Invalid attachment file index: " + arguments[1]);
+            }
+            Path file = files.get(fileIndex);
             UIUtils.asyncExec(() -> {
                 try {
-                    Path file = Path.of(filePath);
                     if (Files.exists(file)) {
                         ShellUtils.showInSystemExplorer(file.toFile());
                     } else {
-                        DBWorkbench.getPlatformUI().showError("File not found", NLS.bind("The file does not exist: {0}", filePath));
+                        DBWorkbench.getPlatformUI().showError("File not found", NLS.bind("The file does not exist: {0}", file));
                     }
                 } catch (Exception e) {
-                    log.error("Error opening file in explorer: " + filePath, e);
+                    log.error("Error opening file in explorer: " + file, e);
                     DBWorkbench.getPlatformUI().showError("Error", NLS.bind("Failed to open file in explorer: {0}", e.getMessage()));
                 }
             });
@@ -430,6 +453,15 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             return null;
         });
 
+        createFunction("openPreferencePage", arguments -> {
+            if (arguments.length < 1) {
+                throw new IllegalArgumentException("openPreferencePage requires at least one argument");
+            }
+            String pageId = String.valueOf(arguments[0]);
+            UIUtils.asyncExec(() -> UIUtils.showPreferencesFor(browser.getShell(), null, pageId));
+            return null;
+        });
+
         createFunction("confirmFunctionCalls", arguments -> {
             if (arguments.length < 2) {
                 throw new IllegalArgumentException("confirmFunctionCalls requires messageId and functionIndex");
@@ -443,6 +475,23 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
             pending.approvedIndices.add(functionIndex);
             checkAllDecisions(chat, messageId, pending);
+            return null;
+        });
+
+        createFunction("traverseOut", arguments -> {
+            boolean forward = arguments.length < 1 || CommonUtils.toBoolean(arguments[0]);
+            UIUtils.asyncExec(() -> {
+                if (browser.isDisposed()) {
+                    return;
+                }
+                if (forward) {
+                    if (!chat.setFocusOnPrompt()) {
+                        browser.traverse(SWT.TRAVERSE_TAB_NEXT);
+                    }
+                } else if (!chat.focusContextBar()) {
+                    browser.traverse(SWT.TRAVERSE_TAB_PREVIOUS);
+                }
+            });
             return null;
         });
 

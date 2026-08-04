@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
@@ -47,7 +46,9 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull
         @Override
         protected CopilotClientResponses initialize() throws DBException {
-            return createClient(getProperties().getBaseAuthUrl());
+            CopilotClientResponses newClient = createClient(getProperties().getBaseAuthUrl());
+            newClient.setTimeout(getProperties().getTimeout());
+            return newClient;
         }
 
         @Override
@@ -64,7 +65,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<CopilotModel> models = client.getInstance().loadModels(monitor, requestSessionToken(monitor).token());
+        List<CopilotModel> models = client.getInstance().loadModels(monitor, requestSessionToken(monitor));
         boolean isPremium = models.stream().anyMatch(CopilotModel::modelPickerEnabled);
         return models.stream()
             .filter(model -> isModelOffered(model, isPremium))
@@ -94,7 +95,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         );
         Object chatResponse = client.getInstance().chat(
             monitor,
-            requestSessionToken(monitor).token(),
+            requestSessionToken(monitor),
             copilotChatRequestOAIResponsesRequestPair
         );
         if (chatResponse instanceof OAIResponsesResponse oaiResponse) {
@@ -150,7 +151,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         );
         client.getInstance().createChatCompletionStream(
             monitor,
-            requestSessionToken(monitor).token(),
+            requestSessionToken(monitor),
             copilotChatRequestOAIResponsesRequestPair,
             listener
         );
@@ -186,12 +187,9 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         return sessionToken;
     }
 
-    @NotNull
+    @Nullable
     public String getModelName() {
-        return CommonUtils.toString(
-            properties.getModel(),
-            OpenAIConstants.DEFAULT_MODEL
-        );
+        return properties.getModel();
     }
 
     @NotNull

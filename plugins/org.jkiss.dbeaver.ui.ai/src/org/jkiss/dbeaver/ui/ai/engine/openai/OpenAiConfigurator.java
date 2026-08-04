@@ -21,9 +21,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
@@ -45,7 +43,7 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
-import org.jkiss.dbeaver.ui.ai.preferences.AIIObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.ai.preferences.AbstractAIEngineConfigurator;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -53,7 +51,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
-    implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+    extends AbstractAIEngineConfigurator<ENGINE, PROPERTIES> {
 
     private static final Log log = Log.getLog(OpenAiConfigurator.class);
 
@@ -61,7 +59,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     protected String baseUrl;
     protected volatile String token = "";
     private String temperature = "0.0";
-    private boolean logQuery = false;
 
     @Nullable
     private Text baseUrlText;
@@ -71,7 +68,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     private Text temperatureText;
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
-    private Button logQueryCheck;
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchOpenAiModels);
 
@@ -98,13 +94,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         token = CommonUtils.toString(configuration.getToken());
-        modelSelectorField.setSelectedModel(
-            CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
-        );
+        modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel()));
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
 
-        logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applySettings();
+        loadAdvancedSettings(configuration);
 
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
@@ -118,7 +112,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         configuration.setModel(modelSelectorField.getSelectedModel());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
-        configuration.setLoggingEnabled(logQuery);
+        saveAdvancedSettings(configuration);
     }
 
     @Override
@@ -127,16 +121,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     protected void createAdditionalSettings(@NotNull Composite parent) {
-        logQueryCheck = UIUtils.createCheckbox(
-            parent,
-            AIUIMessages.openai_configurator_log_query_label,
-            AIUIMessages.openai_configurator_log_query_tip,
-            false,
-            2
-        );
-        logQueryCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
-            logQuery = logQueryCheck.getSelection()
-        ));
+        createAdvancedSettings(parent);
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
@@ -249,7 +234,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
 
         temperatureText.setText(temperature);
-        logQueryCheck.setSelection(logQuery);
     }
 
     @Override
@@ -268,7 +252,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         propertiesCopy.setModel(modelSelectorField.getSelectedModel());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
-        propertiesCopy.setLoggingEnabled(logQuery);
+        saveAdvancedSettings(propertiesCopy);
         return Optional.of(propertiesCopy);
     }
 }

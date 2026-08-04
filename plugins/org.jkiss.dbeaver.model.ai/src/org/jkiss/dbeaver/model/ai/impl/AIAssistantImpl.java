@@ -109,7 +109,7 @@ public class AIAssistantImpl implements AIAssistant {
 
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
                 Instant now = Instant.now();
-                AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
+                AIEngineResponse completionResponse = requestCompletion(engine, profile, monitor, request);
                 int systemPromptLength = AIPromptUtils.calcSystemPromptLength(completionRequest.getMessages());
                 AIUsage usage = completionResponse.getUsage() != null ?
                     completionResponse.getUsage() :
@@ -257,7 +257,8 @@ public class AIAssistantImpl implements AIAssistant {
         );
 
         if (isLoggingEnabled()) {
-            log.debug("AI chat request:\n" + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
+            log.debug("AI chat request (" + getEngineInfo(profile, engine) + "):\n"
+                + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
             log.debug("AI chat request functions: " + request.getFunctions().stream().map(AIFunctionDescriptor::getId).toList());
 
             AIDatabaseContext context = functionContext.getContext();
@@ -277,8 +278,10 @@ public class AIAssistantImpl implements AIAssistant {
         callWithRetry(listener, () -> {
             if (isTruncated.get()) {
                 isTruncated.set(false);
-                listener.warning(
-                    "Context description was truncated");
+                listener.warning(AIUtils.getSettingsAccessMessage(
+                    AIMessages.ai_warning_chat_history_truncated,
+                    AIMessages.ai_warning_chat_history_truncated_linked,
+                    AIMessages.ai_warning_chat_history_truncated_admin));
             }
             int systemPromptLength = AIPromptUtils.calcSystemPromptLength(request.getMessages());
             listener.systemPromptLength(systemPromptLength);
@@ -448,11 +451,14 @@ public class AIAssistantImpl implements AIAssistant {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         Map<String, Object> arguments = functionCall.getArguments();
-        log.debug("Call AI function " + function.getId() + "(" +
-            arguments.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
-                .collect(Collectors.joining(",")) +
-            ")");
+
+        if (isLoggingEnabled()) {
+            log.debug("Call AI function " + function.getId() + "(" +
+                arguments.entrySet().stream()
+                    .map(e -> e.getKey() + "=" + e.getValue())
+                    .collect(Collectors.joining(",")) +
+                ")");
+        }
         DBPDataSourceContainer container = context.getContext() != null
             ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
         AIBaseFeatures.AI_CHAT_FUNCTION_CALL.use(AIBaseFeatures.buildFeatureParameters(
@@ -493,13 +499,15 @@ public class AIAssistantImpl implements AIAssistant {
     @NotNull
     protected AIEngineResponse requestCompletion(
         @NotNull AIEngine<?> engine,
+        @NotNull AIConfigurationProfile profile,
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
         try {
             boolean loggingEnabled = isLoggingEnabled();
             if (loggingEnabled) {
-                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
+                log.debug("AI request (" + getEngineInfo(profile, engine) + "):\n"
+                    + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
@@ -516,6 +524,13 @@ public class AIAssistantImpl implements AIAssistant {
                 throw new DBException("Error requesting completion", e);
             }
         }
+    }
+
+    @NotNull
+    protected static String getEngineInfo(@NotNull AIConfigurationProfile profile, @NotNull AIEngine<?> engine) {
+        return "profile: " + profile.getProfileName()
+            + ", engine: " + profile.getEngineId()
+            + ", model: " + engine.getProperties().getModel();
     }
 
     protected boolean isLoggingEnabled() {

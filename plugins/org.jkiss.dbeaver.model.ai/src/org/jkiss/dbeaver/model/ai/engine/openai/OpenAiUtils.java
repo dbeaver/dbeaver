@@ -80,17 +80,24 @@ public class OpenAiUtils {
                 tool.type = OAITool.TYPE_FUNCTION;
                 tool.name = fd.getFullId();
                 tool.description = fd.getAiDescription();
-                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
-                List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionParameter param : fd.getParameters()) {
-                    OAIToolParameter tp = new OAIToolParameter();
-                    tp.type = param.getType();
-                    tp.description = param.getDescription();
-                    tp.enumItems = param.getValidValues();
-                    requiredFields.add(param.getName());
-                    tool.parameters.properties.put(param.getName(), tp);
+                if (fd.getParameters().length > 0) {
+                    tool.parameters = new OAIToolParameters();
+                    tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
+                    List<String> requiredFields = new ArrayList<>();
+                    for (AIFunctionParameter param : fd.getParameters()) {
+                        OAIToolParameter tp = new OAIToolParameter();
+                        tp.type = param.getType();
+                        tp.description = param.getDescription();
+                        tp.enumItems = param.getValidValues();
+                        if (param.isRequired()) {
+                            requiredFields.add(param.getName());
+                        }
+                        tool.parameters.properties.put(param.getName(), tp);
+                    }
+                    if (!requiredFields.isEmpty()) {
+                        tool.parameters.required = requiredFields.toArray(new String[0]);
+                    }
                 }
-                tool.parameters.required = requiredFields.toArray(new String[0]);
                 tools.add(tool);
             }
             oaiRequest.tools = tools;
@@ -128,6 +135,10 @@ public class OpenAiUtils {
             || message.contains("The requested model is not supported");
     }
 
+    public static boolean isTemperatureNotSupported(@Nullable String message) {
+        return message != null && message.contains("Unsupported parameter: 'temperature'");
+    }
+
     public static boolean processErrors(
         @NotNull MonitoredHttpClient.ErrorMapper mapper,
         @NotNull Consumer<Throwable> errorHandler,
@@ -142,7 +153,7 @@ public class OpenAiUtils {
                 String reason;
                 if (shouldFallbackToLegacyChat(responseBody)) {
                     reason = OpenAIConstants.LEGACY_FALLBACK;
-                } else if (responseBody.contains("Unsupported parameter: 'temperature'")) {
+                } else if (isTemperatureNotSupported(responseBody)) {
                     reason = OpenAIConstants.TEMPERATURE_NOT_SUPPORTED;
                 } else {
                     errorHandler.accept(mapper.map(statusCode, responseBody));

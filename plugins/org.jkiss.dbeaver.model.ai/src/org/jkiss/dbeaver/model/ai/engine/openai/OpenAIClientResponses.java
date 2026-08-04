@@ -52,6 +52,12 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         this.backupClient = createBackupClient();
     }
 
+    @Override
+    public void setTimeout(int timeoutSeconds) {
+        super.setTimeout(timeoutSeconds);
+        backupClient.setTimeout(timeoutSeconds);
+    }
+
     @NotNull
     public HttpClient getHttpClient() {
         return client.getHttpClient();
@@ -80,6 +86,10 @@ public class OpenAIClientResponses extends OpenAiClientBase {
             if (OpenAiUtils.shouldFallbackToLegacyChat(exception.getMessage())) {
                 // If the request failed due to an unsupported model, fallback to the legacy client which might support it
                 return backupClient.createChatCompletion(monitor, completionRequest);
+            } else if (completionRequest.temperature != null && OpenAiUtils.isTemperatureNotSupported(exception.getMessage())) {
+                completionRequest.temperature = null;
+                MODELS_WITHOUT_TEMPERATURE.add(completionRequest.model);
+                return createChatCompletion(monitor, completionRequest);
             } else {
                 throw exception;
             }
@@ -131,6 +141,15 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     @NotNull
     protected OpenAIClientChat createBackupClient() {
         return new OpenAIClientChat(baseUrl, requestFilters);
+    }
+
+    @NotNull
+    @Override
+    protected HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest) throws DBException {
+        if (completionRequest.model != null && MODELS_WITHOUT_TEMPERATURE.contains(completionRequest.model)) {
+            completionRequest.temperature = null;
+        }
+        return super.createCompletionRequest(completionRequest);
     }
 
     @NotNull
