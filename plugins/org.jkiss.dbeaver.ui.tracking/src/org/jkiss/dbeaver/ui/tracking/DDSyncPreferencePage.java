@@ -21,10 +21,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
@@ -34,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.tracking.DDAccessKey;
+import org.jkiss.dbeaver.model.tracking.DDSyncBinding;
 import org.jkiss.dbeaver.model.tracking.DDSyncService;
 import org.jkiss.dbeaver.model.tracking.DDWorkspace;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -74,7 +72,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             2,
             GridData.FILL_HORIZONTAL,
             SWT.DEFAULT);
-        accountText = UIUtils.createLabelText(group, "Account", "", SWT.READ_ONLY);
+        accountText = UIUtils.createLabelText(group, "Account", "", SWT.READ_ONLY, idFieldLayout());
 
         Composite buttons = UIUtils.createComposite(group, 2);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -100,7 +98,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             2,
             GridData.FILL_HORIZONTAL,
             SWT.DEFAULT);
-        workspaceText = UIUtils.createLabelText(syncGroup, "Bound to", "", SWT.READ_ONLY);
+        workspaceText = UIUtils.createLabelText(syncGroup, "Bound to", "", SWT.READ_ONLY, idFieldLayout());
 
         Composite syncButtons = UIUtils.createComposite(syncGroup, 2);
         GridData syncGd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -121,13 +119,16 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return;
         }
         try {
-            String workspaceId = service.getBoundWorkspaceId();
-            if (workspaceId == null) {
+            DDSyncBinding binding = service.getBinding();
+            String workspaceId;
+            if (binding == null) {
                 String label = askWorkspaceLabel();
                 if (label == null) {
                     return;
                 }
                 workspaceId = service.createWorkspace(label);
+            } else {
+                workspaceId = binding.workspaceId();
             }
             List<String> uploaded = service.upload(workspaceId);
             refresh();
@@ -146,14 +147,16 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return;
         }
         try {
-            String workspaceId = service.getBoundWorkspaceId();
-            if (workspaceId == null) {
-                workspaceId = askWorkspace(service.listWorkspaces());
-                if (workspaceId == null) {
+            DDSyncBinding binding = service.getBinding();
+            if (binding == null) {
+                DDWorkspace selected = askWorkspace(service.listWorkspaces());
+                if (selected == null) {
                     return;
                 }
-                service.bindWorkspace(workspaceId);
+                service.bindWorkspace(selected.workspaceId(), selected.label());
+                binding = service.getBinding();
             }
+            String workspaceId = binding.workspaceId();
             List<String> restored = service.download(workspaceId);
             refresh();
             DBWorkbench.getPlatformUI().showMessageBox(
@@ -186,6 +189,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             DBWorkbench.getPlatform().getWorkspace());
     }
 
+    @NotNull
+    private static GridData idFieldLayout() {
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.widthHint = UIUtils.getFontHeight(Display.getCurrent().getSystemFont()) * 22;
+        return gd;
+    }
+
     @Nullable
     private String askWorkspaceLabel() {
         String label = EnterNameDialog.chooseName(getShell(), "Workspace name", "");
@@ -193,7 +203,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     @Nullable
-    private String askWorkspace(@NotNull List<DDWorkspace> workspaces) {
+    private DDWorkspace askWorkspace(@NotNull List<DDWorkspace> workspaces) {
         if (workspaces.isEmpty()) {
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "No synchronized workspaces found", true);
             return null;
@@ -211,7 +221,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         if (dialog.open() != Window.OK) {
             return null;
         }
-        return ((DDWorkspace) dialog.getFirstResult()).workspaceId();
+        return (DDWorkspace) dialog.getFirstResult();
     }
 
     private void saveKey(@Nullable String key) {
@@ -229,9 +239,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         accountText.setText(accessKey == null ? "" : accessKey.accountId().toString());
         deleteButton.setEnabled(present);
 
-        String workspaceId = DDSyncService.readBinding(
+        DDSyncBinding binding = DDSyncService.readBinding(
             DBWorkbench.getPlatform().getWorkspace().getAbsolutePath());
-        workspaceText.setText(CommonUtils.notEmpty(workspaceId));
+        workspaceText.setText(binding == null
+            ? ""
+            : CommonUtils.isEmpty(binding.label()) ? binding.workspaceId() : binding.label());
         uploadButton.setEnabled(present);
         downloadButton.setEnabled(present);
     }

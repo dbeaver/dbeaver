@@ -63,24 +63,29 @@ public class DDSyncService {
     }
 
     @Nullable
-    public String getBoundWorkspaceId() {
+    public DDSyncBinding getBinding() {
         return readBinding(workspace.getAbsolutePath());
     }
 
     @Nullable
-    public static String readBinding(@NotNull Path workspacePath) {
+    public static DDSyncBinding readBinding(@NotNull Path workspacePath) {
         Path bindingFile = workspacePath.resolve(BINDING_FILE);
+        if (!Files.exists(bindingFile)) {
+            return null;
+        }
         try {
-            return Files.exists(bindingFile) ? Files.readString(bindingFile).trim() : null;
-        } catch (IOException e) {
+            return JSONUtils.GSON.fromJson(Files.readString(bindingFile), DDSyncBinding.class);
+        } catch (IOException | RuntimeException e) {
             log.debug("Error reading synchronization binding", e);
             return null;
         }
     }
 
-    public void bindWorkspace(@NotNull String workspaceId) throws DBException {
+    public void bindWorkspace(@NotNull String workspaceId, @Nullable String label) throws DBException {
         try {
-            Files.writeString(workspace.getAbsolutePath().resolve(BINDING_FILE), workspaceId);
+            Files.writeString(
+                workspace.getAbsolutePath().resolve(BINDING_FILE),
+                JSONUtils.GSON.toJson(new DDSyncBinding(workspaceId, label)));
         } catch (IOException e) {
             throw new DBException("Error writing synchronization binding", e);
         }
@@ -89,7 +94,7 @@ public class DDSyncService {
     @NotNull
     public String createWorkspace(@NotNull String label) throws DBException {
         DDWorkspace created = client.createWorkspace(label);
-        bindWorkspace(created.workspaceId());
+        bindWorkspace(created.workspaceId(), created.label());
         return created.workspaceId();
     }
 
