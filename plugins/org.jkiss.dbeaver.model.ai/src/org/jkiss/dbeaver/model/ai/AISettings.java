@@ -141,6 +141,25 @@ public class AISettings implements DBPAdaptable {
         return profile;
     }
 
+    @NotNull
+    public AIConfigurationProfile copyConfiguration(
+        @NotNull AIConfigurationProfile source,
+        @NotNull String id,
+        @NotNull String name
+    ) throws DBException {
+        AIConfigurationProfile copy = createConfiguration(id, source.getEngineDescriptor());
+        copy.setProfileName(name);
+        AIEngineProperties sourceConfiguration = source.getConfiguration();
+        copy.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
+            AISettingsManager.READ_PROPS_GSON.toJson(sourceConfiguration),
+            sourceConfiguration.getClass()
+        ));
+        if (!AISettingsManager.saveSecretsAsPlainText()) {
+            copy.saveSecrets();
+        }
+        return copy;
+    }
+
     public void removeConfiguration(@NotNull AIConfigurationProfile profile) {
         configurations.remove(profile.getProfileId());
         if (CommonUtils.equalObjects(defaultConfiguration, profile.getProfileId())) {
