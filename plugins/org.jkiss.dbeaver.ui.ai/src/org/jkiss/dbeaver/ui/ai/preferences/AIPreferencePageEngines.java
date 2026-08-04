@@ -162,6 +162,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         partDivider = UIUtils.createPartDivider(null, composite, SWT.VERTICAL);
         partDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        Button duplicateProfileBtn;
         Button deleteProfileBtn;
         {
             profilesPanel = UIUtils.createComposite(partDivider, 2);
@@ -186,6 +187,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 UIIcon.ADD,
                 SelectionListener.widgetSelectedAdapter(e -> addNewProfile())
             );
+            duplicateProfileBtn = UIUtils.createPushButton(
+                buttonsPanel,
+                null,
+                AIUIMessages.ai_engines_page_duplicate_profile_tip,
+                UIIcon.ROW_COPY,
+                SelectionListener.widgetSelectedAdapter(e -> duplicateProfile())
+            );
+            duplicateProfileBtn.setEnabled(selectedProfile != null);
             deleteProfileBtn = UIUtils.createPushButton(
                 buttonsPanel,
                 null,
@@ -240,6 +249,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             profilesViewer.addSelectionChangedListener(event -> {
                 Object selItem = profilesViewer.getStructuredSelection().getFirstElement();
                 AIConfigurationProfile profile = selItem instanceof AIConfigurationProfile p ? p : null;
+                duplicateProfileBtn.setEnabled(profile != null);
                 deleteProfileBtn.setEnabled(profile != null);
                 if (profile == selectedProfile) {
                     return;
@@ -296,6 +306,31 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
                 AIUIMessages.ai_engines_page_create_error_title, AIUIMessages.ai_engines_page_create_error_message, e);
+        }
+    }
+
+    private void duplicateProfile() {
+        if (selectedProfile == null || activeEngineConfiguratorPage == null) {
+            return;
+        }
+        try {
+            selectedProfile.setProfileName(profileNameText.getText());
+            activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
+
+            AIConfigurationProfile newProfile = settings.copyConfiguration(
+                selectedProfile,
+                AIProfileCreateDialog.genProfileId(selectedProfile.getEngineDescriptor()),
+                AIProfileCreateDialog.genProfileName(selectedProfile.getProfileName())
+            );
+            reloadEngines();
+            profilesViewer.setSelection(new StructuredSelection(newProfile));
+
+            AISettingsManager.getInstance().saveSettings();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.ai_engines_page_duplicate_error_title,
+                AIUIMessages.ai_engines_page_duplicate_error_message,
+                e);
         }
     }
 
