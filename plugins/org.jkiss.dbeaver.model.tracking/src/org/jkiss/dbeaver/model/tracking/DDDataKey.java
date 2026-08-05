@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.model.tracking;
 
 import org.jkiss.code.NotNull;
 
-public record DDTrackStop(
-    @NotNull String trackingId
+public record DDDataKey(
+    @NotNull String encryptedKey,
+    @NotNull String keyType
 ) {
 }
