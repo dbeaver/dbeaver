@@ -113,7 +113,7 @@ public class ConfirmedShellCommandsManager {
         Set<String> confirmedCommands = null;
         String loaded = getConfigurationController().loadConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME);
         if (loaded != null) {
-            confirmedCommands = JSONUtils.GSON.fromJson(
+            confirmedCommands = (Set<String>) JSONUtils.GSON.fromJson(
                 loaded,
                 TypeToken.getParameterized(Set.class, String.class)
             );
