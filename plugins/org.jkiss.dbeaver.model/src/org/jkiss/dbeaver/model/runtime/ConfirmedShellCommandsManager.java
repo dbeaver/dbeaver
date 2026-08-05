@@ -77,6 +77,7 @@ public class ConfirmedShellCommandsManager {
     }
 
     public boolean removeConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
+        validateNotDistributed();
         return !command.isBlank() && removeConfirmedShellCommand(command.getCommand());
     }
 
@@ -113,8 +114,8 @@ public class ConfirmedShellCommandsManager {
         String loaded = getConfigurationController().loadConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME);
         if (loaded != null) {
             confirmedCommands = JSONUtils.GSON.fromJson(
-                loaded, new TypeToken<Set<String>>() {
-                }.getType()
+                loaded,
+                TypeToken.getParameterized(Set.class, String.class)
             );
         }
         return Objects.requireNonNullElse(confirmedCommands, new HashSet<>());
