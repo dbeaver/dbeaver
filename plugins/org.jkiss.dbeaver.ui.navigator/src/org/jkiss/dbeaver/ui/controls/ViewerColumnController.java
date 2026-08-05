@@ -353,16 +353,16 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         isPacking = true;
         try {
             int itemCount = 0;
-            if (viewer instanceof TreeViewer) {
-                itemCount = ((TreeViewer) viewer).getTree().getItemCount();
+            if (viewer instanceof TreeViewer treeViewer) {
+                itemCount = treeViewer.getTree().getItemCount();
                 float[] ratios = null;
-                if (((TreeViewer) viewer).getTree().getColumnCount() == 2) {
+                if (treeViewer.getTree().getColumnCount() == 2) {
                     ratios = new float[]{0.6f, 0.4f};
                 }
-                UIUtils.packColumns(((TreeViewer) viewer).getTree(), forceAutoSize, ratios);
-            } else if (viewer instanceof TableViewer) {
-                itemCount = ((TableViewer) viewer).getTable().getItemCount();
-                UIUtils.packColumns(((TableViewer) viewer).getTable(), forceAutoSize);
+                UIUtils.packColumns(treeViewer.getTree(), forceAutoSize, ratios);
+            } else if (viewer instanceof TableViewer tableViewer) {
+                itemCount = tableViewer.getTable().getItemCount();
+                UIUtils.packColumns(tableViewer.getTable(), forceAutoSize);
             }
 
             /*if (itemCount == 0) */{
