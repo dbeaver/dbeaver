@@ -53,7 +53,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
     }
 
     // Maven allows '*' wildcard in exclusions to exclude all dependencies
-    private boolean matchesExclusionPart(String exclusionPart, String dependencyPart) {
+    private boolean matchesExclusionPart(@NotNull String exclusionPart, @NotNull String dependencyPart) {
         return "*".equals(exclusionPart) || exclusionPart.equals(dependencyPart);
     }
 
