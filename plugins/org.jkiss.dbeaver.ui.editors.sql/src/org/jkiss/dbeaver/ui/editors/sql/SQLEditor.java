@@ -120,7 +120,10 @@ import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.*;
-import org.jkiss.utils.*;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -848,6 +851,14 @@ public class SQLEditor extends SQLEditorBase implements
                     } catch (DBException e) {
                         DBWorkbench.getPlatformUI()
                             .showError("New connection default", "Error setting default catalog/schema for new connection", e);
+                    }
+                }
+                var txnManager = DBUtils.getTransactionManager(newContext);
+                if (txnManager != null && !txnManager.isAutoCommit()) {
+                    try (DBCSession session = newContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction")) {
+                        txnManager.commit(session);
+                    } catch (DBCException e) {
+                        log.warn("Error committing changes context defaults for new connection", e);
                     }
                 }
                 SQLEditor.this.isolatedExecutionContext = newContext;

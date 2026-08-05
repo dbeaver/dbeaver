@@ -395,6 +395,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         postgreContext.refreshDefaults(monitor, true);
         if (activeSchema != null) {
             postgreContext.setDefaultCatalog(monitor, activeSchema.getDatabase(), activeSchema, true);
+
+            // Commit possible changes to search_path
+            var txnManager = DBUtils.getTransactionManager(context);
+            if (txnManager != null && !txnManager.isAutoCommit()) {
+                try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction")) {
+                    txnManager.commit(session);
+                } catch (DBCException e) {
+                    log.warn("Error committing changes context defaults for new connection", e);
+                }
+            }
         }
     }
 
