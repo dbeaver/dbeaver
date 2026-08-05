@@ -4470,24 +4470,30 @@ public class ResultSetViewer extends Viewer
 
     @NotNull
     public String getActiveQueryText() {
-        DBCStatistics statistics = getModel().getStatistics();
-        String queryText = statistics == null ? null : statistics.getQueryText();
-        if (queryText == null || queryText.isEmpty()) {
-            DBSDataContainer dataContainer = getDataContainer();
-            if (dataContainer != null) {
-                if (dataContainer instanceof SQLQueryContainer) {
-                    SQLScriptElement query = ((SQLQueryContainer) dataContainer).getQuery();
-                    if (query != null) {
-                        return query.getText();
-                    }
+        String queryText = null;
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer != null) {
+            if (dataContainer instanceof SQLQueryContainer queryContainer) {
+                SQLScriptElement query = queryContainer.getQuery();
+                if (query != null) {
+                    return query.getText();
                 }
-                return dataContainer.getName();
             }
+            queryText = CommonUtils.notNull(this.getQueryTextFromStats(), dataContainer.getName());
+        } else {
+            queryText = this.getQueryTextFromStats();
+        }
+        if (CommonUtils.isEmpty(queryText)) {
             queryText = DEFAULT_QUERY_TEXT;
         }
         return queryText;
     }
 
+    @Nullable
+    private String getQueryTextFromStats() {
+        DBCStatistics statistics = getModel().getStatistics();
+        return statistics == null ? null : statistics.getQueryText();
+    }
 
     private boolean runDataPump(
         @NotNull final DBSDataContainer dataContainer,

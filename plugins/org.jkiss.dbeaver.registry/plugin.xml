@@ -89,10 +89,9 @@
             class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseShellCommand"
             desktop="true">
 
-            <propertyGroup label="Database user">
-                <property id="user" label="User" type="string"/>
-            </propertyGroup>
-
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPreference" value="connection.shellAuthModelEnabled"/>
+            </enabledWhen>
         </authModel>
     </extension>
 

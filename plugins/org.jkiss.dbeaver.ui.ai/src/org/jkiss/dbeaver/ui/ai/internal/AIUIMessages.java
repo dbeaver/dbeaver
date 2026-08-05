@@ -29,13 +29,16 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_completion_group;
     public static String gpt_preference_page_completion_include_source_label;
     public static String gpt_preference_page_completion_include_source_tip;
-    public static String gpt_preference_page_completion_execute_immediately_label;
-    public static String gpt_preference_page_completion_execute_immediately_tip;
     public static String gpt_preference_page_completion_send_type_label;
     public static String gpt_preference_page_completion_send_type_tip;
     public static String gpt_preference_page_completion_execute_description_label;
     public static String gpt_preference_page_completion_execute_description_tip;
     public static String gpt_preference_page_schema_group;
+    public static String gpt_preference_page_chat_group;
+    public static String gpt_preference_page_chat_use_stream_mode_label;
+    public static String gpt_preference_page_chat_use_stream_mode_tip;
+    public static String gpt_preference_page_chat_execute_in_new_console_label;
+    public static String gpt_preference_page_chat_execute_in_new_console_tip;
     public static String gpt_preference_page_advanced_appearance_group;
     public static String gpt_preference_page_combo_engine;
     public static String gpt_preference_page_text_temperature;
@@ -92,6 +95,7 @@ public class AIUIMessages extends NLS {
     public static String ai_engine_configurator_timeout_tip;
 
     public static String ai_engines_page_create_profile_tip;
+    public static String ai_engines_page_duplicate_profile_tip;
     public static String ai_engines_page_delete_profile_tip;
     public static String ai_engines_page_no_active_engine;
     public static String ai_engines_page_group_profile;
@@ -102,6 +106,8 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_column_model;
     public static String ai_engines_page_create_error_title;
     public static String ai_engines_page_create_error_message;
+    public static String ai_engines_page_duplicate_error_title;
+    public static String ai_engines_page_duplicate_error_message;
     public static String ai_engines_page_delete_confirm_title;
     public static String ai_engines_page_delete_confirm_message;
     public static String ai_engines_page_save_error_title;

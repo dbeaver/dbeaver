@@ -23,7 +23,6 @@ public class AIConstants {
 
     // Misc
 
-    public static final String AI_COMPLETION_EXECUTE_IMMEDIATELY = "ai.completion.executeImmediately";
     public static final String AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT = "ai.completion.includeSourceTextInQuery";
 
     public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";

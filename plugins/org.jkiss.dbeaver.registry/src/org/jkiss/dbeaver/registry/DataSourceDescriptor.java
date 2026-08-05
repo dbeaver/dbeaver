@@ -1203,10 +1203,26 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
-                try {
-                    log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
-                } catch (Throwable e) {
-                    log.debug("Connected (" + getId() + ", driver unknown)");
+                if (dataSource != null) {
+                    DBPDataSourceInfo info = dataSource.getInfo();
+                    log.debug(
+                        """
+                        Connected to a datasource:
+                            id='%s',
+                            databaseProductName='%s',
+                            databaseProductVersion='%s',
+                            driverName='%s',
+                            driverVersion='%s'.
+                        """.formatted(
+                            id,
+                            info.getDatabaseProductName(),
+                            info.getDatabaseProductVersion(),
+                            info.getDriverName(),
+                            info.getDriverVersion()
+                        )
+                    );
+                } else {
+                    log.debug("Connected to datasource with id=" + id);
                 }
 
                 this.connectFailed = false;
@@ -1337,8 +1353,8 @@ public class DataSourceDescriptor
             if (profile != null) {
                 if (secretController != null) {
                     profile.resolveSecrets(secretController);
-                } else if (profile.isGlobal() && !DBWorkbench.isDistributed()) {
-                    // Global profile secrets are stored in global secret controller
+                } else if (profile.isGlobal() && !DBWorkbench.isMultiuserOrDistributed()) {
+                    // Global profile secrets are stored in global secret controller for desktop apps
                     profile.resolveSecrets(DBSSecretController.getGlobalSecretController());
                 }
                 for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
