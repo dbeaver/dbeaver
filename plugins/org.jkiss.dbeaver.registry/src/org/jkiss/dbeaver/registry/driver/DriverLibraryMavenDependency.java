@@ -42,8 +42,9 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
         List<MavenArtifactReference> exclusions = source.getExclusions();
         if (exclusions != null) {
             for (MavenArtifactReference exReference : exclusions) {
-                if (matchesExclusionPart(exReference.getGroupId(), dependency.getGroupId())
-                    && matchesExclusionPart(exReference.getArtifactId(), dependency.getArtifactId())) {
+                if (matchesExclusionPart(exReference.getGroupId(), dependency.getGroupId()) &&
+                    matchesExclusionPart(exReference.getArtifactId(), dependency.getArtifactId())
+                ) {
                     return true;
                 }
             }
