@@ -680,6 +680,20 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         return -1;
     }
 
+    public boolean isBooleanColumn(int columnIndex) {
+        final Control control = viewer.getControl();
+        final Item column;
+        if (control instanceof Tree tree && columnIndex >= 0 && columnIndex < tree.getColumnCount()) {
+            column = tree.getColumn(columnIndex);
+        } else if (control instanceof Table table && columnIndex >= 0 && columnIndex < table.getColumnCount()) {
+            column = table.getColumn(columnIndex);
+        } else {
+            return false;
+        }
+        return column.getData() instanceof ColumnInfo columnInfo &&
+            columnInfo.labelProvider instanceof ColumnBooleanLabelProvider;
+    }
+
     private static class ColumnInfo extends ViewerColumnRegistry.ColumnState {
         final String description;
         final int style;
