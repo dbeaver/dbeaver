@@ -1203,10 +1203,26 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
-                try {
-                    log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
-                } catch (Throwable e) {
-                    log.debug("Connected (" + getId() + ", driver unknown)");
+                if (dataSource != null) {
+                    DBPDataSourceInfo info = dataSource.getInfo();
+                    log.debug(
+                        """
+                        Connected to a datasource:
+                            id='%s',
+                            databaseProductName='%s',
+                            databaseProductVersion='%s',
+                            driverName='%s',
+                            driverVersion='%s'.
+                        """.formatted(
+                            id,
+                            info.getDatabaseProductName(),
+                            info.getDatabaseProductVersion(),
+                            info.getDriverName(),
+                            info.getDriverVersion()
+                        )
+                    );
+                } else {
+                    log.debug("Connected to datasource with id=" + id);
                 }
 
                 this.connectFailed = false;
