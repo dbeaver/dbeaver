@@ -43,21 +43,39 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     private boolean seenLanguageChangeWarning = false;
 
-    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, boolean canBeSkipped) {
-        super(window, new ProductConfigWizard(canBeSkipped));
+    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, @NotNull ProductConfigWizard.Origin origin) {
+        super(window, new ProductConfigWizard(origin));
     }
 
     public boolean isRestartRequired() {
         return getWizard().isRestartRequired();
     }
 
-    public boolean isCanBeSkipped() {
-        return getWizard().isCanBeSkipped();
+    @NotNull
+    public ProductConfigWizard.Origin getOrigin() {
+        return getWizard().getOrigin();
+    }
+
+    @Override
+    public int open() {
+        ProductConfigFeatures.WIZARD_SHOWN.use(Map.of(
+            "origin", getOrigin()
+        ));
+
+        int result = super.open();
+
+        ProductConfigFeatures.WIZARD_CLOSED.use(Map.of(
+            "origin", getOrigin(),
+            "status", result == IDialogConstants.OK_ID ? "finished" : "canceled"
+        ));
+
+        return result;
     }
 
     @NotNull
@@ -174,7 +192,7 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         super.createButtonsForButtonBar(parent);
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        if (cancelButton != null && !isCanBeSkipped()) {
+        if (cancelButton != null && getOrigin() == ProductConfigWizard.Origin.AUTOMATIC) {
             cancelButton.setText(ProductConfigMessages.button_exit);
         }
     }

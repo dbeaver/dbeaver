@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.app.config.ProductConfigWizard;
 import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
@@ -186,7 +187,10 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             return;
         }
         runWithSplashHidden(() -> {
-            var dialog = new ProductConfigWizardDialog(getWindowConfigurer().getWindow(), false);
+            var dialog = new ProductConfigWizardDialog(
+                getWindowConfigurer().getWindow(),
+                ProductConfigWizard.Origin.AUTOMATIC
+            );
             if (dialog.open() == IDialogConstants.CANCEL_ID) {
                 getWindowConfigurer().getWorkbenchConfigurer().emergencyClose();
             }
