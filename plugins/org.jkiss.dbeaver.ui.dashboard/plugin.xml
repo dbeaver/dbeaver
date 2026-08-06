@@ -240,8 +240,8 @@
             </enabledWhen>
         </activity>
 
-        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org.jkiss.dbeaver.ui.dashboard.*"/>
-        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org.jkiss.dbeaver.dashboard.ui.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org\.jkiss\.dbeaver\.ui\.dashboard.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org\.jkiss\.dbeaver\.dashboard\.ui.*"/>
     </extension>
 
 </plugin>
