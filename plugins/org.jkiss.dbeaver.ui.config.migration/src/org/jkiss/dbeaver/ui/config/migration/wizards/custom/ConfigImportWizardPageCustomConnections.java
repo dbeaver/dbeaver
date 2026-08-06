@@ -128,7 +128,12 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
             conProps.get("user"),
             conProps.get("password")
         );
-        
+
+        String authModelId = conProps.get("authModelId");
+        if (CommonUtils.isNotEmpty(authModelId)) {
+            ici.setAuthModelId(authModelId);
+        }
+
         log.debug("load connection: " + ici.toString());
         importData.addConnection(ici);
     }
