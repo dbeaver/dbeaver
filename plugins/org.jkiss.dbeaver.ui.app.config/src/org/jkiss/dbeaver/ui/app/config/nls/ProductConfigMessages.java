@@ -27,6 +27,12 @@ public final class ProductConfigMessages extends NLS {
     public static String appearance_description;
     public static String appearance_theme_header;
     public static String appearance_theme_hint;
+    public static String appearance_navigator_header;
+    public static String appearance_navigator_simple;
+    public static String appearance_navigator_advanced;
+    public static String appearance_navigator_custom;
+    public static String appearance_navigator_custom_configure;
+    public static String appearance_navigator_hint;
 
     public static String features_title;
     public static String features_description;
