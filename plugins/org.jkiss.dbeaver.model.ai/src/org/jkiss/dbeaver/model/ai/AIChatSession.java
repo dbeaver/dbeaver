@@ -159,9 +159,13 @@ public class AIChatSession {
             monitor -> {
                 try {
                     this.conversations = new LinkedHashMap<>();
-                    List<QMAIConversationHistory> conversationsHistory = storage.findConversations(
-                        sessionIdProvider.getSessionId(monitor)
-                    );
+                    List<QMAIConversationHistory> conversationsHistory = new ArrayList<>();
+                    String sessionId = sessionIdProvider.getSessionId(monitor);
+                    if (sessionId != null) {
+                        conversationsHistory = storage.findConversations(
+                            sessionId
+                        );
+                    }
                     for (QMAIConversationHistory history : conversationsHistory) {
                         DBPDataSourceContainer dataSourceContainer = getContainer(history.getDataSource());
                         AIChatConversation conversation = QMAIChatHistoryMapper.toAIChatConversation(
@@ -408,18 +412,20 @@ public class AIChatSession {
             configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
         }
         String engineId = configurationProfile.getEngineId();
-        QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
-            sessionId,
-            engineId
-        );
-        if (quotaStatus.exceeded()) {
-            throw new DBException(
-                "Token quota for " +
-                    engineId +
-                    " exceeded. The quota will be reset at " +
-                    USER_DATE_TIME_FORMATTER
-                        .format(quotaStatus.resetAt())
+        if (sessionId != null) {
+            QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
+                sessionId,
+                engineId
             );
+            if (quotaStatus.exceeded()) {
+                throw new DBException(
+                    "Token quota for " +
+                        engineId +
+                        " exceeded. The quota will be reset at " +
+                        USER_DATE_TIME_FORMATTER
+                            .format(quotaStatus.resetAt())
+                );
+            }
         }
 
         AIPromptGenerator promptGenerator = conversation.getPromptGenerator();
@@ -430,7 +436,7 @@ public class AIChatSession {
             chatListener.warning("Failed to connect to the database");
             return finishConversationWithError(conversation, chatListener, e);
         }
-        if (isContextChanged(conversation.getId(), context) && !conversation.isTemporary()) {
+        if (isContextChanged(conversation.getId(), context) && !conversation.isTemporary() && sessionId != null) {
             storage.saveConversation(
                 sessionId,
                 QMAIChatHistoryMapper.toQMAIChatHistory(
@@ -607,7 +613,7 @@ public class AIChatSession {
 
     // Chat session provider
     public interface SessionIdProvider {
-        @NotNull
+        @Nullable
         String getSessionId(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 
