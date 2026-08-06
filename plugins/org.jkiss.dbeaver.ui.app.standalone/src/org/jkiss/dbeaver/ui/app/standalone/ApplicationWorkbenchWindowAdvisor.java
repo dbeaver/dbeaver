@@ -184,14 +184,23 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             // Only show when the persisted configuration lacks any features defined in the registry, e.g. fresh start
             return;
         }
-        var display = Display.getCurrent();
-        var splash = WorkbenchPlugin.getSplashShell(display);
-        try {
-            splash.setVisible(false);
-            var dialog = new ProductConfigWizardDialog(getWindowConfigurer().getWindow());
+        runWithSplashHidden(() -> {
+            var dialog = new ProductConfigWizardDialog(getWindowConfigurer().getWindow(), false);
             dialog.open();
+        });
+    }
+
+    private static void runWithSplashHidden(@NotNull Runnable runnable) {
+        var splash = WorkbenchPlugin.getSplashShell(Display.getCurrent());
+        if (splash != null) {
+            splash.setVisible(false);
+        }
+        try {
+            runnable.run();
         } finally {
-            splash.setVisible(true);
+            if (splash != null) {
+                splash.setVisible(true);
+            }
         }
     }
 

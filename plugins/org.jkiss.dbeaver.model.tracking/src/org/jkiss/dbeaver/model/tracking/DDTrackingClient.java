@@ -41,8 +41,12 @@ public class DDTrackingClient implements DDTrackingService {
     private final Transport stopTransport;
 
     public DDTrackingClient(@NotNull String url) {
-        this.startTransport = new Transport(url, START_TIMEOUT_MS);
-        this.stopTransport = new Transport(url, STOP_TIMEOUT_MS);
+        this(url, TRACKING_ENDPOINT);
+    }
+
+    protected DDTrackingClient(@NotNull String url, @NotNull String rootPath) {
+        this.startTransport = new Transport(url, rootPath, START_TIMEOUT_MS);
+        this.stopTransport = new Transport(url, rootPath, STOP_TIMEOUT_MS);
     }
 
     @Nullable
@@ -53,33 +57,53 @@ public class DDTrackingClient implements DDTrackingService {
 
     @Nullable
     @Override
-    public DDTracking stop(@Nullable String apiKey, @NotNull DDTrackStop request) {
-        return stopTransport.post(TRACK_STOP_ENDPOINT, apiKey, request);
+    public DDTracking stop(@Nullable String apiKey, @NotNull String trackingId) {
+        return stopTransport.post(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), apiKey);
     }
 
     private static final class Transport extends AbstractRestClient {
 
-        Transport(@NotNull String url, int readTimeoutMs) {
+        private final String rootPath;
+
+        Transport(@NotNull String url, @NotNull String rootPath, int readTimeoutMs) {
             super(url, DEFAULT_CONNECT_TIMEOUT, readTimeoutMs, List.of());
+            this.rootPath = rootPath;
         }
 
         @Nullable
         DDTracking post(@NotNull String path, @Nullable String apiKey, @NotNull Object body) {
             try {
-                String endpoint = CommonUtils.removeLeadingSlash(METERING_ENDPOINT + path);
-                URI uri = buildUri(endpoint, Map.of());
-
+                URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
                     .POST(createBodyPublisher(body, MediaType.JSON));
-                if (apiKey != null) {
-                    builder.header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + apiKey);
-                }
-
+                applyAuth(builder, apiKey);
                 return execute(builder, DDTracking.class);
             } catch (DBException e) {
                 log.debug("DataDam tracking request failed", e);
                 return null;
+            }
+        }
+
+        @Nullable
+        DDTracking post(@NotNull String path, @Nullable String apiKey) {
+            try {
+                URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+                    .POST(HttpRequest.BodyPublishers.noBody());
+                applyAuth(builder, apiKey);
+                return execute(builder, DDTracking.class);
+            } catch (DBException e) {
+                log.debug("DataDam tracking request failed", e);
+                return null;
+            }
+        }
+
+        private static void applyAuth(@NotNull HttpRequest.Builder builder, @Nullable String apiKey) throws DBException {
+            if (apiKey != null) {
+                DDAccessKey accessKey = DDAccessKey.parseOrNull(apiKey);
+                String credential = accessKey == null ? apiKey : accessKey.buildToken();
+                builder.header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + credential);
             }
         }
 
