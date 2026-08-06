@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -186,19 +187,21 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         }
         runWithSplashHidden(() -> {
             var dialog = new ProductConfigWizardDialog(getWindowConfigurer().getWindow(), false);
-            dialog.open();
+            if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                getWindowConfigurer().getWorkbenchConfigurer().emergencyClose();
+            }
         });
     }
 
     private static void runWithSplashHidden(@NotNull Runnable runnable) {
         var splash = WorkbenchPlugin.getSplashShell(Display.getCurrent());
-        if (splash != null) {
+        if (splash != null && !splash.isDisposed()) {
             splash.setVisible(false);
         }
         try {
             runnable.run();
         } finally {
-            if (splash != null) {
+            if (splash != null && !splash.isDisposed()) {
                 splash.setVisible(true);
             }
         }

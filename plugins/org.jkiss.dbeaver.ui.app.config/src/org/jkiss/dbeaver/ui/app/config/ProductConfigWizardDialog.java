@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
@@ -173,8 +174,8 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         super.createButtonsForButtonBar(parent);
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        if (cancelButton != null) {
-            UIUtils.setControlVisible(cancelButton, isCanBeSkipped());
+        if (cancelButton != null && !isCanBeSkipped()) {
+            cancelButton.setText(ProductConfigMessages.button_exit);
         }
     }
 

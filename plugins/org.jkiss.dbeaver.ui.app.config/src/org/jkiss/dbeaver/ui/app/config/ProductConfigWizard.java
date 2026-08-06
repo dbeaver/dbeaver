@@ -16,14 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.app.config;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.app.config.pages.ProductConfigWizardPage;
 import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigPageDescriptor;
 import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigWizardRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public final class ProductConfigWizard extends Wizard {
     private static final Log log = Log.getLog(ProductConfigWizard.class);
@@ -61,8 +64,14 @@ public final class ProductConfigWizard extends Wizard {
 
     @Override
     public boolean performCancel() {
-        // Can't cancel - force the user to go through, or apply defaults by pressing "Finish"
-        return isCanBeSkipped();
+        if (isCanBeSkipped()) {
+            return true;
+        }
+        return UIUtils.confirmAction(
+            getShell(),
+            ProductConfigMessages.confirm_exit_title,
+            NLS.bind(ProductConfigMessages.confirm_exit_message, GeneralUtils.getProductName())
+        );
     }
 
     /**
@@ -78,7 +87,7 @@ public final class ProductConfigWizard extends Wizard {
     }
 
     public boolean isCanBeSkipped() {
-        return canBeSkipped || Platform.inDevelopmentMode();
+        return canBeSkipped/* || Platform.inDevelopmentMode()*/;
     }
 
     private void applySettings() {
