@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactDependency;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
