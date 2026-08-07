@@ -254,7 +254,6 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     public void cancelPrompt() {
         if (activeConversation != null) {
             activeConversation.cancelConversation();
-            chatSession.notifyMessageAdd(activeConversation, activeConversation.getMessages().getLast());
             chatSession.notifyListeners(AIChatListener::conversationCanceled, activeConversation);
         }
     }
