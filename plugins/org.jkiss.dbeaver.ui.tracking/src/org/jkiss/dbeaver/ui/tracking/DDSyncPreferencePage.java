@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.tracking.DDAccessKey;
-import org.jkiss.dbeaver.model.tracking.DDSyncBinding;
-import org.jkiss.dbeaver.model.tracking.DDSyncService;
-import org.jkiss.dbeaver.model.tracking.DDWorkspace;
+import org.jkiss.dbeaver.model.tracking.sync.DDSyncBinding;
+import org.jkiss.dbeaver.model.tracking.sync.DDSyncService;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -143,17 +143,17 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
         try {
             DDSyncBinding binding = service.getBinding();
-            String workspaceId;
+            String containerId;
             if (binding == null) {
-                String label = askWorkspaceLabel();
+                String label = askContainerLabel();
                 if (label == null) {
                     return;
                 }
-                workspaceId = service.createWorkspace(label);
+                containerId = service.createContainer(label);
             } else {
-                workspaceId = binding.workspaceId();
+                containerId = binding.containerId();
             }
-            List<String> uploaded = service.upload(workspaceId);
+            List<String> uploaded = service.upload(containerId);
             refresh();
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
@@ -172,15 +172,15 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         try {
             DDSyncBinding binding = service.getBinding();
             if (binding == null) {
-                DDWorkspace selected = askWorkspace(service.listWorkspaces());
+                DDContainer selected = askContainer(service.listContainers());
                 if (selected == null) {
                     return;
                 }
-                service.bindWorkspace(selected.workspaceId(), selected.label());
+                service.bind(selected.id(), selected.label());
                 binding = service.getBinding();
             }
-            String workspaceId = binding.workspaceId();
-            List<String> restored = service.download(workspaceId);
+            String containerId = binding.containerId();
+            List<String> restored = service.download(containerId);
             refresh();
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
@@ -220,14 +220,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     @Nullable
-    private String askWorkspaceLabel() {
+    private String askContainerLabel() {
         String label = EnterNameDialog.chooseName(getShell(), "Workspace name", "");
         return CommonUtils.isEmpty(label) ? null : label;
     }
 
     @Nullable
-    private DDWorkspace askWorkspace(@NotNull List<DDWorkspace> workspaces) {
-        if (workspaces.isEmpty()) {
+    private DDContainer askContainer(@NotNull List<DDContainer> containers) {
+        if (containers.isEmpty()) {
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "No synchronized workspaces found", true);
             return null;
         }
@@ -235,16 +235,16 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             @NotNull
             @Override
             public String getText(@NotNull Object element) {
-                return ((DDWorkspace) element).label();
+                return ((DDContainer) element).label();
             }
         });
         dialog.setTitle(SYNC_TITLE);
         dialog.setMessage("Select workspace");
-        dialog.setElements(workspaces.toArray());
+        dialog.setElements(containers.toArray());
         if (dialog.open() != Window.OK) {
             return null;
         }
-        return (DDWorkspace) dialog.getFirstResult();
+        return (DDContainer) dialog.getFirstResult();
     }
 
     @NotNull
@@ -295,7 +295,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             DBWorkbench.getPlatform().getWorkspace().getAbsolutePath());
         workspaceText.setText(binding == null
             ? ""
-            : CommonUtils.isEmpty(binding.label()) ? binding.workspaceId() : binding.label());
+            : CommonUtils.isEmpty(binding.label()) ? binding.containerId() : binding.label());
         uploadButton.setEnabled(present);
         downloadButton.setEnabled(present);
 

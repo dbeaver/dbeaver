@@ -14,12 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.sync;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-public record DDSyncEnvelope(
-    @Nullable String project,
-    @NotNull String content
-) { }
+public enum DDSyncScope {
+    WORKSPACE,
+    PROJECT
+}

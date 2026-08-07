@@ -14,48 +14,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.sync;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncFiles;
 
-public enum DDSyncConfigType {
+import java.util.Map;
 
-    AI("ai", ".metadata/.config/ai-configuration.json", DDSyncScope.WORKSPACE),
-    CONNECTIONS("connections", ".dbeaver/data-sources.json", DDSyncScope.PROJECT);
+public class DDFileSyncUnit implements DDSyncUnit {
 
     private final String id;
     private final String path;
     private final DDSyncScope scope;
 
-    DDSyncConfigType(@NotNull String id, @NotNull String path, @NotNull DDSyncScope scope) {
+    public DDFileSyncUnit(
+        @NotNull String id,
+        @NotNull String path,
+        @NotNull DDSyncScope scope
+    ) {
         this.id = id;
         this.path = path;
         this.scope = scope;
     }
 
     @NotNull
+    @Override
     public String getId() {
         return id;
     }
 
     @NotNull
-    public String getPath() {
-        return path;
-    }
-
-    @NotNull
+    @Override
     public DDSyncScope getScope() {
         return scope;
     }
 
-    @Nullable
-    public static DDSyncConfigType findById(@NotNull String id) {
-        for (DDSyncConfigType type : values()) {
-            if (type.id.equals(id)) {
-                return type;
-            }
-        }
-        return null;
+    @NotNull
+    @Override
+    public Map<String, byte[]> read(@NotNull DDSyncTarget target) throws DBException {
+        return files(target).read();
+    }
+
+    @Override
+    public void write(@NotNull DDSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException {
+        files(target).write(resources);
+    }
+
+    @NotNull
+    private DDSyncFiles files(@NotNull DDSyncTarget target) {
+        return new DDSyncFiles(target.root().resolve(path));
     }
 }
