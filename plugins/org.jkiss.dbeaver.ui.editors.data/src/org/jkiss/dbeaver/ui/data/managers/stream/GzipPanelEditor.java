@@ -59,24 +59,39 @@ public class GzipPanelEditor extends TextPanelEditor {
         }
 
         try {
-            ByteArrayOutputStream rawBuffer = new ByteArrayOutputStream();
+            IValueController controller = getValueController();
+            DBCExecutionContext executionContext = controller != null ? controller.getExecutionContext() : null;
+            final org.jkiss.dbeaver.model.preferences.DBPPreferenceStore store = executionContext != null
+                ? executionContext.getDataSource().getContainer().getPreferenceStore()
+                : org.jkiss.dbeaver.runtime.DBWorkbench.getPlatform().getPreferenceStore();
+            final int maxTextBytesPref = store.getInt(org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) * 1000;
+            final int maxBytes = maxTextBytesPref > 0 ? maxTextBytesPref : 10_000_000;
+
+            byte[] rawBytes;
             try (InputStream is = storage.getContentStream()) {
-                if (is != null) {
-                    ContentUtils.copyStreams(is, -1, rawBuffer, monitor);
-                }
+                rawBytes = is == null ? new byte[0] : is.readNBytes(maxBytes + 1);
             }
-            byte[] rawBytes = rawBuffer.toByteArray();
             if (rawBytes.length == 0) {
                 super.primeEditorValue(monitor, control, value);
                 return;
             }
+            if (rawBytes.length > maxBytes) {
+                throw new DBException("Compressed content is too large to decompress");
+            }
 
-            byte[] decompressedBytes = decompress(rawBytes);
+            byte[] decompressedBytes = decompress(rawBytes, maxBytes);
             String decompressedText = new String(decompressedBytes, StandardCharsets.UTF_8);
-            IValueController controller = getValueController();
-            DBCExecutionContext executionContext = controller != null ? controller.getExecutionContext() : null;
-            StringContent decompressedContent = new StringContent(executionContext, decompressedText);
-            super.primeEditorValue(monitor, control, decompressedContent);
+
+            TextEditorPart textEditor = getTextEditor();
+            if (textEditor != null) {
+                textEditor.setInput(new org.jkiss.dbeaver.ui.editors.StringEditorInput(
+                    "Decompressed Content",
+                    decompressedText,
+                    true,
+                    StandardCharsets.UTF_8.name()));
+            } else {
+                control.setText(decompressedText);
+            }
         } catch (Exception e) {
             log.error("Error decompressing BLOB content", e);
             throw new DBException("Error decompressing BLOB content", e);
