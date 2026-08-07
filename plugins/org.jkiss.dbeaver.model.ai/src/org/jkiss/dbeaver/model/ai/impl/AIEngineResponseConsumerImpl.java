@@ -74,7 +74,7 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
     @Override
     public void nextChunk(@NotNull AIEngineResponseChunk chunk) {
         if (monitor.isCanceled() || !conversation.isActive()) {
-            close(true);
+            close(true, conversation.getState() == AIChatConversation.State.CANCELED);
             return;
         }
         if (chunk.getFunctionCall() != null) {
@@ -99,14 +99,14 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
             throwable.printStackTrace(System.err);
         }
         chatListener.error(throwable);
-        close(true);
+        close(true, false);
     }
 
     @Override
     public void completeBlock() {
         boolean hasFunctions = !functionCalls.isEmpty();
 
-        close(!hasFunctions);
+        close(!hasFunctions, false);
 
         // Request completed
         // Now let's check function calls
@@ -130,7 +130,7 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
         chatListener.warning(message);
     }
 
-    private void close(boolean finishConversation) {
+    private void close(boolean finishConversation, boolean isCanceled) {
         if (closed) {
             return;
         }
@@ -145,7 +145,7 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
             systemPromptLength.get()
         );
 
-        chatListener.complete(List.of(messageMeta), finishConversation);
+        chatListener.complete(List.of(messageMeta), finishConversation, isCanceled);
 
         try {
             engine.close();

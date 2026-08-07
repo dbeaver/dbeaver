@@ -71,13 +71,17 @@ class AIChatSessionResponseConsumer implements AIChatResponseConsumer {
     @Override
     public void complete(
         @NotNull List<AIMessageMeta> meta,
-        boolean finishConversation
+        boolean finishConversation,
+        boolean isCanceled
     ) {
         String assistantResponseText = response.toString();
         if (!assistantResponseText.isBlank()) {
             addConversationMessage(
                 AIMessage.assistantMessage(assistantResponseText, meta)
             );
+        }
+        if (isCanceled) {
+            warning("Response generation cancelled by user.");
         }
         conversation.promptProcessed(finishConversation);
     }

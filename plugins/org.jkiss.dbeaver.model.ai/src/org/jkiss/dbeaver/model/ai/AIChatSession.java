@@ -554,7 +554,7 @@ public class AIChatSession {
         try {
             chatListener.error(error);
         } finally {
-            chatListener.complete(List.of(), true);
+            chatListener.complete(List.of(), true, false);
         }
         return CompletableFuture.completedFuture(conversation);
     }
