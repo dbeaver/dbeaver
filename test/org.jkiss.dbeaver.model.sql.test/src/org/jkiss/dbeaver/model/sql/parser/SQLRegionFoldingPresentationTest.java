@@ -16,6 +16,14 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.rules.FastPartitioner;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLPartitionScanner;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -86,5 +94,44 @@ public class SQLRegionFoldingPresentationTest extends DBeaverUnitTest {
             widenedDamagedRegionOffset,
             SAMPLE_REGIONS
         ));
+    }
+
+    @Test
+    public void markerRangeCheckDetectsOnlyAffectedMarkerLines() throws DBException {
+        Document document = createPartitionedDocument("""
+            SELECT 1
+            --region A
+            SELECT 2
+            --endregion
+            """);
+        int markerOffset = document.get().indexOf("--region");
+
+        Assertions.assertTrue(SQLRegionMarkerFolding.hasRegionMarkerInRange(
+            document,
+            BasicSQLDialect.INSTANCE,
+            markerOffset,
+            "--region A".length()
+        ));
+        Assertions.assertFalse(SQLRegionMarkerFolding.hasRegionMarkerInRange(
+            document,
+            BasicSQLDialect.INSTANCE,
+            0,
+            "SELECT 1".length()
+        ));
+    }
+
+    private static Document createPartitionedDocument(String sql) throws DBException {
+        SQLDialect dialect = BasicSQLDialect.INSTANCE;
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(dialect, DBWorkbench.getPlatform().getPreferenceStore());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules();
+        Document document = new Document(sql);
+        FastPartitioner partitioner = new FastPartitioner(
+            new SQLPartitionScanner(null, dialect, ruleManager),
+            SQLParserPartitions.SQL_CONTENT_TYPES);
+        partitioner.connect(document);
+        document.setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
+        return document;
     }
 }

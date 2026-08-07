@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.sql.SQLPartitionScanner;
@@ -135,9 +136,66 @@ public class SQLRegionMarkerFoldingTest extends DBeaverUnitTest {
         Assertions.assertEquals("INNER2", after.getFirst().regionKey());
     }
 
+    @Test
+    public void duplicateRegionNamesProduceSeparateFolds() throws DBException {
+        Document document = createPartitionedDocument("""
+            --region A
+            SELECT 1
+            --endregion
+            --region A
+            SELECT 2
+            --endregion
+            """);
+
+        List<SQLRegionMarkerFolding.RegionFold> regions = SQLRegionMarkerFolding.scanFoldableRegions(document);
+
+        Assertions.assertEquals(2, regions.size());
+        Assertions.assertNotEquals(regions.get(0).offset(), regions.get(1).offset());
+    }
+
+    @Test
+    public void regionIndexFindsEnclosingNestedRegion() {
+        List<SQLRegionMarkerFolding.RegionFold> regions = List.of(
+            new SQLRegionMarkerFolding.RegionFold("OUTER", 0, 100),
+            new SQLRegionMarkerFolding.RegionFold("OUTER/INNER", 20, 30)
+        );
+        SQLRegionMarkerFolding.RegionIndex index = SQLRegionMarkerFolding.createRegionIndex(regions);
+
+        Assertions.assertTrue(index.isStrictlyEnclosed(25, 35));
+        Assertions.assertTrue(index.isStrictlyEnclosed(10, 50));
+        Assertions.assertFalse(index.isStrictlyEnclosed(80, 110));
+    }
+
+    @Test
+    public void dialectCommentPrefixControlsRegionMarkers() throws DBException {
+        SQLDialect slashCommentDialect = new BasicSQLDialect() {
+            @Override
+            public String[] getSingleLineComments() {
+                return new String[]{"//"};
+            }
+        };
+        Document document = createPartitionedDocument("""
+            //region SLASH
+            SELECT 1
+            //endregion
+            --region DASH
+            SELECT 2
+            --endregion
+            """, slashCommentDialect);
+
+        List<SQLRegionMarkerFolding.RegionFold> regions = SQLRegionMarkerFolding.scanFoldableRegions(document, slashCommentDialect);
+
+        Assertions.assertEquals(1, regions.size());
+        Assertions.assertEquals("SLASH", regions.getFirst().regionKey());
+    }
+
     private static Document createPartitionedDocument(String sql) throws DBException {
         SQLDialectMetadataRegistry registry = DBWorkbench.getPlatform().getSQLDialectRegistry();
         SQLDialect dialect = registry.getDialect("generic").createInstance();
+        return createPartitionedDocument(sql, dialect);
+    }
+
+    private static Document createPartitionedDocument(String sql, SQLDialect dialect) throws DBException {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, DBWorkbench.getPlatform().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);

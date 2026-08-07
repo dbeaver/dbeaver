@@ -38,16 +38,18 @@ import java.util.*;
  */
 public class SQLProjectionAnnotationModel extends ProjectionAnnotationModel {
 
-    private final Map<Integer, Set<Integer>> deferredCollapsedEnclosedOffsets = new HashMap<>();
+    private final Map<Annotation, Set<Annotation>> deferredCollapsedEnclosedAnnotations = new IdentityHashMap<>();
 
     @Override
     public void collapse(Annotation annotation) {
+        pruneDeferredCollapseState();
         saveAndExpandEnclosedCollapsed(annotation);
         super.collapse(annotation);
     }
 
     @Override
     public void expand(Annotation annotation) {
+        pruneDeferredCollapseState();
         super.expand(annotation);
         forgetDeferredCollapse(annotation);
         restoreDeferredCollapsedEnclosed(annotation);
@@ -55,6 +57,7 @@ public class SQLProjectionAnnotationModel extends ProjectionAnnotationModel {
 
     @Override
     public void toggleExpansionState(Annotation annotation) {
+        pruneDeferredCollapseState();
         boolean wasCollapsed = annotation instanceof ProjectionAnnotation projectionAnnotation && projectionAnnotation.isCollapsed();
         if (!wasCollapsed) {
             saveAndExpandEnclosedCollapsed(annotation);
@@ -66,16 +69,21 @@ public class SQLProjectionAnnotationModel extends ProjectionAnnotationModel {
         }
     }
 
+    private void pruneDeferredCollapseState() {
+        deferredCollapsedEnclosedAnnotations.entrySet().removeIf(entry -> {
+            if (getPosition(entry.getKey()) == null) {
+                return true;
+            }
+            entry.getValue().removeIf(annotation -> getPosition(annotation) == null);
+            return entry.getValue().isEmpty();
+        });
+    }
+
     private void forgetDeferredCollapse(@NotNull Annotation annotation) {
-        Position position = getPosition(annotation);
-        if (position == null) {
-            return;
+        for (Set<Annotation> annotations : deferredCollapsedEnclosedAnnotations.values()) {
+            annotations.remove(annotation);
         }
-        int offset = position.getOffset();
-        for (Set<Integer> offsets : deferredCollapsedEnclosedOffsets.values()) {
-            offsets.remove(offset);
-        }
-        deferredCollapsedEnclosedOffsets.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+        deferredCollapsedEnclosedAnnotations.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     }
 
     private void saveAndExpandEnclosedCollapsed(@NotNull Annotation outerAnnotation) {
@@ -83,22 +91,22 @@ public class SQLProjectionAnnotationModel extends ProjectionAnnotationModel {
         if (outerPosition == null) {
             return;
         }
-        Set<Integer> enclosedCollapsedOffsets = collectEnclosedCollapsedOffsets(outerPosition, outerAnnotation);
-        if (enclosedCollapsedOffsets.isEmpty()) {
+        Set<Annotation> enclosedCollapsedAnnotations = collectEnclosedCollapsedAnnotations(outerPosition, outerAnnotation);
+        if (enclosedCollapsedAnnotations.isEmpty()) {
             return;
         }
-        deferredCollapsedEnclosedOffsets.put(outerPosition.getOffset(), enclosedCollapsedOffsets);
-        expandEnclosedCollapsed(outerPosition, outerAnnotation);
+        deferredCollapsedEnclosedAnnotations.put(outerAnnotation, enclosedCollapsedAnnotations);
+        expandEnclosedCollapsed(enclosedCollapsedAnnotations);
     }
 
     @NotNull
-    private Set<Integer> collectEnclosedCollapsedOffsets(
+    private Set<Annotation> collectEnclosedCollapsedAnnotations(
         @NotNull Position outerPosition,
         @NotNull Annotation outerAnnotation
     ) {
         int outerStart = outerPosition.getOffset();
         int outerEnd = outerStart + outerPosition.getLength();
-        Set<Integer> enclosedCollapsedOffsets = new HashSet<>();
+        Set<Annotation> enclosedCollapsedAnnotations = Collections.newSetFromMap(new IdentityHashMap<>());
         Iterator<Annotation> it = getAnnotationIterator();
         while (it.hasNext()) {
             Annotation enclosedAnnotation = it.next();
@@ -115,57 +123,36 @@ public class SQLProjectionAnnotationModel extends ProjectionAnnotationModel {
             int innerStart = innerPosition.getOffset();
             int innerEnd = innerStart + innerPosition.getLength();
             if (isStrictlyEnclosed(innerStart, innerEnd, outerStart, outerEnd)) {
-                enclosedCollapsedOffsets.add(innerStart);
+                enclosedCollapsedAnnotations.add(enclosedAnnotation);
             }
         }
-        return enclosedCollapsedOffsets;
+        return enclosedCollapsedAnnotations;
     }
 
     private void expandEnclosedCollapsed(
-        @NotNull Position outerPosition,
-        @NotNull Annotation outerAnnotation
+        @NotNull Set<Annotation> enclosedCollapsedAnnotations
     ) {
-        int outerStart = outerPosition.getOffset();
-        int outerEnd = outerStart + outerPosition.getLength();
-        Iterator<Annotation> it = getAnnotationIterator();
-        while (it.hasNext()) {
-            Annotation enclosedAnnotation = it.next();
-            if (enclosedAnnotation == outerAnnotation
-                || !(enclosedAnnotation instanceof ProjectionAnnotation inner)
-                || !inner.isCollapsed()
+        for (Annotation enclosedAnnotation : enclosedCollapsedAnnotations) {
+            if (enclosedAnnotation instanceof ProjectionAnnotation inner && inner.isCollapsed()
+                && getPosition(enclosedAnnotation) != null
             ) {
-                continue;
-            }
-            Position innerPosition = getPosition(enclosedAnnotation);
-            if (innerPosition == null) {
-                continue;
-            }
-            int innerStart = innerPosition.getOffset();
-            int innerEnd = innerStart + innerPosition.getLength();
-            if (isStrictlyEnclosed(innerStart, innerEnd, outerStart, outerEnd)) {
                 super.expand(enclosedAnnotation);
             }
         }
     }
 
     private void restoreDeferredCollapsedEnclosed(@NotNull Annotation outerAnnotation) {
-        Position outerPosition = getPosition(outerAnnotation);
-        if (outerPosition == null) {
-            return;
-        }
-        Set<Integer> deferredOffsets = deferredCollapsedEnclosedOffsets.remove(outerPosition.getOffset());
-        if (deferredOffsets == null || deferredOffsets.isEmpty()) {
+        Set<Annotation> deferredAnnotations = deferredCollapsedEnclosedAnnotations.remove(outerAnnotation);
+        if (deferredAnnotations == null || deferredAnnotations.isEmpty()) {
             return;
         }
         List<ProjectionAnnotation> toCollapse = new ArrayList<>();
-        Iterator<Annotation> it = getAnnotationIterator();
-        while (it.hasNext()) {
-            Annotation annotation = it.next();
+        for (Annotation annotation : deferredAnnotations) {
             if (!(annotation instanceof ProjectionAnnotation projectionAnnotation)) {
                 continue;
             }
             Position position = getPosition(annotation);
-            if (position != null && deferredOffsets.contains(position.getOffset())) {
+            if (position != null) {
                 toCollapse.add(projectionAnnotation);
             }
         }
