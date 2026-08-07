@@ -171,9 +171,9 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                 SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                         int selectionIndex = objectTable.getSelectionIndex();
                         if (selectionIndex > 0) {
-                            DBSObject prevScript = selectedObjects.get(selectionIndex - 1);
+                            DBSObject prevObject = selectedObjects.get(selectionIndex - 1);
                             selectedObjects.set(selectionIndex - 1, selectedObjects.get(selectionIndex));
-                            selectedObjects.set(selectionIndex, prevScript);
+                            selectedObjects.set(selectionIndex, prevObject);
                             refreshObjects();
                         }
                         moveButtons[0].setEnabled(selectionIndex > 1);
@@ -187,9 +187,9 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                 SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                         int selectionIndex = objectTable.getSelectionIndex();
                         if (selectionIndex < objectTable.getItemCount() - 1) {
-                            DBSObject nextScript = selectedObjects.get(selectionIndex + 1);
+                            DBSObject nextObject = selectedObjects.get(selectionIndex + 1);
                             selectedObjects.set(selectionIndex + 1, selectedObjects.get(selectionIndex));
-                            selectedObjects.set(selectionIndex, nextScript);
+                            selectedObjects.set(selectionIndex, nextObject);
                             refreshObjects();
                         }
                         moveButtons[0].setEnabled(selectionIndex > 0);

@@ -24,9 +24,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.ControlEditor;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -77,6 +75,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
+    private static final int MAPPING_COLUMN_WIDTH = 20;
+    private static final int CHECKBOX_COLUMN_WIDTH = 16;
     private static final StyledString.Styler STRIKEOUT_STYLER = new StyledString.Styler() {
         @Override
         public void applyStyles(TextStyle style) {
@@ -89,9 +89,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private Button configureButton;
     protected Button previewButton;
     private Button loadMappingsButton;
+    private Button chooseContainerButton;
+    private ControlEditor chooseContainerEditor;
     private Button upButton;
     private Button downButton;
-    private Button recreateButton;
+    private Composite bottomBar;
+    private Button recreateCheck;
     private Button transformCheck;
     private Combo transformCombo;
     protected Button mappingRules;
@@ -146,12 +149,15 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             DatabaseMappingObject mapping = (DatabaseMappingObject) element;
             String targetName = mapping.getTargetName();
             if (CommonUtils.isEmpty(targetName) && isConfigurationRow(element)) {
-                // A not-yet-chosen FK referenced target - a soft placeholder, no warning fill.
                 return new StyledString(DTUIMessages.database_consumer_page_mapping_target_unspecified);
             }
             StyledString text = new StyledString(CommonUtils.notEmpty(targetName));
             if (mapping.getMappingType() == DatabaseMappingType.skip) {
                 text.setStyle(0, text.length(), STRIKEOUT_STYLER);
+            }
+            String transformerLabel = getTransformerLabel(mapping);
+            if (transformerLabel != null) {
+                text.append(" → " + transformerLabel, StyledString.QUALIFIER_STYLER);
             }
             return text;
         }
@@ -173,6 +179,23 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         public Image getImage(Object element) {
             return null;
         }
+    }
+
+    @Nullable
+    private static String getTransformerLabel(@NotNull DatabaseMappingObject mapping) {
+        if (!(mapping instanceof DatabaseMappingAttribute attribute) || !attribute.getMappingType().isValid()) {
+            return null;
+        }
+        DataTransferAttributeTransformerDescriptor transformer = attribute.getTransformer();
+        if (transformer == null) {
+            return null;
+        }
+        Map<String, Object> properties = attribute.getTransformerProperties();
+        String values = transformer.getProperties().stream()
+            .map(property -> CommonUtils.toString(properties.get(property.getId())))
+            .filter(CommonUtils::isNotEmpty)
+            .collect(Collectors.joining(", "));
+        return values.isEmpty() ? transformer.getName() : transformer.getName() + ": " + values;
     }
 
     public DatabaseConsumerPageMapping() {
@@ -318,6 +341,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
                 @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.character == SWT.SPACE) {
+                        e.doit = false;
+                    }
+                }
+
+                @Override
                 public void keyReleased(KeyEvent e) {
                     try {
                         boolean updated = false;
@@ -333,10 +363,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             updated = true;
                         } else if (e.character == SWT.SPACE) {
                             for (TreeItem item : mappingViewer.getTree().getSelection()) {
-                                element = item.getData();
-                                applyMappingTransfer(element);
+                                if (item.getData() instanceof DatabaseMappingObject mapping
+                                    && !isConfigurationRow(mapping)) {
+                                    toggleMappingTransfer(mapping);
+                                }
                             }
-                            updated = true;
                         } else if (e.keyCode == SWT.SHIFT) {
                             TreeItem[] selection = mappingViewer.getTree().getSelection();
                             if (selection.length > 0) {
@@ -380,7 +411,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
         {
             boolean withUpDown = getWizard().getSettings().getDataPipes().size() > 1;
-            Composite bottomBar = UIUtils.createComposite(composite, 5 + (withUpDown ? 2 : 0));
+            bottomBar = UIUtils.createComposite(composite, 5 + (withUpDown ? 2 : 0));
             bottomBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             Label hintInfo = new Label(bottomBar, SWT.NONE);
@@ -388,14 +419,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             hintInfo.setCursor(hintInfo.getDisplay().getSystemCursor(SWT.CURSOR_HELP));
             hintInfo.setToolTipText(DTUIMessages.database_consumer_page_mapping_label_hint);
 
-            recreateButton = UIUtils.createPushButton(
-                bottomBar,
-                null,
-                DTUIMessages.database_consumer_page_mapping_button_recreate_tip,
-                DBIcon.MAPPING,
-                SelectionListener.widgetSelectedAdapter(e -> toggleRecreateSelection()));
-            recreateButton.setLayoutData(new GridData());
-            recreateButton.setEnabled(false);
+            recreateCheck = new Button(bottomBar, SWT.CHECK);
+            recreateCheck.setText(DTUIMessages.database_consumer_page_mapping_button_recreate);
+            recreateCheck.setLayoutData(new GridData());
+            recreateCheck.setEnabled(false);
+            recreateCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> toggleRecreateSelection()));
             transformCheck = new Button(bottomBar, SWT.CHECK);
             transformCheck.setLayoutData(new GridData());
             transformCheck.setText(DTUIMessages.database_consumer_page_mapping_column_transformer_text);
@@ -487,7 +515,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         mappingViewer = new CheckboxTreeViewer(composite, SWT.FULL_SELECTION);
         mappingViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         mappingViewer.getTree().setLinesVisible(false);
-        mappingViewer.getTree().setHeaderVisible(false);
+        mappingViewer.getTree().setHeaderVisible(true);
+        mappingViewer.getTree().addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                updateTreeColumnWidths();
+            }
+        });
 
         final DBPDataSourceContainer container = DatabaseConsumerSettings.getDataSourceContainer(getWizard().getSettings());
         if (container != null) {
@@ -505,6 +539,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             // Lines look weird on an empty table and visually clash with the button
             mappingViewer.getTree().setLinesVisible(false);
+        } else {
+            updateChooseContainerButton();
         }
 
         UIWidgets.setControlContextMenu(mappingViewer.getTree(), manager -> {
@@ -520,8 +556,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                                     getShell(),
                                     mapping,
                                     mapping.getTransformer());
-                                if (settingsDialog.open() != IDialogConstants.OK_ID) {
-                                    return;
+                                if (settingsDialog.open() == IDialogConstants.OK_ID) {
+                                    mappingViewer.update(mapping, null);
                                 }
                             }
                         });
@@ -637,7 +673,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     return type.isValid() ? type.name() : null;
                 }
             });
-            columnMapping.getColumn().setText(DTUIMessages.database_consumer_page_mapping_column_mapping_text);
         }
 
         new DefaultViewerToolTipSupport(mappingViewer);
@@ -921,9 +956,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
     private void toggleRecreateSelection() {
         TreeItem[] selection = mappingViewer.getTree().getSelection();
-        if (selection.length == 0) {
-            return;
-        }
         try {
             boolean recreateConfirmed = false;
             for (TreeItem item : selection) {
@@ -956,6 +988,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DTUIMessages.database_consumer_page_mapping_title_error_mapping_table,
                 DTUIMessages.database_consumer_page_mapping_message_error_mapping_target_table,
                 e);
+        } finally {
+            // The click already toggled the checkbox visually - re-sync it with the actual
+            // mapping state (the confirmation may have been cancelled or the update failed)
+            updateRecreateCheck(getSelectedMapping());
         }
     }
 
@@ -1453,22 +1489,42 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE)
         ) {
             loadSettings(true);
+        } else if (container != null && getDatabaseConsumerSettings().getContainer() == null) {
+           String containerPath = DatabaseConsumerSettings.getSavedContainerPath(getWizard().getSettings());
+            if (containerPath != null) {
+                containerPanel.setContainerText(
+                    containerPath.replace('/', '.') + "  [" + container.getName() + "]");
+            }
         }
 
         if (firstInit) {
             firstInit = false;
             UIUtils.asyncExec(() -> {
-                Tree table = mappingViewer.getTree();
-                int totalWidth = table.getClientArea().width;
-                TreeColumn[] columns = table.getColumns();
-                // columns[2] (Mapping) is a narrow icon-only column; split the rest between Source and Target.
-                int mappingWidth = 40;
-                int rest = totalWidth - mappingWidth;
-                columns[0].setWidth(rest / 2);
-                columns[1].setWidth(rest - rest / 2);
-                columns[2].setWidth(mappingWidth);
+                updateTreeColumnWidths();
                 this.autoAssignMappings();
             });
+        }
+    }
+
+    private void updateTreeColumnWidths() {
+        Tree tree = mappingViewer.getTree();
+        if (tree.isDisposed()) {
+            return;
+        }
+        TreeColumn[] columns = tree.getColumns();
+        int totalWidth = tree.getClientArea().width;
+        if (columns.length < 3 || totalWidth <= 0) {
+            return;
+        }
+        int rest = Math.max(totalWidth - MAPPING_COLUMN_WIDTH - CHECKBOX_COLUMN_WIDTH, 0);
+        setColumnWidth(columns[0], rest / 2);
+        setColumnWidth(columns[1], rest - rest / 2);
+        setColumnWidth(columns[2], MAPPING_COLUMN_WIDTH);
+    }
+
+    private static void setColumnWidth(@NotNull TreeColumn column, int width) {
+        if (column.getWidth() != width) {
+            column.setWidth(width);
         }
     }
 
@@ -1515,6 +1571,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                 }
             }
+        }
+
+        if (getDatabaseConsumerSettings().getContainer() == null) {
+            containerPanel.setContainerText(null);
         }
 
         loadAndUpdateColumnsModel();
@@ -1609,6 +1669,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             setMessage(lastError.getMessage(), IMessageProvider.ERROR);
         }
 
+        if (settings.getContainer() == null) {
+            mappingViewer.setInput(List.of());
+            return;
+        }
+
         Object[] expandedElements = mappingViewer.getExpandedElements();
         mappingViewer.setInput(model);
         mappingViewer.setExpandedElements(expandedElements);
@@ -1644,6 +1709,36 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     @Override
     protected void updatePageCompletion() {
         super.updatePageCompletion();
+        updateChooseContainerButton();
+    }
+
+    private void updateChooseContainerButton() {
+        if (mappingViewer == null || mappingViewer.getTree().isDisposed()) {
+            return;
+        }
+        boolean needed = getDatabaseConsumerSettings().getContainer() == null
+            && (loadMappingsButton == null || loadMappingsButton.isDisposed());
+        boolean present = chooseContainerButton != null && !chooseContainerButton.isDisposed();
+        if (needed && !present) {
+            chooseContainerButton = new Button(mappingViewer.getTree(), SWT.PUSH);
+            chooseContainerButton.setText(DTMessages.data_transfer_db_consumer_choose_container);
+            chooseContainerButton.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
+            chooseContainerButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(
+                e -> containerPanel.browseContainer()));
+
+            chooseContainerEditor = new ControlEditor(mappingViewer.getTree());
+            final Point buttonSize = chooseContainerButton.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            chooseContainerEditor.minimumWidth = buttonSize.x;
+            chooseContainerEditor.minimumHeight = buttonSize.y;
+            chooseContainerEditor.setEditor(chooseContainerButton);
+        } else if (!needed && present) {
+            chooseContainerButton.dispose();
+            chooseContainerButton = null;
+            if (chooseContainerEditor != null) {
+                chooseContainerEditor.dispose();
+                chooseContainerEditor = null;
+            }
+        }
     }
 
     @Override
@@ -1659,17 +1754,24 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         mappingRules.setEnabled(hasMappings);
         boolean isContainer = selectedMapping instanceof DatabaseMappingContainer;
         boolean isColumn = selectedMapping instanceof DatabaseMappingAttribute;
-        if (recreateButton != null && !recreateButton.isDisposed()) {
-            recreateButton.setEnabled(isContainer
-                && (selectedMapping.getMappingType() == DatabaseMappingType.existing
-                    || selectedMapping.getMappingType() == DatabaseMappingType.recreate));
-        }
-        setControlExcluded(recreateButton, !isContainer);
+        updateRecreateCheck(selectedMapping);
+        setControlExcluded(recreateCheck, !isContainer);
         setControlExcluded(transformCheck, !isColumn);
-        setControlExcluded(transformCombo, !isColumn);
+        transformCombo.setVisible(isColumn);
         layoutBottomBar();
         updateTransformControls(selectedMapping);
         updateUpAndDownButtons();
+    }
+
+    private void updateRecreateCheck(@Nullable DatabaseMappingObject selectedMapping) {
+        if (recreateCheck == null || recreateCheck.isDisposed()) {
+            return;
+        }
+        boolean isContainer = selectedMapping instanceof DatabaseMappingContainer;
+        DatabaseMappingType mappingType = selectedMapping == null ? null : selectedMapping.getMappingType();
+        recreateCheck.setEnabled(isContainer
+            && (mappingType == DatabaseMappingType.existing || mappingType == DatabaseMappingType.recreate));
+        recreateCheck.setSelection(isContainer && mappingType == DatabaseMappingType.recreate);
     }
 
     private static void setControlExcluded(@Nullable Control control, boolean excluded) {
@@ -1683,12 +1785,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     private void layoutBottomBar() {
-        if (recreateButton != null && !recreateButton.isDisposed()) {
-            Composite parent = recreateButton.getParent();
-            if (parent != null && !parent.isDisposed()) {
-                parent.layout(true);
-            }
+        if (bottomBar == null || bottomBar.isDisposed()) {
+            return;
         }
+        bottomBar.layout(true);
     }
 
     protected boolean hasMappings(@Nullable DatabaseMappingObject mapping) {

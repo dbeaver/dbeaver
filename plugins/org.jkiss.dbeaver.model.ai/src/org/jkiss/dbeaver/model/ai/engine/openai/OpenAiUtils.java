@@ -135,6 +135,10 @@ public class OpenAiUtils {
             || message.contains("The requested model is not supported");
     }
 
+    public static boolean isTemperatureNotSupported(@Nullable String message) {
+        return message != null && message.contains("Unsupported parameter: 'temperature'");
+    }
+
     public static boolean processErrors(
         @NotNull MonitoredHttpClient.ErrorMapper mapper,
         @NotNull Consumer<Throwable> errorHandler,
@@ -149,7 +153,7 @@ public class OpenAiUtils {
                 String reason;
                 if (shouldFallbackToLegacyChat(responseBody)) {
                     reason = OpenAIConstants.LEGACY_FALLBACK;
-                } else if (responseBody.contains("Unsupported parameter: 'temperature'")) {
+                } else if (isTemperatureNotSupported(responseBody)) {
                     reason = OpenAIConstants.TEMPERATURE_NOT_SUPPORTED;
                 } else {
                     errorHandler.accept(mapper.map(statusCode, responseBody));

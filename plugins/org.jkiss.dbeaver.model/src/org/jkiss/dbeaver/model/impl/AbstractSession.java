@@ -26,26 +26,27 @@ import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Abstract execution context
  */
 public abstract class AbstractSession implements DBCSession, DBDFormatSettingsExt, DBRBlockingObject {
 
-    private DBRProgressMonitor monitor;
-    private DBCExecutionPurpose purpose;
-    private String taskTitle;
+    private final DBRProgressMonitor monitor;
+    private final DBCExecutionPurpose purpose;
+    private final String taskTitle;
     private DBDDataFormatterProfile dataFormatterProfile;
     private boolean holdsBlock = false;
     private boolean loggingEnabled = true;
     private byte useNativeDateTimeFormat = -1;
 
-    public AbstractSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
+    public AbstractSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle) {
         this.monitor = monitor;
         this.purpose = purpose;
         this.taskTitle = taskTitle;
 
-        if (taskTitle != null) {
+        if (CommonUtils.isNotEmpty(taskTitle)) {
             monitor.startBlock(this, taskTitle);
             holdsBlock = true;
         }

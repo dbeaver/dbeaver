@@ -144,7 +144,11 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     @Nullable
     private static Color getConnectionColor(@NotNull CTabItem item, @NotNull MPart part) {
         DBPDataSourceContainer container = DBeaverEditorPartUtils.getDataSourceContainer(
-            part, () -> item.getParent().redraw());
+            part, () -> {
+                if (!item.isDisposed()) {
+                    item.getParent().redraw();
+                }
+            });
         if (container != null) {
             return UIUtils.getConnectionColor(container.getConnectionConfiguration());
         }

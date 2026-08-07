@@ -62,7 +62,7 @@ public class AIProfileCreateDialog extends BaseDialog {
 
         Text idText = UIUtils.createLabelText(enginePanel, "ID", genProfileId(selectedEngine));
         idText.addModifyListener(e ->  profileId = idText.getText());
-        Text nameText = UIUtils.createLabelText(enginePanel, "Name", genProfileName(selectedEngine));
+        Text nameText = UIUtils.createLabelText(enginePanel, "Name", genProfileName(selectedEngine.getLabel()));
         nameText.addModifyListener(e ->  profileName = nameText.getText());
 
         engineCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -70,7 +70,7 @@ public class AIProfileCreateDialog extends BaseDialog {
             selectedEngine = aiEngines.get(engineCombo.getSelectionIndex());
             if (oldAutoId.equals(profileId)) {
                 profileId = genProfileId(selectedEngine);
-                profileName = genProfileName(selectedEngine);
+                profileName = genProfileName(selectedEngine.getLabel());
                 idText.setText(profileId);
                 nameText.setText(profileName);
             }
@@ -80,7 +80,7 @@ public class AIProfileCreateDialog extends BaseDialog {
     }
 
     @NotNull
-    private String genProfileId(@NotNull AIEngineDescriptor engineDescriptor) {
+    static String genProfileId(@NotNull AIEngineDescriptor engineDescriptor) {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         String baseId = engineDescriptor.getId();
         String id = baseId;
@@ -95,9 +95,8 @@ public class AIProfileCreateDialog extends BaseDialog {
 
 
     @NotNull
-    private String genProfileName(@NotNull AIEngineDescriptor engineDescriptor) {
+    static String genProfileName(@NotNull String baseName) {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        String baseName = engineDescriptor.getLabel();
         String name = baseName;
         for (int i = 1; ; i++) {
             if (aiSettings.getConfigurationByNameOrNull(name) == null) {

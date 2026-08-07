@@ -9,6 +9,32 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.databricks</artifactId>
-  <version>1.0.106-SNAPSHOT</version>
+  <version>1.0.107-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>4.12.0</version>
+        <configuration>
+          <visitor>false</visitor>
+          <listener>false</listener>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <sourceDirectory>grammar</sourceDirectory>
+              <outputDirectory>target/generated-sources/antlr4/org/jkiss/dbeaver/ext/databricks</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
