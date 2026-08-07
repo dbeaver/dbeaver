@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -179,11 +180,13 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
         return false;
     }
 
-    private String normalizeDDL(String ddl) {
+    @ForTest
+    static String normalizeDDL(String ddl) {
         int declStart = ddl.indexOf("(");
         int declEnd = ddl.indexOf(") ENGINE");
-        if (declEnd == -1) {
-            declEnd = ddl.length() - 1;
+        if (declStart == -1 || declEnd == -1 || declStart > declEnd) {
+            // Not a column declaration block (e.g. plain view definition) - leave it as is
+            return ddl;
         }
         return
             ddl.substring(0, declStart) + "(\n" +
