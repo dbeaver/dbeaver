@@ -28,7 +28,6 @@ import java.util.function.Consumer;
 public class ProductConfigWelcomePage extends ProductConfigWizardPage {
     public ProductConfigWelcomePage() {
         super(ProductConfigMessages.welcome_title, ProductConfigMessages.welcome_description);
-        setPageComplete(true);
     }
 
     @Override
