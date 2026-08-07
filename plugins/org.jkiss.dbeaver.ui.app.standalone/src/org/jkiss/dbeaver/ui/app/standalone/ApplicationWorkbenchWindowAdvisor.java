@@ -192,7 +192,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
                 ProductConfigWizard.Origin.AUTOMATIC
             );
             if (dialog.open() == IDialogConstants.CANCEL_ID) {
-                getWindowConfigurer().getWorkbenchConfigurer().emergencyClose();
+                System.exit(0);
             }
         });
     }
