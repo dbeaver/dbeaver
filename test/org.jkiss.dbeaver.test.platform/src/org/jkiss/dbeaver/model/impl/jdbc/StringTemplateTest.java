@@ -37,7 +37,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
         "jdbc:clickhouse://{host}:{port}[/{database}]",
         "jdbc:CUBRID:{host}:{port}:{database}:::",
         "jdbc:dm://{host}[:{port}]",
-        "jdbc:databend://{username}:{password}@{host}:{port}[/{database}]",
+        "jdbc:databend://[{user}:{password}@]{host}:{port}[/{database}]",
         "jdbc:databricks://{host}[:{port}][/{database}]",
         "jdbc:db2://{host}[:{port}]/{database}",
         "jdbc:as400://{host};[libraries={database};]",
