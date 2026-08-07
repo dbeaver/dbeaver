@@ -24,7 +24,7 @@
                     id="databend"
                     label="Databend"
                     class="com.databend.jdbc.DatabendDriver"
-                    sampleURL="jdbc:databend://[{user}:{password}@]{host}:{port}[/{database}]"
+                    sampleURL="jdbc:databend://{host}:{port}[/{database}]"
                     defaultPort="8000"
                     icon="icons/databend_icon.png"
                     iconBig="icons/databend_icon_big.png"
