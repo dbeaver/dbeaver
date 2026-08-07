@@ -81,7 +81,7 @@ class AIChatSessionResponseConsumer implements AIChatResponseConsumer {
             );
         }
         if (isCanceled) {
-            warning("Response generation cancelled by user.");
+            warning("Conversation was canceled by user");
         }
         conversation.promptProcessed(finishConversation);
     }
