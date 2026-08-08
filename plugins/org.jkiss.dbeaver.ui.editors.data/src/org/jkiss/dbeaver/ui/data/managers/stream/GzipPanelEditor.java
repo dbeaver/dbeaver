@@ -87,6 +87,8 @@ public class GzipPanelEditor extends TextPanelEditor {
                     } finally {
                         control.setRedraw(true);
                     }
+                } else {
+                    control.setText(decompressedText);
                 }
             });
         } catch (Exception e) {
