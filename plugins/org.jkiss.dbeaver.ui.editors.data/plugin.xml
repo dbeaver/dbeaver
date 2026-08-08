@@ -18,7 +18,7 @@
     <extension point="org.jkiss.dbeaver.dataManager">
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.TextStreamValueManager" id="plaintext" label="Text" primaryMime="text/plain"
                        description="Plain text" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.svg"/>
-        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.GzipStreamValueManager" id="gzip" label="Decompress (GZIP)"
+        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.GzipStreamValueManager" id="gzip" label="Decompress (GZIP/ZLIB)"
                        description="Decompressed GZIP/ZLIB content" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.svg"/>
 
         <!--

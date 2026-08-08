@@ -44,15 +44,16 @@ public class GzipStreamValueManager implements IStreamValueManager {
                 if (storage != null) {
                     try (InputStream stream = storage.getContentStream()) {
                         if (stream != null) {
-                            byte[] header = new byte[2];
-                            int read = stream.read(header);
-                            if (read == 2) {
+                            byte[] header = stream.readNBytes(2);
+                            if (header.length == 2) {
+                                int b0 = header[0] & 0xFF;
+                                int b1 = header[1] & 0xFF;
                                 // GZIP magic header: 0x1F, 0x8B
-                                if ((header[0] & 0xFF) == 0x1F && (header[1] & 0xFF) == 0x8B) {
+                                if (b0 == 0x1F && b1 == 0x8B) {
                                     return MatchType.PRIMARY;
                                 }
-                                // ZLIB magic header check (0x78)
-                                if ((header[0] & 0xFF) == 0x78) {
+                                // ZLIB magic header check (RFC 1950)
+                                if ((header[0] & 0x0F) == 8 && ((b0 << 8) | b1) % 31 == 0) {
                                     return MatchType.PRIMARY;
                                 }
                             }

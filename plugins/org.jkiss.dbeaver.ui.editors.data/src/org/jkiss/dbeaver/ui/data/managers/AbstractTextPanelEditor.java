@@ -97,6 +97,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private Path tempFile;
     private MessageBar messageBar;
 
+    @Nullable
     public IValueController getValueController() {
         return valueController;
     }
