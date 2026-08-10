@@ -31,11 +31,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.ai.internal.AIChatMessages;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.ArrayUtils;
@@ -177,7 +177,7 @@ final class WebViewDndController {
         Font font = UIUtils.scaleFontSize(gc.getFont(), 2);
         gc.setFont(font);
 
-        var text = AIChatMessages.ai_chat_drag_n_drop_message;
+        var text = AIChatMessagesUI.ai_chat_drag_n_drop_message;
         var extent = gc.textExtent(text);
 
         Image icon = DBeaverIcons.getImage(UIIcon.IMPORT);

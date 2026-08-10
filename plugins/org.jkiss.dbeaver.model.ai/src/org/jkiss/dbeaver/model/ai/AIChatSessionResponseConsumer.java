@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.internal.AIChatMessages;
 
 import java.util.List;
 
@@ -81,7 +82,7 @@ class AIChatSessionResponseConsumer implements AIChatResponseConsumer {
             );
         }
         if (isCanceled) {
-            warning("Conversation was canceled by user");
+            warning(AIChatMessages.ai_chat_conversation_cancelled);
         }
         conversation.promptProcessed(finishConversation);
     }

@@ -27,12 +27,12 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
-import org.jkiss.dbeaver.model.ai.internal.AIChatMessages;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.utils.DurationFormat;
@@ -168,7 +168,7 @@ final class WebViewMessageRenderer {
     @NotNull
     static String formatUsage(@NotNull AIExtendedUsage usage) {
         return NLS.bind(
-            AIChatMessages.ai_chat_message_meta_tokens,
+            AIChatMessagesUI.ai_chat_message_meta_tokens,
             usage.totalInputTokens(),
             usage.totalOutputTokens()
         );
@@ -227,13 +227,13 @@ final class WebViewMessageRenderer {
             resultArgs.put("messageId", message.id());
             resultArgs.put("functionName", functionCall.getFunctionName());
             resultArgs.put("result", result);
-            resultArgs.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+            resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
             AIFunctionResult functionResult = message.message().getFunctionResult();
             if (functionResult != null && functionResult.getException() != null) {
                 resultArgs.put("hasException", true);
                 String toolName = function != null ? function.getName() : functionCall.getFunctionName();
-                resultArgs.put("text", NLS.bind(AIChatMessages.ai_chat_confirm_failed, toolName));
-                resultArgs.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
+                resultArgs.put("text", NLS.bind(AIChatMessagesUI.ai_chat_confirm_failed, toolName));
+                resultArgs.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
                 if (!arguments.isEmpty()) {
                     resultArgs.put("arguments", arguments);
                 }
@@ -254,13 +254,13 @@ final class WebViewMessageRenderer {
         args.put("messageId", message.id());
         args.put(
             "text",
-            hasException ? NLS.bind(AIChatMessages.ai_chat_confirm_failed, toolName)
-                : NLS.bind(AIChatMessages.ai_chat_confirm_auto_approved, toolName)
+            hasException ? NLS.bind(AIChatMessagesUI.ai_chat_confirm_failed, toolName)
+                : NLS.bind(AIChatMessagesUI.ai_chat_confirm_auto_approved, toolName)
         );
         args.put("functionName", functionCall.getFunctionName());
         args.put("confirmed", confirmed);
-        args.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
-        args.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+        args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
+        args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
         if (hasException) {
             args.put("hasException", true);
         }
@@ -303,17 +303,17 @@ final class WebViewMessageRenderer {
     void initChat() {
         Map<String, Object> icons = Map.of(
             "copy",
-            getActionData(UIIcon.COPY, AIChatMessages.ai_chat_message_copy_to_clipboard_tip),
+            getActionData(UIIcon.COPY, AIChatMessagesUI.ai_chat_message_copy_to_clipboard_tip),
             "execute",
-            getActionData(UIIcon.SQL_EXECUTE, AIChatMessages.ai_chat_message_execute_query_tip),
+            getActionData(UIIcon.SQL_EXECUTE, AIChatMessagesUI.ai_chat_message_execute_query_tip),
             "editor",
-            getActionData(UIIcon.MOVE, AIChatMessages.ai_chat_message_copy_to_editor_tip),
+            getActionData(UIIcon.MOVE, AIChatMessagesUI.ai_chat_message_copy_to_editor_tip),
             "info",
             getActionData(DBIcon.SMALL_INFO, ""),
             "clean",
-            getActionData(UIIcon.CLEAN, AIChatMessages.ai_chat_message_clear_up_to_here_tip),
+            getActionData(UIIcon.CLEAN, AIChatMessagesUI.ai_chat_message_clear_up_to_here_tip),
             "close",
-            getActionData(UIIcon.CLOSE, AIChatMessages.ai_chat_message_delete_message_tip),
+            getActionData(UIIcon.CLOSE, AIChatMessagesUI.ai_chat_message_delete_message_tip),
             "settings",
             Map.of(
                 "showMessageTime", AIConstants.AI_CHAT_SHOW_MESSAGE_TIME,
@@ -323,17 +323,17 @@ final class WebViewMessageRenderer {
             ),
             "a11y",
             Map.of(
-                "transcriptLabel", AIChatMessages.ai_chat_a11y_transcript_label,
-                "waitingForResponse", AIChatMessages.ai_chat_a11y_waiting_for_response,
+                "transcriptLabel", AIChatMessagesUI.ai_chat_a11y_transcript_label,
+                "waitingForResponse", AIChatMessagesUI.ai_chat_a11y_waiting_for_response,
                 "roles", Map.of(
-                    "user", AIChatMessages.ai_chat_message_role_user_label,
-                    "assistant", AIChatMessages.ai_chat_message_role_assistant_label,
-                    "function", AIChatMessages.ai_chat_message_role_function_label,
-                    "system", AIChatMessages.ai_chat_message_role_system_label,
-                    "generated", AIChatMessages.ai_chat_message_role_generated_label,
-                    "warning", AIChatMessages.ai_chat_message_role_warning_label,
-                    "error", AIChatMessages.ai_chat_message_role_error_label,
-                    "attachment", AIChatMessages.ai_chat_message_role_attachment_label
+                    "user", AIChatMessagesUI.ai_chat_message_role_user_label,
+                    "assistant", AIChatMessagesUI.ai_chat_message_role_assistant_label,
+                    "function", AIChatMessagesUI.ai_chat_message_role_function_label,
+                    "system", AIChatMessagesUI.ai_chat_message_role_system_label,
+                    "generated", AIChatMessagesUI.ai_chat_message_role_generated_label,
+                    "warning", AIChatMessagesUI.ai_chat_message_role_warning_label,
+                    "error", AIChatMessagesUI.ai_chat_message_role_error_label,
+                    "attachment", AIChatMessagesUI.ai_chat_message_role_attachment_label
                 )
             )
         );
@@ -372,7 +372,7 @@ final class WebViewMessageRenderer {
     }
 
     void showEmptyChat() {
-        execute("showCenterText", Map.of("text", AIChatMessages.ai_chat_empty_hint));
+        execute("showCenterText", Map.of("text", AIChatMessagesUI.ai_chat_empty_hint));
     }
 
     void execute(@NotNull String function, @NotNull Object... args) {

@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.*;
-import org.jkiss.dbeaver.model.ai.internal.AIChatMessages;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.ai.quota.UserTokenQuotaService;
@@ -53,6 +52,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -239,7 +239,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
     @NotNull
     AIChatConversation createEmptyConversation(@Nullable DBPDataSourceContainer container) {
-        return createEmptyConversation(AIChatMessages.ai_chat_default_conversation_name, container);
+        return createEmptyConversation(AIChatMessagesUI.ai_chat_default_conversation_name, container);
     }
 
     /**
@@ -365,7 +365,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     @NotNull
     private String createNewConversationName() throws DBException {
         List<AIChatConversation> conversations = listConversations();
-        String baseName = AIChatMessages.ai_chat_default_conversation_name;
+        String baseName = AIChatMessagesUI.ai_chat_default_conversation_name;
         String name = baseName;
         for (int i = 1; ; i++) {
             String candidate = name;
@@ -382,8 +382,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             return;
         }
         if (DBWorkbench.getPlatformUI().confirmAction(
-            AIChatMessages.ai_chat_conversation_delete_confirm_title,
-            NLS.bind(AIChatMessages.ai_chat_conversation_delete_confirm_message, getActiveConversation().getCaption())
+            AIChatMessagesUI.ai_chat_conversation_delete_confirm_title,
+            NLS.bind(AIChatMessagesUI.ai_chat_conversation_delete_confirm_message, getActiveConversation().getCaption())
         )) {
             try {
                 removeActiveConversation();
