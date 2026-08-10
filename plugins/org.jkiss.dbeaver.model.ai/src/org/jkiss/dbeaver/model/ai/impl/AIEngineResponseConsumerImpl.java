@@ -99,14 +99,14 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
             throwable.printStackTrace(System.err);
         }
         chatListener.error(throwable);
-        close(true, false);
+        close(true);
     }
 
     @Override
     public void completeBlock() {
         boolean hasFunctions = !functionCalls.isEmpty();
 
-        close(!hasFunctions, false);
+        close(!hasFunctions);
 
         // Request completed
         // Now let's check function calls
@@ -128,6 +128,10 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
     @Override
     public void warning(@NotNull String message) {
         chatListener.warning(message);
+    }
+
+    private void close (boolean finishConversation) {
+        close(finishConversation, false);
     }
 
     private void close(boolean finishConversation, boolean isCanceled) {
