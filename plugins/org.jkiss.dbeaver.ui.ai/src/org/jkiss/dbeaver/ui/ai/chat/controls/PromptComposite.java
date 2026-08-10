@@ -40,11 +40,11 @@ import org.jkiss.dbeaver.model.ai.AIChatConversation;
 import org.jkiss.dbeaver.model.ai.AIChatListener;
 import org.jkiss.dbeaver.model.ai.AIChatMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.internal.AIChatMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatIcons;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 

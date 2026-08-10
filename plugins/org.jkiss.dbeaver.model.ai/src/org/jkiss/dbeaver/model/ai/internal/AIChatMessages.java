@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.ai.chat.internal;
+package org.jkiss.dbeaver.model.ai.internal;
 
 import org.eclipse.osgi.util.NLS;
 
