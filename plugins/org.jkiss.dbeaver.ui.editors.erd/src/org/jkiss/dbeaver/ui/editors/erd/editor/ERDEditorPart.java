@@ -136,6 +136,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     private EditModeComposite editModeComposite;
 
+    @Nullable
+    private Runnable showPaletteAction = null;
+
     /**
      * the graphical viewer
      */
@@ -693,7 +696,48 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             this.getPalettePreferences()
         );
         paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
+
+
+        if (Arrays.stream(paletteComposite.getChildren())
+                .filter(c -> c.getClass().getName().endsWith(".FlyoutPaletteComposite$Sash"))
+                .findFirst()
+                .orElse(null) instanceof Composite paletteFlyoutSash &&
+            Arrays.stream(paletteFlyoutSash.getChildren())
+                .filter(c -> c.getClass().getName().endsWith(".FlyoutPaletteComposite$ButtonCanvas"))
+                .findFirst().orElse(null) instanceof Widget paletteFlyoutSashButton
+        ) {
+            this.showPaletteAction = new Runnable() {
+                @Override
+                public void run() {
+
+                    // if STATE_COLLAPSED, then STATE_EXPANDED, otherwise as is --> not STATE_COLLAPSED
+                    sendEvent(paletteFlyoutSash, SWT.MouseHover);
+                    // not STATE_COLLAPSED --> STATE_COLLAPSED
+                    sendEvent(paletteFlyoutSashButton, SWT.MouseDown);
+                    sendEvent(paletteFlyoutSashButton, SWT.MouseUp);
+                    // is STATE_COLLAPSED --> STATE_PINNED_OPEN
+                    sendEvent(paletteFlyoutSashButton, SWT.MouseDown);
+                    sendEvent(paletteFlyoutSashButton, SWT.MouseUp);
+                }
+
+                private void sendEvent(@NotNull Widget w, int type) {
+                    Event ev = new Event();
+                    ev.type = type;
+                    ev.widget = w;
+                    ev.display = w.getDisplay();
+                    ev.button = 1;
+                    w.notifyListeners(type, ev);
+                }
+            };
+        }
+
         return paletteComposite;
+    }
+
+    public void showPalette() {
+        if (this.showPaletteAction != null) {
+            this.showPaletteAction.run();
+        }
     }
 
     public boolean isLoaded() {
