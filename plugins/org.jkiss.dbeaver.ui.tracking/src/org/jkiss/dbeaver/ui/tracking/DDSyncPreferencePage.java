@@ -186,7 +186,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 SYNC_TITLE,
                 restored.isEmpty()
                     ? "Nothing to download"
-                    : "Downloaded: " + String.join(", ", restored) + ".\nRestart DBeaver to apply.",
+                    : "Downloaded: " + String.join(", ", restored),
                 false);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Download failed", e);

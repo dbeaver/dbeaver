@@ -23,6 +23,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.sync.DBPSyncRegistry;
+import org.jkiss.dbeaver.model.sync.DBPSyncScope;
+import org.jkiss.dbeaver.model.sync.DBPSyncSettings;
+import org.jkiss.dbeaver.model.sync.DBPSyncTarget;
+import org.jkiss.dbeaver.model.sync.DBPSyncUnit;
 import org.jkiss.dbeaver.model.tracking.DDAccessKey;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDContainer;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncEntry;
@@ -102,21 +107,21 @@ public class DDSyncService {
     @NotNull
     public List<String> upload(@NotNull String containerId) throws DBException {
         List<String> uploaded = new ArrayList<>();
-        for (DDSyncUnit unit : DDSyncRegistry.getUnits()) {
-            if (!DDSyncSettings.isEnabled(unit)) {
+        for (DBPSyncUnit unit : DBPSyncRegistry.getInstance().getUnits()) {
+            if (!DBPSyncSettings.isEnabled(unit)) {
                 continue;
             }
-            if (unit.getScope() == DDSyncScope.WORKSPACE) {
-                if (uploadUnit(containerId, unit, unit.getId(), new DDSyncTarget(workspace, null))) {
+            if (unit.getScope() == DBPSyncScope.WORKSPACE) {
+                if (uploadUnit(containerId, unit, unit.getId(), new DBPSyncTarget(workspace, null))) {
                     uploaded.add(unit.getId());
                 }
             } else {
                 for (DBPProject project : workspace.getProjects()) {
-                    if (!DDSyncSettings.isEnabled(project)) {
+                    if (!DBPSyncSettings.isEnabled(project)) {
                         continue;
                     }
                     String key = getProjectId(project) + KEY_SEPARATOR + unit.getId();
-                    if (uploadUnit(containerId, unit, key, new DDSyncTarget(workspace, project))) {
+                    if (uploadUnit(containerId, unit, key, new DBPSyncTarget(workspace, project))) {
                         uploaded.add(project.getName() + "/" + unit.getId());
                     }
                 }
@@ -134,17 +139,17 @@ public class DDSyncService {
                 log.debug("Skip unknown synchronization key: " + entry.key());
                 continue;
             }
-            DDSyncUnit unit = ref.unit();
-            if (!DDSyncSettings.isEnabled(unit)) {
+            DBPSyncUnit unit = ref.unit();
+            if (!DBPSyncSettings.isEnabled(unit)) {
                 continue;
             }
-            DBPProject project = unit.getScope() == DDSyncScope.WORKSPACE
+            DBPProject project = unit.getScope() == DBPSyncScope.WORKSPACE
                 ? null
                 : resolveProject(ref.projectId(), entry.label());
-            if (project != null && !DDSyncSettings.isEnabled(project)) {
+            if (project != null && !DBPSyncSettings.isEnabled(project)) {
                 continue;
             }
-            unit.write(new DDSyncTarget(workspace, project), entry.resources());
+            unit.write(new DBPSyncTarget(workspace, project), entry.resources());
             restored.add(project == null
                 ? unit.getId()
                 : project.getName() + "/" + unit.getId());
@@ -156,7 +161,7 @@ public class DDSyncService {
     private static DDUnitRef parseKey(@NotNull String key) {
         String[] parts = key.split(KEY_SEPARATOR, 2);
         String projectId = parts.length > 1 && isUuid(parts[0]) ? parts[0] : null;
-        DDSyncUnit unit = DDSyncRegistry.findById(projectId == null ? parts[0] : parts[1]);
+        DBPSyncUnit unit = DBPSyncRegistry.getInstance().findById(projectId == null ? parts[0] : parts[1]);
         if (unit == null) {
             return null;
         }
@@ -173,16 +178,16 @@ public class DDSyncService {
     }
 
     private record DDUnitRef(
-        @NotNull DDSyncUnit unit,
+        @NotNull DBPSyncUnit unit,
         @Nullable String projectId
     ) {
     }
 
     private boolean uploadUnit(
         @NotNull String containerId,
-        @NotNull DDSyncUnit unit,
+        @NotNull DBPSyncUnit unit,
         @NotNull String key,
-        @NotNull DDSyncTarget target
+        @NotNull DBPSyncTarget target
     ) throws DBException {
         Map<String, byte[]> resources = unit.read(target);
         if (resources.isEmpty()) {

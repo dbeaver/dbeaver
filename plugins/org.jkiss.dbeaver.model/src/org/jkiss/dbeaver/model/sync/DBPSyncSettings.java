@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync;
+package org.jkiss.dbeaver.model.sync;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -22,26 +22,29 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-public class DDSyncSettings {
+/**
+ * Tells whether a component or a project is allowed to be synchronized.
+ */
+public class DBPSyncSettings {
 
     private static final String PREF_UNIT_PREFIX = "datadam.sync.";
     private static final String PROP_PROJECT_SYNC = "datadam.sync";
 
-    private DDSyncSettings() {
+    private DBPSyncSettings() {
     }
 
-    public static boolean isEnabled(@NotNull DDSyncUnit unit) {
+    public static boolean isEnabled(@NotNull DBPSyncUnit unit) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         String name = PREF_UNIT_PREFIX + unit.getId();
         return store.contains(name) ? store.getBoolean(name) : unit.isEnabledByDefault();
     }
 
-    public static void setEnabled(@NotNull DDSyncUnit unit, boolean enabled) {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_UNIT_PREFIX + unit.getId(), enabled);
-    }
-
     public static boolean isEnabled(@NotNull DBPProject project) {
         return CommonUtils.toBoolean(project.getProjectProperty(PROP_PROJECT_SYNC), true);
+    }
+
+    public static void setEnabled(@NotNull DBPSyncUnit unit, boolean enabled) {
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_UNIT_PREFIX + unit.getId(), enabled);
     }
 
     public static void setEnabled(@NotNull DBPProject project, boolean enabled) {

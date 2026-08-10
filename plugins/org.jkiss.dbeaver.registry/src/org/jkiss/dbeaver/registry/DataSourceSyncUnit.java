@@ -14,9 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync;
+package org.jkiss.dbeaver.registry;
 
-public enum DDSyncScope {
-    WORKSPACE,
-    PROJECT
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.sync.DBPFileSyncUnit;
+import org.jkiss.dbeaver.model.sync.DBPSyncScope;
+
+public class DataSourceSyncUnit extends DBPFileSyncUnit {
+
+    public DataSourceSyncUnit() {
+        super(
+            "connections",
+            DBPProject.METADATA_FOLDER + "/" + DBPDataSourceRegistry.MODERN_CONFIG_FILE_NAME,
+            DBPSyncScope.PROJECT,
+            false);
+    }
 }
