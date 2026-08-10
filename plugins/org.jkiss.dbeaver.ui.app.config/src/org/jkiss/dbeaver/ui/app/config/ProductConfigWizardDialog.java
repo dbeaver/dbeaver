@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.app.config;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.util.Geometry;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -48,12 +47,22 @@ import java.util.function.Consumer;
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     private boolean seenLanguageChangeWarning = false;
 
-    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window) {
-        super(window, new ProductConfigWizard());
+    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, boolean canBeSkipped) {
+        super(window, new ProductConfigWizard(canBeSkipped));
     }
 
     public boolean isRestartRequired() {
-        return ((ProductConfigWizard) getWizard()).isRestartRequired();
+        return getWizard().isRestartRequired();
+    }
+
+    public boolean isCanBeSkipped() {
+        return getWizard().isCanBeSkipped();
+    }
+
+    @NotNull
+    @Override
+    protected ProductConfigWizard getWizard() {
+        return (ProductConfigWizard) super.getWizard();
     }
 
     @NotNull
@@ -164,8 +173,8 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         super.createButtonsForButtonBar(parent);
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        if (cancelButton != null && !Platform.inDevelopmentMode()) {
-            UIUtils.setControlVisible(cancelButton, false);
+        if (cancelButton != null) {
+            UIUtils.setControlVisible(cancelButton, isCanBeSkipped());
         }
     }
 
