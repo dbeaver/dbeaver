@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -50,7 +49,7 @@ public class GBase8sDataSource extends GenericDataSource {
 
     public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
             throws DBException {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new GBase8sSQLDialect());
     }
 
     @Override

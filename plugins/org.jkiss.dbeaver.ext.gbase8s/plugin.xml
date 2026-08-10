@@ -4,7 +4,8 @@
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="gbase8s"
             class="org.jkiss.dbeaver.ext.gbase8s.model.meta.GBase8sMetaModel"
-            driverClass="com.gbasedbt.jdbc.Driver" />
+            driverClass="com.gbasedbt.jdbc.Driver"
+            dialect="gbase8s" />
     </extension>
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
@@ -13,7 +14,7 @@
             description="GBase 8s connector"
             icon="icons/gbase8s_icon.png"
             parent="generic"
-            dialect="generic"
+            dialect="gbase8s"
             label="GBase 8s">
             <treeInjection path="generic/catalog/schema/table"
                 changeFolderType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTable"/>
@@ -57,6 +58,11 @@
                 </driver>
             </drivers>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="gbase8s" parent="generic" class="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sSQLDialect"
+            label="GBase 8s" description="GBase 8s SQL dialect." icon="icons/gbase8s_icon.png" />
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">

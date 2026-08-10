@@ -66,13 +66,20 @@ public class GBase8sUtils {
     }
 
     public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
+        return isSqlMode(container, GBase8sConstants.JDBC_SQL_MODE_ORACLE);
+    }
+
+    public static boolean isMySQLSqlMode(DBPDataSourceContainer container) {
+        return isSqlMode(container, GBase8sConstants.JDBC_SQL_MODE_MYSQL);
+    }
+
+    private static boolean isSqlMode(DBPDataSourceContainer container, String expectedSqlMode) {
         DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
         String sqlMode = getSqlModeValue(configuration.getProperties());
         if (sqlMode != null) {
-            return GBase8sConstants.JDBC_SQL_MODE_ORACLE.equalsIgnoreCase(sqlMode);
+            return expectedSqlMode.equalsIgnoreCase(sqlMode);
         }
-        return GBase8sConstants.JDBC_SQL_MODE_ORACLE
-                .equalsIgnoreCase(getSqlModeValue(container.getDriver().getConnectionProperties()));
+        return expectedSqlMode.equalsIgnoreCase(getSqlModeValue(container.getDriver().getConnectionProperties()));
     }
 
     private static String getSqlModeValue(Map<String, ?> properties) {
