@@ -63,8 +63,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     // History (may be purged when limit reached)
     private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
-    private long eventDispatchPeriod = QMConfigurationProvider.DEFAULT_EVENT_DISPATCH_PERIOD;
-    private boolean applicationSaveMetadataEvents = true;
+    private long eventDispatchPeriod = 250;
     private volatile boolean saveMetadataEvents = true;
 
     public QMMCollectorImpl() {
@@ -72,7 +71,6 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         var qmConfigurationProvider = DBUtils.getAdapter(QMConfigurationProvider.class, application);
         if (qmConfigurationProvider != null) {
             eventDispatchPeriod = qmConfigurationProvider.getEventDispatchPeriod();
-            applicationSaveMetadataEvents = qmConfigurationProvider.isSaveMetadataEvents();
         }
         refreshMetadataEventsSetting();
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
@@ -87,8 +85,8 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     private void refreshMetadataEventsSetting() {
-        saveMetadataEvents = applicationSaveMetadataEvents
-            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(QMConstants.PROP_SAVE_METADATA_QUERIES);
+        saveMetadataEvents = DBWorkbench.getPlatform().getPreferenceStore()
+            .getBoolean(QMConstants.PROP_SAVE_METADATA_QUERIES);
     }
 
     public void dispose() {

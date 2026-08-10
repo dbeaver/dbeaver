@@ -17,14 +17,5 @@
 package org.jkiss.dbeaver.model.qm;
 
 public interface QMConfigurationProvider {
-
-    long DEFAULT_EVENT_DISPATCH_PERIOD = 250;
-
-    default long getEventDispatchPeriod() {
-        return DEFAULT_EVENT_DISPATCH_PERIOD;
-    }
-
-    default boolean isSaveMetadataEvents() {
-        return true;
-    }
+    long getEventDispatchPeriod();
 }

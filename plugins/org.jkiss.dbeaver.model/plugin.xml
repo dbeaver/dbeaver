@@ -213,6 +213,12 @@
                           scopes="global,user"/>
             </propertyGroup>
         </propertyGroup>
+        <propertyGroup id="qm" label="Query Manager">
+            <property id="qm.saveMetadataQueries" label="%qm.saveMetadataQueries"
+                      type="boolean" scopes="global"
+                      defaultValue="true"
+                      description="%qm.saveMetadataQueries.description"/>
+        </propertyGroup>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
