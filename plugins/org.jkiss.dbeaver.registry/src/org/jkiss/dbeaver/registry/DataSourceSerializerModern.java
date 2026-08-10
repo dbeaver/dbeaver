@@ -681,7 +681,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
 
                     // Events
-                    Arrays.stream(config.getDeclaredEvents()).forEach(e -> config.setEvent(e, null));
+                    //clear config before reading it, to remove any disabled commands
+                    config.clearEvents();
                     for (Map.Entry<String, Map<String, Object>> eventObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_EVENTS)) {
                         DBPConnectionEventType eventType = CommonUtils.valueOf(DBPConnectionEventType.class, eventObject.getKey(), DBPConnectionEventType.BEFORE_CONNECT);
                         Map<String, Object> eventCfg = eventObject.getValue();
