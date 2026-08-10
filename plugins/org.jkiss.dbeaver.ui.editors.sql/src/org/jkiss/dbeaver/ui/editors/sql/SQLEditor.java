@@ -853,13 +853,10 @@ public class SQLEditor extends SQLEditorBase implements
                             .showError("New connection default", "Error setting default catalog/schema for new connection", e);
                     }
                 }
-                var txnManager = DBUtils.getTransactionManager(newContext);
-                if (txnManager != null && !txnManager.isAutoCommit()) {
-                    try (DBCSession session = newContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction")) {
-                        txnManager.commit(session);
-                    } catch (DBCException e) {
-                        log.warn("Error committing changes context defaults for new connection", e);
-                    }
+                try {
+                    DBExecUtils.commitContextTransaction(monitor, newContext);
+                } catch (DBCException e) {
+                    log.warn("Error committing changes context defaults for new connection", e);
                 }
                 SQLEditor.this.isolatedExecutionContext = newContext;
                 // Needed to update main toolbar
@@ -1483,7 +1480,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             });
         }
-        resultTabs.setSimple(true);
         resultTabs.setFont(JFaceResources.getFont(UIFonts.Eclipse.PART_TITLE_FONT));
 
         resultTabs.addMouseListener(MouseListener.mouseUpAdapter(e -> {
