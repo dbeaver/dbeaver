@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,6 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.model;
 
-import java.lang.reflect.Field;
-import java.sql.SQLException;
-import java.util.Set;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
@@ -30,11 +26,20 @@ import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.Field;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Chao Tian
@@ -47,6 +52,30 @@ public class GBase8sDataSource extends GenericDataSource {
         -79700,	// this is documented as "Feature not supported", see https://www.gbase.cn/docs/gbase-8s/06%20%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/01%20JDBCDriver%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8C%87%E5%8D%97/09%20%E9%99%84%E5%BD%95#-79700
         -79882	// this occurs when calling PreparedStatement.setNCharacterStream(), not documented
     );
+
+    /**
+     * case-insensitive placeholder indicates that some driver properties will be set dynamically if user not set.
+     */
+    private static final String PROPERTY_AUTO_SET = "%AUTO%";
+
+    /**
+     * driver properties that needs to be set dynamically.
+     * if you don't need dynamic, just define this property in plugin.xml :)
+     */
+    private static final Map<String, Function<String, String>> DYNAMIC_DRIVER_PROPERTIES = Map.ofEntries(
+        // according to documentation, when loading big CLOB/TEXT value, the driver need save it in temp file.
+        // but sometimes it will fail (see #41669), give driver property `JDBCTEMP` will fix it.
+        Map.entry("JDBCTEMP", current -> defaultWhenNeedSet(current, () -> System.getProperty("java.io.tmpdir")))
+    );
+
+    private static String defaultWhenNeedSet(String current, Supplier<String> defaultValue) {
+        if (CommonUtils.isEmpty(current) || current.equalsIgnoreCase(PROPERTY_AUTO_SET)) {
+            String newValue = defaultValue.get();
+            log.debug("Set default value: " + newValue);
+            return newValue;
+        }
+        return current;
+    }
 
     public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
             throws DBException {
@@ -92,5 +121,24 @@ public class GBase8sDataSource extends GenericDataSource {
         }
 
         return super.discoverErrorType(error);  // fallback case
+    }
+
+    /**
+     * override this method to set some driver properties dynamically to fix #41669
+     *
+     * @param connectionInfo {@inheritDoc}
+     * @param connectProps {@inheritDoc}
+     */
+    @Override
+    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+        super.fillConnectionProperties(connectionInfo, connectProps);
+
+        for (var propEntry : DYNAMIC_DRIVER_PROPERTIES.entrySet()) {
+            String propertyName = propEntry.getKey();
+            log.debug("Detected driver property that may be need to set dynamically: " + propertyName);
+            if (connectProps.containsKey(propertyName)) {
+                connectProps.setProperty(propertyName, propEntry.getValue().apply(connectProps.getProperty(propertyName)));
+            }
+        }
     }
 }
