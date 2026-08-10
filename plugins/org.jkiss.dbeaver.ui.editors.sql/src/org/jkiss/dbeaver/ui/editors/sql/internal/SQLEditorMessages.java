@@ -311,6 +311,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_bind_connection_hint;
     public static String pref_page_sql_editor_checkbox_bind_embedded_read;
     public static String pref_page_sql_editor_checkbox_bind_embedded_read_tip;
+    public static String pref_page_sql_editor_checkbox_bind_embedded_read_confirm;
+    public static String pref_page_sql_editor_checkbox_bind_embedded_read_confirm_tip;
     public static String pref_page_sql_editor_checkbox_bind_embedded_write;
     public static String pref_page_sql_editor_checkbox_bind_embedded_write_tip;
     public static String pref_page_sql_editor_group_scripts;
@@ -411,6 +413,18 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_confirm_no_fetch_result_for_big_script_yes;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_no;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_remember;
+
+    public static String sql_editor_confirm_binding_read_confirmation_title;
+    public static String sql_editor_confirm_binding_read_confirmation_question;
+    public static String sql_editor_confirm_binding_read_confirmation_yes;
+    public static String sql_editor_confirm_binding_read_confirmation_no;
+    public static String sql_editor_confirm_binding_read_confirmation_remember;
+
+    public static String sql_editor_confirm_binding_read_ensure_title;
+    public static String sql_editor_confirm_binding_read_ensure_question;
+    public static String sql_editor_confirm_binding_read_ensure_yes;
+    public static String sql_editor_confirm_binding_read_ensure_just_now;
+    public static String sql_editor_confirm_binding_read_ensure_cancel;
 
     public static String dialog_save_script_title;
     public static String dialog_save_script_message;

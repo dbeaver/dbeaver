@@ -253,9 +253,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     static long getBigScriptFileLengthBoundary() {
         return DBWorkbench.getPlatform().getPreferenceStore().getLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY);
     }
-    
+
     static boolean isReadEmbeddedBinding() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ);
+    }
+
+    static boolean isConfirmReadEmbeddedBinding() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ_CONFIRM);
     }
 
     static boolean isWriteEmbeddedBinding() {

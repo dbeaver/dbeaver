@@ -71,6 +71,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     private Text scriptFileNamePattern;
     private Spinner bigScriptFileSizeBoundarySpinner;
     private Button bindEmbeddedReadCheck;
+    private Button bindEmbeddedReadConfirmCheck;
     private Button bindEmbeddedWriteCheck;
     private Composite commentTypeComposite;
     private ControlEnableState commentTypeEnableBlock;
@@ -241,6 +242,13 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ),
                 2);
 
+            bindEmbeddedReadConfirmCheck = UIUtils.createCheckbox(
+                connGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_bind_embedded_read_confirm,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_bind_embedded_read_confirm_tip,
+                store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ_CONFIRM),
+                2);
+
             bindEmbeddedWriteCheck = UIUtils.createCheckbox(
                 connGroup,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_bind_embedded_write,
@@ -307,6 +315,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         bindEmbeddedReadCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ));
+        bindEmbeddedReadConfirmCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ_CONFIRM));
         bindEmbeddedWriteCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE));
         setScriptBindingTypes(SQLScriptBindingType.NAME);
         enableCommentType();
@@ -350,6 +359,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ, bindEmbeddedReadCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ_CONFIRM, bindEmbeddedReadConfirmCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE, bindEmbeddedWriteCheck.getSelection());
         try {
             for (Control ch : commentTypeComposite.getChildren()) {
