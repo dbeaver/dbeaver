@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.firebird;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedureParameter;
@@ -57,6 +58,7 @@ public class FireBirdUtils {
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, procedure, "Load procedure source code")) {
             String source = "";
+            Boolean sqlSecurity = null;
             if (procedure.getProcedureType() == DBSProcedureType.PROCEDURE) {
                 DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
                 source = (String) fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
@@ -64,13 +66,22 @@ public class FireBirdUtils {
                     return null;
                 }
             } else if (procedure.getDataSource().isServerVersionAtLeast(3, 0)) {
-                String sql = "SELECT RDB$FUNCTION_SOURCE FROM RDB$FUNCTIONS WHERE RDB$FUNCTION_NAME =?";
+                boolean supportsSqlSecurity = procedure.getDataSource().isServerVersionAtLeast(4, 0);
+                String sql = "SELECT RDB$FUNCTION_SOURCE" +
+                    (supportsSqlSecurity ? ", RDB$SQL_SECURITY" : "") +
+                    " FROM RDB$FUNCTIONS WHERE RDB$FUNCTION_NAME =?";
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql))
                 {
                     dbStat.setString(1, procedure.getName());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         if (dbResult.nextRow()) {
-                            source =  JDBCUtils.safeGetString(dbResult, 1);
+                            source = JDBCUtils.safeGetString(dbResult, 1);
+                            if (supportsSqlSecurity) {
+                                sqlSecurity = JDBCUtils.safeGetBoolean(dbResult, 2);
+                                if (dbResult.wasNull()) {
+                                    sqlSecurity = null;
+                                }
+                            }
                         }
                     }
                 }
@@ -78,7 +89,7 @@ public class FireBirdUtils {
                 return null;
             }
 
-            return getProcedureSourceWithHeader(monitor, procedure, source);
+            return getProcedureSourceWithHeader(monitor, procedure, source, sqlSecurity);
         } catch (SQLException e) {
             throw new DBException("Can't read source code of procedure '" + procedure.getName() + "'", e);
         } catch (Exception e) {
@@ -125,7 +136,12 @@ public class FireBirdUtils {
         }
     }
 
-    private static String getProcedureSourceWithHeader(DBRProgressMonitor monitor, GenericProcedure procedure, String source) throws DBException {
+    private static String getProcedureSourceWithHeader(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericProcedure procedure,
+        @NotNull String source,
+        @Nullable Boolean sqlSecurity
+    ) throws DBException {
         StringBuilder sql = new StringBuilder();
         boolean isFunction = procedure.getProcedureType() == DBSProcedureType.FUNCTION;
         sql.append("CREATE OR ALTER ");
@@ -205,6 +221,10 @@ public class FireBirdUtils {
                     sql.append(")\n");
                 }
             }
+        }
+
+        if (sqlSecurity != null) {
+            sql.append("SQL SECURITY ").append(sqlSecurity ? "DEFINER" : "INVOKER").append("\n");
         }
 
         sql.append("AS\n").append(source);
