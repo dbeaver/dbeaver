@@ -37,7 +37,6 @@ public class AISyncUnit extends DBPFileSyncUnit {
             DBPSyncScope.WORKSPACE,
             true);
     }
-
     @Override
     public void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException {
         super.write(target, resources);
