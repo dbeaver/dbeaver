@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync.core;
+package org.jkiss.dbeaver.model.sync;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -31,10 +31,10 @@ import java.util.stream.Stream;
 /**
  * Resource set addressed by a single path: either one file or all files of a directory.
  */
-public record DDSyncFiles(
+public record DBPSyncFiles(
     @NotNull Path root
 ) {
-    private static final Log log = Log.getLog(DDSyncFiles.class);
+    private static final Log log = Log.getLog(DBPSyncFiles.class);
 
     @NotNull
     public Map<String, byte[]> read() throws DBException {

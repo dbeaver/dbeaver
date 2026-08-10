@@ -14,30 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync;
+package org.jkiss.dbeaver.model.ai.registry;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.sync.DBPFileSyncUnit;
+import org.jkiss.dbeaver.model.sync.DBPSyncScope;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
 
-import java.util.Map;
+public class AISyncUnit extends DBPFileSyncUnit {
 
-/**
- * Configuration component which can be synchronized.
- */
-public interface DDSyncUnit {
-
-    @NotNull
-    String getId();
-
-    @NotNull
-    DDSyncScope getScope();
-
-    default boolean isEnabledByDefault() {
-        return true;
+    public AISyncUnit() {
+        super(
+            "ai",
+            DBPWorkspace.METADATA_FOLDER + "/" + BasePlatformImpl.CONFIG_FOLDER
+                + "/" + AISettingsManager.AI_CONFIGURATION_FILE_NAME,
+            DBPSyncScope.WORKSPACE,
+            true);
     }
-
-    @NotNull
-    Map<String, byte[]> read(@NotNull DDSyncTarget target) throws DBException;
-
-    void write(@NotNull DDSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException;
 }

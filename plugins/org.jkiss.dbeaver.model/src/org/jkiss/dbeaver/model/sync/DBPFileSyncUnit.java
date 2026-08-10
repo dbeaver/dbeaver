@@ -14,28 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync;
+package org.jkiss.dbeaver.model.sync;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncFiles;
 
 import java.util.Map;
 
-public class DDFileSyncUnit implements DDSyncUnit {
+/**
+ * Component whose configuration is a file or a directory inside the workspace or the project.
+ */
+public class DBPFileSyncUnit implements DBPSyncUnit {
 
     private final String id;
     private final String path;
-    private final DDSyncScope scope;
+    private final DBPSyncScope scope;
+    private final boolean enabledByDefault;
 
-    public DDFileSyncUnit(
+    public DBPFileSyncUnit(
         @NotNull String id,
         @NotNull String path,
-        @NotNull DDSyncScope scope
+        @NotNull DBPSyncScope scope,
+        boolean enabledByDefault
     ) {
         this.id = id;
         this.path = path;
         this.scope = scope;
+        this.enabledByDefault = enabledByDefault;
     }
 
     @NotNull
@@ -46,23 +51,28 @@ public class DDFileSyncUnit implements DDSyncUnit {
 
     @NotNull
     @Override
-    public DDSyncScope getScope() {
+    public DBPSyncScope getScope() {
         return scope;
+    }
+
+    @Override
+    public boolean isEnabledByDefault() {
+        return enabledByDefault;
     }
 
     @NotNull
     @Override
-    public Map<String, byte[]> read(@NotNull DDSyncTarget target) throws DBException {
+    public Map<String, byte[]> read(@NotNull DBPSyncTarget target) throws DBException {
         return files(target).read();
     }
 
     @Override
-    public void write(@NotNull DDSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException {
+    public void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException {
         files(target).write(resources);
     }
 
     @NotNull
-    private DDSyncFiles files(@NotNull DDSyncTarget target) {
-        return new DDSyncFiles(target.root().resolve(path));
+    private DBPSyncFiles files(@NotNull DBPSyncTarget target) {
+        return new DBPSyncFiles(target.root().resolve(path));
     }
 }
