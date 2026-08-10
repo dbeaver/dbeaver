@@ -52,9 +52,14 @@ public class BreadcrumbTrim {
 
     @PostConstruct
     public void createControls(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 0);
-        ((GridLayout)composite.getLayout()).marginLeft = 5;
-        ProjectsPanel projectsPanel = new ProjectsPanel(composite);
+        Composite composite;
+        if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
+            composite = UIUtils.createPlaceholder(parent, 2, 0);
+            ProjectsPanel projectsPanel = new ProjectsPanel(composite);
+        } else {
+            composite = UIUtils.createPlaceholder(parent, 1, 0);
+        }
+        ((GridLayout) composite.getLayout()).marginLeft = 5;
         var viewer = new NodeBreadcrumbViewer(composite, SWT.BOTTOM);
 
         installListeners(viewer);
