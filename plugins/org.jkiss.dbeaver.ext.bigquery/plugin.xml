@@ -61,8 +61,7 @@
                     webURL="https://docs.cloud.google.com/bigquery/docs/jdbc-for-bigquery"
                     databaseDocumentationSuffixURL="Database-driver-BigQuery"
                     categories="sql,gcp"
-                    singleConnection="true"
-                    propagateDriverProperties="true">
+                    singleConnection="true">
                     <file type="jar" path="maven:/com.google.cloud:google-cloud-bigquery-jdbc:RELEASE[0.6.0]" bundle="!drivers.google-bigquery"/>
 
                     <file type="jar" path="drivers/google-bigquery" bundle="drivers.google-bigquery"/>
