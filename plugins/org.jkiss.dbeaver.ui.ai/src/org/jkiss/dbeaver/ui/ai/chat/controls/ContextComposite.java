@@ -499,7 +499,7 @@ public class ContextComposite extends Composite {
     }
 
     private void contributeContextActions(@NotNull IContributionManager manager) {
-        changeScopeAction = new Action(AIChatMessages.ai_chat_change_scope_label, DBeaverIcons.getImageDescriptor(UIIcon.FILTER_CONFIG)) {
+        changeScopeAction = new Action(AIChatMessages.ai_chat_change_scope_label, DBeaverIcons.getImageDescriptor(UIIcon.DOTS_BUTTON)) {
             @Override
             public void run() {
                 showScopeDropDown();
