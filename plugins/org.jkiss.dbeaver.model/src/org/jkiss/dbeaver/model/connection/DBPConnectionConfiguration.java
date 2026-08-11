@@ -92,8 +92,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         });
 
     public static final String PROP_SECRET_SUBJECT_ID = "shared.credentials.default.subject";
+    public static final boolean CLOSE_IDLE_CONNECTION_DEFAULT = true;
 
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
+    public static final DBPConnectionEventType[] EMPTY_EVENTS = new DBPConnectionEventType[0];
 
     private String hostName;
     private String hostPort;
@@ -113,15 +115,14 @@ public class DBPConnectionConfiguration implements DBPObject {
     private final Map<String, String> providerProperties;
     @NotNull
     private final Map<String, Object> runtimeAttributes;
+    private Map<DBPConnectionEventType, DBRShellCommand> events;
+    private List<DBWHandlerConfiguration> handlers;
     @NotNull
-    private final Map<DBPConnectionEventType, DBRShellCommand> events;
-    @NotNull
-    private final List<DBWHandlerConfiguration> handlers;
     private final DBPConnectionBootstrap bootstrap;
     @NotNull
     private DBPConnectionType connectionType;
     private DBPDriverConfigurationType configurationType;
-    private String connectionColor;
+    private transient String connectionColor;
     private int keepAliveInterval;
     private boolean closeIdleConnection;
     private int closeIdleInterval;
@@ -134,12 +135,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.configurationType = DBPDriverConfigurationType.MANUAL;
         this.properties = new LinkedHashMap<>();
         this.providerProperties = new LinkedHashMap<>();
-        this.events = new LinkedHashMap<>();
         this.runtimeAttributes = new HashMap<>();
-        this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
-        this.closeIdleConnection = true;
+        this.closeIdleConnection = CLOSE_IDLE_CONNECTION_DEFAULT;
         this.closeIdleInterval = 0;
     }
 
@@ -161,13 +160,17 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);
         this.runtimeAttributes = info.runtimeAttributes;
-        this.events = new LinkedHashMap<>(info.events.size());
-        for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
-            this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
+        if (info.events != null) {
+            this.events = new LinkedHashMap<>(info.events.size());
+            for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
+                this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
+            }
         }
-        this.handlers = new ArrayList<>(info.handlers.size());
-        for (DBWHandlerConfiguration handler : info.handlers) {
-            this.handlers.add(new DBWHandlerConfiguration(handler));
+        if (info.handlers != null) {
+            this.handlers = new ArrayList<>(info.handlers.size());
+            for (DBWHandlerConfiguration handler : info.handlers) {
+                this.handlers.add(new DBWHandlerConfiguration(handler));
+            }
         }
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
         this.connectionColor = info.connectionColor;
@@ -329,15 +332,17 @@ public class DBPConnectionConfiguration implements DBPObject {
     // Events
 
     @Nullable
-    public DBRShellCommand getEvent(DBPConnectionEventType eventType) {
-        return events.get(eventType);
+    public synchronized DBRShellCommand getEvent(@NotNull DBPConnectionEventType eventType) {
+        return events == null ? null : events.get(eventType);
     }
 
-    public void setEvent(@NotNull DBPConnectionEventType eventType, @Nullable DBRShellCommand command) {
-        if (command == null) {
-            events.remove(eventType);
-        } else {
-            events.put(eventType, command);
+    public synchronized void setEvent(@NotNull DBPConnectionEventType eventType, @Nullable DBRShellCommand command) {
+        if (events != null) {
+            if (command == null) {
+                events.remove(eventType);
+            } else {
+                events.put(eventType, command);
+            }
         }
     }
 
@@ -346,52 +351,60 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     @NotNull
-    public DBPConnectionEventType[] getDeclaredEvents() {
+    public synchronized DBPConnectionEventType[] getDeclaredEvents() {
+        if (events == null) {
+            return EMPTY_EVENTS;
+        }
         Set<DBPConnectionEventType> eventTypes = events.keySet();
-        return eventTypes.toArray(new DBPConnectionEventType[0]);
+        return eventTypes.toArray(EMPTY_EVENTS);
     }
 
     ////////////////////////////////////////////////////
     // Network handlers
 
     @NotNull
-    public List<DBWHandlerConfiguration> getHandlers() {
+    public synchronized List<DBWHandlerConfiguration> getHandlers() {
+        if (handlers == null) {
+            return Collections.emptyList();
+        }
         return handlers;
     }
 
-    public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers) {
-        synchronized (this.handlers) {
+    public synchronized void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers) {
+        if (this.handlers != null) {
             this.handlers.clear();
             this.handlers.addAll(handlers);
         }
     }
 
-    public void updateHandler(@NotNull DBWHandlerConfiguration handler) {
-        synchronized (handlers) {
+    public synchronized void updateHandler(@NotNull DBWHandlerConfiguration handler) {
+        if (this.handlers != null) {
             for (int i = 0; i < handlers.size(); i++) {
                 if (handlers.get(i).getId().equals(handler.getId())) {
                     handlers.set(i, handler);
                     return;
                 }
             }
-            this.handlers.add(handler);
+        } else {
+            this.handlers = new ArrayList<>();
         }
+        this.handlers.add(handler);
     }
 
     @Nullable
-    public DBWHandlerConfiguration getHandler(@NotNull String id) {
-        synchronized (handlers) {
+    public synchronized DBWHandlerConfiguration getHandler(@NotNull String id) {
+        if (handlers != null) {
             for (DBWHandlerConfiguration cfg : handlers) {
                 if (cfg.getId().equals(id)) {
                     return cfg;
                 }
             }
-            return null;
         }
+        return null;
     }
 
-    public void removeHandler(@NotNull String id) {
-        synchronized (handlers) {
+    public synchronized void removeHandler(@NotNull String id) {
+        if (handlers != null) {
             handlers.removeIf(handler -> handler.getId().equals(id));
         }
     }
@@ -495,7 +508,7 @@ public class DBPConnectionConfiguration implements DBPObject {
      *
      * @param profile the network profile
      */
-    public void setConfigProfile(@Nullable DBWNetworkProfile profile) {
+    public synchronized void setConfigProfile(@Nullable DBWNetworkProfile profile) {
         if (profile == null) {
             configProfileSource = null;
             configProfileName = null;
@@ -503,13 +516,13 @@ public class DBPConnectionConfiguration implements DBPObject {
             configProfileSource = profile.getProfileSource();
             configProfileName = profile.getProfileId();
 
-            synchronized (handlers) {
+            if (handlers != null) {
                 handlers.clear();
+            }
 
-                for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
-                    if (handlerConfig.isEnabled()) {
-                        updateHandler(new DBWHandlerConfiguration(handlerConfig));
-                    }
+            for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
+                if (handlerConfig.isEnabled()) {
+                    updateHandler(new DBWHandlerConfiguration(handlerConfig));
                 }
             }
         }
@@ -641,9 +654,13 @@ public class DBPConnectionConfiguration implements DBPObject {
         resolveDynamicVariablesInMap(this.properties, variableResolver);
         resolveDynamicVariablesInMap(this.authProperties, variableResolver);
         resolveDynamicVariablesInMap(this.providerProperties, variableResolver);
-        for (DBWHandlerConfiguration handler : handlers) {
-            if (handler.isEnabled()) {
-                handler.resolveDynamicVariables(variableResolver);
+        if (handlers != null) {
+            synchronized (this) {
+                for (DBWHandlerConfiguration handler : handlers) {
+                    if (handler.isEnabled()) {
+                        handler.resolveDynamicVariables(variableResolver);
+                    }
+                }
             }
         }
         bootstrap.resolveDynamicVariables(variableResolver);
