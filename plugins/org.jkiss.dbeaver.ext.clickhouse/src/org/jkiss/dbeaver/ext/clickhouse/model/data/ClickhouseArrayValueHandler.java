@@ -72,6 +72,11 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         @NotNull DBSTypedObject type,
         int index
     ) throws DBCException, SQLException {
+        final String typeName = type.getTypeName();
+        if (typeName.startsWith("Map")) {
+            return ClickhouseStructValueHandler.INSTANCE.getValueFromObject(session, type, resultSet.getObject(index), false, false);
+        }
+
         // Remove after https://github.com/ClickHouse/clickhouse-java/issues/2711 is fixed
         try {
             return super.fetchColumnValue(session, resultSet, type, index);
@@ -99,6 +104,10 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         boolean copy,
         boolean validateValue
     ) throws DBCException {
+        final String typeName = type.getTypeName();
+        if (typeName.startsWith("Map")) {
+            return ClickhouseStructValueHandler.INSTANCE.getValueFromObject(session, type, object, copy, validateValue);
+        }
         if (object == null) {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
