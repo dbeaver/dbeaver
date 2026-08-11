@@ -31,15 +31,17 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author Chao Tian
@@ -54,27 +56,29 @@ public class GBase8sDataSource extends GenericDataSource {
     );
 
     /**
-     * case-insensitive placeholder indicates that some driver properties will be set dynamically if user not set.
-     */
-    private static final String PROPERTY_AUTO_SET = "%AUTO%";
-
-    /**
      * driver properties that needs to be set dynamically.
      * if you don't need dynamic, just define this property in plugin.xml :)
      */
     private static final Map<String, Function<String, String>> DYNAMIC_DRIVER_PROPERTIES = Map.ofEntries(
         // according to documentation, when loading big CLOB/TEXT value, the driver need save it in temp file.
         // but sometimes it will fail (see #41669), give driver property `JDBCTEMP` will fix it.
-        Map.entry("JDBCTEMP", current -> defaultWhenNeedSet(current, () -> System.getProperty("java.io.tmpdir")))
+        Map.entry("JDBCTEMP", GBase8sDataSource::configureDefaultJdbcTemp)
     );
 
-    private static String defaultWhenNeedSet(String current, Supplier<String> defaultValue) {
-        if (CommonUtils.isEmpty(current) || current.equalsIgnoreCase(PROPERTY_AUTO_SET)) {
-            String newValue = defaultValue.get();
-            log.debug("Set default value: " + newValue);
-            return newValue;
+    private static String configureDefaultJdbcTemp(String currentTemp) {
+        if (!CommonUtils.isEmpty(currentTemp)) {
+            return currentTemp;
         }
-        return current;
+
+        try {
+            String defaultTemp = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gbase8s-jdbctemp").toAbsolutePath().toString(); //$NON-NLS-1$
+            log.debug("Fallback to default JDBCTEMP: " + defaultTemp);
+            return defaultTemp;
+        } catch (IOException e) {
+            log.warn("Failed to configure default JDBC temp", e);
+            // Is it necessary to prompt to user?
+            return currentTemp;
+        }
     }
 
     public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
@@ -136,9 +140,7 @@ public class GBase8sDataSource extends GenericDataSource {
         for (var propEntry : DYNAMIC_DRIVER_PROPERTIES.entrySet()) {
             String propertyName = propEntry.getKey();
             log.debug("Detected driver property that may be need to set dynamically: " + propertyName);
-            if (connectProps.containsKey(propertyName)) {
-                connectProps.setProperty(propertyName, propEntry.getValue().apply(connectProps.getProperty(propertyName)));
-            }
+            connectProps.setProperty(propertyName, propEntry.getValue().apply(connectProps.getProperty(propertyName)));
         }
     }
 }
