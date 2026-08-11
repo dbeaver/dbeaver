@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.CommonUtils;
@@ -142,6 +143,11 @@ public class AISettingsManager {
                 AIConfigurationProfile profile = settings.getDefaultConfigurationOrNull();
                 if (profile != null) {
                     profile.saveSecrets();
+                }
+                // need to save creds as well e.g. for Bedrock
+                DBSSecretController secretController = DBSSecretController.getGlobalSecretControllerOrNull();
+                if (secretController != null) {
+                    secretController.flushChanges();
                 }
             }
 
