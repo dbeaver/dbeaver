@@ -588,6 +588,10 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_edit_wizard_shell_cmd_directory_title;
     public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_label;
     public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_title;
+    public static String dialog_connection_edit_wizard_shell_cmd_clear_button_label;
+    public static String dialog_connection_edit_wizard_shell_cmd_te_warning_label;
+    public static String dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_label;
+    public static String dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_text;
 
     public static String dialog_connection_edit_wizard_connections;
     public static String dialog_connection_edit_wizard_connections_description;
