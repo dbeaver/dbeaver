@@ -545,6 +545,26 @@ public class DBExecUtils {
         }
     }
 
+    /**
+     * Commit a transaction within the active context. If the context is in auto-commit mode, this method does nothing.
+     *
+     * @param monitor progress monitor
+     * @param context execution context to commit the transaction for
+     * @throws DBCException on any DB error during commit
+     */
+    public static void commitContextTransaction(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext context
+    ) throws DBCException {
+        var manager = DBUtils.getTransactionManager(context);
+        if (manager == null || manager.isAutoCommit()) {
+            return;
+        }
+        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction")) {
+            manager.commit(session);
+        }
+    }
+
     @Nullable
     public static DBSEntityConstraint getBestIdentifier(
         @NotNull DBRProgressMonitor monitor,
