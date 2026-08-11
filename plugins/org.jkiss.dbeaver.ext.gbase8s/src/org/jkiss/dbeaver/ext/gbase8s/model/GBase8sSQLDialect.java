@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -30,7 +31,8 @@ public class GBase8sSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    public void initDriverSettings(@NotNull JDBCSession session, @NotNull JDBCDataSource dataSource,
+            @NotNull JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         if (GBase8sUtils.isMySQLSqlMode(dataSource.getContainer())) {
             setIdentifierQuoteString(new String[][]{{"`", "`"}});
