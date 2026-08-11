@@ -8,7 +8,8 @@ Bundle-Release-Date: 20260817
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator
-Require-Bundle: org.jkiss.dbeaver.data.gis,
+Require-Bundle: org.eclipse.e4.ui.css.core,
+ org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data,
