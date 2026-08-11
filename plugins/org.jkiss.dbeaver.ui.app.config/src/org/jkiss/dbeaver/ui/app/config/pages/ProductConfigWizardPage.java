@@ -28,7 +28,6 @@ public abstract class ProductConfigWizardPage extends WizardPage {
         setTitle(title);
         setDescription(description);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DBEAVER_LOGO));
-        setPageComplete(false); // set to true by EasyConfigWizardDialog#showPage
     }
 
     @NotNull

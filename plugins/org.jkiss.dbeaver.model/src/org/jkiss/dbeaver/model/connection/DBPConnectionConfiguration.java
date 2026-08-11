@@ -115,6 +115,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private final Map<String, String> providerProperties;
     @NotNull
     private final Map<String, Object> runtimeAttributes;
+    @Nullable
     private Map<DBPConnectionEventType, DBRShellCommand> events;
     private List<DBWHandlerConfiguration> handlers;
     @NotNull
@@ -347,7 +348,9 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public void clearEvents() {
-        events.clear();
+        if (events != null) {
+            events.clear();
+        }
     }
 
     @NotNull

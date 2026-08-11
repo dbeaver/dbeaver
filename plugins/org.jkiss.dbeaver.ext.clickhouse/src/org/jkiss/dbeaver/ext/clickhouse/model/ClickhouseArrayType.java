@@ -30,10 +30,24 @@ public class ClickhouseArrayType extends ClickhouseAbstractDataType {
     private final String fullName;
 
     public ClickhouseArrayType(@NotNull ClickhouseDataSource dataSource, @NotNull DBSDataType componentType) {
+        this(dataSource, componentType, "Array", "Array(" + componentType.getFullTypeName() + ")");
+    }
+
+    protected ClickhouseArrayType(
+        @NotNull ClickhouseDataSource dataSource,
+        @NotNull DBSDataType componentType,
+        @NotNull String baseName,
+        @NotNull String fullName
+    ) {
         super(dataSource);
         this.componentType = componentType;
-        this.baseName = "Array";
-        this.fullName = "Array(" + componentType.getFullTypeName() + ")";
+        this.baseName = baseName;
+        this.fullName = fullName;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return obj instanceof ClickhouseArrayType other && this.componentType.equals(other.componentType);
     }
 
     @NotNull
