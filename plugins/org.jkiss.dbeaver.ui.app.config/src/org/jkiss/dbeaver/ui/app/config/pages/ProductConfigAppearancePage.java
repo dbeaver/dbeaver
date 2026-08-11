@@ -86,33 +86,9 @@ public class ProductConfigAppearancePage extends ProductConfigWizardPage {
         return pb -> pb
             .margins(10, 10)
             .row(rb -> rb.label(ProductConfigMessages.appearance_theme_header))
-            .indent(pb1 -> {
-                for (ITheme theme : themeEngine.getThemes()) {
-                    pb1.row(rb -> rb.radioButton(theme.getLabel(), UIObservables.equals(currentTheme, theme)));
-                }
-            })
+            .row(rb -> rb.panel(pb1 -> pb1.indent(buildThemePanel())))
             .row(rb -> rb.label(ProductConfigMessages.appearance_navigator_header))
-            .indent(pb1 -> pb1
-                .row(rb -> rb.radioButton(
-                    ProductConfigMessages.appearance_navigator_simple,
-                    UIObservables.equals(navigatorPreset, Preset.SIMPLE)))
-                .row(rb -> rb.radioButton(
-                    ProductConfigMessages.appearance_navigator_advanced,
-                    UIObservables.equals(navigatorPreset, Preset.ADVANCED)))
-                .row(rb -> rb
-                    .radioButton(
-                        ProductConfigMessages.appearance_navigator_custom,
-                        UIObservables.equals(navigatorPreset, Preset.CUSTOM))
-                    .link(ProductConfigMessages.appearance_navigator_custom_configure, e -> {
-                        var dialog = new EditConnectionNavigatorSettingsDialog(
-                            getShell(),
-                            navigatorSettings.get(),
-                            null);
-                        if (dialog.open() == IDialogConstants.OK_ID) {
-                            navigatorSettings.set(dialog.getNavigatorSettings());
-                        }
-                    }))
-                .row(rb -> rb.weblink(ProductConfigMessages.appearance_navigator_hint)))
+            .row(rb -> rb.panel(pb1 -> pb1.indent(buildNavigatorPanel())))
             .row(UIRowBuilder::verticalSpacer)
             .row(rb -> rb
                 .panel(pb1 -> pb1
@@ -128,6 +104,43 @@ public class ProductConfigAppearancePage extends ProductConfigWizardPage {
                         .wrap()
                         .align(UIAlignX.FILL)
                         .grow(UIGrowX.ALWAYS)))));
+    }
+
+    @NotNull
+    private Consumer<UIPanelBuilder> buildThemePanel() {
+        return pb -> {
+            for (ITheme theme : themeEngine.getThemes()) {
+                pb.row(rb -> rb.radioButton(theme.getLabel(), UIObservables.equals(currentTheme, theme)));
+            }
+        };
+    }
+
+    @NotNull
+    private Consumer<UIPanelBuilder> buildNavigatorPanel() {
+        return pb -> pb
+            .row(rb -> rb.radioButton(
+                ProductConfigMessages.appearance_navigator_simple,
+                UIObservables.equals(navigatorPreset, Preset.SIMPLE)
+            ))
+            .row(rb -> rb.radioButton(
+                ProductConfigMessages.appearance_navigator_advanced,
+                UIObservables.equals(navigatorPreset, Preset.ADVANCED)
+            ))
+            .row(rb -> rb
+                .radioButton(
+                    ProductConfigMessages.appearance_navigator_custom,
+                    UIObservables.equals(navigatorPreset, Preset.CUSTOM))
+                .link(ProductConfigMessages.appearance_navigator_custom_configure, e -> {
+                    var dialog = new EditConnectionNavigatorSettingsDialog(
+                        getShell(),
+                        navigatorSettings.get(),
+                        null
+                    );
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        navigatorSettings.set(dialog.getNavigatorSettings());
+                    }
+                }))
+            .row(rb -> rb.weblink(ProductConfigMessages.appearance_navigator_hint));
     }
 
     @NotNull
