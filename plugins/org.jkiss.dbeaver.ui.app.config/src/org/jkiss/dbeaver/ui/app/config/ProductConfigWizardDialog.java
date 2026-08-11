@@ -32,6 +32,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
+import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -42,6 +44,7 @@ import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     private boolean seenLanguageChangeWarning = false;
@@ -61,18 +64,31 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
 
     @Override
     public int open() {
+        beforeOpen();
+        int result = super.open();
+        afterClose(result);
+        return result;
+    }
+
+    private void beforeOpen() {
         ProductConfigFeatures.WIZARD_SHOWN.use(Map.of(
             "origin", getOrigin()
         ));
+    }
 
-        int result = super.open();
+    private void afterClose(int result) {
+        var registry = ProductConfigRegistry.getInstance();
+        var features = registry.getFeatures().stream()
+            .collect(Collectors.toMap(
+                ProductConfigFeatureDescriptor::getId,
+                registry::getFeatureEnablement
+            ));
 
         ProductConfigFeatures.WIZARD_CLOSED.use(Map.of(
             "origin", getOrigin(),
-            "status", result == IDialogConstants.OK_ID ? "finished" : "canceled"
+            "status", result == IDialogConstants.OK_ID ? "finished" : "canceled",
+            "features", features
         ));
-
-        return result;
     }
 
     @NotNull
