@@ -1898,7 +1898,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             for (DBDAttributeBinding cur = binding; cur != null; cur = cur.getParentObject()) {
                 final DBPDataKind kind = cur.getDataKind();
                 if (kind == DBPDataKind.ARRAY) {
-                    return true;
+                    return this.isComplexValuesExpansionEnabled();
                 }
             }
         }

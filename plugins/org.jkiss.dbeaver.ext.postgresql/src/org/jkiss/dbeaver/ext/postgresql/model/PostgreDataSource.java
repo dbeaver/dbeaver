@@ -395,6 +395,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         postgreContext.refreshDefaults(monitor, true);
         if (activeSchema != null) {
             postgreContext.setDefaultCatalog(monitor, activeSchema.getDatabase(), activeSchema, true);
+
+            try {
+                // Commit possible changes to search_path
+                DBExecUtils.commitContextTransaction(monitor, context);
+            } catch (DBCException e) {
+                log.warn("Error committing changes context defaults for new connection", e);
+            }
         }
     }
 

@@ -120,7 +120,10 @@ import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.*;
-import org.jkiss.utils.*;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -850,6 +853,11 @@ public class SQLEditor extends SQLEditorBase implements
                             .showError("New connection default", "Error setting default catalog/schema for new connection", e);
                     }
                 }
+                try {
+                    DBExecUtils.commitContextTransaction(monitor, newContext);
+                } catch (DBCException e) {
+                    log.warn("Error committing changes context defaults for new connection", e);
+                }
                 SQLEditor.this.isolatedExecutionContext = newContext;
                 // Needed to update main toolbar
                 // FIXME: silly workaround. Command state update doesn't happen in some cases
@@ -1472,7 +1480,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             });
         }
-        resultTabs.setSimple(true);
         resultTabs.setFont(JFaceResources.getFont(UIFonts.Eclipse.PART_TITLE_FONT));
 
         resultTabs.addMouseListener(MouseListener.mouseUpAdapter(e -> {
