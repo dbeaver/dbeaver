@@ -96,7 +96,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         root.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (DBWorkbench.isDistributed() && !confirmedShellCommandsManager.isFeatureEnabledInDistributed()) {
             UIUtils.createWarningLabel(
-                parent,
+                root,
                 "LZ: " + CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
                 GridData.FILL_BOTH,
                 1
