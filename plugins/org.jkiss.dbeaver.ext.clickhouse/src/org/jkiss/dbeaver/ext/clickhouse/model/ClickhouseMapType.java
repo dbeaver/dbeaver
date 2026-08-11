@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.Pair;
 
 import java.util.List;
+import java.util.stream.Stream;
 
-public class ClickhouseMapType extends ClickhouseTupleType {
+public class ClickhouseMapType extends ClickhouseTuplesArrayType {
     private final DBSDataType keyType;
     private final DBSDataType valueType;
 
@@ -31,7 +33,13 @@ public class ClickhouseMapType extends ClickhouseTupleType {
         @NotNull DBSDataType keyType,
         @NotNull DBSDataType valueType
     ) {
-        super(dataSource, "Map", List.of(new Pair<>("Key", keyType), new Pair<>("Value", valueType)));
+        super(
+            dataSource,
+            new EntryType(dataSource, keyType, valueType),
+            "Map",
+            "Map" + ClickhouseTupleType.prepareTupleSpec(Stream.of(keyType, valueType))
+        );
+
         this.keyType = keyType;
         this.valueType = valueType;
     }
@@ -44,5 +52,30 @@ public class ClickhouseMapType extends ClickhouseTupleType {
     @NotNull
     public DBSDataType getValueType() {
         return valueType;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return obj instanceof ClickhouseMapType other && this.keyType.equals(other.keyType) && this.valueType.equals(other.valueType);
+    }
+
+    public static class EntryType extends ClickhouseTupleType {
+        private final DBSDataType keyType;
+        private final DBSDataType valueType;
+
+        private EntryType(
+            @NotNull ClickhouseDataSource dataSource,
+            @NotNull DBSDataType keyType,
+            @NotNull DBSDataType valueType
+        ) {
+            super(dataSource, "Map.Entry", List.of(new Pair<>("Key", keyType), new Pair<>("Value", valueType)));
+            this.keyType = keyType;
+            this.valueType = valueType;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            return obj instanceof EntryType other && this.keyType.equals(other.keyType) && this.valueType.equals(other.valueType);
+        }
     }
 }
