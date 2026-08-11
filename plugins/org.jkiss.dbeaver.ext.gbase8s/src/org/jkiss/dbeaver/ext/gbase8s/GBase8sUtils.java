@@ -17,10 +17,8 @@
 
 package org.jkiss.dbeaver.ext.gbase8s;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -34,6 +32,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Chao Tian
@@ -65,15 +67,15 @@ public class GBase8sUtils {
         }
     }
 
-    public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
+    public static boolean isOracleSqlMode(@NotNull DBPDataSourceContainer container) {
         return isSqlMode(container, GBase8sConstants.JDBC_SQL_MODE_ORACLE);
     }
 
-    public static boolean isMySQLSqlMode(DBPDataSourceContainer container) {
+    public static boolean isMySQLSqlMode(@NotNull DBPDataSourceContainer container) {
         return isSqlMode(container, GBase8sConstants.JDBC_SQL_MODE_MYSQL);
     }
 
-    private static boolean isSqlMode(DBPDataSourceContainer container, String expectedSqlMode) {
+    private static boolean isSqlMode(@NotNull DBPDataSourceContainer container, @NotNull String expectedSqlMode) {
         DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
         String sqlMode = getSqlModeValue(configuration.getProperties());
         if (sqlMode != null) {
@@ -82,7 +84,8 @@ public class GBase8sUtils {
         return expectedSqlMode.equalsIgnoreCase(getSqlModeValue(container.getDriver().getConnectionProperties()));
     }
 
-    private static String getSqlModeValue(Map<String, ?> properties) {
+    @Nullable
+    private static String getSqlModeValue(@Nullable Map<String, ?> properties) {
         if (properties == null || properties.isEmpty()) {
             return null;
         }
@@ -140,7 +143,7 @@ public class GBase8sUtils {
                         + "where ta.tabname = '%s' and ta.tabtype='T' " + "and tb.datakey IN ('A', 'D') "
                         + "and tr.trigname = '%s'" + "order by tr.trigname, datakey desc, seqno ",
                 trigger.getTable().getName(), trigger.getName());
-        return listToString(getSource(monitor, sqlTrigger, trigger.getName(), trigger.getDataSource()), "\n");
+        return listToString(getSource(monitor, sqlProcedure, trigger.getName(), trigger.getDataSource()), "\n");
     }
 
 }
