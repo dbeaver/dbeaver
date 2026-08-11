@@ -143,7 +143,7 @@ public class GBase8sUtils {
                         + "where ta.tabname = '%s' and ta.tabtype='T' " + "and tb.datakey IN ('A', 'D') "
                         + "and tr.trigname = '%s'" + "order by tr.trigname, datakey desc, seqno ",
                 trigger.getTable().getName(), trigger.getName());
-        return listToString(getSource(monitor, sqlProcedure, trigger.getName(), trigger.getDataSource()), "\n");
+        return listToString(getSource(monitor, sqlTrigger, trigger.getName(), trigger.getDataSource()), "\n");
     }
 
 }
