@@ -96,7 +96,7 @@ public class ConfirmedShellCommandsManager {
 
     private void validateForDistributed() throws DBException {
         if (!isFeatureEnabledInDistributed()) {
-            throw new DBException("LZ: Admin disabled");
+            throw new DBException(ModelMessages.shell_cmd_manager_add_command_error_message_te_specific);
         }
     }
 

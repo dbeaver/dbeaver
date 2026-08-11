@@ -97,7 +97,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         if (DBWorkbench.isDistributed() && !confirmedShellCommandsManager.isFeatureEnabledInDistributed()) {
             UIUtils.createWarningLabel(
                 root,
-                "LZ: " + CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
                 GridData.FILL_BOTH,
                 1
             );
