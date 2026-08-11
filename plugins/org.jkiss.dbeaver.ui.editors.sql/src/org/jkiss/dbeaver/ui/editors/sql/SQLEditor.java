@@ -684,7 +684,7 @@ public class SQLEditor extends SQLEditorBase implements
     private record DataSourceBindingInfo(
         @NotNull String specText,
         @NotNull DBPDataSourceContainer dataSource
-    ){
+    ) {
     }
 
     @Nullable
