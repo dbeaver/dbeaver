@@ -16,20 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.app.config;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
-public final class ProductConfigMessages extends NLS {
-    public static String data_collection_title;
-    public static String data_collection_description;
-    public static String data_collection_agreement_text;
-    public static String data_collection_send_usage_statistics;
-    public static String data_collection_do_not_send_usage_statistics;
-    public static String data_collection_cannot_opt_out_notice;
+public final class ProductConfigFeatures {
+    public static final DBRFeature CATEGORY = DBRFeature.createCategory("Product Config", "Product config features");
+    public static final DBRFeature WIZARD_SHOWN = DBRFeature.createFeature(CATEGORY, "Product config wizard was shown");
+    public static final DBRFeature WIZARD_CLOSED = DBRFeature.createFeature(CATEGORY, "Product config wizard was closed");
 
-    static {
-        NLS.initializeMessages(ProductConfigMessages.class.getName(), ProductConfigMessages.class);
-    }
-
-    private ProductConfigMessages() {
+    private ProductConfigFeatures() {
     }
 }
