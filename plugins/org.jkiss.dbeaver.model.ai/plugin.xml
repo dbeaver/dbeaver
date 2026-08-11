@@ -61,6 +61,10 @@
         </definition>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.model.ai.internal.AIPreferenceInitializer"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
             id="ai"

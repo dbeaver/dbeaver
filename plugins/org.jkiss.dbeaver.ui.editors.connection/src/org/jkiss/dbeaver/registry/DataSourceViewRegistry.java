@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 
@@ -32,6 +34,7 @@ public class DataSourceViewRegistry {
     private final List<DataSourceViewDescriptor> views = new ArrayList<>();
     private final List<DataSourceConfiguratorDescriptor> configurators = new ArrayList<>();
 
+    @NotNull
     public synchronized static DataSourceViewRegistry getInstance() {
         if (instance == null) {
             instance = new DataSourceViewRegistry(Platform.getExtensionRegistry());
@@ -39,7 +42,7 @@ public class DataSourceViewRegistry {
         return instance;
     }
 
-    private DataSourceViewRegistry(IExtensionRegistry registry) {
+    private DataSourceViewRegistry(@NotNull IExtensionRegistry registry) {
         for (IConfigurationElement viewElement : registry.getConfigurationElementsFor(DataSourceViewDescriptor.EXTENSION_ID)) {
             if (viewElement.getName().equals(RegistryConstants.TAG_VIEW)) {
                 this.views.add(
@@ -55,7 +58,8 @@ public class DataSourceViewRegistry {
         }
     }
 
-    public DataSourceViewDescriptor findView(DBPDataSourceProviderDescriptor provider, String targetID) {
+    @Nullable
+    public DataSourceViewDescriptor findView(@NotNull DBPDataSourceProviderDescriptor provider, @NotNull String targetID) {
         for (DBPDataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
             for (DataSourceViewDescriptor view : views) {
                 if (view.getDataSources().contains(pd.getId()) && targetID.equals(view.getTargetID())) {
@@ -66,19 +70,8 @@ public class DataSourceViewRegistry {
         return null;
     }
 
-    public List<DataSourceViewDescriptor> getViews(DBPDataSourceProviderDescriptor provider, String targetID) {
-        List<DataSourceViewDescriptor> result = new ArrayList<>();
-        for (DBPDataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
-            for (DataSourceViewDescriptor view : views) {
-                if (view.getDataSources().contains(pd.getId()) && targetID.equals(view.getTargetID())) {
-                    result.add(view);
-                }
-            }
-        }
-        return result;
-    }
-
-    public List<DataSourceConfiguratorDescriptor> getConfigurators(DBPDataSourceContainer dataSourceContainer) {
+    @NotNull
+    public List<DataSourceConfiguratorDescriptor> getConfigurators(@NotNull DBPDataSourceContainer dataSourceContainer) {
         List<DataSourceConfiguratorDescriptor> result = new ArrayList<>();
         for (DataSourceConfiguratorDescriptor configuratorDesc : configurators) {
             if (configuratorDesc.appliesTo(dataSourceContainer)) {
@@ -88,7 +81,8 @@ public class DataSourceViewRegistry {
         return result;
     }
 
-    public List<DataSourcePageDescriptor> getRootDataSourcePages(DataSourceDescriptor dataSource) {
+    @NotNull
+    public List<DataSourcePageDescriptor> getRootDataSourcePages(@NotNull DBPDataSourceContainer dataSource) {
         List<DataSourcePageDescriptor> roots = new ArrayList<>();
         for (DataSourceConfiguratorDescriptor configurator : getConfigurators(dataSource)) {
             roots.addAll(configurator.getRootPages(dataSource));
@@ -96,7 +90,8 @@ public class DataSourceViewRegistry {
         return sortPages(roots);
     }
 
-    public List<DataSourcePageDescriptor> getChildDataSourcePages(DBPDataSourceContainer dataSource, String parentId) {
+    @NotNull
+    public List<DataSourcePageDescriptor> getChildDataSourcePages(@NotNull DBPDataSourceContainer dataSource, @Nullable String parentId) {
         List<DataSourcePageDescriptor> children = new ArrayList<>();
         for (DataSourceConfiguratorDescriptor configurator : getConfigurators(dataSource)) {
             children.addAll(configurator.getChildPages(dataSource, parentId));
@@ -104,7 +99,8 @@ public class DataSourceViewRegistry {
         return sortPages(children);
     }
 
-    private List<DataSourcePageDescriptor> sortPages(List<DataSourcePageDescriptor> pages) {
+    @NotNull
+    private List<DataSourcePageDescriptor> sortPages(@NotNull List<DataSourcePageDescriptor> pages) {
         pages.sort((o1, o2) -> {
             if (o1.getId().equals(o2.getAfterPageId())) {
                 return -1;
