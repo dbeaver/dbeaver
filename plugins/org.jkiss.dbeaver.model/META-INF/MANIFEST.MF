@@ -103,7 +103,7 @@ Import-Package: org.bouncycastle.asn1,
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,
- org.jkiss.bundle.jexl3;visibility:=reexport,
+ org.apache.commons.jexl3;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  com.google.gson;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport
