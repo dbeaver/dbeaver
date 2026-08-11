@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConfigurationController;
+import org.jkiss.dbeaver.model.app.DBAFeaturesConfig;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -37,6 +38,7 @@ public class ConfirmedShellCommandsManager {
     private static final Log log = Log.getLog(ConfirmedShellCommandsManager.class);
 
     public static final String CONFIRMED_COMMANDS_FILE_NAME = "confirmed_shell_commands.json";
+    public static final String SHELL_COMMANDS_ENABLED_DIST = "enableConnectionShellCmd";
 
     private static ConfirmedShellCommandsManager instance;
 
@@ -56,10 +58,13 @@ public class ConfirmedShellCommandsManager {
 
     public void validateCommandByUser(@NotNull DBRShellCommand command, @NotNull DBPConnectionEventType eventType) throws DBException {
         if (!command.isBlank()) {
-            validateNotDistributed();
-            boolean isApprovedByUser = confirmedCommands().contains(command.getCommand()) || askApproveForCommand(command);
-            if (!isApprovedByUser) {
-                throw new DBException(NLS.bind(ModelMessages.shell_cmd_manager_add_command_error_message, eventType.getTitle()));
+            if (!DBWorkbench.isDistributed()) {
+                boolean isApprovedByUser = confirmedCommands().contains(command.getCommand()) || askApproveForCommand(command);
+                if (!isApprovedByUser) {
+                    throw new DBException(NLS.bind(ModelMessages.shell_cmd_manager_add_command_error_message, eventType.getTitle()));
+                }
+            } else {
+                validateForDistributed();
             }
         }
     }
@@ -72,19 +77,32 @@ public class ConfirmedShellCommandsManager {
      * @throws DBException in case smth bad happens while adding
      */
     public boolean addConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
-        validateNotDistributed();
+        if (DBWorkbench.isDistributed()) {
+            validateForDistributed();
+            //always false, since in TE for now command security management is disabled, and commands are not checked to be approved first
+            return false;
+        }
         return !command.isBlank() && addConfirmedShellCommand(command.getCommand());
     }
 
     public boolean removeConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
-        validateNotDistributed();
+        if (DBWorkbench.isDistributed()) {
+            validateForDistributed();
+            //always false, since in TE for now command security management is disabled, and commands are not checked to be approved first
+            return false;
+        }
         return !command.isBlank() && removeConfirmedShellCommand(command.getCommand());
     }
 
-    private void validateNotDistributed() throws DBException {
-        if (DBWorkbench.isDistributed()) {
-            throw new DBException(ModelMessages.shell_cmd_manager_add_command_error_message_te_specific);
+    private void validateForDistributed() throws DBException {
+        if (!isFeatureEnabledInDistributed()) {
+            throw new DBException("LZ: Admin disabled");
         }
+    }
+
+    public boolean isFeatureEnabledInDistributed() {
+        var featureChecker = DBWorkbench.getService(DBAFeaturesConfig.class);
+        return featureChecker != null && featureChecker.isServiceEnabled(SHELL_COMMANDS_ENABLED_DIST);
     }
 
     private boolean askApproveForCommand(@NotNull DBRShellCommand command) throws DBException {

@@ -94,10 +94,10 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         Composite root = UIUtils.createPlaceholder(parent, 1, 2);
         root.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (DBWorkbench.isDistributed()) {
+        if (DBWorkbench.isDistributed() && !confirmedShellCommandsManager.isFeatureEnabledInDistributed()) {
             UIUtils.createWarningLabel(
                 parent,
-                CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
+                "LZ: " + CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
                 GridData.FILL_BOTH,
                 1
             );
@@ -136,7 +136,10 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                     DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
                     boolean enabled = ((TableItem) e.item).getChecked();
                     if (enabled || (command != null && enabled != command.isEnabled())) {
-                        if (enabled && eventType != null && command == null && !DBWorkbench.isDistributed()) {
+                        if (enabled
+                            && eventType != null
+                            && command == null
+                            && isAllowedInDistributed()) {
                             createNewCommand(eventType);
                         }
                         updateEvent(false);
@@ -293,7 +296,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
         boolean isCommandPresent = command != null && command.isEnabled();
-        boolean isCommandControlEnabled = !DBWorkbench.isDistributed() && isCommandPresent;
+        boolean isCommandControlEnabled = isAllowedInDistributed() && isCommandPresent;
         commandText.setEnabled(isCommandControlEnabled);
         showProcessCheck.setEnabled(isCommandControlEnabled);
         waitFinishCheck.setEnabled(isCommandControlEnabled);
@@ -315,6 +318,10 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         } else {
             cleanActiveCommand();
         }
+    }
+
+    private boolean isAllowedInDistributed() {
+        return !DBWorkbench.isDistributed() || confirmedShellCommandsManager.isFeatureEnabledInDistributed();
     }
 
     private void cleanActiveCommand() {
@@ -355,6 +362,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         return command != null
             && command.isEnabled()
             && !command.isBlank()
+            && !DBWorkbench.isDistributed()
             && !originalCommands.contains(command.getCommand());
     }
 
