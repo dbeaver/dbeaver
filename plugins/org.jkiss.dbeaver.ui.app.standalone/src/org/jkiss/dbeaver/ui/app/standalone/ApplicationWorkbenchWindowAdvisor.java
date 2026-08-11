@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -192,6 +193,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
                 ProductConfigWizard.Origin.AUTOMATIC
             );
             if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                DBRFeatureRegistry.getInstance().endTracking();
                 System.exit(0);
             }
         });
