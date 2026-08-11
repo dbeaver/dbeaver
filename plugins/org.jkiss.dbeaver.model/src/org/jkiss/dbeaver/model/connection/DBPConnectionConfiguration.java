@@ -342,7 +342,9 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public void clearEvents() {
-        events.clear();
+        if (events != null) {
+            events.clear();
+        }
     }
 
     @NotNull
