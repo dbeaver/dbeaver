@@ -725,10 +725,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBNModel getNavigatorModel() {
-        return null;
+        throw new DBRuntimeException("This project doesn't support navigator model");
     }
 
     @Override

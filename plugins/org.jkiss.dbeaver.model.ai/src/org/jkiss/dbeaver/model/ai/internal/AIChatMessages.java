@@ -14,19 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.ai.internal;
 
-package org.jkiss.dbeaver.model.runtime;
+import org.eclipse.osgi.util.NLS;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+public class AIChatMessages extends NLS {
+    public static String ai_chat_conversation_cancelled;
 
-/**
- * Runnable with parameter and progress
- */
-@FunctionalInterface
-public interface DBRRunnableParametrizedWithProgress<T> {
-
-    void run(@NotNull DBRProgressMonitor monitor, @NotNull T param)
-        throws DBException;
-
+    static {
+        NLS.initializeMessages(AIChatMessages.class.getName(), AIChatMessages.class);
+    }
 }
