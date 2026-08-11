@@ -14,24 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.editors;
+package org.jkiss.dbeaver.model.ai.internal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class EditorMessages extends NLS {
-
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.data.editors.EditorMessages";
-
-    public static String content_viewer_settings;
-    public static String create_control_error_title;
-    public static String create_control_error_description;
-    public static String html_preview_read_error;
-    public static String html_preview_unavailable;
+public class AIChatMessages extends NLS {
+    public static String ai_chat_conversation_cancelled;
 
     static {
-        NLS.initializeMessages(BUNDLE_NAME, EditorMessages.class);
-    }
-
-    private EditorMessages() {
+        NLS.initializeMessages(AIChatMessages.class.getName(), AIChatMessages.class);
     }
 }

@@ -665,7 +665,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         config.setKeepAliveInterval(keepAlive);
                     }
                     boolean closeIdleEnabled = JSONUtils.getBoolean(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED);
-                    config.setCloseIdleConnection(closeIdleEnabled);
+                    if (closeIdleEnabled != DBPConnectionConfiguration.CLOSE_IDLE_CONNECTION_DEFAULT) {
+                        config.setCloseIdleConnection(closeIdleEnabled);
+                    }
                     int closeIdle = JSONUtils.getInteger(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE);
                     if (closeIdle > 0) {
                         config.setCloseIdleInterval(closeIdle);
@@ -1140,7 +1142,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             if (connectionInfo.getKeepAliveInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
-            JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED, connectionInfo.isCloseIdleConnection());
+            if (connectionInfo.isCloseIdleConnection() != DBPConnectionConfiguration.CLOSE_IDLE_CONNECTION_DEFAULT) {
+                JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED, connectionInfo.isCloseIdleConnection());
+            }
             if (connectionInfo.getCloseIdleInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }

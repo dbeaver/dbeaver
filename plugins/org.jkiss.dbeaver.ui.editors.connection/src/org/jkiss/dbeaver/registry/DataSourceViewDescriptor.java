@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
 import java.util.Arrays;
@@ -29,44 +29,44 @@ import java.util.List;
  */
 public class DataSourceViewDescriptor extends AbstractDescriptor {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceView"; //$NON-NLS-1$
+
     private final String id;
     private final String targetID;
     private final List<String> dataSourceIds;
     private final String label;
     private final ObjectType viewType;
-    private final DBPImage icon;
 
-    public DataSourceViewDescriptor(IConfigurationElement config) {
+    public DataSourceViewDescriptor(@NotNull IConfigurationElement config) {
         super(config.getContributor().getName());
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.targetID = config.getAttribute(RegistryConstants.ATTR_TARGET_ID);
         this.dataSourceIds = Arrays.asList(config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE).split(","));
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.viewType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getTargetID() {
         return targetID;
     }
 
+    @NotNull
     public List<String> getDataSources() {
         return dataSourceIds;
     }
 
+    @NotNull
     public String getLabel() {
         return label;
     }
 
-    public DBPImage getIcon() {
-        return icon;
-    }
-
-    public <T> T createView(Class<T> implementsClass) {
+    @NotNull
+    public <T> T createView(@NotNull Class<T> implementsClass) {
         try {
             return viewType.createInstance(implementsClass);
         } catch (Throwable ex) {
