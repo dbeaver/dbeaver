@@ -133,7 +133,7 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
         chatListener.warning(message);
     }
 
-    private void close (boolean finishConversation) {
+    private void close(boolean finishConversation) {
         close(finishConversation, false);
     }
 
