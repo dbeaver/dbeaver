@@ -51,7 +51,8 @@ public interface DBPPlatform {
     @NotNull
     String getDeploymentId();
 
-    @Deprecated // use navigator model from DBPProject
+    // Deprecated? use navigator model from DBPProject when possible
+    // But we still use it in desktop for global tree.
     @NotNull
     DBNModel getNavigatorModel();
 
