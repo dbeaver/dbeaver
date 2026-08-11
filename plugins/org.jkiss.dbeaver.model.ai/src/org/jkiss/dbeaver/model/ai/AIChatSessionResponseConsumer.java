@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.internal.AIChatMessages;
 
 import java.util.List;
 
@@ -71,13 +72,17 @@ class AIChatSessionResponseConsumer implements AIChatResponseConsumer {
     @Override
     public void complete(
         @NotNull List<AIMessageMeta> meta,
-        boolean finishConversation
+        boolean finishConversation,
+        boolean isCanceled
     ) {
         String assistantResponseText = response.toString();
         if (!assistantResponseText.isBlank()) {
             addConversationMessage(
                 AIMessage.assistantMessage(assistantResponseText, meta)
             );
+        }
+        if (isCanceled) {
+            warning(AIChatMessages.ai_chat_conversation_cancelled);
         }
         conversation.promptProcessed(finishConversation);
     }
