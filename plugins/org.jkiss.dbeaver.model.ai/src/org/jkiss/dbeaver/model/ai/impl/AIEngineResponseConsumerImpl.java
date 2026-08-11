@@ -95,6 +95,9 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
 
     @Override
     public void error(@NotNull Throwable throwable) {
+        if (closed) {
+            return;
+        }
         if (logResponses) {
             throwable.printStackTrace(System.err);
         }
