@@ -39,6 +39,7 @@ public class DBPSyncRegistry {
 
     private static DBPSyncRegistry instance;
 
+    @NotNull
     public static synchronized DBPSyncRegistry getInstance() {
         if (instance == null) {
             instance = new DBPSyncRegistry();
