@@ -17,10 +17,7 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.model;
 
-import java.lang.reflect.Field;
-import java.sql.SQLException;
-import java.util.Set;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
@@ -35,6 +32,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
+import java.sql.SQLException;
+import java.util.Set;
+
 /**
  * @author Chao Tian
  */
@@ -47,8 +48,8 @@ public class GBase8sDataSource extends GenericDataSource {
         -79882	// this occurs when calling PreparedStatement.setNCharacterStream(), not documented
     );
 
-    public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
-            throws DBException {
+    public GBase8sDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container,
+            @NotNull GenericMetaModel metaModel) throws DBException {
         super(monitor, container, metaModel, new GBase8sSQLDialect());
     }
 
