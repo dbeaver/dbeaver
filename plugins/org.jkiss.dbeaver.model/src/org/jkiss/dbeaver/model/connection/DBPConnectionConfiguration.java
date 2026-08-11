@@ -341,6 +341,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         }
     }
 
+    public void clearEvents() {
+        events.clear();
+    }
+
     @NotNull
     public DBPConnectionEventType[] getDeclaredEvents() {
         Set<DBPConnectionEventType> eventTypes = events.keySet();
