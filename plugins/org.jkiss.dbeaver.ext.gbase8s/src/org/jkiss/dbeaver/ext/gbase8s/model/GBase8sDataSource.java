@@ -37,11 +37,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Chao Tian
@@ -55,30 +54,22 @@ public class GBase8sDataSource extends GenericDataSource {
         -79882	// this occurs when calling PreparedStatement.setNCharacterStream(), not documented
     );
 
+    private static final String PROPERTY_JDBCTEMP = "JDBCTEMP"; //$NON-NLS-1$
+
     /**
-     * driver properties that needs to be set dynamically.
-     * if you don't need dynamic, just define this property in plugin.xml :)
+     * Path to default JDBCTEMP.  According to Driver's documentation, driver needs JDBCTEMP just to load large CLOB/TEXT
+     * data so it could be shared with different instances.
      */
-    private static final Map<String, Function<String, String>> DYNAMIC_DRIVER_PROPERTIES = Map.ofEntries(
-        // according to documentation, when loading big CLOB/TEXT value, the driver need save it in temp file.
-        // but sometimes it will fail (see #41669), give driver property `JDBCTEMP` will fix it.
-        Map.entry("JDBCTEMP", GBase8sDataSource::configureDefaultJdbcTemp)
-    );
-
-    private static String configureDefaultJdbcTemp(String currentTemp) {
-        if (!CommonUtils.isEmpty(currentTemp)) {
-            return currentTemp;
-        }
-
+    private static final Path DEFAULT_JDBCTEMP;
+    static {
+        Path jdbcTemp;
         try {
-            String defaultTemp = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gbase8s-jdbctemp").toAbsolutePath().toString(); //$NON-NLS-1$
-            log.debug("Fallback to default JDBCTEMP: " + defaultTemp);
-            return defaultTemp;
+            jdbcTemp = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gbase8s-jdbctemp").toAbsolutePath(); //$NON-NLS-1$
         } catch (IOException e) {
             log.warn("Failed to configure default JDBC temp", e);
-            // Is it necessary to prompt to user?
-            return currentTemp;
+            jdbcTemp = null;
         }
+        DEFAULT_JDBCTEMP = jdbcTemp;
     }
 
     public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
@@ -137,10 +128,10 @@ public class GBase8sDataSource extends GenericDataSource {
     protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
         super.fillConnectionProperties(connectionInfo, connectProps);
 
-        for (var propEntry : DYNAMIC_DRIVER_PROPERTIES.entrySet()) {
-            String propertyName = propEntry.getKey();
-            log.debug("Detected driver property that may be need to set dynamically: " + propertyName);
-            connectProps.setProperty(propertyName, propEntry.getValue().apply(connectProps.getProperty(propertyName)));
+        // handle JDBCTEMP driver properties (#41669), use existed value first, then fallback to default value
+        String jdbcTemp = connectProps.getProperty(PROPERTY_JDBCTEMP); //$NON-NLS-1$
+        if (CommonUtils.isEmpty(jdbcTemp) && DEFAULT_JDBCTEMP != null) {
+            connectProps.setProperty(PROPERTY_JDBCTEMP, DEFAULT_JDBCTEMP.toString());
         }
     }
 }
