@@ -728,7 +728,8 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @NotNull
     @Override
     public DBNModel getNavigatorModel() {
-        throw new DBRuntimeException("This project doesn't support navigator model");
+        // FIXME: It mustn't return null actually
+        return null;
     }
 
     @Override
