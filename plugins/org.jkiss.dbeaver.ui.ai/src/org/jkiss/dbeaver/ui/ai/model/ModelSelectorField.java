@@ -16,13 +16,18 @@
  */
 package org.jkiss.dbeaver.ui.ai.model;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -33,9 +38,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -45,30 +52,43 @@ public class ModelSelectorField {
     @NotNull
     private final Combo combo;
     @NotNull
+    private final Button refreshButton;
+    @NotNull
     private final ModelListProvider modelListProvider;
+    @NotNull
+    private final List<RequiredSetting> requiredSettings;
 
     private volatile String selectedModel;
     private boolean disableModifyListener = false;
 
-    private ModelSelectorField(
-        @NotNull Combo combo,
-        @NotNull ModelListProvider modelListProvider,
-        @Nullable Runnable onModelModify
-    ) {
-        this.combo = combo;
-        if (onModelModify != null) {
-            this.combo.addModifyListener(e -> {
-                String newText = combo.getText();
-                if (!newText.equals(selectedModel) && !disableModifyListener) {
-                    selectedModel = newText;
-                    onModelModify.run();
-                }
-            });
-        } else {
-            this.combo.addModifyListener(e -> selectedModel = combo.getText());
-        }
+    private ModelSelectorField(@NotNull Builder builder) {
+        this.modelListProvider = builder.modelListSupplier;
+        this.requiredSettings = List.copyOf(builder.requiredSettings);
 
-        this.modelListProvider = modelListProvider;
+        this.combo = UIUtils.createLabelCombo(builder.parent, builder.modelLabel, SWT.DROP_DOWN);
+        this.combo.setLayoutData(builder.gridData);
+        this.combo.addModifyListener(e -> {
+            String newText = combo.getText();
+            if (disableModifyListener || newText.equals(selectedModel)) {
+                return;
+            }
+            selectedModel = newText;
+            if (builder.onModify != null) {
+                builder.onModify.run();
+            }
+        });
+
+        this.refreshButton = UIUtils.createPushButton(
+            builder.parent,
+            null,
+            AIUIMessages.gpt_preference_page_refresh_models,
+            UIIcon.REFRESH,
+            SelectionListener.widgetSelectedAdapter(e -> refreshModelListWithProgress())
+        );
+        for (RequiredSetting setting : requiredSettings) {
+            setting.control().addModifyListener(e -> updateRefreshButtonState());
+        }
+        updateRefreshButtonState();
     }
 
     @NotNull
@@ -89,6 +109,9 @@ public class ModelSelectorField {
     }
 
     public void refreshModelListSilently(boolean refresh) {
+        if (findMissingSetting() != null) {
+            return;
+        }
         new AbstractJob("Refreshing model list silently") {
             @NotNull
             @Override
@@ -104,11 +127,11 @@ public class ModelSelectorField {
         }.schedule();
     }
 
-    public void refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
-        Set<String> models = new HashSet<>(modelListProvider.getModels(monitor, refresh));
+    public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
+        List<String> loadedModels = modelListProvider.getModels(monitor, refresh);
 
-        if (models.isEmpty()) {
-            return;
+        if (loadedModels.isEmpty()) {
+            return 0;
         }
 
         UIUtils.syncExec(() -> {
@@ -116,9 +139,12 @@ public class ModelSelectorField {
                 return;
             }
             String selectedItem = combo.getText();
-            models.add(selectedItem);
+            Set<String> models = new LinkedHashSet<>(loadedModels);
+            if (!selectedItem.isEmpty()) {
+                models.add(selectedItem);
+            }
 
-            List<String> sortedModels = new ArrayList<>(models).stream()
+            List<String> sortedModels = models.stream()
                 .sorted(String::compareToIgnoreCase)
                 .toList();
 
@@ -127,6 +153,93 @@ public class ModelSelectorField {
             disableModifyListener = false;
             combo.select(sortedModels.indexOf(selectedItem));
         });
+
+        return loadedModels.size();
+    }
+
+    private void refreshModelListWithProgress() {
+        RefreshModelListJob job = new RefreshModelListJob();
+        if (!runJobWithProgressDialog(job)) {
+            return;
+        }
+        if (job.error != null) {
+            DBWorkbench.getPlatformUI().showError(AIUIMessages.model_selector_refresh_error_title, null, job.error);
+            return;
+        }
+        DBWorkbench.getPlatformUI().showMessageBox(
+            AIUIMessages.model_selector_refresh_title,
+            job.modelCount > 0
+                ? NLS.bind(AIUIMessages.model_selector_refresh_success_message, job.modelCount)
+                : AIUIMessages.model_selector_refresh_empty_message,
+            job.modelCount == 0
+        );
+    }
+
+    private static boolean runJobWithProgressDialog(@NotNull AbstractJob job) {
+        boolean[] completed = new boolean[1];
+        job.schedule();
+        try {
+            UIUtils.runInProgressDialog(monitor -> {
+                monitor.beginTask(job.getName(), IProgressMonitor.UNKNOWN);
+                try {
+                    completed[0] = job.join(0, RuntimeUtils.getNestedMonitor(monitor));
+                } catch (OperationCanceledException e) {
+                    // the user pressed сancel
+                } finally {
+                    monitor.done();
+                }
+            });
+        } catch (InvocationTargetException e) {
+            log.error("Error waiting for " + job.getName(), e.getTargetException());
+        }
+        if (!completed[0]) {
+            job.cancel();
+        }
+        return completed[0];
+    }
+
+    private class RefreshModelListJob extends AbstractJob {
+        @Nullable
+        private volatile DBException error;
+        private volatile int modelCount;
+
+        private RefreshModelListJob() {
+            super(AIUIMessages.model_selector_refresh_title);
+        }
+
+        @NotNull
+        @Override
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+            try {
+                modelCount = refreshModelList(monitor, true);
+            } catch (DBException e) {
+                error = e;
+            }
+            return Status.OK_STATUS;
+        }
+    }
+
+    private void updateRefreshButtonState() {
+        if (refreshButton.isDisposed()) {
+            return;
+        }
+        String missingSetting = findMissingSetting();
+        refreshButton.setEnabled(missingSetting == null);
+        refreshButton.setToolTipText(
+            missingSetting == null ? AIUIMessages.gpt_preference_page_refresh_models : missingSetting);
+    }
+
+    @Nullable
+    private String findMissingSetting() {
+        for (RequiredSetting setting : requiredSettings) {
+            if (!setting.control().isDisposed() && setting.control().getText().isEmpty()) {
+                return setting.messageWhenEmpty();
+            }
+        }
+        return null;
+    }
+
+    private record RequiredSetting(@NotNull Text control, @NotNull String messageWhenEmpty) {
     }
 
     public static class Builder {
@@ -142,6 +255,8 @@ public class ModelSelectorField {
         @NotNull
         private ModelListProvider modelListSupplier;
         private String modelLabel = AIUIMessages.gpt_preference_page_combo_engine;
+
+        private final List<RequiredSetting> requiredSettings = new ArrayList<>();
 
         public Builder withParent(@NotNull Composite parent) {
             this.parent = parent;
@@ -168,45 +283,14 @@ public class ModelSelectorField {
             return this;
         }
 
+        public Builder withRequiredSetting(@NotNull Text control, @NotNull String messageWhenEmpty) {
+            this.requiredSettings.add(new RequiredSetting(control, messageWhenEmpty));
+            return this;
+        }
+
         @NotNull
         public ModelSelectorField build() {
-            Combo combo = UIUtils.createLabelCombo(
-                parent,
-                modelLabel,
-                SWT.DROP_DOWN
-            );
-            combo.setLayoutData(gridData);
-
-            ModelSelectorField modelSelectorField = new ModelSelectorField(combo, modelListSupplier, onModify);
-
-            UIUtils.createPushButton(
-                parent,
-                null,
-                AIUIMessages.gpt_preference_page_refresh_models,
-                UIIcon.REFRESH,
-                SelectionListener.widgetSelectedAdapter((e) -> {
-                    new AbstractJob("Refreshing model list") {
-                        @NotNull
-                        @Override
-                        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                            try {
-                                modelSelectorField.refreshModelList(monitor, true);
-                                return Status.OK_STATUS;
-                            } catch (DBException exception) {
-                                DBWorkbench.getPlatformUI().showError(
-                                    "Error reading model list",
-                                    null,
-                                    exception
-                                );
-
-                                return Status.CANCEL_STATUS;
-                            }
-                        }
-                    }.schedule();
-                })
-            );
-
-            return modelSelectorField;
+            return new ModelSelectorField(this);
         }
     }
 

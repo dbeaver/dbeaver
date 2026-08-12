@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.app.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.util.Geometry;
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -31,32 +29,66 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
+import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     private boolean seenLanguageChangeWarning = false;
 
-    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, boolean canBeSkipped) {
-        super(window, new ProductConfigWizard(canBeSkipped));
+    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, @NotNull ProductConfigWizard.Origin origin) {
+        super(window, new ProductConfigWizard(origin));
     }
 
     public boolean isRestartRequired() {
         return getWizard().isRestartRequired();
     }
 
-    public boolean isCanBeSkipped() {
-        return getWizard().isCanBeSkipped();
+    @NotNull
+    public ProductConfigWizard.Origin getOrigin() {
+        return getWizard().getOrigin();
+    }
+
+    @Override
+    public int open() {
+        beforeOpen();
+        int result = super.open();
+        afterClose(result);
+        return result;
+    }
+
+    private void beforeOpen() {
+        ProductConfigFeatures.WIZARD_SHOWN.use(Map.of(
+            "origin", getOrigin()
+        ));
+    }
+
+    private void afterClose(int result) {
+        var registry = ProductConfigRegistry.getInstance();
+        var features = registry.getFeatures().stream()
+            .collect(Collectors.toMap(
+                ProductConfigFeatureDescriptor::getId,
+                registry::getFeatureEnablement
+            ));
+
+        ProductConfigFeatures.WIZARD_CLOSED.use(Map.of(
+            "origin", getOrigin(),
+            "status", result == IDialogConstants.OK_ID ? "finished" : "canceled",
+            "features", features
+        ));
     }
 
     @NotNull
@@ -68,7 +100,7 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     @NotNull
     @Override
     protected Point getInitialSize() {
-        return new Point(600, 450);
+        return new Point(600, 500);
     }
 
     @Override
@@ -120,14 +152,6 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     }
 
     @Override
-    public void showPage(@Nullable IWizardPage page) {
-        super.showPage(page);
-        if (page instanceof WizardPage page1) {
-            page1.setPageComplete(true);
-        }
-    }
-
-    @Override
     public boolean isHelpAvailable() {
         // Language change only supported when the wizard appears before the application is fully initialized.
         return DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager;
@@ -173,8 +197,8 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         super.createButtonsForButtonBar(parent);
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        if (cancelButton != null) {
-            UIUtils.setControlVisible(cancelButton, isCanBeSkipped());
+        if (cancelButton != null && getOrigin() == ProductConfigWizard.Origin.AUTOMATIC) {
+            cancelButton.setText(ProductConfigMessages.button_exit);
         }
     }
 

@@ -139,7 +139,7 @@ log.error("...", exception);
 Long-running operations always accept a `DBRProgressMonitor`:
 
 ```java
-public void doSomething(DBRProgressMonitor monitor) throws DBException {
+public void doSomething(@NotNull DBRProgressMonitor monitor) throws DBException {
     monitor.beginTask("Loading...", 100);
     try {
         // work
@@ -242,8 +242,8 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 - **`master`** — inactive branch; do not use or commit to it.
 - **Release branches** — exist for each release; never commit to them directly.
 - Pull requests that only fix typos, formatting, or trivial refactoring are generally **not accepted** per the contributor guide.
-- **Naming convention**: issues, commit messages, and PR titles should follow the format `org/repo#issueNumber title` (e.g., `dbeaver/dbeaver#12345 Fix NPE in PostgreSQL dialect`).
-- **Branch naming**: branches should follow the format `org/project#issueNumber-issueTitle` (e.g., `dbeaver/dbeaver#12345-fix-npe-postgresql`).
+- **Naming convention**: issues, commit messages, and PR titles should follow the format `dbeaver/repo#issueNumber title` (e.g., `dbeaver/dbeaver#12345 Fix NPE in PostgreSQL dialect`).
+- **Branch naming**: branches should follow the format `dbeaver/repo#issueNumber-issueTitle` (e.g., `dbeaver/dbeaver#12345-fix-npe-postgresql`).
 - **Linking PRs to issues**: always link a pull request to its corresponding GitHub issue. Use the GitHub UI "Development" link on the PR sidebar when possible; if a direct link is not available, add `Closes org/project#issueNumber` in the PR description (e.g., `Closes dbeaver/dbeaver#12345`).
 - **AI-generated PRs**: large pull requests that are entirely AI-generated are strongly discouraged. Keep AI-assisted contributions focused and small, and ensure each change is understood and reviewed by a human contributor.
 - **AI tools disclosure**: if AI tools were used to generate code, mention it in the PR description. Example: *This PR was generated with AI (GitHub Copilot)*.

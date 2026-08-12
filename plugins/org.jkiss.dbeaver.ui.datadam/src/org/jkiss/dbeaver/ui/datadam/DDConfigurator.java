@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.datadam.DDAIEngine;
 import org.jkiss.dbeaver.model.datadam.DDAIEngineProperties;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
@@ -79,6 +80,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         modelSelectorField = ModelSelectorField.builder()
             .withParent(composite)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
+            .withRequiredSetting(tokenText, AIUIMessages.model_selector_token_required)
             .withModelListSupplier((monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
                 .map(AIModel::name)
                 .toList())
@@ -162,11 +164,6 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
 
     @NotNull
     private List<AIModel> fetchModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (CommonUtils.isEmpty(token)) {
-            // no key yet (e.g. right after selecting the engine) - list nothing instead of surfacing an error
-            return List.of();
-        }
-
         DDAIEngineProperties properties = new DDAIEngineProperties();
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);
