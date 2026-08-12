@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build-java:
-    uses: dbeaver/dbeaver-common/.github/workflows/mvn-package.yml@devel
+    uses: dbeaver/dbeaver-common/.github/workflows/mvn-package.yml@dbeaver/dbeaver-devops#2801-setup-java
     name: Build
     secrets: inherit
     with:
