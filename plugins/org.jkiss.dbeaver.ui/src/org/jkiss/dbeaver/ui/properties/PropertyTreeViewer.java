@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,8 +63,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.text.Collator;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Driver properties control
@@ -675,14 +675,10 @@ public class PropertyTreeViewer extends TreeViewer {
                                 }
                             });
                         }
-                        if (isPropertyChanged(prop) && prop.isEditable()) {
-                            if (prop.propertySource instanceof IPropertySource2 && !prop.propertySource.isPropertyResettable(prop.property.getId())) {
-                                // it is not resettable
-                            } else {
-                                manager.add(new ActionResetProperty(prop, false));
-                                if (!isCustomProperty(prop.property)) {
-                                    manager.add(new ActionResetProperty(prop, true));
-                                }
+                        if (canResetProperty(prop)) {
+                            manager.add(new ActionResetProperty(prop, false));
+                            if (!isCustomProperty(prop.property)) {
+                                manager.add(new ActionResetProperty(prop, true));
                             }
                         }
                     }
@@ -703,6 +699,14 @@ public class PropertyTreeViewer extends TreeViewer {
             getTree().setMenu(menu);
             getTree().addDisposeListener(e -> menuMgr.dispose());
         }
+    }
+
+    private boolean canResetProperty(TreeNode prop) {
+        if (prop.property == null || !prop.isEditable() || !isPropertyChanged(prop)) {
+            return false;
+        }
+        return !(prop.propertySource instanceof IPropertySource2) ||
+            prop.propertySource.isPropertyResettable(prop.property.getId());
     }
 
     private boolean isCustomProperty(DBPPropertyDescriptor property)
@@ -824,6 +828,24 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
         return null;
+    }
+
+    public boolean canResetSelectedProperty() {
+        TreeNode node = getSelectedNode();
+        return node != null && canResetProperty(node);
+    }
+
+    public void resetSelectedPropertyToDefault() {
+        TreeNode node = getSelectedNode();
+        if (node != null && canResetProperty(node)) {
+            new ActionResetProperty(node, true).run();
+        }
+    }
+
+    @Nullable
+    private TreeNode getSelectedNode() {
+        Object element = getStructuredSelection().getFirstElement();
+        return element instanceof TreeNode node ? node : null;
     }
 
     public String getSelectedCategory() {
