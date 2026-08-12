@@ -19,60 +19,101 @@ package org.jkiss.dbeaver.model.sql.semantics.model.dml;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCorrelatedSourceModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Describes DELETE statement
  */
-public class SQLQueryDeleteModel extends SQLQueryDMLStatementModel {
+public class SQLQueryDeleteModel extends SQLQueryModelContent {
 
     @Nullable
     private final SQLQueryValueExpression whereClause;
-    @Nullable 
-    private final SQLQueryRowsCorrelatedSourceModel aliasedTableModel;
+    @Nullable
+    private final SQLQueryRowsSourceModel rowsSource;
+    @Nullable
+    private final SQLQueryLexicalScope sourceScope;
+    @Nullable
+    private final SQLQueryLexicalScope conditionsScope;
+    @Nullable
+    private final SQLQueryLexicalScope tailScope;
+
+    private SQLQueryDeleteModel(
+        @NotNull STMTreeNode syntaxNode,
+        @Nullable SQLQueryRowsSourceModel rowsSource,
+        @Nullable SQLQueryValueExpression whereClause,
+        @Nullable SQLQueryLexicalScope sourceScope,
+        @Nullable SQLQueryLexicalScope conditionsScope,
+        @Nullable SQLQueryLexicalScope tailScope
+    ) {
+        super(syntaxNode.getRealInterval(), syntaxNode, rowsSource);
+        this.whereClause = whereClause;
+        this.rowsSource = rowsSource;
+        this.sourceScope = sourceScope;
+        this.conditionsScope = conditionsScope;
+        this.tailScope = tailScope;
+    }
 
     @NotNull
     public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
         STMTreeNode tableNameNode = node.findFirstChildOfName(STMKnownRuleNames.tableName);
-        SQLQueryRowsTableDataModel tableModel = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode, false);
-
         STMTreeNode aliasNode = node.findFirstChildOfName(STMKnownRuleNames.correlationName);
+        STMTreeNode whereClauseNode = node.findFirstChildOfName(STMKnownRuleNames.whereClause);
+
+        SQLQueryRowsSourceModel rowsSource;
+        SQLQueryLexicalScope sourceScope;
+        try (SQLQueryModelRecognizer.LexicalScopeHolder holder = recognizer.openScope()) {
+            sourceScope = holder.lexicalScope;
+            rowsSource = tableNameNode == null ? null : recognizer.collectTableReference(tableNameNode, false);
+
+            List<STMTreeNode> immediateChildren = node.getChildren();
+            int from = tableNameNode != null ? immediateChildren.get(immediateChildren.indexOf(tableNameNode) - 1).getRealInterval().b + 2
+                : immediateChildren.size() <= 2 ? immediateChildren.get(immediateChildren.size() - 1).getRealInterval().b + 2
+                : 0;
+            int to = tableNameNode != null ? tableNameNode.getRealInterval().b
+                : aliasNode != null ? aliasNode.getRealInterval().a - 1
+                : Integer.MAX_VALUE;
+            sourceScope.setInterval(Interval.of(from, to));
+        }
+
         SQLQuerySymbolEntry alias = aliasNode == null ? null : recognizer.collectIdentifier(aliasNode, null);
 
-        STMTreeNode whereClauseNode = node.findFirstChildOfName(STMKnownRuleNames.whereClause);
-        SQLQueryValueExpression whereClauseExpr = whereClauseNode == null ? null : recognizer.collectValueExpression(whereClauseNode, null);
-
-        return new SQLQueryDeleteModel(node, tableModel, alias, whereClauseExpr);
-    }
-
-    private SQLQueryDeleteModel(
-        @NotNull STMTreeNode syntaxNode,
-        @Nullable SQLQueryRowsTableDataModel tableModel,
-        @Nullable SQLQuerySymbolEntry alias,
-        @Nullable SQLQueryValueExpression whereClause
-    ) {
-        super(syntaxNode, tableModel);
-        this.whereClause = whereClause;
-        
-        if (alias != null && tableModel != null) {
-            Interval correlatedRegion = Interval.of(tableModel.getInterval().a, alias.getInterval().b);
-            this.aliasedTableModel = new SQLQueryRowsCorrelatedSourceModel(syntaxNode, tableModel, alias, Collections.emptyList());
-        } else {
-            this.aliasedTableModel  = null;
+        if (alias != null && rowsSource != null) {
+            Interval correlatedRegion = Interval.of(rowsSource.getInterval().a, alias.getInterval().b);
+            rowsSource = new SQLQueryRowsCorrelatedSourceModel(node, rowsSource, alias, Collections.emptyList());
         }
+
+        SQLQueryLexicalScope tailScope;
+        SQLQueryLexicalScope conditionsScope;
+        SQLQueryValueExpression whereClauseExpr;
+        if (whereClauseNode != null) {
+            try (SQLQueryModelRecognizer.LexicalScopeHolder holder = recognizer.openScope()) {
+                conditionsScope = holder.lexicalScope;
+                whereClauseExpr = recognizer.collectValueExpression(whereClauseNode, conditionsScope);
+            }
+            STMTreeNode lastConditionKwNode =  whereClauseNode.findFirstNonErrorChild();
+            int from = lastConditionKwNode != null ? lastConditionKwNode.getRealInterval().b + 2 : whereClauseNode.getRealInterval().a;
+            int to = Integer.MAX_VALUE;
+            conditionsScope.setInterval(Interval.of(from, to));
+            tailScope = conditionsScope;
+        } else {
+            whereClauseExpr = null;
+            conditionsScope = null;
+            tailScope = sourceScope;
+        }
+
+        return new SQLQueryDeleteModel(node, rowsSource, whereClauseExpr, sourceScope, conditionsScope, tailScope);
     }
 
     @Nullable
@@ -81,15 +122,20 @@ public class SQLQueryDeleteModel extends SQLQueryDMLStatementModel {
     }
     
     @Nullable
-    public SQLQueryRowsCorrelatedSourceModel getAliasedTableModel() {
-        return this.aliasedTableModel;
+    public SQLQueryRowsSourceModel getRowsSource() {
+        return this.rowsSource;
     }
 
     @Override
-    protected void resolveRowsReferencesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        if (this.aliasedTableModel != null) {
-            context = this.aliasedTableModel.resolveRowSources(context, statistics);
+    public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.rowsSource != null) {
+            context = this.rowsSource.resolveRowSources(context, statistics);
         }
+
+        if (this.sourceScope != null) {
+            this.sourceScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(context));
+        }
+
         if (this.whereClause != null) {
             this.whereClause.resolveRowSources(context, statistics);
         }
@@ -97,11 +143,24 @@ public class SQLQueryDeleteModel extends SQLQueryDMLStatementModel {
 
     @Override
     public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        if (this.aliasedTableModel != null) {
-            this.aliasedTableModel.resolveValueRelations(context, statistics);
+        SQLQueryRowsDataContext rowsContext;
+        if (this.rowsSource != null) {
+            this.rowsSource.resolveValueRelations(context, statistics);
+            rowsContext = this.rowsSource.getRowsDataContext();
+        } else {
+            rowsContext = context;
         }
+
         if (this.whereClause != null) {
-            this.whereClause.resolveValueRelations(context, statistics);
+            this.whereClause.resolveValueRelations(rowsContext, statistics);
+        }
+
+        if (this.conditionsScope != null) {
+            this.conditionsScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(rowsContext));
+        }
+
+        if (this.tailScope != null) {
+            this.setTailOrigin(this.tailScope.getSymbolsOrigin());
         }
     }
 

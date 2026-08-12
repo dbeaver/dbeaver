@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.tracking.DDTrackingInitializer" order="100"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.eclipse.ui.preferencePages.Workbench"
+              id="org.jkiss.dbeaver.preferences.synchronization"
+              class="org.jkiss.dbeaver.ui.tracking.DDSyncPreferencePage"
+              name="Synchronization"/>
+    </extension>
+
+</plugin>

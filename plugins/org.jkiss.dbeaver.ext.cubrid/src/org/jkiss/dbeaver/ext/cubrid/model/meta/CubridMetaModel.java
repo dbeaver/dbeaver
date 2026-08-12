@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.cubrid.model.plan.CubridQueryPlanner;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -51,6 +52,14 @@ import java.util.Map;
 
 public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
     private static final Log log = Log.getLog(CubridMetaModel.class);
+
+    @NotNull
+    @Override
+    public GenericDataSource createDataSourceImpl(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBPDataSourceContainer container) throws DBException {
+        return new CubridDataSource(monitor, container, this);
+    }
 
     @Nullable
     public String getTableOrViewName(@Nullable GenericTableBase base) {

@@ -495,7 +495,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
     }
 
     @Override
-    public boolean performSearch(SearchType searchType) {
+    public boolean performSearch(@NotNull SearchType searchType) {
         return performSearch(searchType, true);
     }
 
@@ -511,7 +511,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         if (searchType == SearchType.NONE && isSetFocusToSearchText) {
             getProgressControl().searchText.setFocus();
         }
-        if (!CommonUtils.isEmpty(getProgressControl().curSearchText)) {
+        if (!CommonUtils.isEmpty(getProgressControl().curSearchText) && getSearchRunner() != null) {
             int options = 0;
             if (searchType == SearchType.PREVIOUS) {
                 options |= ISearchExecutor.SEARCH_PREVIOUS;
@@ -566,7 +566,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         final int totalWork;
         int progress;
 
-        private TaskInfo(String name, int totalWork) {
+        private TaskInfo(@NotNull String name, int totalWork) {
             this.name = name;
             this.totalWork = totalWork;
         }
@@ -622,6 +622,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
             };
         }
 
+        @Nullable
         private TaskInfo getCurTaskInfo() {
             for (int i = tasksRunning.size() - 1; i >= 0; i--) {
                 if (tasksRunning.get(i).totalWork > 1) {
@@ -678,7 +679,5 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 getProgressControl().hideControls(true);
             }
         }
-
     }
-
 }

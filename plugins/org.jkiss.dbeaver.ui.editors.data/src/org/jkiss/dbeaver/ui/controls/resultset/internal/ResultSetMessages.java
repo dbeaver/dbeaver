@@ -25,6 +25,7 @@ public class ResultSetMessages extends NLS {
     public static String confirm_modifying_query_title;
 
     public static String controls_resultset_filter_button_reset;
+    public static String controls_resultset_filter_saved_filter_reset_message;
     public static String controls_resultset_filter_column_name;
     public static String controls_resultset_filter_column_visible;
     public static String controls_resultset_filter_column_pinned;
@@ -66,6 +67,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_show_selected_row_count;
     public static String controls_resultset_viewer_action_show_selected_column_count;
     public static String controls_resultset_viewer_action_show_selected_cell_count;
+    public static String controls_resultset_viewer_action_show_filter_panel;
     public static String controls_resultset_viewer_action_open_value_editor_column_readonly;
     public static String controls_resultset_viewer_action_edit;
     public static String controls_resultset_viewer_action_order_filter;
@@ -512,6 +514,10 @@ public class ResultSetMessages extends NLS {
     public static String reference_value_editor_current_pagination_value;
     public static String reference_value_editor_define_description_value;
     public static String reference_value_editor_search_hint_value;
+
+    public static String find_and_replace_overlay_label;
+    public static String find_and_replace_overlay_tooltip;
+    public static String find_and_replace_find_all_tooltip;
 
     static {
         // initialize resource bundle

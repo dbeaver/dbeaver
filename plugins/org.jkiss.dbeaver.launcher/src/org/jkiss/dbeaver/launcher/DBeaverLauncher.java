@@ -947,8 +947,14 @@ public class DBeaverLauncher {
     }
 
     private Path detectDefaultWorkspaceLocation(String[] args, Path dbeaverDataDir) {
+        String customWorkspacePath = System.getenv(Constants.ENV_WORKSPACE_PATH);
+        if (customWorkspacePath != null && !customWorkspacePath.isBlank()) {
+            // Custom location
+            return Path.of(customWorkspacePath);
+        }
+
+
         String productName = findProductIdInArgs(args);
-        String customWorkspacePath = null;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if (ARG_DATA.equals(arg)) {
@@ -1919,6 +1925,12 @@ public class DBeaverLauncher {
     public int run(String[] args) {
         int result;
         try {
+            if (DelegateMainLauncher.canHandle(args)) {
+                commands = args;
+                String[] passThruArgs = processCommandLine(Arrays.copyOf(args, args.length));
+                DelegateMainLauncher.run(passThruArgs);
+                return 0;
+            }
             basicRun(args);
             String exitCode = System.getProperty(PROP_EXITCODE);
             try {
@@ -2325,6 +2337,12 @@ public class DBeaverLauncher {
     }
 
     public static String getWorkingDirectory(String defaultWorkspaceLocation) {
+        String customDataPath = System.getenv(Constants.ENV_DATA_PATH);
+        if (customDataPath != null && !customDataPath.isBlank()) {
+            // Custom location
+            return Path.of(customDataPath).resolve(defaultWorkspaceLocation).toAbsolutePath().toString();
+        }
+
         String osName = (System.getProperty("os.name")).toUpperCase();
         String workingDirectory;
         if (osName.contains("WIN")) {
@@ -2798,15 +2816,6 @@ public class DBeaverLauncher {
                 }
             });
         }
-        if (showSplash || endSplash != null) {
-            // Register the endSplashHandler to be run at VM shutdown. This hook will be
-            // removed once the splash screen has been taken down.
-            try {
-                Runtime.getRuntime().addShutdownHook(splashHandler);
-            } catch (Throwable ex) {
-                // Best effort to register the handler
-            }
-        }
 
         // if -endsplash is specified, use it and ignore any -showsplash command
         if (endSplash != null) {
@@ -2847,14 +2856,6 @@ public class DBeaverLauncher {
 
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
-
-        if (splashHandler != null) {
-            try {
-                Runtime.getRuntime().removeShutdownHook(splashHandler);
-            } catch (Throwable e) {
-                // OK to ignore this, happens when the VM is already shutting down
-            }
-        }
     }
 
     /*

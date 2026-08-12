@@ -3,12 +3,13 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Data GIS UI
 Bundle-SymbolicName: org.jkiss.dbeaver.data.gis.view;singleton:=true
-Bundle-Version: 1.0.175.qualifier
-Bundle-Release-Date: 20260601
+Bundle-Version: 1.0.181.qualifier
+Bundle-Release-Date: 20260831
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator
-Require-Bundle: org.jkiss.dbeaver.data.gis,
+Require-Bundle: org.eclipse.e4.ui.css.core,
+ org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data,

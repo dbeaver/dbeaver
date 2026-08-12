@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ import java.util.regex.Pattern;
 
 public class LogOutputStream extends OutputStream {
 
-    public static final long DEFAULT_MAX_LOG_SIZE = 1024 * 1024 * 10; // 10Mb    
-    public static final int DEFAULT_MAX_LOG_FILES_COUNT = 3;
+    public static final long DEFAULT_MAX_LOG_SIZE = 1024 * 1024 * 10; // 10 MiB
+    public static final int DEFAULT_MAX_LOG_FILES_COUNT = 7;
     
     public static final String LOGS_MAX_FILE_SIZE = "logs.files.output.maxSize";
     public static final String LOGS_MAX_FILES_COUNT = "logs.files.output.maxCount";
@@ -56,7 +56,7 @@ public class LogOutputStream extends OutputStream {
     private final String logFileName;
     private final String logFileNameExtension;
     private final Predicate<String> logFileNamePattern;
-    
+
     public LogOutputStream(@NotNull File debugLogFile) throws IOException {
         if (debugLogFile.exists() && !debugLogFile.isFile()) {
             throw new IOException(
@@ -130,7 +130,7 @@ public class LogOutputStream extends OutputStream {
         }
     }
 
-    private OutputStream getLogFileWriter() throws IOException {
+    private synchronized OutputStream getLogFileWriter() throws IOException {
         if (this.currentLogFileOutput == null || this.rotateCurrentLogFile(false)) {
             this.currentLogFileOutput = new FileOutputStream(this.currentLogFile, true);
         }

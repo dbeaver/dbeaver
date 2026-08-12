@@ -4,7 +4,7 @@ Bundle-Vendor: DBeaver Corp
 Bundle-Activator: org.jkiss.dbeaver.model.ai.internal.AIActivator
 Bundle-Name: DBeaver AI Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.ai;singleton:=true
-Bundle-Version: 2.0.23.qualifier
+Bundle-Version: 2.0.29.qualifier
 Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.commands,
  org.jkiss.dbeaver.model.ai.engine,
@@ -12,12 +12,15 @@ Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.engine.copilot.dto,
  org.jkiss.dbeaver.model.ai.engine.openai,
  org.jkiss.dbeaver.model.ai.engine.openai.dto,
+ org.jkiss.dbeaver.model.ai.functions,
  org.jkiss.dbeaver.model.ai.impl,
  org.jkiss.dbeaver.model.ai.internal,
  org.jkiss.dbeaver.model.ai.prompt,
+ org.jkiss.dbeaver.model.ai.qm,
+ org.jkiss.dbeaver.model.ai.quota,
  org.jkiss.dbeaver.model.ai.registry,
  org.jkiss.dbeaver.model.ai.utils
-Bundle-Release-Date: 20260601
+Bundle-Release-Date: 20260831
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: org.jkiss.dbeaver.model.ai

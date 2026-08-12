@@ -46,6 +46,8 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
 
     public static final ClickhouseArrayValueHandler INSTANCE = new ClickhouseArrayValueHandler();
     public static final String ARRAY_DELIMITER = ",";
+    public static final String ARRAY_PREFIX = "[";
+    public static final String ARRAY_SUFFIX = "]";
     public static final Set<Character> QUOTED_CHARS = Set.of('[', ']', '"', ' ', '\\');
 
     @Override
@@ -70,6 +72,11 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         @NotNull DBSTypedObject type,
         int index
     ) throws DBCException, SQLException {
+        final String typeName = type.getTypeName();
+        if (typeName.startsWith("Map")) {
+            return ClickhouseStructValueHandler.INSTANCE.getValueFromObject(session, type, resultSet.getObject(index), false, false);
+        }
+
         // Remove after https://github.com/ClickHouse/clickhouse-java/issues/2711 is fixed
         try {
             return super.fetchColumnValue(session, resultSet, type, index);
@@ -97,6 +104,10 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         boolean copy,
         boolean validateValue
     ) throws DBCException {
+        final String typeName = type.getTypeName();
+        if (typeName.startsWith("Map")) {
+            return ClickhouseStructValueHandler.INSTANCE.getValueFromObject(session, type, object, copy, validateValue);
+        }
         if (object == null) {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
@@ -112,6 +123,8 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         } else if (object instanceof Array array && itemType.getName().startsWith("Tuple")) {
             // Tuples are represented as Object[] and need to be handled separately to avoid confusion with nested arrays
             return makeCollectionFromTupleArray(session, itemType, array);
+        } else if (object instanceof String string && string.startsWith(ARRAY_PREFIX) && string.endsWith(ARRAY_SUFFIX)) {
+            return JDBCCollection.makeCollectionFromString((JDBCSession) session, string);
         }
 
         return super.getValueFromObject(session, type, object, copy, validateValue);
@@ -166,7 +179,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         @NotNull DBDDisplayFormat format
     ) {
         if (!DBUtils.isNullValue(value) && value instanceof JDBCCollection collection) {
-            final StringJoiner output = new StringJoiner(ARRAY_DELIMITER, "[", "]");
+            final StringJoiner output = new StringJoiner(ARRAY_DELIMITER, ARRAY_PREFIX, ARRAY_SUFFIX);
 
             for (int i = 0; i < collection.getItemCount(); i++) {
                 final Object item = collection.getItem(i);

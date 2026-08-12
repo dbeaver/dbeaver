@@ -25,9 +25,9 @@ You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Earl
 
 ## Running
 
-Just run an installer (or unzip an archive) and run `dbeaver`.  
+Just run an installer and then click on app icon. Or unzip an archive and run `dbeaver` from command line.  
 
-Note: DBeaver needs Java to run. <a href="https://adoptium.net/temurin/releases/?package=jre" target="_blank">OpenJDK 21</a> is included in all DBeaver distributions.
+Note: DBeaver needs Java to run. <a href="https://adoptium.net/temurin/releases/?package=jre" target="_blank">OpenJDK 25</a> is included in all DBeaver distributions.
 You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
 
 ## Documentation
@@ -54,7 +54,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 ### Community version
 
 Out of the box DBeaver supports following database drivers: 
-MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill, Presto, Trino, Phoenix, Exasol, Informix, Teradata, Vertica, Netezza, Firebird, Derby, H2, H2GIS, WMI, Snowflake, Greenplum, Redshift, Athena, SAP HANA, MaxDB, NuoDB, MS Access, SQLite, CSV, DBF, Firebird, TimescaleDB, Yellowbrick, CockroachDB, OrientDB, MonetDB, Google BigQuery, Google Spanner, Apache Hive/Impala/Spark, Apache Ignite, MapD, Azure SQL, CrateDB, Elasticsearch, Ocient, Ingres, OmniSci, Yugabyte, IRIS, Data Virtuality, Denodo, Virtuoso, Machbase, DuckDB, Babelfish, OceanBase, Salesforce, EnterpriseDB, Apache Druid, Apache Kylin, Databricks, OpenSearch, TiDB, TDEngine, Materialize, JDBCX, Dameng, Altibase, StarRocks, CUBRID, GaussDB, DolphinDB, LibSQL, GBase 8s, Databend, Cloudberry, Teiid, Kingbase.
+MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill, Presto, Trino, Phoenix, Exasol, Informix, Teradata, Vertica, Netezza, Firebird, Derby, H2, H2GIS, WMI, Snowflake, Greenplum, Redshift, Athena, SAP HANA, MaxDB, NuoDB, MS Access, SQLite, CSV, DBF, Firebird, TimescaleDB, Yellowbrick, CockroachDB, OrientDB, MonetDB, Google BigQuery, Google Spanner, Apache Hive/Impala/Spark, Apache Ignite, MapD, Azure SQL, CrateDB, Elasticsearch, Ocient, Ingres, OmniSci, Yugabyte, IRIS, Data Virtuality, Denodo, Virtuoso, Machbase, DuckDB, Babelfish, OceanBase, Salesforce, EnterpriseDB, Apache Druid, Apache Kylin, Databricks, OpenSearch, TiDB, TDEngine, Materialize, JDBCX, Dameng, Altibase, StarRocks, CUBRID, GaussDB, DolphinDB, LibSQL, GBase 8s, Databend, Cloudberry, Teiid, Kingbase, GreptimeDB.
 
 ### PRO versions
 
@@ -87,8 +87,8 @@ Thank you!
 
 ---------
 
-<a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
+Our other open-source products:
 
-<a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> is a web-based database management tool built on the DBeaver platform. It brings the capabilities of DBeaver to the web interface, enabling database management from any device with an internet connection and eliminating the need for local installation.   
-Supporting any database, CloudBeaver incorporates most of DBeaver's features and includes advanced access management for secure collaboration.    
-Designed with a user-friendly interface, CloudBeaver simplifies complex database operations and is suitable for both individual developers and organizations. Its scalable architecture accommodates various needs, making it a convenient solution for managing databases anytime and anywhere through web-based accessibility.
+- <a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> - web-based database management tool built on the DBeaver platform.<br/>Runs as server (docker) and provides rich web interface (SPA).  
+- <a href="https://github.com/dbeaver/dbvr">dbvr</a> - CLI database management tool. Useful in CI/CD pipelines and all sort of automations. 
+

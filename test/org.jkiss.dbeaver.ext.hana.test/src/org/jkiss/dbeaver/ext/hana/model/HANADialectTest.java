@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,24 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class HANADialectTest extends DBeaverUnitTest {
     @Test
     public void quoteStatusStringTest() {
         final HANASQLDialect dialect = new HANASQLDialect();
 
-        Assert.assertFalse(dialect.mustBeQuoted("test", false));
-        Assert.assertFalse(dialect.mustBeQuoted("testNAME", false));
-        Assert.assertFalse(dialect.mustBeQuoted("Test", false));
-        Assert.assertFalse(dialect.mustBeQuoted("TEST", false));
-        Assert.assertTrue(dialect.mustBeQuoted("тест", false));
-        Assert.assertTrue(dialect.mustBeQuoted("  test  ", false));
-        Assert.assertTrue(dialect.mustBeQuoted("њен", false));
-        Assert.assertTrue(dialect.mustBeQuoted("भिडियोहरू", false));
-        Assert.assertTrue(dialect.mustBeQuoted("名错误", false));
-        Assert.assertTrue(dialect.mustBeQuoted("თახვი", false));
-        Assert.assertTrue(dialect.mustBeQuoted("+%$*@#", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("test", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("testNAME", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("Test", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("TEST", false));
+        Assertions.assertTrue(dialect.mustBeQuoted("тест", false));
+        Assertions.assertTrue(dialect.mustBeQuoted("  test  ", false));
+        Assertions.assertTrue(dialect.mustBeQuoted("њен", false));
+        Assertions.assertTrue(dialect.mustBeQuoted("भिडियोहरू", false));
+        Assertions.assertTrue(dialect.mustBeQuoted("名错误", false));
+        Assertions.assertTrue(dialect.mustBeQuoted("თახვი", false));
+        Assertions.assertTrue(dialect.mustBeQuoted("+%$*@#", false));
     }
 }

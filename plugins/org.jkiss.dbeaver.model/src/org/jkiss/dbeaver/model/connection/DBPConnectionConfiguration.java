@@ -92,8 +92,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         });
 
     public static final String PROP_SECRET_SUBJECT_ID = "shared.credentials.default.subject";
+    public static final boolean CLOSE_IDLE_CONNECTION_DEFAULT = true;
 
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
+    public static final DBPConnectionEventType[] EMPTY_EVENTS = new DBPConnectionEventType[0];
 
     private String hostName;
     private String hostPort;
@@ -113,14 +115,15 @@ public class DBPConnectionConfiguration implements DBPObject {
     private final Map<String, String> providerProperties;
     @NotNull
     private final Map<String, Object> runtimeAttributes;
+    @Nullable
+    private Map<DBPConnectionEventType, DBRShellCommand> events;
+    private List<DBWHandlerConfiguration> handlers;
     @NotNull
-    private final Map<DBPConnectionEventType, DBRShellCommand> events;
-    @NotNull
-    private final List<DBWHandlerConfiguration> handlers;
     private final DBPConnectionBootstrap bootstrap;
+    @NotNull
     private DBPConnectionType connectionType;
     private DBPDriverConfigurationType configurationType;
-    private String connectionColor;
+    private transient String connectionColor;
     private int keepAliveInterval;
     private boolean closeIdleConnection;
     private int closeIdleInterval;
@@ -133,12 +136,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.configurationType = DBPDriverConfigurationType.MANUAL;
         this.properties = new LinkedHashMap<>();
         this.providerProperties = new LinkedHashMap<>();
-        this.events = new LinkedHashMap<>();
         this.runtimeAttributes = new HashMap<>();
-        this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
-        this.closeIdleConnection = true;
+        this.closeIdleConnection = CLOSE_IDLE_CONNECTION_DEFAULT;
         this.closeIdleInterval = 0;
     }
 
@@ -160,13 +161,17 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);
         this.runtimeAttributes = info.runtimeAttributes;
-        this.events = new LinkedHashMap<>(info.events.size());
-        for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
-            this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
+        if (info.events != null) {
+            this.events = new LinkedHashMap<>(info.events.size());
+            for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
+                this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
+            }
         }
-        this.handlers = new ArrayList<>(info.handlers.size());
-        for (DBWHandlerConfiguration handler : info.handlers) {
-            this.handlers.add(new DBWHandlerConfiguration(handler));
+        if (info.handlers != null) {
+            this.handlers = new ArrayList<>(info.handlers.size());
+            for (DBWHandlerConfiguration handler : info.handlers) {
+                this.handlers.add(new DBWHandlerConfiguration(handler));
+            }
         }
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
         this.connectionColor = info.connectionColor;
@@ -175,11 +180,12 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.closeIdleInterval = info.closeIdleInterval;
     }
 
+    @Nullable
     public String getClientHomeId() {
         return clientHomeId;
     }
 
-    public void setClientHomeId(String clientHomeId) {
+    public void setClientHomeId(@Nullable String clientHomeId) {
         this.clientHomeId = clientHomeId;
     }
 
@@ -188,50 +194,56 @@ public class DBPConnectionConfiguration implements DBPObject {
         return hostName;
     }
 
-    public void setHostName(String hostName) {
+    public void setHostName(@Nullable String hostName) {
         this.hostName = hostName;
     }
 
+    @Nullable
     public String getHostPort() {
         return hostPort;
     }
 
-    public void setHostPort(String hostPort) {
+    public void setHostPort(@Nullable String hostPort) {
         this.hostPort = hostPort;
     }
 
+    @Nullable
     public String getServerName() {
         return serverName;
     }
 
-    public void setServerName(String serverName) {
+    public void setServerName(@Nullable String serverName) {
         this.serverName = serverName;
     }
 
+    @Nullable
     public String getDatabaseName() {
         return databaseName;
     }
 
-    public void setDatabaseName(String databaseName) {
+    public void setDatabaseName(@Nullable String databaseName) {
         this.databaseName = databaseName;
     }
 
+    @Nullable
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public void setUrl(@Nullable String url) {
         this.url = url;
     }
 
+    @Nullable
     public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName) {
+    public void setUserName(@Nullable String userName) {
         this.userName = userName;
     }
 
+    @Nullable
     public String getUserPassword() {
         return userPassword;
     }
@@ -243,19 +255,20 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Properties (connection properties, usually used by driver)
 
-    public boolean hasProperty(String name) {
+    public boolean hasProperty(@NotNull String name) {
         return properties.containsKey(name);
     }
 
-    public String getProperty(String name) {
+    @Nullable
+    public String getProperty(@NotNull String name) {
         return properties.get(name);
     }
 
-    public void setProperty(String name, String value) {
+    public void setProperty(@NotNull String name, @Nullable String value) {
         properties.put(name, value);
     }
 
-    public void removeProperty(String name) {
+    public void removeProperty(@NotNull String name) {
         properties.remove(name);
     }
     
@@ -272,15 +285,16 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Provider properties (extra configuration parameters)
 
-    public String getProviderProperty(String name) {
+    @Nullable
+    public String getProviderProperty(@NotNull String name) {
         return providerProperties.get(name);
     }
 
-    public void setProviderProperty(String name, String value) {
+    public void setProviderProperty(@NotNull String name, @Nullable String value) {
         providerProperties.put(name, value);
     }
 
-    public void removeProviderProperty(String name) {
+    public void removeProviderProperty(@NotNull String name) {
         providerProperties.remove(name);
     }
 
@@ -297,11 +311,12 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Runtime attributes
 
-    public Object getRuntimeAttribute(String name) {
+    @Nullable
+    public Object getRuntimeAttribute(@NotNull String name) {
         return runtimeAttributes.get(name);
     }
 
-    public void setRuntimeAttribute(String name, Object value) {
+    public void setRuntimeAttribute(@NotNull String name, @Nullable Object value) {
         runtimeAttributes.put(name, value);
     }
 
@@ -317,64 +332,82 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Events
 
-    public DBRShellCommand getEvent(DBPConnectionEventType eventType) {
-        return events.get(eventType);
+    @Nullable
+    public synchronized DBRShellCommand getEvent(@NotNull DBPConnectionEventType eventType) {
+        return events == null ? null : events.get(eventType);
     }
 
-    public void setEvent(DBPConnectionEventType eventType, DBRShellCommand command) {
-        if (command == null) {
-            events.remove(eventType);
-        } else {
-            events.put(eventType, command);
+    public synchronized void setEvent(@NotNull DBPConnectionEventType eventType, @Nullable DBRShellCommand command) {
+        if (events != null) {
+            if (command == null) {
+                events.remove(eventType);
+            } else {
+                events.put(eventType, command);
+            }
         }
     }
 
-    public DBPConnectionEventType[] getDeclaredEvents() {
+    public void clearEvents() {
+        if (events != null) {
+            events.clear();
+        }
+    }
+
+    @NotNull
+    public synchronized DBPConnectionEventType[] getDeclaredEvents() {
+        if (events == null) {
+            return EMPTY_EVENTS;
+        }
         Set<DBPConnectionEventType> eventTypes = events.keySet();
-        return eventTypes.toArray(new DBPConnectionEventType[0]);
+        return eventTypes.toArray(EMPTY_EVENTS);
     }
 
     ////////////////////////////////////////////////////
     // Network handlers
 
     @NotNull
-    public List<DBWHandlerConfiguration> getHandlers() {
+    public synchronized List<DBWHandlerConfiguration> getHandlers() {
+        if (handlers == null) {
+            return Collections.emptyList();
+        }
         return handlers;
     }
 
-    public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers) {
-        synchronized (this.handlers) {
+    public synchronized void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers) {
+        if (this.handlers != null) {
             this.handlers.clear();
             this.handlers.addAll(handlers);
         }
     }
 
-    public void updateHandler(@NotNull DBWHandlerConfiguration handler) {
-        synchronized (handlers) {
+    public synchronized void updateHandler(@NotNull DBWHandlerConfiguration handler) {
+        if (this.handlers != null) {
             for (int i = 0; i < handlers.size(); i++) {
                 if (handlers.get(i).getId().equals(handler.getId())) {
                     handlers.set(i, handler);
                     return;
                 }
             }
-            this.handlers.add(handler);
+        } else {
+            this.handlers = new ArrayList<>();
         }
+        this.handlers.add(handler);
     }
 
     @Nullable
-    public DBWHandlerConfiguration getHandler(@NotNull String id) {
-        synchronized (handlers) {
+    public synchronized DBWHandlerConfiguration getHandler(@NotNull String id) {
+        if (handlers != null) {
             for (DBWHandlerConfiguration cfg : handlers) {
                 if (cfg.getId().equals(id)) {
                     return cfg;
                 }
             }
-            return null;
         }
+        return null;
     }
 
-    public void removeHandler(@NotNull String id) {
-        synchronized (handlers) {
+    public synchronized void removeHandler(@NotNull String id) {
+        if (handlers != null) {
             handlers.removeIf(handler -> handler.getId().equals(id));
         }
     }
@@ -386,11 +419,12 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Misc
 
+    @NotNull
     public DBPConnectionType getConnectionType() {
         return connectionType;
     }
 
-    public void setConnectionType(DBPConnectionType connectionType) {
+    public void setConnectionType(@NotNull DBPConnectionType connectionType) {
         this.connectionType = connectionType;
     }
 
@@ -408,11 +442,12 @@ public class DBPConnectionConfiguration implements DBPObject {
      *
      * @return RGB color or null
      */
+    @Nullable
     public String getConnectionColor() {
         return connectionColor;
     }
 
-    public void setConnectionColor(String color) {
+    public void setConnectionColor(@Nullable String color) {
         this.connectionColor = color;
     }
 
@@ -476,7 +511,7 @@ public class DBPConnectionConfiguration implements DBPObject {
      *
      * @param profile the network profile
      */
-    public void setConfigProfile(@Nullable DBWNetworkProfile profile) {
+    public synchronized void setConfigProfile(@Nullable DBWNetworkProfile profile) {
         if (profile == null) {
             configProfileSource = null;
             configProfileName = null;
@@ -484,13 +519,13 @@ public class DBPConnectionConfiguration implements DBPObject {
             configProfileSource = profile.getProfileSource();
             configProfileName = profile.getProfileId();
 
-            synchronized (handlers) {
+            if (handlers != null) {
                 handlers.clear();
+            }
 
-                for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
-                    if (handlerConfig.isEnabled()) {
-                        updateHandler(new DBWHandlerConfiguration(handlerConfig));
-                    }
+            for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
+                if (handlerConfig.isEnabled()) {
+                    updateHandler(new DBWHandlerConfiguration(handlerConfig));
                 }
             }
         }
@@ -527,22 +562,29 @@ public class DBPConnectionConfiguration implements DBPObject {
                 log.error("Authentication model '" + authModelId + "' not found. Use default.");
             }
         }
-        return getAuthModelDescriptor(AuthModelDatabaseNative.ID);
+        DBPAuthModelDescriptor defModel = getAuthModelDescriptor(AuthModelDatabaseNative.ID);
+        assert defModel != null;
+        return defModel;
     }
 
-    private DBPAuthModelDescriptor getAuthModelDescriptor(String id) {
+    @Nullable
+    private DBPAuthModelDescriptor getAuthModelDescriptor(@NotNull String id) {
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(id);
     }
 
-    public void setAuthModelId(String authModelId) {
+    public void setAuthModelId(@NotNull String authModelId) {
         this.authModelId = authModelId;
     }
 
-    public String getAuthProperty(String name) {
+    public String getAuthProperty(@NotNull String name) {
         return authProperties == null ? null : authProperties.get(name);
     }
 
+    @NotNull
     public Map<String, String> getAuthProperties() {
+        if (authProperties == null) {
+            return Collections.emptyMap();
+        }
         return authProperties;
     }
 
@@ -575,10 +617,9 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof DBPConnectionConfiguration)) {
+        if (!(obj instanceof DBPConnectionConfiguration source)) {
             return false;
         }
-        DBPConnectionConfiguration source = (DBPConnectionConfiguration) obj;
         return
             CommonUtils.equalOrEmptyStrings(this.hostName, source.hostName) &&
                 CommonUtils.equalOrEmptyStrings(this.hostPort, source.hostPort) &&
@@ -616,9 +657,13 @@ public class DBPConnectionConfiguration implements DBPObject {
         resolveDynamicVariablesInMap(this.properties, variableResolver);
         resolveDynamicVariablesInMap(this.authProperties, variableResolver);
         resolveDynamicVariablesInMap(this.providerProperties, variableResolver);
-        for (DBWHandlerConfiguration handler : handlers) {
-            if (handler.isEnabled()) {
-                handler.resolveDynamicVariables(variableResolver);
+        if (handlers != null) {
+            synchronized (this) {
+                for (DBWHandlerConfiguration handler : handlers) {
+                    if (handler.isEnabled()) {
+                        handler.resolveDynamicVariables(variableResolver);
+                    }
+                }
             }
         }
         bootstrap.resolveDynamicVariables(variableResolver);

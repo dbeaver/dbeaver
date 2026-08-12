@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,22 @@
  */
 package org.jkiss.utils;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class IOUtilsTest {
 
     @Test
     public void testLocalPaths() {
-        Assert.assertTrue(IOUtils.isLocalFile("c:/absolute/path"));
-        Assert.assertTrue(IOUtils.isLocalFile("c:\\absolute\\path"));
-        Assert.assertTrue(IOUtils.isLocalFile("/absolute/path"));
-        Assert.assertTrue(IOUtils.isLocalFile("\\absolute\\path"));
-        Assert.assertTrue(IOUtils.isLocalFile("file:/some/path"));
-        Assert.assertTrue(IOUtils.isLocalFile("file://some/path"));
-        Assert.assertTrue(IOUtils.isLocalFile("file:some/path"));
-        Assert.assertFalse(IOUtils.isLocalFile("s3:/some/path"));
-        Assert.assertFalse(IOUtils.isLocalFile("s3://some/path"));
-        Assert.assertFalse(IOUtils.isLocalFile("gs://some/path"));
+        Assertions.assertTrue(IOUtils.isLocalFile("c:/absolute/path"));
+        Assertions.assertTrue(IOUtils.isLocalFile("c:\\absolute\\path"));
+        Assertions.assertTrue(IOUtils.isLocalFile("/absolute/path"));
+        Assertions.assertTrue(IOUtils.isLocalFile("\\absolute\\path"));
+        Assertions.assertTrue(IOUtils.isLocalFile("file:/some/path"));
+        Assertions.assertTrue(IOUtils.isLocalFile("file://some/path"));
+        Assertions.assertTrue(IOUtils.isLocalFile("file:some/path"));
+        Assertions.assertFalse(IOUtils.isLocalFile("s3:/some/path"));
+        Assertions.assertFalse(IOUtils.isLocalFile("s3://some/path"));
+        Assertions.assertFalse(IOUtils.isLocalFile("gs://some/path"));
     }
 }

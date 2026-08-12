@@ -23,21 +23,22 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * A preference page that shows network profiles for all projects.
@@ -48,6 +49,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
     private PrefPageProjectNetworkProfiles networkProfilesPage;
     private Composite networkProfilesPageHolder;
     private int lastProjectIndex = -1;
+    private Link projectInfoLink;
 
     @Override
     public void init(@NotNull IWorkbench workbench) {
@@ -71,20 +73,31 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         );
         projectCombo.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         projectCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-            DBPProject project = projects.get(projectCombo.getSelectionIndex());
+            int selectionIndex = projectCombo.getSelectionIndex();
+            if (selectionIndex == 0) {
+                lastProjectIndex = -1;
+                refreshActiveProject(null);
+                projectInfoLink.setVisible(false);
+                return;
+            }
+            DBPProject project = projects.get(selectionIndex - 1);
             if (!refreshActiveProject(project)) {
                 // Failed to load another project, let's fall back to the old one...
                 projectCombo.select(lastProjectIndex);
                 return;
             }
-            lastProjectIndex = projectCombo.getSelectionIndex();
+            lastProjectIndex = selectionIndex - 1;
+            projectInfoLink.setVisible(true);
         }));
 
-        UIUtils.createInfoLink(
+        projectInfoLink = UIUtils.createInfoLink(
             composite,
             UIConnectionMessages.pref_page_network_profiles_global_project_hint,
             () -> {
-                if (projects.get(projectCombo.getSelectionIndex()) instanceof RCPProject project) {
+                int selectionIndex = projectCombo.getSelectionIndex();
+                if (selectionIndex < 1) {
+                    refreshActiveProject(null);
+                } else if (projects.get(selectionIndex - 1) instanceof RCPProject project) {
                     PrefPageProjectNetworkProfiles.open(getShell(), project, null);
                     refreshActiveProject(project);
                 }
@@ -96,16 +109,11 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         networkProfilesPageHolder.setLayout(new FillLayout());
 
         // Populate and select active project
-        DBPProject activeProject = workspace.getActiveProject();
+        projectCombo.add("<Global>");
         for (DBPProject project : projects) {
             projectCombo.add(project.getDisplayName());
-            if (project == activeProject) {
-                projectCombo.select(projectCombo.getItemCount() - 1);
-            }
         }
-        if (projectCombo.getSelectionIndex() < 0) {
-            projectCombo.select(0);
-        }
+        projectCombo.select(0);
         projectCombo.notifyListeners(SWT.Selection, new Event());
 
         return composite;
@@ -129,8 +137,8 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         }
     }
 
-    private boolean refreshActiveProject(@NotNull DBPProject project) {
-        if (project.getDataSourceRegistry().hasError()) {
+    private boolean refreshActiveProject(@Nullable DBPProject project) {
+        if (project != null && project.getDataSourceRegistry().hasError()) {
             DBWorkbench.getPlatformUI().showError(
                 "Error opening project",
                 NLS.bind(
@@ -148,11 +156,37 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             networkProfilesPage = null;
         }
 
-        networkProfilesPage = new PrefPageProjectNetworkProfiles();
+        networkProfilesPage = createPrefPageNetworkProfiles();
         networkProfilesPage.setProjectMeta(project);
         networkProfilesPage.createControl(networkProfilesPageHolder);
         networkProfilesPage.loadSettings();
+        networkProfilesPageHolder.layout(true, true);
 
         return true;
+    }
+
+    @NotNull
+    private PrefPageProjectNetworkProfiles createPrefPageNetworkProfiles() {
+        return new PrefPageGlobalNetworkProfiles();
+    }
+
+    private class PrefPageGlobalNetworkProfiles extends PrefPageProjectNetworkProfiles {
+
+        @NotNull
+        @Override
+        protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
+            Predicate<DBPProject> projectUsingProfileAsGlobal = proj -> {
+                DBWNetworkProfile profile = proj.getDataSourceRegistry().getNetworkProfiles()
+                    .getProfile(null, selectedProfile.getProfileName());
+                return profile != null && profile.isGlobal();
+            };
+            return selectedProfile.isGlobal()
+                ? getProjects()
+                .stream()
+                .filter(projectUsingProfileAsGlobal)
+                .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
+                .toList()
+                : super.connectionsUsingProfile(selectedProfile);
+        }
     }
 }

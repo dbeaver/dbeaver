@@ -65,6 +65,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     private Text typeName;
     private Text typeDescription;
     private ColorSelector colorPicker;
+    private ColorSelector alternativeColorPicker;
     private Button autocommitCheck;
     private Button confirmCheck;
     private Button confirmDataChangeCheck;
@@ -98,7 +99,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_name);
             UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_description);
-            typeTable.setHeaderVisible(true);
+            //typeTable.setHeaderVisible(true);
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             typeTable.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -132,7 +133,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         DBPConnectionType newType = new DBPConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         newType.setId(name.toLowerCase());
                         newType.setName("New type");
-                        newType.setColor("255,255,255");
+                        newType.setColorLight("255,255,255");
                         addTypeToTable(newType, newType);
                         typeTable.select(typeTable.getItemCount() - 1);
                         typeTable.showSelection();
@@ -191,47 +192,20 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
             {
                 UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color);
-//                Composite colorGroup = UIUtils.createPlaceholder(groupSettings, 2, 5);
-//                colorGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-                colorPicker = new ColorSelector(groupSettings);
-//                colorPicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                Composite panel = UIUtils.createComposite(groupSettings, 3);
+                panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                colorPicker = new ColorSelector(panel);
                 colorPicker.addListener(event -> {
-                    getSelectedType().setColor(StringConverter.asString(colorPicker.getColorValue()));
+                    getSelectedType().setColorLight(StringConverter.asString(colorPicker.getColorValue()));
                     updateTableInfo();
                 });
-/*
-                Button pickerButton = new Button(colorGroup, SWT.PUSH);
-                pickerButton.setText("...");
-                pickerButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        DBPConnectionType connectionType = getSelectedType();
-                        ColorDialog colorDialog = new ColorDialog(parent.getShell());
-                        colorDialog.setRGB(StringConverter.asRGB(connectionType.getColor()));
-                        RGB rgb = colorDialog.open();
-                        if (rgb != null) {
-                            Color color = null;
-                            int count = colorPicker.getItemCount();
-                            for (int i = 0; i < count; i++) {
-                                Color item = colorPicker.getColorItem(i);
-                                if (item != null && item.getRGB().equals(rgb)) {
-                                    color = item;
-                                    break;
-                                }
-                            }
-                            if (color == null) {
-                                color = new Color(colorPicker.getDisplay(), rgb);
-                                colorPicker.addColor(color);
-                            }
-                            colorPicker.select(color);
-                            getSelectedType().setColor(StringConverter.asString(color.getRGB()));
-                            updateTableInfo();
-                        }
-                    }
+
+                UIUtils.createControlLabel(panel, CoreMessages.pref_page_connection_types_label_color_alternative);
+                alternativeColorPicker = new ColorSelector(panel);
+                alternativeColorPicker.addListener(event -> {
+                    getSelectedType().setColorDark(StringConverter.asString(alternativeColorPicker.getColorValue()));
+                    updateTableInfo();
                 });
-*/
             }
         }
 
@@ -396,16 +370,23 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         }
     }
 
+    @NotNull
     private DBPConnectionType getSelectedType() {
         return (DBPConnectionType) typeTable.getItem(typeTable.getSelectionIndex()).getData();
     }
 
-    private void showSelectedType(DBPConnectionType connectionType) {
-        final Color connectionTypeColor = UIUtils.getConnectionTypeColor(connectionType);
+    private void showSelectedType(@NotNull DBPConnectionType connectionType) {
+        final Color connectionTypeColor = UIUtils.getConnectionColorByRGB(connectionType.getColorLight());
         if (connectionTypeColor != null) {
             colorPicker.setColorValue(connectionTypeColor.getRGB());
         } else {
             colorPicker.setColorValue(colorPicker.getButton().getBackground().getRGB());
+        }
+        final Color alternativeConnectionTypeColor = UIUtils.getConnectionColorByRGB(connectionType.getColorDark());
+        if (alternativeConnectionTypeColor != null) {
+            alternativeColorPicker.setColorValue(alternativeConnectionTypeColor.getRGB());
+        } else {
+            alternativeColorPicker.setColorValue(alternativeColorPicker.getButton().getBackground().getRGB());
         }
 
         typeId.setText(connectionType.getId());
@@ -513,7 +494,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         TableItem item = new TableItem(typeTable, SWT.LEFT);
         item.setText(0, connectionType.getName());
         item.setText(1, CommonUtils.toString(connectionType.getDescription()));
-        if (connectionType.getColor() != null) {
+        if (connectionType.getColorLight() != null) {
             Color connectionColor = UIUtils.getConnectionTypeColor(connectionType);
             //item.setBackground(0, connectionColor);
             item.setBackground(1, connectionColor);
@@ -574,7 +555,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setAutocommit(changed.isAutocommit());
                 source.setConfirmExecute(changed.isConfirmExecute());
                 source.setConfirmDataChange(changed.isConfirmDataChange());
-                source.setColor(changed.getColor());
+                source.setColorLight(changed.getColorLight());
+                source.setColorDark(changed.getColorDark());
                 source.setModifyPermissions(changed.getModifyPermission());
                 source.setSmartCommit(changed.isSmartCommit());
                 source.setSmartCommitRecover(changed.isSmartCommitRecover());

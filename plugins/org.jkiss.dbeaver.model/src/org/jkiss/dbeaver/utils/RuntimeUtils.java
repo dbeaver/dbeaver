@@ -53,6 +53,10 @@ import java.util.*;
  * RuntimeUtils
  */
 public final class RuntimeUtils {
+
+    public static final String ENV_WORKSPACE_PATH = "DBEAVER_WORKSPACE";
+    public static final String ENV_DATA_PATH = "DBEAVER_DATA";
+
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
     private static final boolean IS_OS_ARCH_AARCH64;
@@ -192,7 +196,7 @@ public final class RuntimeUtils {
     }
 
     /**
-     * @deprecated consider using {@link DurationFormatter#format(Duration, DurationFormat)} instead
+     * Consider using {@link DurationFormatter#format(Duration, DurationFormat)} instead
      */
     @NotNull
     public static String formatExecutionTime(long ms) {
@@ -580,7 +584,29 @@ public final class RuntimeUtils {
     }
 
     @NotNull
+    public static Path getWorkspacePath(@NotNull String workingDirectory, @NotNull String defaultAppWorkspaceName) {
+        String customWorkspacePath = System.getenv(ENV_WORKSPACE_PATH);
+        if (!CommonUtils.isEmpty(customWorkspacePath)) {
+            // Custom location
+            return Path.of(customWorkspacePath);
+        }
+
+        return Path.of(workingDirectory).resolve(defaultAppWorkspaceName);
+    }
+
+    @NotNull
     public static String getWorkingDirectory(@NotNull String subPath) {
+        String customDataPath = System.getenv(ENV_DATA_PATH);
+        if (!CommonUtils.isEmpty(customDataPath)) {
+            // Custom location
+            return Path.of(customDataPath).resolve(subPath).toAbsolutePath().toString();
+        }
+
+        // Detect default workspace location
+        // Since 6.1.3 it is different for different OSes
+        // Windows: %AppData%/DBeaverData
+        // MacOS: ~/Library/DBeaverData
+        // Linux: $XDG_DATA_HOME/DBeaverData
         String workingDirectory;
         if (isWindows()) {
             String appData = System.getenv("AppData");
@@ -641,7 +667,8 @@ public final class RuntimeUtils {
     public static <T> void executeJobsForEach(
         @NotNull Collection<? extends T> objects,
         @NotNull DBRRunnableParametrizedWithProgress<? super T> task
-    ) {
+    ) throws DBException {
+        Map<T, Throwable> errors = Collections.synchronizedMap(new LinkedHashMap<>());
         JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, 10, 1);
         for (T object : objects) {
             AbstractJob job = new AbstractJob("Execute for " + object) {
@@ -656,10 +683,9 @@ public final class RuntimeUtils {
                     if (!monitor.isCanceled()) {
                         try {
                             task.run(monitor, object);
-                        } catch (InvocationTargetException e) {
-                            log.debug(e.getTargetException());
-                        } catch (InterruptedException e) {
-                            return Status.CANCEL_STATUS;
+                        } catch (Throwable e) {
+                            errors.put(object, e);
+                            log.debug(e);
                         }
                     }
                     return Status.OK_STATUS;
@@ -674,6 +700,13 @@ public final class RuntimeUtils {
             }
         } catch (InterruptedException e) {
             // ignore
+        }
+        if (!errors.isEmpty()) {
+            Throwable firstError = errors.values().iterator().next();
+            if (firstError instanceof DBException dbe) {
+                throw dbe;
+            }
+            throw new DBException("Error executing task", firstError);
         }
     }
 

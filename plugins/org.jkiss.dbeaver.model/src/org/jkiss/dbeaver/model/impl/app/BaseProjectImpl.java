@@ -223,6 +223,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                         ensureOpen();
                         if (dataSourceRegistry == null) {
                             dataSourceRegistry = createDataSourceRegistry();
+                            dataSourceRegistry.initializeDataSources();
                         }
                     }
                 }
@@ -476,8 +477,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     @Override
-    public void refreshProject(DBRProgressMonitor monitor) {
-
+    public void refreshProject() {
+        synchronized (metadataSync) {
+            properties = null;
+        }
     }
 
     /**
@@ -722,9 +725,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBNModel getNavigatorModel() {
+        // FIXME: It mustn't return null actually
         return null;
     }
 
