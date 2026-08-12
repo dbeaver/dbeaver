@@ -94,7 +94,11 @@ public class ConfirmedShellCommandsManager {
     throws DBException {
         if (DBWorkbench.getPlatformUI().confirmAction(
             ModelMessages.shell_cmd_manager_add_command_confirmation_label,
-            NLS.bind(ModelMessages.shell_cmd_manager_add_command_confirmation_text, approveByUserAdditionalContext, command.getCommand())
+            NLS.bind(
+                ModelMessages.shell_cmd_manager_add_command_confirmation_text, approveByUserAdditionalContext, command.getCommand()
+            ),
+            ModelMessages.shell_cmd_manager_add_command_confirmation_button,
+            false
         )) {
             addConfirmedShellCommand(command);
             return true;
