@@ -1076,6 +1076,10 @@ public class SQLEditor extends SQLEditorBase implements
     public void createPartControl(Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
+        if (parent != null) {
+            CSSUtils.markConnectionTypeColor(parent);
+        }
+
         // divides editor area and results/panels area
         resultsSash = UIUtils.createPartDivider(
             this,
@@ -1096,6 +1100,7 @@ public class SQLEditor extends SQLEditorBase implements
         createControlsBar(sqlEditorPanel);
 
         sqlExtraPanelSash = new SashForm(sqlEditorPanel, SWT.HORIZONTAL);
+        CSSUtils.markConnectionTypeColor(sqlExtraPanelSash);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.verticalIndent = 5;
         sqlExtraPanelSash.setLayoutData(gd);
@@ -1104,6 +1109,7 @@ public class SQLEditor extends SQLEditorBase implements
         StackLayout presentationStackLayout = null;
         if (!extraPresentationManager.presentations.isEmpty()) {
             presentationStack = new Composite(sqlExtraPanelSash, SWT.NONE);
+            CSSUtils.markConnectionTypeColor(presentationStack);
             presentationStack.setLayoutData(new GridData(GridData.FILL_BOTH));
             presentationStackLayout = new StackLayout();
             presentationStack.setLayout(presentationStackLayout);
@@ -1116,6 +1122,7 @@ public class SQLEditor extends SQLEditorBase implements
         getEditorControlWrapper().setLayoutData(new GridData(GridData.FILL_BOTH));
 
         sqlExtraPanelFolder = new CTabFolder(sqlExtraPanelSash, SWT.TOP | SWT.CLOSE | SWT.FLAT);
+        CSSUtils.markConnectionTypeColor(sqlExtraPanelFolder);
         sqlExtraPanelFolder.setSelection(0);
         sqlExtraPanelFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             CTabItem item = sqlExtraPanelFolder.getSelection();
@@ -1262,6 +1269,7 @@ public class SQLEditor extends SQLEditorBase implements
                 super.setBackground(color);
             }
         };
+        CSSUtils.markConnectionTypeColor(leftToolPanel);
         GridLayout panelsLayout = new GridLayout(1, true);
         panelsLayout.marginHeight = 2;
         panelsLayout.marginWidth = 1;
@@ -3379,6 +3387,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
+        Composite topComposite = resultsSash.getParent() != null ? resultsSash.getParent() : resultsSash;
+        DatabaseEditorUtils.setPartBackground(this, topComposite);
         DatabaseEditorUtils.setPartBackground(this, resultsSash);
         if (sqlEditorPanel != null) {
             DatabaseEditorUtils.setPartBackground(this, sqlEditorPanel);
@@ -3389,8 +3399,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Re-apply CSS so connection-type colored widgets (side toolbars, sash, etc.)
         // refresh immediately instead of waiting for the next CSS engine pass
-        CSSUtils.applyStyles(resultsSash);
-        CSSUtils.refreshConnectionTypeControls(resultsSash);
+        CSSUtils.applyStyles(topComposite);
+        CSSUtils.refreshConnectionTypeControls(topComposite);
 
         // Repaint the workbench editor tab folder so the custom tab renderer
         // picks up the new connection color immediately after a connection change
