@@ -64,7 +64,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
     private long eventDispatchPeriod = 250;
-    private volatile boolean saveMetadataEvents = true;
+    private volatile boolean skipMetadataEvents;
 
     public QMMCollectorImpl() {
         var application = DBWorkbench.getPlatform().getApplication();
@@ -79,14 +79,14 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     @Override
     public void preferenceChange(@NotNull PreferenceChangeEvent event) {
-        if (QMConstants.PROP_SAVE_METADATA_QUERIES.equals(event.getProperty())) {
+        if (QMConstants.PROP_SKIP_METADATA_QUERIES.equals(event.getProperty())) {
             refreshMetadataEventsSetting();
         }
     }
 
     private void refreshMetadataEventsSetting() {
-        saveMetadataEvents = DBWorkbench.getPlatform().getPreferenceStore()
-            .getBoolean(QMConstants.PROP_SAVE_METADATA_QUERIES);
+        skipMetadataEvents = DBWorkbench.getPlatform().getPreferenceStore()
+            .getBoolean(QMConstants.PROP_SKIP_METADATA_QUERIES);
     }
 
     public void dispose() {
@@ -176,7 +176,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         final long timestamp,
         final @NotNull DBPDataSource dataSource
     ) {
-        if (!saveMetadataEvents && isMetadataQuery(object)) {
+        if (skipMetadataEvents && isMetadataQuery(object)) {
             return;
         }
         try {
