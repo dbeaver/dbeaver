@@ -250,7 +250,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         removeItem.setEnabled(false);
 
         ToolItem resetItem = new ToolItem(toolBar, SWT.NONE);
-        resetItem.setImage(DBeaverIcons.getImage(UIIcon.ARROW_RESET));
+        resetItem.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
         resetItem.setToolTipText(
             UIMessages.ui_properties_tree_viewer_action_reset_value + UIMessages.ui_properties_tree_viewer__to_default);
         resetItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> resetSelectedPropertyToDefault()));
