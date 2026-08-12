@@ -74,7 +74,7 @@
         <module>org.jkiss.dbeaver.ext.postgresql</module>
 
         <module>org.jkiss.dbeaver.ext.snowflake</module>
-    <module>org.jkiss.dbeaver.ext.frostlake</module>
+        <module>org.jkiss.dbeaver.ext.frostlake</module>
         <module>org.jkiss.dbeaver.ext.spanner</module>
         <module>org.jkiss.dbeaver.ext.sqlite</module>
         <module>org.jkiss.dbeaver.ext.vertica</module>

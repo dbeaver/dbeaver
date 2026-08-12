@@ -82,7 +82,8 @@ public class FrostlakeObject implements DBSObject, DBPNamedObject2, DBPSaveableO
             final String column = meta.getColumnName(i);
             if ("name".equalsIgnoreCase(column)
                 || "comment".equalsIgnoreCase(column)
-                || "created_on".equalsIgnoreCase(column)) {
+                || "created_on".equalsIgnoreCase(column)
+                || "schema_name".equalsIgnoreCase(column)) {
                 continue;
             }
             attributes.put(column, dbResult.getObject(i));
