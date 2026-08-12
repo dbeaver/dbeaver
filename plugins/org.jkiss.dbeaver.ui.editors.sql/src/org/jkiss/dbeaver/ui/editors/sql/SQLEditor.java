@@ -604,12 +604,14 @@ public class SQLEditor extends SQLEditorBase implements
         if (SQLEditorBase.isReadEmbeddedBinding()) {
             // Try to get datasource from contents (always, no matter what )
             DataSourceBindingInfo bindingInfo = getDataSourceFromContent();
-            // if embedded one is different from the already associated, we are going to change it
-            if (bindingInfo != null && bindingInfo.dataSource != inputDataSource) {
+            // if embedded one should be created or is different from the already associated, we are going to change it
+            if (bindingInfo != null && (
+                !bindingInfo.dataSourceSupplier().foundExisting() || bindingInfo.dataSourceSupplier().supplier().get() != inputDataSource
+            )) {
                 // Ask for confirmation due to security reasons like potential RCE (dbeaver/pro#9973)
                 DataSourceBindingOperation op = this.decideOnDataSourceBindingOperation(bindingInfo);
                 if (op.use) {
-                    inputDataSource = bindingInfo.dataSource();
+                    inputDataSource = bindingInfo.dataSourceSupplier().supplier().get();
                 }
                 if (op.saveChoice) {
                     DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
@@ -686,7 +688,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private record DataSourceBindingInfo(
         @NotNull String specText,
-        @NotNull DBPDataSourceContainer dataSource
+        @NotNull DataSourceUtils.BySpecInfo dataSourceSupplier
     ) {
     }
 
@@ -706,15 +708,15 @@ public class SQLEditor extends SQLEditorBase implements
             if (matcher.matches()) {
                 String connSpec = matcher.group(1).trim();
                 if (!CommonUtils.isEmpty(connSpec)) {
-                    final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
+                    final DataSourceUtils.BySpecInfo dataSourceSupplier = DataSourceUtils.getDataSourceSupplierBySpec(
                         project,
                         connSpec,
                         null,
                         true,
                         false
                     );
-                    if (dataSource != null) {
-                        return new DataSourceBindingInfo(connSpec, dataSource);
+                    if (dataSourceSupplier != null) {
+                        return new DataSourceBindingInfo(connSpec, dataSourceSupplier);
                     }
                 }
             }
@@ -728,7 +730,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void embedDataSourceAssociation() {
         DataSourceBindingInfo existingInfo = this.getDataSourceFromContent();
-        if (existingInfo != null && existingInfo.dataSource() == dataSourceContainer) {
+        if (existingInfo != null &&
+            existingInfo.dataSourceSupplier().foundExisting() &&
+            existingInfo.dataSourceSupplier().supplier().get() == dataSourceContainer) {
             return;
         }
         IDocument document = getDocument();
