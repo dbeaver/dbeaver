@@ -44,18 +44,20 @@ public class DatabricksDriverWrapper implements Driver {
         this.delegate = delegate;
     }
 
+    @Nullable
     @Override
-    public Connection connect(String url, Properties info) throws SQLException {
+    public Connection connect(@Nullable String url, @Nullable Properties info) throws SQLException {
         return delegate.connect(removeDuplicatedUrlParameters(url, info), info);
     }
 
     @Override
-    public boolean acceptsURL(String url) throws SQLException {
+    public boolean acceptsURL(@Nullable String url) throws SQLException {
         return delegate.acceptsURL(url);
     }
 
+    @Nullable
     @Override
-    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
+    public DriverPropertyInfo[] getPropertyInfo(@Nullable String url, @Nullable Properties info) throws SQLException {
         return delegate.getPropertyInfo(url, info);
     }
 
@@ -74,6 +76,7 @@ public class DatabricksDriverWrapper implements Driver {
         return delegate.jdbcCompliant();
     }
 
+    @Nullable
     @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return delegate.getParentLogger();
