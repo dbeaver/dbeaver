@@ -147,6 +147,11 @@ final class GISLeafletHttpServer {
         try (content; exchange) {
             if (content != null) {
                 log.trace("Serving content for path: " + path);
+                String contentType = getContentType(path);
+                exchange.getResponseHeaders().set("Content-Type", contentType);
+                if (contentType.startsWith("text/html")) {
+                    exchange.getResponseHeaders().set("X-UA-Compatible", "IE=edge");
+                }
                 exchange.sendResponseHeaders(200, 0);
                 content.transferTo(exchange.getResponseBody());
             } else {
@@ -154,5 +159,15 @@ final class GISLeafletHttpServer {
                 exchange.sendResponseHeaders(404, 0);
             }
         }
+    }
+
+    @NotNull
+    private static String getContentType(@NotNull String path) {
+        return switch (path) {
+            case "/inc/leaflet.css" -> "text/css; charset=UTF-8";
+            case "/inc/leaflet.js", "/inc/wkx.min.js", "/inc/leaflet-lasso.min.js" -> "text/javascript; charset=UTF-8";
+            case "/inc/layers.png" -> "image/png";
+            default -> "text/html; charset=UTF-8";
+        };
     }
 }
