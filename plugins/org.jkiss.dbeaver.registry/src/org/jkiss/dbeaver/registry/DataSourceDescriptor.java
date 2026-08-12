@@ -1485,7 +1485,12 @@ public class DataSourceDescriptor
 
     @NotNull
     private String approveByUserAdditionalContext(@NotNull DBPConnectionEventType eventType) {
-        return "Project: '%s' Datasource Name: '%s' Event type: '%s'".formatted(getProject().getName(), getName(), eventType.getTitle());
+        return NLS.bind(
+            RegistryMessages.connection_add_shell_cmd_context_description,
+            getProject().getName(),
+            getName(),
+            eventType.getTitle()
+        );
     }
 
     @Override
