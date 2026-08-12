@@ -1440,7 +1440,7 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
-            ConfirmedShellCommandsManager.getInstance().validateCommandByUser(command, eventType);
+            ConfirmedShellCommandsManager.getInstance().validateCommandByUser(command, approveByUserAdditionalContext(eventType));
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
             monitor.subTask("Execute process " + processDescriptor.getName());
@@ -1481,6 +1481,11 @@ public class DataSourceDescriptor
                 case AFTER_DISCONNECT -> handlerDesc.getInstance().beforeDisconnect(monitor, this);
             }
         }
+    }
+
+    @NotNull
+    private String approveByUserAdditionalContext(@NotNull DBPConnectionEventType eventType) {
+        return "Project %s Datasource Name: %s Event type: %s".formatted(getProject().getName(), getName(), eventType.getTitle());
     }
 
     @Override

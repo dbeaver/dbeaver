@@ -22,7 +22,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -55,12 +54,15 @@ public class ConfirmedShellCommandsManager {
     private ConfirmedShellCommandsManager() {
     }
 
-    public void validateCommandByUser(@NotNull DBRShellCommand command, @NotNull DBPConnectionEventType eventType) throws DBException {
+    public void validateCommandByUser(@NotNull DBRShellCommand command, @NotNull String approveByUserAdditionalContext) throws DBException {
         if (!command.isBlank()) {
             validateNotDistributed();
-            boolean isApprovedByUser = confirmedCommands().contains(command.getCommand()) || askApproveForCommand(command);
+            boolean isApprovedByUser = confirmedCommands().contains(command.getCommand()) || askApproveForCommand(
+                command,
+                approveByUserAdditionalContext
+            );
             if (!isApprovedByUser) {
-                throw new DBException(NLS.bind(ModelMessages.shell_cmd_manager_add_command_error_message, eventType.getTitle()));
+                throw new DBException(NLS.bind(ModelMessages.shell_cmd_manager_add_command_error_message, approveByUserAdditionalContext));
             }
         }
     }
@@ -88,10 +90,11 @@ public class ConfirmedShellCommandsManager {
         }
     }
 
-    private boolean askApproveForCommand(@NotNull DBRShellCommand command) throws DBException {
+    private boolean askApproveForCommand(@NotNull DBRShellCommand command, @NotNull String approveByUserAdditionalContext)
+    throws DBException {
         if (DBWorkbench.getPlatformUI().confirmAction(
             ModelMessages.shell_cmd_manager_add_command_confirmation_label,
-            NLS.bind(ModelMessages.shell_cmd_manager_add_command_confirmation_text, command.getCommand())
+            NLS.bind(ModelMessages.shell_cmd_manager_add_command_confirmation_text, approveByUserAdditionalContext, command.getCommand())
         )) {
             addConfirmedShellCommand(command);
             return true;
