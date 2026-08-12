@@ -20,8 +20,9 @@
                 icon="icons/databend_icon.png"
                 dialect="databend">
             <drivers managable="true">
+                <driver id="databend"/>
                 <driver
-                    id="databend"
+                    id="databend_jdbc"
                     label="Databend"
                     class="com.databend.jdbc.DatabendDriver"
                     sampleURL="jdbc:databend://{host}:{port}[/{database}]"
@@ -49,6 +50,8 @@
                     <parameter name="omit-schema" value="false"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
                     <parameter name="query-set-active-db" value="USE &quot;?&quot;"/>
+
+                    <replace provider="databend" driver="databend"/>
                 </driver>
             </drivers>
 
