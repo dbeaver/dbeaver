@@ -76,6 +76,7 @@ public class DatabaseEditorUtils {
             rootComposite.setData(CSSUtils.DATABASE_EDITOR_COMPOSITE_DATASOURCE, dsContainer);
             rootComposite.setBackground(bgColor);
         }
+        CSSUtils.refreshConnectionTypeControls(rootComposite);
     }
 
     public static void contributeStandardEditorActions(IWorkbenchSite workbenchSite, IContributionManager contributionManager) {
