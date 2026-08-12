@@ -20,11 +20,12 @@
                 icon="icons/databend_icon.png"
                 dialect="databend">
             <drivers managable="true">
+                <driver id="databend"/>
                 <driver
-                    id="databend"
+                    id="databend_jdbc"
                     label="Databend"
                     class="com.databend.jdbc.DatabendDriver"
-                    sampleURL="jdbc:databend://{username}:{password}@{host}:{port}[/{database}]"
+                    sampleURL="jdbc:databend://{host}:{port}[/{database}]"
                     defaultPort="8000"
                     icon="icons/databend_icon.png"
                     iconBig="icons/databend_icon_big.png"
@@ -49,6 +50,8 @@
                     <parameter name="omit-schema" value="false"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
                     <parameter name="query-set-active-db" value="USE &quot;?&quot;"/>
+
+                    <replace provider="databend" driver="databend"/>
                 </driver>
             </drivers>
 
@@ -69,9 +72,21 @@
                 label="SSL"
                 description="SSL settings"
                 secured="false"
-                desktop="true"
+                desktop="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
+            <propertyGroup label="Method">
+                <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
+                          desktop="true" hidden="true"/>
+            </propertyGroup>
+            <propertyGroup label="SSL Settings">
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,file" length="MULTILINE"/>
+                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password,file" length="MULTILINE"/>
+                <property id="ssl.client.cert" label="Client Certificate Path" type="string" description="Path to a client certificate file"
+                          desktop="true"/>
+                <property id="ssl.client.key" label="Client Private Key Path" type="string" description="Path to a client private key file"
+                          desktop="true"/>
+            </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.databend.DatabendDataSourceProvider"/>
         </handler>
     </extension>
