@@ -31,8 +31,11 @@ public class GBase8sSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public void initDriverSettings(@NotNull JDBCSession session, @NotNull JDBCDataSource dataSource,
-            @NotNull JDBCDatabaseMetaData metaData) {
+    public void initDriverSettings(
+        @NotNull JDBCSession session,
+        @NotNull JDBCDataSource dataSource,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
         super.initDriverSettings(session, dataSource, metaData);
         if (GBase8sUtils.isMySQLSqlMode(dataSource.getContainer())) {
             setIdentifierQuoteString(new String[][]{{"`", "`"}});
