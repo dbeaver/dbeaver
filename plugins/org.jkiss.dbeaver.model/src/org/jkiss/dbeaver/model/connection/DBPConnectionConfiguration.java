@@ -141,6 +141,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = 0;
         this.closeIdleConnection = CLOSE_IDLE_CONNECTION_DEFAULT;
         this.closeIdleInterval = 0;
+        this.events = new LinkedHashMap<>();
     }
 
     public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info) {

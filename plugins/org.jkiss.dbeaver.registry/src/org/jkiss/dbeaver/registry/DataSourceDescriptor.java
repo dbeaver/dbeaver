@@ -1485,7 +1485,7 @@ public class DataSourceDescriptor
 
     @NotNull
     private String approveByUserAdditionalContext(@NotNull DBPConnectionEventType eventType) {
-        return "Project %s Datasource Name: %s Event type: %s".formatted(getProject().getName(), getName(), eventType.getTitle());
+        return "Project: '%s' Datasource Name: '%s' Event type: '%s'".formatted(getProject().getName(), getName(), eventType.getTitle());
     }
 
     @Override
