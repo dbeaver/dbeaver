@@ -285,6 +285,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         AIChatMessage chatMessage = activeConversation.addMessage(promptMessage);
         chatSession.notifyMessageAdd(activeConversation, chatMessage);
 
+        activeConversation.startConversation();
         chatSession.setBusy(true);
 
         new AbstractJob("Execute prompt") {

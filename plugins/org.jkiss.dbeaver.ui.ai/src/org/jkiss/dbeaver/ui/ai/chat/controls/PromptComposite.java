@@ -89,17 +89,11 @@ public class PromptComposite extends Composite {
                             @NotNull
                             @Override
                             protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
-                                if (sendButton.isDisposed() || !chat.isBusy()) {
-                                    return Status.OK_STATUS;
-                                }
                                 if (chat.getActiveConversation().isActive()) {
                                     sendButton.setImage(null);
                                     sendButton.setImage(DBeaverIcons.getImage(UIIcon.CLOSE));
                                     sendButton.setToolTipText(AIChatMessagesUI.ai_chat_cancel_button_tip);
                                     sendButton.setEnabled(true);
-                                } else {
-                                    // conversation hasn't started yet for example slow server
-                                    schedule(250);
                                 }
                                 return Status.OK_STATUS;
                             }
