@@ -725,9 +725,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBNModel getNavigatorModel() {
+        // FIXME: It mustn't return null actually
         return null;
     }
 
