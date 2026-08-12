@@ -16,18 +16,22 @@
  */
 package org.jkiss.dbeaver.tasks.ui.sql.script;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.wizard.EditTaskVariablesDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.sql.SQLTaskConstants;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -36,6 +40,7 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
 
     private SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
     private SQLScriptTaskPageSettings pageSettings;
+    private SQLScriptTaskPageLog pageLog;
 
     public SQLScriptTaskConfigurationWizard() {
     }
@@ -64,6 +69,10 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
         super.addPages();
         pageSettings = new SQLScriptTaskPageSettings(this);
         addPage(pageSettings);
+        if (getCurrentTask() != null && getCurrentTask().isTemporary()) {
+            pageLog = new SQLScriptTaskPageLog();
+            addPage(pageLog);
+        }
     }
 
     @Override
@@ -85,19 +94,46 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
             if (!saveConfigurationToTask(task)) {
                 return false;
             }
+            if (!confirmTaskVariables(task)) {
+                return false;
+            }
             TaskConfigurationWizardDialog container = getContainer();
+            if (container.getCurrentPage() != pageLog) {
+                container.showPage(pageLog);
+            }
             container.disableButtonsOnProgress();
             try {
-                TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, System.out);
+                pageLog.getLogWriter().println("Executing '" + task.getName() + "'...");
+                TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, pageLog.getLogWriter());
                 executor.executeTask();
+                pageLog.getLogWriter().println("Done.");
+                container.setCompleteMarkAfterProgress();
             } catch (Exception e) {
+                pageLog.getLogWriter().println("Failed: " + e.getMessage());
                 DBWorkbench.getPlatformUI().showError("Task run error", e.getMessage(), e);
                 return false;
             } finally {
                 container.enableButtonsAfterProgress();
             }
-            return true;
+            return false;
         }
         return super.performFinish();
     }
+
+    private boolean confirmTaskVariables(@NotNull DBTTask task) {
+        if (!CommonUtils.toBoolean(task.getProperties().get(DBTaskUtils.TASK_PROMPT_VARIABLES))) {
+            return true;
+        }
+        Map<String, Object> variables = DBTaskUtils.getVariables(task);
+        if (variables.isEmpty()) {
+            return true;
+        }
+        EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(getContainer().getShell(), Map.of(task, variables));
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return false;
+        }
+        DBTaskUtils.setVariables(task, dialog.getVariables(task));
+        return true;
+    }
+
 }
