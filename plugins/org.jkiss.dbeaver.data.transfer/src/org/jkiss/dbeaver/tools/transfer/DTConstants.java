@@ -51,6 +51,7 @@ public class DTConstants {
     public static final String PROP_ON_DUPLICATE_KEY_METHOD = "onDuplicateKeyMethod";
     public static final String PROP_USE_BULK_LOAD = "useBulkLoad";
     public static final String PROP_USE_TRANSACTIONS = "useTransactions";
+    public static final String PROP_OPEN_NEW_CONNECTION = "openNewConnection";
 
     public static final int DEFAULT_MAX_TYPE_LENGTH = 32767; // Max Oracle VARCHAR data type length
 

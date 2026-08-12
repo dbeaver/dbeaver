@@ -113,6 +113,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder weblink(@NotNull String text) {
+        return weblink(UIObservable.of(text));
+    }
+
+    @NotNull
     UIRowBuilder button(
         @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
