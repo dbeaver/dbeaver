@@ -50,10 +50,7 @@ import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
@@ -71,8 +68,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -110,6 +107,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private CTabFolder tabFolder;
     private ToolItem handlerItem;
     private ToolItem profileItem;
+    private ToolBar handlersToolbar;
 
     /**
      * Constructor for ConnectionPageSettings
@@ -126,10 +124,17 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         this.driverSubstitution = driverSubstitution;
 
         if (driverSubstitution != null) {
-            this.substitutedViewDescriptor = DataSourceViewRegistry.getInstance().findView(
-                DataSourceProviderRegistry.getInstance().getDataSourceProvider(driverSubstitution.getProviderId()),
-                IActionConstants.EDIT_CONNECTION_POINT
-            );
+            DataSourceProviderDescriptor dataSourceProvider = DataSourceProviderRegistry.getInstance()
+                .getDataSourceProvider(driverSubstitution.getProviderId());
+            if (dataSourceProvider != null) {
+                this.substitutedViewDescriptor = DataSourceViewRegistry.getInstance().findView(
+                    dataSourceProvider,
+                    IActionConstants.EDIT_CONNECTION_POINT
+                );
+            } else {
+                log.error("Datasource provider " + driverSubstitution.getProviderId() + " not found");
+                this.substitutedViewDescriptor = null;
+            }
         } else {
             this.substitutedViewDescriptor = null;
         }
@@ -188,8 +193,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     //                    if (pageControl == null) {
     //                        page.createControl(getControl().getParent());
     //                    }
-                        if (pageControl != null && page instanceof IDataSourceConnectionEditor) {
-                            ((IDataSourceConnectionEditor) page).loadSettings();
+                        if (pageControl != null && page instanceof IDataSourceConnectionEditor dse) {
+                            dse.loadSettings();
                         }
                     }
                 }
@@ -201,6 +206,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         } finally {
             control.setRedraw(true);
         }
+        handlersToolbar.setVisible(!getDriver().isEmbedded());
         //getContainer().updateTitleBar();
         UIUtils.asyncExec(() -> connectionEditor.activateEditor());
     }
@@ -289,11 +295,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 var toolBarComposite = new Composite(tabFolder, SWT.NONE);
                 toolBarComposite.setLayout(GridLayoutFactory.fillDefaults().extendedMargins(0, 0, 0, 0).create());
 
-                var toolBar = new ToolBar(toolBarComposite, SWT.FLAT | SWT.RIGHT);
-                handlerItem = createHandlerItem(toolBar, allPages);
-                profileItem = createProfileItem(toolBar);
+                handlersToolbar = new ToolBar(toolBarComposite, SWT.FLAT | SWT.RIGHT);
+                handlerItem = createHandlerItem(handlersToolbar, allPages);
+                profileItem = createProfileItem(handlersToolbar);
                 tabFolder.setTopRight(toolBarComposite, SWT.RIGHT);
-                UIStyles.fixToolBarForeground(toolBar);
+                UIStyles.fixToolBarForeground(handlersToolbar);
 
                 updateHandlerItem(allPages);
                 updateProfileItem(getActiveProfile());
@@ -458,9 +464,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         }
                     }
                 };
-                manager.addMenuListener(mm -> {
-                    getDisplay().asyncExec(() -> highlightSelectedItem.accept(mm));
-                });
+                manager.addMenuListener(mm ->
+                    getDisplay().asyncExec(() -> highlightSelectedItem.accept(mm)));
                 // initial highlight
                 getDisplay().asyncExec(() -> highlightSelectedItem.accept(manager));
             }
@@ -648,7 +653,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         page.loadConfiguration(profile);
-        page.getHandlerConfiguration().setEnabled(true);
+        DBWHandlerConfiguration handlerConfiguration = page.getHandlerConfiguration();
+        if (handlerConfiguration != null) {
+            handlerConfiguration.setEnabled(true);
+        }
 
         var index = Math.min(tabFolder.getItemCount(), ArrayUtils.indexOf(subPages, page) + 1 /* main tab */);
         var item = createPageTab(page, index);
@@ -666,7 +674,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
         var page = (ConnectionPageNetworkHandler) item.getData();
         page.loadConfiguration(null);
-        page.getHandlerConfiguration().setEnabled(false);
+        DBWHandlerConfiguration handlerConfiguration = page.getHandlerConfiguration();
+        if (handlerConfiguration != null) {
+            handlerConfiguration.setEnabled(false);
+        }
 
         // TODO: Stop activating pages
         activateItem(item);
@@ -932,7 +943,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public boolean openDriverEditor() {
-        DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), (DriverDescriptor) this.getDriver());
+        DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), this.getDriver());
         return dialog.open() == IDialogConstants.OK_ID;
     }
 

@@ -43,7 +43,7 @@ public class ClickhouseStructValueHandler extends JDBCStructValueHandler {
             return object;
         }
 
-        final String typeName = type.getTypeName();
+        final String typeName = type.getFullTypeName();
 
         if (typeName.startsWith("Tuple") || typeName.startsWith("Map")) {
             try {

@@ -507,11 +507,20 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 e
             );
         }
-        if (Objects.nonNull(connectionTestButton)) {
-            connectionTestButton.setEnabled(activeEngineConfiguratorPage.getCurrentProperties().isPresent());
-        }
+        updateTestConnectionButton();
     }
 
+    private void updateTestConnectionButton() {
+        if (connectionTestButton == null || connectionTestButton.isDisposed()) {
+            return;
+        }
+        boolean testSupported = activeEngineConfiguratorPage != null
+            && activeEngineConfiguratorPage.supportsConnectionTest();
+        UIUtils.setControlVisible(connectionTestButton, testSupported);
+        connectionTestButton.setEnabled(
+            testSupported && activeEngineConfiguratorPage.getCurrentProperties().isPresent());
+        connectionTestButton.getParent().layout(true, true);
+    }
 
     private void createTestConnectionButton(@NotNull Composite parent) {
         connectionTestButton = UIUtils.createPushButton(
@@ -543,9 +552,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 }
             })
         );
+        connectionTestButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        connectionTestButton.setEnabled(
-            activeEngineConfiguratorPage != null && activeEngineConfiguratorPage.getCurrentProperties().isPresent());
+        updateTestConnectionButton();
     }
 
     private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
@@ -615,6 +624,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             return Optional
                 .ofNullable(configurator)
                 .flatMap(AIIObjectPropertyConfigurator::getCurrentProperties);
+        }
+
+        private boolean supportsConnectionTest() {
+            return configurator == null || configurator.supportsConnectionTest();
         }
     }
 

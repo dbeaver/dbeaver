@@ -345,6 +345,10 @@ public class UIUtils {
             if (clientArea.isEmpty()) {
                 return;
             }
+            ScrollBar verticalBar = tree.getVerticalBar();
+            if (verticalBar != null) {
+                clientArea.width -= verticalBar.getSize().x;
+            }
             int totalWidth = 0;
             for (TreeColumn column : columns) {
                 int colWidth = column.getWidth();
