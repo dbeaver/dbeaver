@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -40,6 +41,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_SCIENTIFIC_EXP_SEP = "scientificExponentSeparator";
     public static final String PROP_SCIENTIFIC_PATTERN = "scientificPattern";
     public static final String PROP_EXCLUDE_ID_COLUMNS = "excludeIdColumns";
+    public static final String DEFAULT_SCIENTIFIC_PATTERN = "0.###E0";
 
     @NotNull
     @Override
@@ -55,8 +57,9 @@ public class NumberFormatSample implements DBDDataFormatterSample {
         props.put(PROP_MIN_FRACT_DIGITS, tmp.getMinimumFractionDigits());
         props.put(PROP_USE_TYPE_SCALE, false);
         props.put(PROP_NATIVE_SPECIAL_VALUES, false);
-        props.put(PROP_SCIENTIFIC_EXP_SEP, "E");
-        props.put(PROP_SCIENTIFIC_PATTERN, tmp.toPattern()); // Use default locale-specific pattern
+        props.put(PROP_SCIENTIFIC_SMALL_VALUES, false);
+        props.put(PROP_SCIENTIFIC_EXP_SEP, DecimalFormatSymbols.getInstance(locale).getExponentSeparator());
+        props.put(PROP_SCIENTIFIC_PATTERN, DEFAULT_SCIENTIFIC_PATTERN);
         props.put(PROP_EXCLUDE_ID_COLUMNS, false);
         // Use UNNECESSARY by default [#6493]
         // FIX: Use default. The problem in rounding was caused by float->double conversions.
