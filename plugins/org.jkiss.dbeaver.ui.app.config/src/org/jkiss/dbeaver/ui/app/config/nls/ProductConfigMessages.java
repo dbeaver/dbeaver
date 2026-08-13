@@ -43,7 +43,6 @@ public final class ProductConfigMessages extends NLS {
     public static String final_steps_description;
     public static String final_steps_header;
 
-    public static String button_exit;
     public static String confirm_exit_title;
     public static String confirm_exit_message;
 

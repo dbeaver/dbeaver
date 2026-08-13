@@ -43,6 +43,7 @@ public class ProductConfigWelcomePage extends ProductConfigWizardPage {
                 .label(lb -> lb
                     .text(ProductConfigMessages.welcome_body_text)
                     .wrap()
+                    .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)));
     }
