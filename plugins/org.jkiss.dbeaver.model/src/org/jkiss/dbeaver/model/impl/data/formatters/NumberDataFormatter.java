@@ -26,11 +26,7 @@ import org.jkiss.utils.CommonUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.FieldPosition;
-import java.text.NumberFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
+import java.text.*;
 import java.util.Locale;
 import java.util.Map;
 
@@ -121,11 +117,20 @@ public class NumberDataFormatter implements DBDDataFormatter {
         position = new FieldPosition(0);
         nativeSpecialValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_NATIVE_SPECIAL_VALUES));
         scientificSmallValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_SCIENTIFIC_SMALL_VALUES));
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         String scientificExpSep = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_EXP_SEP));
+        if (!CommonUtils.isEmpty(scientificExpSep)) {
+            symbols.setExponentSeparator(scientificExpSep);
+            numberFormat.setDecimalFormatSymbols(symbols);
+        }
         String scientificPattern = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_PATTERN));
-
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
-        symbols.setExponentSeparator(scientificExpSep);
+        if (CommonUtils.isEmpty(scientificPattern)) {
+            scientificPattern = NumberFormatSample.DEFAULT_SCIENTIFIC_PATTERN;
+        }
+        if (scientificPattern.indexOf('E') < 0) {
+            throw new IllegalArgumentException("Scientific notation pattern must contain an exponent, for example "
+                + NumberFormatSample.DEFAULT_SCIENTIFIC_PATTERN);
+        }
         scientificFormat = new DecimalFormat(scientificPattern, symbols);
     }
 
@@ -158,11 +163,8 @@ public class NumberDataFormatter implements DBDDataFormatter {
                 buffer.setLength(0);
                 try {
                     if (scientificSmallValues && value instanceof BigDecimal bigValue) {
-                        int maxFD = numberFormat.getMaximumFractionDigits();
-                        BigDecimal smallestValue = BigDecimal.valueOf(1.0).movePointLeft(maxFD);
-                        if (((bigValue.compareTo(smallestValue) < 0 && (bigValue.compareTo(BigDecimal.ZERO) > 0)) ||
-                             (bigValue.compareTo(smallestValue.negate()) > 0 && (bigValue.compareTo(BigDecimal.ZERO) < 0)))) {
-                            // This is a very small BigDecimal
+                        BigDecimal smallestValue = BigDecimal.ONE.movePointLeft(numberFormat.getMaximumFractionDigits());
+                        if (bigValue.signum() != 0 && bigValue.abs().compareTo(smallestValue) < 0) {
                             return scientificFormat.format(value, buffer, position).toString();
                         }
                     }
