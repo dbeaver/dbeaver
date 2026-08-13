@@ -22,6 +22,7 @@ public final class ProductConfigMessages extends NLS {
     public static String welcome_title;
     public static String welcome_description;
     public static String welcome_body_text;
+    public static String welcome_body_hint;
 
     public static String appearance_title;
     public static String appearance_description;
