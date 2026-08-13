@@ -110,6 +110,19 @@ public class NumberDataFormatterTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void separatorClashingWithLocaleSeparatorsIsRejected() {
+        // Such a separator formats to 1.5.-12, which parses back as 1.5 without any error
+        for (String separator : new String[]{".", ","}) {
+            Map<String, Object> props = properties(Locale.US, true);
+            props.put(NumberFormatSample.PROP_SCIENTIFIC_EXP_SEP, separator);
+            Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> formatter(Locale.US, props),
+                "separator " + separator + " must be rejected");
+        }
+    }
+
+    @Test
     public void customExponentSeparatorSurvivesRoundTrip() throws Exception {
         Map<String, Object> props = properties(Locale.US, true);
         props.put(NumberFormatSample.PROP_SCIENTIFIC_EXP_SEP, "e");

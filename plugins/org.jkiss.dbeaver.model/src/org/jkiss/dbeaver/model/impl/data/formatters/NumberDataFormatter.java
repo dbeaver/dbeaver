@@ -120,6 +120,11 @@ public class NumberDataFormatter implements DBDDataFormatter {
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         String scientificExpSep = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_EXP_SEP));
         if (!CommonUtils.isEmpty(scientificExpSep)) {
+            if (scientificExpSep.indexOf(symbols.getDecimalSeparator()) >= 0
+                || scientificExpSep.indexOf(symbols.getGroupingSeparator()) >= 0) {
+                throw new IllegalArgumentException(
+                    "Exponent separator must not contain the decimal or grouping separator");
+            }
             symbols.setExponentSeparator(scientificExpSep);
             numberFormat.setDecimalFormatSymbols(symbols);
         }
