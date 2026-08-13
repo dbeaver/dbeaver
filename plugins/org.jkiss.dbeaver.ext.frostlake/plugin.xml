@@ -117,23 +117,23 @@
                     Account-level objects, siblings of Databases: a warehouse, role or user belongs to
                     no schema, and SHOW … IN SCHEMA is a syntax error for them.
                 -->
-                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.warehouses.node.name" icon="icons/fl_warehouse.svg">
-                    <items label="%tree.warehouse.node.name" path="warehouse" property="warehouses" icon="icons/fl_warehouse.svg"/>
+                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.warehouses.node.name" icon="#folder_admin">
+                    <items label="%tree.warehouse.node.name" path="warehouse" property="warehouses" icon="#server"/>
                 </folder>
-                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.roles.node.name" icon="icons/fl_role.svg">
-                    <items label="%tree.role.node.name" path="role" property="roles" icon="icons/fl_role.svg"/>
+                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.roles.node.name" icon="#user_group">
+                    <items label="%tree.role.node.name" path="role" property="roles" icon="#user_group"/>
                 </folder>
-                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.users.node.name" icon="icons/fl_user.svg">
-                    <items label="%tree.user.node.name" path="user" property="users" icon="icons/fl_user.svg"/>
+                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.users.node.name" icon="#folder_user">
+                    <items label="%tree.user.node.name" path="user" property="users" icon="#user"/>
                 </folder>
 
-                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericCatalog" label="%tree.databases.node.name" icon="icons/fl_database.svg">
-                    <items label="%tree.database.node.name" path="catalog" property="catalogs" icon="icons/fl_database.svg">
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSchema" label="%tree.schemas.node.name" icon="icons/fl_schema.svg">
-                            <items label="%tree.schema.node.name" path="schema" property="schemas" icon="icons/fl_schema.svg">
+                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericCatalog" label="%tree.databases.node.name" icon="#folder_database">
+                    <items label="%tree.database.node.name" path="catalog" property="catalogs" icon="#database">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSchema" label="%tree.schemas.node.name" icon="#folder_schema">
+                            <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
 
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="icons/fl_table.svg">
-                                    <items label="%tree.table.node.name" path="table" property="physicalTables" icon="icons/fl_table.svg">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table">
+                                    <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
                                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns">
                                             <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
                                         </folder>
@@ -142,7 +142,7 @@
                                                 <items label="%tree.constraint.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"/>
                                             </items>
                                         </folder>
-                                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys">
+                                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-key">
                                             <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                                 <items label="%tree.foreign_key_column.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"/>
                                             </items>
@@ -150,60 +150,60 @@
                                     </items>
                                 </folder>
 
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericView" label="%tree.views.node.name" icon="icons/fl_view.svg">
-                                    <items label="%tree.view.node.name" path="view" property="views" icon="icons/fl_view.svg">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericView" label="%tree.views.node.name" icon="#folder_view">
+                                    <items label="%tree.view.node.name" path="view" property="views" icon="#view">
                                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns">
                                             <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
                                         </folder>
                                     </items>
                                 </folder>
 
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="icons/fl_procedure.svg">
-                                    <items label="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="icons/fl_procedure.svg">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="#procedure">
+                                    <items label="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
                                         <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
                                     </items>
                                 </folder>
 
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.functions.node.name" icon="icons/fl_function.svg">
-                                    <items label="%tree.function.node.name" path="function" property="functionsOnly" icon="icons/fl_function.svg">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.functions.node.name" icon="#function">
+                                    <items label="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
                                         <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
                                     </items>
                                 </folder>
 
                                 <!-- The Snowflake-shaped objects JDBC cannot reach. One node type, many kinds. -->
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.stages.node.name" icon="icons/fl_stage.svg">
-                                    <items label="%tree.stage.node.name" path="stage" property="stages" icon="icons/fl_stage.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.stages.node.name" icon="#folder_link">
+                                    <items label="%tree.stage.node.name" path="stage" property="stages" icon="#link"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.pipes.node.name" icon="icons/fl_pipe.svg">
-                                    <items label="%tree.pipe.node.name" path="pipe" property="pipes" icon="icons/fl_pipe.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.pipes.node.name" icon="#job_schedule">
+                                    <items label="%tree.pipe.node.name" path="pipe" property="pipes" icon="#job"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.streams.node.name" icon="icons/fl_stream.svg">
-                                    <items label="%tree.stream.node.name" path="stream" property="streams" icon="icons/fl_stream.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.streams.node.name" icon="#trigger">
+                                    <items label="%tree.stream.node.name" path="stream" property="streams" icon="#trigger"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.tasks.node.name" icon="icons/fl_task.svg">
-                                    <items label="%tree.task.node.name" path="task" property="tasks" icon="icons/fl_task.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.tasks.node.name" icon="#scheduler">
+                                    <items label="%tree.task.node.name" path="task" property="tasks" icon="#task"/>
                                 </folder>
                                 <!-- Sequences come from the generic model, which already lists them. -->
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="icons/fl_sequence.svg">
-                                    <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="icons/fl_sequence.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequence">
+                                    <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.fileFormats.node.name" icon="icons/fl_file_format.svg">
-                                    <items label="%tree.fileFormat.node.name" path="fileFormat" property="fileFormats" icon="icons/fl_file_format.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.fileFormats.node.name" icon="#document">
+                                    <items label="%tree.fileFormat.node.name" path="fileFormat" property="fileFormats" icon="#document"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.dynamicTables.node.name" icon="icons/fl_dynamic_table.svg">
-                                    <items label="%tree.dynamicTable.node.name" path="dynamicTable" property="dynamicTables" icon="icons/fl_dynamic_table.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.dynamicTables.node.name" icon="#folder_table">
+                                    <items label="%tree.dynamicTable.node.name" path="dynamicTable" property="dynamicTables" icon="#table"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.tags.node.name" icon="icons/fl_tag.svg">
-                                    <items label="%tree.tag.node.name" path="tag" property="tags" icon="icons/fl_tag.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.tags.node.name" icon="#folder_info">
+                                    <items label="%tree.tag.node.name" path="tag" property="tags" icon="#info"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.maskingPolicies.node.name" icon="icons/fl_masking_policy.svg">
-                                    <items label="%tree.maskingPolicy.node.name" path="maskingPolicy" property="maskingPolicies" icon="icons/fl_masking_policy.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.maskingPolicies.node.name" icon="#folder_key">
+                                    <items label="%tree.maskingPolicy.node.name" path="maskingPolicy" property="maskingPolicies" icon="#locked"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.rowAccessPolicies.node.name" icon="icons/fl_row_access_policy.svg">
-                                    <items label="%tree.rowAccessPolicy.node.name" path="rowAccessPolicy" property="rowAccessPolicies" icon="icons/fl_row_access_policy.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.rowAccessPolicies.node.name" icon="#permissions">
+                                    <items label="%tree.rowAccessPolicy.node.name" path="rowAccessPolicy" property="rowAccessPolicies" icon="#key"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.cortexSearchServices.node.name" icon="icons/fl_cortex_search.svg">
-                                    <items label="%tree.cortexSearchService.node.name" path="cortexSearchService" property="cortexSearchServices" icon="icons/fl_cortex_search.svg"/>
+                                <folder type="org.jkiss.dbeaver.ext.frostlake.model.FrostlakeObject" label="%tree.cortexSearchServices.node.name" icon="#index">
+                                    <items label="%tree.cortexSearchService.node.name" path="cortexSearchService" property="cortexSearchServices" icon="#index"/>
                                 </folder>
 
                             </items>
