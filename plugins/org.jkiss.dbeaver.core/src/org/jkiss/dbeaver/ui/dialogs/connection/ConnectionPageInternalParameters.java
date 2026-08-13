@@ -149,7 +149,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
         viewer.setContentProvider(new ArrayContentProvider());
         viewer.setInput(preferences.preferenceNames());
 
-        UIUtils.asyncExec(() -> UIUtils.packColumns(viewer.getTable()));
+        UIUtils.asyncExec(() -> UIUtils.packColumns(viewer.getTable(), true));
     }
 
     @Override
