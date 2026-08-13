@@ -451,6 +451,9 @@ public class AIChatSession {
             messages,
             confirmation
         );
+        if (conversation.getState() == AIChatConversation.State.CANCELED) {
+            return CompletableFuture.completedFuture(conversation);
+        }
         try {
             return getAssistant().generateTextStream(
                 monitor,
