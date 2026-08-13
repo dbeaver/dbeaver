@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.controls.AIChatControl;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatIcons;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.controls.ScopeSelectorControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.utils.ArrayUtils;
@@ -222,8 +222,8 @@ public class AIChatUtils {
         @NotNull AIChatMessage message
     ) {
         if (DBWorkbench.getPlatformUI().confirmAction(
-            AIChatMessages.ai_chat_clear_history_confirm_title,
-            AIChatMessages.ai_chat_clear_history_partial_confirm_message
+            AIChatMessagesUI.ai_chat_clear_history_confirm_title,
+            AIChatMessagesUI.ai_chat_clear_history_partial_confirm_message
         )) {
             chatSession.notifyMessagesRemove(activeConversation, message);
             activeConversation.clearMessagesAfter(message);

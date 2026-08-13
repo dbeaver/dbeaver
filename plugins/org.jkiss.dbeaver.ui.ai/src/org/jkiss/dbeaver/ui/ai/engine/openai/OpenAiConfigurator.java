@@ -63,7 +63,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     @Nullable
     private Text baseUrlText;
 
-    @Nullable
     protected Text tokenText;
     private Text temperatureText;
     private ModelSelectorField modelSelectorField;
@@ -128,6 +127,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
+            .withRequiredSetting(tokenText, AIUIMessages.model_selector_token_required)
             .withModelListSupplier(
                 (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
                     .filter(it -> it.features().contains(AIModelFeature.CHAT))
@@ -163,11 +163,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
     @NotNull
     private List<AIModel> fetchOpenAiModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (token == null || token.isEmpty()) {
-            //throw new DBException(AIUIMessages.openai_configurator_token_required);
-            return List.of();
-        }
-
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);

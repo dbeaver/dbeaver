@@ -29,6 +29,5 @@ public class OAIToolParameters {
     @NotNull
     public Map<String, OAIToolParameter> properties = new LinkedHashMap<>();
     public String[] required;
-//    public boolean additionalProperties;
 
 }

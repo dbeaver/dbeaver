@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.ai.chat.internal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class AIChatMessages extends NLS {
+public class AIChatMessagesUI extends NLS {
     public static String ai_chat_message_role_user_label;
     public static String ai_chat_message_role_assistant_label;
     public static String ai_chat_message_role_function_label;
@@ -71,7 +71,6 @@ public class AIChatMessages extends NLS {
     public static String ai_chat_confirm_declined;
     public static String ai_chat_confirm_params;
     public static String ai_chat_confirm_result;
-    public static String ai_chat_conversation_cancelled;
     public static String ai_chat_message_role_attachment_label;
     public static String ai_chat_conversation_new_label;
     public static String ai_chat_conversation_delete_label;
@@ -85,6 +84,6 @@ public class AIChatMessages extends NLS {
 
 
     static {
-        NLS.initializeMessages(AIChatMessages.class.getName(), AIChatMessages.class);
+        NLS.initializeMessages(AIChatMessagesUI.class.getName(), AIChatMessagesUI.class);
     }
 }
