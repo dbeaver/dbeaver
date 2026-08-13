@@ -61,7 +61,7 @@
                     categories="sql,analytic,columns"
                     singleConnection="true"
                     allowsEmptyPassword="true">
-                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.9.7]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.10.0-rc1]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
                     <file type="jar" path="maven:/org.apache.httpcomponents.client5:httpclient5:RELEASE[5.4.4]" bundle="!drivers.clickhouse_com"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
@@ -106,9 +106,9 @@
                           desktop="true" hidden="true"/>
             </propertyGroup>
             <propertyGroup label="SSL Settings">
-                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
-                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
-                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured,file" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,file" length="MULTILINE"/>
+                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password,file" length="MULTILINE"/>
                 <property id="ssl.ca.cert" label="CA Certificate Path" type="string" description="Path to a CA certificate file"
                           desktop="true"/>
                 <property id="ssl.client.cert" label="Client Certificate Path" type="string" description="Path to a client certificate file"
@@ -145,6 +145,7 @@
             <type name="IPV6"/>
             <type name="TUPLE*"/>
             <type name="MAP*"/>
+            <type name="JSON"/>
 
             <!-- https://clickhouse.com/docs/sql-reference/data-types/geo -->
             <type name="POINT"/>

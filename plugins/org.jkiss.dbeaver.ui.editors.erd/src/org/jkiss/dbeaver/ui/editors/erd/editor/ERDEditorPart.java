@@ -115,6 +115,7 @@ import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -130,11 +131,15 @@ import java.util.regex.PatternSyntaxException;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
     private static final Log searcherLog = Log.getLog(Searcher.class);
+    private static final Log log = Log.getLog(ERDEditorPart.class);
 
     @Nullable
     protected ProgressControl progressControl;
 
     private EditModeComposite editModeComposite;
+
+    @Nullable
+    private Runnable showPaletteAction = null;
 
     /**
      * the graphical viewer
@@ -426,10 +431,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @return an instance of <code>Schema</code>
      */
+    @Nullable
     public EntityDiagram getDiagram() {
-        return getDiagramPart().getDiagram();
+        DiagramPart part = getDiagramPart();
+        return part != null
+            ? part.getDiagram()
+            : null;
+
     }
 
+    @Nullable
     public DiagramPart getDiagramPart() {
         return rootPart == null ? null : (DiagramPart) rootPart.getContents();
     }
@@ -687,7 +698,27 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             this.getPalettePreferences()
         );
         paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
+
+        this.showPaletteAction = () -> {
+            try {
+                BeanUtils.invokeObjectDeclaredMethod(
+                    paletteComposite,
+                    "setState",
+                    new Class<?>[] { int.class },
+                    new Object[] { FlyoutPaletteComposite.STATE_PINNED_OPEN }
+                );
+            } catch (Throwable e) {
+                log.debug("Failed to enforce palette visibility", e);
+            }
+        };
+
         return paletteComposite;
+    }
+
+    public void showPalette() {
+        if (this.showPaletteAction != null) {
+            this.showPaletteAction.run();
+        }
     }
 
     public boolean isLoaded() {
@@ -1116,9 +1147,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         @Override
         public void run() {
-            getDiagram().setAttributeStyle(style, !isChecked());
-            refreshEntityAndAttributes();
-            refreshDiagram(true, true);
+            if (getDiagram() != null) {
+                getDiagram().setAttributeStyle(style, !isChecked());
+                refreshEntityAndAttributes();
+                refreshDiagram(true, true);
+            }
         }
     }
 
@@ -1205,25 +1238,27 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void run() {
             EntityDiagram diagram = getDiagram();
-            if (defStyle) {
-                diagram.setAttributeVisibility(visibility);
-                for (ERDEntity entity : diagram.getEntities()) {
-                    entity.reloadAttributes(diagram);
-                }
-                refreshEntityAndAttributes();
-            } else {
-                for (Object object : ((IStructuredSelection) getGraphicalViewer().getSelection()).toArray()) {
-                    if (object instanceof EntityPart entityPart) {
-                        entityPart.getEntity().setAttributeVisibility(visibility);
-                        UIUtils.asyncExec(() -> {
-                            entityPart.getEntity().reloadAttributes(diagram);
-                            entityPart.refresh();
-                        });
+            if (diagram != null) {
+                if (defStyle) {
+                    diagram.setAttributeVisibility(visibility);
+                    for (ERDEntity entity : diagram.getEntities()) {
+                        entity.reloadAttributes(diagram);
+                    }
+                    refreshEntityAndAttributes();
+                } else {
+                    for (Object object : ((IStructuredSelection) getGraphicalViewer().getSelection()).toArray()) {
+                        if (object instanceof EntityPart entityPart) {
+                            entityPart.getEntity().setAttributeVisibility(visibility);
+                            UIUtils.asyncExec(() -> {
+                                entityPart.getEntity().reloadAttributes(diagram);
+                                entityPart.refresh();
+                            });
 
+                        }
                     }
                 }
+                refreshDiagram(true, false);
             }
-            refreshDiagram(true, false);
         }
     }
 
@@ -1231,7 +1266,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             GraphicalViewer graphicalViewer = getGraphicalViewer();
-            if (graphicalViewer == null) {
+            if (getDiagram() == null) {
                 return;
             }
             if (ERDUIConstants.PREF_GRID_ENABLED.equals(event.getProperty())) {
@@ -1278,9 +1313,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     protected void refreshEntityAndAttributes() {
-        getDiagram().getEntities().forEach(entity -> {
-            entity.reloadAttributes(getDiagram());
-        });
+        if (getDiagram() != null) {
+            getDiagram().getEntities().forEach(entity -> {
+                entity.reloadAttributes(getDiagram());
+            });
+        }
         getGraphicalViewer().getContents().getChildren().forEach(editPart -> {
             if (editPart instanceof EntityPart entityPart) {
                 entityPart.refresh();

@@ -147,15 +147,15 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
             createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, true);
         }
-        if (getWizard().isTaskSaveEnabled()) {
-            createButton(parent, SAVE_BUTTON_ID, TaskUIMessages.task_configuration_wizard_dialog_button_save, false).setEnabled(false);
-        }
         super.createButtonsForButtonBar(parent);
     }
 
     @Override
     protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
         ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
+        if (getWizard().isTaskSaveEnabled()) {
+            createButton(parent, SAVE_BUTTON_ID, TaskUIMessages.task_configuration_wizard_dialog_button_save, false).setEnabled(false);
+        }
         getWizard().createTaskActions(parent);
     }
 

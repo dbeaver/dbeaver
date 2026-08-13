@@ -67,7 +67,7 @@ public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEnt
             try {
                 if (dictionary.getDescriptionColumnNames() == null) {
                     Collection<? extends DBSEntityAttribute> tablePK = DBUtils.getBestTableIdentifier(monitor, entity);
-                    if (tablePK != null && !tablePK.isEmpty()) {
+                    if (!tablePK.isEmpty()) {
                         dictionary.setDescriptionColumnNames(DBVEntity.getDefaultDescriptionColumn(monitor, tablePK.iterator().next()));
                     }
                 }

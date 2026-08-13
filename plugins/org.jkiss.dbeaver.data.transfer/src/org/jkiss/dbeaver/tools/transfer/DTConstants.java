@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,12 @@ public class DTConstants {
     public static final String PROP_PROCESSOR_TYPE = "processor";
     public static final String PROP_PROCESSORS_LIST = "processors";
     public static final String PROP_NAME = "@propNames";
+
+    // Database consumer settings keys (shared between the desktop and cloudbeaver)
+    public static final String PROP_ON_DUPLICATE_KEY_METHOD = "onDuplicateKeyMethod";
+    public static final String PROP_USE_BULK_LOAD = "useBulkLoad";
+    public static final String PROP_USE_TRANSACTIONS = "useTransactions";
+    public static final String PROP_OPEN_NEW_CONNECTION = "openNewConnection";
 
     public static final int DEFAULT_MAX_TYPE_LENGTH = 32767; // Max Oracle VARCHAR data type length
 

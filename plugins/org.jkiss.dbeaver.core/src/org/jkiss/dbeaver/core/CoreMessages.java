@@ -378,6 +378,9 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_status_bar_show_breadcrumbs_editors_label;
     public static String pref_page_ui_status_bar_show_status_line_check_label;
     public static String pref_page_ui_status_bar_show_status_line_check_tip;
+    public static String pref_page_ui_general_check_zoom_restart_prompt_label;
+    public static String pref_page_ui_general_check_zoom_restart_prompt_tip;
+    public static String pref_page_ui_general_group_display;
     public static String pref_page_eclipse_ui_general_group_general;
     public static String pref_page_eclipse_ui_general_group_label;
 
@@ -534,6 +537,8 @@ public class CoreMessages extends NLS {
 
     public static String pref_page_connection_label_close_connection_on_sleep;
     public static String pref_page_connection_label_close_connection_on_sleep_tip;
+    public static String pref_page_connection_label_enable_shell_auth_model;
+    public static String pref_page_connection_label_enable_shell_auth_model_tip;
 
     public static String pref_page_network_expert_label;
     public static String pref_page_network_expert_preferred_ip_stack_label;
@@ -581,6 +586,10 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_edit_wizard_shell_cmd_directory_title;
     public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_label;
     public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_title;
+    public static String dialog_connection_edit_wizard_shell_cmd_clear_button_label;
+    public static String dialog_connection_edit_wizard_shell_cmd_te_warning_label;
+    public static String dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_label;
+    public static String dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_text;
 
     public static String dialog_connection_edit_wizard_connections;
     public static String dialog_connection_edit_wizard_connections_description;

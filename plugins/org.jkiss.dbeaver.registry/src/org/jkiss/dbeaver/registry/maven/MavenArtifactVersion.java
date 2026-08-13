@@ -106,6 +106,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         this.snapshotVersion = snapshotVersion;
         loadPOM(monitor, resolveOptionalDependencies);
         this.version = verifyVersionString(evaluateString(this.version));
+        this.packaging = evaluateString(this.packaging);
     }
 
     private MavenArtifactVersion(
