@@ -895,7 +895,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 return cat1 - cat2;
             }
 
-            if (e1 instanceof DBPObjectWithOrdinalPosition p1 && e2 instanceof DBPObjectWithOrdinalPosition p2) {
+            if (getColumnInfo(viewer) == null && e1 instanceof DBPObjectWithOrdinalPosition p1 && e2 instanceof DBPObjectWithOrdinalPosition p2) {
                 int result = p1.compareTo(p2);
                 if (result != 0) {
                     return result;
