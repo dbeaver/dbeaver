@@ -181,6 +181,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         );
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
+        gd.widthHint = 150;
         tokenText.setLayoutData(gd);
         tokenText.addModifyListener((e -> token = tokenText.getText()));
         tokenText.setMessage(AIUIMessages.openai_configurator_token_placeholder);
