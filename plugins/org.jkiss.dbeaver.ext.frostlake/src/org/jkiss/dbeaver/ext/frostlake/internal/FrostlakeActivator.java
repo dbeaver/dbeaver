@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.frostlake.internal;
 
 import org.eclipse.core.runtime.Plugin;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -30,18 +32,19 @@ public class FrostlakeActivator extends Plugin {
         // default constructor
     }
 
+    @Nullable
     public static FrostlakeActivator getDefault() {
         return instance;
     }
 
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(@NotNull BundleContext context) throws Exception {
         super.start(context);
         instance = this;
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(@NotNull BundleContext context) throws Exception {
         instance = null;
         super.stop(context);
     }

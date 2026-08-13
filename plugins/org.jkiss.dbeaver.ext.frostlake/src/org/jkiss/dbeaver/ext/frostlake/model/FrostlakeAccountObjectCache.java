@@ -51,6 +51,7 @@ public class FrostlakeAccountObjectCache extends JDBCObjectCache<FrostlakeDataSo
         return session.prepareStatement(kind.getAccountListQuery());
     }
 
+    @NotNull
     @Override
     protected FrostlakeObject fetchObject(@NotNull JDBCSession session,
                                           @NotNull FrostlakeDataSource dataSource,

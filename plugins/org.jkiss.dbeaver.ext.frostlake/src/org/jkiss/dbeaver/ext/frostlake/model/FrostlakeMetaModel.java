@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.frostlake.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -39,19 +40,22 @@ public class FrostlakeMetaModel extends GenericMetaModel {
         super();
     }
 
+    @NotNull
     @Override
     public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor,
                                                   @NotNull DBPDataSourceContainer container) throws DBException {
         return new FrostlakeDataSource(monitor, container, this);
     }
 
+    @NotNull
     @Override
     public GenericSchema createSchemaImpl(@NotNull GenericDataSource dataSource,
-                                          GenericCatalog catalog,
+                                          @Nullable GenericCatalog catalog,
                                           @NotNull String schemaName) {
         return new FrostlakeSchema(dataSource, catalog, schemaName);
     }
 
+    @Nullable
     @Override
     public String getTableDDL(@NotNull DBRProgressMonitor monitor,
                               @NotNull GenericTableBase sourceObject,

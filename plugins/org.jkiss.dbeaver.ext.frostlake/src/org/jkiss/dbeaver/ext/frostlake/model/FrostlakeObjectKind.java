@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.frostlake.model;
 
+import org.jkiss.code.NotNull;
+
 /**
  * The Frostlake object kinds that have no JDBC metadata call, each named by the SHOW command that
  * lists it.
@@ -31,6 +33,7 @@ package org.jkiss.dbeaver.ext.frostlake.model;
  * The extra columns are surfaced as properties without this enum needing to know about them, so adding
  * a kind is one line here and one folder in plugin.xml.
  */
+
 public enum FrostlakeObjectKind {
 
     // Schema-level: listed with IN SCHEMA.
@@ -54,7 +57,7 @@ public enum FrostlakeObjectKind {
     private final String nodePath;
     private final boolean schemaScoped;
 
-    FrostlakeObjectKind(String showKeyword, String nodePath, boolean schemaScoped) {
+    FrostlakeObjectKind(@NotNull String showKeyword, @NotNull String nodePath, boolean schemaScoped) {
         this.showKeyword = showKeyword;
         this.nodePath = nodePath;
         this.schemaScoped = schemaScoped;
@@ -70,29 +73,31 @@ public enum FrostlakeObjectKind {
     }
 
     /** The plural that follows SHOW, e.g. {@code FILE FORMATS}. */
+    @NotNull
     public String getShowKeyword() {
         return showKeyword;
     }
 
     /** The node path used for this kind in plugin.xml, and so in navigator URLs. */
+    @NotNull
     public String getNodePath() {
         return nodePath;
     }
 
     /**
-     * The listing statement for one schema. Qualified with the catalog so the answer does not depend on
-     * which database the session happens to be pointed at.
+     * The listing statement for one schema, qualified with the catalog so the answer does not depend on
+     * which database the session happens to be pointed at. The caller passes the schema reference
+     * already qualified and quoted — an identifier that was created quoted and lower-case only survives
+     * the round trip if it is quoted on the way back in, since Frostlake folds an unquoted one to
+     * upper-case exactly as Snowflake does.
      */
-    /**
-     * The listing for one schema. The caller passes the schema reference already qualified and quoted —
-     * an identifier that was created quoted and lower-case only survives the round trip if it is quoted
-     * on the way back in, since Frostlake folds an unquoted one to upper-case exactly as Snowflake does.
-     */
-    public String getSchemaListQuery(String qualifiedSchemaName) {
+    @NotNull
+    public String getSchemaListQuery(@NotNull String qualifiedSchemaName) {
         return "SHOW " + showKeyword + " IN SCHEMA " + qualifiedSchemaName;
     }
 
     /** The listing statement for an account-level kind, which takes no scope at all. */
+    @NotNull
     public String getAccountListQuery() {
         return "SHOW " + showKeyword;
     }

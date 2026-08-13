@@ -107,6 +107,7 @@ public class FrostlakeObject implements DBSObject, DBPNamedObject2, DBPSaveableO
         return kind;
     }
 
+    @Nullable
     @Property(viewable = true, order = 2)
     public String getCreatedOn() {
         return createdOn;
@@ -119,7 +120,7 @@ public class FrostlakeObject implements DBSObject, DBPNamedObject2, DBPSaveableO
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 

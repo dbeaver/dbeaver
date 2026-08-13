@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.frostlake.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -205,13 +206,16 @@ public class FrostlakeSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    public void initDriverSettings(@NotNull JDBCSession session,
+                                   @NotNull JDBCDataSource dataSource,
+                                   @NotNull JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(Arrays.asList(FROSTLAKE_KEYWORDS));
         addFunctions(Arrays.asList(FROSTLAKE_FUNCTIONS));
         addDataTypes(Arrays.asList(FROSTLAKE_TYPES));
     }
 
+    @NotNull
     @Override
     public String[][] getBlockBoundStrings() {
         return new String[][]{{"BEGIN", "END"}};

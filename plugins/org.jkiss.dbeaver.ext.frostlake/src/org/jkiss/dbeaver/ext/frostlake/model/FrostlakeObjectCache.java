@@ -51,6 +51,7 @@ public class FrostlakeObjectCache extends JDBCObjectCache<FrostlakeSchema, Frost
                 schema.getCatalog().getName(), schema.getName())));
     }
 
+    @NotNull
     @Override
     protected FrostlakeObject fetchObject(@NotNull JDBCSession session,
                                           @NotNull FrostlakeSchema schema,

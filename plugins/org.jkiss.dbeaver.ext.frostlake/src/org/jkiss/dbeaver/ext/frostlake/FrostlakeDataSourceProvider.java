@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ext.frostlake;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.frostlake.model.FrostlakeDataSource;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.CommonUtils;

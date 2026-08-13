@@ -23,9 +23,9 @@ public class FrostlakeConstants {
 
     /** jdbc:frostlake://host:port/db — talks to a running DatabaseHttpServer. */
     public static final String URL_PREFIX_SERVER = "jdbc:frostlake://";
-    /** jdbc:frostlake:direct:<name> — in-process, one shared engine per name, nothing persisted. */
+    /** jdbc:frostlake:direct:&lt;name&gt; — in-process, one shared engine per name, nothing persisted. */
     public static final String URL_PREFIX_DIRECT = "jdbc:frostlake:direct:";
-    /** jdbc:frostlake:file:<dir> — in-process and persistent, pinned to a directory. */
+    /** jdbc:frostlake:file:&lt;dir&gt; — in-process and persistent, pinned to a directory. */
     public static final String URL_PREFIX_FILE = "jdbc:frostlake:file:";
 
     public static final int DEFAULT_PORT = 18082;

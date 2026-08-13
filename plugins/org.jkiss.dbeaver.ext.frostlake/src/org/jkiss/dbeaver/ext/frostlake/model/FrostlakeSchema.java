@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.frostlake.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -46,7 +47,7 @@ public class FrostlakeSchema extends GenericSchema {
         new EnumMap<>(FrostlakeObjectKind.class);
 
     public FrostlakeSchema(@NotNull GenericDataSource dataSource,
-                           GenericCatalog catalog,
+                           @Nullable GenericCatalog catalog,
                            @NotNull String schemaName) {
         super(dataSource, catalog, schemaName);
     }
@@ -68,47 +69,58 @@ public class FrostlakeSchema extends GenericSchema {
         return cacheOf(kind).getAllObjects(monitor, this);
     }
 
-    public Collection<FrostlakeObject> getStages(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getStages(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.STAGE);
     }
 
-    public Collection<FrostlakeObject> getPipes(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getPipes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.PIPE);
     }
 
-    public Collection<FrostlakeObject> getStreams(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getStreams(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.STREAM);
     }
 
-    public Collection<FrostlakeObject> getTasks(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getTasks(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.TASK);
     }
 
-    public Collection<FrostlakeObject> getFileFormats(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getFileFormats(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.FILE_FORMAT);
     }
 
-    public Collection<FrostlakeObject> getDynamicTables(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getDynamicTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.DYNAMIC_TABLE);
     }
 
-    public Collection<FrostlakeObject> getTags(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getTags(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.TAG);
     }
 
-    public Collection<FrostlakeObject> getMaskingPolicies(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getMaskingPolicies(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.MASKING_POLICY);
     }
 
-    public Collection<FrostlakeObject> getRowAccessPolicies(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getRowAccessPolicies(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.ROW_ACCESS_POLICY);
     }
 
-    public Collection<FrostlakeObject> getCortexSearchServices(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getCortexSearchServices(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects(monitor, FrostlakeObjectKind.CORTEX_SEARCH_SERVICE);
     }
 
     /** Refreshing the schema drops every kind's cache along with the generic content. */
+    @Nullable
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         for (FrostlakeObjectCache cache : caches.values()) {

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.frostlake.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -46,10 +47,11 @@ public class FrostlakeDDL {
      * {@code GET_DDL('<type>', '<qualified name>')}, or {@code fallback} when the engine cannot answer
      * — an older Frostlake, or an object type GET_DDL does not cover.
      */
+    @Nullable
     public static String readObjectDDL(@NotNull DBRProgressMonitor monitor,
                                        @NotNull DBSObject object,
                                        @NotNull String objectType,
-                                       String fallback) {
+                                       @Nullable String fallback) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Read Frostlake object DDL")) {
             try (JDBCPreparedStatement statement = session.prepareStatement("SELECT GET_DDL(?, ?)")) {
                 statement.setString(1, objectType);

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.frostlake.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -39,7 +40,7 @@ public class FrostlakeDataSource extends GenericDataSource {
     public FrostlakeDataSource(@NotNull DBRProgressMonitor monitor,
                                @NotNull DBPDataSourceContainer container,
                                @NotNull GenericMetaModel metaModel)
-        throws DBException {
+            throws DBException {
         super(monitor, container, metaModel, new FrostlakeSQLDialect());
     }
 
@@ -63,19 +64,23 @@ public class FrostlakeDataSource extends GenericDataSource {
         return cacheOf(kind).getAllObjects(monitor, this);
     }
 
-    public Collection<FrostlakeObject> getWarehouses(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getWarehouses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return accountObjects(monitor, FrostlakeObjectKind.WAREHOUSE);
     }
 
-    public Collection<FrostlakeObject> getRoles(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getRoles(@NotNull DBRProgressMonitor monitor) throws DBException {
         return accountObjects(monitor, FrostlakeObjectKind.ROLE);
     }
 
-    public Collection<FrostlakeObject> getUsers(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<FrostlakeObject> getUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return accountObjects(monitor, FrostlakeObjectKind.USER);
     }
 
     /** Refreshing the connection drops the account-level caches along with the generic content. */
+    @Nullable
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         for (FrostlakeAccountObjectCache cache : accountCaches.values()) {
