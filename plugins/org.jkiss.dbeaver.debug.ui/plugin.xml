@@ -200,7 +200,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.app.config">
-        <feature id="debug" label="Procedure debugger" enabledByDefault="false"/>
+        <feature
+            id="debug"
+            label="Procedure debugger"
+            description="Enables debugging of stored procedures and functions in PostgreSQL and its derivatives (Greenplum, TimescaleDB, etc.)"
+            enabledByDefault="false"/>
     </extension>
 
     <extension point="org.eclipse.ui.activities">
@@ -210,7 +214,7 @@
             </enabledWhen>
         </activity>
 
-        <activityPatternBinding activityId="dbeaver.activity.debug" pattern="org.jkiss.dbeaver.debug.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.debug" pattern="org\.jkiss\.dbeaver\.debug.*"/>
     </extension>
 
 </plugin>

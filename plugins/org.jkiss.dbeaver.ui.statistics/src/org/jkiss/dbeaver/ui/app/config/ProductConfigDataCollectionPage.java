@@ -27,10 +27,14 @@ import org.jkiss.dbeaver.ui.statistics.UIStatisticsActivator;
 import java.util.function.Consumer;
 
 public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
-    private final UIObservable<Boolean> sendUsageStatistics = UIObservable.of(true, Boolean.class);
+    private final boolean collectionRequired = DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired();
+    private final UIObservable<Boolean> sendUsageStatistics = UIObservable.of(null, Boolean.class);
 
     public ProductConfigDataCollectionPage() {
         super(ProductConfigMessages.data_collection_title, ProductConfigMessages.data_collection_description);
+        setPageComplete(false);
+
+        sendUsageStatistics.addChangeListener((o, n) -> setPageComplete(n != null));
     }
 
     @Override
@@ -40,7 +44,11 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
 
     @Override
     public void loadSettings() {
-        sendUsageStatistics.set(UIStatisticsActivator.isTrackingEnabled());
+        if (collectionRequired) {
+            sendUsageStatistics.set(true);
+        } else if (UIStatisticsActivator.isSkipDataShareConfirmation()) {
+            sendUsageStatistics.set(UIStatisticsActivator.isTrackingEnabled());
+        }
     }
 
     @Override
@@ -53,7 +61,7 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
         return pb -> pb
             .margins(10, 10)
             .row(buildAgreementPanel())
-            .row(buildSendUsageCheckbox());
+            .accept(buildConfirmationPanel(sendUsageStatistics, collectionRequired));
     }
 
     @NotNull
@@ -63,26 +71,32 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
                 .align(UIAlignX.FILL, UIAlignY.FILL)
                 .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
                 .row(rb1 -> rb1
-                    .weblink(
-                        ProductConfigMessages.data_collection_agreement_text, lb -> lb
-                            .align(UIAlignX.FILL, UIAlignY.FILL)
-                            .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
-                    )));
+                    .weblink(ProductConfigMessages.data_collection_agreement_text, lb -> lb
+                        .align(UIAlignX.FILL, UIAlignY.FILL)
+                        .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS))));
     }
 
     @NotNull
-    private Consumer<UIRowBuilder> buildSendUsageCheckbox() {
-        boolean collectionRequired = DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired();
-        return rb -> {
-            rb.checkBox(
-                ProductConfigMessages.data_collection_send_usage_statistics, bb -> bb
-                .selected(sendUsageStatistics)
-                .enabled(UIObservable.of(!collectionRequired)));
-            if (collectionRequired) {
-                rb.label(lb -> lb
-                    .image(DBIcon.SMALL_INFO)
-                    .tooltip(ProductConfigMessages.data_collection_cannot_opt_out_notice));
-            }
-        };
+    private static Consumer<UIPanelBuilder> buildConfirmationPanel(
+        @NotNull UIObservable<Boolean> sendUsageStatistics,
+        boolean collectionRequired
+    ) {
+        return pb -> pb
+            .row(rb -> {
+                rb.radioButton(
+                    ProductConfigMessages.data_collection_send_usage_statistics, bb -> bb
+                        .selected(UIObservables.equals(sendUsageStatistics, Boolean.TRUE))
+                        .enabled(UIObservable.of(!collectionRequired)));
+
+                if (collectionRequired) {
+                    rb.label(lb -> lb
+                        .image(DBIcon.SMALL_INFO)
+                        .tooltip(ProductConfigMessages.data_collection_cannot_opt_out_notice));
+                }
+            })
+            .row(rb -> rb.radioButton(
+                ProductConfigMessages.data_collection_do_not_send_usage_statistics, bb -> bb
+                    .selected(UIObservables.equals(sendUsageStatistics, Boolean.FALSE))
+                    .enabled(UIObservable.of(!collectionRequired))));
     }
 }

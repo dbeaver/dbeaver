@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -32,6 +34,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     private final IConfigurationElement contributorConfig;
     private final String id;
+    private final DBPImage icon;
     private final ObjectType objectType;
     private final ObjectType propertiesType;
     private final boolean supportsFunctions;
@@ -41,6 +44,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         super(contributorConfig);
         this.contributorConfig = contributorConfig;
         this.id = contributorConfig.getAttribute("id");
+        this.icon = iconToImage(contributorConfig.getAttribute(RegistryConstants.ATTR_ICON));
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
         this.supportsFunctions = CommonUtils.toBoolean(contributorConfig.getAttribute("supportsFunctions"));
         this.propertiesType = new ObjectType(contributorConfig, "properties");
@@ -50,6 +54,11 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     @NotNull
     public String getId() {
         return id;
+    }
+
+    @NotNull
+    public DBPImage getIcon() {
+        return icon;
     }
 
     @NotNull
@@ -101,12 +110,12 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public AIEngine createEngineInstance() throws DBException {
-        return createEngineInstance(AISettingsManager.getInstance().getSettings().getEngineConfiguration(getId()));
+    public AIEngine<?> createEngineInstance(@NotNull AIConfigurationProfile profile) throws DBException {
+        return createEngineInstance(profile.getConfiguration());
     }
 
     @NotNull
-    public AIEngine createEngineInstance(@NotNull AIEngineProperties properties) throws DBException {
+    public AIEngine<?> createEngineInstance(@NotNull AIEngineProperties properties) throws DBException {
         return objectType.createInstance(AIEngine.class, properties);
     }
 }

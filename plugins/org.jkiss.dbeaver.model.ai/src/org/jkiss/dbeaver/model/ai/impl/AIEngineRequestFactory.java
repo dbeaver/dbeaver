@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -65,8 +64,8 @@ public class AIEngineRequestFactory {
     public AIEngineRequest build(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIAssistant assistant,
+        @NotNull AIConfigurationProfile profile,
         @NotNull AIEngine<?> engine,
-        @NotNull AIEngineDescriptor engineDescriptor,
         @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
@@ -76,7 +75,7 @@ public class AIEngineRequestFactory {
 
         RequestFunctions requestFunctions = determineRequestTools(
             assistant,
-            engineDescriptor,
+            profile,
             functionContext,
             messages.stream().filter(aiMessage -> aiMessage.getRole() == AIMessageType.USER).count()
         );
@@ -109,7 +108,7 @@ public class AIEngineRequestFactory {
         if (databaseContext != null && dbSnapshotTokenBudget > 0) {
             AIDatabaseSnapshotService databaseSnapshotService = new AIDatabaseSnapshotService();
 
-            boolean functionsEnabled = isFunctionsEnabled(assistant, engineDescriptor);
+            boolean functionsEnabled = isFunctionsEnabled(assistant, profile);
             AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
                 monitor,
                 databaseContext,
@@ -152,23 +151,23 @@ public class AIEngineRequestFactory {
         return request;
     }
 
-    private boolean isFunctionsEnabled(@NotNull AIAssistant assistant, @NotNull AIEngineDescriptor engineDescriptor) {
-        if (!assistant.isFunctionSupported()) {
+    private boolean isFunctionsEnabled(@NotNull AIAssistant assistant, @NotNull AIConfigurationProfile profile) throws DBException {
+        if (!assistant.isFunctionSupported(profile)) {
             return false;
         }
         AIToolboxManager toolboxManager = assistant.getToolboxManager();
         AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
-        return engineDescriptor.isSupportsFunctions() && functionSettings.isFunctionsEnabled();
+        return profile.getEngineDescriptor().isSupportsFunctions() && functionSettings.isFunctionsEnabled();
     }
 
     @NotNull
     protected RequestFunctions determineRequestTools(
         @NotNull AIAssistant assistant,
-        @NotNull AIEngineDescriptor engineDescriptor,
+        @NotNull AIConfigurationProfile profile,
         @NotNull AIFunctionContext functionContext,
         long userMessageCount
-    ) {
-        if (!isFunctionsEnabled(assistant, engineDescriptor)) {
+    ) throws DBException {
+        if (!isFunctionsEnabled(assistant, profile)) {
             return new RequestFunctions();
         }
         AIToolboxManager toolboxManager = assistant.getToolboxManager();
@@ -220,11 +219,11 @@ public class AIEngineRequestFactory {
             }
         }
 
-        if (!prompt.isSupportsActions(userMessageCount)) {
+        if (!prompt.isSupportsActions(userMessageCount) || !promptGenerator.supportsUIAndActionFunctions()) {
             // Filter out actions
             selectedFunctions.removeIf(fd -> fd.getType() == AIFunctionType.ACTION);
         }
-        if (!prompt.isSupportsUi(userMessageCount)) {
+        if (!prompt.isSupportsUi(userMessageCount) || !promptGenerator.supportsUIAndActionFunctions()) {
             // Filter out ui functions
             selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
         }

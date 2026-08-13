@@ -2,6 +2,8 @@
 <?eclipse version="3.4"?>
 
 <plugin>
+    <extension-point id="chatView" name="AI Chat View" schema="schema/org.jkiss.dbeaver.ui.ai.chatView.exsd"/>
+
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.openai.OpenAiConfigurator"/>
         <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotConfigurator"/>
@@ -37,6 +39,10 @@
             <keywordReference id="dbeaver.ai.pref"/>
             <keywordReference id="dbeaver.ai.config"/>
         </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.chat" category="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageChat" name="%pref.page.ai.chat.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="dbeaver.ai.pref"/>
+        </page>
         <page id="org.jkiss.dbeaver.preferences.ai.prompts" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePagePrompts" name="%pref.page.ai.prompts.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="dbeaver.ai.pref"/>
@@ -48,6 +54,9 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
         <page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration" name="%prop.page.ai.config.name">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.chat" category="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageChat" name="%pref.page.ai.chat.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
         <page id="org.jkiss.dbeaver.preferences.ai.prompts" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePagePrompts" name="%pref.page.ai.prompts.name">
@@ -70,6 +79,12 @@
         <command id="com.dbeaver.ai.chat.sendPrompt" name="Send" description="Send prompt to AI engine" categoryId="com.dbeaver.ai"/>
         <command id="com.dbeaver.ai.chat.attach" name="Attach" description="Attach file" categoryId="com.dbeaver.ai"/>
         <command id="com.dbeaver.ai.chat.toggle" name="AI Chat" description="Toggle AI Chat visibility" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.focusPrompt" name="%command.com.dbeaver.ai.chat.focusPrompt.name" description="%command.com.dbeaver.ai.chat.focusPrompt.description" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.focusChat" name="%command.com.dbeaver.ai.chat.focusChat.name" description="%command.com.dbeaver.ai.chat.focusChat.description" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.newConversation" name="%command.com.dbeaver.ai.chat.newConversation.name" description="%command.com.dbeaver.ai.chat.newConversation.description" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.deleteConversation" name="%command.com.dbeaver.ai.chat.deleteConversation.name" description="%command.com.dbeaver.ai.chat.deleteConversation.description" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.openSettings" name="%command.com.dbeaver.ai.chat.openSettings.name" description="%command.com.dbeaver.ai.chat.openSettings.description" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.openFilters" name="%command.com.dbeaver.ai.chat.openFilters.name" description="%command.com.dbeaver.ai.chat.openFilters.description" categoryId="com.dbeaver.ai"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -131,16 +146,22 @@
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ui.ai.showCompletion" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai.svg"/>
-        <image commandId="com.dbeaver.ai.chat.sendPrompt" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai-chat-send.svg"/>
-        <image commandId="com.dbeaver.ai.chat.attach" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/attach.svg"/>
+        <image commandId="com.dbeaver.ai.chat.sendPrompt" icon="platform:/plugin/org.jkiss.dbeaver.ui.ai/icons/ai-chat-send.svg"/>
+        <image commandId="com.dbeaver.ai.chat.attach" icon="platform:/plugin/org.jkiss.dbeaver.ui.ai/icons/attach.svg"/>
         <image commandId="com.dbeaver.ai.chat.toggle" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.ui.ai.showCompletion" class="org.jkiss.dbeaver.ui.ai.internal.AITranslateHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.ai.configuration" class="org.jkiss.dbeaver.ui.ai.internal.AIConfigurationHandler"/>
-        <handler commandId="com.dbeaver.ai.chat.sendPrompt" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatSendPromptHandler"/>
-        <handler commandId="com.dbeaver.ai.chat.attach" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatAttachHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.sendPrompt" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatCommandHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.attach" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatCommandHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.focusPrompt" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatCommandHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.focusChat" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatCommandHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.newConversation" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatCommandHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.deleteConversation" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatCommandHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.openSettings" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatCommandHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.openFilters" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatCommandHandler"/>
         <handler commandId="com.dbeaver.ai.chat.toggle" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatToggleHandler">
             <enabledWhen>
                 <and>
@@ -154,6 +175,13 @@
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.ui.ai.showCompletion" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+I"/>
         <key commandId="com.dbeaver.ai.chat.sendPrompt" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+Enter"/>
+        <key commandId="com.dbeaver.ai.chat.attach" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+U"/>
+        <key commandId="com.dbeaver.ai.chat.focusPrompt" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+L"/>
+        <key commandId="com.dbeaver.ai.chat.focusChat" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+M"/>
+        <key commandId="com.dbeaver.ai.chat.newConversation" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+N"/>
+        <key commandId="com.dbeaver.ai.chat.deleteConversation" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+DEL"/>
+        <key commandId="com.dbeaver.ai.chat.openSettings" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+S"/>
+        <key commandId="com.dbeaver.ai.chat.openFilters" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+M2+F"/>
     </extension>
 
 

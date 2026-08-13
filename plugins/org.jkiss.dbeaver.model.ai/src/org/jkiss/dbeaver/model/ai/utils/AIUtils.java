@@ -23,17 +23,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -57,33 +55,77 @@ public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
     public static final double DEFAULT_TEMPERATURE = 0.0;
 
-    @Nullable
-    public static AIEngineDescriptor getActiveEngineDescriptor() {
-        return AIEngineRegistry.getInstance().getEngineDescriptor(
-            AISettingsManager.getInstance().getSettings().activeEngine()
-        );
+    @NotNull
+    public static String getSettingsAccessMessage(
+        @NotNull String plain,
+        @NotNull String linked,
+        @NotNull String contactAdmin
+    ) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return plain;
+        }
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            return linked;
+        }
+        return contactAdmin;
     }
 
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        AIEngineProperties configuration = aiSettings.getEngineConfiguration(aiSettings.activeEngine());
-        return configuration.isValidConfiguration();
+        aiSettings.resolveSecrets();
+        AIConfigurationProfile profile = aiSettings.getDefaultConfigurationOrNull();
+        return profile != null && profile.getConfiguration().isValidConfiguration();
     }
 
     /**
      * Retrieves a secret value from the global secret controller.
      * If the secret value is empty, it returns the provided default value.
      */
+    @Nullable
     public static String getSecretValueOrDefault(
+        @NotNull AIConfigurationProfile profile,
         @NotNull String secretId,
         @Nullable String defaultValue
     ) throws DBException {
-        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(secretId);
+        DBSSecretController globalSecretController = DBSSecretController.getGlobalSecretControllerOrNull();
+        if (globalSecretController == null) {
+            return defaultValue;
+        }
+        String suffix = getSecretSuffix(profile);
+        String secretValue = globalSecretController.getPrivateSecretValue(
+            secretId + suffix);
         if (CommonUtils.isEmpty(secretValue)) {
             return defaultValue;
         }
 
         return secretValue;
+    }
+
+    public static void setSecretValue(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secret,
+        @Nullable String value
+    ) throws DBException {
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            secret + getSecretSuffix(profile), value);
+    }
+
+    public static void deleteSecretValue(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secret
+    ) throws DBException {
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            secret + getSecretSuffix(profile),
+            null);
+    }
+
+    @NotNull
+    private static String getSecretSuffix(@NotNull AIConfigurationProfile profile) {
+        if (!profile.isMigrated()) {
+            return  "_" + profile.getProfileId();
+        }
+        // Legacy configurations didn't have a prefix
+        return "";
     }
 
     /**
@@ -614,4 +656,5 @@ public final class AIUtils {
     public static boolean useStreamMode() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_USE_STREAM_MODE);
     }
+
 }

@@ -315,17 +315,20 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
+        List<MySQLTableConstraint> constraintObjects = new ArrayList<>();
+
+        List<MySQLTableConstraint> uniqueKeyConstraints = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
+        if (uniqueKeyConstraints != null) {
+            constraintObjects.addAll(uniqueKeyConstraints);
+        }
+
         if (getDataSource().supportsCheckConstraints()) {
             List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
             if (!CommonUtils.isEmpty(checkConstraintObjects)) {
                 constraintObjects.addAll(checkConstraintObjects);
             }
-            return constraintObjects;
         }
-        else {
-            return constraintObjects;
-        }
+        return constraintObjects;
     }
 
     public MySQLTableConstraint getUniqueKey(DBRProgressMonitor monitor, String ukName)
