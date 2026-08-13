@@ -124,7 +124,7 @@ public class ConfirmedShellCommandsManager {
             try (var reader = Files.newBufferedReader(path)) {
                 confirmedCommands = (Set<String>) JSONUtils.GSON.fromJson(reader, TypeToken.getParameterized(Set.class, String.class));
             } catch (Exception e) {
-                log.error("Error loading product configuration state from " + path, e);
+                log.error("Error loading confirmed shell commands from " + path, e);
             }
         }
         return Objects.requireNonNullElse(confirmedCommands, new HashSet<>());
@@ -158,7 +158,7 @@ public class ConfirmedShellCommandsManager {
                 JSONUtils.PRETTY_GSON.toJson(confirmedCommands, writer);
             }
         } catch (Exception e) {
-            throw new DBException("Error saving confirmed commands", e);
+            throw new DBException("Error saving confirmed commands, file: %s".formatted(path), e);
         }
         log.debug("Saved confirmed commands to file '%s'".formatted(CONFIRMED_COMMANDS_FILE_NAME));
     }
