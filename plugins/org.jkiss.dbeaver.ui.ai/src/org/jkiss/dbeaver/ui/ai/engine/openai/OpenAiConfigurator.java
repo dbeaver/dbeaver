@@ -197,6 +197,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         baseUrlText.addModifyListener((e -> baseUrl = baseUrlText.getText()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
+        gd.widthHint = 150;
         baseUrlText.setLayoutData(gd);
     }
 
