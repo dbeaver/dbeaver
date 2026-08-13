@@ -34,11 +34,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpRequest;
-import java.time.Duration;
 import java.util.List;
 
 public abstract class OpenAiClientBase extends AbstractHttpAIClient {
-    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
     protected static final Gson GSON = JSONUtils.GSON;
     private static final Log log = Log.getLog(OpenAiClientBase.class);
     protected final String baseUrl;
@@ -81,7 +79,7 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(baseUrl, "models"))
             .GET()
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
 
         HttpRequest modifiedRequest = applyFilters(request);
@@ -105,7 +103,7 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
     @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
         log.debug("OpenAI request failed: " + statusCode + ", " + body);
-        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(statusCode, body));
     }
 
     @NotNull
@@ -114,7 +112,7 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
             .uri(AIHttpUtils.resolve(baseUrl, OpenAIConstants.ENDPOINT_RESPONSES))
             .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
     }
 

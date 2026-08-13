@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 public class TransformerSettingsDialog extends BaseDialog {
     private static final Log log = Log.getLog(TransformerSettingsDialog.class);
@@ -68,7 +68,7 @@ public class TransformerSettingsDialog extends BaseDialog {
     private PropertyTreeViewer propertiesEditor;
     private PropertySourceCustom propertySource;
 
-    private boolean selector;
+    private final boolean selector;
     private List<? extends DBDAttributeTransformerDescriptor> transformerList;
     private Text infoText;
     private DBDAttributeTransformerDescriptor transformer;
@@ -76,7 +76,8 @@ public class TransformerSettingsDialog extends BaseDialog {
     private Table attributeTable;
 
     public TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, boolean selector) {
-        super(viewer.getControl().getShell(), DBUtils.getObjectFullName(viewer.getDataContainer(), DBPEvaluationContext.UI) + " transforms", null);
+        super(viewer.getControl().getShell(), DBUtils.getObjectFullName(
+            viewer.getDataContainer(), DBPEvaluationContext.UI) + " transforms", null);
         this.viewer = viewer;
         this.currentAttribute = currentAttribute;
         this.selector = selector;
@@ -84,12 +85,13 @@ public class TransformerSettingsDialog extends BaseDialog {
         this.vEntitySrc = this.currentAttribute == null ?
             viewer.getModel().getVirtualEntity(true) :
             DBVUtils.getVirtualEntity(currentAttribute, true);
+        Objects.requireNonNull(vEntitySrc, "Virtual entity must be created");
         this.vEntity = new DBVEntity(vEntitySrc.getContainer(), vEntitySrc, vEntitySrc.getModel());
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
         Composite panel = composite;
@@ -128,7 +130,7 @@ public class TransformerSettingsDialog extends BaseDialog {
         UIUtils.createTableColumn(attributeTable, SWT.LEFT, "Transforms");
 
         for (DBDAttributeBinding attr : viewer.getModel().getVisibleAttributes()) {
-            TableItem attrItem = new TableItem(attributeTable, SWT.NONE);;
+            TableItem attrItem = new TableItem(attributeTable, SWT.NONE);
             attrItem.setData(attr);
             attrItem.setText(0, attr.getName());
             attrItem.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr, true)));
@@ -202,7 +204,7 @@ public class TransformerSettingsDialog extends BaseDialog {
         if (selector) {
             transformerCombo.removeAll();
             transformerCombo.add(ResultSetViewer.EMPTY_TRANSFORMER_NAME);
-            if (transformerList != null && selector) {
+            if (transformerList != null) {
                 for (DBDAttributeTransformerDescriptor td : transformerList) {
                     transformerCombo.add(td.getName());
                     if (td == transformer) {
@@ -255,7 +257,7 @@ public class TransformerSettingsDialog extends BaseDialog {
             final Map<String, Object> properties = propertySource.getPropertiesWithDefaults();
             for (Map.Entry<String, Object> prop : properties.entrySet()) {
                 if (prop.getValue() != null) {
-                    settings.setTransformOption(prop.getKey().toString(), prop.getValue().toString());
+                    settings.setTransformOption(prop.getKey(), prop.getValue().toString());
                 }
             }
             getDialogSettings().put(PROP_FOR_TRANSFORMER + transformer.getId(), GSON.toJson(properties, PROPERTIES_TYPE));
@@ -343,8 +345,7 @@ public class TransformerSettingsDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
 		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }

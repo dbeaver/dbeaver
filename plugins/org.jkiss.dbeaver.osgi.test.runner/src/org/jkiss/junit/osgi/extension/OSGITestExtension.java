@@ -197,7 +197,26 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         ClassLoader prev = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(osgiLoader);
-            osgiMethod.invoke(osgiInstance);
+            if (invocationContext.getArguments().isEmpty()) {
+                osgiMethod.invoke(osgiInstance);
+            } else {
+                Object[] args = invocationContext.getArguments().toArray();
+                // enums are special case, since they can come from different class loader
+                Class<?>[] parameterTypes = osgiMethod.getParameterTypes();
+                for (int i = 0; i < args.length; i++) {
+                    Object arg = args[i];
+                    Class<?> expected = parameterTypes[i];
+
+                    if (arg != null && expected.isEnum()) {
+                        args[i] = Enum.valueOf(
+                            (Class<? extends Enum>) expected,
+                            ((Enum<?>) arg).name()
+                        );
+                    }
+                }
+
+                osgiMethod.invoke(osgiInstance, args);
+            }
         } catch (InvocationTargetException e) {
             throw e.getCause();
         } finally {
@@ -207,6 +226,15 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
 
     @Override
     public void interceptTestMethod(
+        @NotNull Invocation<Void> inv,
+        @NotNull ReflectiveInvocationContext<Method> ctx,
+        @NotNull ExtensionContext ext
+    ) throws Throwable {
+        interceptWithOsgi(inv, ctx);
+    }
+
+    @Override
+    public void interceptTestTemplateMethod(
         @NotNull Invocation<Void> inv,
         @NotNull ReflectiveInvocationContext<Method> ctx,
         @NotNull ExtensionContext ext

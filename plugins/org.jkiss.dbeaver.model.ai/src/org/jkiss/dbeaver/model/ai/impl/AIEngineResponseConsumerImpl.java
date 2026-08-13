@@ -74,7 +74,7 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
     @Override
     public void nextChunk(@NotNull AIEngineResponseChunk chunk) {
         if (monitor.isCanceled() || !conversation.isActive()) {
-            close(true);
+            close(true, conversation.getState() == AIChatConversation.State.CANCELED);
             return;
         }
         if (chunk.getFunctionCall() != null) {
@@ -95,6 +95,9 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
 
     @Override
     public void error(@NotNull Throwable throwable) {
+        if (closed) {
+            return;
+        }
         if (logResponses) {
             throwable.printStackTrace(System.err);
         }
@@ -131,6 +134,10 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
     }
 
     private void close(boolean finishConversation) {
+        close(finishConversation, false);
+    }
+
+    private void close(boolean finishConversation, boolean isCanceled) {
         if (closed) {
             return;
         }
@@ -145,7 +152,7 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
             systemPromptLength.get()
         );
 
-        chatListener.complete(List.of(messageMeta), finishConversation);
+        chatListener.complete(List.of(messageMeta), finishConversation, isCanceled);
 
         try {
             engine.close();

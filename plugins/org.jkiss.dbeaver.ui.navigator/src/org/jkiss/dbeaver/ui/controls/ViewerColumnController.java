@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -352,16 +353,16 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         isPacking = true;
         try {
             int itemCount = 0;
-            if (viewer instanceof TreeViewer) {
-                itemCount = ((TreeViewer) viewer).getTree().getItemCount();
+            if (viewer instanceof TreeViewer treeViewer) {
+                itemCount = treeViewer.getTree().getItemCount();
                 float[] ratios = null;
-                if (((TreeViewer) viewer).getTree().getColumnCount() == 2) {
+                if (treeViewer.getTree().getColumnCount() == 2) {
                     ratios = new float[]{0.6f, 0.4f};
                 }
-                UIUtils.packColumns(((TreeViewer) viewer).getTree(), forceAutoSize, ratios);
-            } else if (viewer instanceof TableViewer) {
-                itemCount = ((TableViewer) viewer).getTable().getItemCount();
-                UIUtils.packColumns(((TableViewer) viewer).getTable(), forceAutoSize);
+                UIUtils.packColumns(treeViewer.getTree(), forceAutoSize, ratios);
+            } else if (viewer instanceof TableViewer tableViewer) {
+                itemCount = tableViewer.getTable().getItemCount();
+                UIUtils.packColumns(tableViewer.getTable(), forceAutoSize);
             }
 
             /*if (itemCount == 0) */{
@@ -679,6 +680,20 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         return -1;
     }
 
+    public boolean isBooleanColumn(int columnIndex) {
+        final Control control = viewer.getControl();
+        final Item column;
+        if (control instanceof Tree tree && columnIndex >= 0 && columnIndex < tree.getColumnCount()) {
+            column = tree.getColumn(columnIndex);
+        } else if (control instanceof Table table && columnIndex >= 0 && columnIndex < table.getColumnCount()) {
+            column = table.getColumn(columnIndex);
+        } else {
+            return false;
+        }
+        return column.getData() instanceof ColumnInfo columnInfo &&
+            columnInfo.labelProvider instanceof ColumnBooleanLabelProvider;
+    }
+
     private static class ColumnInfo extends ViewerColumnRegistry.ColumnState {
         final String description;
         final int style;
@@ -880,11 +895,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 return cat1 - cat2;
             }
 
-            // NOTE: In tree viewers, only parent elements (present in input) should be sorted.
-            // If both e1 and e2 are not in the input collection, they are children — skip sorting.
-            Object input = viewer.getInput();
-            if (input instanceof Collection<?> list && !list.contains(e1) && !list.contains(e2)) {
-                return 0;
+            if (e1 instanceof DBPObjectWithOrdinalPosition p1 && e2 instanceof DBPObjectWithOrdinalPosition p2) {
+                int result = p1.compareTo(p2);
+                if (result != 0) {
+                    return result;
+                }
             }
 
             final String name1 = getLabel(viewer, e1);

@@ -46,6 +46,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean system;
     private final boolean ui;
     private final boolean enabledByDefault;
+    private final boolean omitConfirmation;
     private final AIFunctionAllowMode defaultAllowMode;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
@@ -74,6 +75,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
             config.getAttribute("defaultAllowMode"),
             AIFunctionAllowMode.ALWAYS_ALLOW
         );
+        this.omitConfirmation = CommonUtils.toBoolean(config.getAttribute("omitConfirmation"), false);
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
         this.aiDescription = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -151,6 +153,11 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     @Override
     public boolean isEnabledByDefault() {
         return enabledByDefault;
+    }
+
+    @Override
+    public boolean isOmitConfirmation() {
+        return omitConfirmation;
     }
 
     @NotNull
