@@ -153,7 +153,7 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     @NotNull
     @Override
     protected Point getInitialSize() {
-        return new Point(600, 500);
+        return new Point(700, 500);
     }
 
     @Override
