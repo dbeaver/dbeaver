@@ -223,7 +223,7 @@ public class AISettings implements DBPAdaptable {
     // Disables AI integration. Saves configuration.
     public void setAiDisabled(boolean aiDisabled) {
         this.aiDisabled = aiDisabled;
-        AISettingsManager.getInstance().saveSettings();
+        AISettingsManager.getInstance().saveSettings(this);
     }
 
     @Override
