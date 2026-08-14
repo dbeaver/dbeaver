@@ -117,9 +117,6 @@ public class DDSyncService {
                 }
             } else {
                 for (DBPProject project : workspace.getProjects()) {
-                    if (!DBPSyncSettings.isEnabled(project)) {
-                        continue;
-                    }
                     String key = getProjectId(project) + KEY_SEPARATOR + unit.getId();
                     if (uploadUnit(containerId, unit, key, new DBPSyncTarget(workspace, project))) {
                         uploaded.add(project.getName() + "/" + unit.getId());
@@ -146,9 +143,6 @@ public class DDSyncService {
             DBPProject project = unit.getScope() == DBPSyncScope.WORKSPACE
                 ? null
                 : resolveProject(ref.projectId(), entry.label());
-            if (project != null && !DBPSyncSettings.isEnabled(project)) {
-                continue;
-            }
             unit.write(new DBPSyncTarget(workspace, project), entry.resources());
             restored.add(project == null
                 ? unit.getId()
