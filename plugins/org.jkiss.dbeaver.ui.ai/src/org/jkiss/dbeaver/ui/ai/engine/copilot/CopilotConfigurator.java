@@ -144,6 +144,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                             temperatureText.setText("0.0");
                         }
                     );
+                AIModel selectedModel = modelSelectorField.getSelectedModel();
+                if (selectedModel != null) {
+                    contextWindowSizeField.setValue(selectedModel.contextWindowSize());
+                }
             })
             .withModelListSupplier(modelListProvider)
             .build();
