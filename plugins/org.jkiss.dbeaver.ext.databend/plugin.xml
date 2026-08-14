@@ -75,10 +75,6 @@
                 desktop="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
-            <propertyGroup label="Method">
-                <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
-                          desktop="true" hidden="true"/>
-            </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.databend.DatabendDataSourceProvider"/>
         </handler>
     </extension>
