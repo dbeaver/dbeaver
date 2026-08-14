@@ -79,14 +79,6 @@
                 <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
                           desktop="true" hidden="true"/>
             </propertyGroup>
-            <propertyGroup label="SSL Settings">
-                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,file" length="MULTILINE"/>
-                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password,file" length="MULTILINE"/>
-                <property id="ssl.client.cert" label="Client Certificate Path" type="string" description="Path to a client certificate file"
-                          desktop="true"/>
-                <property id="ssl.client.key" label="Client Private Key Path" type="string" description="Path to a client private key file"
-                          desktop="true"/>
-            </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.databend.DatabendDataSourceProvider"/>
         </handler>
     </extension>
