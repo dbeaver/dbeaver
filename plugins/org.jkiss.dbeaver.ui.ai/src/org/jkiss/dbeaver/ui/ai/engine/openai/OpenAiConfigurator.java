@@ -162,7 +162,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @NotNull
-    private List<AIModel> fetchOpenAiModels(@NotNull DBRProgressMonitor monitor) throws DBException {
+    protected List<AIModel> fetchOpenAiModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);
