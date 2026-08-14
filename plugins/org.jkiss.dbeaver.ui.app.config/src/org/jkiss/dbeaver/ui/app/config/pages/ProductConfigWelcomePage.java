@@ -52,19 +52,16 @@ public class ProductConfigWelcomePage extends ProductConfigWizardPage {
                     SWT.ICON_INFORMATION
                 );
             }
+
+            if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager manager) {
+                manager.setPlatformLanguage(language.get());
+            }
         });
     }
 
     @Override
     public void createControl(@NotNull Composite parent) {
         setControl(UIPanelBuilder.build(parent, buildPanel()));
-    }
-
-    @Override
-    public void applySettings() {
-        if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager manager) {
-            manager.setPlatformLanguage(language.get());
-        }
     }
 
     @NotNull
