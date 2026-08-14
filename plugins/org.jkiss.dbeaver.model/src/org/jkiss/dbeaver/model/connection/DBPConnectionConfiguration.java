@@ -338,12 +338,13 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public synchronized void setEvent(@NotNull DBPConnectionEventType eventType, @Nullable DBRShellCommand command) {
-        if (events != null) {
-            if (command == null) {
-                events.remove(eventType);
-            } else {
-                events.put(eventType, command);
-            }
+        if (events == null) {
+            events = new LinkedHashMap<>();
+        }
+        if (command == null) {
+            events.remove(eventType);
+        } else {
+            events.put(eventType, command);
         }
     }
 
