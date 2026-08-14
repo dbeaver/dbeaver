@@ -72,6 +72,7 @@
                     <parameter name="supports-catalog-selection" value="false"/>
                     <parameter name="supports-ddl-transactions" value="false"/>
                     <parameter name="supports-schema-selection" value="false"/>
+                    <parameter name="supports-partner-attribution" value="true"/>
                 </driver>
 
                 <provider-properties drivers="*">
