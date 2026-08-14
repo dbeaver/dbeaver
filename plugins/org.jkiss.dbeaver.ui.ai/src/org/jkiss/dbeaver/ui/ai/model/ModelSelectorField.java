@@ -32,9 +32,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
@@ -58,8 +61,10 @@ public class ModelSelectorField {
     @NotNull
     private final List<RequiredSetting> requiredSettings;
 
-    private volatile String selectedModel;
+    private volatile String selectedModelName;
+    private volatile AIModel selectedModel;
     private boolean disableModifyListener = false;
+    private List<AIModel> loadedModels;
 
     private ModelSelectorField(@NotNull Builder builder) {
         this.modelListProvider = builder.modelListSupplier;
@@ -69,10 +74,11 @@ public class ModelSelectorField {
         this.combo.setLayoutData(builder.gridData);
         this.combo.addModifyListener(e -> {
             String newText = combo.getText();
-            if (disableModifyListener || newText.equals(selectedModel)) {
+            if (disableModifyListener || newText.equals(selectedModelName)) {
                 return;
             }
-            selectedModel = newText;
+            selectedModelName = newText;
+            selectedModel = getModel(newText);
             if (builder.onModify != null) {
                 builder.onModify.run();
             }
@@ -97,8 +103,26 @@ public class ModelSelectorField {
     }
 
     @Nullable
-    public String getSelectedModel() {
+    public String getSelectedModelName() {
+        return selectedModelName;
+    }
+
+    @Nullable
+    public AIModel getSelectedModel() {
         return selectedModel;
+    }
+
+    @Nullable
+    public AIModel getModel(@NotNull String name) {
+        if (loadedModels == null) {
+            return null;
+        }
+        for (AIModel model : loadedModels) {
+            if (model.name().equals(name)) {
+                return model;
+            }
+        }
+        return null;
     }
 
     public void setSelectedModel(@Nullable String model) {
@@ -128,7 +152,7 @@ public class ModelSelectorField {
     }
 
     public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
-        List<String> loadedModels = modelListProvider.getModels(monitor, refresh);
+        loadedModels = modelListProvider.getModels(monitor, refresh);
 
         if (loadedModels.isEmpty()) {
             return 0;
@@ -139,7 +163,7 @@ public class ModelSelectorField {
                 return;
             }
             String selectedItem = combo.getText();
-            Set<String> models = new LinkedHashSet<>(loadedModels);
+            Set<String> models = new LinkedHashSet<>(loadedModels.stream().map(AIModel::name).toList());
             if (!selectedItem.isEmpty()) {
                 models.add(selectedItem);
             }
@@ -166,12 +190,17 @@ public class ModelSelectorField {
             DBWorkbench.getPlatformUI().showError(AIUIMessages.model_selector_refresh_error_title, null, job.error);
             return;
         }
-        DBWorkbench.getPlatformUI().showMessageBox(
+
+        DBeaverNotifications.showNotification(
+            "ai.model.load",
             AIUIMessages.model_selector_refresh_title,
             job.modelCount > 0
                 ? NLS.bind(AIUIMessages.model_selector_refresh_success_message, job.modelCount)
                 : AIUIMessages.model_selector_refresh_empty_message,
-            job.modelCount == 0
+            DBPMessageType.INFORMATION,
+            () -> {
+
+            }
         );
     }
 
@@ -296,6 +325,6 @@ public class ModelSelectorField {
 
     public interface ModelListProvider {
         @NotNull
-        List<String> getModels(@NotNull DBRProgressMonitor monitor, boolean forceRefresh) throws DBException;
+        List<AIModel> getModels(@NotNull DBRProgressMonitor monitor, boolean forceRefresh) throws DBException;
     }
 }

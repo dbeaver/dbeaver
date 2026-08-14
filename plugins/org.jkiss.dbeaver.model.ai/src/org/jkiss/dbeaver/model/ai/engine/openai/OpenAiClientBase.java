@@ -83,7 +83,8 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
             .build();
 
         HttpRequest modifiedRequest = applyFilters(request);
-        return GSON.fromJson(client.send(monitor, modifiedRequest), OAIModelList.class).data();
+        String response = client.send(monitor, modifiedRequest);
+        return GSON.fromJson(response, OAIModelList.class).data();
     }
 
     @NotNull
