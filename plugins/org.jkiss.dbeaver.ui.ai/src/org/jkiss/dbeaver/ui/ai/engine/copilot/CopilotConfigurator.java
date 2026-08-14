@@ -57,7 +57,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
     private ModelSelectorField modelSelectorField;
-    private Text accessTokenText;
+    protected Text accessTokenText;
 
     protected volatile String accessToken;
     protected String token = "";
@@ -67,8 +67,8 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     @NotNull
     private List<AIModel> fetchCopilotModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (accessToken == null || accessToken.isEmpty()) {
-            throw new DBException("Access token is not set");
+        if (CommonUtils.isEmpty(accessToken)) {
+            throw new DBException(CopilotMessages.copilot_access_token_required);
         }
 
         try (CopilotCompletionEngine engine = createEngine()) {
@@ -132,6 +132,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
+            .withRequiredSetting(accessTokenText, CopilotMessages.copilot_access_token_required)
             .withModifyListener(() -> {
                 CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(

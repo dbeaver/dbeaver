@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,14 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @NotNull
     final JDBCExecutionContext context;
     private volatile Thread blockThread;
+    private volatile JDBCDatabaseMetaDataImpl metaData;
 
-    public JDBCConnectionImpl(@NotNull JDBCExecutionContext context, @NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle)
-    {
+    public JDBCConnectionImpl(
+        @NotNull JDBCExecutionContext context,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionPurpose purpose,
+        @NotNull String taskTitle
+    ) {
         super(monitor, purpose, taskTitle);
         this.context = context;
     }
@@ -345,10 +350,11 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     @NotNull
     @Override
-    public JDBCDatabaseMetaData getMetaData()
-        throws SQLException
-    {
-        return new JDBCDatabaseMetaDataImpl(this, getOriginal().getMetaData());
+    public synchronized JDBCDatabaseMetaData getMetaData() throws SQLException {
+        if (metaData == null) {
+            metaData = new JDBCDatabaseMetaDataImpl(this, getOriginal().getMetaData());
+        }
+        return metaData;
     }
 
     @Override

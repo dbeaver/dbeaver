@@ -18,23 +18,20 @@ package org.jkiss.dbeaver.ui.app.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.util.Geometry;
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Monitor;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
+import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -42,21 +39,60 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     private boolean seenLanguageChangeWarning = false;
 
-    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, boolean canBeSkipped) {
-        super(window, new ProductConfigWizard(canBeSkipped));
+    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, @NotNull ProductConfigWizard.Origin origin) {
+        super(
+            window,
+            new ProductConfigWizard(origin),
+            null,
+            origin == ProductConfigWizard.Origin.AUTOMATIC ? null : window.getShell()
+        );
+        setFinishButtonLabel("Apply");
+        setMinimumPageSize(0, 0);
     }
 
     public boolean isRestartRequired() {
         return getWizard().isRestartRequired();
     }
 
-    public boolean isCanBeSkipped() {
-        return getWizard().isCanBeSkipped();
+    @NotNull
+    public ProductConfigWizard.Origin getOrigin() {
+        return getWizard().getOrigin();
+    }
+
+    @Override
+    public int open() {
+        beforeOpen();
+        int result = super.open();
+        afterClose(result);
+        return result;
+    }
+
+    private void beforeOpen() {
+        ProductConfigFeatures.WIZARD_SHOWN.use(Map.of(
+            "origin", getOrigin()
+        ));
+    }
+
+    private void afterClose(int result) {
+        var registry = ProductConfigRegistry.getInstance();
+        var features = registry.getFeatures().stream()
+            .collect(Collectors.toMap(
+                ProductConfigFeatureDescriptor::getId,
+                registry::getFeatureEnablement
+            ));
+
+        ProductConfigFeatures.WIZARD_CLOSED.use(Map.of(
+            "origin", getOrigin(),
+            "status", result == IDialogConstants.OK_ID ? "finished" : "canceled",
+            "features", features
+        ));
     }
 
     @NotNull
@@ -65,15 +101,15 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         return (ProductConfigWizard) super.getWizard();
     }
 
-    @NotNull
     @Override
-    protected Point getInitialSize() {
-        return new Point(600, 450);
+    protected void configureShell(@NotNull Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setImages(Window.getDefaultImages());
     }
 
     @Override
     public int getShellStyle() {
-        return SWT.TITLE | SWT.BORDER | SWT.RESIZE;
+        return SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE;
     }
 
     @Override
@@ -114,17 +150,15 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         );
     }
 
+    @NotNull
     @Override
-    public void updateSize() {
-        // don't update size - pages are adapted to the dialog size
+    protected Point getInitialSize() {
+        return new Point(700, 500);
     }
 
     @Override
-    public void showPage(@Nullable IWizardPage page) {
-        super.showPage(page);
-        if (page instanceof WizardPage page1) {
-            page1.setPageComplete(true);
-        }
+    public void updateSize() {
+        // don't update size - pages are adapted to the dialog size
     }
 
     @Override
@@ -173,8 +207,19 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         super.createButtonsForButtonBar(parent);
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        if (cancelButton != null) {
-            UIUtils.setControlVisible(cancelButton, isCanBeSkipped());
+        if (cancelButton != null && getOrigin() == ProductConfigWizard.Origin.AUTOMATIC) {
+            UIUtils.setControlVisible(cancelButton, false);
+            parent.layout(true, true);
+        }
+    }
+
+    @Override
+    public void updateButtons() {
+        super.updateButtons();
+
+        Button finishButton = getButton(IDialogConstants.FINISH_ID);
+        if (finishButton != null && !finishButton.isDisposed() && finishButton.isEnabled()) {
+            getShell().setDefaultButton(finishButton);
         }
     }
 

@@ -22,13 +22,13 @@ import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.forms.UIAlignX;
 import org.jkiss.dbeaver.ui.forms.UIGrowX;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
+import org.jkiss.dbeaver.ui.forms.UIRowBuilder;
 
 import java.util.function.Consumer;
 
 public class ProductConfigWelcomePage extends ProductConfigWizardPage {
     public ProductConfigWelcomePage() {
         super(ProductConfigMessages.welcome_title, ProductConfigMessages.welcome_description);
-        setPageComplete(true);
     }
 
     @Override
@@ -44,7 +44,20 @@ public class ProductConfigWelcomePage extends ProductConfigWizardPage {
                 .label(lb -> lb
                     .text(ProductConfigMessages.welcome_body_text)
                     .wrap()
+                    .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                     .align(UIAlignX.FILL)
-                    .grow(UIGrowX.ALWAYS)));
+                    .grow(UIGrowX.ALWAYS)))
+            .row(UIRowBuilder::verticalSpacer)
+            .row(rb -> rb
+                .panel(pb1 -> pb1
+                    .align(UIAlignX.FILL)
+                    .grow(UIGrowX.ALWAYS)
+                    .row(rb1 -> rb1
+                        .label(lb -> lb
+                            .text(ProductConfigMessages.welcome_body_hint)
+                            .wrap()
+                            .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
+                            .align(UIAlignX.FILL)
+                            .grow(UIGrowX.ALWAYS)))));
     }
 }

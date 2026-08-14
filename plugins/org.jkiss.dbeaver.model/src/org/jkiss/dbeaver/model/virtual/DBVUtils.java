@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.virtual;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -485,8 +486,7 @@ public abstract class DBVUtils {
 
     public static JexlExpression parseExpression(String expression) {
         Map<String, Object> nsList = getExpressionNamespaces();
-
-        JexlBuilder jexlBuilder = new JexlBuilder();
+        JexlBuilder jexlBuilder = new JexlBuilder().permissions(JexlPermissions.SECURE);
         jexlBuilder.cache(100);
         jexlBuilder.namespaces(nsList);
 

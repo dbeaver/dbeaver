@@ -16,19 +16,25 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
+import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -38,7 +44,9 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Events edit dialog page
@@ -56,10 +64,14 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private Button terminateCheck;
     private Spinner pauseAfterExecute;
     private TextWithOpenFolder workingDirectory;
+    private Button removeButton;
 
     private Table eventTypeTable;
 
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
+    private final Set<String> originalCommands = new HashSet<>();
+
+    private final ConfirmedShellCommandsManager confirmedShellCommandsManager = ConfirmedShellCommandsManager.getInstance();
 
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
@@ -71,13 +83,26 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
             DBRShellCommand command = dataSource.getConnectionConfiguration().getEvent(eventType);
             eventsCache.put(eventType, command == null ? null : new DBRShellCommand(command));
+            if (command != null && command.isEnabled() && !command.isBlank()) {
+                originalCommands.add(command.getCommand());
+            }
         }
     }
 
     @Override
     public void createControl(Composite parent)
     {
-        Composite group = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite root = UIUtils.createPlaceholder(parent, 1, 2);
+        root.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (DBWorkbench.isDistributed()) {
+            UIUtils.createWarningLabel(
+                parent,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
+                GridData.FILL_BOTH,
+                1
+            );
+        }
+        Composite group = UIUtils.createPlaceholder(root, 2, 5);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -111,6 +136,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                     DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
                     boolean enabled = ((TableItem) e.item).getChecked();
                     if (enabled || (command != null && enabled != command.isEnabled())) {
+                        if (enabled && eventType != null && command == null && !DBWorkbench.isDistributed()) {
+                            createNewCommand(eventType);
+                        }
                         updateEvent(false);
                     }
                 }
@@ -172,11 +200,32 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
                 dataSource.getConnectionConfiguration()));
+            removeButton = createClearButton(settingsGroup);
         }
 
         selectEventType(null);
+        setControl(root);
+    }
 
-        setControl(group);
+    @NotNull
+    private Button createClearButton(@NotNull Composite parent) {
+        return UIUtils.createPushButton(
+            parent,
+            CoreMessages.dialog_connection_edit_wizard_shell_cmd_clear_button_label,
+            DBeaverIcons.getImage(UIIcon.CLEAN),
+            SelectionListener.widgetSelectedAdapter(e -> {
+                DBPConnectionEventType eventType = getSelectedEventType();
+                if (eventType != null) {
+                    eventsCache.put(eventType, null);
+                    cleanActiveCommand();
+                    TableItem item = getEventItem(eventType);
+                    if (item != null) {
+                        item.setChecked(false);
+                    }
+                    selectEventType(null);
+                }
+            })
+        );
     }
 
     private DBPConnectionEventType getSelectedEventType()
@@ -195,12 +244,20 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         return null;
     }
 
+    @Nullable
     private DBRShellCommand getActiveCommand() {
         DBPConnectionEventType eventType = getSelectedEventType();
         if (eventType != null) {
-            return eventsCache.computeIfAbsent(eventType, k -> new DBRShellCommand("")); //$NON-NLS-1$
+            return eventsCache.get(eventType);
         }
         return null;
+    }
+
+    @NotNull
+    private DBRShellCommand createNewCommand(@NotNull DBPConnectionEventType eventType) {
+        DBRShellCommand command = new DBRShellCommand("");
+        eventsCache.put(eventType, command);
+        return command;
     }
 
     private void updateEvent(boolean commandChange)
@@ -235,14 +292,17 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private void selectEventType(DBPConnectionEventType eventType)
     {
         DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
-        commandText.setEnabled(command != null && command.isEnabled());
-        showProcessCheck.setEnabled(command != null && command.isEnabled());
-        waitFinishCheck.setEnabled(command != null && command.isEnabled());
+        boolean isCommandPresent = command != null && command.isEnabled();
+        boolean isCommandControlEnabled = !DBWorkbench.isDistributed() && isCommandPresent;
+        commandText.setEnabled(isCommandControlEnabled);
+        showProcessCheck.setEnabled(isCommandControlEnabled);
+        waitFinishCheck.setEnabled(isCommandControlEnabled);
         waitFinishTimeoutMs.setEnabled(waitFinishCheck.isEnabled());
-        terminateCheck.setEnabled(command != null && command.isEnabled());
-        pauseAfterExecute.setEnabled(command != null && command.isEnabled());
-        workingDirectory.setEnabled(command != null && command.isEnabled());
-        workingDirectory.getTextControl().setEnabled(command != null && command.isEnabled());
+        terminateCheck.setEnabled(isCommandControlEnabled);
+        pauseAfterExecute.setEnabled(isCommandControlEnabled);
+        workingDirectory.setEnabled(isCommandControlEnabled);
+        workingDirectory.getTextControl().setEnabled(isCommandControlEnabled);
+        removeButton.setEnabled(isCommandPresent);
 
         if (command != null) {
             commandText.setText(CommonUtils.toString(command.getCommand()));
@@ -253,21 +313,49 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             pauseAfterExecute.setSelection(command.getPauseAfterExecute());
             workingDirectory.setText(CommonUtils.notEmpty(command.getWorkingDirectory()));
         } else {
-            commandText.setText(""); //$NON-NLS-1$
-            showProcessCheck.setSelection(false);
-            waitFinishCheck.setSelection(false);
-            waitFinishTimeoutMs.setSelection(DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
-            terminateCheck.setSelection(false);
-            pauseAfterExecute.setSelection(0);
-            workingDirectory.setText("");
+            cleanActiveCommand();
         }
+    }
+
+    private void cleanActiveCommand() {
+        commandText.setText(""); //$NON-NLS-1$
+        showProcessCheck.setSelection(false);
+        waitFinishCheck.setSelection(false);
+        waitFinishTimeoutMs.setSelection(DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
+        terminateCheck.setSelection(false);
+        pauseAfterExecute.setSelection(0);
+        workingDirectory.setText("");
     }
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
-            dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), entry.getValue());
+            DBRShellCommand command = entry.getValue();
+            try {
+                if (isAddCommandToConfirmed(command)) {
+                    confirmedShellCommandsManager.addConfirmedShellCommand(command);
+                }
+                dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), command);
+            } catch (DBException e) {
+                UIUtils.showMessageBox(
+                    getShell(),
+                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_label,
+                    NLS.bind(
+                        CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_text,
+                        entry.getKey().getTitle(),
+                        e.getMessage()
+                    ),
+                    SWT.ICON_WARNING
+                );
+            }
         }
+    }
+
+    private boolean isAddCommandToConfirmed(@Nullable DBRShellCommand command) {
+        return command != null
+            && command.isEnabled()
+            && !command.isBlank()
+            && !originalCommands.contains(command.getCommand());
     }
 
 }

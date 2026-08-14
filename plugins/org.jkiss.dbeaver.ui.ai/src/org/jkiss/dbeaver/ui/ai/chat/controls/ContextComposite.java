@@ -50,7 +50,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -169,7 +169,7 @@ public class ContextComposite extends Composite {
             contextComposite.getAccessible().addAccessibleListener(new AccessibleAdapter() {
                 @Override
                 public void getName(AccessibleEvent e) {
-                    e.result = AIChatMessages.ai_chat_a11y_connection_name + ": " + contextName.getText();
+                    e.result = AIChatMessagesUI.ai_chat_a11y_connection_name + ": " + contextName.getText();
                 }
             });
 
@@ -227,7 +227,7 @@ public class ContextComposite extends Composite {
             conversationNameText.getAccessible().addAccessibleListener(new AccessibleAdapter() {
                 @Override
                 public void getName(AccessibleEvent e) {
-                    e.result = AIChatMessages.ai_chat_a11y_conversation_name;
+                    e.result = AIChatMessagesUI.ai_chat_a11y_conversation_name;
                 }
             });
             conversationNameText.addFocusListener(FocusListener.focusLostAdapter(e -> {
@@ -499,7 +499,7 @@ public class ContextComposite extends Composite {
     }
 
     private void contributeContextActions(@NotNull IContributionManager manager) {
-        changeScopeAction = new Action(AIChatMessages.ai_chat_change_scope_label, DBeaverIcons.getImageDescriptor(UIIcon.FILTER_CONFIG)) {
+        changeScopeAction = new Action(AIChatMessagesUI.ai_chat_change_scope_label, DBeaverIcons.getImageDescriptor(UIIcon.DOTS_BUTTON)) {
             @Override
             public void run() {
                 showScopeDropDown();
@@ -508,7 +508,7 @@ public class ContextComposite extends Composite {
         setToolTipWithShortcut(changeScopeAction, AIChatController.CMD_OPEN_FILTERS);
 
         manager.add(changeScopeAction);
-        Action settingsAction = new Action(AIChatMessages.ai_chat_settings_label, IAction.AS_DROP_DOWN_MENU) {
+        Action settingsAction = new Action(AIChatMessagesUI.ai_chat_settings_label, IAction.AS_DROP_DOWN_MENU) {
             {
                 setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
             }
@@ -545,7 +545,7 @@ public class ContextComposite extends Composite {
     }
 
     private void contributeConversationActions(@NotNull IContributionManager manager) {
-        addConversationAction = new Action(AIChatMessages.ai_chat_conversation_new_label, DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
+        addConversationAction = new Action(AIChatMessagesUI.ai_chat_conversation_new_label, DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
             @Override
             public void run() {
                 chat.createNewConversation();
@@ -554,7 +554,7 @@ public class ContextComposite extends Composite {
         setToolTipWithShortcut(addConversationAction, AIChatController.CMD_NEW_CONVERSATION);
         manager.add(addConversationAction);
         if (chat.getChatSession().getStorage().canPersist()) {
-            deleteConversationAction = new Action(AIChatMessages.ai_chat_conversation_delete_label, DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
+            deleteConversationAction = new Action(AIChatMessagesUI.ai_chat_conversation_delete_label, DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
                 @Override
                 public void run() {
                     chat.deleteActiveConversationWithConfirmation();
