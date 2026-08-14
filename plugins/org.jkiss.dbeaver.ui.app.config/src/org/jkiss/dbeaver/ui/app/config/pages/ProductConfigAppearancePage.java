@@ -102,6 +102,7 @@ public class ProductConfigAppearancePage extends ProductConfigWizardPage {
                     .label(lb -> lb
                         .text(ProductConfigMessages.appearance_theme_hint)
                         .wrap()
+                        .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                         .align(UIAlignX.FILL)
                         .grow(UIGrowX.ALWAYS)))));
     }
