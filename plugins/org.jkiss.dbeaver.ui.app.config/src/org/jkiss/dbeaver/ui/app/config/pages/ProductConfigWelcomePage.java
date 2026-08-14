@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.app.config.pages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
@@ -83,6 +84,10 @@ public class ProductConfigWelcomePage extends ProductConfigWizardPage {
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)
                     .row(rb1 -> rb1
+                        // TODO introduce a dedicated icon+label control
+                        .label(lb -> lb
+                            .image(DBIcon.SMALL_INFO)
+                            .align(UIAlignY.TOP))
                         .label(lb -> lb
                             .text(ProductConfigMessages.welcome_body_hint)
                             .wrap()
