@@ -18,15 +18,13 @@ package org.jkiss.dbeaver.ui.app.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.util.Geometry;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Monitor;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -37,7 +35,6 @@ import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
@@ -50,7 +47,14 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     private boolean seenLanguageChangeWarning = false;
 
     public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, @NotNull ProductConfigWizard.Origin origin) {
-        super(window, new ProductConfigWizard(origin));
+        super(
+            window,
+            new ProductConfigWizard(origin),
+            null,
+            origin == ProductConfigWizard.Origin.AUTOMATIC ? null : window.getShell()
+        );
+        setFinishButtonLabel("Apply");
+        setMinimumPageSize(0, 0);
     }
 
     public boolean isRestartRequired() {
@@ -97,15 +101,15 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         return (ProductConfigWizard) super.getWizard();
     }
 
-    @NotNull
     @Override
-    protected Point getInitialSize() {
-        return new Point(600, 500);
+    protected void configureShell(@NotNull Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setImages(Window.getDefaultImages());
     }
 
     @Override
     public int getShellStyle() {
-        return SWT.TITLE | SWT.BORDER | SWT.RESIZE;
+        return SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE;
     }
 
     @Override
@@ -144,6 +148,12 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
                 monitorBounds.y, monitorBounds.y + monitorBounds.height - initialSize.y
             )
         );
+    }
+
+    @NotNull
+    @Override
+    protected Point getInitialSize() {
+        return new Point(700, 500);
     }
 
     @Override
@@ -198,7 +208,18 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
         if (cancelButton != null && getOrigin() == ProductConfigWizard.Origin.AUTOMATIC) {
-            cancelButton.setText(ProductConfigMessages.button_exit);
+            UIUtils.setControlVisible(cancelButton, false);
+            parent.layout(true, true);
+        }
+    }
+
+    @Override
+    public void updateButtons() {
+        super.updateButtons();
+
+        Button finishButton = getButton(IDialogConstants.FINISH_ID);
+        if (finishButton != null && !finishButton.isDisposed() && finishButton.isEnabled()) {
+            getShell().setDefaultButton(finishButton);
         }
     }
 
