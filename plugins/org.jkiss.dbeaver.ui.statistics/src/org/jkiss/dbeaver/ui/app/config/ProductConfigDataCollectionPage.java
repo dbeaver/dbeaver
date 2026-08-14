@@ -54,6 +54,7 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
     @Override
     public void applySettings() {
         UIStatisticsActivator.setTrackingEnabled(sendUsageStatistics.get());
+        UIStatisticsActivator.setSkipDataShareConfirmation(true);
     }
 
     @NotNull
