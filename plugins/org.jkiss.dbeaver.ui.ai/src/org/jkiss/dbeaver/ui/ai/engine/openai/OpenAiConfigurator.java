@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
 import org.jkiss.dbeaver.ui.ai.preferences.AbstractAIEngineConfigurator;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -171,10 +172,12 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);
-
-        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
-            return engine.getModels(monitor);
+        if (!CommonUtils.isEmpty(token)) {
+            try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
+                return engine.getModels(monitor);
+            }
         }
+        return Collections.emptyList();
     }
 
     protected void createConnectionParameters(@NotNull Composite parent) {
