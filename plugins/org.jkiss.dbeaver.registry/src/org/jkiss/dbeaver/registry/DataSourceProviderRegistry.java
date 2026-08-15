@@ -62,6 +62,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         return instance != null;
     }
 
+    @NotNull
     public static synchronized DataSourceProviderRegistry getInstance() {
         if (instance == null) {
             instance = new DataSourceProviderRegistry();
@@ -71,7 +72,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
-    private final Map<String, DataSourceProviderDescriptor> dataSourceProvidersMap = new HashMap<>();
+    private final Map<String, DataSourceProviderDescriptor> dataSourceProvidersMap = new LinkedHashMap<>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final List<DataSourceHandlerDescriptor> dataSourceHandlers = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
@@ -87,7 +88,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
     private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
-
 
     private DataSourceProviderRegistry() {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
@@ -516,7 +516,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Persistence
 
-    private void loadDrivers(String configFileName, boolean provided) {
+    private void loadDrivers(@NotNull String configFileName, boolean provided) {
         try {
             String driversConfig;
             if (provided) {
@@ -544,11 +544,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         saveDrivers(DBWorkbench.getPlatform().getConfigurationController());
     }
 
-    public void saveDrivers(DBConfigurationController configurationController) throws DBException {
+    public void saveDrivers(@NotNull DBConfigurationController configurationController) throws DBException {
         saveDriversConfigFile(configurationController);
     }
 
-    public void saveDriversConfigFile(DBConfigurationController configurationController) throws DBException {
+    public void saveDriversConfigFile(@NotNull DBConfigurationController configurationController) throws DBException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new DriverDescriptorSerializerLegacy().serializeDrivers(baos, this.dataSourceProviders);
@@ -691,6 +691,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Handlers
 
+    @NotNull
     public List<DataSourceHandlerDescriptor> getDataSourceHandlers() {
         return dataSourceHandlers;
     }
@@ -758,7 +759,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     void fireRegistryChange(@NotNull DataSourceRegistry<?> registry, boolean load) {
-
         forEachRegistryListener(l -> {
             if (load) {
                 l.handleRegistryLoad(registry);
