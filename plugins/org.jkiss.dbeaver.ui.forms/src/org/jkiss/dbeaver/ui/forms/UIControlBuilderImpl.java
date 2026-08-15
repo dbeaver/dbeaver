@@ -357,12 +357,14 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         }
 
         private final UIObservable<String> text;
+        private final UIObservable<String> tooltip;
         private final Consumer<SelectionEvent> onSelect;
         private final Kind kind;
         private UIObservable<Boolean> selected;
 
-        ButtonBuilderImpl(@Nullable UIObservable<String> text, @Nullable Consumer<SelectionEvent> onSelect, @NotNull Kind kind) {
+        ButtonBuilderImpl(@Nullable UIObservable<String> text, @Nullable UIObservable<String> tooltip, @Nullable Consumer<SelectionEvent> onSelect, @NotNull Kind kind) {
             this.text = text;
+            this.tooltip = tooltip;
             this.onSelect = onSelect;
             this.kind = kind;
         }
@@ -399,6 +401,9 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             super.bind(context, control, row);
             if (text != null) {
                 context.bindValue(WidgetProperties.text().observe(control), delegate(text));
+            }
+            if (tooltip != null) {
+                context.bindValue(WidgetProperties.tooltipText().observe(control), delegate(tooltip));
             }
             if (selected != null) {
                 context.bindValue(WidgetProperties.buttonSelection().observe(control), delegate(selected));
