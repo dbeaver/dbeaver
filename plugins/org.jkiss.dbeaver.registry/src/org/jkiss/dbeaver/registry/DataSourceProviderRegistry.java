@@ -428,7 +428,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     @Nullable
     @Override
     public DBPDriver findDriver(@NotNull CompositeObjectId ref) {
-        return findDriver(ref.shortId());
+        DataSourceProviderDescriptor dsProvider = getDataSourceProvider(ref.primaryId());
+        if (dsProvider != null) {
+            return dsProvider.getDriver(ref.secondaryId());
+        }
+        return null;
     }
 
     @Nullable
