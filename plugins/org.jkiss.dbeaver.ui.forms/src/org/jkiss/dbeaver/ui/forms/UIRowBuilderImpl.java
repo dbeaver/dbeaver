@@ -21,7 +21,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.forms.UIControlBuilder.*;
 import org.jkiss.dbeaver.ui.forms.UIControlBuilderImpl.*;
 import org.jkiss.dbeaver.ui.forms.UIControlBuilderImpl.ButtonBuilderImpl.Kind;
@@ -121,7 +120,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
         @NotNull Consumer<SelectionEvent> onSelect,
         @NotNull Consumer<? super ButtonBuilder> handler
     ) {
-        var builder = new ButtonBuilderImpl(text, null, onSelect, Kind.BUTTON);
+        var builder = new ButtonBuilderImpl(text, onSelect, Kind.BUTTON);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -131,10 +130,9 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @Override
     public UIRowBuilder radioButton(
         @NotNull UIObservable<String> text,
-        @Nullable UIObservable<String> tooltip,
         @NotNull Consumer<? super ButtonBuilder> handler
     ) {
-        var builder = new ButtonBuilderImpl(text, tooltip, null, Kind.RADIO);
+        var builder = new ButtonBuilderImpl(text, null, Kind.RADIO);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -143,7 +141,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @NotNull
     @Override
     public UIRowBuilder checkBox(@NotNull UIObservable<String> text, @NotNull Consumer<? super ButtonBuilder> handler) {
-        var builder = new ButtonBuilderImpl(text, null, null, Kind.CHECK);
+        var builder = new ButtonBuilderImpl(text, null, Kind.CHECK);
         handler.accept(builder);
         controls.add(builder);
         return this;
