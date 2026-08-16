@@ -17,12 +17,16 @@
 package org.jkiss.dbeaver.ui.app.config.pages;
 
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.app.config.ProductConfigWizard;
 
 public abstract class ProductConfigWizardPage extends WizardPage {
+    protected static final int TEXT_WIDTH_HINT = 300;
+    protected static final int TEXT_HEIGHT_HINT = SWT.DEFAULT;
+
     public ProductConfigWizardPage(@NotNull String title, @NotNull String description) {
         super(title);
         setTitle(title);

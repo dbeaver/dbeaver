@@ -239,8 +239,7 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 ## Branches and Git Workflow
 
 - **`devel`** — the main development branch; all PRs must target this branch.
-- **`master`** — inactive branch; do not use or commit to it.
-- **Release branches** — exist for each release; never commit to them directly.
+- **Release branches** — `release_VERSION`, exist for each release; never commit to them directly.
 - Pull requests that only fix typos, formatting, or trivial refactoring are generally **not accepted** per the contributor guide.
 - **Naming convention**: issues, commit messages, and PR titles should follow the format `dbeaver/repo#issueNumber title` (e.g., `dbeaver/dbeaver#12345 Fix NPE in PostgreSQL dialect`).
 - **Branch naming**: branches should follow the format `dbeaver/repo#issueNumber-issueTitle` (e.g., `dbeaver/dbeaver#12345-fix-npe-postgresql`).
