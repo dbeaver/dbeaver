@@ -354,7 +354,7 @@ public class DiagramLoader extends ERDPersistedState {
                         relationLoadInfo.bends.add(new int[] {
                             Integer.parseInt(locX),
                             Integer.parseInt(locY)
-                        } );
+                        });
                     }
                 }
                 monitor.worked(1);

@@ -23,6 +23,7 @@ import org.eclipse.draw2d.geometry.PrecisionPoint;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.Path;
 import org.eclipse.draw2d.graph.ShortestPathRouter;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouter;
 
@@ -332,11 +333,11 @@ public class ShortPathRouting extends ERDConnectionRouter {
     }
 
     /**
-     * This method checks and remove bend point if it overlap entity
+     * This method checks and remove bend point if it overlaps with entity
      *
      * @param path - path
      */
-    private void removeOverlappingBendPoints(Path path) {
+    private void removeOverlappingBendPoints(@NotNull Path path) {
         PointList bendPoints = path.getBendPoints();
         if (bendPoints != null) {
             PointList actualBendPoints = new PointList(bendPoints.size());
@@ -359,57 +360,32 @@ public class ShortPathRouting extends ERDConnectionRouter {
             }
             path.setBendPoints(actualBendPoints);
 
-            if (overlapFound && path.data instanceof Connection connection) {
-                // Keep the connection's user bendpoint model (routing constraint) in sync with
-                // the points actually used for routing. Otherwise a bendpoint that got silently
-                // dropped here (because an entity was moved on top of it) would still remain in
-                // the connection's routing constraint. GEF requires an exact match between the
-                // constraint and the rendered points to create a move/delete handle for a bend,
-                // so a stale constraint entry results in a visible "elbow" with no grip to fix it
-                // (see #41587).
-                removeOverlappingBendpointsFromModel(connection, bendPoints, actualBendPoints);
+            // having bendpoint-entity overlap and existing bendpoint constraints for the current relation path,
+            // we need to remove unwanted points from constraint and leave only those we've kept in the path's bendpoints collection
+            if (overlapFound && path.data instanceof Connection connection
+                && this.getConstraint(connection) instanceof List<?> bendpointsConstraint
+                && bendpointsConstraint.size() == bendPoints.size()
+                && !bendpointsConstraint.isEmpty() && bendpointsConstraint.getFirst() instanceof Bendpoint
+            ) {
+                for (int i = bendpointsConstraint.size() - 1; i >= 0; i--) {
+                    if (!pointListContainsPoint(actualBendPoints, bendPoints.getPoint(i))) {
+                        bendpointsConstraint.remove(i);
+                    }
+                }
             }
         }
     }
 
-    /**
-     * Removes bendpoints from the connection's routing constraint (the user/model bendpoint
-     * list) that no longer correspond to a point actually used for routing (see
-     * {@link #removeOverlappingBendPoints(Path)}). The constraint list is mutated in place so
-     * that it stays the same object referenced by the connection figure and by the associated
-     * model (e.g. {@code ERDAssociation}), keeping the visual route and the persisted/editable
-     * bendpoints consistent.
-     */
-    private void removeOverlappingBendpointsFromModel(Connection connection, PointList oldPoints, PointList newPoints) {
-        Object constraint = getConstraint(connection);
-        if (!(constraint instanceof List)) {
-            return;
-        }
-        List<?> rawConstraint = (List<?>) constraint;
-        if (rawConstraint.isEmpty() || !(rawConstraint.get(0) instanceof Bendpoint) || rawConstraint.size() != oldPoints.size()) {
-            // Not a plain list of user bendpoints matching the computed path (e.g. relative
-            // bendpoints used for self-referencing associations) - leave it untouched.
-            return;
-        }
-        @SuppressWarnings("unchecked")
-        List<Bendpoint> bendpoints = (List<Bendpoint>) rawConstraint;
-        for (int i = bendpoints.size() - 1; i >= 0; i--) {
-            if (!containsPoint(newPoints, oldPoints.getPoint(i))) {
-                bendpoints.remove(i);
-            }
-        }
-    }
-
-    private static boolean containsPoint(PointList points, Point point) {
-        for (int i = 0; i < points.size(); i++) {
-            if (points.getPoint(i).equals(point)) {
+    private static boolean pointListContainsPoint(@NotNull PointList pointList, @NotNull Point point) {
+        for (Point p : pointList) {
+            if (p.equals(point)) {
                 return true;
             }
         }
         return false;
     }
 
-    protected int getDirection(Rectangle r, Point p) {
+    protected int getDirection(@NotNull Rectangle r, @NotNull Point p) {
         int i = 0;
         int direction = LEFT;
         int distance = Math.abs(r.x - p.x);
