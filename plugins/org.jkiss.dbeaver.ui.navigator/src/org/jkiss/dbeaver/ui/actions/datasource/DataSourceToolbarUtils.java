@@ -58,8 +58,8 @@ public class DataSourceToolbarUtils {
     }
 
     public static void refreshSelectorToolbar(IWorkbenchWindow window) {
-        if (window instanceof WorkbenchWindow && window.getActivePage() != null) {
-            MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
+        if (window instanceof WorkbenchWindow ww && window.getActivePage() != null) {
+            MTrimBar topTrim = ww.getTopTrim();
             boolean showConnectionSelector = false;
             boolean showSchemaSelector = false;
             IEditorPart activeEditor = window.getActivePage().getActiveEditor();
@@ -87,7 +87,7 @@ public class DataSourceToolbarUtils {
                         if (widget instanceof Composite controlsPanel) {
                             Control[] childControl = controlsPanel.getChildren();
                             for (Control cc : childControl) {
-                                cc.setBackground(bgColor);
+                                cc.setBackground(bgColor != null ? bgColor : controlsPanel.getBackground());
                                 cc.setEnabled(showConnectionSelector && canChangeConn);
                             }
                         }
