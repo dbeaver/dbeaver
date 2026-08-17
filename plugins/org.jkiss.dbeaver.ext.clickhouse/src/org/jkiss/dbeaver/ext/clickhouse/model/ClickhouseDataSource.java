@@ -233,6 +233,12 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     @Nullable
     @Override
+    public DBSDataType getLocalDataType(@Nullable String typeName) {
+        return super.getLocalDataType(ClickhouseTypeParser.getTypeNameWithoutModifiers(typeName));
+    }
+
+    @Nullable
+    @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
         String shortName = dataTypeMap.get(typeFullName);
         if (shortName != null) {
