@@ -62,8 +62,7 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
                 // Fix of broken tool items bg color dbeaver/pro#10293
                 // Set items background to toolbar background
                 Color tbBg = toolBar.getBackground();
-                ToolItem[] childControl = toolBar.getItems();
-                for (ToolItem cc : childControl) {
+                for (ToolItem cc : toolBar.getItems()) {
                     cc.setBackground(tbBg);
                 }
             }
