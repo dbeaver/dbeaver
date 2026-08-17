@@ -202,11 +202,12 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
                 dataSource.getConnectionConfiguration()));
             if (!DBWorkbench.isDistributed()) {
-                UIUtils.createInfoLink(
+                Link confirmedCommandsLink = UIUtils.createInfoLink(
                     detailsGroup,
                     "<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_link + "</a>",
                     this::openConfirmedShellCommandsEditor
                 );
+                confirmedCommandsLink.setToolTipText(CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_tooltip);
             }
             removeButton = createClearButton(settingsGroup);
         }

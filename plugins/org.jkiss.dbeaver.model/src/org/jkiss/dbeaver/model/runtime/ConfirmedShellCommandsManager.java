@@ -148,7 +148,7 @@ public class ConfirmedShellCommandsManager {
                 confirmedCommands = (Set<String>) JSONUtils.GSON.fromJson(reader, TypeToken.getParameterized(Set.class, String.class));
                 confirmedCommandsModificationTime = getFileModificationTime(path);
             } catch (Exception e) {
-                log.error("Error loading confirmed shell commands from " + path, e);
+                throw new DBException("Error loading confirmed shell commands from " + path, e);
             }
         } else {
             confirmedCommandsModificationTime = null;
