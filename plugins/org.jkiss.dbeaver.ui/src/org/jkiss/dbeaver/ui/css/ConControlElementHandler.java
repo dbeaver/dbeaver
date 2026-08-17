@@ -66,7 +66,7 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
                 for (ToolItem cc : childControl) {
                     cc.setBackground(tbBg);
                 }
-                }
+            }
 
             return;
         }
