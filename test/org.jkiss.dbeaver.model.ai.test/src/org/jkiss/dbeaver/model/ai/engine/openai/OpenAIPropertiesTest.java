@@ -20,10 +20,8 @@ import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OpenAIPropertiesTest extends DBeaverUnitTest {
 
@@ -35,11 +33,11 @@ public class OpenAIPropertiesTest extends DBeaverUnitTest {
         ObjectPropertyDescriptor descriptor = (ObjectPropertyDescriptor) propertySource.getProperty(
             AIConstants.AI_CONTEXT_SIZE_PROPERTY);
 
-        assertEquals(1, descriptor.getMinValue());
-        assertThrows(IllegalArgumentException.class, () -> descriptor.writeValue(properties, 0));
-        assertThrows(IllegalArgumentException.class, () -> descriptor.writeValue(properties, -1));
+        Assertions.assertEquals(1, descriptor.getMinValue());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> descriptor.writeValue(properties, 0));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> descriptor.writeValue(properties, -1));
 
         descriptor.writeValue(properties, 1);
-        assertEquals(1, properties.getContextWindowSize());
+        Assertions.assertEquals(1, properties.getContextWindowSize());
     }
 }
