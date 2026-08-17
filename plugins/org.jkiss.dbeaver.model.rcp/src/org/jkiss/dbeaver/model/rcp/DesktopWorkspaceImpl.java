@@ -519,6 +519,10 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             if (Files.exists(propsFile)) {
                 try (InputStream is = Files.newInputStream(propsFile)) {
                     try (ObjectInputStream ois = new ObjectInputStream(is)) {
+                        ois.setObjectInputFilter(ObjectInputFilter.Config.createFilter(
+                            "java.util.HashMap;java.util.LinkedHashMap;java.lang.String;" +
+                            "java.lang.Number;java.lang.Boolean;java.lang.Integer;" +
+                            "java.lang.Long;java.lang.Double;!*"));
                         final Object object = ois.readObject();
                         if (object instanceof Map) {
                             externalFileProperties.putAll((Map) object);
