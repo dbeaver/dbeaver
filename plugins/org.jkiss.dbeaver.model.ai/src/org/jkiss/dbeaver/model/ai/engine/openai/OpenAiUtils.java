@@ -106,6 +106,21 @@ public class OpenAiUtils {
         return oaiRequest;
     }
 
+    static void prepareChatGptAccountRequest(@NotNull OAIResponsesRequest request) {
+        if (request.input == null) {
+            return;
+        }
+        String instructions = request.input.stream()
+            .filter(message -> "system".equals(message.role))
+            .map(OAIMessage::getFullText)
+            .filter(CommonUtils::isNotEmpty)
+            .collect(Collectors.joining("\n"));
+        request.instructions = CommonUtils.isEmpty(instructions) ? null : instructions;
+        request.input = request.input.stream()
+            .filter(message -> !"system".equals(message.role))
+            .toList();
+    }
+
     @NotNull
     private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
         List<OAIMessage> result = new ArrayList<>(messages.size());
@@ -136,7 +151,9 @@ public class OpenAiUtils {
     }
 
     public static boolean isTemperatureNotSupported(@Nullable String message) {
-        return message != null && message.contains("Unsupported parameter: 'temperature'");
+        return message != null
+            && message.contains("Unsupported parameter")
+            && message.contains("temperature");
     }
 
     public static boolean processErrors(

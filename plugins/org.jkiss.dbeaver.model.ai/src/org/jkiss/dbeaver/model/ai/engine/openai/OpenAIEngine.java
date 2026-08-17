@@ -56,6 +56,17 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
+            if (!OpenAIAccountAuthenticator.isSupported()) {
+                throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
+            }
+            return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModels(openAIProperties).stream()
+                .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
+                    model,
+                    new AIModel(model, OpenAIProperties.DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE, OpenAIModels.detectModelFeatures(model))
+                ))
+                .toList();
+        }
         return openAiService.getInstance().getModels(monitor)
             .stream()
             .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
@@ -103,7 +114,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        OAIResponsesRequest oaiRequest = createRequest(request);
         oaiRequest.stream = true;
         openAiService.getInstance().createChatCompletionStream(monitor, oaiRequest, listener);
     }
@@ -128,13 +139,37 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        OAIResponsesRequest oaiRequest = createRequest(request);
 
         return openAiService.getInstance().createChatCompletion(monitor, oaiRequest);
     }
 
     @NotNull
+    private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        if (properties instanceof OpenAIProperties openAIProperties
+            && openAIProperties.isChatGptAccountAuthentication()
+        ) {
+            OpenAiUtils.prepareChatGptAccountRequest(oaiRequest);
+        }
+        return oaiRequest;
+    }
+
+    @NotNull
     protected OpenAIClientResponses createClient() throws DBException {
+        if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
+            if (!OpenAIAccountAuthenticator.isSupported()) {
+                throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
+            }
+            if (!openAIProperties.isChatGptAccountConnected()) {
+                throw new DBException("OpenAI ChatGPT account is not connected");
+            }
+            return new OpenAIClientResponses(
+                OpenAIAccountAuthenticator.CODEX_ENDPOINT,
+                List.of(new OpenAIAccountRequestFilter(openAIProperties)),
+                false
+            );
+        }
         String token = properties.getToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("OpenAI API token is not set");

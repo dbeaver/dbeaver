@@ -26,7 +26,6 @@ import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -421,23 +420,15 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (partDivider.isDisposed()) {
             return;
         }
-        Shell shell = partDivider.getShell();
-        shell.layout(true, true);
-        int tableHeight = updateSashWeights();
-        int clientHeight = partDivider.getClientArea().height;
-        if (clientHeight <= 0) {
-            UIUtils.asyncExec(this::relayoutPage);
+        partDivider.getShell().layout(true, true);
+        updateSashWeights();
+        if (settingsScroll.getClientArea().height <= 0) {
+            if (settingsStackLayout.topControl == settingsScroll) {
+                UIUtils.asyncExec(this::relayoutPage);
+            }
             return;
         }
-        int settingsHeight = settingsPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-        settingsScroll.setMinHeight(settingsHeight);
-        Point shellSize = shell.getSize();
-        int newHeight = Math.min(
-            shellSize.y + tableHeight + partDivider.getSashWidth() + settingsHeight - clientHeight,
-            shell.getDisplay().getClientArea().height);
-        if (newHeight > shellSize.y) {
-            UIUtils.resizeShell(shell, new Point(shellSize.x, newHeight));
-        }
+        settingsScroll.setMinSize(settingsPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
     private int updateSashWeights() {
@@ -492,10 +483,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 return;
             }
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
-            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor);
+            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor, this::handleConfiguratorChange);
             profileConfiguratorMapping.put(selectedProfile.getEngineId(), activeEngineConfiguratorPage);
         } else {
-            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor);
+            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor, this::handleConfiguratorChange);
         }
 
         try {
@@ -508,6 +499,16 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             );
         }
         updateTestConnectionButton();
+    }
+
+    private void handleConfiguratorChange() {
+        UIUtils.asyncExec(() -> {
+            if (partDivider.isDisposed()) {
+                return;
+            }
+            updateTestConnectionButton();
+            relayoutPage();
+        });
     }
 
     private void updateTestConnectionButton() {
@@ -596,11 +597,11 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             this.configurator = configurator;
         }
 
-        private void createControl(Composite parent, AIEngineDescriptor engine) {
+        private void createControl(Composite parent, AIEngineDescriptor engine, @NotNull Runnable changeListener) {
             composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (configurator != null) {
-                configurator.createControl(composite, engine, () -> {});
+                configurator.createControl(composite, engine, changeListener);
             }
         }
 

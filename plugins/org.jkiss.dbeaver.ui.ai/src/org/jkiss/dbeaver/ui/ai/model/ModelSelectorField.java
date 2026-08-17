@@ -60,6 +60,9 @@ public class ModelSelectorField {
 
     private volatile String selectedModel;
     private boolean disableModifyListener = false;
+    private boolean refreshEnabled = true;
+    @Nullable
+    private String refreshDisabledMessage;
 
     private ModelSelectorField(@NotNull Builder builder) {
         this.modelListProvider = builder.modelListSupplier;
@@ -109,7 +112,7 @@ public class ModelSelectorField {
     }
 
     public void refreshModelListSilently(boolean refresh) {
-        if (findMissingSetting() != null) {
+        if (!refreshEnabled || findMissingSetting() != null) {
             return;
         }
         new AbstractJob("Refreshing model list silently") {
@@ -125,6 +128,12 @@ public class ModelSelectorField {
                 }
             }
         }.schedule();
+    }
+
+    public void setRefreshEnabled(boolean enabled, @Nullable String disabledMessage) {
+        refreshEnabled = enabled;
+        refreshDisabledMessage = disabledMessage;
+        updateRefreshButtonState();
     }
 
     public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
@@ -221,6 +230,11 @@ public class ModelSelectorField {
 
     private void updateRefreshButtonState() {
         if (refreshButton.isDisposed()) {
+            return;
+        }
+        if (!refreshEnabled) {
+            refreshButton.setEnabled(false);
+            refreshButton.setToolTipText(refreshDisabledMessage);
             return;
         }
         String missingSetting = findMissingSetting();
