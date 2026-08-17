@@ -94,7 +94,8 @@ public class ConfirmedShellCommandsManager {
                 }
             }
             synchronized (this) {
-                confirmedCommands = loadConfirmedCommandsForRepo();
+                confirmedCommands = null;
+                confirmedCommandsModificationTime = null;
             }
             return path;
         } catch (Exception e) {
@@ -145,7 +146,7 @@ public class ConfirmedShellCommandsManager {
         var path = getConfigFilePath();
         if (Files.exists(path)) {
             try (var reader = Files.newBufferedReader(path)) {
-                confirmedCommands = (Set<String>) JSONUtils.GSON.fromJson(reader, TypeToken.getParameterized(Set.class, String.class));
+                confirmedCommands = JSONUtils.GSON.fromJson(reader, TypeToken.getParameterized(Set.class, String.class).getType());
                 confirmedCommandsModificationTime = getFileModificationTime(path);
             } catch (Exception e) {
                 throw new DBException("Error loading confirmed shell commands from " + path, e);
