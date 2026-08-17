@@ -50,7 +50,7 @@ public class CompareObjectsExecutor {
     private final DBRProgressListener initializeFinisher;
     private final ILazyPropertyLoadListener lazyPropertyLoadListener;
 
-    private volatile int initializedCount = 0;
+    private final java.util.concurrent.atomic.AtomicInteger initializedCount = new java.util.concurrent.atomic.AtomicInteger(0);
     private volatile IStatus initializeError;
     private final Map<Object, Map<DBPPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<>();
 
@@ -127,7 +127,7 @@ public class CompareObjectsExecutor {
                 if (!status.isOK()) {
                     initializeError = status;
                 } else {
-                    initializedCount++;
+                    initializedCount.incrementAndGet();
                 }
             }
         };
@@ -190,21 +190,20 @@ public class CompareObjectsExecutor {
         boolean onlyStruct = settings.isCompareOnlyStructure();
 
         // Clear compare singletons
-        this.initializedCount = 0;
+        this.initializedCount.set(0);
         this.initializeError = null;
         this.propertyValues.clear();
 
-        StringBuilder title = new StringBuilder();
+        StringJoiner title = new StringJoiner(", ");
         // Initialize nodes
         {
             monitor.subTask("Initialize nodes");
             for (DBNDatabaseNode node : nodes) {
-                if (title.length() > 0) title.append(", ");
-                title.append(node.getNodeFullName());
+                title.add(node.getNodeFullName());
                 node.initializeNode(null, initializeFinisher);
                 monitor.worked(1);
             }
-            while (initializedCount != nodes.size()) {
+            while (initializedCount.get() != nodes.size()) {
                 if (initializeError != null) {
                     throw new DBException(initializeError.getMessage());
                 }

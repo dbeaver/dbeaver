@@ -155,8 +155,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context,
                                         @NotNull String purpose) throws DBCException {
         Connection connection = super.openConnection(monitor, context, purpose);
-        try {
-            Statement statement = connection.createStatement();
+        try (Statement statement = connection.createStatement()) {
             statement.execute("SELECT * FROM SYS.M_MONITOR_COLUMNS");
         } catch (SQLException e) {
             if (e.getErrorCode() == HANAConstants.ERR_SQL_ALTER_PASSWORD_NEEDED) {
