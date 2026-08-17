@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -200,6 +201,13 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
                 dataSource.getConnectionConfiguration()));
+            if (!DBWorkbench.isDistributed()) {
+                UIUtils.createInfoLink(
+                    detailsGroup,
+                    "<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_link + "</a>",
+                    this::openConfirmedShellCommandsEditor
+                );
+            }
             removeButton = createClearButton(settingsGroup);
         }
 
@@ -356,6 +364,24 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             && command.isEnabled()
             && !command.isBlank()
             && !originalCommands.contains(command.getCommand());
+    }
+
+    private void openConfirmedShellCommandsEditor() {
+        try {
+            var filePath = confirmedShellCommandsManager.prepareConfirmedCommandsFile();
+            if (EditorUtils.openExternalFileEditor(filePath, UIUtils.getActiveWorkbenchWindow()) == null) {
+                DBWorkbench.getPlatformUI().showError(
+                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,
+                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message
+                );
+            }
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message,
+                e
+            );
+        }
     }
 
 }
