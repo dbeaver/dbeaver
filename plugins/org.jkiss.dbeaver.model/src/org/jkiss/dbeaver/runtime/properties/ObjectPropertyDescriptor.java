@@ -183,6 +183,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return propType != null && BeanUtils.isNumericType(propType);
     }
 
+    public int getMinValue() {
+        return propInfo.minValue();
+    }
+
     public boolean isDateTime() {
         Class<?> propType = getGetter().getReturnType();
         return propType != null && Date.class.isAssignableFrom(propType);
@@ -541,6 +545,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                         value = List.of(value);
                     }
                 }
+            }
+            if (value instanceof Number number && getMinValue() != Integer.MIN_VALUE && number.doubleValue() < getMinValue()) {
+                throw new IllegalArgumentException(
+                    "Property '" + getDisplayName() + "' value must be at least " + getMinValue());
             }
             setter.invoke(object, value);
         } else {

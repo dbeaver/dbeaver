@@ -84,7 +84,7 @@ public class CopilotProperties extends BaseAIEngineProperties {
 
     @Override
     @Nullable
-    @Property(order = 4)
+    @Property(order = 4, minValue = 1)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;

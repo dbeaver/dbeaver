@@ -161,6 +161,11 @@ public @interface Property
     boolean required() default false;
 
     /**
+     * Minimum allowed value for numeric properties.
+     */
+    int minValue() default Integer.MIN_VALUE;
+
+    /**
      * Property applies only for desktop products.
      */
     boolean desktop() default false;
