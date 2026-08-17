@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class DataSourceToolbarUtils {
 
@@ -112,20 +111,7 @@ public class DataSourceToolbarUtils {
                             }
                         }
                     }
-                } else if (RuntimeUtils.isWindows()) {
-                    // Fix of broken tool items bg color dbeaver/pro#10293
-                    // Set items background to toolbar background
-                    // But this doesn't fix bg in non-main toolbar
-                    if (element instanceof MElementContainer<?>) {
-                        Object widget = element.getWidget();
-                        if (widget instanceof Composite controlsPanel) {
-                            Color tbBg = controlsPanel.getBackground();
-                            Control[] childControl = controlsPanel.getChildren();
-                            for (Control cc : childControl) {
-                                cc.setBackground(tbBg);
-                            }
-                        }
-                    }
+                    return;
                 }
             }
         }

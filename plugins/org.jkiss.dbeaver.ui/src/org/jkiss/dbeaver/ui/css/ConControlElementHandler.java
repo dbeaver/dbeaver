@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.w3c.dom.css.CSSValue;
@@ -56,6 +57,17 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             } else {
                 super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
             }
+
+            if (RuntimeUtils.isWindows()) {
+                // Fix of broken tool items bg color dbeaver/pro#10293
+                // Set items background to toolbar background
+                Color tbBg = toolBar.getBackground();
+                ToolItem[] childControl = toolBar.getItems();
+                for (ToolItem cc : childControl) {
+                    cc.setBackground(tbBg);
+                }
+                }
+
             return;
         }
 
