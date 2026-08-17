@@ -23,7 +23,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.ShellUtils;
 
 import java.text.NumberFormat;
@@ -145,13 +144,12 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     UIRowBuilder radioButton(
         @NotNull UIObservable<String> text,
-        @Nullable UIObservable<String> tooltip,
         @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
     );
 
     @NotNull
     default UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
-        return radioButton(UIObservable.of(text), null, handler);
+        return radioButton(UIObservable.of(text), handler);
     }
 
     @NotNull
@@ -161,7 +159,7 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
 
     @NotNull
     default UIRowBuilder radioButton(@NotNull String text, @NotNull String tooltip, @NotNull UIObservable<Boolean> selected) {
-        return radioButton(UIObservable.of(text), UIObservable.of(tooltip), bb -> bb.selected(selected));
+        return radioButton(text, bb -> bb.tooltip(tooltip).selected(selected));
     }
 
     @NotNull
@@ -180,6 +178,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     default UIRowBuilder checkBox(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
         return checkBox(text, bb -> bb.selected(selected));
+    }
+
+    @NotNull
+    default UIRowBuilder checkBox(@NotNull String text, @NotNull String tooltip, @NotNull UIObservable<Boolean> selected) {
+        return checkBox(text, bb -> bb.tooltip(tooltip).selected(selected));
     }
 
     @NotNull
