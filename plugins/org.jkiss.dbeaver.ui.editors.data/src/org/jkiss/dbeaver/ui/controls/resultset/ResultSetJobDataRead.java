@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
@@ -35,10 +36,13 @@ import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<Object>, IQueryExecuteController {
 
     private static final int PROGRESS_VISUALIZE_PERIOD = 100;
+    private static final Map<DBCExecutionContext, ISchedulingRule> DATA_READ_RULES = new WeakHashMap<>();
 
     private final Composite progressControl;
     private int offset;
@@ -55,6 +59,12 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
     ) {
         super(ResultSetMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", executionSource, executionContext);
         this.progressControl = progressControl;
+        setRule(getDataReadRule(executionContext));
+    }
+
+    @NotNull
+    private static synchronized ISchedulingRule getDataReadRule(@NotNull DBCExecutionContext executionContext) {
+        return DATA_READ_RULES.computeIfAbsent(executionContext, context -> new DataReadRule());
     }
 
     public void setOffset(int offset)
@@ -205,6 +215,18 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
                 schedule(PROGRESS_VISUALIZE_PERIOD);
             }
             return Status.OK_STATUS;
+        }
+    }
+
+    private static final class DataReadRule implements ISchedulingRule {
+        @Override
+        public boolean contains(ISchedulingRule rule) {
+            return rule == this;
+        }
+
+        @Override
+        public boolean isConflicting(ISchedulingRule rule) {
+            return rule == this;
         }
     }
 
