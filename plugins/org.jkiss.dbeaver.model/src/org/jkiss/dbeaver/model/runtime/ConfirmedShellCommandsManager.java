@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -44,6 +45,8 @@ public class ConfirmedShellCommandsManager {
 
     @Nullable
     private Set<String> confirmedCommands;
+    @Nullable
+    private FileTime confirmedCommandsModificationTime;
 
     @NotNull
     public static synchronized ConfirmedShellCommandsManager getInstance() {
@@ -89,13 +92,30 @@ public class ConfirmedShellCommandsManager {
         return !command.isBlank() && addConfirmedShellCommand(command.getCommand());
     }
 
-    public boolean removeConfirmedShellCommand(@NotNull DBRShellCommand command) throws DBException {
-        if (DBWorkbench.isDistributed()) {
-            validateForDistributed();
-            //always false, since in TE for now command security management is disabled, and commands are not checked to be approved first
-            return false;
+
+    @NotNull
+    public Path prepareConfirmedCommandsFile() throws DBException {
+        validateForDistributed();
+        var path = getConfirmedCommandsFilePath();
+        try {
+            Files.createDirectories(path.getParent());
+            if (!Files.exists(path)) {
+                try (var writer = Files.newBufferedWriter(path)) {
+                    JSONUtils.PRETTY_GSON.toJson(Set.of(), writer);
+                }
+            }
+            synchronized (this) {
+                confirmedCommands = loadConfirmedCommandsForRepo();
+            }
+            return path;
+        } catch (Exception e) {
+            throw new DBException("Error preparing confirmed commands file: %s".formatted(path), e);
         }
-        return !command.isBlank() && removeConfirmedShellCommand(command.getCommand());
+    }
+
+    @NotNull
+    public Path getConfirmedCommandsFilePath() {
+        return getConfigFilePath();
     }
 
     private void validateForDistributed() throws DBException {
@@ -127,7 +147,7 @@ public class ConfirmedShellCommandsManager {
 
     @NotNull
     private Set<String> confirmedCommands() throws DBException {
-        if (confirmedCommands == null) {
+        if (confirmedCommands == null || isConfirmedCommandsFileChanged()) {
             synchronized (this) {
                 confirmedCommands = loadConfirmedCommandsForRepo();
             }
@@ -141,12 +161,20 @@ public class ConfirmedShellCommandsManager {
         var path = getConfigFilePath();
         if (Files.exists(path)) {
             try (var reader = Files.newBufferedReader(path)) {
-                confirmedCommands = (Set<String>) JSONUtils.GSON.fromJson(reader, TypeToken.getParameterized(Set.class, String.class));
+                confirmedCommands = JSONUtils.GSON.fromJson(reader, TypeToken.getParameterized(Set.class, String.class).getType());
+                confirmedCommandsModificationTime = getFileModificationTime(path);
             } catch (Exception e) {
                 log.error("Error loading confirmed shell commands from " + path, e);
             }
+        } else {
+            confirmedCommandsModificationTime = null;
         }
         return Objects.requireNonNullElse(confirmedCommands, new HashSet<>());
+    }
+
+    private boolean isConfirmedCommandsFileChanged() throws DBException {
+        FileTime actualModificationTime = getFileModificationTime(getConfigFilePath());
+        return !Objects.equals(confirmedCommandsModificationTime, actualModificationTime);
     }
 
     private boolean addConfirmedShellCommand(@NotNull String command) throws DBException {
@@ -159,16 +187,6 @@ public class ConfirmedShellCommandsManager {
         }
     }
 
-    private boolean removeConfirmedShellCommand(@NotNull String command) throws DBException {
-        synchronized (this) {
-            confirmedCommands = loadConfirmedCommandsForRepo();
-            boolean result = confirmedCommands.remove(command);
-            log.debug("Tried to remove confirmed command result: %s".formatted(result));
-            saveCommands();
-            return result;
-        }
-    }
-
     private void saveCommands() throws DBException {
         var path = getConfigFilePath();
         try {
@@ -176,10 +194,20 @@ public class ConfirmedShellCommandsManager {
             try (var writer = Files.newBufferedWriter(path)) {
                 JSONUtils.PRETTY_GSON.toJson(confirmedCommands, writer);
             }
+            confirmedCommandsModificationTime = getFileModificationTime(path);
         } catch (Exception e) {
             throw new DBException("Error saving confirmed commands, file: %s".formatted(path), e);
         }
         log.debug("Saved confirmed commands to file '%s'".formatted(CONFIRMED_COMMANDS_FILE_NAME));
+    }
+
+    @Nullable
+    private FileTime getFileModificationTime(@NotNull Path path) throws DBException {
+        try {
+            return Files.exists(path) ? Files.getLastModifiedTime(path) : null;
+        } catch (Exception e) {
+            throw new DBException("Error reading confirmed commands file modification time: %s".formatted(path), e);
+        }
     }
 
     @NotNull
