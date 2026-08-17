@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.polardbx.mysql.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
@@ -44,7 +45,8 @@ import java.util.Map;
 public class PolarDBXProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQLCatalog> {
 
     @Override
-    public DBSObjectCache<MySQLCatalog, MySQLProcedure> getObjectsCache(MySQLProcedure object) {
+    @Nullable
+    public DBSObjectCache<MySQLCatalog, MySQLProcedure> getObjectsCache(@NotNull MySQLProcedure object) {
         return object.getContainer().getProceduresCache();
     }
 
@@ -54,8 +56,11 @@ public class PolarDBXProcedureManager extends SQLObjectEditor<MySQLProcedure, My
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
-        throws DBException {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Procedure name cannot be empty");
         }
@@ -69,11 +74,12 @@ public class PolarDBXProcedureManager extends SQLObjectEditor<MySQLProcedure, My
      * This ensures the PolarDBX-specific getFullyQualifiedName() implementation is used.
      */
     @Override
+    @NotNull
     protected MySQLProcedure createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        final Object container,
-        Object copyFrom,
+        @NotNull final Object container,
+        @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
         return new PolarDBXProcedure((MySQLCatalog) container);
@@ -116,7 +122,10 @@ public class PolarDBXProcedureManager extends SQLObjectEditor<MySQLProcedure, My
         );
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, MySQLProcedure procedure) {
+    private void createOrReplaceProcedureQuery(
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull MySQLProcedure procedure
+    ) {
         actions.add(
             new SQLDatabasePersistAction(
                 "Drop procedure",

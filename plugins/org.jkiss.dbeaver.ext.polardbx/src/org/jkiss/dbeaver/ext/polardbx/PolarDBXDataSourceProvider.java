@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.polardbx;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -29,36 +28,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class PolarDBXDataSourceProvider extends MySQLDataSourceProvider {
 
-    private static final Log log = Log.getLog(PolarDBXDataSourceProvider.class);
-
     @NotNull
     @Override
     public String getConnectionURL(
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException {
-        // Use a unified PolarDB-X URL format, compatible with both the Standard Edition and the Enterprise Edition.
-        // PolarDB-X URL format: jdbc:polardbx://[host]:[port],[host]:[port],...[/database]?[property=<value>]&[property=<value>]
         String polardbxUrlTemplate = "jdbc:polardbx://{host}[:{port}][/{database}]";
-        String connectionUrl = DatabaseURL.generateUrlByTemplate(polardbxUrlTemplate, connectionInfo);
-
-        // Add PolarDB-X default parameters, compatible with both the Standard Edition and the Enterprise Edition.
-        // socketTimeout is set to 60 seconds to prevent network reads from hanging indefinitely.
-        String defaultParams = "ignoreVip=false&socketTimeout=60000&useSSL=false&characterEncoding=UTF-8";
-
-        // Check whether the URL already contains parameters.
-        if (connectionUrl.contains("?")) {
-            // If parameters already exist, append to the existing parameters.
-            connectionUrl = connectionUrl + "&" + defaultParams;
-        } else {
-            // If there are no parameters, add the parameter separator.
-            connectionUrl = connectionUrl + "?" + defaultParams;
-        }
-
-        return connectionUrl;
+        return DatabaseURL.generateUrlByTemplate(polardbxUrlTemplate, connectionInfo);
     }
-
-
 
     @NotNull
     @Override

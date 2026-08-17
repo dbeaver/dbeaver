@@ -22,48 +22,36 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedureParameter;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.DBUtils;
-import java.sql.Types;
-import java.sql.DatabaseMetaData;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
-import java.util.Map;
-import java.util.HashMap;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public class PolarDBXCatalog extends MySQLCatalog {
@@ -76,7 +64,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
         "TABLE_GROUP"
     );
 
-    public PolarDBXCatalog(@NotNull MySQLDataSource dataSource, JDBCResultSet dbResult) {
+    public PolarDBXCatalog(@NotNull MySQLDataSource dataSource, @Nullable JDBCResultSet dbResult) {
         super(dataSource, dbResult);
     }
 
@@ -100,6 +88,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
         return isBlacklistedName(tableBase.getName());
     }
 
+    @NotNull
     @Override
     public Collection<MySQLView> getViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         Collection<MySQLView> views = super.getViews(monitor);
@@ -115,6 +104,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
         return filtered;
     }
 
+    @NotNull
     @Override
     public Collection<MySQLTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         Collection<MySQLTableBase> children = super.getChildren(monitor);
@@ -130,6 +120,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
         return filtered;
     }
 
+    @Nullable
     @Override
     public MySQLTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         MySQLTableBase child = super.getChild(monitor, childName);
@@ -143,11 +134,13 @@ public class PolarDBXCatalog extends MySQLCatalog {
     private final PolarDBXProceduresCache polarProceduresCache = new PolarDBXProceduresCache();
     private final PolarDBXIndexCache polarIndexCache = new PolarDBXIndexCache(polarTableCache);
 
+    @NotNull
     @Override
     public MySQLCatalog.TableCache getTableCache() {
         return polarTableCache;
     }
 
+    @NotNull
     @Override
     public MySQLCatalog.ProceduresCache getProceduresCache() {
         return polarProceduresCache;
@@ -156,6 +149,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
     // Override the parent method to directly return our smart index cache.
     // Note: we cannot override getIndexCache() directly here because the return type does not match,
     // so we provide the smart cache functionality by overriding the getIndexes() method instead.
+    @NotNull
     @Override
     public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return polarIndexCache.getAllObjects(monitor, this);
@@ -173,6 +167,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
         // Function definition cache to avoid repeated parsing.
         private final Map<String, Map<String, FunctionDefinitionParser.ParameterInfo>> functionDefinitionCache = new HashMap<>();
 
+        @NotNull
         @Override
         protected MySQLProcedure fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
@@ -214,7 +209,11 @@ public class PolarDBXCatalog extends MySQLCatalog {
         /**
          * Fetch the function definition and parse its parameter information.
          */
-        private Map<String, FunctionDefinitionParser.ParameterInfo> getFunctionParameterInfo(JDBCSession session, String functionName) {
+        @NotNull
+        private Map<String, FunctionDefinitionParser.ParameterInfo> getFunctionParameterInfo(
+            @NotNull JDBCSession session,
+            @NotNull String functionName
+        ) {
             String cacheKey = functionName;
             Map<String, FunctionDefinitionParser.ParameterInfo> cachedInfo = functionDefinitionCache.get(cacheKey);
             if (cachedInfo != null) {
@@ -232,7 +231,10 @@ public class PolarDBXCatalog extends MySQLCatalog {
                             String functionDefinition = JDBCUtils.safeGetString(result, "Create Function");
                             if (functionDefinition != null) {
                                 Map<String, FunctionDefinitionParser.ParameterInfo> paramInfo =
-                                    FunctionDefinitionParser.parseFunctionDefinition(functionDefinition);
+                                    FunctionDefinitionParser.parseFunctionDefinition(
+                                        PolarDBXCatalog.this.getDataSource().getSQLDialect(),
+                                        functionDefinition
+                                    );
                                 functionDefinitionCache.put(cacheKey, paramInfo);
                                 return paramInfo;
                             }
@@ -249,6 +251,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             return emptyInfo;
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareChildrenStatement(
             @NotNull JDBCSession session,
@@ -355,6 +358,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             }
         }
 
+        @NotNull
         @Override
         protected MySQLProcedureParameter fetchChild(
             @NotNull JDBCSession session,
@@ -377,6 +381,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
          * Inspired by the OceanBase plugin approach: directly create function parameter objects with parsed lengths.
          * Avoids complex result set wrappers by using the actual length at parameter creation time.
          */
+        @NotNull
         private MySQLProcedureParameter createFunctionParameterWithParsedLength(
             @NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLProcedure parent, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
@@ -413,7 +418,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             // Create the parameter object directly, using the actual parsed length.
             MySQLProcedureParameter parameter = new MySQLProcedureParameter(
                 parent,
-                DBUtils.getUnQuotedIdentifier(owner.getDataSource(), paramName),  // parameter name
+                owner.getDataSource().getSQLDialect().getUnquotedIdentifier(paramName, true),  // parameter name
                 typeName,  // data type name (e.g. VARCHAR)
                 typeID,
                 ordinalPosition,
@@ -431,16 +436,22 @@ public class PolarDBXCatalog extends MySQLCatalog {
          * Gets the parameter length from information_schema when available, then falls back to the
          * SHOW CREATE FUNCTION declaration and finally to a Connector/J-compatible type default.
          */
-        private int getEnhancedParameterLength(Map<String, FunctionDefinitionParser.ParameterInfo> functionParams,
-                                               String paramName, String typeName, int originalPrecision) {
+        private int getEnhancedParameterLength(
+            @NotNull Map<String, FunctionDefinitionParser.ParameterInfo> functionParams,
+            @NotNull String paramName,
+            @NotNull String typeName,
+            int originalPrecision
+        ) {
 
             // Handle the key mapping for the RETURN parameter to ensure key consistency.
             String lookupKey;
             if ("RETURN".equals(paramName)) {
                 lookupKey = "return";
             } else {
-                // Remove backticks and convert to lower case, consistent with how keys are stored during parsing.
-                lookupKey = paramName.replaceAll("`", "").toLowerCase();
+                lookupKey = FunctionDefinitionParser.normalizeParameterName(
+                    PolarDBXCatalog.this.getDataSource().getSQLDialect(),
+                    paramName
+                );
             }
 
             // Prefer metadata returned by information_schema.PARAMETERS.
@@ -462,7 +473,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
          * Get the basic default length based on the data type.
          * A simplified version providing default lengths for the main types.
          */
-        private int getBasicDefaultLengthForType(String typeName) {
+        private int getBasicDefaultLengthForType(@Nullable String typeName) {
             if (typeName == null) return 255;
 
             String lowerType = typeName.toLowerCase();
@@ -521,7 +532,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
 
         private volatile boolean fullCacheLoaded = false;
 
-        PolarDBXIndexCache(TableCache tableCache) {
+        PolarDBXIndexCache(@NotNull TableCache tableCache) {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
 
@@ -558,7 +569,11 @@ public class PolarDBXCatalog extends MySQLCatalog {
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MySQLCatalog owner,
+            @Nullable MySQLTable forTable
+        )
             throws SQLException
         {
             // Use the same query logic as MySQL.

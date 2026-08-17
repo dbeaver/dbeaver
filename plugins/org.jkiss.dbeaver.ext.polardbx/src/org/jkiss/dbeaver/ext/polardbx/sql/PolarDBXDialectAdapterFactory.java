@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.polardbx.sql;
 
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
@@ -27,14 +29,16 @@ public class PolarDBXDialectAdapterFactory implements IAdapterFactory {
 
     private static final Class<?>[] ADAPTERS = new Class[] { TPRuleProvider.class };
 
+    @Nullable
     @Override
-    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+    public <T> T getAdapter(@NotNull Object adaptableObject, @NotNull Class<T> adapterType) {
         if (adaptableObject instanceof SQLDialect && adapterType == TPRuleProvider.class) {
             return adapterType.cast(new PolarDBXDialectRules());
         }
         return null;
     }
 
+    @NotNull
     @Override
     public Class<?>[] getAdapterList() {
         return ADAPTERS;

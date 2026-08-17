@@ -45,11 +45,11 @@ public class PolarDBXProcedure extends MySQLProcedure {
 
     private static final Log log = Log.getLog(PolarDBXProcedure.class);
 
-    public PolarDBXProcedure(MySQLCatalog catalog) {
+    public PolarDBXProcedure(@NotNull MySQLCatalog catalog) {
         super(catalog);
     }
 
-    public PolarDBXProcedure(MySQLCatalog catalog, ResultSet dbResult) {
+    public PolarDBXProcedure(@NotNull MySQLCatalog catalog, @NotNull ResultSet dbResult) {
         super(catalog, dbResult);
     }
 
@@ -81,7 +81,8 @@ public class PolarDBXProcedure extends MySQLProcedure {
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getDeclaration(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public String getDeclaration(@NotNull DBRProgressMonitor monitor) throws DBException {
         // Get the clientBody field value from the parent class.
         String currentClientBody = super.getDeclaration();
 

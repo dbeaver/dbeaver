@@ -44,7 +44,11 @@ public class PolarDBXDialect extends MySQLDialect implements SQLDialectDDLExtens
     };
 
     @Override
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    public void initDriverSettings(
+        @NotNull JDBCSession session,
+        @NotNull JDBCDataSource dataSource,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
         super.initBaseDriverSettings(session, dataSource, metaData);
 
         for (String kw : POLARDBX_ADVANCED_KEYWORDS) {
@@ -57,6 +61,7 @@ public class PolarDBXDialect extends MySQLDialect implements SQLDialectDDLExtens
     }
 
     @NotNull
+    @Override
     public String[] getNonTransactionKeywords() {
         return ArrayUtils.concatArrays(
             MySQLDialect.MYSQL_NON_TRANSACTIONAL_KEYWORDS,

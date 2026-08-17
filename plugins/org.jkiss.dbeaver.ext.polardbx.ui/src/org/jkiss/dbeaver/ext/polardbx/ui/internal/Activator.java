@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.polardbx.ui.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.osgi.framework.BundleContext;
 
 public class Activator extends AbstractUIPlugin {
@@ -25,16 +27,17 @@ public class Activator extends AbstractUIPlugin {
     private static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.polardbx.ui";
 
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(@NotNull BundleContext context) throws Exception {
         super.start(context);
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(@NotNull BundleContext context) throws Exception {
         super.stop(context);
     }
 
-    public static ImageDescriptor getImageDescriptor(String path) {
+    @Nullable
+    public static ImageDescriptor getImageDescriptor(@NotNull String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
     }
 }

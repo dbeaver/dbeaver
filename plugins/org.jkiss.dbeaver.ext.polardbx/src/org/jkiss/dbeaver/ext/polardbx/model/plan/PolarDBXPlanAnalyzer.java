@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.polardbx.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAbstract;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXMySQLDataSource;
@@ -30,12 +32,12 @@ public class PolarDBXPlanAnalyzer extends MySQLPlanAnalyser {
     };
     private final PolarDBXMySQLDataSource dataSource;
 
-    public PolarDBXPlanAnalyzer(PolarDBXMySQLDataSource dataSource) {
+    public PolarDBXPlanAnalyzer(@NotNull PolarDBXMySQLDataSource dataSource) {
         super(dataSource);
         this.dataSource = dataSource;
     }
 
-    private static boolean block(String firstKeyword) {
+    private static boolean block(@Nullable String firstKeyword) {
         for (String blockWord : FIRST_KEYWORD_BLOCK_LIST) {
             if (blockWord.equalsIgnoreCase(firstKeyword)) {
                 return true;
@@ -44,8 +46,9 @@ public class PolarDBXPlanAnalyzer extends MySQLPlanAnalyser {
         return false;
     }
 
+    @NotNull
     @Override
-    public MySQLPlanAbstract explain(JDBCSession session, String query) throws DBCException {
+    public MySQLPlanAbstract explain(@NotNull JDBCSession session, @NotNull String query) throws DBCException {
         final SQLDialect dialect = SQLUtils.getDialectFromObject(this.dataSource);
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);

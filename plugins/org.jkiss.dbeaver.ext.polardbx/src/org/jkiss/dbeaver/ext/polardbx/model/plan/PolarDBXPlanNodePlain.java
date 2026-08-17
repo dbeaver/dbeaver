@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.polardbx.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -36,7 +38,7 @@ public class PolarDBXPlanNodePlain extends MySQLPlanNode {
     protected PolarDBXPlanNodePlain parent;
     protected List<PolarDBXPlanNodePlain> nested;
 
-    public PolarDBXPlanNodePlain(List<PolarDBXPlanNodePlain> nodes) {
+    public PolarDBXPlanNodePlain(@NotNull List<PolarDBXPlanNodePlain> nodes) {
         id = "<plan>";
         if (!nodes.isEmpty()) {
             this.estRows = nodes.get(0).estRows;
@@ -44,7 +46,7 @@ public class PolarDBXPlanNodePlain extends MySQLPlanNode {
         this.nested = nodes;
     }
 
-    public PolarDBXPlanNodePlain(PolarDBXPlanNodePlain parent, ResultSet dbResult) {
+    public PolarDBXPlanNodePlain(@Nullable PolarDBXPlanNodePlain parent, @NotNull ResultSet dbResult) {
         this.parent = parent;
         this.id = JDBCUtils.safeGetString(dbResult, "id");
         this.estRows = JDBCUtils.safeGetString(dbResult, "estRows");
@@ -53,26 +55,31 @@ public class PolarDBXPlanNodePlain extends MySQLPlanNode {
         this.operatorInfo = JDBCUtils.safeGetString(dbResult, "operator info");
     }
 
+    @Nullable
     @Override
     public PolarDBXPlanNodePlain getParent() {
         return parent;
     }
 
+    @Nullable
     @Override
     public Number getNodeCost() {
         return null;
     }
 
+    @Nullable
     @Override
     public Number getNodePercent() {
         return null;
     }
 
+    @Nullable
     @Override
     public Number getNodeDuration() {
         return null;
     }
 
+    @Nullable
     @Override
     public Number getNodeRowCount() {
         if (estRows == null) {
@@ -85,47 +92,55 @@ public class PolarDBXPlanNodePlain extends MySQLPlanNode {
         }
     }
 
+    @Nullable
     @Override
     public String getNodeName() {
         return this.accessObject;
     }
 
+    @Nullable
     @Override
     public String getNodeType() {
-        return this.id.trim().replaceAll("└", "").replaceAll("─", "");
+        return id == null ? null : id.trim().replaceAll("└", "").replaceAll("─", "");
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBCPlanNode> getNested() {
-        return this.nested;
+        return nested == null ? List.of() : nested;
     }
 
     @Property(order = 0, viewable = true)
+    @Nullable
     public String getId() {
         return id;
     }
 
     @Property(order = 1, viewable = true)
+    @Nullable
     public String getEstRows() {
         return estRows;
     }
 
     @Property(order = 2, viewable = true)
+    @Nullable
     public String getTask() {
         return task;
     }
 
     @Property(order = 3, viewable = true)
+    @Nullable
     public String getAccessObject() {
         return accessObject;
     }
 
     @Property(order = 4, viewable = true)
+    @Nullable
     public String getOperatorInfo() {
         return operatorInfo;
     }
 
-    void setParent(PolarDBXPlanNodePlain node) {
+    void setParent(@Nullable PolarDBXPlanNodePlain node) {
         if (this.parent != null && this.parent.nested != null) {
             this.parent.nested.remove(this);
         }
@@ -135,7 +150,7 @@ public class PolarDBXPlanNodePlain extends MySQLPlanNode {
         }
     }
 
-    private void addChild(PolarDBXPlanNodePlain node) {
+    private void addChild(@NotNull PolarDBXPlanNodePlain node) {
         if (this.nested == null) {
             this.nested = new ArrayList<>();
         }

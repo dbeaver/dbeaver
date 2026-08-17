@@ -20,38 +20,33 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
+import org.jkiss.dbeaver.ext.polardbx.model.plan.PolarDBXPlanAnalyzer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
-import org.jkiss.dbeaver.ext.polardbx.model.plan.PolarDBXPlanAnalyzer;
-import org.osgi.framework.Version;
-import org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXCatalog;
-
-import java.sql.Connection;
-import java.sql.Statement;
 
 public class PolarDBXMySQLDataSource extends MySQLDataSource {
     private static final Log log = Log.getLog(PolarDBXMySQLDataSource.class);
@@ -62,11 +57,14 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
     private static final Pattern POLARDBX_STANDARD_VERSION_PATTERN = Pattern.compile(
         "^\\d+\\.\\d+\\.\\d+-(AliSQL-)?X-Cluster-(\\d+\\.\\d+\\.\\d+(?:\\.\\d+)?)-.*"
     );
+    private static final Pattern POLARDBX_ENTERPRISE_VERSION_PATTERN = Pattern.compile(
+        "^\\d+\\.\\d+\\.\\d+-(?i:TDDL)-(\\d+\\.\\d+\\.\\d+)(?:-.*)?$"
+    );
 
     private String serverVersion = "";
     private boolean isPolarDBXStandardEdition = false;
-    private String polarDBXStandardVersion = null;
 
+    @NotNull
     public String getServerVersion() {
         return this.serverVersion;
     }
@@ -79,44 +77,65 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
         return isPolarDBXStandardEdition;
     }
 
-    /**
-     * Get the version number of the PolarDB-X Standard Edition.
-     * @return the Standard Edition version number, or null if it is not the Standard Edition
-     */
-    public String getPolarDBXStandardVersion() {
-        return polarDBXStandardVersion;
-    }
-
-    public PolarDBXMySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public PolarDBXMySQLDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         super(monitor, container, new PolarDBXDialect());
     }
 
     @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        super.initialize(monitor);
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "PolarDB-X version fetch")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT VERSION() AS VERSION")) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        this.serverVersion = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_VERSION);
-
-                        // Detect whether this is a PolarDB-X Standard Edition.
-                        detectPolarDBXStandardEdition();
-                    }
+    protected synchronized void readDatabaseServerVersion(
+        @NotNull Connection session,
+        @NotNull DatabaseMetaData metaData
+    ) {
+        if (databaseVersion == null) {
+            try {
+                String version = JDBCUtils.executeQuery(session, "SELECT VERSION()");
+                if (CommonUtils.isNotEmpty(version)) {
+                    serverVersion = version;
+                    isPolarDBXStandardEdition = POLARDBX_STANDARD_VERSION_PATTERN.matcher(version).matches();
+                    databaseVersion = parseDatabaseVersion(version);
                 }
-            } catch (SQLException ex) {
-                // ignore version fetch failure
+            } catch (SQLException | IllegalArgumentException e) {
+                log.debug("Error determining PolarDB-X server version", e);
+            }
+            if (databaseVersion == null) {
+                super.readDatabaseServerVersion(session, metaData);
             }
         }
     }
 
+    @Nullable
+    private static Version parseDatabaseVersion(@NotNull String version) {
+        Matcher standardMatcher = POLARDBX_STANDARD_VERSION_PATTERN.matcher(version);
+        if (standardMatcher.matches()) {
+            String[] versionParts = standardMatcher.group(2).split("\\.");
+            return new Version(
+                Integer.parseInt(versionParts[0]),
+                Integer.parseInt(versionParts[1]),
+                Integer.parseInt(versionParts[2])
+            );
+        }
+
+        Matcher enterpriseMatcher = POLARDBX_ENTERPRISE_VERSION_PATTERN.matcher(version);
+        if (enterpriseMatcher.matches()) {
+            return new Version(enterpriseMatcher.group(1));
+        }
+        return null;
+    }
+
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
         super.createDataSourceInfo(monitor, metaData);
         return new PolarDBXMySQLDataSourceInfo(this, metaData);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
@@ -137,6 +156,7 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
         return props;
     }
 
+    @NotNull
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor,
                                        @Nullable JDBCExecutionContext context,
@@ -158,8 +178,9 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
         return connection;
     }
 
+    @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         // For the Standard Edition, use MySQL's adapter logic entirely.
         if (isPolarDBXStandardEdition()) {
             return super.getAdapter(adapter);
@@ -191,54 +212,7 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
         return this.isServerVersionAtLeast(4, 0);
     }
 
-    /**
-     * Detect the PolarDB-X Standard Edition and extract its version information.
-     */
-    private void detectPolarDBXStandardEdition() {
-        if (CommonUtils.isEmpty(serverVersion)) {
-            return;
-        }
-
-        Matcher matcher = POLARDBX_STANDARD_VERSION_PATTERN.matcher(serverVersion);
-        if (matcher.matches()) {
-            isPolarDBXStandardEdition = true;
-            polarDBXStandardVersion = matcher.group(2); // extract the version number part
-        } else {
-            isPolarDBXStandardEdition = false;
-            polarDBXStandardVersion = null;
-        }
-    }
-
-    @Override
-    public boolean isServerVersionAtLeast(int major, int minor) {
-        // For the Standard Edition, use MySQL-compatible version comparison logic.
-        if (isPolarDBXStandardEdition && polarDBXStandardVersion != null) {
-            try {
-                String[] versionParts = polarDBXStandardVersion.split("\\.");
-                int majorVer = Integer.parseInt(versionParts[0]);
-                int minorVer = versionParts.length > 1 ? Integer.parseInt(versionParts[1]) : 0;
-
-                if (majorVer < major) {
-                    return false;
-                } else if (majorVer == major && minorVer < minor) {
-                    return false;
-                }
-                return true;
-            } catch (Exception e) {
-                // ignore: fall back to default version comparison below
-            }
-        }
-
-        // The regular edition uses the original logic.
-        Version dbVer = this.getInfo().getDatabaseVersion();
-        if (dbVer.getMajor() < major) {
-            return false;
-        } else if (dbVer.getMajor() == major && dbVer.getMinor() < minor) {
-            return false;
-        }
-        return true;
-    }
-
+    @Nullable
     @Override
     public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
         return getCatalog(childName);
@@ -247,24 +221,6 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
     @NotNull
     @Override
     public MySQLCatalog createCatalogInstance(@NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) {
-        // Make sure version detection has completed; if not detected yet, detect it first.
-        if (CommonUtils.isEmpty(serverVersion)) {
-            try {
-                // Try to obtain version information from the current session.
-                JDBCSession session = resultSet.getSession();
-                try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT VERSION() AS VERSION")) {
-                    try (JDBCResultSet versionResult = dbStat.executeQuery()) {
-                        if (versionResult.next()) {
-                            this.serverVersion = JDBCUtils.safeGetString(versionResult, MySQLConstants.COL_VERSION);
-                            detectPolarDBXStandardEdition();
-                        }
-                    }
-                }
-            } catch (SQLException ex) {
-                // If detection fails, default to the PolarDB-X dedicated Catalog; it will be re-detected during initialize.
-            }
-        }
-
         // For the Standard Edition, use MySQL's native Catalog directly.
         if (isPolarDBXStandardEdition()) {
             return new MySQLCatalog(owner, resultSet);

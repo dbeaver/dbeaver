@@ -23,31 +23,24 @@
                     icon="icons/polardbx_icon.svg"
                     iconBig="icons/polardbx_icon_big.svg"
                     logoImage="platform:/plugin/org.jkiss.dbeaver.ext.polardbx.ui/icons/polardbx_logo.svg">
-                    <!-- PolarDB-X driver: use the local driver when the drivers.polardbx bundle is present; otherwise download it from Maven -->
                     <file type="jar" path="maven:/com/alibaba/polardbx:polardbx-connector-java:RELEASE[2.2.12]" bundle="!drivers.polardbx"/>
                     <file type="jar" path="maven:/dnsjava:dnsjava:RELEASE[3.6.1]" bundle="!drivers.polardbx"/>
                     <file type="jar" path="drivers/polardbx/polardbx-connector-java.jar" bundle="drivers.polardbx"/>
                     <file type="jar" path="drivers/polardbx/dnsjava.jar" bundle="drivers.polardbx"/>
-
-                    <!-- License -->
                     <file type="license" path="docs/root/licenses/external/asl-2.0.txt"/>
-
-                    <!-- Connection timeout settings -->
                     <property name="connectTimeout" value="60000"/>
                     <property name="loginTimeout" value="30"/>
-
-                    <!-- General settings -->
+                    <property name="socketTimeout" value="60000"/>
+                    <property name="ignoreVip" value="false"/>
+                    <property name="useSSL" value="false"/>
+                    <property name="characterEncoding" value="UTF-8"/>
                     <property name="rewriteBatchedStatements" value="true"/>
                     <parameter name="serverType" value="polardbx"/>
                     <property name="enabledTLSProtocols" value="TLSv1.2,TLSv1.3"/>
-
-                    <!-- Connection pool and stability settings -->
                     <property name="autoReconnect" value="true"/>
                     <property name="failOverReadOnly" value="false"/>
                     <property name="maxReconnects" value="3"/>
                     <property name="initialTimeout" value="2"/>
-
-                    <!-- DBeaver default settings -->
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
@@ -73,7 +66,6 @@
         </dialect>
     </extension>
 
-    <!-- Adapter factory that registers the dialect with TPRuleProvider -->
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXDialect"
                  class="org.jkiss.dbeaver.ext.polardbx.sql.PolarDBXDialectAdapterFactory">
@@ -81,13 +73,9 @@
         </factory>
     </extension>
 
-    <!-- Register PolarDB-X specific object managers -->
     <extension point="org.jkiss.dbeaver.objectManager">
-        <!-- Use the PolarDB-X specific procedure manager, which supports automatic refresh after creation -->
-        <!-- Register the PolarDBXProcedure type -->
         <manager class="org.jkiss.dbeaver.ext.polardbx.mysql.edit.PolarDBXProcedureManager"
                  objectType="org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXProcedure"/>
-        <!-- Also register the MySQLProcedure type, so that the PolarDB-X manager is used when creating new procedures -->
         <manager class="org.jkiss.dbeaver.ext.polardbx.mysql.edit.PolarDBXProcedureManager"
                  objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
     </extension>

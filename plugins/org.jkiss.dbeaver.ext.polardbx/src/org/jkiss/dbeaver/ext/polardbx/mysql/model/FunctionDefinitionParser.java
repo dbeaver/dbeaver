@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.polardbx.mysql.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.util.*;
 
@@ -26,8 +29,6 @@ import java.util.*;
  * This class parses SHOW CREATE FUNCTION results to extract function parameter information.
  * The implementation is based on the existing logic from MySQL Connector/J's DatabaseMetaData class,
  * specifically the TypeDescriptor and getCallStmtParameterTypes methods.
- * 
- * @author DBeaver Team
  */
 public class FunctionDefinitionParser {
     private static final Log log = Log.getLog(FunctionDefinitionParser.class);
@@ -42,7 +43,13 @@ public class FunctionDefinitionParser {
         private final boolean isReturnParameter;
         private final int scale;
         
-        public ParameterInfo(String parameterName, int length, String dataType, boolean isReturnParameter, int scale) {
+        public ParameterInfo(
+            @NotNull String parameterName,
+            int length,
+            @NotNull String dataType,
+            boolean isReturnParameter,
+            int scale
+        ) {
             this.parameterName = parameterName;
             this.length = length;
             this.dataType = dataType;
@@ -50,7 +57,8 @@ public class FunctionDefinitionParser {
             this.scale = scale;
         }
         
-        public String getParameterName() { 
+        @NotNull
+        public String getParameterName() {
             return parameterName; 
         }
         
@@ -58,7 +66,8 @@ public class FunctionDefinitionParser {
             return length; 
         }
         
-        public String getDataType() { 
+        @NotNull
+        public String getDataType() {
             return dataType; 
         }
         
@@ -71,6 +80,7 @@ public class FunctionDefinitionParser {
         }
         
         @Override
+        @NotNull
         public String toString() {
             return String.format("ParameterInfo{name='%s', length=%d, type='%s', scale=%d, isReturn=%s}", 
                                parameterName, length, dataType, scale, isReturnParameter);
@@ -80,11 +90,16 @@ public class FunctionDefinitionParser {
     /**
      * Parse SHOW CREATE FUNCTION result to extract function parameter information
      * Based on DatabaseMetaData.getCallStmtParameterTypes logic
-     * 
+     *
+     * @param dialect The SQL dialect used to unquote parameter identifiers
      * @param functionDefinition The function definition string from SHOW CREATE FUNCTION
      * @return List of parameter information including parameter names and lengths
      */
-    public static Map<String, ParameterInfo> parseFunctionDefinition(String functionDefinition) {
+    @NotNull
+    public static Map<String, ParameterInfo> parseFunctionDefinition(
+        @NotNull SQLDialect dialect,
+        @Nullable String functionDefinition
+    ) {
         Map<String, ParameterInfo> parameters = new LinkedHashMap<>();
 
         if (functionDefinition == null || functionDefinition.trim().isEmpty()) {
@@ -103,7 +118,7 @@ public class FunctionDefinitionParser {
             }
 
             // 2. Parse input parameters - based on existing parameter parsing logic
-            Map<String, ParameterInfo> inputParams = parseInputParametersUsingOriginalLogic(procedureDef);
+            Map<String, ParameterInfo> inputParams = parseInputParametersUsingOriginalLogic(dialect, procedureDef);
             parameters.putAll(inputParams);
             
         } catch (Exception e) {
@@ -118,7 +133,8 @@ public class FunctionDefinitionParser {
      * Parse return type based on DatabaseMetaData existing logic
      * Based on DatabaseMetaData.java line 1538 logic
      */
-    private static ParameterInfo parseReturnTypeUsingOriginalLogic(String procedureDef) {
+    @Nullable
+    private static ParameterInfo parseReturnTypeUsingOriginalLogic(@NotNull String procedureDef) {
         int returnsIndex = procedureDef.toUpperCase().indexOf("RETURNS");
         if (returnsIndex != -1) {
             int declarationStart = returnsIndex + "RETURNS".length();
@@ -148,7 +164,7 @@ public class FunctionDefinitionParser {
     /**
      * Find end position of RETURNS clause
      */
-    private static int findEndOfReturnsClause(String procedureDef, int startPos) {
+    private static int findEndOfReturnsClause(@NotNull String procedureDef, int startPos) {
         // Look for possible end keywords
         String[] endKeywords = {"DETERMINISTIC", "NOT DETERMINISTIC", "READS SQL DATA", 
                                "MODIFIES SQL DATA", "NO SQL", "CONTAINS SQL", "SQL SECURITY", 
@@ -170,7 +186,11 @@ public class FunctionDefinitionParser {
      * Parse input parameters based on DatabaseMetaData existing logic
      * Based on DatabaseMetaData.java lines 1543-1550 logic
      */
-    private static Map<String, ParameterInfo> parseInputParametersUsingOriginalLogic(String procedureDef) {
+    @NotNull
+    private static Map<String, ParameterInfo> parseInputParametersUsingOriginalLogic(
+        @NotNull SQLDialect dialect,
+        @NotNull String procedureDef
+    ) {
         Map<String, ParameterInfo> parameters = new LinkedHashMap<>();
         
         int openParenIndex = procedureDef.indexOf('(');
@@ -191,10 +211,10 @@ public class FunctionDefinitionParser {
         List<String> parameterStrings = splitParametersUsingOriginalLogic(parameterList);
         
         for (String paramStr : parameterStrings) {
-            ParameterInfo param = parseParameterUsingOriginalLogic(paramStr.trim());
+            ParameterInfo param = parseParameterUsingOriginalLogic(dialect, paramStr.trim());
             if (param != null) {
                 // Store with lowercase key for consistent lookup
-                String key = param.getParameterName().toLowerCase();
+                String key = normalizeParameterName(dialect, param.getParameterName());
                 parameters.put(key, param);
             }
         }
@@ -206,7 +226,8 @@ public class FunctionDefinitionParser {
      * Split parameter list based on existing logic
      * Simulates DatabaseMetaData parameter splitting logic without regex
      */
-    private static List<String> splitParametersUsingOriginalLogic(String parameterList) {
+    @NotNull
+    private static List<String> splitParametersUsingOriginalLogic(@NotNull String parameterList) {
         List<String> parameters = new ArrayList<>();
         
         // Based on existing string processing logic, no regex
@@ -253,7 +274,11 @@ public class FunctionDefinitionParser {
     /**
      * Parse single parameter based on existing logic
      */
-    private static ParameterInfo parseParameterUsingOriginalLogic(String parameterDefinition) {
+    @Nullable
+    private static ParameterInfo parseParameterUsingOriginalLogic(
+        @NotNull SQLDialect dialect,
+        @Nullable String parameterDefinition
+    ) {
         if (parameterDefinition == null || parameterDefinition.trim().isEmpty()) {
             return null;
         }
@@ -277,10 +302,7 @@ public class FunctionDefinitionParser {
         String parameterName = cleanParam.substring(0, firstSpaceIndex).trim();
         String typeDefinition = cleanParam.substring(firstSpaceIndex + 1).trim();
         
-        // Remove backticks from parameter name - based on existing logic
-        if (parameterName.startsWith("`") && parameterName.endsWith("`")) {
-            parameterName = parameterName.substring(1, parameterName.length() - 1);
-        }
+        parameterName = dialect.getUnquotedIdentifier(parameterName, true);
         
         // Parse type definition
         TypeInfo typeInfo = parseTypeUsingOriginalLogic(typeDefinition);
@@ -294,6 +316,11 @@ public class FunctionDefinitionParser {
         );
     }
 
+    @NotNull
+    static String normalizeParameterName(@NotNull SQLDialect dialect, @NotNull String parameterName) {
+        return dialect.getUnquotedIdentifier(parameterName, true).toLowerCase(Locale.ENGLISH);
+    }
+
     /**
      * Type information internal class - based on DatabaseMetaData.TypeDescriptor
      */
@@ -302,7 +329,7 @@ public class FunctionDefinitionParser {
         final int columnSize;
         final int decimalDigits;
         
-        TypeInfo(String typeName, int columnSize, int decimalDigits) {
+        TypeInfo(@NotNull String typeName, int columnSize, int decimalDigits) {
             this.typeName = typeName;
             this.columnSize = columnSize;
             this.decimalDigits = decimalDigits;
@@ -314,7 +341,8 @@ public class FunctionDefinitionParser {
      * Completely copies existing type parsing logic, no regex
      * Based on DatabaseMetaData.java lines 240-410
      */
-    private static TypeInfo parseTypeUsingOriginalLogic(String typeInfo) {
+    @NotNull
+    private static TypeInfo parseTypeUsingOriginalLogic(@Nullable String typeInfo) {
         if (typeInfo == null || typeInfo.trim().isEmpty()) {
             return new TypeInfo("UNKNOWN", 255, 0);
         }
@@ -438,7 +466,8 @@ public class FunctionDefinitionParser {
     /**
      * Extract base type name - based on existing logic
      */
-    private static String extractBaseTypeName(String typeInfo) {
+    @NotNull
+    private static String extractBaseTypeName(@NotNull String typeInfo) {
         // Find first space or parenthesis
         int spaceIndex = typeInfo.indexOf(' ');
         int parenIndex = typeInfo.indexOf('(');
@@ -458,7 +487,7 @@ public class FunctionDefinitionParser {
     /**
      * Check if string type
      */
-    private static boolean isStringType(String typeName) {
+    private static boolean isStringType(@NotNull String typeName) {
         return typeName.equals("CHAR") || typeName.equals("VARCHAR") || 
                typeName.equals("TEXT") || typeName.equals("TINYTEXT") ||
                typeName.equals("MEDIUMTEXT") || typeName.equals("LONGTEXT") ||
@@ -468,7 +497,7 @@ public class FunctionDefinitionParser {
     /**
      * Check if binary type
      */
-    private static boolean isBinaryType(String typeName) {
+    private static boolean isBinaryType(@NotNull String typeName) {
         return typeName.equals("BINARY") || typeName.equals("VARBINARY") ||
                typeName.equals("BLOB") || typeName.equals("TINYBLOB") ||
                typeName.equals("MEDIUMBLOB") || typeName.equals("LONGBLOB") ||
@@ -478,7 +507,7 @@ public class FunctionDefinitionParser {
     /**
      * Check if date/time type
      */
-    private static boolean isDateTimeType(String typeName) {
+    private static boolean isDateTimeType(@NotNull String typeName) {
         return typeName.equals("DATE") || typeName.equals("TIME") ||
                typeName.equals("DATETIME") || typeName.equals("TIMESTAMP") ||
                typeName.equals("YEAR");
@@ -489,7 +518,7 @@ public class FunctionDefinitionParser {
      * Database metadata is preferred by {@link PolarDBXCatalog}; these values are only a fallback because
      * PolarDB-X can return zero for function parameter precision and length.
      */
-    private static int getDefaultColumnSize(String typeName) {
+    private static int getDefaultColumnSize(@NotNull String typeName) {
         return switch (typeName) {
             case "TINYINT" -> 3;
             case "SMALLINT" -> 5;
@@ -512,7 +541,7 @@ public class FunctionDefinitionParser {
     /**
      * Find matching closing parenthesis - based on existing logic
      */
-    private static int findMatchingCloseParen(String str, int openIndex) {
+    private static int findMatchingCloseParen(@NotNull String str, int openIndex) {
         if (openIndex == -1 || openIndex >= str.length()) {
             return -1;
         }

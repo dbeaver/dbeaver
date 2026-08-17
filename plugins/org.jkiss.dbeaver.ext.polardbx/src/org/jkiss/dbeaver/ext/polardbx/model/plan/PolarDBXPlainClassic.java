@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.polardbx.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAbstract;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -33,7 +35,7 @@ import java.util.Map;
 public class PolarDBXPlainClassic extends MySQLPlanAbstract {
     private List<PolarDBXPlanNodePlain> rootNodes;
 
-    public PolarDBXPlainClassic(JDBCSession session, String query) throws DBCException {
+    public PolarDBXPlainClassic(@NotNull JDBCSession session, @NotNull String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -49,31 +51,39 @@ public class PolarDBXPlainClassic extends MySQLPlanAbstract {
         }
     }
 
-    public PolarDBXPlainClassic(MySQLDataSource dataSource, String query, List<PolarDBXPlanNodePlain> rootNodes) {
+    public PolarDBXPlainClassic(
+        @NotNull MySQLDataSource dataSource,
+        @NotNull String query,
+        @NotNull List<PolarDBXPlanNodePlain> rootNodes
+    ) {
         super(dataSource, query);
         this.rootNodes = rootNodes;
     }
 
+    @Nullable
     @Override
-    public Object getPlanFeature(String feature) {
+    public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
             return true;
         }
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN FORMAT = \"brief\" " + query;
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
 }
