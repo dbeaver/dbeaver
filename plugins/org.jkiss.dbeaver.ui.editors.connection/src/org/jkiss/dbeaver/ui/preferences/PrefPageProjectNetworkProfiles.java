@@ -125,25 +125,23 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     @Override
     protected boolean deleteProfile(@NotNull DBWNetworkProfile selectedProfile) {
         List<? extends DBPDataSourceContainer> usedBy = connectionsUsingProfile(selectedProfile);
-        if (!usedBy.isEmpty()) {
-                UIUtils.showMessageBox(
-                    getShell(),
-                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
-                    NLS.bind(
-                        UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info, new Object[] {
-                            selectedProfile.getProfileName(),
-                            usedBy.size(),
-                            usedBy.stream()
-                                .sorted(Comparator.comparing(DBPNamedObject::getName))
-                                .map(x -> " - " + x.getName())
-                                .collect(Collectors.joining("\n"))
-                        }
-                    ),
-                    SWT.ICON_ERROR
-                );
-                return false;
-            }
-        if (UIUtils.confirmAction(
+        String usedByNames = usedBy.stream()
+            .sorted(Comparator.comparing(DBPNamedObject::getName))
+            .map(x -> " - " + x.getName())
+            .collect(Collectors.joining("\n"));
+        if (!selectedProfile.isGlobal() && !usedBy.isEmpty()) {
+            UIUtils.showMessageBox(
+                getShell(),
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info,
+                    selectedProfile.getProfileName(), usedBy.size(), usedByNames
+                ),
+                SWT.ICON_ERROR
+            );
+            return false;
+        }
+        if (!UIUtils.confirmAction(
             getShell(),
             UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
             NLS.bind(
@@ -151,12 +149,26 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
                 selectedProfile.getProfileName()
             )
         )) {
-            DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
-            profilesRegistry.removeProfile(selectedProfile);
-            profilesRegistry.saveSettings();
-            return true;
+            return false;
         }
-        return false;
+        if (!usedBy.isEmpty() && !UIUtils.confirmAction(
+            getShell(),
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
+            NLS.bind(
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_used_confirmation_question,
+                new Object[] {
+                    selectedProfile.getProfileName(),
+                    usedBy.size(),
+                    usedByNames
+                }
+            )
+        )) {
+            return false;
+        }
+        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
+        profilesRegistry.removeProfile(selectedProfile);
+        profilesRegistry.saveSettings();
+        return true;
     }
 
     @NotNull
