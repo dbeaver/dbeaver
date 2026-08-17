@@ -169,6 +169,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 try (JDBCResultSet rs = stat.executeQuery()) {
                     if (rs.nextRow()) {
                         String activeSchemaName = JDBCUtils.safeGetString(rs, 1);
+                        activeUser = JDBCUtils.safeGetString(rs, 2);
                         if (!CommonUtils.isEmpty(activeSchemaName)) {
                             // Pre-cache schemas, we need them anyway
                             getDefaultCatalog().getSchemas(monitor);
@@ -177,7 +178,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                                 activeSchemaId = activeSchema.getObjectId();
                             }
                         }
-                        activeUser = JDBCUtils.safeGetString(rs, 2);
                     }
                 }
             }
@@ -236,7 +236,10 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     private void addSearchPath(@NotNull String path) {
         searchPath.clear();
         searchPath.add(path);
-        if (!path.contains(activeUser) && getDataSource().getServerType().supportsStandardSearchPath()) {
+        if (activeUser != null
+            && !path.contains(activeUser)
+            && getDataSource().getServerType().supportsStandardSearchPath()
+        ) {
             searchPath.add(activeUser);
         }
     }

@@ -118,12 +118,17 @@ public class PostgreDatabase extends JDBCRemoteInstance
         // We need to set name first
         this.name = databaseName;
         this.initCaches();
-        checkInstanceConnection(monitor, false);
+        if (!dataSource.isConnectionRefreshing()) {
+            checkInstanceConnection(monitor, false);
+            readDatabaseInfoSafely(monitor);
+        }
+    }
 
+    void readDatabaseInfoSafely(@NotNull DBRProgressMonitor monitor) {
         try {
             readDatabaseInfo(monitor);
         } catch (DBCException e) {
-            // On some multi-tenant servers pg_database is not public so error may gappen here
+            // On some multi-tenant servers pg_database is not public
             log.debug("Error reading database info", e);
         }
     }
