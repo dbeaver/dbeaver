@@ -16,21 +16,32 @@
  */
 package org.jkiss.dbeaver.ui.app.config;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.app.config.pages.ProductConfigWizardPage;
 import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigPageDescriptor;
 import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigWizardRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public final class ProductConfigWizard extends Wizard {
+    public enum Origin {
+        AUTOMATIC,
+        BY_USER
+    }
+
     private static final Log log = Log.getLog(ProductConfigWizard.class);
 
+    private final Origin origin;
     private boolean restartRequired = false;
 
-    public ProductConfigWizard() {
+    public ProductConfigWizard(@NotNull Origin origin) {
+        this.origin = origin;
         setWindowTitle("Product Configuration");
     }
 
@@ -59,8 +70,14 @@ public final class ProductConfigWizard extends Wizard {
 
     @Override
     public boolean performCancel() {
-        // Can't cancel - force the user to go through, or apply defaults by pressing "Finish"
-        return Platform.inDevelopmentMode();
+        if (origin == Origin.BY_USER) {
+            return true;
+        }
+        return UIUtils.confirmAction(
+            getShell(),
+            ProductConfigMessages.confirm_exit_title,
+            NLS.bind(ProductConfigMessages.confirm_exit_message, GeneralUtils.getProductName())
+        );
     }
 
     /**
@@ -73,6 +90,11 @@ public final class ProductConfigWizard extends Wizard {
 
     public boolean isRestartRequired() {
         return restartRequired;
+    }
+
+    @NotNull
+    public Origin getOrigin() {
+        return origin;
     }
 
     private void applySettings() {

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -51,12 +52,14 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.app.config.ProductConfigWizard;
 import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
@@ -184,14 +187,29 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             // Only show when the persisted configuration lacks any features defined in the registry, e.g. fresh start
             return;
         }
-        var display = Display.getCurrent();
-        var splash = WorkbenchPlugin.getSplashShell(display);
-        try {
+        runWithSplashHidden(() -> {
+            var dialog = new ProductConfigWizardDialog(
+                getWindowConfigurer().getWindow(),
+                ProductConfigWizard.Origin.AUTOMATIC
+            );
+            if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                DBRFeatureRegistry.getInstance().endTracking();
+                System.exit(0);
+            }
+        });
+    }
+
+    private static void runWithSplashHidden(@NotNull Runnable runnable) {
+        var splash = WorkbenchPlugin.getSplashShell(Display.getCurrent());
+        if (splash != null && !splash.isDisposed()) {
             splash.setVisible(false);
-            var dialog = new ProductConfigWizardDialog(getWindowConfigurer().getWindow());
-            dialog.open();
+        }
+        try {
+            runnable.run();
         } finally {
-            splash.setVisible(true);
+            if (splash != null && !splash.isDisposed()) {
+                splash.setVisible(true);
+            }
         }
     }
 

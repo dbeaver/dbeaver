@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -265,6 +265,13 @@ public class ModelMessages extends NLS {
     public static String duration_formatter_minutes;
     public static String duration_formatter_seconds;
     public static String duration_formatter_milliseconds;
+
+
+    public static String shell_cmd_manager_add_command_confirmation_label;
+    public static String shell_cmd_manager_add_command_confirmation_text;
+    public static String shell_cmd_manager_add_command_confirmation_button;
+    public static String shell_cmd_manager_add_command_error_message;
+    public static String shell_cmd_manager_add_command_error_message_te_specific;
 
     static {
         // initialize resource bundle

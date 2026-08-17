@@ -226,7 +226,7 @@
             class="org.jkiss.dbeaver.model.impl.config.ProductConfigPropertyTester"
             id="org.jkiss.dbeaver.app.config"
             namespace="org.jkiss.dbeaver.app.config"
-            properties="isFeatureEnabled"
+            properties="isFeatureEnabled,isAvailable"
             type="java.lang.Object"/>
     </extension>
 

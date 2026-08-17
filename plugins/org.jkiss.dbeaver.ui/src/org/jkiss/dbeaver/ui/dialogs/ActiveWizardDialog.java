@@ -27,6 +27,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -53,7 +54,12 @@ public class ActiveWizardDialog extends WizardDialog {
 
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard, IStructuredSelection selection)
     {
-        super(window.getShell(), wizard);
+        this(window, wizard, selection, window.getShell());
+    }
+
+    public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard, IStructuredSelection selection, Shell parentShell)
+    {
+        super(parentShell, wizard);
 
         // Initialize wizard
         if (wizard instanceof IWorkbenchWizard) {

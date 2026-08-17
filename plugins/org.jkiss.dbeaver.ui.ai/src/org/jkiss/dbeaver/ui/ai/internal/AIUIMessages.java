@@ -90,6 +90,12 @@ public class AIUIMessages extends NLS {
     public static String openai_configurator_token_required;
     public static String openai_configurator_token_placeholder;
 
+    public static String model_selector_refresh_title;
+    public static String model_selector_refresh_success_message;
+    public static String model_selector_refresh_empty_message;
+    public static String model_selector_refresh_error_title;
+    public static String model_selector_token_required;
+
     public static String ai_engine_configurator_advanced_settings;
     public static String ai_engine_configurator_timeout_label;
     public static String ai_engine_configurator_timeout_tip;
