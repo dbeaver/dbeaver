@@ -3,7 +3,7 @@ name: code-review
 description: Review pull requests for copy-paste defects and accidentally committed sensitive data. Use this during code review when changed code may have been copied or pasted.
 ---
 
-# Copy-Paste Review
+# Pull Requests Review
 
 Inspect changed code for signs of copied logic, configuration, tests, and
 documentation that were not fully adapted to their new context.
