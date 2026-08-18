@@ -98,6 +98,7 @@ public class PropertyTreeViewer extends TreeViewer {
     private ExpandMode expandMode = ExpandMode.ALL;
 
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
+    private final List<Runnable> editorValueChangeListeners = new ArrayList<>();
 
     public PropertyTreeViewer(Composite parent, int style)
     {
@@ -594,6 +595,9 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             final Control editorControl = cellEditor.getControl();
             if (editorControl != null) {
+                Listener editorValueListener = e -> notifyEditorValueChangeListeners();
+                editorControl.addListener(SWT.Modify, editorValueListener);
+                editorControl.addListener(SWT.Selection, editorValueListener);
                 Control traverseControl = editorControl;
                 if (editorControl instanceof Composite) {
                     for (Control child : ((Composite) editorControl).getChildren()) {
@@ -827,6 +831,26 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
+    public void addEditorValueChangeListener(@NotNull Runnable listener) {
+        synchronized (editorValueChangeListeners) {
+            editorValueChangeListeners.add(listener);
+        }
+    }
+
+    public void removeEditorValueChangeListener(@NotNull Runnable listener) {
+        synchronized (editorValueChangeListeners) {
+            editorValueChangeListeners.remove(listener);
+        }
+    }
+
+    private void notifyEditorValueChangeListeners() {
+        List<Runnable> listeners;
+        synchronized (editorValueChangeListeners) {
+            listeners = new ArrayList<>(editorValueChangeListeners);
+        }
+        listeners.forEach(Runnable::run);
+    }
+
     public void setExpandMode(ExpandMode expandMode) {
         this.expandMode = expandMode;
     }
@@ -853,7 +877,12 @@ public class PropertyTreeViewer extends TreeViewer {
 
     public boolean canResetSelectedProperty() {
         TreeNode node = getSelectedNode();
-        return node != null && isPropertyResettable(node);
+        return (node != null && canResetProperty(node)) || isSelectedPropertyValueEdited(node);
+    }
+
+    private boolean isSelectedPropertyValueEdited(@Nullable TreeNode node) {
+        return node != null && curCellEditorListener != null && curCellEditorListener.prop == node &&
+            curCellEditorListener.columnIndex != 0 && curCellEditorListener.isValueChanged();
     }
 
     public void resetSelectedPropertyToDefault() {
@@ -1377,6 +1406,15 @@ public class PropertyTreeViewer extends TreeViewer {
                     disposeOldEditor();
                 }
             }
+        }
+
+        private boolean isValueChanged() {
+            Object value = cellEditor.getValue();
+            Object oldValue = columnIndex == 0 ?
+                prop.property.getDisplayName() :
+                prop.propertySource.getPropertyValue(null, prop.property.getId());
+            boolean unchangedEmptyValue = value instanceof String string && string.isEmpty() && oldValue == null;
+            return !unchangedEmptyValue && DBUtils.compareDataValues(oldValue, value) != 0;
         }
 
         @Override

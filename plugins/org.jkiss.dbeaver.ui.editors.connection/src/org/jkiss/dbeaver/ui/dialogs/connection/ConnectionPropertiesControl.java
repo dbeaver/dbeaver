@@ -257,6 +257,8 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         resetItem.setEnabled(false);
 
 
+        Runnable updateResetItem = () -> resetItem.setEnabled(
+            !USER_PROPERTIES_CATEGORY.equals(getSelectedCategory()) && canResetSelectedProperty());
         addSelectionChangedListener(event -> {
             addItem.setEnabled(getCategoryNode(USER_PROPERTIES_CATEGORY) != null);
             boolean hasDelete = false;
@@ -264,10 +266,10 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
                 hasDelete = true;
             }
             removeItem.setEnabled(hasDelete);
-            resetItem.setEnabled(!USER_PROPERTIES_CATEGORY.equals(getSelectedCategory()) && canResetSelectedProperty());
+            updateResetItem.run();
         });
-        addPropertyChangeListener(event -> resetItem.setEnabled(
-            !USER_PROPERTIES_CATEGORY.equals(getSelectedCategory()) && canResetSelectedProperty()));
+        addPropertyChangeListener(event -> updateResetItem.run());
+        addEditorValueChangeListener(updateResetItem);
     }
 
 }
