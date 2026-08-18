@@ -28,7 +28,9 @@ import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -168,7 +170,21 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
         @Nullable
         @Override
-        public Object[] getPossibleValues(OpenAIProperties object) {
+        public Object[] getPossibleValues(@Nullable OpenAIProperties object) {
+            try {
+                if (object != null && object.token != null) {
+                    if (!CommonUtils.isEmpty(object.token)) {
+                        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(object)) {
+                            return engine.getModels(new VoidProgressMonitor()).stream()
+                                .filter(model -> !model.features().contains(AIModelFeature.SPEECH_TO_TEXT))
+                                .map(AIModel::name)
+                                .toArray();
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                // Ignore exception and return known models
+            }
             return OpenAIModels.KNOWN_MODELS.entrySet().stream()
                 .filter(entry -> !entry.getValue().features().contains(AIModelFeature.SPEECH_TO_TEXT))
                 .map(Map.Entry::getKey)
