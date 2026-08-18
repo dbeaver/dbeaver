@@ -185,7 +185,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBNModel getNavigatorModel() {
         return getWorkspace().getPlatform().getNavigatorModel();

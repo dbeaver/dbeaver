@@ -22,11 +22,21 @@ public final class ProductConfigMessages extends NLS {
     public static String welcome_title;
     public static String welcome_description;
     public static String welcome_body_text;
+    public static String welcome_body_hint;
 
     public static String appearance_title;
     public static String appearance_description;
     public static String appearance_theme_header;
     public static String appearance_theme_hint;
+    public static String appearance_navigator_header;
+    public static String appearance_navigator_simple;
+    public static String appearance_navigator_simple_hint;
+    public static String appearance_navigator_advanced;
+    public static String appearance_navigator_advanced_hint;
+    public static String appearance_navigator_custom;
+    public static String appearance_navigator_custom_hint;
+    public static String appearance_navigator_custom_configure;
+    public static String appearance_navigator_hint;
 
     public static String features_title;
     public static String features_description;
@@ -36,6 +46,9 @@ public final class ProductConfigMessages extends NLS {
     public static String final_steps_title;
     public static String final_steps_description;
     public static String final_steps_header;
+
+    public static String confirm_exit_title;
+    public static String confirm_exit_message;
 
     static {
         NLS.initializeMessages(ProductConfigMessages.class.getName(), ProductConfigMessages.class);

@@ -456,7 +456,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 } else {
                     tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 }
-                monitor.subTask("Create temp folder '" + tempFolderPath + "'");
+                //monitor.subTask("Create temp folder '" + tempFolderPath + "'");
                 Path tmpFolder = Paths.get(tempFolderPath);
                 if (!Files.exists(tmpFolder)) {
                     log.debug("Create global temp folder '" + tmpFolder + "'");
