@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -138,10 +137,6 @@ public class ModelSelectorField {
 
     public void refreshModelListSilently(boolean refresh) {
         if (!refreshEnabled || findMissingSetting() != null) {
-            return;
-        }
-        if (!CommonUtils.isEmpty(combo.getText())) {
-            // Model already set
             return;
         }
         new AbstractJob("Refreshing model list silently") {
