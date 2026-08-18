@@ -718,11 +718,11 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
-    private boolean canResetProperty(TreeNode prop) {
+    private boolean canResetProperty(@NotNull TreeNode prop) {
         return isPropertyResettable(prop) && isPropertyChanged(prop);
     }
 
-    private boolean isPropertyResettable(TreeNode prop) {
+    private boolean isPropertyResettable(@NotNull TreeNode prop) {
         if (prop.property == null || !prop.isEditable()) {
             return false;
         }
