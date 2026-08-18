@@ -2,8 +2,8 @@
 
 ## What is DBeaver?
 
-DBeaver Community Edition (CE) is a free, open-source, multi-platform database management tool written in **Java**. 
-It supports 100+ database drivers out of the box and is built on **Eclipse RCP** with an **OSGi** plugin architecture.
+DBeaver Community Edition (CE) is a free, open-source, multi-platform database management tool written in Java. 
+It supports 100+ database drivers out of the box and is built on Eclipse RCP with an OSGi plugin architecture.
 The commercial product shares the same model layer as DBeaver CE and the browser-based [CloudBeaver](https://github.com/dbeaver/cloudbeaver).
 
 ## Repository Layout
@@ -12,8 +12,6 @@ The commercial product shares the same model layer as DBeaver CE and the browser
 - test: test plugins
 - features: Eclipse feature descriptors
 - product: Eclipse product configurations + aggregator
-
-The build depends on a sibling repository `dbeaver-common`
 
 ## Technology Stack
 
@@ -29,7 +27,7 @@ The build depends on a sibling repository `dbeaver-common`
 
 ## Build System
 
-**Eclipse Tycho** (Maven plugin for OSGi). 
+Eclipse Tycho (Maven plugin for OSGi). 
 Each plugin is packaged as `eclipse-plugin`; test plugins as `eclipse-test-plugin`.
 
 ### Building
@@ -43,14 +41,21 @@ mvn package -f product/aggregate/pom.xml -T 1C -Pproduct-dbeaver-ce,product-dbea
 mvn package -f plugins/org.jkiss.dbeaver.ext.mysql/pom.xml
 ```
 
-> **CI** runs the same command via the reusable workflow in `.github/workflows/push-pr-devel.yml`.
+> CI runs the same command via the reusable workflow in `.github/workflows/push-pr-devel.yml`.
+
+### Dependencies
+
+All OSGI dependencies come from P2 repositories (not Maven repos).
+You can find them in root POMs (repos with layout=p2).
+This includes standard Eclipse P2 for RCP development + DBeaver custom P2 (see `repo.p2.eclipse.url`).
+Custom P2 repo source repo is `dbeaver-deps-ce` - it converts classic Maven dependencies into P2 bundles.
 
 ### Plugin packaging rules
 
 - Every plugin has a `META-INF/MANIFEST.MF` (bundle metadata) and a `pom.xml` with `<packaging>eclipse-plugin</packaging>`.
-- Dependencies between plugins are declared in `MANIFEST.MF` under `Require-Bundle:`, **not** in `pom.xml`.
+- Dependencies between plugins are declared in `MANIFEST.MF` under `Require-Bundle:`, not in `pom.xml`.
 - `plugin.xml` declares Eclipse extension points and extensions.
-- All source is under `src/` (no `src/main/java`).
+- Bundle source code is in the `src` folder specified in `build.properties` (as required by Tycho).
 
 ## Code Conventions
 
@@ -69,7 +74,7 @@ All production code lives in the `org.jkiss.dbeaver.*` namespace.
 
 ### License header
 
-Every Java file **must** begin with:
+Every Java file must begin with:
 
 ```java
 /*
@@ -100,7 +105,7 @@ private static final Log log = Log.getLog(MyClass.class);
     log.error("...", exception);
 ```
 
-`Log` is `org.jkiss.dbeaver.Log`. Do **not** use `System.out/err` or SLF4J directly.
+`Log` is `org.jkiss.dbeaver.Log`. Do not use `System.out/err` or SLF4J directly.
 
 ### Exception handling
 
@@ -138,7 +143,7 @@ Use `new VoidProgressMonitor()` in tests when a real monitor is not needed.
 
 ### Model / UI separation
 
-Plugins are split into pure-model (`ext.mysql`) and UI (`ext.mysql.ui`) bundles. Model plugins **must not** import SWT, JFace, or Eclipse workbench packages. This separation allows the model layer to be reused in server-side products (CloudBeaver).
+Plugins are split into pure-model (`ext.mysql`) and UI (`ext.mysql.ui`) bundles. Model plugins must not import SWT, JFace, or Eclipse workbench packages. This separation allows the model layer to be reused in server-side products (CloudBeaver).
 
 ### Extension-point driven design
 
@@ -154,7 +159,7 @@ Features are contributed via Eclipse extension points declared in `plugin.xml`. 
 
 ### Adding a new database driver
 
-> **Note**: For many drivers, updating `plugin.xml` alone is enough — you only need to implement Java classes when the existing JDBC infrastructure does not cover your use case.
+Note: For many drivers, updating `plugin.xml` alone is enough — you only need to implement Java classes when the existing JDBC infrastructure does not cover your use case.
 
 1. Create `plugins/org.jkiss.dbeaver.ext.{db}/` with `META-INF/MANIFEST.MF`, `plugin.xml`, and a `pom.xml` (`eclipse-plugin`).
 2. Add an optionally-UI sibling `plugins/org.jkiss.dbeaver.ext.{db}.ui/`.
@@ -172,8 +177,6 @@ The utility class `org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils` (in `org.jkiss.d
 String name = JDBCUtils.safeGetString(dbResult, "table_name");
 long oid = JDBCUtils.safeGetLong(dbResult, "oid");
 ```
-
----
 
 ## Testing
 
@@ -212,27 +215,23 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 
 ## Branches and Git Workflow
 
-- **`devel`** — the main development branch; all PRs must target this branch.
-- **Release branches** — `release_VERSION`, exist for each release; never commit to them directly.
-- Pull requests that only fix typos, formatting, or trivial refactoring are generally **not accepted** per the contributor guide.
-- **Naming convention**: issues, commit messages, and PR titles should follow the format `dbeaver/repo#issueNumber title` (e.g., `dbeaver/dbeaver#12345 Fix NPE in PostgreSQL dialect`).
-- **Branch naming**: branches should follow the format `dbeaver/repo#issueNumber-issueTitle` (e.g., `dbeaver/dbeaver#12345-fix-npe-postgresql`).
-- **Linking PRs to issues**: always link a pull request to its corresponding GitHub issue. Use the GitHub UI "Development" link on the PR sidebar when possible; if a direct link is not available, add `Closes org/project#issueNumber` in the PR description (e.g., `Closes dbeaver/dbeaver#12345`).
-- **AI-generated PRs**: large pull requests that are entirely AI-generated are strongly discouraged. Keep AI-assisted contributions focused and small, and ensure each change is understood and reviewed by a human contributor.
-- **AI tools disclosure**: if AI tools were used to generate code, mention it in the PR description. Example: *This PR was generated with AI (GitHub Copilot)*.
-
----
+- `devel` — the main development branch; all PRs must target this branch.
+- Release branches — `release_VERSION`, exist for each release; never commit to them directly.
+- Pull requests that only fix typos, formatting, or trivial refactoring are generally not accepted per the contributor guide.
+- Naming convention: issues, commit messages, and PR titles should follow the format `dbeaver/repo#issueNumber title` (e.g., `dbeaver/dbeaver#12345 Fix NPE in PostgreSQL dialect`).
+- Branch naming: branches should follow the format `dbeaver/repo#issueNumber-issueTitle` (e.g., `dbeaver/dbeaver#12345-fix-npe-postgresql`).
+- Linking PRs to issues: always link a pull request to its corresponding GitHub issue. Use the GitHub UI "Development" link on the PR sidebar when possible; if a direct link is not available, add `Closes org/project#issueNumber` in the PR description (e.g., `Closes dbeaver/dbeaver#12345`).
+- AI-generated PRs: large pull requests that are entirely AI-generated are strongly discouraged. Keep AI-assisted contributions focused and small, and ensure each change is understood and reviewed by a human contributor.
+- AI tools disclosure: if AI tools were used to generate code, mention it in the PR description. Example: *This PR was generated with AI (GitHub Copilot)*.
 
 ## Common Pitfalls / Known Issues
 
-1. **Build requires sibling `dbeaver-common`**: The root `pom.xml` references `../dbeaver-common/pom.xml` as its parent. Clone `dbeaver-common` alongside this repo before building.
-2. **No `src/main/java`**: Sources live directly under `src/` (Tycho convention for OSGi plugins). Do not create Maven standard directory layout.
-3. **Dependencies in `MANIFEST.MF`, not `pom.xml`**: Adding a dependency means editing `Require-Bundle:` in `META-INF/MANIFEST.MF`. Maven `<dependencies>` are only for Maven-only artifacts resolved via P2 (`pomDependencies=consider`).
-4. **UI thread safety**: All SWT/UI updates must run on the display thread. Use `UIUtils.asyncExec(Runnable)` or `UIUtils.syncExec(Runnable)` (from `org.jkiss.dbeaver.ui`).
-5. **`@Property` on getters only**: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
-6. **Java 21 required**: The target platform requires `JavaSE-21`. Do not use preview features.
-
----
+- All GitHub repos must be cloned in the same folder (DBEAVER_DEV_HOME - the parent folder of this repository)
+- If repository is missing AI agent can clone it in DBEAVER_DEV_HOME
+- Each repository may have file `project.deps` in its root. This file is a simple text file, each line contains short name of repository this repository depends on. Dependencies must be cloned too if missing.
+- UI thread safety: All SWT/UI updates must run on the display thread. Use `UIUtils.asyncExec(Runnable)` or `UIUtils.syncExec(Runnable)` (from `org.jkiss.dbeaver.ui`).
+- `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
+- Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.
 
 ## Key Files Quick Reference
 
