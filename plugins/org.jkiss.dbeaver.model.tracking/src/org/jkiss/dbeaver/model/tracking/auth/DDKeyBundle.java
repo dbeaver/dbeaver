@@ -14,26 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync.core;
+package org.jkiss.dbeaver.model.tracking.auth;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-
-import java.util.List;
 
 /**
- * Remote storage of opaque values. Knows nothing about their content or encryption.
+ * Working keys of the account: request signing key and data encryption key.
  */
-public interface DDSyncTransport {
-
-    @NotNull
-    List<DDContainer> listContainers() throws DBException;
-
-    @NotNull
-    DDContainer createContainer(@NotNull String label) throws DBException;
-
-    @NotNull
-    List<DDRawEntry> load(@NotNull String containerId) throws DBException;
-
-    void save(@NotNull String containerId, @NotNull String key, @NotNull byte[] value) throws DBException;
+public record DDKeyBundle(
+    @NotNull String accountId,
+    @NotNull String signingKey,
+    @NotNull String dataKey,
+    long generation
+) {
 }

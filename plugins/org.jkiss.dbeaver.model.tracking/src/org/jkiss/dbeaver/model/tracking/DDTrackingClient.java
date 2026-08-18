@@ -51,14 +51,14 @@ public class DDTrackingClient implements DDTrackingService {
 
     @Nullable
     @Override
-    public DDTracking start(@Nullable String apiKey, @NotNull DDClientInfo client) {
-        return startTransport.post(TRACK_START_ENDPOINT, apiKey, client);
+    public DDTracking start(@Nullable String authorization, @NotNull DDClientInfo client) {
+        return startTransport.post(TRACK_START_ENDPOINT, authorization, client);
     }
 
     @Nullable
     @Override
-    public DDTracking stop(@Nullable String apiKey, @NotNull String trackingId) {
-        return stopTransport.post(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), apiKey);
+    public DDTracking stop(@Nullable String authorization, @NotNull String trackingId) {
+        return stopTransport.post(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), authorization);
     }
 
     private static final class Transport extends AbstractRestClient {
@@ -71,13 +71,13 @@ public class DDTrackingClient implements DDTrackingService {
         }
 
         @Nullable
-        DDTracking post(@NotNull String path, @Nullable String apiKey, @NotNull Object body) {
+        DDTracking post(@NotNull String path, @Nullable String authorization, @NotNull Object body) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
                     .POST(createBodyPublisher(body, MediaType.JSON));
-                applyAuth(builder, apiKey);
+                applyAuth(builder, authorization);
                 return execute(builder, DDTracking.class);
             } catch (DBException e) {
                 log.debug("DataDam tracking request failed", e);
@@ -86,12 +86,12 @@ public class DDTrackingClient implements DDTrackingService {
         }
 
         @Nullable
-        DDTracking post(@NotNull String path, @Nullable String apiKey) {
+        DDTracking post(@NotNull String path, @Nullable String authorization) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .POST(HttpRequest.BodyPublishers.noBody());
-                applyAuth(builder, apiKey);
+                applyAuth(builder, authorization);
                 return execute(builder, DDTracking.class);
             } catch (DBException e) {
                 log.debug("DataDam tracking request failed", e);
@@ -99,11 +99,12 @@ public class DDTrackingClient implements DDTrackingService {
             }
         }
 
-        private static void applyAuth(@NotNull HttpRequest.Builder builder, @Nullable String apiKey) throws DBException {
-            if (apiKey != null) {
-                DDAccessKey accessKey = DDAccessKey.parseOrNull(apiKey);
-                String credential = accessKey == null ? apiKey : accessKey.buildToken();
-                builder.header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + credential);
+        private static void applyAuth(
+            @NotNull HttpRequest.Builder builder,
+            @Nullable String authorization
+        ) {
+            if (authorization != null) {
+                builder.header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + authorization);
             }
         }
 

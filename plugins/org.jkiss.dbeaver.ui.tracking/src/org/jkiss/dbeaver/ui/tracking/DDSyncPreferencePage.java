@@ -30,7 +30,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
-import org.jkiss.dbeaver.model.tracking.DDAccessKey;
+import org.jkiss.dbeaver.model.tracking.auth.DDBrowserLogin;
+import org.jkiss.dbeaver.model.tracking.auth.DDBundleCredentials;
+import org.jkiss.dbeaver.model.tracking.auth.DDCryptoState;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.tracking.sync.DDSyncBinding;
 import org.jkiss.dbeaver.model.tracking.sync.DDSyncService;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDContainer;
@@ -46,11 +50,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private static final Log log = Log.getLog(DDSyncPreferencePage.class);
 
-    public static final String SECRET_ACCESS_KEY = "datadam.access-key";
 
     private static final String SYNC_TITLE = "Synchronization";
     private static final String ENV_URL = "DATADAM_URL";
     private static final String PREF_SERVER_URL = "datadam.server-url";
+    private static final int GATEWAY_PORT = 9000;
+    private static final int ACCOUNT_PORT = 9001;
 
     private Text accountText;
     private Text urlText;
@@ -101,17 +106,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 2;
         buttons.setLayoutData(gd);
-        UIUtils.createPushButton(buttons, "Import Key...", null, SelectionListener.widgetSelectedAdapter(e -> {
-            DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
-            if (dialog.open() == Window.OK) {
-                saveKey(dialog.getKey());
-                refresh();
-            }
-        }));
-        deleteButton = UIUtils.createPushButton(buttons, "Delete", null, SelectionListener.widgetSelectedAdapter(e -> {
-            if (UIUtils.confirmAction(getShell(), "Delete access key", "Delete the stored access key?")) {
-                saveKey(null);
-                refresh();
+        UIUtils.createPushButton(buttons, "Log In...", null, SelectionListener.widgetSelectedAdapter(e -> logIn()));
+        deleteButton = UIUtils.createPushButton(buttons, "Log Out", null, SelectionListener.widgetSelectedAdapter(e -> {
+            if (UIUtils.confirmAction(getShell(), "Log out", "Forget the keys stored on this computer?")) {
+                logOut();
             }
         }));
 
@@ -195,20 +193,19 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     @Nullable
     private DDSyncService createSyncService() {
-        String key = readKey();
-        DDAccessKey accessKey = DDAccessKey.parseOrNull(key);
-        if (accessKey == null) {
-            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "Import an access key first", true);
+        DDKeyBundle bundle = DDKeyStore.load();
+        if (bundle == null) {
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "Log in first", true);
             return null;
         }
-        String url = getServerUrl();
+        String url = getGatewayUrl();
         if (CommonUtils.isEmpty(url)) {
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "DataDam URL is not configured", true);
             return null;
         }
         return new DDSyncService(
             url,
-            accessKey,
+            new DDBundleCredentials(bundle),
             DBWorkbench.getPlatform().getWorkspace());
     }
 
@@ -253,6 +250,24 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return CommonUtils.isEmpty(url) ? CommonUtils.notEmpty(System.getenv(ENV_URL)) : url;
     }
 
+    @NotNull
+    public static String getGatewayUrl() {
+        return withPort(getServerUrl(), GATEWAY_PORT);
+    }
+
+    @NotNull
+    public static String getAccountUrl() {
+        return withPort(getServerUrl(), ACCOUNT_PORT);
+    }
+
+    @NotNull
+    private static String withPort(@NotNull String url, int port) {
+        if (CommonUtils.isEmpty(url)) {
+            return url;
+        }
+        return CommonUtils.removeTrailingSlash(url) + ":" + port;
+    }
+
     private void updateApplyState() {
         Button applyButton = getApplyButton();
         if (applyButton != null && !applyButton.isDisposed()) {
@@ -274,21 +289,45 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return super.performOk();
     }
 
-    private void saveKey(@Nullable String key) {
+    private void logIn() {
+        String siteUrl = getAccountUrl();
+        if (CommonUtils.isEmpty(siteUrl)) {
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "DataDam URL is not configured", true);
+            return;
+        }
         try {
-            DBSSecretController controller = DBSSecretController.getGlobalSecretController();
-            controller.setPrivateSecretValue(SECRET_ACCESS_KEY, key);
-            controller.flushChanges();
+            DDCryptoState state = new DDBrowserLogin(siteUrl).login();
+            if (!state.cryptoConfigured()) {
+                DBWorkbench.getPlatformUI().showMessageBox(
+                    SYNC_TITLE,
+                    "Encryption is not configured for this account. Set it up in the web browser first.",
+                    true);
+                return;
+            }
+            DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
+            if (dialog.open() != Window.OK) {
+                return;
+            }
+            DDKeyStore.save(DDKeyStore.unpack(state, dialog.getKey()));
+            refresh();
         } catch (DBException e) {
-            log.error("Error saving access key", e);
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Login failed", e);
+        }
+    }
+
+    private void logOut() {
+        try {
+            DDKeyStore.clear();
+            refresh();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Cannot forget the keys", e);
         }
     }
 
     private void refresh() {
-        String key = readKey();
-        boolean present = !CommonUtils.isEmpty(key);
-        DDAccessKey accessKey = present ? DDAccessKey.parseOrNull(key) : null;
-        accountText.setText(accessKey == null ? "" : accessKey.accountId().toString());
+        DDKeyBundle bundle = DDKeyStore.load();
+        boolean present = bundle != null;
+        accountText.setText(present ? bundle.accountId() : "");
         deleteButton.setEnabled(present);
 
         DDSyncBinding binding = DDSyncService.readBinding(
@@ -308,13 +347,4 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             : savedUrl);
     }
 
-    @Nullable
-    private String readKey() {
-        try {
-            return DBSSecretController.getGlobalSecretController().getPrivateSecretValue(SECRET_ACCESS_KEY);
-        } catch (DBException e) {
-            log.error("Error reading access key", e);
-            return null;
-        }
-    }
 }

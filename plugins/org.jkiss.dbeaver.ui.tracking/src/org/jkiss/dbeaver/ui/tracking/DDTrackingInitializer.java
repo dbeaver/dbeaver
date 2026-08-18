@@ -30,6 +30,10 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.tracking.DDClientInfo;
+import org.jkiss.dbeaver.model.tracking.auth.DDBundleCredentials;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyStore;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncCredentials;
 import org.jkiss.dbeaver.model.tracking.DDTracking;
 import org.jkiss.dbeaver.model.tracking.DDTrackingClient;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -48,8 +52,6 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
 
     private static final Log log = Log.getLog(DDTrackingInitializer.class);
 
-    private static final String ENV_KEY = "DATADAM_KEY";
-
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
 
     @Override
@@ -57,12 +59,13 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
         if (!STARTED.compareAndSet(false, true)) {
             return;
         }
-        String key = readAccessKey();
-        if (CommonUtils.isEmpty(key)) {
-            log.debug("DataDam tracking disabled (no access key)");
+        DDKeyBundle bundle = DDKeyStore.load();
+        if (bundle == null) {
+            log.debug("DataDam tracking disabled (not logged in)");
             return;
         }
-        String url = DDSyncPreferencePage.getServerUrl();
+        DDSyncCredentials credentials = new DDBundleCredentials(bundle);
+        String url = DDSyncPreferencePage.getGatewayUrl();
         if (CommonUtils.isEmpty(url)) {
             log.debug("DataDam tracking disabled (no server URL)");
             return;
@@ -84,7 +87,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                     localMacAddress(),
                     localIpAddress()
                 );
-                DDTracking tracking = client.start(key, info);
+                DDTracking tracking = client.start(buildToken(credentials), info);
                 if (tracking != null) {
                     trackingId.set(tracking.trackingId());
                 }
@@ -99,7 +102,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
                 String id = trackingId.get();
                 if (id != null) {
-                    client.stop(key, id);
+                    client.stop(buildToken(credentials), id);
                 }
                 return true;
             }
@@ -109,20 +112,6 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                 //empty
             }
         });
-    }
-
-    @Nullable
-    private static String readAccessKey() {
-        try {
-            String key = DBSSecretController.getGlobalSecretController()
-                .getPrivateSecretValue(DDSyncPreferencePage.SECRET_ACCESS_KEY);
-            if (!CommonUtils.isEmpty(key)) {
-                return key;
-            }
-        } catch (DBException e) {
-            log.debug("Error reading access key from secure storage", e);
-        }
-        return System.getenv(ENV_KEY);
     }
 
     @NotNull
@@ -139,6 +128,16 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                 .formatHex(RuntimeUtils.getLocalMacAddress());
 
         } catch (IOException e) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static String buildToken(@NotNull DDSyncCredentials credentials) {
+        try {
+            return credentials.buildToken();
+        } catch (DBException e) {
+            log.debug("Error signing tracking request", e);
             return null;
         }
     }

@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.tracking.DDAccessKey;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -66,7 +66,7 @@ public class DDImportKeyDialog extends BaseDialog {
     protected void okPressed() {
         String value = keyText.getText().trim();
         try {
-            DDAccessKey.parse(value);
+            DDKeyStore.decodeAccessKey(value);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Import Access Key", e.getMessage());
             return;
