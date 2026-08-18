@@ -333,7 +333,7 @@ public class AIAssistantImpl implements AIAssistant {
                     chatListener.error(
                         new DBException(
                             "Too many AI function calls (" + AIAssistantImpl.MAX_FUNCTION_CALLS + ")"));
-                    chatListener.complete(List.of(), true);
+                    chatListener.complete(List.of(), true, false);
                     return;
                 }
                 fc.transformArguments(context, functionContext);

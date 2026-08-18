@@ -480,6 +480,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         } else {
             configuration.resolveDynamicVariables(SystemVariablesResolver.INSTANCE);
         }
+        configuration.setDataSource(null); // we don't need to operate with database specifics to test the tunnel
 
         final String[] tunnelVersions = new String[2];
 
