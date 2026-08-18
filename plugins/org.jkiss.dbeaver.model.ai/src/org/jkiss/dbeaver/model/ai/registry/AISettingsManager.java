@@ -123,17 +123,23 @@ public class AISettingsManager {
     public void modifySettings(@NotNull Consumer<AISettings> consumer) {
         AISettings settings = this.getSettings();
         consumer.accept(settings);
-        this.saveSettings();
+        this.saveSettings(settings);
     }
 
     public void saveSettings() {
+        saveSettings(getSettings());
+    }
+
+    /**
+     * Saves the given settings and makes them current
+     */
+    public void saveSettings(@NotNull AISettings settings) {
         try {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 log.warn("The user has no permission to save AI configuration");
                 return;
             }
 
-            AISettings settings = getSettings();
             String content = SAVE_PROPS_GSON.toJson(settings);
 
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
