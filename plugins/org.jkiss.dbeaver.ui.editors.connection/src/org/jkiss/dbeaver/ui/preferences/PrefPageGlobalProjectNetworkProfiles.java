@@ -39,8 +39,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * A preference page that shows network profiles for all projects.
@@ -197,6 +199,21 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 .filter(projectUsingProfileAsGlobal)
                 .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
                 .toList();
+        }
+
+        @NotNull
+        @Override
+        protected String formatConnectionsUsingProfile(@NotNull List<? extends DBPDataSourceContainer> dataSources) {
+            return dataSources.stream()
+                .collect(Collectors.groupingBy(DBPDataSourceContainer::getProject))
+                .entrySet()
+                .stream()
+                .sorted(Comparator.comparing(entry -> entry.getKey().getName()))
+                .map(entry -> "Project\n- " + entry.getKey().getName() + "\n   Connections:\n" + entry.getValue().stream()
+                    .sorted(Comparator.comparing(DBPDataSourceContainer::getName))
+                    .map(dataSource -> "   - " + dataSource.getName())
+                    .collect(Collectors.joining("\n")))
+                .collect(Collectors.joining("\n"));
         }
 
         @Override

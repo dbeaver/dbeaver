@@ -125,10 +125,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     @Override
     protected boolean deleteProfile(@NotNull DBWNetworkProfile selectedProfile) {
         List<? extends DBPDataSourceContainer> usedBy = connectionsUsingProfile(selectedProfile);
-        String usedByNames = usedBy.stream()
-            .sorted(Comparator.comparing(DBPNamedObject::getName))
-            .map(x -> " - " + x.getName())
-            .collect(Collectors.joining("\n"));
+        String usedByNames = formatConnectionsUsingProfile(usedBy);
         if (!selectedProfile.isGlobal() && !usedBy.isEmpty()) {
             UIUtils.showMessageBox(
                 getShell(),
@@ -177,6 +174,14 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
             );
             return false;
         }
+    }
+
+    @NotNull
+    protected String formatConnectionsUsingProfile(@NotNull List<? extends DBPDataSourceContainer> dataSources) {
+        return dataSources.stream()
+            .sorted(Comparator.comparing(DBPNamedObject::getName))
+            .map(dataSource -> " - " + dataSource.getName())
+            .collect(Collectors.joining("\n"));
     }
 
     protected void removeProfile(
