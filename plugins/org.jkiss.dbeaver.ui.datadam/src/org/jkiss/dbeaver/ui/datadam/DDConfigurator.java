@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.datadam.DDAIEngine;
 import org.jkiss.dbeaver.model.datadam.DDAIEngineProperties;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
@@ -79,9 +80,8 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         modelSelectorField = ModelSelectorField.builder()
             .withParent(composite)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withModelListSupplier((monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
-                .map(AIModel::name)
-                .toList())
+            .withRequiredSetting(tokenText, AIUIMessages.model_selector_token_required)
+            .withModelListSupplier(modelsCache::get)
             .withModifyListener(() -> {
             })
             .build();
@@ -129,7 +129,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
     public void saveSettings(@NotNull DDAIEngineProperties configuration) {
         configuration.setBaseUrl(baseUrl);
         configuration.setToken(token);
-        configuration.setModel(modelSelectorField.getSelectedModel());
+        configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
         configuration.setLoggingEnabled(logQuery);
@@ -153,7 +153,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         DDAIEngineProperties propertiesCopy = new DDAIEngineProperties();
         propertiesCopy.setBaseUrl(baseUrl);
         propertiesCopy.setToken(token);
-        propertiesCopy.setModel(modelSelectorField.getSelectedModel());
+        propertiesCopy.setModel(modelSelectorField.getSelectedModelName());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
         propertiesCopy.setLoggingEnabled(logQuery);
@@ -162,11 +162,6 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
 
     @NotNull
     private List<AIModel> fetchModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (CommonUtils.isEmpty(token)) {
-            // no key yet (e.g. right after selecting the engine) - list nothing instead of surfacing an error
-            return List.of();
-        }
-
         DDAIEngineProperties properties = new DDAIEngineProperties();
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);

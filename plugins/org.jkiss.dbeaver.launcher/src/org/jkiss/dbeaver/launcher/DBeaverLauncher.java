@@ -35,8 +35,8 @@ import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
 import java.security.Security;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -2816,15 +2816,6 @@ public class DBeaverLauncher {
                 }
             });
         }
-        if (showSplash || endSplash != null) {
-            // Register the endSplashHandler to be run at VM shutdown. This hook will be
-            // removed once the splash screen has been taken down.
-            try {
-                Runtime.getRuntime().addShutdownHook(splashHandler);
-            } catch (Throwable ex) {
-                // Best effort to register the handler
-            }
-        }
 
         // if -endsplash is specified, use it and ignore any -showsplash command
         if (endSplash != null) {
@@ -2865,14 +2856,6 @@ public class DBeaverLauncher {
 
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
-
-        if (splashHandler != null) {
-            try {
-                Runtime.getRuntime().removeShutdownHook(splashHandler);
-            } catch (Throwable e) {
-                // OK to ignore this, happens when the VM is already shutting down
-            }
-        }
     }
 
     /*

@@ -2,42 +2,18 @@
 
 ## What is DBeaver?
 
-DBeaver Community Edition (CE) is a free, open-source, multi-platform database management tool written in **Java**. It supports 100+ database drivers out of the box and is built on **Eclipse RCP** with an **OSGi** plugin architecture. The commercial product shares the same model layer as DBeaver CE and the browser-based [CloudBeaver](https://github.com/dbeaver/cloudbeaver).
-
----
+DBeaver Community Edition (CE) is a free, open-source, multi-platform database management tool written in **Java**. 
+It supports 100+ database drivers out of the box and is built on **Eclipse RCP** with an **OSGi** plugin architecture.
+The commercial product shares the same model layer as DBeaver CE and the browser-based [CloudBeaver](https://github.com/dbeaver/cloudbeaver).
 
 ## Repository Layout
 
-```
-dbeaver/
-├── plugins/          # OSGi bundles (source code)
-│   ├── org.jkiss.dbeaver.model/          # Core API interfaces (no UI, no JDBC)
-│   ├── org.jkiss.dbeaver.model.jdbc/     # JDBC base implementations
-│   ├── org.jkiss.dbeaver.model.sql/      # SQL model (dialect, LSM parser glue)
-│   ├── org.jkiss.dbeaver.model.lsm/      # ANTLR4-based SQL parser
-│   ├── org.jkiss.dbeaver.core/           # Desktop RCP application core
-│   ├── org.jkiss.dbeaver.registry/       # Driver/connection registry
-│   ├── org.jkiss.dbeaver.ext.{db}/       # Per-DB model plugin (no UI deps)
-│   ├── org.jkiss.dbeaver.ext.{db}.ui/    # Per-DB UI plugin
-│   ├── org.jkiss.dbeaver.ui.*/           # Shared UI components
-│   └── org.jkiss.dbeaver.osgi.test.runner/ # OSGi JUnit 5 test harness
-├── test/             # OSGi test plugins (eclipse-test-plugin packaging)
-│   ├── org.jkiss.dbeaver.ext.{db}.test/
-│   └── org.jkiss.dbeaver.model.sql.test/
-├── features/         # Eclipse feature descriptors
-├── product/          # Product configurations & aggregator POMs
-│   └── aggregate/    # Top-level Maven build entry point
-├── docs/
-│   ├── codestyle/eclipse-formatter-profile.xml
-│   ├── license_header.txt
-│   └── devel.txt     # Branch/process overview
-├── pom.xml           # Root Tycho Maven POM
-└── project.deps      # External dependency repo names (e.g. "dbeaver-common")
-```
+- plugins: main source code, OSGi bundles
+- test: test plugins
+- features: Eclipse feature descriptors
+- product: Eclipse product configurations + aggregator
 
-The build depends on a sibling repository called **`dbeaver-common`** (must be checked out at `../dbeaver-common`).
-
----
+The build depends on a sibling repository `dbeaver-common`
 
 ## Technology Stack
 
@@ -51,19 +27,19 @@ The build depends on a sibling repository called **`dbeaver-common`** (must be c
 | SQL parsing | JSQLParser, ANTLR4 (LSM module) |
 | Testing | JUnit 5, Mockito, custom OSGi test runner |
 
----
-
 ## Build System
 
-DBeaver uses **Eclipse Tycho** (Maven plugin for OSGi). Each plugin is packaged as `eclipse-plugin`; test plugins as `eclipse-test-plugin`.
+**Eclipse Tycho** (Maven plugin for OSGi). 
+Each plugin is packaged as `eclipse-plugin`; test plugins as `eclipse-test-plugin`.
 
 ### Building
 
 ```bash
 # Full build from the aggregator
-mvn package -f product/aggregate/pom.xml -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce
+mvn package -f product/aggregate/pom.xml -T 1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce
 
-# Build only a single plugin (fast iteration)
+# Build only a single plugin (fast iteration). 
+# It may fails because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
 mvn package -f plugins/org.jkiss.dbeaver.ext.mysql/pom.xml
 ```
 
@@ -75,8 +51,6 @@ mvn package -f plugins/org.jkiss.dbeaver.ext.mysql/pom.xml
 - Dependencies between plugins are declared in `MANIFEST.MF` under `Require-Bundle:`, **not** in `pom.xml`.
 - `plugin.xml` declares Eclipse extension points and extensions.
 - All source is under `src/` (no `src/main/java`).
-
----
 
 ## Code Conventions
 
@@ -121,9 +95,9 @@ See `docs/license_header.txt` for the canonical template.
 ```java
 private static final Log log = Log.getLog(MyClass.class);
 // ...
-log.debug("...");
-log.warn("...", exception);
-log.error("...", exception);
+    log.debug("...");
+    log.warn("...", exception);
+    log.error("...", exception);
 ```
 
 `Log` is `org.jkiss.dbeaver.Log`. Do **not** use `System.out/err` or SLF4J directly.
@@ -139,7 +113,7 @@ log.error("...", exception);
 Long-running operations always accept a `DBRProgressMonitor`:
 
 ```java
-public void doSomething(DBRProgressMonitor monitor) throws DBException {
+public void doSomething(@NotNull DBRProgressMonitor monitor) throws DBException {
     monitor.beginTask("Loading...", 100);
     try {
         // work
@@ -150,7 +124,7 @@ public void doSomething(DBRProgressMonitor monitor) throws DBException {
 }
 ```
 
-Use `VoidProgressMonitor.INSTANCE` in tests when a real monitor is not needed.
+Use `new VoidProgressMonitor()` in tests when a real monitor is not needed.
 
 ### NLS / Localization
 
@@ -239,11 +213,10 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 ## Branches and Git Workflow
 
 - **`devel`** — the main development branch; all PRs must target this branch.
-- **`master`** — inactive branch; do not use or commit to it.
-- **Release branches** — exist for each release; never commit to them directly.
+- **Release branches** — `release_VERSION`, exist for each release; never commit to them directly.
 - Pull requests that only fix typos, formatting, or trivial refactoring are generally **not accepted** per the contributor guide.
-- **Naming convention**: issues, commit messages, and PR titles should follow the format `org/repo#issueNumber title` (e.g., `dbeaver/dbeaver#12345 Fix NPE in PostgreSQL dialect`).
-- **Branch naming**: branches should follow the format `org/project#issueNumber-issueTitle` (e.g., `dbeaver/dbeaver#12345-fix-npe-postgresql`).
+- **Naming convention**: issues, commit messages, and PR titles should follow the format `dbeaver/repo#issueNumber title` (e.g., `dbeaver/dbeaver#12345 Fix NPE in PostgreSQL dialect`).
+- **Branch naming**: branches should follow the format `dbeaver/repo#issueNumber-issueTitle` (e.g., `dbeaver/dbeaver#12345-fix-npe-postgresql`).
 - **Linking PRs to issues**: always link a pull request to its corresponding GitHub issue. Use the GitHub UI "Development" link on the PR sidebar when possible; if a direct link is not available, add `Closes org/project#issueNumber` in the PR description (e.g., `Closes dbeaver/dbeaver#12345`).
 - **AI-generated PRs**: large pull requests that are entirely AI-generated are strongly discouraged. Keep AI-assisted contributions focused and small, and ensure each change is understood and reviewed by a human contributor.
 - **AI tools disclosure**: if AI tools were used to generate code, mention it in the PR description. Example: *This PR was generated with AI (GitHub Copilot)*.
