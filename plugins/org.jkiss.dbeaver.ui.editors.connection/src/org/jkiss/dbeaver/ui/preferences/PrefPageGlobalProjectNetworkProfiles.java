@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.registry.GlobalNetworkProfileManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -157,7 +158,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             networkProfilesPage = null;
         }
 
-        networkProfilesPage = createPrefPageNetworkProfiles();
+        networkProfilesPage = createPrefPageNetworkProfiles(project);
         networkProfilesPage.setProjectMeta(project);
         networkProfilesPage.createControl(networkProfilesPageHolder);
         networkProfilesPage.loadSettings();
@@ -167,11 +168,21 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
     }
 
     @NotNull
-    private PrefPageProjectNetworkProfiles createPrefPageNetworkProfiles() {
-        return new PrefPageGlobalNetworkProfiles();
+    private PrefPageProjectNetworkProfiles createPrefPageNetworkProfiles(@Nullable DBPProject project) {
+        return project == null ? new PrefPageGlobalNetworkProfiles() : new PrefPageProjectNetworkProfiles();
     }
 
     private class PrefPageGlobalNetworkProfiles extends PrefPageProjectNetworkProfiles {
+
+        @NotNull
+        @Override
+        protected GlobalNetworkProfileManager getProfilesRegistry() {
+            var profilesRegistry = super.getProfilesRegistry();
+            if (profilesRegistry instanceof GlobalNetworkProfileManager globalProfilesRegistry) {
+                return globalProfilesRegistry;
+            }
+            throw new IllegalStateException("Global network profile manager expected");
+        }
 
         @NotNull
         @Override
@@ -181,13 +192,11 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                     .getProfile(null, selectedProfile.getProfileName());
                 return profile != null && profile.isGlobal();
             };
-            return selectedProfile.isGlobal()
-                ? getProjects()
+            return getProjects()
                 .stream()
                 .filter(projectUsingProfileAsGlobal)
                 .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
-                .toList()
-                : super.connectionsUsingProfile(selectedProfile);
+                .toList();
         }
 
         @Override
@@ -195,19 +204,8 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             @NotNull DBWNetworkProfile profile,
             @NotNull List<? extends DBPDataSourceContainer> usedBy
         ) throws DBException {
-            if (profile.isGlobal()) {
-                detachProfile(usedBy);
-            }
+            getProfilesRegistry().detachProfile(profile, usedBy);
             super.removeProfile(profile, usedBy);
-        }
-
-        private void detachProfile(@NotNull List<? extends DBPDataSourceContainer> dataSources) throws DBException {
-            for (DBPDataSourceContainer dataSource : dataSources) {
-                var configuration = dataSource.getConnectionConfiguration();
-                configuration.setConfigProfile(null);
-                configuration.setHandlers(List.of());
-                dataSource.getRegistry().updateDataSource(dataSource);
-            }
         }
     }
 }

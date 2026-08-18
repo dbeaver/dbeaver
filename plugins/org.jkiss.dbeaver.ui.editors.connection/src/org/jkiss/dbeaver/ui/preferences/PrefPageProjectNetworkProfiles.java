@@ -98,7 +98,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     }
 
     @NotNull
-    private DBWNetworkProfileManager getProfilesRegistry() {
+    protected DBWNetworkProfileManager getProfilesRegistry() {
         if (projectMeta == null) {
             return DBWorkbench.getPlatform().getNetworkProfiles();
         } else {
@@ -156,9 +156,9 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
             UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
             NLS.bind(
                 UIConnectionMessages.pref_page_network_profiles_tool_delete_used_confirmation_question,
-                    selectedProfile.getProfileName(),
-                    usedBy.size(),
-                    usedByNames
+                selectedProfile.getProfileName(),
+                usedBy.size(),
+                usedByNames
             )
         )) {
             return false;
