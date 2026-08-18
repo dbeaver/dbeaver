@@ -209,7 +209,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 .entrySet()
                 .stream()
                 .sorted(Comparator.comparing(entry -> entry.getKey().getName()))
-                .map(entry -> "Project\n- " + entry.getKey().getName() + "\n   Connections:\n" + entry.getValue().stream()
+                .map(entry -> "- " + entry.getKey().getName() + "\n   Connections:\n" + entry.getValue().stream()
                     .sorted(Comparator.comparing(DBPDataSourceContainer::getName))
                     .map(dataSource -> "   - " + dataSource.getName())
                     .collect(Collectors.joining("\n")))
