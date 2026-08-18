@@ -486,11 +486,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } finally {
             this.isConnectionRefreshing = false;
         }
-        PostgreDatabase defaultInstance = getDefaultInstance();
-        defaultInstance.checkInstanceConnection(monitor, false);
-        if (!isReadDatabaseList(getContainer().getActualConnectionConfiguration())) {
-            defaultInstance.readDatabaseInfoSafely(monitor);
-        }
+        getDefaultInstance().checkInstanceConnection(monitor, false);
 
         this.initialize(monitor);
 
