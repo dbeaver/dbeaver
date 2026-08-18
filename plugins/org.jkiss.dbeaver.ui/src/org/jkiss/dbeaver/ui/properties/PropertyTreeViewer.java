@@ -90,6 +90,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
     private int selectedColumn = -1;
     private CellEditor curCellEditor;
+    private CellEditorListener curCellEditorListener;
 
     private String[] customCategories;
     private IBaseLabelProvider extraLabelProvider;
@@ -436,15 +437,29 @@ public class PropertyTreeViewer extends TreeViewer {
         super.refresh();
     }
 
-    private void disposeOldEditor()
-    {
-        if (curCellEditor != null) {
-            curCellEditor.deactivate();
-            curCellEditor.dispose();
-            curCellEditor = null;
+    private void disposeOldEditor() {
+        CellEditor cellEditor = curCellEditor;
+        curCellEditor = null;
+        curCellEditorListener = null;
+        if (cellEditor != null) {
+            cellEditor.deactivate();
+            cellEditor.dispose();
         }
         Control oldEditor = treeEditor.getEditor();
-        if (oldEditor != null) oldEditor.dispose();
+        if (oldEditor != null) {
+            oldEditor.dispose();
+        }
+    }
+
+    private void applyOldEditorValue() {
+        CellEditor cellEditor = curCellEditor;
+        CellEditorListener cellEditorListener = curCellEditorListener;
+        if (cellEditor != null && cellEditorListener != null) {
+            cellEditor.deactivate();
+            if (cellEditor == curCellEditor) {
+                cellEditorListener.applyEditorValue();
+            }
+        }
     }
 
     private void registerEditor()
@@ -532,7 +547,7 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     private void showEditor(final TreeItem item, boolean isDef) {
-        // Clean up any previous editor control
+        applyOldEditorValue();
         disposeOldEditor();
         if (item == null) {
             return;
@@ -566,11 +581,13 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             final Object propertyValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
 
-            cellEditor.addListener(new CellEditorListener(cellEditor, columnIndex, prop));
+            CellEditorListener cellEditorListener = new CellEditorListener(cellEditor, columnIndex, prop);
+            cellEditor.addListener(cellEditorListener);
             if (propertyValue != null) {
                 cellEditor.setValue(UIUtils.normalizePropertyValue(propertyValue));
             }
             curCellEditor = cellEditor;
+            curCellEditorListener = cellEditorListener;
 
             if (isDef) {
                 cellEditor.activate();
@@ -702,7 +719,11 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     private boolean canResetProperty(TreeNode prop) {
-        if (prop.property == null || !prop.isEditable() || !isPropertyChanged(prop)) {
+        return isPropertyResettable(prop) && isPropertyChanged(prop);
+    }
+
+    private boolean isPropertyResettable(TreeNode prop) {
+        if (prop.property == null || !prop.isEditable()) {
             return false;
         }
         return !(prop.propertySource instanceof IPropertySource2) ||
@@ -832,12 +853,12 @@ public class PropertyTreeViewer extends TreeViewer {
 
     public boolean canResetSelectedProperty() {
         TreeNode node = getSelectedNode();
-        return node != null && canResetProperty(node);
+        return node != null && isPropertyResettable(node);
     }
 
     public void resetSelectedPropertyToDefault() {
         TreeNode node = getSelectedNode();
-        if (node != null && canResetProperty(node)) {
+        if (node != null && isPropertyResettable(node)) {
             new ActionResetProperty(node, true).run();
         }
     }
@@ -1269,8 +1290,8 @@ public class PropertyTreeViewer extends TreeViewer {
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
+            disposeOldEditor();
             if (prop.propertySource != null) {
                 if (toDefault) {
                     prop.propertySource.resetPropertyValueToDefault(prop.property.getId());
@@ -1280,7 +1301,6 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             handlePropertyChange(prop);
             PropertyTreeViewer.this.update(prop, null);
-            disposeOldEditor();
         }
     }
 
@@ -1324,15 +1344,15 @@ public class PropertyTreeViewer extends TreeViewer {
         @Override
         public void applyEditorValue()
         {
+            if (cellEditor != curCellEditor) {
+                return;
+            }
             try {
                 //editorValueChanged(true, true);
                 final Object value = cellEditor.getValue();
                 final Object oldValue = columnIndex == 0 ? prop.property.getDisplayName() : prop.propertySource.getPropertyValue(null, prop.property.getId());
-                if (value instanceof String && ((String) value).isEmpty() && oldValue == null) {
-                    // The same empty string
-                    return;
-                }
-                if (DBUtils.compareDataValues(oldValue, value) != 0) {
+                boolean unchangedEmptyValue = value instanceof String && ((String) value).isEmpty() && oldValue == null;
+                if (!unchangedEmptyValue && DBUtils.compareDataValues(oldValue, value) != 0) {
                     if (columnIndex == 0) {
                         String newName = CommonUtils.toString(value);
                         String oldPropId = prop.property.getId();
@@ -1350,17 +1370,21 @@ public class PropertyTreeViewer extends TreeViewer {
                     }
                     handlePropertyChange(prop);
                 }
-
-                disposeOldEditor();
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + prop.property.getDisplayName() + "' value", e);
+            } finally {
+                if (cellEditor == curCellEditor) {
+                    disposeOldEditor();
+                }
             }
         }
 
         @Override
         public void cancelEditor()
         {
-            disposeOldEditor();
+            if (cellEditor == curCellEditor) {
+                disposeOldEditor();
+            }
         }
 
         @Override
