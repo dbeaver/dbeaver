@@ -22,13 +22,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionNavigatorSettingsDialog;
-import org.jkiss.dbeaver.ui.forms.*;
+import org.jkiss.dbeaver.ui.forms.UIObservable;
+import org.jkiss.dbeaver.ui.forms.UIObservables;
+import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.function.Consumer;
 
@@ -88,22 +89,7 @@ public class ProductConfigAppearancePage extends ProductConfigWizardPage {
             .row(rb -> rb.label(ProductConfigMessages.appearance_theme_header))
             .row(rb -> rb.panel(pb1 -> pb1.indent(buildThemePanel())))
             .row(rb -> rb.label(ProductConfigMessages.appearance_navigator_header))
-            .row(rb -> rb.panel(pb1 -> pb1.indent(buildNavigatorPanel())))
-            .row(UIRowBuilder::verticalSpacer)
-            .row(rb -> rb
-                .panel(pb1 -> pb1
-                    .align(UIAlignX.FILL)
-                    .grow(UIGrowX.ALWAYS)
-                    .row(rb1 -> rb1
-                    // TODO introduce a dedicated icon+label control
-                    .label(lb -> lb
-                        .image(DBIcon.SMALL_INFO)
-                        .align(UIAlignY.TOP))
-                    .label(lb -> lb
-                        .text(ProductConfigMessages.appearance_theme_hint)
-                        .wrap()
-                        .align(UIAlignX.FILL)
-                        .grow(UIGrowX.ALWAYS)))));
+            .row(rb -> rb.panel(pb1 -> pb1.indent(buildNavigatorPanel())));
     }
 
     @NotNull
@@ -120,15 +106,18 @@ public class ProductConfigAppearancePage extends ProductConfigWizardPage {
         return pb -> pb
             .row(rb -> rb.radioButton(
                 ProductConfigMessages.appearance_navigator_simple,
+                ProductConfigMessages.appearance_navigator_simple_hint,
                 UIObservables.equals(navigatorPreset, Preset.SIMPLE)
             ))
             .row(rb -> rb.radioButton(
                 ProductConfigMessages.appearance_navigator_advanced,
+                ProductConfigMessages.appearance_navigator_advanced_hint,
                 UIObservables.equals(navigatorPreset, Preset.ADVANCED)
             ))
             .row(rb -> rb
                 .radioButton(
                     ProductConfigMessages.appearance_navigator_custom,
+                    ProductConfigMessages.appearance_navigator_custom_hint,
                     UIObservables.equals(navigatorPreset, Preset.CUSTOM))
                 .link(ProductConfigMessages.appearance_navigator_custom_configure, e -> {
                     var dialog = new EditConnectionNavigatorSettingsDialog(

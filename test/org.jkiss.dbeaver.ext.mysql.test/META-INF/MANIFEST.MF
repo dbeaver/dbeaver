@@ -13,4 +13,5 @@ Require-Bundle: org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.test.platform,
- org.jkiss.dbeaver.ext.mysql
+ org.jkiss.dbeaver.ext.mysql,
+ org.jkiss.dbeaver.tasks.native

@@ -18,39 +18,34 @@ package org.jkiss.dbeaver.ui.app.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.util.Geometry;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
-import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.ui.forms.UIObservable;
-import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
-    private boolean seenLanguageChangeWarning = false;
-
     public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, @NotNull ProductConfigWizard.Origin origin) {
-        super(window, new ProductConfigWizard(origin));
+        super(
+            window,
+            new ProductConfigWizard(origin),
+            null,
+            origin == ProductConfigWizard.Origin.AUTOMATIC ? null : window.getShell()
+        );
+        setFinishButtonLabel("Apply");
+        setMinimumPageSize(0, 0);
     }
 
     public boolean isRestartRequired() {
@@ -97,15 +92,15 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         return (ProductConfigWizard) super.getWizard();
     }
 
-    @NotNull
     @Override
-    protected Point getInitialSize() {
-        return new Point(600, 500);
+    protected void configureShell(@NotNull Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setImages(Window.getDefaultImages());
     }
 
     @Override
     public int getShellStyle() {
-        return SWT.TITLE | SWT.BORDER | SWT.RESIZE;
+        return SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE;
     }
 
     @Override
@@ -146,50 +141,15 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         );
     }
 
+    @NotNull
+    @Override
+    protected Point getInitialSize() {
+        return new Point(600, 450);
+    }
+
     @Override
     public void updateSize() {
         // don't update size - pages are adapted to the dialog size
-    }
-
-    @Override
-    public boolean isHelpAvailable() {
-        // Language change only supported when the wizard appears before the application is fully initialized.
-        return DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager;
-    }
-
-    @NotNull
-    @Override
-    protected Control createHelpControl(@NotNull Composite parent) {
-        ((GridLayout) parent.getLayout()).numColumns++;
-
-        var language = UIObservable.of(
-            DBPPlatformDesktop.getInstance().getPlatformLanguage(),
-            DBPPlatformLanguage.class
-        );
-        language.addChangeListener((o, newLanguage) -> {
-            if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager manager) {
-                manager.setPlatformLanguage(newLanguage);
-            }
-            if (!seenLanguageChangeWarning) {
-                seenLanguageChangeWarning = true;
-                UIUtils.showMessageBox(
-                    getShell(),
-                    "Language change",
-                    "Language change will be applied after restart.",
-                    SWT.ICON_INFORMATION
-                );
-            }
-        });
-
-        var control = UIPanelBuilder.build(parent, buildLanguagePanel(language));
-        control.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-
-        addPageChangedListener(event -> {
-            boolean firstPageSelected = event.getSelectedPage() == getWizard().getStartingPage();
-            UIUtils.setControlVisible(control, firstPageSelected);
-        });
-
-        return control;
     }
 
     @Override
@@ -198,17 +158,18 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
         if (cancelButton != null && getOrigin() == ProductConfigWizard.Origin.AUTOMATIC) {
-            cancelButton.setText(ProductConfigMessages.button_exit);
+            UIUtils.setControlVisible(cancelButton, false);
+            parent.layout(true, true);
         }
     }
 
-    @NotNull
-    private static Consumer<UIPanelBuilder> buildLanguagePanel(@NotNull UIObservable<DBPPlatformLanguage> language) {
-        return pb -> pb
-            .row(rb -> rb.comboBox(
-                PlatformLanguageRegistry.getInstance().getLanguages(),
-                language,
-                DBPPlatformLanguage::getLabel
-            ));
+    @Override
+    public void updateButtons() {
+        super.updateButtons();
+
+        Button finishButton = getButton(IDialogConstants.FINISH_ID);
+        if (finishButton != null && !finishButton.isDisposed() && finishButton.isEnabled()) {
+            getShell().setDefaultButton(finishButton);
+        }
     }
 }
