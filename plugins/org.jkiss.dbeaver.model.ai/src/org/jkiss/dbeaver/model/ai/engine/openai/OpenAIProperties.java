@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
-
 public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
     protected static final String GPT_BASE_URL = "gpt.base_url";
     protected static final String GPT_TOKEN = "gpt.token";
@@ -185,10 +183,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
             } catch (DBException e) {
                 // Ignore exception and return known models
             }
-            return OpenAIModels.KNOWN_MODELS.entrySet().stream()
-                .filter(entry -> !entry.getValue().features().contains(AIModelFeature.SPEECH_TO_TEXT))
-                .map(Map.Entry::getKey)
-                .toArray();
+            return null;
         }
     }
 }
