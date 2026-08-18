@@ -279,6 +279,12 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         });
         relayoutPage();
         UIUtils.packColumns(profilesViewer.getTable(), true);
+        UIUtils.asyncExec(() -> {
+            // SWT on Linux can keep a stale header trim unless the table is realized with header state toggled.
+            Table table = profilesViewer.getTable();
+            table.setHeaderVisible(true);
+            table.setHeaderVisible(false);
+        });
 
         return composite;
     }
