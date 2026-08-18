@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.StringJoiner;
 
@@ -207,7 +208,8 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         try {
             runnable.run();
         } finally {
-            if (splash != null && !splash.isDisposed()) {
+            // Don't show splash back on Linux because setVisible blocks indefinitely for some reason
+            if (splash != null && !splash.isDisposed() && !RuntimeUtils.isLinux()) {
                 splash.setVisible(true);
             }
         }
