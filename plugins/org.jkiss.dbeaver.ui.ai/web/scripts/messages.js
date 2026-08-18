@@ -146,6 +146,7 @@ function removeMessage(args) {
         currentStreamingMessageId = null;
     }
     ensureBusyIndicator();
+    updateAiNoticeVisibility();
 }
 
 function removeFunctionArtifacts(messageId) {
