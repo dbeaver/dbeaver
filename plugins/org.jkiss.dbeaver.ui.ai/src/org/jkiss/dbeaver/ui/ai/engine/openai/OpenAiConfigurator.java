@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
 import org.jkiss.dbeaver.ui.ai.preferences.AbstractAIEngineConfigurator;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -155,7 +156,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             configuration.setToken(apiToken);
             configuration.copyAccountTokensFrom(properties);
         }
-        configuration.setModel(modelSelectorField.getSelectedModel());
+        configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
         saveAdvancedSettings(configuration);
@@ -175,31 +176,31 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withRequiredSetting(tokenText, AIUIMessages.model_selector_token_required)
-            .withModelListSupplier((monitor, forceRefresh) -> {
-                List<AIModel> loadedModels = loadModels(monitor, forceRefresh);
-                if (loadedModels.isEmpty()) {
-                    return List.of();
-                }
-                availableModels = loadedModels;
-                List<String> models = loadedModels.stream()
+            .withModelListSupplier(
+                (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
                     .filter(it -> it.features().contains(AIModelFeature.CHAT))
-                    .map(AIModel::name)
-                    .toList();
-                UIUtils.syncExec(() -> {
-                    if (temperatureText == null || temperatureText.isDisposed()) {
-                        return;
+                    .toList()
+            )
+            .withModifyListener(() -> {
+                OpenAIModels.getModelByName(modelSelectorField.getSelectedModelName())
+                    .ifPresentOrElse(
+                        model -> {
+                            contextWindowSizeField.setValue(model.contextWindowSize());
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
+                        }, () -> {
+                            contextWindowSizeField.setValue(null);
+                            temperatureText.setText("0.0");
+                            temperatureText.setEnabled(true);
+                        }
+                    );
+
+                AIModel selectedModel = modelSelectorField.getSelectedModel();
+                    if (selectedModel != null && selectedModel.contextWindowSize() != null) {
+                        contextWindowSizeField.setValue(selectedModel.contextWindowSize());
                     }
-                    if (isAccountAuthentication()
-                        && !models.isEmpty()
-                        && !models.contains(modelSelectorField.getSelectedModel())
-                    ) {
-                        modelSelectorField.setSelectedModel(models.getFirst());
-                    }
-                });
-                return models;
-            })
-            .withModifyListener(this::applySelectedModelDefaults)
-            .build();
+                })
+                .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)
@@ -255,10 +256,12 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(currentToken);
         properties.setBaseUrl(currentBaseUrl);
-
-        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
-            return engine.getModels(monitor);
+        if (!CommonUtils.isEmpty(currentToken)) {
+            try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
+                return engine.getModels(monitor);
+            }
         }
+        return Collections.emptyList();
     }
 
     @NotNull
@@ -393,7 +396,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             propertiesCopy.copyAccountTokensFrom(properties);
             propertiesCopy.useAccountCredentialsFrom(properties);
         }
-        propertiesCopy.setModel(modelSelectorField.getSelectedModel());
+        propertiesCopy.setModel(modelSelectorField.getSelectedModelName());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
         saveAdvancedSettings(propertiesCopy);
