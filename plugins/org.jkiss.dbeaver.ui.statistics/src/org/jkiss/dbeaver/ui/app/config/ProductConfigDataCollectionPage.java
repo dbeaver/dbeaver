@@ -54,14 +54,15 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
     @Override
     public void applySettings() {
         UIStatisticsActivator.setTrackingEnabled(sendUsageStatistics.get());
+        UIStatisticsActivator.setSkipDataShareConfirmation(true);
     }
 
     @NotNull
     private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
-            .row(buildAgreementPanel())
-            .accept(buildConfirmationPanel(sendUsageStatistics, collectionRequired));
+            .accept(buildConfirmationPanel(sendUsageStatistics, collectionRequired))
+            .row(buildAgreementPanel());
     }
 
     @NotNull
