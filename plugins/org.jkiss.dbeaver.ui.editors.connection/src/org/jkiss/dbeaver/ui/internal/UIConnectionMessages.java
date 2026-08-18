@@ -330,6 +330,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_copy_text;
     public static String pref_page_network_profiles_tool_delete_dialog_error_title;
     public static String pref_page_network_profiles_tool_delete_dialog_error_info;
+    public static String pref_page_network_profiles_tool_delete_dialog_error_message;
     public static String pref_page_network_profiles_tool_delete_confirmation_title;
     public static String pref_page_network_profiles_tool_delete_confirmation_question;
     public static String pref_page_network_profiles_tool_delete_used_confirmation_question;

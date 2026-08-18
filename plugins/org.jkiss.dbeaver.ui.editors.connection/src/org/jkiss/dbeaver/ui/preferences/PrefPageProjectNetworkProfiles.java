@@ -163,10 +163,29 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         )) {
             return false;
         }
+        try {
+            removeProfile(selectedProfile, usedBy);
+            return true;
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_message,
+                    selectedProfile.getProfileName()
+                ),
+                e
+            );
+            return false;
+        }
+    }
+
+    protected void removeProfile(
+        @NotNull DBWNetworkProfile profile,
+        @NotNull List<? extends DBPDataSourceContainer> usedBy
+    ) throws DBException {
         DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
-        profilesRegistry.removeProfile(selectedProfile);
+        profilesRegistry.removeProfile(profile);
         profilesRegistry.saveSettings();
-        return true;
     }
 
     @NotNull

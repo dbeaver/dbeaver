@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -187,6 +188,26 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
                 .toList()
                 : super.connectionsUsingProfile(selectedProfile);
+        }
+
+        @Override
+        protected void removeProfile(
+            @NotNull DBWNetworkProfile profile,
+            @NotNull List<? extends DBPDataSourceContainer> usedBy
+        ) throws DBException {
+            if (profile.isGlobal()) {
+                detachProfile(usedBy);
+            }
+            super.removeProfile(profile, usedBy);
+        }
+
+        private void detachProfile(@NotNull List<? extends DBPDataSourceContainer> dataSources) throws DBException {
+            for (DBPDataSourceContainer dataSource : dataSources) {
+                var configuration = dataSource.getConnectionConfiguration();
+                configuration.setConfigProfile(null);
+                configuration.setHandlers(List.of());
+                dataSource.getRegistry().updateDataSource(dataSource);
+            }
         }
     }
 }
