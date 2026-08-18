@@ -269,6 +269,7 @@ public class ModelMessages extends NLS {
 
     public static String shell_cmd_manager_add_command_confirmation_label;
     public static String shell_cmd_manager_add_command_confirmation_text;
+    public static String shell_cmd_manager_add_command_confirmation_button;
     public static String shell_cmd_manager_add_command_error_message;
     public static String shell_cmd_manager_add_command_error_message_te_specific;
 
