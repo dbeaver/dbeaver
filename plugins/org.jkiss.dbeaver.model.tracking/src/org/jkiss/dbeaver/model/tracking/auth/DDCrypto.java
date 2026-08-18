@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync.core;
+package org.jkiss.dbeaver.model.tracking.auth;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -26,7 +26,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
-final class DDSyncCrypto {
+public final class DDCrypto {
 
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int IV_LENGTH = 12;
@@ -34,11 +34,11 @@ final class DDSyncCrypto {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private DDSyncCrypto() {
+    private DDCrypto() {
     }
 
     @NotNull
-    static byte[] encrypt(@NotNull SecretKey key, @NotNull byte[] data) throws DBException {
+    public static byte[] encrypt(@NotNull SecretKey key, @NotNull byte[] data) throws DBException {
         try {
             byte[] iv = new byte[IV_LENGTH];
             RANDOM.nextBytes(iv);
@@ -50,19 +50,19 @@ final class DDSyncCrypto {
             System.arraycopy(encrypted, 0, result, iv.length, encrypted.length);
             return result;
         } catch (GeneralSecurityException e) {
-            throw new DBException("Error encrypting sync data", e);
+            throw new DBException("Error encrypting data", e);
         }
     }
 
     @NotNull
-    static byte[] decrypt(@NotNull SecretKey key, @NotNull byte[] input) throws DBException {
+    public static byte[] decrypt(@NotNull SecretKey key, @NotNull byte[] input) throws DBException {
         try {
             byte[] iv = Arrays.copyOfRange(input, 0, IV_LENGTH);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(TAG_LENGTH_BITS, iv));
             return cipher.doFinal(input, IV_LENGTH, input.length - IV_LENGTH);
         } catch (GeneralSecurityException e) {
-            throw new DBException("Error decrypting sync data", e);
+            throw new DBException("Error decrypting data", e);
         }
     }
 }

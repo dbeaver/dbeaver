@@ -43,13 +43,6 @@ class DDRestTransport extends AbstractRestClient implements DDSyncTransport {
 
     @NotNull
     @Override
-    public byte[] loadWrappedDataKey() throws DBException {
-        DDDataKey dataKey = execute(request(DDSyncApi.DATA_KEY_ENDPOINT, Map.of()).GET(), DDDataKey.class);
-        return Base64.getDecoder().decode(dataKey.encryptedKey());
-    }
-
-    @NotNull
-    @Override
     public DDContainer createContainer(@NotNull String label) throws DBException {
         DDContainerData created = execute(
             request(DDSyncApi.WORKSPACE_ENDPOINT, Map.of(DDSyncApi.PARAM_LABEL, label))

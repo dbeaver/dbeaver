@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import javax.crypto.SecretKey;
 
 /**
- * Credentials used to authorize requests and to unwrap the data encryption key.
+ * Credentials used to sign requests and to encrypt data.
  */
 public interface DDSyncCredentials {
 
@@ -30,5 +30,5 @@ public interface DDSyncCredentials {
     String buildToken() throws DBException;
 
     @NotNull
-    SecretKey decryptDataKey(@NotNull byte[] encryptedDataKey) throws DBException;
+    SecretKey getDataKey() throws DBException;
 }

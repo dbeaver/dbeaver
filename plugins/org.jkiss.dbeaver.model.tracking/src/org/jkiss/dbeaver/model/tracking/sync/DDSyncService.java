@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.sync.DBPSyncScope;
 import org.jkiss.dbeaver.model.sync.DBPSyncSettings;
 import org.jkiss.dbeaver.model.sync.DBPSyncTarget;
 import org.jkiss.dbeaver.model.sync.DBPSyncUnit;
-import org.jkiss.dbeaver.model.tracking.DDAccessKey;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncCredentials;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDContainer;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncEntry;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncStore;
@@ -56,10 +56,10 @@ public class DDSyncService {
 
     public DDSyncService(
         @NotNull String url,
-        @NotNull DDAccessKey accessKey,
+        @NotNull DDSyncCredentials credentials,
         @NotNull DBPWorkspace workspace
     ) {
-        this.store = new DDSyncStore(url, accessKey);
+        this.store = new DDSyncStore(url, credentials);
         this.workspace = workspace;
     }
 
