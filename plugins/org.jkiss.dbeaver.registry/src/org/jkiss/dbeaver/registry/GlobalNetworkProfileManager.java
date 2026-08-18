@@ -119,7 +119,7 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
             var configuration = dataSource.getConnectionConfiguration();
             configuration.setConfigProfile(null);
             configuration.setHandlers(List.of());
-            dataSource.getRegistry().updateDataSource(dataSource);
+            dataSource.getRegistry().updateDataSource(dataSource, false);
         }
     }
 
