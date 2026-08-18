@@ -18,14 +18,8 @@ package org.jkiss.dbeaver.model.impl.config;
 
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
 public final class ProductConfigUtils {
-    /**
-     * Force Product Config to show at every launch
-     */
-    private static final String PROP_SHOW_ON_STARTUP = "dbeaver.show.easy.config.on.startup";
-
     private ProductConfigUtils() {
     }
 
@@ -35,7 +29,7 @@ public final class ProductConfigUtils {
      * This is determined by the system property {@code dbeaver.show.easy.config.on.startup}.
      */
     public static boolean isAvailable() {
-        return CommonUtils.getBoolean(System.getProperty(PROP_SHOW_ON_STARTUP)) && isProductApplicable();
+        return isProductApplicable();
     }
 
     /**

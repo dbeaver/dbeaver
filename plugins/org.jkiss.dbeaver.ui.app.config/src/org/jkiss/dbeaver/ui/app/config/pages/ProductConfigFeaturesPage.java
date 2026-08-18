@@ -76,6 +76,7 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                 .label(lb -> lb
                     .text(ProductConfigMessages.features_list_header)
                     .wrap()
+                    .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)))
             .row(rb -> rb.scrolledPanel(false, true, pb1 -> pb1
@@ -97,6 +98,7 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                 .label(lb -> lb
                     .text(ProductConfigMessages.features_hint)
                     .wrap()
+                    .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)));
     }
