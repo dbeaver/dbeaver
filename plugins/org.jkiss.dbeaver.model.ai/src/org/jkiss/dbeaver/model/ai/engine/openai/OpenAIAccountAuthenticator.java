@@ -25,7 +25,6 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 
@@ -57,7 +56,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class OpenAIAccountAuthenticator {
+public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
     private static final String ISSUER = "https://auth.openai.com";
     // Public OAuth client ID registered by OpenAI for the Codex browser authorization flow.
     private static final String CLIENT_ID = "app_EMoamEEZ73f0CkXaXp7hrann";
@@ -78,13 +77,16 @@ public class OpenAIAccountAuthenticator {
     }
 
     public static boolean isSupported() {
-        return !DBWorkbench.isDistributed()
-            && !DBWorkbench.getPlatform().getApplication().isMultiuser()
-            && !DBWorkbench.getPlatform().getApplication().isHeadlessMode();
+        return AIAccountAuthenticator.isSupported();
+    }
+
+    @Override
+    public boolean supportsBrowserAuthorization() {
+        return true;
     }
 
     @NotNull
-    public BrowserAuthorization startBrowserAuthorization() throws DBException {
+    public AIAccountAuthenticator.BrowserAuthorization startBrowserAuthorization() throws DBException {
         if (!isSupported()) {
             throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
         }
@@ -136,28 +138,30 @@ public class OpenAIAccountAuthenticator {
             parameters.put("codex_cli_simplified_flow", "true");
             parameters.put("state", state);
             parameters.put("originator", "dbeaver");
-            return new BrowserAuthorization(URI.create(ISSUER + "/oauth/authorize?" + toForm(parameters)));
+            return new AIAccountAuthenticator.BrowserAuthorization(URI.create(ISSUER + "/oauth/authorize?" + toForm(parameters)));
         }
     }
 
     @NotNull
-    public DeviceAuthorization startDeviceAuthorization() throws DBException {
+    public AIAccountAuthenticator.DeviceAuthorization startDeviceAuthorization() throws DBException {
         if (!isSupported()) {
             throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
         }
         JsonObject request = new JsonObject();
         request.addProperty("client_id", CLIENT_ID);
         JsonObject response = sendJson(ISSUER + "/api/accounts/deviceauth/usercode", request);
-        return new DeviceAuthorization(
+        return new AIAccountAuthenticator.DeviceAuthorization(
             getRequiredString(response, "device_auth_id"),
             getRequiredString(response, "user_code"),
-            Math.max(1, response.has("interval") ? response.get("interval").getAsInt() : 5)
+            URI.create(ISSUER + "/codex/device"),
+            Math.max(1, response.has("interval") ? response.get("interval").getAsInt() : 5),
+            AUTHORIZATION_TIMEOUT.toSeconds()
         );
     }
 
     @NotNull
-    public Tokens completeDeviceAuthorization(
-        @NotNull DeviceAuthorization authorization,
+    public AIAccountAuthenticator.Tokens completeDeviceAuthorization(
+        @NotNull AIAccountAuthenticator.DeviceAuthorization authorization,
         @NotNull CompletableFuture<Void> cancellation
     ) throws DBException {
         long deadline = System.nanoTime() + AUTHORIZATION_TIMEOUT.toNanos();
@@ -186,7 +190,7 @@ public class OpenAIAccountAuthenticator {
     }
 
     @NotNull
-    public synchronized Tokens completeBrowserAuthorization() throws DBException {
+    public synchronized AIAccountAuthenticator.Tokens completeBrowserAuthorization() throws DBException {
         if (pendingAuthorization == null) {
             throw new DBException("OpenAI authorization has not been started");
         }
@@ -227,7 +231,7 @@ public class OpenAIAccountAuthenticator {
     }
 
     @NotNull
-    public Tokens refresh(@NotNull String refreshToken) throws DBException {
+    public AIAccountAuthenticator.Tokens refresh(@NotNull String refreshToken) throws DBException {
         return sendTokenRequest(Map.of(
             "grant_type", "refresh_token",
             "refresh_token", refreshToken,
@@ -278,7 +282,11 @@ public class OpenAIAccountAuthenticator {
     }
 
     @NotNull
-    private Tokens exchangeCode(@NotNull String code, @NotNull String verifier, @NotNull String redirectUri) throws DBException {
+    private AIAccountAuthenticator.Tokens exchangeCode(
+        @NotNull String code,
+        @NotNull String verifier,
+        @NotNull String redirectUri
+    ) throws DBException {
         return sendTokenRequest(Map.of(
             "grant_type", "authorization_code",
             "code", code,
@@ -289,11 +297,11 @@ public class OpenAIAccountAuthenticator {
     }
 
     @NotNull
-    private Tokens sendTokenRequest(@NotNull Map<String, String> parameters) throws DBException {
+    private AIAccountAuthenticator.Tokens sendTokenRequest(@NotNull Map<String, String> parameters) throws DBException {
         JsonObject response = sendForm(ISSUER + "/oauth/token", parameters);
         String idToken = response.has("id_token") ? response.get("id_token").getAsString() : null;
         String accessToken = getRequiredString(response, "access_token");
-        return new Tokens(
+        return new AIAccountAuthenticator.Tokens(
             accessToken,
             getRequiredString(response, "refresh_token"),
             response.has("expires_in") ? response.get("expires_in").getAsLong() : 3600,
@@ -324,9 +332,9 @@ public class OpenAIAccountAuthenticator {
     }
 
     @Nullable
-    private JsonObject pollDeviceAuthorization(@NotNull DeviceAuthorization authorization) throws DBException {
+    private JsonObject pollDeviceAuthorization(@NotNull AIAccountAuthenticator.DeviceAuthorization authorization) throws DBException {
         JsonObject body = new JsonObject();
-        body.addProperty("device_auth_id", authorization.deviceAuthId());
+        body.addProperty("device_auth_id", authorization.deviceCode());
         body.addProperty("user_code", authorization.userCode());
         HttpRequest request = HttpRequest.newBuilder(URI.create(ISSUER + "/api/accounts/deviceauth/token"))
             .timeout(requestTimeout)
@@ -517,13 +525,13 @@ public class OpenAIAccountAuthenticator {
     }
 
     @Nullable
-    static String extractEmail(@Nullable String idToken, @Nullable String accessToken) {
+    public static String extractEmail(@Nullable String idToken, @Nullable String accessToken) {
         String email = extractEmail(idToken);
         return email != null ? email : extractEmail(accessToken);
     }
 
     @Nullable
-    static String extractEmail(@Nullable String token) {
+    public static String extractEmail(@Nullable String token) {
         if (token == null) {
             return null;
         }
@@ -541,7 +549,7 @@ public class OpenAIAccountAuthenticator {
         }
     }
 
-    static long extractExpiresAt(@Nullable String token) {
+    public static long extractExpiresAt(@Nullable String token) {
         if (token == null) {
             return 0;
         }
@@ -559,20 +567,6 @@ public class OpenAIAccountAuthenticator {
         }
     }
 
-    public record BrowserAuthorization(@NotNull URI authorizationUri) {
-    }
-
-    public record DeviceAuthorization(
-        @NotNull String deviceAuthId,
-        @NotNull String userCode,
-        int intervalSeconds
-    ) {
-        @NotNull
-        public URI verificationUri() {
-            return URI.create(ISSUER + "/codex/device");
-        }
-    }
-
     private record PendingAuthorization(
         @NotNull HttpServer server,
         @NotNull ExecutorService executor,
@@ -585,12 +579,4 @@ public class OpenAIAccountAuthenticator {
     private record CatalogModel(@NotNull String slug, int priority) {
     }
 
-    public record Tokens(
-        @NotNull String accessToken,
-        @NotNull String refreshToken,
-        long expiresInSeconds,
-        @Nullable String accountId,
-        @Nullable String email
-    ) {
-    }
 }

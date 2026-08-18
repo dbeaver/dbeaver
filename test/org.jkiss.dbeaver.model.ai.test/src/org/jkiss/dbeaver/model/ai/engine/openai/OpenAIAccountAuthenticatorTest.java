@@ -104,7 +104,7 @@ class OpenAIAccountAuthenticatorTest {
     void temporaryPropertiesUseUpdatedSourceCredentials() {
         OpenAIProperties source = new OpenAIProperties();
         source.setAccountTokens(
-            new OpenAIAccountAuthenticator.Tokens(
+            new AIAccountAuthenticator.Tokens(
                 "access-1", "refresh-1", 3600, "account-1", "first@example.com"
             )
         );
@@ -112,7 +112,7 @@ class OpenAIAccountAuthenticatorTest {
         copy.useAccountCredentialsFrom(source);
 
         source.setAccountTokens(
-            new OpenAIAccountAuthenticator.Tokens(
+            new AIAccountAuthenticator.Tokens(
                 "access-2", "refresh-2", 3600, "account-2", "second@example.com"
             )
         );

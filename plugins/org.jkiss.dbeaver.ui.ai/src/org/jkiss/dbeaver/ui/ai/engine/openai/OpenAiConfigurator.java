@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
+import org.jkiss.dbeaver.model.ai.engine.openai.AIAccountAuthenticator;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIAccountAuthenticator;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
@@ -64,7 +65,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     extends AbstractAIEngineConfigurator<ENGINE, PROPERTIES> {
 
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
-    private static final String ACCOUNT_TOKEN_PLACEHOLDER = "ChatGPT account";
     protected String baseUrl;
     protected volatile String token = "";
     private String temperature = "0.0";
@@ -78,7 +78,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     protected ContextWindowSizeField contextWindowSizeField;
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchOpenAiModels);
-    private OpenAIAccountAuthenticator accountAuthenticator;
+    private AIAccountAuthenticator accountAuthenticator;
     protected PROPERTIES properties;
     private volatile List<AIModel> availableModels = List.of();
     @Nullable
@@ -116,7 +116,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     public void loadSettings(@NotNull PROPERTIES configuration) {
         settingsGeneration++;
         properties = configuration;
-        accountAuthenticator = new OpenAIAccountAuthenticator(configuration.getTimeout());
+        accountAuthenticator = createAccountAuthenticator(configuration.getTimeout());
         baseUrl = CommonUtils.toString(configuration.getBaseUrl());
         if (baseUrl.isEmpty()) {
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
@@ -131,8 +131,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
-        boolean useAccountAuthentication = OpenAIAccountAuthenticator.isSupported()
-            && configuration.isChatGptAccountAuthentication();
+        boolean useAccountAuthentication = isAccountAuthenticationSupported()
+            && configuration.isAccountAuthentication();
         if (apiTokenAuthenticationButton != null) {
             apiTokenAuthenticationButton.setSelection(!useAccountAuthentication);
         }
@@ -140,7 +140,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             accountAuthenticationButton.setSelection(useAccountAuthentication);
         }
         updateAuthenticationControls();
-        if (!isAccountAuthentication() || configuration.isChatGptAccountConnected()) {
+        if (!isAccountAuthentication() || configuration.isAccountConnected()) {
             modelSelectorField.refreshModelListSilently(true);
         }
     }
@@ -150,9 +150,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         configuration.setBaseUrl(baseUrl);
         configuration.setToken(token);
         configuration.setAuthentication(isAccountAuthentication()
-            ? OpenAIProperties.AUTHENTICATION_CHATGPT_ACCOUNT
+            ? getAccountAuthenticationId()
             : OpenAIProperties.AUTHENTICATION_API_TOKEN);
-        if (configuration.isChatGptAccountAuthentication()) {
+        if (configuration.isAccountAuthentication()) {
             configuration.setToken(apiToken);
             configuration.copyAccountTokensFrom(properties);
         }
@@ -214,38 +214,15 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
-    private void applySelectedModelDefaults() {
-        if (modelSelectorField == null || temperatureText == null || temperatureText.isDisposed()) {
-            return;
-        }
-        String selectedModel = modelSelectorField.getSelectedModel();
-        availableModels.stream()
-            .filter(model -> model.name().equals(selectedModel))
-            .findFirst()
-            .or(() -> OpenAIModels.getModelByName(selectedModel))
-            .ifPresentOrElse(
-                model -> {
-                    contextWindowSizeField.setValue(model.contextWindowSize());
-                    temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                    temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
-                },
-                () -> {
-                    contextWindowSizeField.setValue(null);
-                    temperatureText.setText("0.0");
-                    temperatureText.setEnabled(true);
-                }
-            );
-    }
-
     @NotNull
     protected List<AIModel> fetchOpenAiModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         PROPERTIES currentProperties = properties;
-        OpenAIAccountAuthenticator currentAuthenticator = accountAuthenticator;
+        AIAccountAuthenticator currentAuthenticator = accountAuthenticator;
         boolean useAccountAuthentication = isAccountAuthentication();
         String currentToken = useAccountAuthentication ? apiToken : token;
         String currentBaseUrl = baseUrl;
         if (currentProperties != null && useAccountAuthentication) {
-            return currentAuthenticator.listModels(currentProperties).stream()
+            return fetchAccountModels(currentProperties, currentAuthenticator).stream()
                 .map(model -> new AIModel(
                     model,
                     OpenAIProperties.DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE,
@@ -265,6 +242,14 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @NotNull
+    protected List<String> fetchAccountModels(
+        @NotNull PROPERTIES properties,
+        @NotNull AIAccountAuthenticator authenticator
+    ) throws DBException {
+        return ((OpenAIAccountAuthenticator) authenticator).listModels(properties);
+    }
+
+    @NotNull
     protected List<AIModel> loadModels(
         @NotNull DBRProgressMonitor monitor,
         boolean forceRefresh
@@ -275,7 +260,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     protected void createConnectionParameters(@NotNull Composite parent) {
-        boolean accountAuthenticationSupported = OpenAIAccountAuthenticator.isSupported();
+        boolean accountAuthenticationSupported = isAccountAuthenticationSupported();
         if (accountAuthenticationSupported) {
             UIUtils.createControlLabel(parent, AIUIMessages.openai_configurator_login_method_label);
             Composite authenticationComposite = UIUtils.createComposite(parent, 2);
@@ -292,7 +277,10 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             });
             apiTokenAuthenticationButton = apiTokenButton;
             Button accountButton = new Button(authenticationComposite, SWT.RADIO);
-            accountButton.setText(AIUIMessages.openai_configurator_authentication_chatgpt_account);
+            accountButton.setText(NLS.bind(
+                AIUIMessages.openai_configurator_authentication_chatgpt_account,
+                getAccountProviderName()
+            ));
             accountButton.addListener(SWT.Selection, event -> {
                 if (accountButton.getSelection()) {
                     authenticationChanged();
@@ -319,7 +307,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         accountText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         accountActionButton = UIUtils.createPushButton(parent, AIUIMessages.openai_configurator_sign_in, null);
         accountActionButton.addListener(SWT.Selection, event -> {
-            if (properties != null && properties.isChatGptAccountConnected()) {
+            if (properties != null && properties.isAccountConnected()) {
                 signOut();
             } else {
                 signIn();
@@ -379,7 +367,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             return false;
         }
         return isAccountAuthentication()
-            ? properties != null && properties.isChatGptAccountConnected()
+            ? properties != null && properties.isAccountConnected()
             : tokenText != null && !tokenText.getText().isEmpty();
     }
 
@@ -409,27 +397,28 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
         accountAuthentication = accountAuthenticationButton != null && accountAuthenticationButton.getSelection();
         boolean account = isAccountAuthentication();
-        if (account && !ACCOUNT_TOKEN_PLACEHOLDER.equals(tokenText.getText())) {
+        String accountTokenPlaceholder = getAccountProviderName() + " account";
+        if (account && !accountTokenPlaceholder.equals(tokenText.getText())) {
             apiToken = tokenText.getText();
-            tokenText.setText(ACCOUNT_TOKEN_PLACEHOLDER);
+            tokenText.setText(accountTokenPlaceholder);
         } else if (!account) {
             tokenText.setText(CommonUtils.notEmpty(apiToken));
         }
-        boolean connected = properties != null && properties.isChatGptAccountConnected();
+        boolean connected = properties != null && properties.isAccountConnected();
         String accountEmail = properties == null ? null : properties.getAccountEmail();
         accountText.setText(connected
             ? CommonUtils.isEmpty(accountEmail)
-                ? AIUIMessages.openai_configurator_account_connected
+                ? NLS.bind(AIUIMessages.openai_configurator_account_connected, getAccountProviderName())
                 : NLS.bind(AIUIMessages.openai_configurator_account_connected_as, accountEmail)
             : AIUIMessages.openai_configurator_account_not_connected);
         accountActionButton.setText(connected
             ? AIUIMessages.openai_configurator_sign_out
-            : AIUIMessages.openai_configurator_sign_in);
+            : NLS.bind(AIUIMessages.openai_configurator_sign_in, getAccountProviderName()));
         accountActionButton.setEnabled(true);
         if (modelSelectorField != null) {
             modelSelectorField.setRefreshEnabled(
                 !account || connected,
-                AIUIMessages.openai_configurator_sign_in_to_refresh_models
+                NLS.bind(AIUIMessages.openai_configurator_sign_in_to_refresh_models, getAccountProviderName())
             );
         }
         setVisible(accountLabel, account);
@@ -449,15 +438,34 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         updateAuthenticationControls();
         propertyChangeListener.run();
         boolean canLoadModels = properties != null && (isAccountAuthentication()
-            ? properties.isChatGptAccountConnected()
+            ? properties.isAccountConnected()
             : !CommonUtils.isEmpty(apiToken));
         if (canLoadModels) {
             modelSelectorField.refreshModelListSilently(true);
         }
     }
 
-    private boolean isAccountAuthentication() {
+    protected boolean isAccountAuthentication() {
         return accountAuthentication;
+    }
+
+    protected boolean isAccountAuthenticationSupported() {
+        return AIAccountAuthenticator.isSupported();
+    }
+
+    @NotNull
+    protected String getAccountAuthenticationId() {
+        return OpenAIProperties.AUTHENTICATION_CHATGPT_ACCOUNT;
+    }
+
+    @NotNull
+    protected String getAccountProviderName() {
+        return "ChatGPT";
+    }
+
+    @NotNull
+    protected AIAccountAuthenticator createAccountAuthenticator(int timeoutSeconds) {
+        return new OpenAIAccountAuthenticator(timeoutSeconds);
     }
 
     private static void setVisible(@NotNull Control control, boolean visible) {
@@ -482,17 +490,21 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     private void signIn() {
-        OpenAIAuthMethodDialog methodDialog = new OpenAIAuthMethodDialog(UIUtils.getActiveShell());
-        if (methodDialog.open() != IDialogConstants.OK_ID) {
-            return;
+        OpenAIAuthMethodDialog.Method method = OpenAIAuthMethodDialog.Method.DEVICE_CODE;
+        if (accountAuthenticator.supportsBrowserAuthorization()) {
+            OpenAIAuthMethodDialog methodDialog = new OpenAIAuthMethodDialog(UIUtils.getActiveShell());
+            if (methodDialog.open() != IDialogConstants.OK_ID) {
+                return;
+            }
+            method = methodDialog.getSelectedMethod();
         }
-        OpenAIAuthMethodDialog.Method method = methodDialog.getSelectedMethod();
+        OpenAIAuthMethodDialog.Method selectedMethod = method;
         PROPERTIES targetProperties = properties;
         OpenAIProperties currentProperties = (OpenAIProperties) getCurrentProperties().orElse(targetProperties);
-        OpenAIAccountAuthenticator targetAuthenticator = new OpenAIAccountAuthenticator(currentProperties.getTimeout());
+        AIAccountAuthenticator targetAuthenticator = createAccountAuthenticator(currentProperties.getTimeout());
         accountAuthenticator = targetAuthenticator;
         accountActionButton.setEnabled(false);
-        new AbstractJob("Sign in to OpenAI") {
+        new AbstractJob("Sign in to " + getAccountProviderName()) {
             @NotNull
             @Override
             protected org.eclipse.core.runtime.IStatus run(@NotNull DBRProgressMonitor monitor) {
@@ -504,7 +516,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     }
                 });
                 try {
-                    OpenAIAccountAuthenticator.Tokens tokens = method == OpenAIAuthMethodDialog.Method.BROWSER
+                    AIAccountAuthenticator.Tokens tokens = selectedMethod == OpenAIAuthMethodDialog.Method.BROWSER
                         ? signInWithBrowser(targetAuthenticator, popupCompletion)
                         : signInHeadless(targetAuthenticator, popupCompletion);
                     if (!popupCompletion.complete(null)) {
@@ -515,7 +527,10 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     UIUtils.asyncExec(() -> {
                         if (persistenceError != null) {
                             DBWorkbench.getPlatformUI().showError(
-                                AIUIMessages.openai_configurator_credentials_save_error_title,
+                                NLS.bind(
+                                    AIUIMessages.openai_configurator_credentials_save_error_title,
+                                    getAccountProviderName()
+                                ),
                                 AIUIMessages.openai_configurator_credentials_save_error_message,
                                 persistenceError
                             );
@@ -530,7 +545,10 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     });
                     return persistenceError == null
                         ? org.eclipse.core.runtime.Status.OK_STATUS
-                        : org.eclipse.core.runtime.Status.error("Unable to save OpenAI account credentials", persistenceError);
+                        : org.eclipse.core.runtime.Status.error(
+                            "Unable to save " + getAccountProviderName() + " account credentials",
+                            persistenceError
+                        );
                 } catch (Exception e) {
                     UIUtils.asyncExec(() -> {
                         if (accountText.isDisposed()) {
@@ -548,7 +566,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     if (popupCompletion.isCancelled()) {
                         return org.eclipse.core.runtime.Status.CANCEL_STATUS;
                     }
-                    return org.eclipse.core.runtime.Status.error("Unable to sign in to OpenAI", e);
+                    return org.eclipse.core.runtime.Status.error("Unable to sign in to " + getAccountProviderName(), e);
                 } finally {
                     popupCompletion.complete(null);
                 }
@@ -564,7 +582,10 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         propertyChangeListener.run();
         if (persistenceError != null) {
             DBWorkbench.getPlatformUI().showError(
-                AIUIMessages.openai_configurator_sign_out_save_error_title,
+                NLS.bind(
+                    AIUIMessages.openai_configurator_sign_out_save_error_title,
+                    getAccountProviderName()
+                ),
                 AIUIMessages.openai_configurator_sign_out_save_error_message,
                 persistenceError
             );
@@ -582,11 +603,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @NotNull
-    private OpenAIAccountAuthenticator.Tokens signInWithBrowser(
-        @NotNull OpenAIAccountAuthenticator authenticator,
+    private AIAccountAuthenticator.Tokens signInWithBrowser(
+        @NotNull AIAccountAuthenticator authenticator,
         @NotNull CompletableFuture<Void> popupCompletion
     ) throws DBException {
-        OpenAIAccountAuthenticator.BrowserAuthorization authorization = authenticator.startBrowserAuthorization();
+        AIAccountAuthenticator.BrowserAuthorization authorization = authenticator.startBrowserAuthorization();
         popupCompletion.whenComplete((result, error) -> {
             if (popupCompletion.isCancelled()) {
                 authenticator.cancelBrowserAuthorization();
@@ -597,15 +618,15 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @NotNull
-    private OpenAIAccountAuthenticator.Tokens signInHeadless(
-        @NotNull OpenAIAccountAuthenticator authenticator,
+    private AIAccountAuthenticator.Tokens signInHeadless(
+        @NotNull AIAccountAuthenticator authenticator,
         @NotNull CompletableFuture<Void> popupCompletion
     ) throws DBException {
         UIServiceAuth service = DBWorkbench.getService(UIServiceAuth.class);
         if (service == null) {
             throw new DBException("No authentication UI service is available");
         }
-        OpenAIAccountAuthenticator.DeviceAuthorization authorization = authenticator.startDeviceAuthorization();
+        AIAccountAuthenticator.DeviceAuthorization authorization = authenticator.startDeviceAuthorization();
         service.showCodePopup(authorization.verificationUri(), authorization.userCode(), popupCompletion);
         return authenticator.completeDeviceAuthorization(authorization, popupCompletion);
     }

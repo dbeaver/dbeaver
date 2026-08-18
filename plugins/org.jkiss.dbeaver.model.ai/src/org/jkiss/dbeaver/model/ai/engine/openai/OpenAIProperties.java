@@ -177,6 +177,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         return AUTHENTICATION_CHATGPT_ACCOUNT.equals(getAuthentication());
     }
 
+    public boolean isAccountAuthentication() {
+        return isChatGptAccountAuthentication();
+    }
+
     public void setAuthentication(@Nullable String authentication) {
         this.authentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
@@ -184,6 +188,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     public boolean isChatGptAccountConnected() {
+        return isAccountConnected();
+    }
+
+    public boolean isAccountConnected() {
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
             return !CommonUtils.isEmpty(credentials.refreshToken);
@@ -213,7 +221,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         }
     }
 
-    public synchronized void setAccountTokens(@NotNull OpenAIAccountAuthenticator.Tokens tokens) {
+    public synchronized void setAccountTokens(@NotNull AIAccountAuthenticator.Tokens tokens) {
         accessToken = tokens.accessToken();
         refreshToken = tokens.refreshToken();
         if (tokens.accountId() != null) {
@@ -252,7 +260,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @NotNull
-    public String getValidAccessToken(@NotNull OpenAIAccountAuthenticator authenticator) throws DBException {
+    public String getValidAccessToken(@NotNull AIAccountAuthenticator authenticator) throws DBException {
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
             if (!CommonUtils.isEmpty(credentials.accessToken)
@@ -261,7 +269,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
                 return credentials.accessToken;
             }
             if (CommonUtils.isEmpty(credentials.refreshToken)) {
-                throw new DBException("ChatGPT account is not connected");
+                throw new DBException(getAccountProviderName() + " account is not connected");
             }
             credentials.setAccountTokens(authenticator.refresh(credentials.refreshToken));
             if (credentials.profile != null) {
@@ -284,10 +292,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         }
         this.profile = profile;
         if (accessToken == null) {
-            accessToken = AIUtils.getSecretValueOrDefault(profile, ACCESS_TOKEN, null);
+            accessToken = AIUtils.getSecretValueOrDefault(profile, getAccessTokenSecretId(), null);
         }
         if (refreshToken == null) {
-            refreshToken = AIUtils.getSecretValueOrDefault(profile, REFRESH_TOKEN, null);
+            refreshToken = AIUtils.getSecretValueOrDefault(profile, getRefreshTokenSecretId(), null);
         }
         String resolvedAccountId = OpenAIAccountAuthenticator.extractAccountId(null, accessToken);
         if (resolvedAccountId != null) {
@@ -307,15 +315,30 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     public void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
         AIUtils.setSecretValue(profile, OpenAIConstants.GPT_API_TOKEN, token);
         this.profile = profile;
-        AIUtils.setSecretValue(profile, REFRESH_TOKEN, refreshToken);
-        AIUtils.setSecretValue(profile, ACCESS_TOKEN, accessToken);
+        AIUtils.setSecretValue(profile, getRefreshTokenSecretId(), refreshToken);
+        AIUtils.setSecretValue(profile, getAccessTokenSecretId(), accessToken);
     }
 
     @Override
     public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
         AIUtils.deleteSecretValue(profile, OpenAIConstants.GPT_API_TOKEN);
-        AIUtils.deleteSecretValue(profile, ACCESS_TOKEN);
-        AIUtils.deleteSecretValue(profile, REFRESH_TOKEN);
+        AIUtils.deleteSecretValue(profile, getAccessTokenSecretId());
+        AIUtils.deleteSecretValue(profile, getRefreshTokenSecretId());
+    }
+
+    @NotNull
+    protected String getAccountProviderName() {
+        return "ChatGPT";
+    }
+
+    @NotNull
+    protected String getAccessTokenSecretId() {
+        return ACCESS_TOKEN;
+    }
+
+    @NotNull
+    protected String getRefreshTokenSecretId() {
+        return REFRESH_TOKEN;
     }
 
     @NotNull
