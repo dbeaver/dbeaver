@@ -573,12 +573,13 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             }
         }
 
-        Set<DBPDataSourceRegistry> affectedDataSourceRegs = new HashSet<>();
+        java.util.List<DBPDataSourceContainer> affectedDataSources = new ArrayList<>();
         if (!changedSet.isEmpty()) {
             registry.saveConnectionTypes();
             // Flush projects configs (as they cache connection type information)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
+                boolean projectAffected = false;
                 for (DBPDataSourceContainer ds : projectRegistry.getDataSources()) {
                     DBPConnectionConfiguration cnnCfg = ds.getConnectionConfiguration();
                     DBPConnectionType cnnType = cnnCfg.getConnectionType();
@@ -586,15 +587,17 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         if (toRemove.contains(cnnType)) {
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         }
-                        projectRegistry.flushConfig();
-                        affectedDataSourceRegs.add(projectRegistry);
-                        break;
+                        affectedDataSources.add(ds);
+                        projectAffected = true;
                     }
+                }
+                if (projectAffected) {
+                    projectRegistry.flushConfig();
                 }
             }
         }
-        for (DBPDataSourceRegistry dsReg : affectedDataSourceRegs) {
-            dsReg.notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, null, dsReg));
+        for (DBPDataSourceContainer ds : affectedDataSources) {
+            ds.getRegistry().notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, ds, ds.getRegistry()));
         }
         return super.performOk();
     }
