@@ -30,6 +30,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -586,9 +587,16 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         if (toRemove.contains(cnnType)) {
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         }
-                        projectRegistry.flushConfig();
+                        try {
+                            projectRegistry.updateDataSource(ds);
+                        } catch (DBException e) {
+                            DBWorkbench.getPlatformUI().showError(
+                                CoreMessages.pref_page_connection_types_label_delete_connection_type,
+                                e.getMessage(),
+                                e);
+                            return false;
+                        }
                         affectedDataSourceRegs.add(projectRegistry);
-                        break;
                     }
                 }
             }
