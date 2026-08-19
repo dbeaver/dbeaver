@@ -317,7 +317,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         ActionUtils.evaluatePropertyState(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_REDO);
 
         // Update actions
-        setDirty(getCommandStack().isDirty());
+        UIUtils.asyncExec(() -> setDirty(getCommandStack().isDirty()));
 
         super.stackChanged(event);
     }

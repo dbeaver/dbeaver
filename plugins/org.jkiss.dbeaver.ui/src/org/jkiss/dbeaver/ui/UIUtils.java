@@ -2230,19 +2230,24 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbStringOrId)) {
             return null;
         }
+        Color connectionColor;
         if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
             // Some color constant
             RGB rgb = getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
-            return getSharedColor(rgb);
+            connectionColor = getSharedColor(rgb);
         } else {
-            Color connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
-            if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
-                // For white color return just null to avoid explicit color set.
-                // It is important for dark themes
-                return null;
-            }
-            return connectionColor;
+            connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
         }
+        if (connectionColor != null &&
+            connectionColor.getRed() == 255 &&
+            connectionColor.getGreen() == 255 &&
+            connectionColor.getBlue() == 255
+        ) {
+            // For white color return just null to avoid explicit color set.
+            // It is important for dark themes
+            connectionColor = null;
+        }
+        return connectionColor;
     }
 
     /**
