@@ -88,7 +88,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"first"});
 
-            assertOutputMatches("|first|");
+            assertOutputMatches("first");
         }
 
         @ParameterizedTest
@@ -99,7 +99,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
                 "first" + lineSeparator + "second" + lineSeparator.repeat(2) + "third" + lineSeparator
             });
 
-            assertOutputMatches("|first" + BR + "second" + BR.repeat(2) + "third" + BR + "|");
+            assertOutputMatches("first" + BR + "second" + BR.repeat(2) + "third" + BR);
         }
 
         @ParameterizedTest
@@ -110,7 +110,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
                 lineSeparator + "first" + lineSeparator + "second" + lineSeparator
             });
 
-            assertOutputMatches("|" + BR + "first" + BR + "second" + BR + "|");
+            assertOutputMatches(BR + "first" + BR + "second" + BR);
         }
 
         @ParameterizedTest
@@ -119,7 +119,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"first|second" + lineSeparator + "third"});
 
-            assertOutputMatches("|first" + PIPE_ESCAPE + "second" + BR + "third|");
+            assertOutputMatches("first" + PIPE_ESCAPE + "second" + BR + "third");
         }
     }
 
@@ -136,7 +136,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {content});
 
-            assertOutputMatches("|first" + BR + "second" + BR + "third|");
+            assertOutputMatches("first" + BR + "second" + BR + "third");
         }
 
         @ParameterizedTest
@@ -149,7 +149,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {content});
 
-            assertOutputMatches("|first" + BR + "second|");
+            assertOutputMatches("first" + BR + "second");
         }
     }
 
@@ -167,7 +167,24 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"ab"});
 
-            assertOutputMatches("|`ab`|");
+            assertOutputMatches("`ab`");
+        }
+
+        @Test
+        public void onlyBackTickEscaped() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"`"});
+
+            assertOutputMatches("`".repeat(2 + 1 + 2));
+        }
+
+        @Test
+        public void onlyDoubleBackTickEscaped() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"``"});
+
+            //escape sequence
+            assertOutputMatches("`".repeat(3 + 2 + 3));
         }
 
 
@@ -177,7 +194,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a" + lineSeparator + "b"});
 
-            assertOutputMatches("|`a`" + BR + "`b`|");
+            assertOutputMatches("`a`" + BR + "`b`");
         }
 
         @Test
@@ -185,7 +202,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a`b"});
 
-            assertOutputMatches("|``a`b``|");
+            assertOutputMatches("``a`b``");
         }
 
         @Test
@@ -193,7 +210,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a`b``c"});
 
-            assertOutputMatches("|```a`b``c```|");
+            assertOutputMatches("```a`b``c```");
         }
 
         @Test
@@ -201,7 +218,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a``b`c"});
 
-            assertOutputMatches("|```a``b`c```|");
+            assertOutputMatches("```a``b`c```");
         }
 
         @Test
@@ -209,7 +226,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"<root attr=\"value\">text</root>"});
 
-            assertOutputMatches("|`<root attr=\"value\">text</root>`|");
+            assertOutputMatches("`<root attr=\"value\">text</root>`");
         }
 
         @Test
@@ -217,7 +234,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a|b"});
 
-            assertOutputMatches("|`a`" + PIPE_ESCAPE + "`b`|");
+            assertOutputMatches("`a`" + PIPE_ESCAPE + "`b`");
         }
 
         @Test
@@ -225,7 +242,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a||b"});
 
-            assertOutputMatches("|`a`" + PIPE_ESCAPE.repeat(2) + "`b`|");
+            assertOutputMatches("`a`" + PIPE_ESCAPE.repeat(2) + "`b`");
         }
 
         @Test
@@ -233,7 +250,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"|a"});
 
-            assertOutputMatches("|" + PIPE_ESCAPE + "`a`|");
+            assertOutputMatches(PIPE_ESCAPE + "`a`");
         }
 
         @Test
@@ -241,7 +258,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"|"});
 
-            assertOutputMatches("|" + PIPE_ESCAPE + "|");
+            assertOutputMatches(PIPE_ESCAPE);
         }
 
         @Test
@@ -249,7 +266,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {""});
 
-            assertOutputMatches("||");
+            assertOutputMatches("");
         }
 
         @Test
@@ -257,7 +274,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"||"});
 
-            assertOutputMatches("|" + PIPE_ESCAPE.repeat(2) + "|");
+            assertOutputMatches(PIPE_ESCAPE.repeat(2));
         }
 
         @Test
@@ -265,7 +282,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a|"});
 
-            assertOutputMatches("|`a`" + PIPE_ESCAPE + "|");
+            assertOutputMatches("`a`" + PIPE_ESCAPE);
         }
 
         @ParameterizedTest
@@ -278,14 +295,14 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
                 }
             );
 
-            assertOutputMatches("|``first```" + BR + "`a`" + PIPE_ESCAPE + "`b`" + BR + "```second`````|");
+            assertOutputMatches("``first```" + BR + "`a`" + PIPE_ESCAPE + "`b`" + BR + "```second`````");
         }
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {
         String expectedOutput = "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
             + "|-----------|" + System.lineSeparator()
-            + expectedRow + System.lineSeparator();
+            + "|" + expectedRow + "|" + System.lineSeparator();
         assertEquals(expectedOutput, stringWriter.toString());
     }
 
