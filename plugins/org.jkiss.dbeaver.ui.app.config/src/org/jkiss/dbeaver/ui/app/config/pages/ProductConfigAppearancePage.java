@@ -106,15 +106,18 @@ public class ProductConfigAppearancePage extends ProductConfigWizardPage {
         return pb -> pb
             .row(rb -> rb.radioButton(
                 ProductConfigMessages.appearance_navigator_simple,
+                ProductConfigMessages.appearance_navigator_simple_hint,
                 UIObservables.equals(navigatorPreset, Preset.SIMPLE)
             ))
             .row(rb -> rb.radioButton(
                 ProductConfigMessages.appearance_navigator_advanced,
+                ProductConfigMessages.appearance_navigator_advanced_hint,
                 UIObservables.equals(navigatorPreset, Preset.ADVANCED)
             ))
             .row(rb -> rb
                 .radioButton(
                     ProductConfigMessages.appearance_navigator_custom,
+                    ProductConfigMessages.appearance_navigator_custom_hint,
                     UIObservables.equals(navigatorPreset, Preset.CUSTOM))
                 .link(ProductConfigMessages.appearance_navigator_custom_configure, e -> {
                     var dialog = new EditConnectionNavigatorSettingsDialog(

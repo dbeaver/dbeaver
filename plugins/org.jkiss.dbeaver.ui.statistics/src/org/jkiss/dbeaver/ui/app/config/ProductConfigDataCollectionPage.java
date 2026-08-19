@@ -61,8 +61,8 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
     private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
-            .row(buildAgreementPanel())
-            .accept(buildConfirmationPanel(sendUsageStatistics, collectionRequired));
+            .accept(buildConfirmationPanel(sendUsageStatistics, collectionRequired))
+            .row(buildAgreementPanel());
     }
 
     @NotNull
