@@ -624,7 +624,8 @@ public final class AIUtils {
         SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
         DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
         boolean supportsSchemas = contextDefaults != null &&
-            (contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange());
+            ((contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange()) ||
+                DBSSchema.class.isAssignableFrom(rootContainer.getPrimaryChildType(monitor)));
         String objectName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 1]);
         String schemaName = null;
         String catalogName = null;
