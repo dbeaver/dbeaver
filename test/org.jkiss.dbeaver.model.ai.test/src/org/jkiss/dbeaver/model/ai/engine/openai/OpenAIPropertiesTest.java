@@ -33,7 +33,7 @@ public class OpenAIPropertiesTest extends DBeaverUnitTest {
         ObjectPropertyDescriptor descriptor = (ObjectPropertyDescriptor) propertySource.getProperty(
             AIConstants.AI_CONTEXT_SIZE_PROPERTY);
 
-        Assertions.assertEquals(1, descriptor.getMinValue());
+        Assertions.assertEquals(1F, descriptor.getConstraints().getMin());
         Assertions.assertThrows(IllegalArgumentException.class, () -> descriptor.writeValue(properties, 0));
         Assertions.assertThrows(IllegalArgumentException.class, () -> descriptor.writeValue(properties, -1));
 

@@ -183,8 +183,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return propType != null && BeanUtils.isNumericType(propType);
     }
 
-    public int getMinValue() {
-        return propInfo.minValue();
+    @Nullable
+    public PropertyConstraints getConstraints() {
+        return PropertyConstraints.from(propInfo);
     }
 
     public boolean isDateTime() {
@@ -546,9 +547,16 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                     }
                 }
             }
-            if (value instanceof Number number && getMinValue() != Integer.MIN_VALUE && number.doubleValue() < getMinValue()) {
-                throw new IllegalArgumentException(
-                    "Property '" + getDisplayName() + "' value must be at least " + getMinValue());
+            PropertyConstraints constraints = getConstraints();
+            if (value instanceof Number number && constraints != null) {
+                if (constraints.getMin() != null && number.doubleValue() < constraints.getMin()) {
+                    throw new IllegalArgumentException(
+                        "Property '" + getDisplayName() + "' value must be at least " + constraints.getMin());
+                }
+                if (constraints.getMax() != null && number.doubleValue() > constraints.getMax()) {
+                    throw new IllegalArgumentException(
+                        "Property '" + getDisplayName() + "' value must be at most " + constraints.getMax());
+                }
             }
             setter.invoke(object, value);
         } else {

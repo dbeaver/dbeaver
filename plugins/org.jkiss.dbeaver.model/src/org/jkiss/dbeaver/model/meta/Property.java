@@ -163,7 +163,27 @@ public @interface Property
     /**
      * Minimum allowed value for numeric properties.
      */
-    int minValue() default Integer.MIN_VALUE;
+    float min() default Float.NaN;
+
+    /**
+     * Maximum allowed value for numeric properties.
+     */
+    float max() default Float.NaN;
+
+    /**
+     * Step for numeric properties.
+     */
+    float step() default Float.NaN;
+
+    /**
+     * Minimum length for string properties.
+     */
+    int minLength() default -1;
+
+    /**
+     * Maximum length for string properties.
+     */
+    int maxLength() default -1;
 
     /**
      * Property applies only for desktop products.
