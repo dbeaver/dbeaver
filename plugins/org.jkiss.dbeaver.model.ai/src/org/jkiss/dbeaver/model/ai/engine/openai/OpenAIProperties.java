@@ -22,15 +22,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
-import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
 public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
     protected static final String GPT_BASE_URL = "gpt.base_url";
@@ -85,7 +81,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Nullable
     @Override
-    @Property(order = 3, listProvider = OpenAIModelListProvider.class)
+    @Property(order = 3)
     public String getModel() {
         if (model != null) {
             return OpenAIModels.getEffectiveModelName(model);
@@ -157,33 +153,5 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
         AIUtils.deleteSecretValue(profile, OpenAIConstants.GPT_API_TOKEN);
-    }
-
-    public static class OpenAIModelListProvider implements IPropertyValueListProvider<OpenAIProperties> {
-
-        @Override
-        public boolean allowCustomValue() {
-            return false;
-        }
-
-        @Nullable
-        @Override
-        public Object[] getPossibleValues(@Nullable OpenAIProperties object) {
-            try {
-                if (object != null && object.token != null) {
-                    if (!CommonUtils.isEmpty(object.token)) {
-                        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(object)) {
-                            return engine.getModels(new VoidProgressMonitor()).stream()
-                                .filter(model -> !model.features().contains(AIModelFeature.SPEECH_TO_TEXT))
-                                .map(AIModel::name)
-                                .toArray();
-                        }
-                    }
-                }
-            } catch (DBException e) {
-                // Ignore exception and return known models
-            }
-            return null;
-        }
     }
 }
