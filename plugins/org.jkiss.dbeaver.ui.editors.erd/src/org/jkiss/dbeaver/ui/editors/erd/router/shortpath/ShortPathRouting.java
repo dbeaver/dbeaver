@@ -46,6 +46,7 @@ public class ShortPathRouting extends ERDConnectionRouter {
     private final Set<Connection> staleConnections = new HashSet<>();
     private final LayoutListener listener = new LayoutTracker();
     private boolean ignoreInvalidate;
+    private boolean bendpointFeedbackActive;
 
     private final FigureListener figureListener = source -> {
         Rectangle newBounds = source.getBounds().getCopy();
@@ -360,9 +361,12 @@ public class ShortPathRouting extends ERDConnectionRouter {
             }
             path.setBendPoints(actualBendPoints);
 
-            // having bendpoint-entity overlap and existing bendpoint constraints for the current relation path,
+            // It is only ok to mess with path data when it is not being operated by the GEF already, which is detected with feedback flag.
+            // On feedback being disabled and bendpoint-vs-entity overlap and existing bendpoint constraints for the current relation path,
             // we need to remove unwanted points from constraint and leave only those we've kept in the path's bendpoints collection
-            if (overlapFound && path.data instanceof Connection connection
+            // GEF owns the temporary constraint list while showing bendpoint drag feedback.
+            if (!bendpointFeedbackActive
+                && overlapFound && path.data instanceof Connection connection
                 && this.getConstraint(connection) instanceof List<?> bendpointsConstraint
                 && bendpointsConstraint.size() == bendPoints.size()
                 && !bendpointsConstraint.isEmpty() && bendpointsConstraint.getFirst() instanceof Bendpoint
@@ -449,6 +453,10 @@ public class ShortPathRouting extends ERDConnectionRouter {
      */
     public void setIgnoreInvalidate(boolean b) {
         ignoreInvalidate = b;
+    }
+
+    public void setBendpointFeedbackActive(boolean bendpointFeedbackActive) {
+        this.bendpointFeedbackActive = bendpointFeedbackActive;
     }
 
     /**
