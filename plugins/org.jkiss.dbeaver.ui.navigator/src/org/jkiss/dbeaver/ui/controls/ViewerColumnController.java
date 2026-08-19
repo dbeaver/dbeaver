@@ -903,7 +903,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             Integer p1 = this.getPosition(e1);
             Integer p2 = this.getPosition(e2);
             if (p1 != null && p2 != null) {
-                int rc = p1 - p2;
+                int rc = p1.compareTo(p2);
                 if (rc != 0) {
                     return rc;
                 }

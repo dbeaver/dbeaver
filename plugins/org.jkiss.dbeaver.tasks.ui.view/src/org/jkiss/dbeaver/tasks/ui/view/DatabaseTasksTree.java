@@ -55,7 +55,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.text.Collator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -96,6 +95,7 @@ public class DatabaseTasksTree {
                 return element instanceof DBTTaskFolder ? 0 : 1;
             }
 
+            @Nullable
             @Override
             protected Integer getPosition(@Nullable Object element) {
                 return element instanceof DBPObjectWithOrdinalPosition o ? o.getOrdinalPosition() : null;
