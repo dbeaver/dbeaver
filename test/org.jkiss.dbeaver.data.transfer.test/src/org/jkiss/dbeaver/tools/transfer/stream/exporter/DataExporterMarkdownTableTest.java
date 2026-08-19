@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,6 +52,8 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
     public static final String BR = DataExporterMarkdownTable.NEW_LINE_ESCAPE;
     private DataExporterMarkdownTable exporter;
     private StringWriter stringWriter;
+    private Map<String, Object> properties;
+    private IStreamDataExporterSite site;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private DBCSession session;
@@ -66,8 +70,10 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
     @BeforeEach
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
-        IStreamDataExporterSite site = ExporterTestsUtils.getIStreamDataExporterSiteMock(
+        properties = new HashMap<>();
+        site = ExporterTestsUtils.getIStreamDataExporterSiteMock(
             "test_table", TEST_COLUMN_NAME, stringWriter, "UTF-8");
+        when(site.getProperties()).thenReturn(properties);
 
         exporter = new DataExporterMarkdownTable();
         exporter.init(site);
@@ -75,6 +81,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
 
     @Nested
     class BasicValueTests {
+
         @Test
         public void simpleCase() throws DBException, IOException {
             exporter.exportHeader(session);
@@ -117,6 +124,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
 
     @Nested
     class ContentReaderTests {
+
         @ParameterizedTest
         @ArgumentsSource(LineSeparatorArgumentsProvider.class)
         public void multilineContentReaderIsKeptInOneTableRow(@NotNull String lineSeparator) throws Exception {
@@ -145,16 +153,77 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
     }
 
     @Nested
-    class XmlTests {
+    class EscapeCellValueTest {
+
+        @BeforeEach
+        public void enableCellEscaping() throws DBException {
+            properties.put("escapeCellContent", true);
+            exporter.init(site);
+        }
+
         @Test
-        public void basicXmlValueKeepsOriginalText() throws DBException, IOException {
+        public void simpleValueIsWrappedInOneBacktick() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"ab"});
+
+            assertOutputMatches("|`ab`|");
+        }
+
+        @ParameterizedTest
+        @ArgumentsSource(LineSeparatorArgumentsProvider.class)
+        public void lineBreakSplitsCodeEscaping(@NotNull String lineSeparator) throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"a" + lineSeparator + "b"});
+
+            assertOutputMatches("|`a`" + BR + "'b`|");
+        }
+
+        @Test
+        public void oneBacktickUsesTwoBacktickDelimiter() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"a`b"});
+
+            assertOutputMatches("|``a`b``|");
+        }
+
+        @Test
+        public void twoBackticksUseThreeBacktickDelimiter() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"a`b``c"});
+
+            assertOutputMatches("|```a`b``c```|");
+        }
+
+        @Test
+        public void xmlValueIsWrappedInCodeSpan() throws DBException, IOException {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"<root attr=\"value\">text</root>"});
 
-            assertOutputMatches("|<root attr=\"value\">text</root>|");
+            assertOutputMatches("|`<root attr=\"value\">text</root>`|");
+        }
+
+        @Test
+        public void pipeSplitsCodeSpans() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"a|b"});
+
+            assertOutputMatches("|`a`&#124;`b`|");
+        }
+
+        @ParameterizedTest
+        @ArgumentsSource(LineSeparatorArgumentsProvider.class)
+        public void mixedLineSeparatorsPipesAndBackticksUseIndependentEscapes(@NotNull String lineSeparator) throws Exception {
+            exporter.exportHeader(session);
+            exporter.exportRow(
+                session, resultSet, new Object[] {
+                    "first`" + lineSeparator + "a|b" + lineSeparator + "second``"
+                }
+            );
+
+            assertOutputMatches("|``first```" + BR + "`a`&#124;`b`" + BR + "```second`````|");
         }
     }
-
+    
     private void assertOutputMatches(@NotNull String expectedRow) {
         String expectedOutput = "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
             + "|-----------|" + System.lineSeparator()
