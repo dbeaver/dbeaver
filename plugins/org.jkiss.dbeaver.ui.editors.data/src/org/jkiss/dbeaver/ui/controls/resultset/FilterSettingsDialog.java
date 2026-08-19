@@ -361,7 +361,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     }
 
     private void refreshData() {
-        attributes.sort(activeSorter);
+        attributes.sort(POSITION_SORTER);
         columnsViewer.refresh();
         columnsViewer.expandAll();
     }
