@@ -18,56 +18,12 @@ package org.jkiss.dbeaver.model.meta;
 
 import org.jkiss.code.Nullable;
 
-public final class PropertyConstraints {
-    @Nullable
-    private final Float min;
-    @Nullable
-    private final Float max;
-    @Nullable
-    private final Float step;
-    @Nullable
-    private final Integer minLength;
-    @Nullable
-    private final Integer maxLength;
-
-    public PropertyConstraints(
-        @Nullable Float min,
-        @Nullable Float max,
-        @Nullable Float step,
-        @Nullable Integer minLength,
-        @Nullable Integer maxLength
-    ) {
-        this.min = min;
-        this.max = max;
-        this.step = step;
-        this.minLength = minLength;
-        this.maxLength = maxLength;
-    }
-
-    @Nullable
-    public Float getMin() {
-        return min;
-    }
-
-    @Nullable
-    public Float getMax() {
-        return max;
-    }
-
-    @Nullable
-    public Float getStep() {
-        return step;
-    }
-
-    @Nullable
-    public Integer getMinLength() {
-        return minLength;
-    }
-
-    @Nullable
-    public Integer getMaxLength() {
-        return maxLength;
-    }
+public record PropertyConstraints(
+    @Nullable Float min,
+    @Nullable Float max,
+    @Nullable Float step,
+    @Nullable Integer minLength,
+    @Nullable Integer maxLength) {
 
     @Nullable
     public static PropertyConstraints from(@Nullable Property property) {

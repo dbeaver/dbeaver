@@ -549,13 +549,13 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             }
             PropertyConstraints constraints = getConstraints();
             if (value instanceof Number number && constraints != null) {
-                if (constraints.getMin() != null && number.doubleValue() < constraints.getMin()) {
+                if (constraints.min() != null && number.doubleValue() < constraints.min()) {
                     throw new IllegalArgumentException(
-                        "Property '" + getDisplayName() + "' value must be at least " + constraints.getMin());
+                        "Property '" + getDisplayName() + "' value must be at least " + constraints.min());
                 }
-                if (constraints.getMax() != null && number.doubleValue() > constraints.getMax()) {
+                if (constraints.max() != null && number.doubleValue() > constraints.max()) {
                     throw new IllegalArgumentException(
-                        "Property '" + getDisplayName() + "' value must be at most " + constraints.getMax());
+                        "Property '" + getDisplayName() + "' value must be at most " + constraints.max());
                 }
             }
             setter.invoke(object, value);
