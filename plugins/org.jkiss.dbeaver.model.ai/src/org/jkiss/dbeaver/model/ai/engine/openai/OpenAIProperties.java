@@ -33,10 +33,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import java.util.Map;
 
 public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
-    private static final String GPT_BASE_URL = "gpt.base_url";
-    private static final String GPT_TOKEN = "gpt.token";
-    private static final String GPT_MODEL = "gpt.model";
-    private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
+    protected static final String GPT_BASE_URL = "gpt.base_url";
+    protected static final String GPT_TOKEN = "gpt.token";
+    protected static final String GPT_MODEL = "gpt.model";
+    protected static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
 
     @Nullable
     @SerializedName(GPT_BASE_URL)
@@ -49,11 +49,11 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Nullable
     @SerializedName(GPT_MODEL)
-    private String model;
+    protected String model;
 
     @Nullable
     @SerializedName(GPT_CONTEXT_WINDOW_SIZE)
-    private Integer contextWindowSize;
+    protected Integer contextWindowSize;
 
     public OpenAIProperties() {
     }
