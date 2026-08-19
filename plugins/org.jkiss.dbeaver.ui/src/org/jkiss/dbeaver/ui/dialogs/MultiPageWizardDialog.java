@@ -164,6 +164,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         IWizardPage firstPage = getStartingPage();
         setTitle(firstPage.getTitle());
         setTitleImage(firstPage.getImage());
+        // The label is initially sized for JFace's default banner, so recalculate it after replacing the image.
+        getTitleImageLabel().getParent().layout(true, true);
         setMessage(firstPage.getDescription());
 
         // Afterwards show the starting page
