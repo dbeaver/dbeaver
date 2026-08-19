@@ -131,7 +131,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             }
         };
 
-        viewer.setComparator(new DefaultComparator(Collator.getInstance()));
+        viewer.setComparator(new DefaultComparator());
     }
 
     public void dispose() {
@@ -164,7 +164,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         this.defaultIcon = defaultIcon;
     }
 
-    public void setComparator(@NotNull DefaultComparator comparator) {
+    public void setComparator(@NotNull ViewerComparator comparator) {
         viewer.setComparator(comparator);
     }
 
@@ -882,6 +882,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     }
 
     public static class DefaultComparator extends ViewerComparator {
+
+        public DefaultComparator() {
+            super(Collator.getInstance());
+        }
+
         public DefaultComparator(@Nullable Comparator<? super String> comparator) {
             super(comparator);
         }
@@ -895,10 +900,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 return cat1 - cat2;
             }
 
-            if (getColumnInfo(viewer) == null && e1 instanceof DBPObjectWithOrdinalPosition p1 && e2 instanceof DBPObjectWithOrdinalPosition p2) {
-                int result = p1.compareTo(p2);
-                if (result != 0) {
-                    return result;
+            Integer p1 = this.getPosition(e1);
+            Integer p2 = this.getPosition(e2);
+            if (p1 != null && p2 != null) {
+                int rc = p1 - p2;
+                if (rc != 0) {
+                    return rc;
                 }
             }
 
@@ -930,6 +937,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             }
 
             return isReversed(viewer) ? -result : result;
+        }
+
+        @Nullable
+        protected Integer getPosition(@Nullable Object element) {
+            return null;
         }
 
         @Nullable

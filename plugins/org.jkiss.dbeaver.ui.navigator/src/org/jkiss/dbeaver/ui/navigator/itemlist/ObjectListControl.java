@@ -1543,6 +1543,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         GroupingViewerColumnController(String id, ColumnViewer viewer) {
             super(id, viewer);
+            this.setComparator(
+                new DefaultComparator() {
+                    @Override
+                    protected Integer getPosition(@Nullable Object element) {
+                        return element instanceof DBPObjectWithOrdinalPosition o ? o.getOrdinalPosition() : null;
+                    }
+                }
+            );
         }
 
         @Override
