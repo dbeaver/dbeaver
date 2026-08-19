@@ -20,10 +20,7 @@ import org.jkiss.code.Nullable;
 
 public record PropertyConstraints(
     @Nullable Float min,
-    @Nullable Float max,
-    @Nullable Float step,
-    @Nullable Integer minLength,
-    @Nullable Integer maxLength) {
+    @Nullable Float max) {
 
     @Nullable
     public static PropertyConstraints from(@Nullable Property property) {
@@ -32,11 +29,6 @@ public record PropertyConstraints(
         }
         Float min = Float.isNaN(property.min()) ? null : property.min();
         Float max = Float.isNaN(property.max()) ? null : property.max();
-        Float step = Float.isNaN(property.step()) ? null : property.step();
-        Integer minLength = property.minLength() < 0 ? null : property.minLength();
-        Integer maxLength = property.maxLength() < 0 ? null : property.maxLength();
-        return min == null && max == null && step == null && minLength == null && maxLength == null
-            ? null
-            : new PropertyConstraints(min, max, step, minLength, maxLength);
+        return min == null && max == null ? null : new PropertyConstraints(min, max);
     }
 }

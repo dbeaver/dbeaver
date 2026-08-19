@@ -171,21 +171,6 @@ public @interface Property
     float max() default Float.NaN;
 
     /**
-     * Step for numeric properties.
-     */
-    float step() default Float.NaN;
-
-    /**
-     * Minimum length for string properties.
-     */
-    int minLength() default -1;
-
-    /**
-     * Maximum length for string properties.
-     */
-    int maxLength() default -1;
-
-    /**
      * Property applies only for desktop products.
      */
     boolean desktop() default false;
