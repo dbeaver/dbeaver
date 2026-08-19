@@ -69,11 +69,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[] {"first\nsecond\r\nthird\rfourth"});
 
-        assertEquals(
-            "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
-                + "|-----------|" + System.lineSeparator()
-                + "|first<br>second<br>third<br>fourth|" + System.lineSeparator(), stringWriter.toString()
-        );
+         assertOutputMatches("|first<br>second<br>third<br>fourth|");
     }
 
     @Test
@@ -81,11 +77,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[] {"first|second\nthird"});
 
-        assertEquals(
-            "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
-                + "|-----------|" + System.lineSeparator()
-                + "|first&#124;second<br>third|" + System.lineSeparator(), stringWriter.toString()
-        );
+         assertOutputMatches("|first&#124;second<br>third|");
     }
 
     @Test
@@ -93,11 +85,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[] {"first\n\nsecond\n"});
 
-        assertEquals(
-            "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
-                + "|-----------|" + System.lineSeparator()
-                + "|first<br><br>second<br>|" + System.lineSeparator(), stringWriter.toString()
-        );
+         assertOutputMatches("|first<br><br>second<br>|");
     }
 
     @Test
@@ -109,11 +97,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[] {content});
 
-        assertEquals(
-            "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
-                + "|-----------|" + System.lineSeparator()
-                + "|first<br>second<br>third|" + System.lineSeparator(), stringWriter.toString()
-        );
+         assertOutputMatches("|first<br>second<br>third|");
     }
 
     @Test
@@ -125,12 +109,15 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[] {content});
 
-        assertEquals(
-            "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
-                + "|-----------|" + System.lineSeparator()
-                + "|first<br>second|" + System.lineSeparator(), stringWriter.toString()
-        );
-    }
+         assertOutputMatches("|first<br>second|");
+     }
+
+     private void assertOutputMatches(String expectedRow) {
+         String expectedOutput = "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
+             + "|-----------|" + System.lineSeparator()
+             + expectedRow + System.lineSeparator();
+         assertEquals(expectedOutput, stringWriter.toString());
+     }
 
     private static class ChunkedReader extends Reader {
         private final String value;
