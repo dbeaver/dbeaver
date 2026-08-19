@@ -128,22 +128,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         this.settings.setDefaultConfiguration(selectedProfile);
-        if (selectedProfile != null) {
-            selectedProfile.setProfileName(profileNameText.getText());
-            try {
-                activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
-            } catch (DBException e) {
-                log.error("Error saving engine settings", e);
-
-                DBWorkbench.getPlatformUI().showError(
-                    AIUIMessages.ai_engines_page_save_error_title,
-                    NLS.bind(AIUIMessages.ai_engines_page_save_error_message, selectedProfile.getEngineId()),
-                    e
-                );
-            }
-        }
+        flushSelectedProfile();
         reloadEngines();
-        AISettingsManager.getInstance().saveSettings();
+        AISettingsManager.getInstance().saveSettings(this.settings);
         try {
             store.save();
         } catch (IOException e) {
@@ -254,6 +241,8 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 if (profile == selectedProfile) {
                     return;
                 }
+                // Editors are re-bound to the new profile, so push their state into the old one first
+                flushSelectedProfile();
                 selectedProfile = profile;
                 showProfileSettings();
                 relayoutPage();
@@ -287,6 +276,27 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         profilesViewer.setInput(settings.getConfigurations());
     }
 
+    /**
+     * Stores the current state of the profile editors into the selected profile.
+     */
+    private void flushSelectedProfile() {
+        if (selectedProfile == null || activeEngineConfiguratorPage == null) {
+            return;
+        }
+        selectedProfile.setProfileName(profileNameText.getText());
+        try {
+            activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
+        } catch (DBException e) {
+            log.error("Error saving engine settings", e);
+
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.ai_engines_page_save_error_title,
+                NLS.bind(AIUIMessages.ai_engines_page_save_error_message, selectedProfile.getEngineId()),
+                e
+            );
+        }
+    }
+
     private void addNewProfile() {
         AIProfileCreateDialog dialog = new AIProfileCreateDialog(getShell());
         if (dialog.open() != IDialogConstants.OK_ID) {
@@ -302,7 +312,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             reloadEngines();
             profilesViewer.setSelection(new StructuredSelection(newProfile));
 
-            AISettingsManager.getInstance().saveSettings();
+            AISettingsManager.getInstance().saveSettings(this.settings);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
                 AIUIMessages.ai_engines_page_create_error_title, AIUIMessages.ai_engines_page_create_error_message, e);
@@ -325,7 +335,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             reloadEngines();
             profilesViewer.setSelection(new StructuredSelection(newProfile));
 
-            AISettingsManager.getInstance().saveSettings();
+            AISettingsManager.getInstance().saveSettings(this.settings);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
                 AIUIMessages.ai_engines_page_duplicate_error_title,
@@ -355,7 +365,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             profilesViewer.setSelection(new StructuredSelection(settings.getConfigurations()[selectionIndex]));
         }
 
-        AISettingsManager.getInstance().saveSettings();
+        AISettingsManager.getInstance().saveSettings(this.settings);
     }
 
     private void createProfilesColumns() {
