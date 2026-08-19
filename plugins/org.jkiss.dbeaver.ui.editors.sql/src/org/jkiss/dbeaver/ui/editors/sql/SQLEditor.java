@@ -2961,9 +2961,13 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean processQueries(
-        @NotNull final List<SQLScriptElement> queries, final boolean forceScript,
-        boolean newTab, final boolean export, final boolean checkSession,
-        @Nullable final SQLQueryListener queryListener, @Nullable final SQLScriptContext context
+        @NotNull final List<SQLScriptElement> queries,
+        final boolean forceScript,
+        boolean newTab,
+        final boolean export,
+        final boolean checkSession,
+        @Nullable final SQLQueryListener queryListener,
+        @Nullable final SQLScriptContext context
     ) {
         if (queries.isEmpty()) {
             // Nothing to process
