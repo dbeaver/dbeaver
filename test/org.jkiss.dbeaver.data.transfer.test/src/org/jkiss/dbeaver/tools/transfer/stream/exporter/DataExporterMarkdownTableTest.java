@@ -50,6 +50,7 @@ import static org.mockito.Mockito.when;
 public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
     public static final String TEST_COLUMN_NAME = "test_column";
     public static final String BR = DataExporterMarkdownTable.NEW_LINE_ESCAPE;
+    public static final String PIPE_ESCAPE = "&#124;";
     private DataExporterMarkdownTable exporter;
     private StringWriter stringWriter;
     private Map<String, Object> properties;
@@ -118,7 +119,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"first|second" + lineSeparator + "third"});
 
-            assertOutputMatches("|first&#124;second" + BR + "third|");
+            assertOutputMatches("|first" + PIPE_ESCAPE + "second" + BR + "third|");
         }
     }
 
@@ -169,6 +170,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             assertOutputMatches("|`ab`|");
         }
 
+
         @ParameterizedTest
         @ArgumentsSource(LineSeparatorArgumentsProvider.class)
         public void lineBreakSplitsCodeEscaping(@NotNull String lineSeparator) throws DBException, IOException {
@@ -215,7 +217,31 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a|b"});
 
-            assertOutputMatches("|`a`&#124;`b`|");
+            assertOutputMatches("|`a`" + PIPE_ESCAPE + "`b`|");
+        }
+
+        @Test
+        public void doublePipeSplitsCodeSpans() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"a||b"});
+
+            assertOutputMatches("|`a`" + PIPE_ESCAPE.repeat(2) + "`b`|");
+        }
+
+        @Test
+        public void pipeStart() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"|a"});
+
+            assertOutputMatches("|" + PIPE_ESCAPE + "`a`|");
+        }
+
+        @Test
+        public void pipeEnd() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"a|"});
+
+            assertOutputMatches("|`a`" + PIPE_ESCAPE + "|");
         }
 
         @ParameterizedTest
@@ -228,7 +254,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
                 }
             );
 
-            assertOutputMatches("|``first```" + BR + "`a`&#124;`b`" + BR + "```second`````|");
+            assertOutputMatches("|``first```" + BR + "`a`" + PIPE_ESCAPE + "`b`" + BR + "```second`````|");
         }
     }
 
