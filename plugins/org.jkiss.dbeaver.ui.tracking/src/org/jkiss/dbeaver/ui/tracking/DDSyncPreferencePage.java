@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
@@ -295,20 +296,35 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "DataDam URL is not configured", true);
             return;
         }
+        DDCryptoState[] result = new DDCryptoState[1];
         try {
-            DDCryptoState state = new DDBrowserLogin(siteUrl).login();
-            if (!state.cryptoConfigured()) {
-                DBWorkbench.getPlatformUI().showMessageBox(
-                    SYNC_TITLE,
-                    "Encryption is not configured for this account. Set it up in the web browser first.",
-                    true);
-                return;
-            }
-            DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
-            if (dialog.open() != Window.OK) {
-                return;
-            }
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    result[0] = new DDBrowserLogin(siteUrl).login();
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Login failed", e.getTargetException());
+            return;
+        }
+
+        DDCryptoState state = result[0];
+        if (!state.cryptoConfigured()) {
+            DBWorkbench.getPlatformUI().showMessageBox(
+                SYNC_TITLE,
+                "Encryption is not configured for this account. Set it up in the web browser first.",
+                true);
+            return;
+        }
+        DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
+        if (dialog.open() != Window.OK) {
+            return;
+        }
+        try {
             DDKeyStore.save(DDKeyStore.unpack(state, dialog.getKey()));
+            DDTrackingInitializer.start();
             refresh();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Login failed", e);
@@ -317,6 +333,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private void logOut() {
         try {
+            DDTrackingInitializer.stop();
             DDKeyStore.clear();
             refresh();
         } catch (DBException e) {

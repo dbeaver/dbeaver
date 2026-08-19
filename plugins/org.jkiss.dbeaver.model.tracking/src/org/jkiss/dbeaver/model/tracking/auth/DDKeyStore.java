@@ -68,9 +68,13 @@ public class DDKeyStore {
             throw new DBException("Encryption is not configured for this account");
         }
         byte[] key = decodeAccessKey(accessKey);
-        byte[] bundle = DDCrypto.decrypt(
-            new SecretKeySpec(key, KEY_ALGORITHM),
-            Base64.getDecoder().decode(state.encryptedBundle()));
+        byte[] encryptedBundle;
+        try {
+            encryptedBundle = Base64.getDecoder().decode(state.encryptedBundle());
+        } catch (IllegalArgumentException e) {
+            throw new DBException("Invalid encrypted bundle", e);
+        }
+        byte[] bundle = DDCrypto.decrypt(new SecretKeySpec(key, KEY_ALGORITHM), encryptedBundle);
 
         String[] parts = new String(bundle, StandardCharsets.UTF_8).split(BUNDLE_SEPARATOR, 2);
         if (parts.length != 2 || CommonUtils.isEmpty(parts[0]) || CommonUtils.isEmpty(parts[1])) {

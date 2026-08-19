@@ -47,7 +47,7 @@ public class DDBrowserLogin {
     private static final Log log = Log.getLog(DDBrowserLogin.class);
 
     private static final String CALLBACK_PATH = "/callback";
-    private static final String LOGIN_PATH = "/login";
+    private static final String LOGIN_PATH = "/index.html";
     private static final int STATE_SIZE_BYTES = 32;
     private static final int MAX_BODY_SIZE = 64 * 1024;
     private static final Duration TIMEOUT = Duration.ofMinutes(3);
