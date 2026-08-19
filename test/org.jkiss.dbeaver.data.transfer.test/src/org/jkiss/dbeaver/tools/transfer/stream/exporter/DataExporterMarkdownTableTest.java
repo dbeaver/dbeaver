@@ -237,6 +237,30 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         }
 
         @Test
+        public void onlyPipeMustNotBeEscaped() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"|"});
+
+            assertOutputMatches("|" + PIPE_ESCAPE + "|");
+        }
+
+        @Test
+        public void emptyCellMustNotBeEscaped() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {""});
+
+            assertOutputMatches("||");
+        }
+
+        @Test
+        public void onlyDoublePipeMustNotBeEscaped() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"||"});
+
+            assertOutputMatches("|" + PIPE_ESCAPE.repeat(2) + "|");
+        }
+
+        @Test
         public void pipeEnd() throws DBException, IOException {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a|"});

@@ -235,6 +235,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     private class CellValueEscaper {
         int indexEscapeStart;
         int escapeSequenceLength = 1;
+        boolean cellEscaped = true;
 
 
         public void writeCellValue(@NotNull String value) {
@@ -267,6 +268,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                         escapeSequenceLength = Math.max(escapeSequenceLength, localEscapeSequenceLength);
                     }
                     buffer.append(c);
+                    cellEscaped = false;
                 }
             }
             terminateEscapeSequence(null);
@@ -274,19 +276,23 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
 
         private void terminateEscapeSequence(@Nullable String tokenTerminateSequence) {
             String fullEscapeSequence = String.valueOf(CELL_VALUE_ESCAPE).repeat(escapeSequenceLength);
-            buffer.insert(indexEscapeStart, fullEscapeSequence);
-            buffer.append(fullEscapeSequence);
+            if (!cellEscaped) {
+                buffer.insert(indexEscapeStart, fullEscapeSequence);
+                buffer.append(fullEscapeSequence);
+            }
             if (tokenTerminateSequence != null) {
                 buffer.append(tokenTerminateSequence);
             }
             indexEscapeStart = buffer.length();
             escapeSequenceLength = 1;
+            cellEscaped = true;
         }
 
         public void reset() {
             buffer.setLength(0);
             escapeSequenceLength = 1;
             indexEscapeStart = 0;
+            cellEscaped = true;
         }
     }
 
