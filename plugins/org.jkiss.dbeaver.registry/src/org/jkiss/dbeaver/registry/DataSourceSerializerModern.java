@@ -713,8 +713,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
                     // Bootstrap
                     Map<String, Object> bootstrapCfg = JSONUtils.getObject(cfgObject, RegistryConstants.TAG_BOOTSTRAP);
+                    DBPConnectionBootstrap bootstrap = config.getBootstrap();
+                    // we need to reset bootstrap to avoid keeping old values when bootstrap is not specified in the configuration
+                    bootstrap.reset();
                     if (!bootstrapCfg.isEmpty()) {
-                        DBPConnectionBootstrap bootstrap = config.getBootstrap();
                         if (bootstrapCfg.containsKey(RegistryConstants.ATTR_AUTOCOMMIT)) {
                             bootstrap.setDefaultAutoCommit(JSONUtils.getBoolean(bootstrapCfg, RegistryConstants.ATTR_AUTOCOMMIT));
                         }
