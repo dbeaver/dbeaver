@@ -265,7 +265,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                     terminateEscapeSequence(PIPE_ESCAPE);
                 } else {
                     if (c == CELL_VALUE_ESCAPE) {
-                        // we must escape any number (N)(`) in code blocks with N+1 (`) in the begging and end of the code block. Ex: a`b ->``a`b`` ; a``b -> ```a``b```
+                        // we must escape any number (N)(`) in code blocks with N+1 (`) in the beginning and end of the code block. Ex: a`b ->``a`b`` ; a``b -> ```a``b```
                         int localEscapeSequenceLength = 2;
                         while (i + 1 < value.length() && value.charAt(i + 1) == CELL_VALUE_ESCAPE) {
                             localEscapeSequenceLength++;

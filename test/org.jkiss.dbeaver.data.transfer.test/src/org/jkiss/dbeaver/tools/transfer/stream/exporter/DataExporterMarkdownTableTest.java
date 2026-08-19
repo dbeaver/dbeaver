@@ -355,6 +355,9 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
 
         @Override
         public int read(char[] target, int targetOffset, int length) {
+            if (length == 0) {
+                return 0;
+            }
             if (offset >= value.length()) {
                 return -1;
             }
