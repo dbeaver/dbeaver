@@ -184,7 +184,7 @@ public class DDTrackingClient implements DDTrackingService {
             }
 
             @NotNull
-            private HttpResponseWrapper executeChain(
+            private HttpResponseWrapper proceedWithRetry(
                 @NotNull InterceptorChain chain,
                 @NotNull HttpRequestWrapper request,
                 @NotNull URI uri
@@ -218,7 +218,7 @@ public class DDTrackingClient implements DDTrackingService {
             @NotNull URI uri
         ) throws Exception {
             SignedExecution execution = signedExecution.get();
-            return execution == null ? chain.proceed(request) : execution.executeChain(chain, request, uri);
+            return execution == null ? chain.proceed(request) : execution.proceedWithRetry(chain, request, uri);
         }
 
         private static void applyAuth(
