@@ -47,6 +47,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     private static final String PROP_CONFLUENCE_FORMAT = "confluenceFormat";
 
     private static final String PIPE_ESCAPE = "&#124;";
+    public static final String NEW_LINE_ESCAPE = "<br>";
 
     private String rowDelimiter;
     private String nullString;
@@ -152,19 +153,23 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
 
     private void writeCellValue(String value)
     {
-        // escape quotes with double quotes
         buffer.setLength(0);
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c == '|') {
+            if (c == '\r') {
+                buffer.append(NEW_LINE_ESCAPE);
+                if (i + 1 < value.length() && value.charAt(i + 1) == '\n') {
+                    i++;
+                }
+            } else if (c == '\n') {
+                buffer.append(NEW_LINE_ESCAPE);
+            } else if (c == '|') {
                 buffer.append(PIPE_ESCAPE);
             } else {
                 buffer.append(c);
             }
         }
-        value = buffer.toString();
-
-        getWriter().write(value);
+        getWriter().write(buffer.toString());
     }
 
     private void writeCellValue(Reader reader) throws IOException
@@ -172,18 +177,34 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
         try {
             // Copy reader
             char buffer[] = new char[2000];
+            boolean pendingCarriageReturn = false;
             for (;;) {
                 int count = reader.read(buffer);
                 if (count <= 0) {
                     break;
                 }
                 for (int i = 0; i < count; i++) {
-                    if (buffer[i] == '|') {
+                    char c = buffer[i];
+                    if (pendingCarriageReturn) {
+                        getWriter().write(NEW_LINE_ESCAPE);
+                        pendingCarriageReturn = false;
+                        if (c == '\n') {
+                            continue;
+                        }
+                    }
+                    if (c == '\r') {
+                        pendingCarriageReturn = true;
+                    } else if (c == '\n') {
+                        getWriter().write(NEW_LINE_ESCAPE);
+                    } else if (c == '|') {
                         getWriter().write(PIPE_ESCAPE);
                     } else {
-                        getWriter().write(buffer[i]);
+                        getWriter().write(c);
                     }
                 }
+            }
+            if (pendingCarriageReturn) {
+                getWriter().write(NEW_LINE_ESCAPE);
             }
         } finally {
             ContentUtils.close(reader);

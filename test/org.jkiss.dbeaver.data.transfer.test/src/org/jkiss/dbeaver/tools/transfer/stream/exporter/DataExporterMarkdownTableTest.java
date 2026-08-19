@@ -46,6 +46,7 @@ import static org.mockito.Mockito.when;
 
 public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
     public static final String TEST_COLUMN_NAME = "test_column";
+    public static final String BR = DataExporterMarkdownTable.NEW_LINE_ESCAPE;
     private DataExporterMarkdownTable exporter;
     private StringWriter stringWriter;
 
@@ -89,11 +90,11 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(
             session, resultSet, new Object[] {
-                "first" + lineSeparator + "second" + lineSeparator + lineSeparator + "third" + lineSeparator
+                "first" + lineSeparator + "second" + lineSeparator.repeat(2) + "third" + lineSeparator
             }
         );
 
-        assertOutputMatches("|first<br>second<br><br>third<br>|");
+        assertOutputMatches("|first" + BR + "second" + BR.repeat(2) + "third" + BR + "|");
     }
 
     @ParameterizedTest
@@ -106,7 +107,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             }
         );
 
-        assertOutputMatches("|<br>first<br>second<br>|");
+        assertOutputMatches("|" + BR + "first" + BR + "second" + BR + "|");
     }
 
     @ParameterizedTest
@@ -115,7 +116,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[] {"first|second" + lineSeparator + "third"});
 
-        assertOutputMatches("|first&#124;second<br>third|");
+        assertOutputMatches("|first&#124;second" + BR + "third|");
     }
 
     @ParameterizedTest
@@ -128,7 +129,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[] {content});
 
-        assertOutputMatches("|first<br>second<br>third|");
+        assertOutputMatches("|first" + BR + "second" + BR + "third|");
     }
 
     @ParameterizedTest
@@ -141,7 +142,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[] {content});
 
-        assertOutputMatches("|first<br>second|");
+        assertOutputMatches("|first" + BR + "second|");
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {
