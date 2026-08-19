@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -140,7 +141,13 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                     if (cs == null) {
                         writeCellValue(DBConstants.NULL_VALUE_LABEL);
                     } else if (ContentUtils.isTextContent(content)) {
-                        writeCellValue(cs.getContentReader());
+                        if (isEscapeCellContent) {
+                            try (Reader reader = cs.getContentReader()) {
+                                cellValueEscaper.writeCellValue(IOUtils.readToString(reader));
+                            }
+                        } else {
+                            writeCellValue(cs.getContentReader());
+                        }
                     } else {
                         getSite().writeBinaryData(cs);
                     }

@@ -151,15 +151,42 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
 
             assertOutputMatches("first" + BR + "second");
         }
+
+        @Test
+        public void simpleValueIsWrappedInOneBacktick() throws DBException, IOException {
+            enableCellEscaping();
+
+            when(content.getContentType()).thenReturn("text/plain");
+            when(content.getContents(any())).thenReturn(contentStorage);
+            when(contentStorage.getContentReader()).thenReturn(new ChunkedReader("a"));
+
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {content});
+
+            assertOutputMatches("`a`");
+        }
+
+        @Test
+        public void escapedContentReaderUsesCellEscaper() throws DBException, IOException {
+            enableCellEscaping();
+
+            when(content.getContentType()).thenReturn("text/plain");
+            when(content.getContents(any())).thenReturn(contentStorage);
+            when(contentStorage.getContentReader()).thenReturn(new StringReader("a|b`c"));
+
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {content});
+
+            assertOutputMatches("`a`" + PIPE_ESCAPE + "``b`c``");
+        }
     }
 
     @Nested
     class EscapeCellValueTest {
 
         @BeforeEach
-        public void enableCellEscaping() throws DBException {
-            properties.put(DataExporterMarkdownTable.PROP_ESCAPE_CELL_CONTENT, true);
-            exporter.init(site);
+        public void setUp() throws DBException {
+            enableCellEscaping();
         }
 
         @Test
@@ -297,6 +324,11 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
 
             assertOutputMatches("``first```" + BR + "`a`" + PIPE_ESCAPE + "`b`" + BR + "```second`````");
         }
+    }
+
+    private void enableCellEscaping() throws DBException {
+        properties.put(DataExporterMarkdownTable.PROP_ESCAPE_CELL_CONTENT, true);
+        exporter.init(site);
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {
