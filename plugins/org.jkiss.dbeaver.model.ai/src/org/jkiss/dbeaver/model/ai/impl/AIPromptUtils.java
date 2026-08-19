@@ -144,8 +144,13 @@ public class AIPromptUtils {
         if (identifierQuoteStrings == null || identifierQuoteStrings.length == 0) {
             return null;
         }
-
-        return "Use " + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + " to quote identifiers if needed.";
+        String baseRule = "Use " + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + " to quote identifiers";
+        if (dialect.isQuoteIdentifiersAlways()) {
+            baseRule += ". Always quote all database objects identifiers. It is better to leave aliases unquoted.";
+        } else {
+            baseRule += " if needed.";
+        }
+        return baseRule;
     }
 
     @Nullable
