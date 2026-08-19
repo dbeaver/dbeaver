@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -72,77 +73,86 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
         exporter.init(site);
     }
 
-    @Test
-    public void simpleCase() throws DBException, IOException {
-        exporter.exportHeader(session);
-        exporter.exportRow(
-            session, resultSet, new Object[] {
-                "first"
-            }
-        );
+    @Nested
+    class BasicValueTests {
+        @Test
+        public void simpleCase() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"first"});
 
-        assertOutputMatches("|first|");
-    }
+            assertOutputMatches("|first|");
+        }
 
-    @ParameterizedTest
-    @ArgumentsSource(LineSeparatorArgumentsProvider.class)
-    public void doubleLineSeparatorsAreConvertedToMarkdownBreaks(@NotNull String lineSeparator) throws DBException, IOException {
-        exporter.exportHeader(session);
-        exporter.exportRow(
-            session, resultSet, new Object[] {
+        @ParameterizedTest
+        @ArgumentsSource(LineSeparatorArgumentsProvider.class)
+        public void doubleLineSeparatorsAreConvertedToMarkdownBreaks(@NotNull String lineSeparator) throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {
                 "first" + lineSeparator + "second" + lineSeparator.repeat(2) + "third" + lineSeparator
-            }
-        );
+            });
 
-        assertOutputMatches("|first" + BR + "second" + BR.repeat(2) + "third" + BR + "|");
-    }
+            assertOutputMatches("|first" + BR + "second" + BR.repeat(2) + "third" + BR + "|");
+        }
 
-    @ParameterizedTest
-    @ArgumentsSource(LineSeparatorArgumentsProvider.class)
-    public void lineSeparatorsAreConvertedToMarkdownBreaks(@NotNull String lineSeparator) throws DBException, IOException {
-        exporter.exportHeader(session);
-        exporter.exportRow(
-            session, resultSet, new Object[] {
+        @ParameterizedTest
+        @ArgumentsSource(LineSeparatorArgumentsProvider.class)
+        public void lineSeparatorsAreConvertedToMarkdownBreaks(@NotNull String lineSeparator) throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {
                 lineSeparator + "first" + lineSeparator + "second" + lineSeparator
-            }
-        );
+            });
 
-        assertOutputMatches("|" + BR + "first" + BR + "second" + BR + "|");
+            assertOutputMatches("|" + BR + "first" + BR + "second" + BR + "|");
+        }
+
+        @ParameterizedTest
+        @ArgumentsSource(LineSeparatorArgumentsProvider.class)
+        public void pipeAndMultilineValueAreEscapedTogether(@NotNull String lineSeparator) throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"first|second" + lineSeparator + "third"});
+
+            assertOutputMatches("|first&#124;second" + BR + "third|");
+        }
     }
 
-    @ParameterizedTest
-    @ArgumentsSource(LineSeparatorArgumentsProvider.class)
-    public void pipeAndMultilineValueAreEscapedTogether(@NotNull String lineSeparator) throws DBException, IOException {
-        exporter.exportHeader(session);
-        exporter.exportRow(session, resultSet, new Object[] {"first|second" + lineSeparator + "third"});
+    @Nested
+    class ContentReaderTests {
+        @ParameterizedTest
+        @ArgumentsSource(LineSeparatorArgumentsProvider.class)
+        public void multilineContentReaderIsKeptInOneTableRow(@NotNull String lineSeparator) throws Exception {
+            when(content.getContentType()).thenReturn("text/plain");
+            when(content.getContents(any())).thenReturn(contentStorage);
+            when(contentStorage.getContentReader()).thenReturn(new StringReader("first" + lineSeparator + "second" + lineSeparator + "third"));
 
-        assertOutputMatches("|first&#124;second" + BR + "third|");
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {content});
+
+            assertOutputMatches("|first" + BR + "second" + BR + "third|");
+        }
+
+        @ParameterizedTest
+        @ArgumentsSource(LineSeparatorArgumentsProvider.class)
+        public void readerLineSeparatorSplitAcrossBuffersIsWrittenAsOneBreak(@NotNull String lineSeparator) throws Exception {
+            when(content.getContentType()).thenReturn("text/plain");
+            when(content.getContents(any())).thenReturn(contentStorage);
+            when(contentStorage.getContentReader()).thenReturn(new ChunkedReader("first" + lineSeparator + "second"));
+
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {content});
+
+            assertOutputMatches("|first" + BR + "second|");
+        }
     }
 
-    @ParameterizedTest
-    @ArgumentsSource(LineSeparatorArgumentsProvider.class)
-    public void multilineContentReaderIsKeptInOneTableRow(@NotNull String lineSeparator) throws Exception {
-        when(content.getContentType()).thenReturn("text/plain");
-        when(content.getContents(any())).thenReturn(contentStorage);
-        when(contentStorage.getContentReader()).thenReturn(new StringReader("first" + lineSeparator + "second" + lineSeparator + "third"));
+    @Nested
+    class XmlTests {
+        @Test
+        public void basicXmlValueKeepsOriginalText() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"<root attr=\"value\">text</root>"});
 
-        exporter.exportHeader(session);
-        exporter.exportRow(session, resultSet, new Object[] {content});
-
-        assertOutputMatches("|first" + BR + "second" + BR + "third|");
-    }
-
-    @ParameterizedTest
-    @ArgumentsSource(LineSeparatorArgumentsProvider.class)
-    public void readerLineSeparatorSplitAcrossBuffersIsWrittenAsOneBreak(@NotNull String lineSeparator) throws Exception {
-        when(content.getContentType()).thenReturn("text/plain");
-        when(content.getContents(any())).thenReturn(contentStorage);
-        when(contentStorage.getContentReader()).thenReturn(new ChunkedReader("first" + lineSeparator + "second"));
-
-        exporter.exportHeader(session);
-        exporter.exportRow(session, resultSet, new Object[] {content});
-
-        assertOutputMatches("|first" + BR + "second|");
+            assertOutputMatches("|<root attr=\"value\">text</root>|");
+        }
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {
