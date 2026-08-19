@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.tracking.auth;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -29,10 +30,6 @@ import java.util.Base64;
 import java.util.HexFormat;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DDBundleCredentialsTest {
     private static final String ACCOUNT_ID = "73ce9dfa-05ad-40f3-802a-bc32e256b737";
@@ -75,10 +72,10 @@ class DDBundleCredentialsTest {
         verifier.initVerify(signingKeys.getPublic());
         verifier.update(canonicalRequest.getBytes(StandardCharsets.UTF_8));
 
-        assertEquals(4, parts.length);
-        assertEquals(ACCOUNT_ID, parts[0]);
-        assertEquals("1", parts[2]);
-        assertTrue(verifier.verify(Base64.getUrlDecoder().decode(parts[3])));
-        assertArrayEquals(dataKey.getEncoded(), credentials.getDataKey().getEncoded());
+        Assertions.assertEquals(4, parts.length);
+        Assertions.assertEquals(ACCOUNT_ID, parts[0]);
+        Assertions.assertEquals("1", parts[2]);
+        Assertions.assertTrue(verifier.verify(Base64.getUrlDecoder().decode(parts[3])));
+        Assertions.assertArrayEquals(dataKey.getEncoded(), credentials.getDataKey().getEncoded());
     }
 }

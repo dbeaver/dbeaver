@@ -16,15 +16,14 @@
  */
 package org.jkiss.dbeaver.model.tracking.auth;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DDCryptoTest {
 
@@ -35,7 +34,7 @@ class DDCryptoTest {
 
         byte[] encrypted = DDCrypto.encrypt(key, plaintext);
 
-        assertArrayEquals(plaintext, DDCrypto.decrypt(key, encrypted));
+        Assertions.assertArrayEquals(plaintext, DDCrypto.decrypt(key, encrypted));
     }
 
     @Test
@@ -44,9 +43,10 @@ class DDCryptoTest {
         byte[] encrypted = DDCrypto.encrypt(key, "tracking data".getBytes(StandardCharsets.UTF_8));
         encrypted[encrypted.length - 1] ^= 1;
 
-        assertThrows(DBException.class, () -> DDCrypto.decrypt(key, encrypted));
+        Assertions.assertThrows(DBException.class, () -> DDCrypto.decrypt(key, encrypted));
     }
 
+    @NotNull
     private static SecretKey generateKey() throws Exception {
         KeyGenerator generator = KeyGenerator.getInstance("AES");
         generator.init(256);

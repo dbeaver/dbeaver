@@ -62,14 +62,14 @@ public class DDTrackingClient implements DDTrackingService {
     }
 
     @Nullable
-    @Override
-    public DDTracking stop(@Nullable String authorization, @NotNull String trackingId) {
-        return stopTransport.post(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), authorization);
+    public DDTracking start(@NotNull DDSyncCredentials credentials, @NotNull DDClientInfo client) {
+        return startTransport.post(TRACK_START_ENDPOINT, credentials, client);
     }
 
     @Nullable
-    public DDTracking start(@NotNull DDSyncCredentials credentials, @NotNull DDClientInfo client) {
-        return startTransport.post(TRACK_START_ENDPOINT, credentials, client);
+    @Override
+    public DDTracking stop(@Nullable String authorization, @NotNull String trackingId) {
+        return stopTransport.post(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), authorization);
     }
 
     @Nullable

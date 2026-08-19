@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.model.tracking.auth;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPairGenerator;
@@ -28,16 +32,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class DDKeyStoreTest {
     private static final String ACCOUNT_ID = "8decb064-2709-4914-b6b6-68eaef98cac3";
@@ -48,10 +42,10 @@ class DDKeyStoreTest {
 
         DDKeyBundle bundle = DDKeyStore.unpack(fixture.state(), fixture.accessKey());
 
-        assertEquals(ACCOUNT_ID, bundle.accountId());
-        assertEquals(fixture.signingKey(), bundle.signingKey());
-        assertEquals(fixture.dataKey(), bundle.dataKey());
-        assertEquals(7, bundle.generation());
+        Assertions.assertEquals(ACCOUNT_ID, bundle.accountId());
+        Assertions.assertEquals(fixture.signingKey(), bundle.signingKey());
+        Assertions.assertEquals(fixture.dataKey(), bundle.dataKey());
+        Assertions.assertEquals(7, bundle.generation());
     }
 
     @Test
@@ -59,7 +53,7 @@ class DDKeyStoreTest {
         BundleFixture fixture = createFixture(1);
         String wrongAccessKey = Base64.getUrlEncoder().withoutPadding().encodeToString(generateAesKey().getEncoded());
 
-        assertThrows(DBException.class, () -> DDKeyStore.unpack(fixture.state(), wrongAccessKey));
+        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(fixture.state(), wrongAccessKey));
     }
 
     @Test
@@ -69,7 +63,7 @@ class DDKeyStoreTest {
         String truncated = Base64.getEncoder().encodeToString(Arrays.copyOf(encrypted, 12));
         DDCryptoState state = new DDCryptoState(ACCOUNT_ID, true, truncated, 1L);
 
-        assertThrows(DBException.class, () -> DDKeyStore.unpack(state, fixture.accessKey()));
+        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, fixture.accessKey()));
     }
 
     @Test
@@ -83,7 +77,7 @@ class DDKeyStoreTest {
             1L
         );
 
-        assertThrows(DBException.class, () -> DDKeyStore.unpack(state, accessKeyValue(accessKey)));
+        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, accessKeyValue(accessKey)));
     }
 
     @Test
@@ -93,7 +87,7 @@ class DDKeyStoreTest {
 
         DBException exception = assertRejectedSave(stored, replacement);
 
-        assertEquals("The keys belong to another account", exception.getMessage());
+        Assertions.assertEquals("The keys belong to another account", exception.getMessage());
     }
 
     @Test
@@ -103,22 +97,26 @@ class DDKeyStoreTest {
 
         DBException exception = assertRejectedSave(stored, replacement);
 
-        assertEquals("The keys are older than the stored ones", exception.getMessage());
+        Assertions.assertEquals("The keys are older than the stored ones", exception.getMessage());
     }
 
-    private static DBException assertRejectedSave(DDKeyBundle stored, DDKeyBundle replacement) throws Exception {
-        DBSSecretController controller = mock(DBSSecretController.class);
-        when(controller.getPrivateSecretValue(anyString())).thenReturn(JSONUtils.GSON.toJson(stored));
-        try (MockedStatic<DBSSecretController> controllers = mockStatic(DBSSecretController.class)) {
+    @NotNull
+    private static DBException assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
+            .thenReturn(JSONUtils.GSON.toJson(stored));
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
             controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
 
-            DBException exception = assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
+            DBException exception = Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
 
-            verify(controller, never()).setPrivateSecretValue(anyString(), any());
+            Mockito.verify(controller, Mockito.never())
+                .setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.any());
             return exception;
         }
     }
 
+    @NotNull
     private static BundleFixture createFixture(long generation) throws Exception {
         SecretKey accessKey = generateAesKey();
         String signingKey = Base64.getEncoder().encodeToString(
@@ -137,22 +135,24 @@ class DDKeyStoreTest {
         );
     }
 
+    @NotNull
     private static SecretKey generateAesKey() throws Exception {
         KeyGenerator generator = KeyGenerator.getInstance("AES");
         generator.init(256);
         return generator.generateKey();
     }
 
-    private static String accessKeyValue(SecretKey accessKey) {
+    @NotNull
+    private static String accessKeyValue(@NotNull SecretKey accessKey) {
         return DDKeyStore.ACCESS_KEY_PREFIX + ACCOUNT_ID + "."
             + Base64.getUrlEncoder().withoutPadding().encodeToString(accessKey.getEncoded());
     }
 
     private record BundleFixture(
-        DDCryptoState state,
-        String accessKey,
-        String signingKey,
-        String dataKey
+        @NotNull DDCryptoState state,
+        @NotNull String accessKey,
+        @NotNull String signingKey,
+        @NotNull String dataKey
     ) {
     }
 }
