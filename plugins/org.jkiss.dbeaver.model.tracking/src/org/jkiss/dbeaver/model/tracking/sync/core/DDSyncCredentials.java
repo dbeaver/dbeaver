@@ -27,7 +27,13 @@ import javax.crypto.SecretKey;
 public interface DDSyncCredentials {
 
     @NotNull
-    String buildToken() throws DBException;
+    String buildToken(
+        @NotNull String method,
+        @NotNull String pathAndQuery,
+        @NotNull byte[] body
+    ) throws DBException;
+
+    void updateServerTime(long serverTimeMillis);
 
     @NotNull
     SecretKey getDataKey() throws DBException;

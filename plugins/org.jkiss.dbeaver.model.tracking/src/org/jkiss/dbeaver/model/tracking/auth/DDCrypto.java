@@ -56,6 +56,9 @@ public final class DDCrypto {
 
     @NotNull
     public static byte[] decrypt(@NotNull SecretKey key, @NotNull byte[] input) throws DBException {
+        if (input.length <= IV_LENGTH) {
+            throw new DBException("Encrypted data is too short");
+        }
         try {
             byte[] iv = Arrays.copyOfRange(input, 0, IV_LENGTH);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
