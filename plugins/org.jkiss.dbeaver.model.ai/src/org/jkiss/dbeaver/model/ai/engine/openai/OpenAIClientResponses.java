@@ -91,8 +91,7 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
         HttpRequest modifiedRequest = applyFilters(request);
         try {
-            String responseJson = client.send(monitor, modifiedRequest);
-            return GSON.fromJson(responseJson, OAIResponsesResponse.class);
+            return parseCompletionResponse(client.send(monitor, modifiedRequest));
         } catch (Exception exception) {
             if (backupClient != null && OpenAiUtils.shouldFallbackToLegacyChat(exception.getMessage())) {
                 // If the request failed due to an unsupported model, fallback to the legacy client which might support it
@@ -160,6 +159,11 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     @NotNull
     protected OpenAIClientChat createBackupClient() {
         return new OpenAIClientChat(baseUrl, requestFilters);
+    }
+
+    @NotNull
+    protected OAIResponsesResponse parseCompletionResponse(@NotNull String responseBody) throws DBException {
+        return GSON.fromJson(responseBody, OAIResponsesResponse.class);
     }
 
     @NotNull

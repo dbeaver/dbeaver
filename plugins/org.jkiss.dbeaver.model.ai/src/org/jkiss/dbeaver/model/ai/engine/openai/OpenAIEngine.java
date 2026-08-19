@@ -164,11 +164,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             if (!openAIProperties.isChatGptAccountConnected()) {
                 throw new DBException("OpenAI ChatGPT account is not connected");
             }
-            return new OpenAIClientResponses(
-                OpenAIAccountAuthenticator.CODEX_ENDPOINT,
-                List.of(new OpenAIAccountRequestFilter(openAIProperties)),
-                false
-            );
+            return new OpenAIAccountClient(openAIProperties);
         }
         String token = properties.getToken();
         if (token == null || token.isEmpty()) {
