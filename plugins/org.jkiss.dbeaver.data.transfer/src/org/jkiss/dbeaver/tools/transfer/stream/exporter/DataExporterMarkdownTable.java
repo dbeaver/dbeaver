@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -35,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.function.Consumer;
 
 /**
  * Markdown Table Exporter
@@ -45,14 +48,20 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     private static final String PROP_SHOW_HEADER_SEPARATOR = "showHeaderSeparator";
     private static final String PROP_CONFLUENCE_FORMAT = "confluenceFormat";
+    public static final String PROP_ESCAPE_CELL_CONTENT = "escapeCellContent";
 
     private static final String PIPE_ESCAPE = "&#124;";
     public static final String NEW_LINE_ESCAPE = "<br>";
+    public static final char CELL_VALUE_ESCAPE = '`';
 
     private String rowDelimiter;
     private String nullString;
     private boolean showHeaderSeparator;
     private boolean confluenceFormat;
+    private boolean isEscapeCellContent;
+
+    private final CellValueEscaper cellValueEscaper = new CellValueEscaper();
+
     private DBDAttributeBinding[] columns;
 
     private final StringBuilder buffer = new StringBuilder();
@@ -67,6 +76,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         showHeaderSeparator = CommonUtils.getBoolean(site.getProperties().get(PROP_SHOW_HEADER_SEPARATOR), true);
         confluenceFormat = CommonUtils.getBoolean(site.getProperties().get(PROP_CONFLUENCE_FORMAT), false);
+        isEscapeCellContent = CommonUtils.getBoolean(site.getProperties().get(PROP_ESCAPE_CELL_CONTENT), false);
     }
 
     @Override
@@ -139,7 +149,8 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                     DTUtils.closeContents(resultSet, content);
                 }
             } else {
-                writeCellValue(super.getValueDisplayString(column, row[i]));
+                Consumer<String> cellWriter = isEscapeCellContent ? cellValueEscaper::writeCellValue : this::writeCellValue;
+                cellWriter.accept(super.getValueDisplayString(column, row[i]));
             }
             writeDelimiter();
         }
@@ -151,7 +162,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     {
     }
 
-    private void writeCellValue(String value)
+    private void writeCellValue(@NotNull String value)
     {
         buffer.setLength(0);
         for (int i = 0; i < value.length(); i++) {
@@ -219,6 +230,64 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     private void writeRowLimit()
     {
         getWriter().write(rowDelimiter);
+    }
+
+    private class CellValueEscaper {
+        int indexEscapeStart;
+        int escapeSequenceLength = 1;
+
+
+        public void writeCellValue(@NotNull String value) {
+            reset();
+            fillBuffer(value);
+            getWriter().write(buffer.toString());
+        }
+
+        private void fillBuffer(@NotNull String value) {
+            for (int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                if (c == '\r') {
+                    if (i + 1 < value.length() && value.charAt(i + 1) == '\n') {
+                        i++;
+                    }
+                    terminateEscapeSequence(NEW_LINE_ESCAPE);
+                } else if (c == '\n') {
+                    terminateEscapeSequence(NEW_LINE_ESCAPE);
+                } else if (c == '|') {
+                    terminateEscapeSequence(PIPE_ESCAPE);
+                } else {
+                    if (c == CELL_VALUE_ESCAPE) {
+                        // we must escape any number (N)(`) in code blocks with N+1 (`) in the begging and end of the code block. Ex: a`b ->``a`b`` ; a``b -> ```a``b```
+                        int localEscapeSequenceLength = 2;
+                        while (i + 1 < value.length() && value.charAt(i + 1) == CELL_VALUE_ESCAPE) {
+                            localEscapeSequenceLength++;
+                            i++;
+                            buffer.append(value.charAt(i));
+                        }
+                        escapeSequenceLength = Math.max(escapeSequenceLength, localEscapeSequenceLength);
+                    }
+                    buffer.append(c);
+                }
+            }
+            terminateEscapeSequence(null);
+        }
+
+        private void terminateEscapeSequence(@Nullable String tokenTerminateSequence) {
+            String fullEscapeSequence = String.valueOf(CELL_VALUE_ESCAPE).repeat(escapeSequenceLength);
+            buffer.insert(indexEscapeStart, fullEscapeSequence);
+            buffer.append(fullEscapeSequence);
+            if (tokenTerminateSequence != null) {
+                buffer.append(tokenTerminateSequence);
+            }
+            indexEscapeStart = buffer.length();
+            escapeSequenceLength = 1;
+        }
+
+        public void reset() {
+            buffer.setLength(0);
+            escapeSequenceLength = 1;
+            indexEscapeStart = 0;
+        }
     }
 
 }

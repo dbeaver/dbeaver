@@ -157,7 +157,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
 
         @BeforeEach
         public void enableCellEscaping() throws DBException {
-            properties.put("escapeCellContent", true);
+            properties.put(DataExporterMarkdownTable.PROP_ESCAPE_CELL_CONTENT, true);
             exporter.init(site);
         }
 
@@ -175,7 +175,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportHeader(session);
             exporter.exportRow(session, resultSet, new Object[] {"a" + lineSeparator + "b"});
 
-            assertOutputMatches("|`a`" + BR + "'b`|");
+            assertOutputMatches("|`a`" + BR + "`b`|");
         }
 
         @Test
@@ -192,6 +192,14 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             exporter.exportRow(session, resultSet, new Object[] {"a`b``c"});
 
             assertOutputMatches("|```a`b``c```|");
+        }
+
+        @Test
+        public void twoBackticksUseThreeBacktickDelimiterReverseOrder() throws DBException, IOException {
+            exporter.exportHeader(session);
+            exporter.exportRow(session, resultSet, new Object[] {"a``b`c"});
+
+            assertOutputMatches("|```a``b`c```|");
         }
 
         @Test
@@ -223,7 +231,7 @@ public class DataExporterMarkdownTableTest extends DBeaverUnitTest {
             assertOutputMatches("|``first```" + BR + "`a`&#124;`b`" + BR + "```second`````|");
         }
     }
-    
+
     private void assertOutputMatches(@NotNull String expectedRow) {
         String expectedOutput = "|" + TEST_COLUMN_NAME + "|" + System.lineSeparator()
             + "|-----------|" + System.lineSeparator()
