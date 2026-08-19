@@ -467,14 +467,14 @@ public class JDBCUtils {
 
         // Invalidate in non-blocking task.
         // Timeout is CONNECTION_VALIDATION_TIMEOUT + 2 seconds
-        final boolean[] isValid = new boolean[1];
+        // isValid is true by default. Otherwise it may cause issues with long-running queries
+        final boolean[] isValid = new boolean[] { true };
         RuntimeUtils.runTask(monitor -> {
             try {
                 if (!CommonUtils.isEmpty(testSQL)) {
                     // Execute test SQL
                     try (Statement dbStat = connection.createStatement()) {
                         dbStat.execute(testSQL);
-                        isValid[0] = true;
                     }
                 } else {
                     try {
@@ -483,7 +483,6 @@ public class JDBCUtils {
                         // isValid may be unsupported by driver
                         // Let's try to read table list
                         connection.getMetaData().getTables(null, null, "DBEAVERFAKETABLENAMEFORPING", null);
-                        isValid[0] = true;
                     }
                 }
             } catch (SQLException e) {
