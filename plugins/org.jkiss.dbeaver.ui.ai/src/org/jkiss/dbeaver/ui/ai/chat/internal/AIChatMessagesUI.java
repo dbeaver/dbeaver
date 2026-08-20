@@ -36,6 +36,7 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_message_delete_message_tip;
     public static String ai_chat_message_info_tip;
     public static String ai_chat_message_meta_tokens;
+    public static String ai_chat_ai_notice;
     public static String ai_chat_prompt_text_hint;
     public static String ai_chat_send_button_label;
     public static String ai_chat_send_button_tip;
