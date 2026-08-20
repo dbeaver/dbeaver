@@ -672,7 +672,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         config.setKeepAliveInterval(keepAlive);
                     }
                     boolean closeIdleEnabled = JSONUtils.getBoolean(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED);
-                    config.setCloseIdleConnection(closeIdleEnabled);
+                    if (closeIdleEnabled != DBPConnectionConfiguration.CLOSE_IDLE_CONNECTION_DEFAULT) {
+                        config.setCloseIdleConnection(closeIdleEnabled);
+                    }
                     int closeIdle = JSONUtils.getInteger(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE);
                     if (closeIdle > 0) {
                         config.setCloseIdleInterval(closeIdle);
@@ -688,6 +690,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
 
                     // Events
+                    //clear config before reading it, to remove any disabled commands
+                    config.clearEvents();
                     for (Map.Entry<String, Map<String, Object>> eventObject : JSONUtils.getNestedObjects(cfgObject, RegistryConstants.TAG_EVENTS)) {
                         DBPConnectionEventType eventType = CommonUtils.valueOf(DBPConnectionEventType.class, eventObject.getKey(), DBPConnectionEventType.BEFORE_CONNECT);
                         Map<String, Object> eventCfg = eventObject.getValue();
@@ -716,8 +720,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
                     // Bootstrap
                     Map<String, Object> bootstrapCfg = JSONUtils.getObject(cfgObject, RegistryConstants.TAG_BOOTSTRAP);
+                    DBPConnectionBootstrap bootstrap = config.getBootstrap();
+                    // we need to reset bootstrap to avoid keeping old values when bootstrap is not specified in the configuration
+                    bootstrap.reset();
                     if (!bootstrapCfg.isEmpty()) {
-                        DBPConnectionBootstrap bootstrap = config.getBootstrap();
                         if (bootstrapCfg.containsKey(RegistryConstants.ATTR_AUTOCOMMIT)) {
                             bootstrap.setDefaultAutoCommit(JSONUtils.getBoolean(bootstrapCfg, RegistryConstants.ATTR_AUTOCOMMIT));
                         }
@@ -1186,7 +1192,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             if (connectionInfo.getKeepAliveInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
-            JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED, connectionInfo.isCloseIdleConnection());
+            if (connectionInfo.isCloseIdleConnection() != DBPConnectionConfiguration.CLOSE_IDLE_CONNECTION_DEFAULT) {
+                JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED, connectionInfo.isCloseIdleConnection());
+            }
             if (connectionInfo.getCloseIdleInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
@@ -1202,7 +1210,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 json.beginObject();
                 for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
                     DBRShellCommand command = connectionInfo.getEvent(eventType);
-                    if (!command.isEnabled()) {
+                    if (command == null) {
                         continue;
                     }
                     json.name(eventType.name());

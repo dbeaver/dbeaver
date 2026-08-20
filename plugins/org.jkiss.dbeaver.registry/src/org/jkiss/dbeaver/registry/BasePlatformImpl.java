@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -455,7 +456,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 } else {
                     tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 }
-                monitor.subTask("Create temp folder '" + tempFolderPath + "'");
+                //monitor.subTask("Create temp folder '" + tempFolderPath + "'");
                 Path tmpFolder = Paths.get(tempFolderPath);
                 if (!Files.exists(tmpFolder)) {
                     log.debug("Create global temp folder '" + tmpFolder + "'");
@@ -500,6 +501,15 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private class GlobalNetworkProfileManager extends DBWNetworkProfileManager {
         public static final String CONFIG_FILE_NAME = "network-profiles.json";
 
+        public GlobalNetworkProfileManager() {
+            super();
+            WorkspaceConfigEventManager.addConfigChangedListener(
+                CONFIG_FILE_NAME, o -> {
+                    reloadProfiles();
+                }
+            );
+        }
+
         @NotNull
         @Override
         protected List<DBWNetworkProfile> loadProfiles() {
@@ -510,7 +520,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                     return DataSourceParser.parseProfiles(
                         new DataSourceParser.ContextParameters(
                             null,
-                            DBWorkbench.isDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                            DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
                             Map.of()
                         ),
                         json);
@@ -527,7 +537,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 List<DBWNetworkProfile> profiles = getProfiles();
                 DataSourceParser.ContextParameters contextParameters = new DataSourceParser.ContextParameters(
                     null,
-                    DBWorkbench.isDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                    DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
                     new LinkedHashMap<>()
                 );
                 StringWriter strWriter = new StringWriter();
@@ -543,7 +553,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 jsonWriter.flush();
                 String cfg = strWriter.toString();
                 DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(CONFIG_FILE_NAME, cfg);
-                if (!DBWorkbench.isDistributed()) {
+                if (!DBWorkbench.isMultiuserOrDistributed()) {
                     for (DBWNetworkProfile profile : profiles) {
                         profile.persistSecrets(DBSSecretController.getGlobalSecretController());
                     }

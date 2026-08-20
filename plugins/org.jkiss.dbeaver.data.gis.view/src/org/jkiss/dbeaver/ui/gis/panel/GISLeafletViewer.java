@@ -76,6 +76,7 @@ import org.locationtech.jts.geom.Geometry;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceListener {
     private static final Log log = Log.getLog(GISLeafletViewer.class);
@@ -709,7 +710,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         @Override
         public String toString() {
-            return String.format("L.latLngBounds(L.latLng(%f, %f), L.latLng(%f, %f))", north, east, south, west);
+            return String.format(Locale.ROOT, "L.latLngBounds(L.latLng(%f, %f), L.latLng(%f, %f))", north, east, south, west);
         }
     }
 

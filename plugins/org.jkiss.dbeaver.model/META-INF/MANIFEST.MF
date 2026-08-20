@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver API
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 2.0.44.qualifier
-Bundle-Release-Date: 20260803
+Bundle-Version: 2.0.46.qualifier
+Bundle-Release-Date: 20260831
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
@@ -103,7 +103,7 @@ Import-Package: org.bouncycastle.asn1,
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,
- org.apache.commons.jexl;visibility:=reexport,
+ org.apache.commons.jexl3;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  com.google.gson;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport

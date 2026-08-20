@@ -57,7 +57,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
     private ModelSelectorField modelSelectorField;
-    private Text accessTokenText;
+    protected Text accessTokenText;
 
     protected volatile String accessToken;
     protected String token = "";
@@ -67,8 +67,8 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     @NotNull
     private List<AIModel> fetchCopilotModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (accessToken == null || accessToken.isEmpty()) {
-            throw new DBException("Access token is not set");
+        if (CommonUtils.isEmpty(accessToken)) {
+            throw new DBException(CopilotMessages.copilot_access_token_required);
         }
 
         try (CopilotCompletionEngine engine = createEngine()) {
@@ -107,7 +107,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     @Override
     public void saveSettings(@NotNull PROPERTIES properties) {
         properties.setToken(accessToken);
-        properties.setModel(modelSelectorField.getSelectedModel());
+        properties.setModel(modelSelectorField.getSelectedModelName());
         properties.setContextWindowSize(contextWindowSizeField.getValue());
         properties.setTemperature(CommonUtils.toDouble(temperature));
         saveAdvancedSettings(properties);
@@ -124,16 +124,17 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
-        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
+        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) ->
+            modelsCache.get(monitor, forceRefresh).stream()
             .filter(it -> it.features().contains(AIModelFeature.CHAT))
-            .map(AIModel::name)
             .toList();
 
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
+            .withRequiredSetting(accessTokenText, CopilotMessages.copilot_access_token_required)
             .withModifyListener(() -> {
-                CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
+                CopilotModels.getModelByName(modelSelectorField.getSelectedModelName())
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
@@ -143,6 +144,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                             temperatureText.setText("0.0");
                         }
                     );
+                AIModel selectedModel = modelSelectorField.getSelectedModel();
+                if (selectedModel != null) {
+                    contextWindowSizeField.setValue(selectedModel.contextWindowSize());
+                }
             })
             .withModelListSupplier(modelListProvider)
             .build();

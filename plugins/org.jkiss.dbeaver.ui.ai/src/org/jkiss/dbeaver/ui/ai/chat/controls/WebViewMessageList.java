@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.browser.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.program.Program;
@@ -42,7 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -108,12 +110,12 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                         resultArgs.put("messageId", message.id());
                         resultArgs.put("functionName", fc.getFunctionName());
                         resultArgs.put("result", CommonUtils.notEmpty(result));
-                        resultArgs.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+                        resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
                         AIFunctionResult functionResult = message.message().getFunctionResult();
                         if (functionResult != null && functionResult.getException() != null) {
                             resultArgs.put("hasException", true);
-                            resultArgs.put("text", NLS.bind(AIChatMessages.ai_chat_confirm_failed, fc.getFunctionDisplayName()));
-                            resultArgs.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
+                            resultArgs.put("text", NLS.bind(AIChatMessagesUI.ai_chat_confirm_failed, fc.getFunctionDisplayName()));
+                            resultArgs.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
                             Map<String, Object> arguments = fc.getArguments();
                             if (!arguments.isEmpty()) {
                                 resultArgs.put("arguments", arguments);
@@ -181,6 +183,12 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         browser.setJavascriptEnabled(true);
+        browser.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            @Override
+            public void getName(AccessibleEvent e) {
+                e.result = AIChatMessagesUI.ai_chat_a11y_transcript_label;
+            }
+        });
         functionAllowMenu = new AIFunctionAllowMenu(
             browser,
             chat.getChatSession().getAssistant().getToolboxManager(),
@@ -247,6 +255,16 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     @Override
     public void onSettingsUpdate(@NotNull AISettingsManager registry) {
         UIUtils.asyncExec(() -> renderer.execute("settingsChanged"));
+    }
+
+    public void focusChat() {
+        if (browser.isDisposed()) {
+            return;
+        }
+        browser.setFocus();
+        if (!isInitWaiting) {
+            renderer.execute("focusChat");
+        }
     }
 
     private void createFunctions(@NotNull AIChatControl chat) {
@@ -350,21 +368,26 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         });
 
         createFunction(ATTACHMENT_OPEN_FILE_IN_EXPLORER, arguments -> {
-            if (arguments.length < 1) {
-                throw new IllegalArgumentException("openFileInExplorer requires at least one argument");
+            if (arguments.length < 2) {
+                throw new IllegalArgumentException("openFileInExplorer requires message id and file index");
             }
-            String filePath = String.valueOf(arguments[0]);
             createAttachmentInteractionEvent(ATTACHMENT_OPEN_FILE_IN_EXPLORER);
+            AIMessageFiles attachment = getMessageFilesById(arguments[0]);
+            List<Path> files = attachment.getAttachment();
+            int fileIndex = CommonUtils.toInt(arguments[1], -1);
+            if (fileIndex < 0 || fileIndex >= files.size()) {
+                throw new IllegalArgumentException("Invalid attachment file index: " + arguments[1]);
+            }
+            Path file = files.get(fileIndex);
             UIUtils.asyncExec(() -> {
                 try {
-                    Path file = Path.of(filePath);
                     if (Files.exists(file)) {
                         ShellUtils.showInSystemExplorer(file.toFile());
                     } else {
-                        DBWorkbench.getPlatformUI().showError("File not found", NLS.bind("The file does not exist: {0}", filePath));
+                        DBWorkbench.getPlatformUI().showError("File not found", NLS.bind("The file does not exist: {0}", file));
                     }
                 } catch (Exception e) {
-                    log.error("Error opening file in explorer: " + filePath, e);
+                    log.error("Error opening file in explorer: " + file, e);
                     DBWorkbench.getPlatformUI().showError("Error", NLS.bind("Failed to open file in explorer: {0}", e.getMessage()));
                 }
             });
@@ -452,6 +475,23 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
             pending.approvedIndices.add(functionIndex);
             checkAllDecisions(chat, messageId, pending);
+            return null;
+        });
+
+        createFunction("traverseOut", arguments -> {
+            boolean forward = arguments.length < 1 || CommonUtils.toBoolean(arguments[0]);
+            UIUtils.asyncExec(() -> {
+                if (browser.isDisposed()) {
+                    return;
+                }
+                if (forward) {
+                    if (!chat.setFocusOnPrompt()) {
+                        browser.traverse(SWT.TRAVERSE_TAB_NEXT);
+                    }
+                } else if (!chat.focusContextBar()) {
+                    browser.traverse(SWT.TRAVERSE_TAB_PREVIOUS);
+                }
+            });
             return null;
         });
 
@@ -570,15 +610,15 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             AIFunctionDescriptor descriptor = fc.getOrResolveFunction(toolboxManager);
             String toolName = descriptor != null ? descriptor.getName() : fc.getFunctionName();
             String functionName = fc.getFunctionName();
-            String text = NLS.bind(AIChatMessages.ai_chat_confirm_auto_approved, toolName);
+            String text = NLS.bind(AIChatMessagesUI.ai_chat_confirm_auto_approved, toolName);
 
             Map<String, Object> args = new HashMap<>();
             args.put("messageId", message.id());
             args.put("text", text);
             args.put("functionName", functionName);
             args.put("confirmed", true);
-            args.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
-            args.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+            args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
+            args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
 
             Map<String, Object> arguments = fc.getArguments();
             if (!arguments.isEmpty()) {
@@ -601,23 +641,23 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             AIFunctionDescriptor descriptor = fc.getOrResolveFunction(toolboxManager);
             String agentName = descriptor != null ? descriptor.getToolbox().getDisplayName() : "";
             String toolName = descriptor != null ? descriptor.getName() : fc.getFunctionName();
-            String title = NLS.bind(AIChatMessages.ai_chat_confirm_title, agentName, toolName);
+            String title = NLS.bind(AIChatMessagesUI.ai_chat_confirm_title, agentName, toolName);
 
             Map<String, Object> args = new HashMap<>();
             args.put("messageId", message.id());
             args.put("functionIndex", i);
             args.put("title", title);
-            args.put("titlePrefix", AIChatMessages.ai_chat_confirm_title_prefix);
-            args.put("titleMiddle", AIChatMessages.ai_chat_confirm_title_middle);
+            args.put("titlePrefix", AIChatMessagesUI.ai_chat_confirm_title_prefix);
+            args.put("titleMiddle", AIChatMessagesUI.ai_chat_confirm_title_middle);
             args.put("agentName", agentName);
             args.put("toolName", toolName);
             args.put("functionName", fc.getFunctionName());
-            args.put("allowText", AIChatMessages.ai_chat_confirm_approve);
-            args.put("declineText", AIChatMessages.ai_chat_confirm_deny);
-            args.put("approvedText", NLS.bind(AIChatMessages.ai_chat_confirm_approved, toolName));
-            args.put("declinedText", NLS.bind(AIChatMessages.ai_chat_confirm_declined, toolName));
-            args.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
-            args.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+            args.put("allowText", AIChatMessagesUI.ai_chat_confirm_approve);
+            args.put("declineText", AIChatMessagesUI.ai_chat_confirm_deny);
+            args.put("approvedText", NLS.bind(AIChatMessagesUI.ai_chat_confirm_approved, toolName));
+            args.put("declinedText", NLS.bind(AIChatMessagesUI.ai_chat_confirm_declined, toolName));
+            args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
+            args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
 
             Map<String, Object> arguments = fc.getArguments();
             if (!arguments.isEmpty()) {

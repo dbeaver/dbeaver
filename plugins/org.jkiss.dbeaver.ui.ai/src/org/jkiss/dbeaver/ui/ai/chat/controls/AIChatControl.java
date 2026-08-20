@@ -22,6 +22,7 @@ import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MouseListener;
@@ -51,7 +52,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -75,6 +76,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     private AIContextSettings activeCompletionSettings;
     private AIChatConversation activeConversation;
     private WebViewMessageList messageList;
+    private ContextComposite contextComposite;
 
     public AIChatControl(@NotNull Composite parent, @NotNull AIChatController controller) {
         super(parent, SWT.NONE);
@@ -106,7 +108,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         int chatFeatures = controller.getChatFeatures();
 
         if (CommonUtils.isBitSet(chatFeatures, AIChatController.FEATURE_CONTEXT_VIEW)) {
-            createContextControl(this);
+            contextComposite = createContextControl(this);
             UIUtils.createLineSeparator(this, SWT.HORIZONTAL);
         }
         Control messageListComposite = createMessageListControl(this);
@@ -120,6 +122,16 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         } else {
             promptComposite = null;
         }
+
+        List<Control> tabList = new ArrayList<>();
+        tabList.add(messageListComposite);
+        if (promptComposite != null) {
+            tabList.add(promptComposite);
+        }
+        if (contextComposite != null) {
+            tabList.add(contextComposite);
+        }
+        setTabList(tabList.toArray(new Control[0]));
 
         WidgetElement.applyStyles(this, true);
 
@@ -227,7 +239,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
     @NotNull
     AIChatConversation createEmptyConversation(@Nullable DBPDataSourceContainer container) {
-        return createEmptyConversation(AIChatMessages.ai_chat_default_conversation_name, container);
+        return createEmptyConversation(AIChatMessagesUI.ai_chat_default_conversation_name, container);
     }
 
     /**
@@ -242,8 +254,6 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     public void cancelPrompt() {
         if (activeConversation != null) {
             activeConversation.cancelConversation();
-            activeConversation.addMessage(AIMessage.warningMessage(AIChatMessages.ai_chat_conversation_cancelled));
-            chatSession.notifyMessageAdd(activeConversation, activeConversation.getMessages().getLast());
             chatSession.notifyListeners(AIChatListener::conversationCanceled, activeConversation);
         }
     }
@@ -275,6 +285,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         AIChatMessage chatMessage = activeConversation.addMessage(promptMessage);
         chatSession.notifyMessageAdd(activeConversation, chatMessage);
 
+        activeConversation.startConversation();
         chatSession.setBusy(true);
 
         new AbstractJob("Execute prompt") {
@@ -322,8 +333,81 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return messageList;
     }
 
-    public void setFocusOnPrompt() {
-        promptComposite.setFocusOnPrompt();
+    public boolean setFocusOnPrompt() {
+        return promptComposite != null && promptComposite.setFocusOnPrompt();
+    }
+
+    public void setFocusOnMessages() {
+        if (messageList != null) {
+            messageList.focusChat();
+        }
+    }
+
+    public boolean focusContextBar() {
+        return contextComposite != null && contextComposite.setFocus();
+    }
+
+    public void createNewConversation() {
+        if (isBusy()) {
+            return;
+        }
+        try {
+            selectConversation(createEmptyConversation(createNewConversationName(), getDataSourceContainer()));
+            setFocusOnPrompt();
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                "Error creating conversation",
+                "Could not create new conversation: " + e.getMessage(),
+                e
+            );
+        }
+    }
+
+    @NotNull
+    private String createNewConversationName() throws DBException {
+        List<AIChatConversation> conversations = listConversations();
+        String baseName = AIChatMessagesUI.ai_chat_default_conversation_name;
+        String name = baseName;
+        for (int i = 1; ; i++) {
+            String candidate = name;
+            if (conversations.stream().noneMatch(c -> c.getCaption().equals(candidate))) {
+                break;
+            }
+            name = baseName + " " + i;
+        }
+        return name;
+    }
+
+    public void deleteActiveConversationWithConfirmation() {
+        if (isBusy() || !chatSession.getStorage().canPersist()) {
+            return;
+        }
+        if (DBWorkbench.getPlatformUI().confirmAction(
+            AIChatMessagesUI.ai_chat_conversation_delete_confirm_title,
+            NLS.bind(AIChatMessagesUI.ai_chat_conversation_delete_confirm_message, getActiveConversation().getCaption())
+        )) {
+            try {
+                removeActiveConversation();
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError(
+                    "Error deleting conversation",
+                    "Could not delete conversation: " + e.getMessage(),
+                    e
+                );
+            }
+        }
+    }
+
+    public void openChatSettings() {
+        if (contextComposite != null) {
+            contextComposite.openSettings();
+        }
+    }
+
+    public void openScopeDropDown() {
+        if (contextComposite != null) {
+            contextComposite.showScopeDropDown();
+        }
     }
 
     public void setConversationProfile(@NotNull AIChatConversation conversation, @Nullable AIConfigurationProfile profile) {

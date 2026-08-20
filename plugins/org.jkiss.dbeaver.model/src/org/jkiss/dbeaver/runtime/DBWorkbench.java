@@ -118,6 +118,10 @@ public class DBWorkbench {
         return getPlatform().getApplication().isDistributed();
     }
 
+    public static boolean isMultiuserOrDistributed() {
+        return getPlatform().getApplication().isMultiuser() || isDistributed();
+    }
+
     public static boolean hasFeature(@NotNull String feature) {
         return getPlatform().getApplication().hasProductFeature(feature);
     }

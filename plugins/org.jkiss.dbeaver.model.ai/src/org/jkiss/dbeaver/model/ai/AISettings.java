@@ -136,9 +136,31 @@ public class AISettings implements DBPAdaptable {
         AIConfigurationProfile profile = new AIConfigurationProfile();
         profile.setProfileId(id);
         profile.setEngineId(engine.getId());
+        profile.setConfiguration(engine.createPropertiesInstance());
+        profile.resolveSecrets();
         configurations.put(id, profile);
 
         return profile;
+    }
+
+    @NotNull
+    public AIConfigurationProfile copyConfiguration(
+        @NotNull AIConfigurationProfile source,
+        @NotNull String id,
+        @NotNull String name
+    ) throws DBException {
+        AIConfigurationProfile copy = createConfiguration(id, source.getEngineDescriptor());
+        copy.setProfileName(name);
+        AIEngineProperties sourceConfiguration = source.getConfiguration();
+        copy.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
+            AISettingsManager.READ_PROPS_GSON.toJson(sourceConfiguration),
+            sourceConfiguration.getClass()
+        ));
+        if (!AISettingsManager.saveSecretsAsPlainText()) {
+            copy.saveSecrets();
+        }
+        copy.resolveSecrets();
+        return copy;
     }
 
     public void removeConfiguration(@NotNull AIConfigurationProfile profile) {
@@ -204,7 +226,7 @@ public class AISettings implements DBPAdaptable {
     // Disables AI integration. Saves configuration.
     public void setAiDisabled(boolean aiDisabled) {
         this.aiDisabled = aiDisabled;
-        AISettingsManager.getInstance().saveSettings();
+        AISettingsManager.getInstance().saveSettings(this);
     }
 
     @Override

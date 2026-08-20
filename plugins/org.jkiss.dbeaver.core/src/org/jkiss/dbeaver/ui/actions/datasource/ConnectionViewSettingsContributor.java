@@ -20,7 +20,6 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -143,14 +143,9 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         }
 
         protected void askToReconnectIfNeeded() {
-            if (dsContainer.isConnected()) {
-                if (UIUtils.confirmAction(
-                    UIUtils.getActiveWorkbenchShell(),
-                    CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dsContainer.getName())
-                )) {
-                    DataSourceHandler.reconnectDataSource(null, dsContainer);
-                }
+            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+            if (serviceConnections != null) {
+                serviceConnections.askToReconnect(dsContainer);
             }
         }
 

@@ -3,13 +3,14 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Databricks Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.databricks;singleton:=true
-Bundle-Version: 1.0.106.qualifier
-Bundle-Release-Date: 20260803
+Bundle-Version: 1.0.108.qualifier
+Bundle-Release-Date: 20260831
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.ext.generic,
+ org.antlr.antlr4-runtime
 Export-Package: org.jkiss.dbeaver.ext.databricks,
  org.jkiss.dbeaver.ext.databricks.model
 Automatic-Module-Name: org.jkiss.dbeaver.ext.databricks

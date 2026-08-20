@@ -115,6 +115,7 @@ import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -130,11 +131,15 @@ import java.util.regex.PatternSyntaxException;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
     private static final Log searcherLog = Log.getLog(Searcher.class);
+    private static final Log log = Log.getLog(ERDEditorPart.class);
 
     @Nullable
     protected ProgressControl progressControl;
 
     private EditModeComposite editModeComposite;
+
+    @Nullable
+    private Runnable showPaletteAction = null;
 
     /**
      * the graphical viewer
@@ -312,7 +317,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         ActionUtils.evaluatePropertyState(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_REDO);
 
         // Update actions
-        setDirty(getCommandStack().isDirty());
+        UIUtils.asyncExec(() -> setDirty(getCommandStack().isDirty()));
 
         super.stackChanged(event);
     }
@@ -693,7 +698,27 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             this.getPalettePreferences()
         );
         paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
+
+        this.showPaletteAction = () -> {
+            try {
+                BeanUtils.invokeObjectDeclaredMethod(
+                    paletteComposite,
+                    "setState",
+                    new Class<?>[] { int.class },
+                    new Object[] { FlyoutPaletteComposite.STATE_PINNED_OPEN }
+                );
+            } catch (Throwable e) {
+                log.debug("Failed to enforce palette visibility", e);
+            }
+        };
+
         return paletteComposite;
+    }
+
+    public void showPalette() {
+        if (this.showPaletteAction != null) {
+            this.showPaletteAction.run();
+        }
     }
 
     public boolean isLoaded() {
