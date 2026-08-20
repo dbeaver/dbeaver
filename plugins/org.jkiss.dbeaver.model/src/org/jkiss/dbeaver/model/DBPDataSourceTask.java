@@ -23,4 +23,15 @@ package org.jkiss.dbeaver.model;
 public interface DBPDataSourceTask
 {
     boolean isActiveTask();
+
+    /**
+     * Per default, the current behavior is that saveable DBPDataSourceTasks are included when disconnecting users of
+     * data sources. Certain cases (see #41844) where application users can set the application to not "Auto-save upon
+     * close" unfortunately interfered with this behavior, i.e. SQL script was recently edited -> application user
+     * decides to disconnect -> prompt to save the script is triggered.
+     * @return
+     */
+    default boolean shouldSaveOnDisconnect() {
+        return true;
+    }
 }
