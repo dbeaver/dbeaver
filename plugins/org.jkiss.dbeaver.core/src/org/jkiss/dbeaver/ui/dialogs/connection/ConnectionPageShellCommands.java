@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.preferences.ConfirmedShellCommandsStore;
-import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -59,6 +59,8 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
 
     private static final String CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title = null;
     private final DataSourceDescriptor dataSource;
+    @Nullable
+    private final UIServiceShellCommands shellCommandsService;
     private Text commandText;
     private Button showProcessCheck;
     private Button waitFinishCheck;
@@ -73,12 +75,11 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
     private final Set<String> originalCommands = new HashSet<>();
 
-    private final ConfirmedShellCommandsManager confirmedShellCommandsManager = ConfirmedShellCommandsManager.getInstance();
-
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
         super(PAGE_NAME);
         this.dataSource = dataSource;
+        this.shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
         setTitle(CoreMessages.dialog_connection_edit_wizard_shell_cmd);
         setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.EVENT));
@@ -96,7 +97,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         Composite root = UIUtils.createPlaceholder(parent, 1, 2);
         root.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (DBWorkbench.isDistributed() && !confirmedShellCommandsManager.isFeatureEnabledInDistributed()) {
+        if (DBWorkbench.isDistributed() && !isShellCommandExecutionAllowed()) {
             UIUtils.createWarningLabel(
                 root,
                 CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
@@ -141,7 +142,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                         if (enabled
                             && eventType != null
                             && command == null
-                            && isAllowedInDistributed()) {
+                            && isShellCommandExecutionAllowed()) {
                             createNewCommand(eventType);
                         }
                         updateEvent(false);
@@ -305,7 +306,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
         boolean isCommandPresent = command != null && command.isEnabled();
-        boolean isCommandControlEnabled = isAllowedInDistributed() && isCommandPresent;
+        boolean isCommandControlEnabled = isShellCommandExecutionAllowed() && isCommandPresent;
         commandText.setEnabled(isCommandControlEnabled);
         showProcessCheck.setEnabled(isCommandControlEnabled);
         waitFinishCheck.setEnabled(isCommandControlEnabled);
@@ -329,8 +330,8 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         }
     }
 
-    private boolean isAllowedInDistributed() {
-        return !DBWorkbench.isDistributed() || confirmedShellCommandsManager.isFeatureEnabledInDistributed();
+    private boolean isShellCommandExecutionAllowed() {
+        return shellCommandsService == null || shellCommandsService.isShellCommandExecutionEnabled();
     }
 
     private void cleanActiveCommand() {
@@ -349,7 +350,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             DBRShellCommand command = entry.getValue();
             try {
                 if (isAddCommandToConfirmed(command)) {
-                    confirmedShellCommandsManager.addConfirmedShellCommand(command);
+                    if (shellCommandsService != null) {
+                        shellCommandsService.addConfirmedCommand(command);
+                    }
                 }
                 dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), command);
             } catch (DBException e) {

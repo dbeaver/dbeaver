@@ -593,6 +593,10 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_edit_wizard_shell_cmd_manage_confirmed_link;
     public static String dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title;
     public static String dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message;
+    public static String shell_cmd_manager_add_command_confirmation_label;
+    public static String shell_cmd_manager_add_command_confirmation_text;
+    public static String shell_cmd_manager_add_command_confirmation_button;
+    public static String shell_cmd_manager_add_command_error_message;
 
     public static String dialog_connection_edit_wizard_connections;
     public static String dialog_connection_edit_wizard_connections_description;
