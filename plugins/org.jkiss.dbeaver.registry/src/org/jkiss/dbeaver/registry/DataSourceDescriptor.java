@@ -1439,7 +1439,7 @@ public class DataSourceDescriptor
         if (command != null && command.isEnabled()) {
             UIServiceShellCommands shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
             if (shellCommandsService != null) {
-                shellCommandsService.validateByUser(command, approveByUserAdditionalContext(eventType));
+                shellCommandsService.validateByUser(command, List.of(approveByUserAdditionalContext(eventType)));
             }
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 

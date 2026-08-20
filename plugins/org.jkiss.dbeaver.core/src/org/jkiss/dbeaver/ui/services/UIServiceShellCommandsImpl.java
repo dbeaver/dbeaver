@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 
+import java.util.List;
+
 public class UIServiceShellCommandsImpl implements UIServiceShellCommands {
 
     private final ConfirmedShellCommandsStore confirmedCommandsStore = ConfirmedShellCommandsStore.getInstance();
@@ -40,17 +42,18 @@ public class UIServiceShellCommandsImpl implements UIServiceShellCommands {
     }
 
     @Override
-    public void validateByUser(@NotNull DBRShellCommand command, @NotNull String approveByUserAdditionalContext) throws DBException {
+    public void validateByUser(@NotNull DBRShellCommand command, @NotNull List<String> approvalContext) throws DBException {
         if (command.isBlank()) {
             return;
         }
 
+        String context = String.join(", ", approvalContext);
         boolean isApprovedByUser = confirmedCommandsStore.contains(command.getCommand())
-            || askApproveForCommand(command, approveByUserAdditionalContext);
+            || askApproveForCommand(command, context);
         if (!isApprovedByUser) {
             throw new DBException(NLS.bind(
                 CoreMessages.shell_cmd_manager_add_command_error_message,
-                approveByUserAdditionalContext
+                context
             ));
         }
     }

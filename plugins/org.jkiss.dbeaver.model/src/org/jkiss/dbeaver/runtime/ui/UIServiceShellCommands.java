@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 
+import java.util.List;
+
 public interface UIServiceShellCommands {
 
     String FEATURE_CONNECTION_SHELL_COMMANDS = "enableConnectionShellCmd";
@@ -28,5 +30,5 @@ public interface UIServiceShellCommands {
 
     boolean addConfirmedCommand(@NotNull DBRShellCommand command) throws DBException;
 
-    void validateByUser(@NotNull DBRShellCommand command, @NotNull String approveByUserAdditionalContext) throws DBException;
+    void validateByUser(@NotNull DBRShellCommand command, @NotNull List<String> approvalContext) throws DBException;
 }
