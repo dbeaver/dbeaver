@@ -99,6 +99,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private Combo transformCombo;
     protected Button mappingRules;
     private ObjectContainerSelectorPanel containerPanel;
+    private boolean transformComboKeyboardSelection;
     private boolean firstInit = true;
     private String mappingErrorMessage;
 
@@ -439,8 +440,31 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DataTransferRegistry.getInstance().getAttributeTransformers()) {
                 transformCombo.add(transformer.getName());
             }
-            transformCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> onTransformComboSelected()));
-
+            transformCombo.addListener(SWT.KeyDown, event -> {
+                if (event.keyCode == SWT.ARROW_DOWN && !transformCombo.getListVisible()) {
+                    event.doit = false;
+                    transformCombo.setListVisible(true);
+                } else if (transformCombo.getListVisible()
+                    && (event.keyCode == SWT.ARROW_DOWN || event.keyCode == SWT.ARROW_UP)) {
+                    // Native combos fire a selection event while the user is only moving the highlighted item.
+                    transformComboKeyboardSelection = true;
+                    transformCombo.getDisplay().asyncExec(() -> transformComboKeyboardSelection = false);
+                } else if (transformCombo.getListVisible()
+                    && (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR)) {
+                    event.doit = false;
+                    transformCombo.setListVisible(false);
+                    onTransformComboSelected();
+                } else if (transformCombo.getListVisible() && event.keyCode == SWT.ESC) {
+                    event.doit = false;
+                    transformCombo.setListVisible(false);
+                    updateTransformControls(getTransformableSelection());
+                }
+            });
+            transformCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (!transformComboKeyboardSelection) {
+                    onTransformComboSelected();
+                }
+            }));
             if (withUpDown) {
                 upButton = UIUtils.createPushButton(
                     bottomBar,
