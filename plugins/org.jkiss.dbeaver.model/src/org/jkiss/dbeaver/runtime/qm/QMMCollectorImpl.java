@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -42,7 +41,7 @@ import java.util.List;
 /**
  * Query manager execution handler implementation
  */
-public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMCollector, DBPPreferenceListener {
+public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMCollector {
 
     private static final Log log = Log.getLog(QMMCollectorImpl.class);
 
@@ -64,7 +63,6 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
     private long eventDispatchPeriod = 250;
-    private volatile boolean skipMetadataEvents;
 
     public QMMCollectorImpl() {
         var application = DBWorkbench.getPlatform().getApplication();
@@ -72,25 +70,10 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         if (qmConfigurationProvider != null) {
             eventDispatchPeriod = qmConfigurationProvider.getEventDispatchPeriod();
         }
-        refreshMetadataEventsSetting();
-        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
         new EventDispatcher().schedule(eventDispatchPeriod);
     }
 
-    @Override
-    public void preferenceChange(@NotNull PreferenceChangeEvent event) {
-        if (QMConstants.PROP_SKIP_METADATA_QUERIES.equals(event.getProperty())) {
-            refreshMetadataEventsSetting();
-        }
-    }
-
-    private void refreshMetadataEventsSetting() {
-        skipMetadataEvents = DBWorkbench.getPlatform().getPreferenceStore()
-            .getBoolean(QMConstants.PROP_SKIP_METADATA_QUERIES);
-    }
-
     public void dispose() {
-        DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
         synchronized (connectionMap) {
             if (!connectionMap.isEmpty()) {
                 List<QMMConnectionInfo> openSessions = new ArrayList<>();
@@ -176,7 +159,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         final long timestamp,
         final @NotNull DBPDataSource dataSource
     ) {
-        if (skipMetadataEvents && isMetadataQuery(object)) {
+        if (isMetadataQuery(object) && isSkipMetadataQueries()) {
             return;
         }
         try {
@@ -188,6 +171,11 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
+    }
+
+    private static boolean isSkipMetadataQueries() {
+        return DBWorkbench.getPlatform().getPreferenceStore()
+            .getBoolean(QMConstants.PROP_SKIP_METADATA_QUERIES);
     }
 
     private static boolean isMetadataQuery(@NotNull QMMObject object) {
