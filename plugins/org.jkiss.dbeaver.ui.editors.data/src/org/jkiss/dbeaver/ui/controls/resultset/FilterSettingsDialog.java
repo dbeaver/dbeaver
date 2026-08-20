@@ -316,7 +316,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     refreshData();
                 });
                 showNoneButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_REMOVEALL));
-                createToolItem(toolbar, ResultSetMessages.dialog_toolbar_reset, UIIcon.REFRESH, () -> {
+                createToolItem(toolbar, ResultSetMessages.dialog_toolbar_reset, UIIcon.ARROW_RESET, () -> {
                     dataFilter.reset();
                     constraints = dataFilter.getConstraints();
                     refreshData();
