@@ -136,6 +136,8 @@ public class AISettings implements DBPAdaptable {
         AIConfigurationProfile profile = new AIConfigurationProfile();
         profile.setProfileId(id);
         profile.setEngineId(engine.getId());
+        profile.setConfiguration(engine.createPropertiesInstance());
+        profile.resolveSecrets();
         configurations.put(id, profile);
 
         return profile;
@@ -157,6 +159,7 @@ public class AISettings implements DBPAdaptable {
         if (!AISettingsManager.saveSecretsAsPlainText()) {
             copy.saveSecrets();
         }
+        copy.resolveSecrets();
         return copy;
     }
 
