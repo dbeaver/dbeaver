@@ -14,12 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
-public record DDSyncBinding(
-    @NotNull String workspaceId,
-    @Nullable String label
-) { }
+import java.util.List;
+
+/**
+ * Remote storage of opaque values. Knows nothing about their content or encryption.
+ */
+public interface DDSyncTransport {
+
+    @NotNull
+    List<DDContainer> listContainers() throws DBException;
+
+    @NotNull
+    DDContainer createContainer(@NotNull String label) throws DBException;
+
+    @NotNull
+    List<DDRawEntry> load(@NotNull String containerId) throws DBException;
+
+    void save(@NotNull String containerId, @NotNull String key, @NotNull byte[] value) throws DBException;
+
+    @NotNull
+    byte[] loadWrappedDataKey() throws DBException;
+}
