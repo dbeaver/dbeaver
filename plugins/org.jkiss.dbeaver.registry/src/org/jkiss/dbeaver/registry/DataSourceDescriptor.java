@@ -1439,7 +1439,7 @@ public class DataSourceDescriptor
         if (command != null && command.isEnabled()) {
             UIServiceShellCommands shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
             if (shellCommandsService != null) {
-                shellCommandsService.validateByUser(command, List.of(approveByUserAdditionalContext(eventType)));
+                shellCommandsService.validateByUser(command, createApprovalContext(eventType));
             }
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
@@ -1484,13 +1484,12 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    private String approveByUserAdditionalContext(@NotNull DBPConnectionEventType eventType) {
-        return NLS.bind(
-            RegistryMessages.connection_add_shell_cmd_context_description,
-            getProject().getName(),
-            getName(),
-            eventType.getTitle()
-        );
+    private Map<String, String> createApprovalContext(@NotNull DBPConnectionEventType eventType) {
+        Map<String, String> context = new LinkedHashMap<>();
+        context.put(RegistryMessages.connection_add_shell_cmd_context_project, getProject().getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_data_source, getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_event_type, eventType.getTitle());
+        return context;
     }
 
     @Override
