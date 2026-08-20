@@ -93,6 +93,12 @@ public class DataSourceUtils {
         return finalName;
     }
 
+    /**
+     * Parse given connectionSpec and recognize connection parameters, try to find
+     * existing connection which matches or create new one if required.
+     *
+     * @return DBPDataSourceContainer describing the connectin according to recognized parameters.
+     */
     @Nullable
     public static DBPDataSourceContainer getDataSourceBySpec(
         @NotNull DBPProject project,
@@ -118,6 +124,15 @@ public class DataSourceUtils {
     ) {
     }
 
+    /**
+     * Parse given connectionSpec and recognize connection parameters, try to find existing connection
+     * which matches or create new one if required.
+     *
+     * @return a record containing flag being set when existing connection found and
+     *     supplier of the DBPDataSourceContainer actually materializing the connection when asked.
+     *     When exising connection not found and new connection creation requested,
+     *     it will only be materialized on the supplier invocation.
+     */
     @Nullable
     public static BySpecInfo getDataSourceSupplierBySpec(
         @NotNull DBPProject project,
