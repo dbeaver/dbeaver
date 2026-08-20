@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 
-import java.util.List;
+import java.util.Map;
 
 public interface UIServiceShellCommands {
 
@@ -30,5 +30,5 @@ public interface UIServiceShellCommands {
 
     boolean addConfirmedCommand(@NotNull DBRShellCommand command) throws DBException;
 
-    void validateByUser(@NotNull DBRShellCommand command, @NotNull List<String> approvalContext) throws DBException;
+    void validateByUser(@NotNull DBRShellCommand command, @NotNull Map<String, String> approvalContext) throws DBException;
 }
