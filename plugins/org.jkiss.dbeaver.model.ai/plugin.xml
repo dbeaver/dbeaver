@@ -128,4 +128,8 @@
 
     </extension>
 
+    <extension point="org.jkiss.dbeaver.syncUnit">
+        <unit class="org.jkiss.dbeaver.model.ai.registry.AISyncUnit"/>
+    </extension>
+
 </plugin>
