@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 
 public interface UIServiceShellCommands {
 
+    String FEATURE_CONNECTION_SHELL_COMMANDS = "enableConnectionShellCmd";
+
     boolean isShellCommandExecutionEnabled();
 
     boolean addConfirmedCommand(@NotNull DBRShellCommand command) throws DBException;
