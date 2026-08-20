@@ -45,6 +45,6 @@ public final class ProductConfigCreateSampleDatabaseAction implements ProductCon
             return false;
         }
         // Don't show the option to create a sample database if it already exists in the workspace
-        return !SampleDatabaseUtil.isSampleDatabaseExists(project.getDataSourceRegistry());
+        return !SampleDatabaseUtil.isSampleDatabaseExists(project);
     }
 }
