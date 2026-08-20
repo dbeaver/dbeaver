@@ -14,17 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-
-import java.util.List;
+package org.jkiss.dbeaver.model.tracking.sync.core;
 
 /**
- * Workspace synchronization endpoints.
+ * Remote synchronization endpoints.
  */
-public interface DDWorkspaceService {
+interface DDSyncApi {
 
     String DATA_KEY_ENDPOINT = "/data/key";
     String WORKSPACE_ENDPOINT = "/workspace";
@@ -35,21 +30,4 @@ public interface DDWorkspaceService {
     String VAR_WORKSPACE_ID = "{workspaceId}";
     String VAR_DATA_TYPE = "{dataType}";
 
-    @NotNull
-    byte[] loadDataKey() throws DBException;
-
-    @NotNull
-    DDWorkspace createWorkspace(@NotNull String label) throws DBException;
-
-    @NotNull
-    List<DDWorkspace> listWorkspaces() throws DBException;
-
-    @NotNull
-    List<DDWorkspaceData> loadData(@NotNull String workspaceId) throws DBException;
-
-    void saveData(
-        @NotNull String workspaceId,
-        @NotNull String dataType,
-        @NotNull String dataValue
-    ) throws DBException;
 }
