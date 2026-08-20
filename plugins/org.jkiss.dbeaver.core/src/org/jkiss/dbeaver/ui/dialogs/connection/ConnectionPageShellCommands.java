@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
+import org.jkiss.dbeaver.model.preferences.ConfirmedShellCommandsStore;
 import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -376,7 +377,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
 
     private void openConfirmedShellCommandsEditor() {
         try {
-            var filePath = confirmedShellCommandsManager.prepareConfirmedCommandsFile();
+            var filePath = ConfirmedShellCommandsStore.getInstance().prepareFile();
             if (EditorUtils.openExternalFileEditor(filePath, UIUtils.getActiveWorkbenchWindow()) == null) {
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,

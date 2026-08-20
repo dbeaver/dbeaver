@@ -16,37 +16,21 @@
  */
 package org.jkiss.dbeaver.model.runtime;
 
-import com.google.gson.reflect.TypeToken;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBAFeaturesConfig;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.preferences.ConfirmedShellCommandsStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
 
 public class ConfirmedShellCommandsManager {
 
-    private static final Log log = Log.getLog(ConfirmedShellCommandsManager.class);
-
-    public static final String CONFIRMED_COMMANDS_FILE_NAME = "confirmed_shell_commands.json";
     public static final String SHELL_COMMANDS_ENABLED_DIST = "enableConnectionShellCmd";
 
     private static ConfirmedShellCommandsManager instance;
 
-    @Nullable
-    private Set<String> confirmedCommands;
-    @Nullable
-    private FileTime confirmedCommandsModificationTime;
+    private final ConfirmedShellCommandsStore confirmedCommandsStore = ConfirmedShellCommandsStore.getInstance();
 
     @NotNull
     public static synchronized ConfirmedShellCommandsManager getInstance() {
@@ -62,7 +46,7 @@ public class ConfirmedShellCommandsManager {
     public void validateCommandByUser(@NotNull DBRShellCommand command, @NotNull String approveByUserAdditionalContext) throws DBException {
         if (!command.isBlank()) {
             if (!DBWorkbench.isDistributed()) {
-                boolean isApprovedByUser = confirmedCommands().contains(command.getCommand())
+                boolean isApprovedByUser = confirmedCommandsStore.contains(command.getCommand())
                     || askApproveForCommand(command, approveByUserAdditionalContext);
                 if (!isApprovedByUser) {
                     throw new DBException(NLS.bind(
@@ -89,33 +73,7 @@ public class ConfirmedShellCommandsManager {
             //always false, since in TE for now command security management is disabled, and commands are not checked to be approved first
             return false;
         }
-        return !command.isBlank() && addConfirmedShellCommand(command.getCommand());
-    }
-
-
-    @NotNull
-    public Path prepareConfirmedCommandsFile() throws DBException {
-        validateForDistributed();
-        var path = getConfirmedCommandsFilePath();
-        try {
-            Files.createDirectories(path.getParent());
-            if (!Files.exists(path)) {
-                try (var writer = Files.newBufferedWriter(path)) {
-                    JSONUtils.PRETTY_GSON.toJson(Set.of(), writer);
-                }
-            }
-            synchronized (this) {
-                confirmedCommands = loadConfirmedCommandsForRepo();
-            }
-            return path;
-        } catch (Exception e) {
-            throw new DBException("Error preparing confirmed commands file: %s".formatted(path), e);
-        }
-    }
-
-    @NotNull
-    public Path getConfirmedCommandsFilePath() {
-        return getConfigFilePath();
+        return !command.isBlank() && confirmedCommandsStore.add(command.getCommand());
     }
 
     private void validateForDistributed() throws DBException {
@@ -145,73 +103,4 @@ public class ConfirmedShellCommandsManager {
         return false;
     }
 
-    @NotNull
-    private Set<String> confirmedCommands() throws DBException {
-        if (confirmedCommands == null || isConfirmedCommandsFileChanged()) {
-            synchronized (this) {
-                confirmedCommands = loadConfirmedCommandsForRepo();
-            }
-        }
-        return confirmedCommands;
-    }
-
-    @NotNull
-    private Set<String> loadConfirmedCommandsForRepo() throws DBException {
-        Set<String> confirmedCommands = null;
-        var path = getConfigFilePath();
-        if (Files.exists(path)) {
-            try (var reader = Files.newBufferedReader(path)) {
-                confirmedCommands = JSONUtils.GSON.fromJson(reader, TypeToken.getParameterized(Set.class, String.class).getType());
-                confirmedCommandsModificationTime = getFileModificationTime(path);
-            } catch (Exception e) {
-                log.error("Error loading confirmed shell commands from " + path, e);
-            }
-        } else {
-            confirmedCommandsModificationTime = null;
-        }
-        return Objects.requireNonNullElse(confirmedCommands, new HashSet<>());
-    }
-
-    private boolean isConfirmedCommandsFileChanged() throws DBException {
-        FileTime actualModificationTime = getFileModificationTime(getConfigFilePath());
-        return !Objects.equals(confirmedCommandsModificationTime, actualModificationTime);
-    }
-
-    private boolean addConfirmedShellCommand(@NotNull String command) throws DBException {
-        synchronized (this) {
-            confirmedCommands = loadConfirmedCommandsForRepo();
-            boolean result = confirmedCommands.add(command);
-            log.debug("Tried to add confirmed command result: %s".formatted(result));
-            saveCommands();
-            return result;
-        }
-    }
-
-    private void saveCommands() throws DBException {
-        var path = getConfigFilePath();
-        try {
-            Files.createDirectories(path.getParent());
-            try (var writer = Files.newBufferedWriter(path)) {
-                JSONUtils.PRETTY_GSON.toJson(confirmedCommands, writer);
-            }
-            confirmedCommandsModificationTime = getFileModificationTime(path);
-        } catch (Exception e) {
-            throw new DBException("Error saving confirmed commands, file: %s".formatted(path), e);
-        }
-        log.debug("Saved confirmed commands to file '%s'".formatted(CONFIRMED_COMMANDS_FILE_NAME));
-    }
-
-    @Nullable
-    private FileTime getFileModificationTime(@NotNull Path path) throws DBException {
-        try {
-            return Files.exists(path) ? Files.getLastModifiedTime(path) : null;
-        } catch (Exception e) {
-            throw new DBException("Error reading confirmed commands file modification time: %s".formatted(path), e);
-        }
-    }
-
-    @NotNull
-    private Path getConfigFilePath() {
-        return DBWorkbench.getPlatform().getGlobalConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME);
-    }
 }
