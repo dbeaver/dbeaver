@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.tracking.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.tracking.sync.DDSyncBinding;
 import org.jkiss.dbeaver.model.tracking.sync.DDSyncService;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDContainer;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDWorkspaceNotFoundException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -61,6 +62,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Text accountText;
     private Text urlText;
     private Text workspaceText;
+    private Button loginButton;
     private Button deleteButton;
     private Button uploadButton;
     private Button downloadButton;
@@ -107,7 +109,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 2;
         buttons.setLayoutData(gd);
-        UIUtils.createPushButton(buttons, "Log In...", null, SelectionListener.widgetSelectedAdapter(e -> logIn()));
+        loginButton = UIUtils.createPushButton(buttons, "Log In...", null, SelectionListener.widgetSelectedAdapter(e -> logIn()));
         deleteButton = UIUtils.createPushButton(buttons, "Log Out", null, SelectionListener.widgetSelectedAdapter(e -> {
             if (UIUtils.confirmAction(getShell(), "Log out", "Forget the keys stored on this computer?")) {
                 logOut();
@@ -141,18 +143,20 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return;
         }
         try {
-            DDSyncBinding binding = service.getBinding();
-            String containerId;
-            if (binding == null) {
-                String label = askContainerLabel();
-                if (label == null) {
+            String containerId = resolveUploadContainer(service);
+            if (containerId == null) {
+                return;
+            }
+            List<String> uploaded;
+            try {
+                uploaded = service.upload(containerId);
+            } catch (DDWorkspaceNotFoundException e) {
+                containerId = createNewContainer(service);
+                if (containerId == null) {
                     return;
                 }
-                containerId = service.createContainer(label);
-            } else {
-                containerId = binding.containerId();
+                uploaded = service.upload(containerId);
             }
-            List<String> uploaded = service.upload(containerId);
             refresh();
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
@@ -163,23 +167,44 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
     }
 
+    @Nullable
+    private String resolveUploadContainer(@NotNull DDSyncService service) throws DBException {
+        DDSyncBinding binding = service.getBinding();
+        if (binding != null) {
+            return binding.containerId();
+        }
+        return createNewContainer(service);
+    }
+
+    @Nullable
+    private String createNewContainer(@NotNull DDSyncService service) throws DBException {
+        String label = askContainerLabel();
+        if (label == null) {
+            return null;
+        }
+        return service.createContainer(label);
+    }
+
     private void download() {
         DDSyncService service = createSyncService();
         if (service == null) {
             return;
         }
         try {
-            DDSyncBinding binding = service.getBinding();
-            if (binding == null) {
-                DDContainer selected = askContainer(service.listContainers());
-                if (selected == null) {
+            String containerId = resolveDownloadContainer(service);
+            if (containerId == null) {
+                return;
+            }
+            List<String> restored;
+            try {
+                restored = service.download(containerId);
+            } catch (DDWorkspaceNotFoundException e) {
+                containerId = pickExistingContainer(service);
+                if (containerId == null) {
                     return;
                 }
-                service.bind(selected.id(), selected.label());
-                binding = service.getBinding();
+                restored = service.download(containerId);
             }
-            String containerId = binding.containerId();
-            List<String> restored = service.download(containerId);
             refresh();
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
@@ -190,6 +215,25 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Download failed", e);
         }
+    }
+
+    @Nullable
+    private String resolveDownloadContainer(@NotNull DDSyncService service) throws DBException {
+        DDSyncBinding binding = service.getBinding();
+        if (binding != null) {
+            return binding.containerId();
+        }
+        return pickExistingContainer(service);
+    }
+
+    @Nullable
+    private String pickExistingContainer(@NotNull DDSyncService service) throws DBException {
+        DDContainer selected = askContainer(service.listContainers());
+        if (selected == null) {
+            return null;
+        }
+        service.bind(selected.id(), selected.label());
+        return selected.id();
     }
 
     @Nullable
@@ -207,7 +251,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return new DDSyncService(
             url,
             new DDBundleCredentials(bundle),
-            DBWorkbench.getPlatform().getWorkspace());
+            DBWorkbench.getPlatform().getWorkspace(),
+            bundle.accountId());
     }
 
     @NotNull
@@ -345,11 +390,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         DDKeyBundle bundle = DDKeyStore.load();
         boolean present = bundle != null;
         accountText.setText(present ? bundle.accountId() : "");
+        loginButton.setEnabled(!present);
         deleteButton.setEnabled(present);
 
         DDSyncBinding binding = DDSyncService.readBinding(
             DBWorkbench.getPlatform().getWorkspace().getAbsolutePath());
-        workspaceText.setText(binding == null
+        boolean boundToCurrentAccount = binding != null && present && bundle.accountId().equals(binding.accountId());
+        workspaceText.setText(!boundToCurrentAccount
             ? ""
             : CommonUtils.isEmpty(binding.label()) ? binding.containerId() : binding.label());
         uploadButton.setEnabled(present);

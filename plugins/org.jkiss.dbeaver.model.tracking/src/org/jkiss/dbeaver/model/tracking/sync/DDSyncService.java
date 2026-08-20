@@ -49,14 +49,17 @@ public class DDSyncService {
 
     private final DDSyncStore store;
     private final DBPWorkspace workspace;
+    private final String accountId;
 
     public DDSyncService(
         @NotNull String url,
         @NotNull DDSyncCredentials credentials,
-        @NotNull DBPWorkspace workspace
+        @NotNull DBPWorkspace workspace,
+        @NotNull String accountId
     ) {
         this.store = new DDSyncStore(url, credentials);
         this.workspace = workspace;
+        this.accountId = accountId;
     }
 
     @NotNull
@@ -66,7 +69,11 @@ public class DDSyncService {
 
     @Nullable
     public DDSyncBinding getBinding() {
-        return readBinding(workspace.getAbsolutePath());
+        DDSyncBinding binding = readBinding(workspace.getAbsolutePath());
+        if (binding == null || !accountId.equals(binding.accountId())) {
+            return null;
+        }
+        return binding;
     }
 
     @Nullable
@@ -87,7 +94,7 @@ public class DDSyncService {
         try {
             Files.writeString(
                 workspace.getAbsolutePath().resolve(BINDING_FILE),
-                JSONUtils.GSON.toJson(new DDSyncBinding(containerId, label)));
+                JSONUtils.GSON.toJson(new DDSyncBinding(containerId, label, accountId)));
         } catch (IOException e) {
             throw new DBException("Error writing synchronization binding", e);
         }

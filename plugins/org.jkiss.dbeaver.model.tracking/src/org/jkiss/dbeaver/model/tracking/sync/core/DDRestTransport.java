@@ -158,6 +158,15 @@ class DDRestTransport extends AbstractRestClient implements DDSyncTransport {
         return credentials.buildToken(method, pathAndQuery, body);
     }
 
+    @NotNull
+    @Override
+    protected DBException mapErrorResponse(int code, @NotNull String message, @NotNull URI uri) {
+        if (code == 404) {
+            return new DDWorkspaceNotFoundException(message);
+        }
+        return super.mapErrorResponse(code, message, uri);
+    }
+
     @Nullable
     private static String header(@NotNull HttpResponseWrapper response, @NotNull String name) {
         return response.headers().entrySet().stream()
