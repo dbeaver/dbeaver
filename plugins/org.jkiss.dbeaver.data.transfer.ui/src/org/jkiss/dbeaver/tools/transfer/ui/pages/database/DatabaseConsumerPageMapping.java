@@ -449,10 +449,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     // Native combos fire a selection event while the user is only moving the highlighted item.
                     transformComboKeyboardSelection = true;
                     transformCombo.getDisplay().asyncExec(() -> transformComboKeyboardSelection = false);
-                } else if (transformCombo.getListVisible()
-                    && (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR)) {
+                } else if (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR) {
                     event.doit = false;
+                    int selectionIndex = transformCombo.getSelectionIndex();
                     transformCombo.setListVisible(false);
+                    transformCombo.select(selectionIndex);
                     onTransformComboSelected();
                 } else if (transformCombo.getListVisible() && event.keyCode == SWT.ESC) {
                     event.doit = false;
@@ -460,11 +461,20 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     updateTransformControls(getTransformableSelection());
                 }
             });
-            transformCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                if (!transformComboKeyboardSelection) {
+            transformCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (!transformComboKeyboardSelection) {
+                        onTransformComboSelected();
+                    }
+                }
+
+
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
                     onTransformComboSelected();
                 }
-            }));
+            });
             if (withUpDown) {
                 upButton = UIUtils.createPushButton(
                     bottomBar,
