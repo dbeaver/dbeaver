@@ -5041,4 +5041,9 @@ public class SQLEditor extends SQLEditorBase implements
             return Status.OK_STATUS;
         }
     };
+
+    @Override
+    public boolean shouldSaveOnDisconnect() {
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
+    }
 }
