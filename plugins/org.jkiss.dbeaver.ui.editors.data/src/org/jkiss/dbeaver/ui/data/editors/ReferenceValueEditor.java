@@ -714,9 +714,10 @@ public class ReferenceValueEditor {
                             Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
                             DBSEntityAttribute referredPrecAttribute = DBUtils.getReferenceAttribute(
                                 monitor, association, precAttribute, false);
-                            if (referredPrecAttribute != null) {
-                                restColumns.add(new DBDAttributeValue(referredPrecAttribute, precValue));
+                            if (referredPrecAttribute == null) {
+                                return null;
                             }
+                            restColumns.add(new DBDAttributeValue(referredPrecAttribute, precValue));
                         }
                     }
                 }
