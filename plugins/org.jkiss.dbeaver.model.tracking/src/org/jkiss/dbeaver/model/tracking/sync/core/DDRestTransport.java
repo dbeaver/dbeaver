@@ -124,6 +124,7 @@ class DDRestTransport extends AbstractRestClient implements DDSyncTransport {
         return builder;
     }
 
+    @NotNull
     @Override
     protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
         try {
