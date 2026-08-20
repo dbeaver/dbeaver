@@ -216,6 +216,15 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 .collect(Collectors.joining("\n"));
         }
 
+        @NotNull
+        @Override
+        protected String getDeleteConfirmationQuestion(@NotNull DBWNetworkProfile profile) {
+            String question = super.getDeleteConfirmationQuestion(profile);
+            return DBWorkbench.isDistributed()
+                ? question + "\n\n" + UIConnectionMessages.pref_page_network_profiles_tool_delete_private_projects_warning
+                : question;
+        }
+
         @Override
         protected void removeProfile(
             @NotNull DBWNetworkProfile profile,

@@ -141,10 +141,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         if (!UIUtils.confirmAction(
             getShell(),
             UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
-            NLS.bind(
-                UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_question,
-                selectedProfile.getProfileName()
-            )
+            getDeleteConfirmationQuestion(selectedProfile)
         )) {
             return false;
         }
@@ -174,6 +171,14 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
             );
             return false;
         }
+    }
+
+    @NotNull
+    protected String getDeleteConfirmationQuestion(@NotNull DBWNetworkProfile profile) {
+        return NLS.bind(
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_question,
+            profile.getProfileName()
+        );
     }
 
     @NotNull
