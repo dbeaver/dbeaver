@@ -14,12 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.meta;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public record DDSyncBinding(
-    @NotNull String workspaceId,
-    @Nullable String label
-) { }
+public record PropertyConstraints(
+    @Nullable Float min,
+    @Nullable Float max) {
+
+    @Nullable
+    public static PropertyConstraints from(@Nullable Property property) {
+        if (property == null) {
+            return null;
+        }
+        Float min = Float.isNaN(property.min()) ? null : property.min();
+        Float max = Float.isNaN(property.max()) ? null : property.max();
+        return min == null && max == null ? null : new PropertyConstraints(min, max);
+    }
+}
