@@ -86,6 +86,9 @@ public class UIServiceShellCommandsImpl implements UIServiceShellCommands {
     }
 
     private static class ConfirmShellCommandDialog extends BaseDialog {
+        private static final int MAX_COMMAND_WIDTH = 80;
+        private static final int MAX_COMMAND_LINES = 8;
+
         private final Map<String, String> approvalContext;
         private final String command;
 
@@ -102,6 +105,19 @@ public class UIServiceShellCommandsImpl implements UIServiceShellCommands {
         @NotNull
         @Override
         protected Composite createDialogArea(@NotNull Composite parent) {
+            String[] commandLines = command.split("\\R", -1);
+            int commandWidth = 0;
+            for (String line : commandLines) {
+                commandWidth = Math.max(commandWidth, line.length());
+            }
+            int scriptStyle = SWT.BORDER | SWT.MULTI | SWT.READ_ONLY;
+            if (commandWidth > MAX_COMMAND_WIDTH) {
+                scriptStyle |= SWT.H_SCROLL;
+            }
+            if (commandLines.length > MAX_COMMAND_LINES) {
+                scriptStyle |= SWT.V_SCROLL;
+            }
+
             Composite area = super.createDialogArea(parent);
             Composite content = UIUtils.createComposite(area, 2);
             content.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -120,10 +136,13 @@ public class UIServiceShellCommandsImpl implements UIServiceShellCommands {
                 content,
                 CoreMessages.shell_cmd_manager_add_command_script_label,
                 command,
-                SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL,
+                scriptStyle,
                 GridDataFactory.fillDefaults()
                     .grab(true, true)
-                    .hint(convertWidthInCharsToPixels(80), convertHeightInCharsToPixels(8))
+                    .hint(
+                        convertWidthInCharsToPixels(Math.min(commandWidth, MAX_COMMAND_WIDTH)),
+                        convertHeightInCharsToPixels(Math.min(commandLines.length, MAX_COMMAND_LINES))
+                    )
                     .create()
             );
 
