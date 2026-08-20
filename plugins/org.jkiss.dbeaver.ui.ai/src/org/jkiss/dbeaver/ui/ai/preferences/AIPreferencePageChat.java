@@ -93,7 +93,7 @@ public class AIPreferencePageChat extends AbstractPrefPage implements IWorkbench
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         chatConfigurator.saveSettings(this.settings);
-        AISettingsManager.getInstance().saveSettings();
+        AISettingsManager.getInstance().saveSettings(this.settings);
         try {
             store.save();
         } catch (IOException e) {

@@ -825,6 +825,34 @@ public final class RuntimeUtils {
         return InternalPlatform.getDefault().getStateLocation(plugin.getBundle(), false).toPath();
     }
 
+    /**
+     * Debounces the execution of a runnable by the specified delay.
+     * <p>
+     * If the returned runnable is called multiple times within the
+     * delay period, only the last call will be executed after the delay.
+     *
+     * @param runnable the runnable to debounce
+     * @param delay    the delay duration
+     * @return a debounced runnable
+     */
+    @NotNull
+    public static Runnable debounce(@NotNull Runnable runnable, @NotNull Duration delay) {
+        var job = new AbstractJob("Debouncer[" + runnable + "]") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                runnable.run();
+                return Status.OK_STATUS;
+            }
+        };
+        job.setUser(false);
+        job.setSystem(true);
+        return () -> {
+            job.cancel();
+            job.schedule(delay);
+        };
+    }
+
     private enum CommandLineState {
         NONE,
         NORMAL,
