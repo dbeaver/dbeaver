@@ -543,17 +543,25 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
     }
 
-    private void parseSampleURL(DBPDriver driver) {
+    private void parseSampleURL(@NotNull DBPDriver driver) {
         this.urlPattern = null;
 
-        boolean useCustomUrl = CommonUtils.isEmpty(driver.getSampleURL());
+        String sampleURL = driver.getSampleURL();
+        boolean useCustomUrl = CommonUtils.isEmpty(sampleURL);
 
         if (!useCustomUrl) {
             try {
-                this.urlPattern = DatabaseURL.getUrlPattern(driver.getSampleURL());
+                this.urlPattern = DatabaseURL.getUrlPattern(sampleURL);
             } catch (DBException e) {
                 setErrorMessage(e.getMessage());
+                log.debug(
+                    "Failed to obtain driver sample url pattern for " + driver.getName() + " (" + sampleURL + ")",
+                    e
+                );
+                useCustomUrl = true;
             }
+        }
+        if (!useCustomUrl) {
             final Set<String> properties = this.urlPattern.getAvailablePropertyNames();
             boolean isSampleUrlUsable = properties.contains(DBConstants.PROP_HOST) ||
                 properties.contains(DBConstants.PROP_DATABASE) ||
