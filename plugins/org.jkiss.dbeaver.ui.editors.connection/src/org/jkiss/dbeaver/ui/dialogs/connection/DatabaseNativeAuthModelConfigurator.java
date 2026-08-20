@@ -173,7 +173,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
         boolean resetPassword = !credentialsPromptMode &&
             (!canEditCredentialsPerPolicy || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection()));
-        if (dataSource.isSharedCredentials()) {
+        if (credentialsFromEnv || dataSource.isSharedCredentials()) {
             resetPassword = false;
         }
 
@@ -310,10 +310,17 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             && !credentialsFromEnvCheck.isDisposed()
             && credentialsFromEnvCheck.getSelection();
         if (envVariablesHintControl != null && !envVariablesHintControl.isDisposed()) {
-            envVariablesHintControl.setVisible(credentialsFromEnv);
+            UIUtils.setControlVisible(envVariablesHintControl, credentialsFromEnv);
+            Composite parent = envVariablesHintControl.getParent();
+            if (parent != null && !parent.isDisposed()) {
+                parent.layout(true, true);
+            }
         }
         if (savePasswordCheck != null && !savePasswordCheck.isDisposed()) {
-            savePasswordCheck.setEnabled(!isForceSaveCredentials());
+            if (credentialsFromEnv && !savePasswordCheck.getSelection()) {
+                savePasswordCheck.setSelection(true);
+            }
+            savePasswordCheck.setEnabled(!credentialsFromEnv && !isForceSaveCredentials());
             boolean savePassword = savePasswordCheck.getSelection();
             if (credentialsFromEnv) {
                 if (passwordText != null && !passwordText.isDisposed()) {

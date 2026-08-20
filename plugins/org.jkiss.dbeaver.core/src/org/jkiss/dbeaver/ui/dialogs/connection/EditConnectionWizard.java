@@ -389,7 +389,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         }
 
         // ...then persist page settings
-        if (pageSettings != null) {
+        if (isPageActive(pageSettings)) {
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
