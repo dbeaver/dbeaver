@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.awt.*;
 import java.time.LocalDate;
@@ -34,20 +37,29 @@ import java.time.LocalDate;
  * This class is responsible for drawing various random decorations over a control.
  * <p>
  * Currently, it only provides winter decorations, such as snowflakes.
+ * <p>
+ * Decorations may be turned off either in the preferences or, if the control they are
+ * installed on provides such an option, right on the control itself.
  *
- * @see #install(Control)
+ * @see #install(Control, Runnable)
  * @see #isEnabled()
  */
 public class HolidayDecorations implements IDisposable {
     public static final String PREF_UI_SHOW_HOLIDAY_DECORATIONS = "ui.show.holiday.decorations"; //$NON-NLS-1$
 
-    private static final boolean ENABLED = isEnabled0();
+    private static boolean enabled = isEnabled0();
 
+    private final Control control;
     private final Painter painter;
+    private final DecorationsToggle toggle;
+    private final Runnable onDisable;
     private double frameTime;
 
-    private HolidayDecorations(@NotNull Control control) {
+    private HolidayDecorations(@NotNull Control control, @Nullable Runnable onDisable) {
+        this.control = control;
         this.painter = new SnowflakePainter(control.getDisplay());
+        this.onDisable = onDisable;
+        this.toggle = onDisable == null ? null : new DecorationsToggle(control, this::disable);
 
         final Listener listener = event -> {
             switch (event.type) {
@@ -63,6 +75,10 @@ public class HolidayDecorations implements IDisposable {
     }
 
     public static boolean install(@NotNull Control control) {
+        return install(control, null);
+    }
+
+    public static boolean install(@NotNull Control control, @Nullable Runnable onDisable) {
         if (!isEnabled()) {
             return false;
         }
@@ -72,13 +88,13 @@ public class HolidayDecorations implements IDisposable {
         final GraphicsDevice device = environment.getDefaultScreenDevice();
         final int refreshRate = 1000 / Math.max(device.getDisplayMode().getRefreshRate(), 60);
 
-        final HolidayDecorations decorations = new HolidayDecorations(control);
+        final HolidayDecorations decorations = new HolidayDecorations(control, onDisable);
         final Display display = Display.getCurrent();
 
         final Runnable timer = new Runnable() {
             @Override
             public void run() {
-                if (control.isDisposed()) {
+                if (control.isDisposed() || !isEnabled()) {
                     return;
                 }
 
@@ -106,7 +122,7 @@ public class HolidayDecorations implements IDisposable {
     }
 
     public static boolean isEnabled() {
-        return ENABLED;
+        return enabled;
     }
 
     private static boolean isEnabled0() {
@@ -118,7 +134,7 @@ public class HolidayDecorations implements IDisposable {
         return switch (current.getMonth()) {
             case DECEMBER -> current.getDayOfMonth() >= 24;
             case JANUARY -> current.getDayOfMonth() <= 7;
-            default -> false;
+            default -> true;
         };
     }
 
@@ -127,8 +143,31 @@ public class HolidayDecorations implements IDisposable {
         painter.dispose();
     }
 
+    private void disable() {
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setValue(PREF_UI_SHOW_HOLIDAY_DECORATIONS, false);
+        PrefUtils.savePreferenceStore(store);
+
+        enabled = false;
+        dispose();
+
+        if (onDisable != null) {
+            onDisable.run();
+        }
+
+        control.redraw();
+    }
+
     private void paint(@NotNull GC gc) {
+        if (!isEnabled()) {
+            return;
+        }
+
         painter.paint(gc);
+
+        if (toggle != null) {
+            toggle.paint(gc);
+        }
     }
 
     private void reset(@NotNull Point size) {

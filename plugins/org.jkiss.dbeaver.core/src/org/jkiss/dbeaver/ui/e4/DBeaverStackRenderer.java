@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -363,17 +363,25 @@ public class DBeaverStackRenderer extends StackRenderer {
             // See StackRenderer#initializeOnboardingInformationInEditorStack (2024-06)
             if (element instanceof MPerspective perspective) {
                 for (MPartStack stack : modelService.findElements(perspective, null, MPartStack.class, List.of(EDITOR_STACK_ID))) {
-                    Control container = getChild(stack.getWidget(), ONBOARDING_CONTAINER);
-                    if (container == null || !HolidayDecorations.install(container)) {
+                    if (!(getChild(stack.getWidget(), ONBOARDING_CONTAINER) instanceof Composite container)) {
                         continue;
                     }
-                    Control composite = getChild(container, ONBOARDING_COMPOSITE);
-                    if (composite != null && composite.getLayoutData() instanceof GridData data) {
-                        data.exclude = true;
+                    // Onboarding content is brought back if the user turns the decorations off
+                    if (!HolidayDecorations.install(container, () -> setOnboardingVisible(container, true))) {
+                        continue;
                     }
+                    setOnboardingVisible(container, false);
                 }
             }
         });
+    }
+
+    private static void setOnboardingVisible(@NotNull Composite container, boolean visible) {
+        Control composite = getChild(container, ONBOARDING_COMPOSITE);
+        if (composite != null && composite.getLayoutData() instanceof GridData data) {
+            data.exclude = !visible;
+            container.layout(true);
+        }
     }
 
     @Nullable
