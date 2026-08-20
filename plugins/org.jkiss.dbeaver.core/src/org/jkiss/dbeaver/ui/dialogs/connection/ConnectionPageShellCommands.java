@@ -57,7 +57,6 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
 
     public static final String PAGE_NAME = ConnectionPageShellCommands.class.getSimpleName();
 
-    private static final String CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title = null;
     private final DataSourceDescriptor dataSource;
     @Nullable
     private final UIServiceShellCommands shellCommandsService;
@@ -190,7 +189,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             pauseAfterExecute.addSelectionListener(eventEditAdapter);
 
             UIUtils.createControlLabel(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_label);
-            workingDirectory = new TextWithOpenFolder(settingsGroup, CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title);
+            workingDirectory = new TextWithOpenFolder(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_title);
             workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             workingDirectory.getTextControl().addModifyListener(e -> {
                 DBRShellCommand command = getActiveCommand();
@@ -206,7 +205,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
                 dataSource.getConnectionConfiguration()));
-            if (!DBWorkbench.isDistributed()) {
+            if (!DBWorkbench.isDistributed() && shellCommandsService != null) {
                 UIUtils.createInfoLink(
                     detailsGroup,
                     "<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_link + "</a>",
