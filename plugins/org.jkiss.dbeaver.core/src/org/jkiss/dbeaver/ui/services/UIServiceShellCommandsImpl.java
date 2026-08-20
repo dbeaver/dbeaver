@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.services;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -119,8 +120,11 @@ public class UIServiceShellCommandsImpl implements UIServiceShellCommands {
                 content,
                 CoreMessages.shell_cmd_manager_add_command_script_label,
                 command,
-                SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL,
-                new GridData(GridData.FILL_BOTH)
+                SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL,
+                GridDataFactory.fillDefaults()
+                    .grab(true, true)
+                    .hint(convertWidthInCharsToPixels(80), convertHeightInCharsToPixels(8))
+                    .create()
             );
 
             return area;
