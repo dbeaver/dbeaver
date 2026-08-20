@@ -1095,7 +1095,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         store.addPropertyChangeListener(listener);
         composite.addDisposeListener(e -> store.removePropertyChangeListener(listener));
-        composite.setVisible(BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_EDITORS);
+        if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
+            composite.setVisible(BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_EDITORS);
+        } else {
+            composite.setVisible(BreadcrumbLocation.get(store) != BreadcrumbLocation.HIDDEN);
+        }
 
         return composite;
     }
