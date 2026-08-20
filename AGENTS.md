@@ -36,12 +36,19 @@ To perform full product build run
 To build only a single bundle run `mvn verify` in bundle folder.  
 It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
 
-### Dependencies
+### Repo dependencies
 
-All OSGI dependencies come from P2 repositories (not Maven repos).
-You can find them in root POMs (repos with layout=p2).
-This includes standard Eclipse P2 for RCP development + DBeaver custom P2 (see `repo.p2.eclipse.url`).
-Custom P2 repo source repo is `dbeaver-deps-ce` - it converts classic Maven dependencies into P2 bundles.
+- All dbeaver-related repositories are in organization https://github.com/dbeaver
+- Each repo may have file `project.deps` in its root. This file is a simple text file, each line contains short name of repository this repository depends on.
+- All GitHub repos must be cloned in the same folder (DBEAVER_DEV_HOME - the parent folder of this repository)
+- If dep repo is missing on disk AI agent can clone it in DBEAVER_DEV_HOME
+
+### Bundle dependencies
+
+- All OSGI dependencies come from Eclipse P2 repos (not Maven).
+- You can find them in root POMs (repos with layout=p2).
+- This includes standard Eclipse P2 for RCP development + DBeaver custom P2 (see `repo.p2.eclipse.url`).
+- Custom P2 repo source repo is `dbeaver-deps-ce` - it converts classic Maven dependencies into P2 bundles.
 
 ### Plugin packaging rules
 
@@ -151,9 +158,6 @@ Use Mockito for mocking.
 
 ## Common Pitfalls / Known Issues
 
-- All GitHub repos must be cloned in the same folder (DBEAVER_DEV_HOME - the parent folder of this repository)
-- If repository is missing AI agent can clone it in DBEAVER_DEV_HOME
-- Each repository may have file `project.deps` in its root. This file is a simple text file, each line contains short name of repository this repository depends on. Dependencies must be cloned too if missing.
 - UI thread safety: All SWT/UI updates must run on the display thread. Use functions like `UIUtils.asyncExec(Runnable)` if needed.
 - `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
 - Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.

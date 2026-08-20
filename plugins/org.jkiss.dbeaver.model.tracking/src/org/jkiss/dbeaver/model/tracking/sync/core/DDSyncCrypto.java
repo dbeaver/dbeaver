@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -22,12 +22,11 @@ import org.jkiss.dbeaver.DBException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
-public final class DDSyncCrypto {
+final class DDSyncCrypto {
 
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int IV_LENGTH = 12;
@@ -39,7 +38,7 @@ public final class DDSyncCrypto {
     }
 
     @NotNull
-    public static String encrypt(@NotNull SecretKey key, @NotNull byte[] data) throws DBException {
+    static byte[] encrypt(@NotNull SecretKey key, @NotNull byte[] data) throws DBException {
         try {
             byte[] iv = new byte[IV_LENGTH];
             RANDOM.nextBytes(iv);
@@ -49,16 +48,15 @@ public final class DDSyncCrypto {
             byte[] result = new byte[iv.length + encrypted.length];
             System.arraycopy(iv, 0, result, 0, iv.length);
             System.arraycopy(encrypted, 0, result, iv.length, encrypted.length);
-            return Base64.getEncoder().encodeToString(result);
+            return result;
         } catch (GeneralSecurityException e) {
             throw new DBException("Error encrypting sync data", e);
         }
     }
 
     @NotNull
-    public static byte[] decrypt(@NotNull SecretKey key, @NotNull String value) throws DBException {
+    static byte[] decrypt(@NotNull SecretKey key, @NotNull byte[] input) throws DBException {
         try {
-            byte[] input = Base64.getDecoder().decode(value);
             byte[] iv = Arrays.copyOfRange(input, 0, IV_LENGTH);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(TAG_LENGTH_BITS, iv));

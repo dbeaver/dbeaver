@@ -14,12 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 
-public record DDDataKey(
-    @NotNull String encryptedKey,
-    @NotNull String keyType
-) {
+import javax.crypto.SecretKey;
+
+/**
+ * Credentials used to authorize requests and to unwrap the data encryption key.
+ */
+public interface DDSyncCredentials {
+
+    @NotNull
+    String buildToken() throws DBException;
+
+    @NotNull
+    SecretKey decryptDataKey(@NotNull byte[] encryptedDataKey) throws DBException;
 }
