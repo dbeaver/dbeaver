@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.io.File;
@@ -47,6 +48,7 @@ public class LogOutputStream extends OutputStream {
     /**
      * The Writer to log messages to.
      */
+    @Nullable
     private volatile FileOutputStream currentLogFileOutput = null;
     private volatile long currentLogSize;
 
@@ -130,18 +132,21 @@ public class LogOutputStream extends OutputStream {
         }
     }
 
+    @NotNull
     private synchronized OutputStream getLogFileWriter() throws IOException {
-        if (this.currentLogFileOutput == null || this.rotateCurrentLogFile(false)) {
+        if (this.currentLogFileOutput != null) {
+            this.rotateCurrentLogFile(false);
+        }
+        if (this.currentLogFileOutput == null) {
             this.currentLogFileOutput = new FileOutputStream(this.currentLogFile, true);
         }
         return this.currentLogFileOutput;
     }
 
     /**
-     * Checks the log file size. If the log file size reaches the limit then the log is rotated
-     * @return false if the file doesn't exist or the log files doesn't need to be rotated
+     * Checks the log file size. If the log file size reaches the limit then the log is rotated.
      */
-    private boolean rotateCurrentLogFile(boolean force) throws IOException {
+    private void rotateCurrentLogFile(boolean force) throws IOException {
         if ((this.currentLogFileOutput != null || this.currentLogFile.exists()) // if we are initializing log file for new launch
             && (this.currentLogSize > this.maxLogSize || force)
         ) {
@@ -149,23 +154,18 @@ public class LogOutputStream extends OutputStream {
             
             File newFile = new File(this.logFileLocation, this.logFileName + "-" + System.currentTimeMillis() + this.logFileNameExtension);
             if (!this.currentLogFile.renameTo(newFile)) {
-                return false;
+                return;
             }
             this.currentLogSize = 0;
             
             File[] logFiles = this.logFileLocation.listFiles((File dir, String name) -> this.logFileNamePattern.test(name));
             if (logFiles == null) {
-                return false;
+                return;
             }
             Arrays.sort(logFiles, Comparator.comparing(File::getName));
             for (int i = 0, count = logFiles.length; i < logFiles.length && count > maxLogFiles; i++, count--) {
                 logFiles[i].delete();
             }
-            
-            return true;
-        } else {
-            return false;
         }
     }
-    
 }
