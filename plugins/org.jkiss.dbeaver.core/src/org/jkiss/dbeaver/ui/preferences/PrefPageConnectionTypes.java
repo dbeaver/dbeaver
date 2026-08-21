@@ -588,7 +588,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         }
                         try {
-                            projectRegistry.updateDataSource(ds);
+                            projectRegistry.updateDataSource(ds, false);
+                            projectRegistry.checkForErrors();
                         } catch (DBException e) {
                             DBWorkbench.getPlatformUI().showError(
                                 CoreMessages.pref_page_connection_types_label_delete_connection_type,
