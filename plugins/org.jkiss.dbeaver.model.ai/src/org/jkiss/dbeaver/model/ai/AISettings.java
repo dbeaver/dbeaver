@@ -169,7 +169,7 @@ public class AISettings implements DBPAdaptable {
             defaultConfiguration = configurations.isEmpty() ? null : configurations.keySet().iterator().next();
         }
         // Remove in legacy config too
-        engineConfigurations.remove(profile.getProfileId());
+        engineConfigurations.remove(profile.getEngineId());
         try {
             profile.getConfiguration().deleteSecrets(profile);
         } catch (DBException e) {
