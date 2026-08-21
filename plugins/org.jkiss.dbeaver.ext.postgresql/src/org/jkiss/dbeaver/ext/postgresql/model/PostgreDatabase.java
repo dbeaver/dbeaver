@@ -128,7 +128,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         try {
             readDatabaseInfo(monitor);
         } catch (DBCException e) {
-            // On some multi-tenant servers pg_database is not public
+            // On some multi-tenant servers pg_database is not public so error may gappen here
             log.debug("Error reading database info", e);
         }
     }
