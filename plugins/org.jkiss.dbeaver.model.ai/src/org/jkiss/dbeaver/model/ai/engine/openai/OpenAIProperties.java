@@ -22,16 +22,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
-import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Map;
 
 public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
     protected static final String GPT_BASE_URL = "gpt.base_url";
@@ -109,7 +105,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Nullable
     @Override
-    @Property(order = 3, listProvider = OpenAIModelListProvider.class)
+    @Property(order = 3)
     public String getModel() {
         if (model != null) {
             return OpenAIModels.getEffectiveModelName(model);
@@ -151,7 +147,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Nullable
     @Override
-    @Property(order = 6)
+    @Property(order = 6, min = 1)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -345,22 +341,5 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     private OpenAIProperties getAccountCredentialsOwner() {
         OpenAIProperties source = accountCredentialsSource;
         return source == null ? this : source.getAccountCredentialsOwner();
-    }
-
-    public static class OpenAIModelListProvider implements IPropertyValueListProvider<OpenAIProperties> {
-
-        @Override
-        public boolean allowCustomValue() {
-            return false;
-        }
-
-        @Nullable
-        @Override
-        public Object[] getPossibleValues(OpenAIProperties object) {
-            return OpenAIModels.KNOWN_MODELS.entrySet().stream()
-                .filter(entry -> !entry.getValue().features().contains(AIModelFeature.SPEECH_TO_TEXT))
-                .map(Map.Entry::getKey)
-                .toArray();
-        }
     }
 }
