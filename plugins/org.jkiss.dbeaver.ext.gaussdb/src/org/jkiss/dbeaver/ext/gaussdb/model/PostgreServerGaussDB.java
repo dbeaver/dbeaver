@@ -42,6 +42,11 @@ public class PostgreServerGaussDB extends PostgreServerExtensionBase {
         return false;
     }
 
+    @Override
+    public boolean isDefaultSchemaPublic() {
+        return false;
+    }
+
     public boolean isSupportJobs() {
         return supportJobs;
     }

@@ -99,6 +99,8 @@ public interface PostgreServerExtension {
 
     boolean supportsStandardSearchPath();
 
+    boolean isDefaultSchemaPublic();
+
     boolean supportsRelationSizeCalc();
 
     boolean supportsExplainPlan();

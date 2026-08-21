@@ -196,6 +196,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return true;
     }
 
+    @Override
+    public boolean isDefaultSchemaPublic() {
+        return true;
+    }
+
     @Nullable
     @Override
     public String readTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase table) throws DBException {
