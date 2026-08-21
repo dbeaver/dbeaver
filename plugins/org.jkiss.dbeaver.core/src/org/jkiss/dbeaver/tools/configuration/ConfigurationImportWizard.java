@@ -98,7 +98,7 @@ public class ConfigurationImportWizard extends Wizard implements IImportWizard {
                                 writeZipEntryToFile(zipInputStream, configFilePath.toFile());
                             }
                         } else {
-                            log.warn("Skipping illegal configuration file targeting outside of the the current configuration location: "
+                            log.warn("Skipping illegal configuration file targeting outside of the current configuration location: "
                                 + rawConfigFilePath);
                         }
                         nextEntry = zipInputStream.getNextEntry();
