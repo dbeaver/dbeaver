@@ -82,18 +82,24 @@ public class ConfigurationImportWizard extends Wizard implements IImportWizard {
                     ZipEntry nextEntry = zipInputStream.getNextEntry();
                     while (nextEntry != null) {
                         String name = nextEntry.getName();
-                        Path configFilePath = workbench.resolve(name);
-                        if (!configFilePath.toFile().getParentFile().canWrite()) {
-                            throw new IOException("Workspace directory is read-only");
-                        }
-                        if (configFilePath.toFile().exists()) {
-                            File listFile = configFilePath.toFile();
-                            if (listFile.getName().equals(name)) {
-                                writeZipEntryToFile(zipInputStream, listFile);
+                        Path rawConfigFilePath = workbench.resolve(name);
+                        Path configFilePath = rawConfigFilePath.normalize();
+                        if (configFilePath.startsWith(workbench)) {
+                            if (!configFilePath.toFile().getParentFile().canWrite()) {
+                                throw new IOException("Workspace directory is read-only");
+                            }
+                            if (configFilePath.toFile().exists()) {
+                                File listFile = configFilePath.toFile();
+                                if (listFile.getName().equals(name)) {
+                                    writeZipEntryToFile(zipInputStream, listFile);
+                                }
+                            } else {
+                                Files.createFile(configFilePath);
+                                writeZipEntryToFile(zipInputStream, configFilePath.toFile());
                             }
                         } else {
-                            Files.createFile(configFilePath);
-                            writeZipEntryToFile(zipInputStream, configFilePath.toFile());
+                            log.warn("Skipping illegal configuration file targeting outside of the the current configuration location: "
+                                + rawConfigFilePath);
                         }
                         nextEntry = zipInputStream.getNextEntry();
                     }
