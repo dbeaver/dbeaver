@@ -321,6 +321,8 @@ final class WebViewMessageRenderer {
                 "showTokensSpent", AIConstants.AI_CHAT_SHOW_TOKENS_SPENT,
                 "showTotalTokensSpent", AIConstants.AI_CHAT_SHOW_TOTAL_TOKENS_SPENT
             ),
+            "notice",
+            AIChatMessagesUI.ai_chat_ai_notice,
             "a11y",
             Map.of(
                 "transcriptLabel", AIChatMessagesUI.ai_chat_a11y_transcript_label,
