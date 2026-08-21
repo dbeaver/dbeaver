@@ -14,12 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.sync;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
-public record DDSyncEnvelope(
-    @Nullable String project,
-    @NotNull String content
-) { }
+import java.util.Map;
+
+/**
+ * Configuration component which can be synchronized.
+ */
+public interface DBPSyncUnit {
+
+    @NotNull
+    String getId();
+
+    @NotNull
+    DBPSyncScope getScope();
+
+    default boolean isEnabledByDefault() {
+        return true;
+    }
+
+    @NotNull
+    Map<String, byte[]> read(@NotNull DBPSyncTarget target) throws DBException;
+
+    void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException;
+}

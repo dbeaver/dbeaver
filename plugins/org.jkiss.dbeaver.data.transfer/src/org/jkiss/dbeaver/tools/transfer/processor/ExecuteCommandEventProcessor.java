@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.processor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -41,6 +42,8 @@ public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor
 
         final DBRShellCommand command = new DBRShellCommand(commandLine);
         command.setWorkingDirectory(workingDirectory);
+
+        ConfirmedShellCommandsManager.getInstance().validateCommandByUser(command, "task completion");
 
         final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command);
         processDescriptor.execute();
