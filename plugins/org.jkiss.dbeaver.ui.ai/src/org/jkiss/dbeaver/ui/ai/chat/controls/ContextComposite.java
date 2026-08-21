@@ -59,6 +59,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -466,9 +467,10 @@ public class ContextComposite extends Composite {
 
         manager.add(new Separator());
         manager.add(new EmptyAction("Active configuration"));
-        for (AIConfigurationProfile profile : AISettingsManager.getInstance().getSettings().getConfigurations()) {
-            manager.add(new ChangeProfileAction(profile));
-        }
+        List.of(AISettingsManager.getInstance().getSettings().getConfigurations()).stream()
+            .sorted(Comparator.comparing(AIConfigurationProfile::getProfileName, String.CASE_INSENSITIVE_ORDER))
+            .map(ChangeProfileAction::new)
+            .forEach(manager::add);
 
         if (RuntimeUtils.isWindows()) {
             // Highlight selected item
