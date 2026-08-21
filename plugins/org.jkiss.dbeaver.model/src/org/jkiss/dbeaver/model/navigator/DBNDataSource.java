@@ -269,6 +269,9 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     @Nullable
     public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException
     {
+        if (!isLocked()) {
+            cleanupNode();
+        }
         DBNNode node = super.refreshNode(monitor, source);
         if (node == this) {
             // Refresh succeeded. Let's fire event

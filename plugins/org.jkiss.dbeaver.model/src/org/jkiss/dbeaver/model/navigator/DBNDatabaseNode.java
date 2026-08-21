@@ -497,8 +497,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                         }
                     }
 
-                    if (oldList == null || Arrays.stream(oldList).noneMatch(oldFolder -> oldFolder.getMeta() == child)) {
-                        // Load new folders only if there are no old ones or prev saved list had some currently needed nodes filtered
+                    if (oldList == null) {
+                        // Load new folders only if there are no old ones
                         toList.add(
                             new DBNDatabaseFolder(this, (DBXTreeFolder) child));
                     } else {
