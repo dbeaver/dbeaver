@@ -52,10 +52,18 @@ public class AIProfileCreateDialog extends BaseDialog {
 
         Combo engineCombo = UIUtils.createLabelCombo(enginePanel, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
         aiEngines = AIEngineRegistry.getInstance().getCompletionEngines();
+        boolean hasPromotedEngines = false;
         for (AIEngineDescriptor ed : aiEngines) {
+            if (hasPromotedEngines && !ed.isPromoted()) {
+                engineCombo.add("----------------");
+                hasPromotedEngines = false;
+            }
             engineCombo.add(ed.getLabel());
+            engineCombo.setData(Integer.toString(engineCombo.getItemCount() - 1), ed);
+            hasPromotedEngines = ed.isPromoted();
         }
         engineCombo.select(0);
+        int[] selectedIndex = {0};
         selectedEngine = aiEngines.getFirst();
         profileId = genProfileId(selectedEngine);
         profileName = selectedEngine.getLabel();
@@ -66,8 +74,15 @@ public class AIProfileCreateDialog extends BaseDialog {
         nameText.addModifyListener(e ->  profileName = nameText.getText());
 
         engineCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            int selectionIndex = engineCombo.getSelectionIndex();
+            Object selection = engineCombo.getData(Integer.toString(selectionIndex));
+            if (!(selection instanceof AIEngineDescriptor engine)) {
+                engineCombo.select(selectedIndex[0]);
+                return;
+            }
             String oldAutoId = genProfileId(selectedEngine);
-            selectedEngine = aiEngines.get(engineCombo.getSelectionIndex());
+            selectedIndex[0] = selectionIndex;
+            selectedEngine = engine;
             if (oldAutoId.equals(profileId)) {
                 profileId = genProfileId(selectedEngine);
                 profileName = genProfileName(selectedEngine.getLabel());
