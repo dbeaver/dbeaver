@@ -523,10 +523,12 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         }
 
         Set<DBPConnectionType> changedSet = new HashSet<>();
+        boolean hasExistingTypeChanges = false;
 
         for (DBPConnectionType connectionType : toRemove) {
             registry.removeConnectionType(connectionType);
             changedSet.add(connectionType);
+            hasExistingTypeChanges = true;
         }
 
         for (Map.Entry<DBPConnectionType, DBPConnectionType> entry : changedInfo.entrySet()) {
@@ -549,6 +551,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 hasChanges = true;
             } else if (!source.equals(changed)) {
                 // Changed type
+                hasExistingTypeChanges = true;
                 source.setId(changed.getId());
                 source.setName(changed.getName());
                 source.setDescription(changed.getDescription());
@@ -576,6 +579,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         Set<DBPDataSourceRegistry> affectedDataSourceRegs = new HashSet<>();
         if (!changedSet.isEmpty()) {
             registry.saveConnectionTypes();
+        }
+        if (hasExistingTypeChanges) {
             // Flush projects configs (as they cache connection type information)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
@@ -585,10 +590,9 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     if (changedSet.contains(cnnType)) {
                         if (toRemove.contains(cnnType)) {
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
+                            projectRegistry.flushConfig();
+                            affectedDataSourceRegs.add(projectRegistry);
                         }
-                        projectRegistry.flushConfig();
-                        affectedDataSourceRegs.add(projectRegistry);
-                        break;
                     }
                 }
             }
