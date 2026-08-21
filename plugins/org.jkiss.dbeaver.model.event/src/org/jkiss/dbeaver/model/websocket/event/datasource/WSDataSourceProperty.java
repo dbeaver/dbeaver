@@ -19,5 +19,6 @@ package org.jkiss.dbeaver.model.websocket.event.datasource;
 public enum WSDataSourceProperty {
     CONFIGURATION, // configuration like host, port, etc
     NAME, // visual changes like name, description that doesn't affect connection configuration
+    NAVIGATION, // navigator location changes
     INTERNAL // internal changes like extensions
 }
