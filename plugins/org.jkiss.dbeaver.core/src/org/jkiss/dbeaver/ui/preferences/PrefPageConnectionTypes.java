@@ -590,9 +590,10 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     if (changedSet.contains(cnnType)) {
                         if (toRemove.contains(cnnType)) {
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
-                            projectRegistry.flushConfig();
-                            affectedDataSourceRegs.add(projectRegistry);
                         }
+                        projectRegistry.flushConfig();
+                        affectedDataSourceRegs.add(projectRegistry);
+                        break;
                     }
                 }
             }
