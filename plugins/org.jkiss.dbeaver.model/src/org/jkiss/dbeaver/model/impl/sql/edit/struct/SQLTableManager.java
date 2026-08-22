@@ -457,8 +457,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 query.insert(insertPos, ","); //$NON-NLS-1$
             }
 
-            // Return position after " --" so that the next search skips this comment
-            return commentPos + 3;
+            // Resume at the buffer end so that the next search never starts inside this comment
+            return query.length();
         } else {
             query.append(","); //$NON-NLS-1$
             return query.length();
