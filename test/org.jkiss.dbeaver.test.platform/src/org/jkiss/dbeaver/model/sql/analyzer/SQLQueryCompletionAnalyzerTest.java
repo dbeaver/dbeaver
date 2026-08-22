@@ -17,15 +17,21 @@
 package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.BadLocationException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposal;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
@@ -543,5 +549,126 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         Set<String> proposals = modelDataRequest
             .requestNewStrings("SELECT * FROM table1 a, table2 b WHERE c.|");
         Assertions.assertTrue(proposals.isEmpty());
+    }
+
+    @Test
+    public void testRowSourceFunctionCompletion() throws DBException {
+        final RequestResult request = RequestBuilder
+            .schemas(d -> {
+                d.schema("public", s -> {
+                    s.table("table1", empty());
+                    s.procedure("test_func");
+                });
+            })
+            .prepare()
+            .setSearchProcedures(true);
+
+        final Set<String> proposals = request.requestNewStrings("SELECT * FROM te|");
+        Assertions.assertTrue(proposals.stream().anyMatch(p -> p.contains("test_func")));
+    }
+
+    @Test
+    public void testQualifiedRowSourceFunctionCompletion() throws DBException {
+        final RequestResult request = RequestBuilder
+            .schemas(d -> {
+                d.schema("public", s -> {
+                    s.table("table1", empty());
+                    s.procedure("test_func");
+                });
+            })
+            .prepare()
+            .setSearchProcedures(true);
+
+        final Set<String> proposals = request.requestNewStrings("SELECT * FROM public.te|");
+        Assertions.assertTrue(proposals.stream().anyMatch(p -> p.contains("test_func")));
+    }
+
+    @Test
+    public void testRowSourceFunctionCompletionDisabled() throws DBException {
+        final RequestResult request = RequestBuilder
+            .schemas(d -> {
+                d.schema("public", s -> {
+                    s.table("table1", empty());
+                    s.procedure("test_func");
+                });
+            })
+            .prepare();
+
+        {
+            final Set<String> proposals = request.requestNewStrings("SELECT * FROM te|");
+            Assertions.assertFalse(proposals.stream().anyMatch(p -> p.contains("test_func")));
+        }
+
+        {
+            final Set<String> proposals = request.requestNewStrings("SELECT * FROM public.te|");
+            Assertions.assertFalse(proposals.stream().anyMatch(p -> p.contains("test_func")));
+        }
+    }
+
+    /**
+     * Completing a partially typed routine name must replace the typed part of the identifier,
+     * leaving no stale characters behind (dbeaver/dbeaver#20261)
+     */
+    @Test
+    public void testRowSourceFunctionCompletionReplacesTypedPrefix() throws DBException {
+        final RequestResult request = RequestBuilder
+            .schemas(d -> {
+                d.schema("public", s -> {
+                    s.table("table1", empty());
+                    s.procedure("test_func");
+                });
+            })
+            .prepare()
+            .setSearchProcedures(true);
+
+        this.assertProposalsReplaceTypedWord(request, "SELECT * FROM te|");
+        this.assertProposalsReplaceTypedWord(request, "SELECT * FROM public.te|");
+    }
+
+    private void assertProposalsReplaceTypedWord(@NotNull RequestResult request, @NotNull String sql) throws DBException {
+        final int cursor = sql.indexOf('|');
+        Assertions.assertTrue(cursor > 0);
+        final String documentText = sql.substring(0, cursor) + sql.substring(cursor + 1);
+
+        final List<SQLQueryCompletionProposal> proposals = request.requestNewProposals(sql).stream()
+            .filter(p -> p.getReplacementString().contains("test_func"))
+            .collect(Collectors.toList());
+        Assertions.assertFalse(proposals.isEmpty(), "No proposals for " + sql);
+
+        for (SQLQueryCompletionProposal proposal : proposals) {
+            // Reproduces the way the UI applies an accepted proposal over the current document state
+            final Document document = new Document(documentText);
+            try {
+                document.replace(
+                    proposal.getReplacementOffset(),
+                    cursor - proposal.getReplacementOffset(),
+                    proposal.getReplacementString()
+                );
+            } catch (BadLocationException e) {
+                throw new DBException("Invalid replacement range", e);
+            }
+            final String applied = document.get();
+            Assertions.assertEquals(
+                1,
+                countOccurrences(applied, "test_func"),
+                () -> "Duplicated identifier after applying proposal: " + applied
+            );
+            Assertions.assertTrue(
+                applied.startsWith("SELECT * FROM "),
+                () -> "Typed prefix was not replaced: " + applied
+            );
+            Assertions.assertTrue(
+                applied.substring("SELECT * FROM ".length()).matches("(public\\.)?test_func.*"),
+                () -> "Typed prefix was not replaced: " + applied
+            );
+        }
+    }
+
+    private static int countOccurrences(@NotNull String text, @NotNull String fragment) {
+        int count = 0;
+        for (int index = text.indexOf(fragment); index >= 0; index = text.indexOf(fragment, index + 1)) {
+            count++;
+        }
+        return count;
     }
 }

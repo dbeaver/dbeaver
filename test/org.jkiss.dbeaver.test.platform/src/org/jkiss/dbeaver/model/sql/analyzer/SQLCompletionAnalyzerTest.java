@@ -558,4 +558,60 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
             .request("SELECT * FROM table1 a, table2 b WHERE c.|");
         Assertions.assertTrue(proposals.isEmpty());
     }
+
+    @Test
+    public void testRowSourceFunctionCompletion() throws DBException {
+        final RequestResult request = RequestBuilder
+            .tables(s -> {
+                s.table("table1", empty());
+                s.procedure("test_func");
+            })
+            .prepare()
+            .setSearchProcedures(true);
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM te|");
+            Assertions.assertTrue(
+                proposals.stream().anyMatch(p -> p.getReplacementString().contains("test_func")),
+                () -> "proposals: " + proposals.stream().map(p -> p.getReplacementString()).toList()
+            );
+        }
+
+        {
+            final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM |");
+            Assertions.assertTrue(
+                proposals.stream().anyMatch(p -> p.getReplacementString().contains("test_func")),
+                () -> "proposals: " + proposals.stream().map(p -> p.getReplacementString()).toList()
+            );
+        }
+    }
+
+    @Test
+    public void testQualifiedRowSourceFunctionCompletion() throws DBException {
+        final RequestResult request = RequestBuilder
+            .schemas(d -> {
+                d.schema("public", s -> {
+                    s.table("table1", empty());
+                    s.procedure("test_func");
+                });
+            })
+            .prepare()
+            .setSearchProcedures(true);
+
+        final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM public.te|");
+        Assertions.assertTrue(proposals.stream().anyMatch(p -> p.getReplacementString().contains("test_func")));
+    }
+
+    @Test
+    public void testRowSourceFunctionCompletionDisabled() throws DBException {
+        final RequestResult request = RequestBuilder
+            .tables(s -> {
+                s.table("table1", empty());
+                s.procedure("test_func");
+            })
+            .prepare();
+
+        final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM te|");
+        Assertions.assertFalse(proposals.stream().anyMatch(p -> p.getReplacementString().contains("test_func")));
+    }
 }

@@ -26,14 +26,18 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -44,11 +48,13 @@ public class RequestBuilder {
     private final DataSource dataSource;
     private final DBSObject object;
     private final List<? extends DBSObject> children;
+    private final Builder<?, ?> builder;
 
-    private RequestBuilder(@NotNull DataSource dataSource, @NotNull DBSObject object, @NotNull List<? extends DBSObject> children) {
+    private RequestBuilder(@NotNull DataSource dataSource,@NotNull DBSObject object, @NotNull List<? extends DBSObject> children, @NotNull Builder<?, ?> builder) {
         this.dataSource = dataSource;
         this.object = object;
         this.children = children;
+        this.builder = builder;
         SQLDialect dialect = new GenericSQLDialect() {
             @Override
             public boolean supportsAliasInSelect() {
@@ -62,27 +68,27 @@ public class RequestBuilder {
         final DataSource dataSource = createDataSource();
         final DatabaseContainerBuilder builder = new DatabaseContainerBuilder(dataSource, "<unnamed>");
         applier.apply(builder);
-        return new RequestBuilder(dataSource, builder.build(), builder.getChildren());
+        return new RequestBuilder(dataSource, builder.build(), builder.getChildren(), builder);
     }
 
     public static RequestBuilder schemas(Builder.Consumer<SchemaContainerBuilder> applier) throws DBException {
         final DataSource dataSource = createDataSource();
         final SchemaContainerBuilder builder = new SchemaContainerBuilder(dataSource, "<unnamed>");
         applier.apply(builder);
-        return new RequestBuilder(dataSource, builder.build(), builder.getChildren());
+        return new RequestBuilder(dataSource, builder.build(), builder.getChildren(), builder);
     }
 
     public static RequestBuilder tables(Builder.Consumer<TableContainerBuilder> applier) throws DBException {
         final DataSource dataSource = createDataSource();
         final TableContainerBuilder builder = new TableContainerBuilder(dataSource, "<unnamed>");
         applier.apply(builder);
-        return new RequestBuilder(dataSource, builder.build(), builder.getChildren());
+        return new RequestBuilder(dataSource, builder.build(), builder.getChildren(), builder);
     }
 
     public static RequestBuilder empty() throws DBException {
         final DataSource dataSource = createDataSource();
         final TableAttributeContainerBuilder builder = new TableAttributeContainerBuilder(dataSource, "<unnamed>");
-        return new RequestBuilder(dataSource, builder.build(), builder.getChildren());
+        return new RequestBuilder(dataSource, builder.build(), builder.getChildren(), builder);
     }
 
     @NotNull
@@ -96,8 +102,18 @@ public class RequestBuilder {
         when(dataSourceContainer.getPreferenceStore()).thenReturn(preferenceStore);
 
         when(dataSource.getContainer()).thenReturn(dataSourceContainer);
+        when(dataSource.getDataSource()).thenReturn(dataSource);
         when(dataSource.getChild(any(), any())).then(x -> DBUtils.findObject(children, x.getArgument(1, String.class)));
         when(dataSource.getChildren(any())).then(x -> children);
+        when(((DBSProcedureContainer) dataSource).getProcedures(any())).then(x -> {
+            final List<DBSProcedure> procedures = new ArrayList<>(builder.getProcedures());
+            for (DBSObject child : children) {
+                if (child instanceof DBSProcedureContainer procContainer) {
+                    procedures.addAll(procContainer.getProcedures(x.getArgument(0, DBRProgressMonitor.class)));
+                }
+            }
+            return procedures;
+        });
 
         return new RequestResult(dataSource);
     }
@@ -122,12 +138,13 @@ public class RequestBuilder {
             RelationalObjectType.TYPE_TRIGGER,
             RelationalObjectType.TYPE_DATA_TYPE
         });
+        when(dsInfo.supportsStoredCode()).thenReturn(true);
 
         DataSource ds = mock(DataSource.class);
         when(ds.getInfo()).then(x -> dsInfo);
         return ds;
     }
 
-    public interface DataSource extends DBPDataSource, DBSObjectContainer {
+    public interface DataSource extends DBPDataSource, DBSObjectContainer, DBSProcedureContainer {
     }
 }
