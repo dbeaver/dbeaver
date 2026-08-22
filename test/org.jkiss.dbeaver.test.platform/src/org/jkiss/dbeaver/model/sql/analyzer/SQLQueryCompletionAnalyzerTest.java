@@ -621,46 +621,43 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
             .prepare()
             .setSearchProcedures(true);
 
-        this.assertProposalsReplaceTypedWord(request, "SELECT * FROM te|");
-        this.assertProposalsReplaceTypedWord(request, "SELECT * FROM public.te|");
-    }
+        for (String sql : List.of("SELECT * FROM te|", "SELECT * FROM public.te|")) {
+            final int cursor = sql.indexOf('|');
+            Assertions.assertTrue(cursor > 0);
+            final String documentText = sql.substring(0, cursor) + sql.substring(cursor + 1);
 
-    private void assertProposalsReplaceTypedWord(@NotNull RequestResult request, @NotNull String sql) throws DBException {
-        final int cursor = sql.indexOf('|');
-        Assertions.assertTrue(cursor > 0);
-        final String documentText = sql.substring(0, cursor) + sql.substring(cursor + 1);
+            final List<SQLQueryCompletionProposal> proposals = request.requestNewProposals(sql).stream()
+                .filter(p -> p.getReplacementString().contains("test_func"))
+                .collect(Collectors.toList());
+            Assertions.assertFalse(proposals.isEmpty(), "No proposals for " + sql);
 
-        final List<SQLQueryCompletionProposal> proposals = request.requestNewProposals(sql).stream()
-            .filter(p -> p.getReplacementString().contains("test_func"))
-            .collect(Collectors.toList());
-        Assertions.assertFalse(proposals.isEmpty(), "No proposals for " + sql);
-
-        for (SQLQueryCompletionProposal proposal : proposals) {
-            // Reproduces the way the UI applies an accepted proposal over the current document state
-            final Document document = new Document(documentText);
-            try {
-                document.replace(
-                    proposal.getReplacementOffset(),
-                    cursor - proposal.getReplacementOffset(),
-                    proposal.getReplacementString()
+            for (SQLQueryCompletionProposal proposal : proposals) {
+                // Reproduces the way the UI applies an accepted proposal over the current document state
+                final Document document = new Document(documentText);
+                try {
+                    document.replace(
+                        proposal.getReplacementOffset(),
+                        cursor - proposal.getReplacementOffset(),
+                        proposal.getReplacementString()
+                    );
+                } catch (BadLocationException e) {
+                    throw new DBException("Invalid replacement range", e);
+                }
+                final String applied = document.get();
+                Assertions.assertEquals(
+                    1,
+                    countOccurrences(applied, "test_func"),
+                    () -> "Duplicated identifier after applying proposal: " + applied
                 );
-            } catch (BadLocationException e) {
-                throw new DBException("Invalid replacement range", e);
+                Assertions.assertTrue(
+                    applied.startsWith("SELECT * FROM "),
+                    () -> "Typed prefix was not replaced: " + applied
+                );
+                Assertions.assertTrue(
+                    applied.substring("SELECT * FROM ".length()).matches("(public\\.)?test_func.*"),
+                    () -> "Typed prefix was not replaced: " + applied
+                );
             }
-            final String applied = document.get();
-            Assertions.assertEquals(
-                1,
-                countOccurrences(applied, "test_func"),
-                () -> "Duplicated identifier after applying proposal: " + applied
-            );
-            Assertions.assertTrue(
-                applied.startsWith("SELECT * FROM "),
-                () -> "Typed prefix was not replaced: " + applied
-            );
-            Assertions.assertTrue(
-                applied.substring("SELECT * FROM ".length()).matches("(public\\.)?test_func.*"),
-                () -> "Typed prefix was not replaced: " + applied
-            );
         }
     }
 
