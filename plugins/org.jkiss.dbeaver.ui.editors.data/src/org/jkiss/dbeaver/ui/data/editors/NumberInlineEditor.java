@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ import java.util.Locale;
 public class NumberInlineEditor extends BaseValueEditor<Text> {
 
     private static final Log log = Log.getLog(NumberInlineEditor.class);
-    private static final int MAX_NUMBER_LENGTH = 100;
+    // PG numeric can be ~147k digits. 100 truncated the value on Windows.
+    private static final int NUMBER_EXTRA_CHARS = 16;
+    private static final int MAX_NUMBER_LENGTH = 131072 + 16383 + NUMBER_EXTRA_CHARS;
 
     // Disable numbers verification. Life is complicated, sometimes numbers aren't actually "classic" numbers
     private static final boolean VALIDATE_NUMBER_INPUT = false;
@@ -62,7 +64,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         final Text editor = new Text(valueController.getEditPlaceholder(), inline ? SWT.BORDER : SWT.MULTI);
         editor.setEditable(!valueController.isReadOnly());
-        editor.setTextLimit(MAX_NUMBER_LENGTH);
+        editor.setTextLimit(resolveTextLimit());
         if (VALIDATE_NUMBER_INPUT) {
             Object curValue = valueController.getValue();
             Class<?> type = curValue instanceof Number ?
@@ -78,11 +80,30 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         return editor;
     }
 
+    private int resolveTextLimit() {
+        int limit = MAX_NUMBER_LENGTH;
+        Integer precision = valueController.getValueType().getPrecision();
+        if (precision != null && precision > 0) {
+            limit = Math.max(limit, precision + NUMBER_EXTRA_CHARS);
+        }
+        Object value = valueController.getValue();
+        if (value != null) {
+            int valueLength = String.valueOf(value).length();
+            if (valueLength > limit) {
+                limit = valueLength;
+            }
+        }
+        return limit;
+    }
+
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
         if (value != null) {
             String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+            if (strValue.length() > control.getTextLimit()) {
+                control.setTextLimit(strValue.length());
+            }
             control.setText(strValue);
         } else {
             control.setText("");
