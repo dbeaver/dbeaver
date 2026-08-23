@@ -1,32 +1,31 @@
 # DBeaver – AI Agent Instructions
 
-## What is DBeaver?
+## Overview
 
 DBeaver Community Edition (CE) is a free, open-source, multi-platform database management tool written in Java. 
-It supports 100+ database drivers out of the box and is built on Eclipse RCP with an OSGi plugin architecture.
-The commercial products share the same model layer as DBeaver CE and the browser-based [CloudBeaver](https://github.com/dbeaver/cloudbeaver).
+It supports 100+ database drivers (mostly JDBC) and is built on Eclipse RCP with an OSGi plugin architecture.
+The commercial products share the same model layer as DBeaver CE + browser-based (GitHub repo `cloudbeaver`) and CLI (GitHub repo `dbvr`).
 
 ## Repository Layout
 
-- plugins: main source code, OSGi bundles
+- plugins/bundles: main source code, OSGi bundles
 - test: test plugins
 - features: Eclipse feature descriptors
 - product: Eclipse product configurations + aggregator
 
 ## Technology Stack
 
-- Language - Java (language level 21)
-- Platform - OSGi / Eclipse Equinox
-- UI framework - Eclipse RCP (SWT + JFace)
-- Build system - Apache  or custom Maven + Eclipse Tycho
-- DB connectivity - JDBC or custom implementation (e.g. WMI)
-- SQL parsing - JSQLParser, ANTLR4 (LSM module)
-- Testing - JUnit 5, Mockito, custom OSGi test runner
+- Language: Java (21)
+- Platform: OSGi / Eclipse Equinox
+- UI: Eclipse RCP (SWT + JFace)
+- DB connectivity: JDBC or custom implementation (e.g. WMI)
+- SQL parsing: JSQLParser, ANTLR4 (LSM module)
+- Testing: JUnit 5, Mockito, custom OSGi test runner
 
 ## Build System
 
-Eclipse Tycho (Maven plugin for OSGi). 
-Each plugin is packaged as `eclipse-plugin`; test plugins as `eclipse-test-plugin`.
+- Apache Maven + Eclipse Tycho. 
+- Each plugin is packaged as `eclipse-plugin`; test plugins as `eclipse-test-plugin`.
 
 ### Building
 
@@ -66,11 +65,10 @@ It may fail because of missing dependencies in ~/.m2. In this case run `mvn clea
 - `DBC*` - Connectivity (execution context) (`DBCSession`, `DBCException`)
 - `DBD*` - Data values/formatting (`DBDValueHandler`, `DBDDataFilter`)
 - `DBR*` - Runtime (progress, jobs) (`DBRProgressMonitor`, `DBRRunnableWithProgress`)
-- `JDBC*`- JDBC-specific implementations (`JDBCDataSource`, `JDBCSQLDialect`)
 
 ### License header
 
-Every Java file must begin with Apache 2.0 license header (it is also in `docs/license_header.txt`)
+For OSS repos every Java file must begin with Apache 2.0 license header (it is also in `docs/license_header.txt`)
 
 ### Annotations
 
@@ -104,17 +102,12 @@ Use `org.jkiss.dbeaver.Log`. Do not use `System.out/err` or SLF4J directly.
 
 ### Model / UI separation
 
-Plugins are split into pure-model (`ext.mysql`) and UI (`ext.mysql.ui`) bundles. 
-Model plugins must not depend on SWT, JFace or any other UI-related bundles
+Plugins are split into pure-model (e.g. `o.j.d.ext.mysql`, `o.j.d.model.ai`) and UI (`o.j.d.ext.mysql.ui`, `o.j.d.ui.charts`) bundles. 
+Model plugins must not depend on SWT, JFace or any other UI-related bundles.
 
 ### Extension-point driven design
 
-Features are contributed via Eclipse extension points declared in `plugin.xml`. Key extension points:
-
-- `org.jkiss.dbeaver.dataSourceProvider` - Register a new database driver/provider
-- `org.jkiss.dbeaver.navigator` (via tree config in plugin.xml) - Define the navigator tree structure for a database
-- `org.jkiss.dbeaver.service` - Register a service implementation
-- etc
+Features are contributed via Eclipse extension points declared in `plugin.xml`.
 
 ### Adding a new database driver
 
@@ -130,20 +123,11 @@ Note: For many drivers, updating `plugin.xml` alone is enough — you only need 
 
 ## Testing
 
-### Test structure
-
 - Test plugins are in the `test/` directory.
 - Each test plugin mirrors a production plugin: `test/org.jkiss.dbeaver.ext.postgresql.test/`.
 - Tests extend `DBeaverUnitTest` (from `org.jkiss.dbeaver.osgi.test.runner`) or use `@RunWithApplication`/`@RunWithProduct` annotations for integration tests that need a running OSGi container.
-
-### Running tests
-
-Tests are run by Maven Tycho as part of the standard build. 
-There is no separate test-only Maven command; tests execute during `mvn install` or `mvn verify` when the `desktop`.
-
-### Writing tests
-
-Use Mockito for mocking.
+- Tests are run by Maven Tycho as part of the standard build. 
+- There is no separate test-only Maven command; tests execute during `mvn install` or `mvn verify` when the `desktop`.
 
 ## Branches and Git Workflow
 
