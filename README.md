@@ -63,6 +63,16 @@ ODBC, MongoDB, Cassandra, Couchbase, CouchDB, Redis, InfluxDB, Firestore, BigTab
 Also, we support flat files as databases: CSV, XLSX, Json, XML, Parquet.  
 You can find the list of all databases supported in commercial versions <a href="https://dbeaver.com/databases/">here</a>.
 
+## AI integration
+
+- All DBeaver products contain AI Chat view similar to classic LLM chats.
+- We use smart chat context which provides LLMs details about database structure, SQL dialect, etc. 
+- LLM integration uses context-dependent dynamic tools and is very efficient from token consumption point of view.
+- AI providers in Community version:
+  - OpenAI (allows to configure most of existing LLMs with custom endpoint)
+  - Copilot
+- Pro versions provide additional AI tools + native support of Anthropic/Grok/Azure/Bedrock/Gemini/Ollama providers.
+
 ## Feedback
 
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
@@ -87,8 +97,7 @@ Thank you!
 
 ---------
 
-Our other open-source products:
+## Our other open-source products:
 
 - <a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> - web-based database management tool built on the DBeaver platform.<br/>Runs as server (docker) and provides rich web interface (SPA).  
 - <a href="https://github.com/dbeaver/dbvr">dbvr</a> - CLI database management tool. Useful in CI/CD pipelines and all sort of automations. 
-
