@@ -146,10 +146,13 @@ Note: For many drivers, updating `plugin.xml` alone is enough — you only need 
 - `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
 - Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.
 
-## Key Files Quick Reference
+## Code rules and style
 
-- `pom.xml` (root) - Tycho build configuration, Java version, target platforms 
-- `product/aggregate/pom.xml` - Top-level build entry point used by CI 
+- Follow code style of the existing code. The most recent code has good code style.
+- Do not hardcode constants, use constants declared in libraries or existing *Constants classes in dbeaver codebase or create new ones if needed.
+- Do not hardcode UI text messages, use NLS *Messages bundles instead. But messages in exceptions should be in English.
+- Leave comments in code for all non-obvious algorithms. Do not comment simple or obvious functions.
+- Create unit tests for all model (non-UI) functions if possible.
 
 ## Code Contribution Guide
 
