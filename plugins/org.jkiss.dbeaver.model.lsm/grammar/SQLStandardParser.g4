@@ -450,7 +450,7 @@ functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((
 functionCallTargetName: qualifiedName|IF;
 functionCallOperand: anyValue;
 
-aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
+aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? aggregateExprParam* RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|LIMIT|SEPARATOR|OFFSET|Comma|rowValueConstructor;
 
 /*
