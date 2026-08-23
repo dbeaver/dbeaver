@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
-import java.sql.ResultSet;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSequence;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.ResultSet;
+import java.util.Map;
 
 public class TiberoSequence extends OracleSequence {
 
@@ -35,8 +35,10 @@ public class TiberoSequence extends OracleSequence {
 
     @NotNull
     @Override
-    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor
-                                        , @NotNull Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         String definition = sourceText;
         if (definition == null) {
             definition = buildStatement(false) + ";";

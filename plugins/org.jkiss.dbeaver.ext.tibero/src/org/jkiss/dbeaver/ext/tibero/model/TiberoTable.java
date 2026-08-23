@@ -17,13 +17,6 @@
 
 package org.jkiss.dbeaver.ext.tibero.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -49,6 +42,13 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class TiberoTable extends OracleTable {
 
@@ -88,9 +88,11 @@ public class TiberoTable extends OracleTable {
 
     @NotNull
     @Override
-    public String getDDL(@NotNull DBRProgressMonitor monitor
-                       , @NotNull OracleDDLFormat ddlFormat
-                       , @NotNull java.util.Map<String, Object> options) throws DBException {
+    public String getDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleDDLFormat ddlFormat,
+        @NotNull java.util.Map<String, Object> options
+    ) throws DBException {
         java.util.Map<String, Object> ddlOptions = new java.util.HashMap<>(options);
         ddlOptions.put(DBPScriptObject.OPTION_SKIP_INDEXES, true);
         ddlOptions.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
@@ -100,8 +102,10 @@ public class TiberoTable extends OracleTable {
 
     @NotNull
     @Override
-    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor
-                                        , @NotNull java.util.Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull java.util.Map<String, Object> options
+    ) throws DBException {
         return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
     }
 
@@ -122,8 +126,10 @@ public class TiberoTable extends OracleTable {
 
     @Nullable
     @Override
-    public OracleTableColumn getAttribute(@NotNull DBRProgressMonitor monitor
-                                        , @NotNull String attributeName) throws DBException {
+    public OracleTableColumn getAttribute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String attributeName
+    ) throws DBException {
         for (OracleTableColumn column : getAttributes(monitor)) {
             if (attributeName.equals(column.getName())) {
                 return column;

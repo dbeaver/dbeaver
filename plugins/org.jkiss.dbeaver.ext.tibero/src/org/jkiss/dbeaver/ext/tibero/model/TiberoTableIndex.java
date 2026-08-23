@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
@@ -27,29 +25,38 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
+import java.util.Map;
+
 /**
  * TiberoTableIndex
  */
 public class TiberoTableIndex extends OracleTableIndex {
 
-    public TiberoTableIndex(OracleSchema schema
-                          , OracleTableBase table
-                          , String indexName
-                          , java.sql.ResultSet dbResult) {
+    public TiberoTableIndex(
+        OracleSchema schema,
+        OracleTableBase table,
+        String indexName,
+        java.sql.ResultSet dbResult
+    ) {
         super(schema, table, indexName, dbResult);
     }
 
-    public TiberoTableIndex(OracleSchema schema
-                          , OracleTableBase parent
-                          , String name, boolean unique
-                          , DBSIndexType indexType) {
+    public TiberoTableIndex(
+        OracleSchema schema,
+        OracleTableBase parent,
+        String name,
+        boolean unique,
+        DBSIndexType indexType
+    ) {
         super(schema, parent, name, unique, indexType);
     }
 
     @NotNull
     @Override
-    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor
-                                        , @NotNull Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         String definition = super.getObjectDefinitionText(monitor, options);
         if (definition != null) {
             int end = definition.length() - 1;

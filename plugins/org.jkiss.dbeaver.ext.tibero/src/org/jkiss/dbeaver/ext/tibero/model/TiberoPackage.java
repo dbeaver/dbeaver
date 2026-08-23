@@ -16,14 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -43,9 +35,18 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class TiberoPackage extends OraclePackage implements DBSObjectContainer, DBSPackage, DBSProcedureContainer {
 
-    private final ProceduresCache proceduresCache = new ProceduresCache();
+    private final TiberoProceduresCache tiberoProceduresCache = new TiberoProceduresCache();
 
     public TiberoPackage(OracleSchema schema, ResultSet dbResult) {
         super(schema, dbResult);
@@ -74,22 +75,22 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
     @Association
     @Override
     public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException {
-        return (Collection) proceduresCache.getAllObjects(monitor, this);
+        return new ArrayList<>(tiberoProceduresCache.getAllObjects(monitor, this));
     }
 
     @Override
     public OracleProcedurePackaged getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
-        return proceduresCache.getObject(monitor, this, uniqueName);
+        return tiberoProceduresCache.getObject(monitor, this, uniqueName);
     }
 
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return proceduresCache.getAllObjects(monitor, this);
+        return tiberoProceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return proceduresCache.getObject(monitor, this, childName);
+        return tiberoProceduresCache.getObject(monitor, this, childName);
     }
 
     @NotNull
@@ -100,16 +101,16 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
 
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
-        proceduresCache.getAllObjects(monitor, this);
+        tiberoProceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        proceduresCache.clearCache();
+        tiberoProceduresCache.clearCache();
         return super.refreshObject(monitor);
     }
 
-    private class ProceduresCache extends JDBCObjectCache<OraclePackage, TiberoProcedurePackaged> {
+    private class TiberoProceduresCache extends JDBCObjectCache<OraclePackage, TiberoProcedurePackaged> {
 
         @NotNull
         @Override
@@ -117,10 +118,14 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
             throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT P.* \n" +
-                     ", CASE WHEN A.DATA_TYPE IS NULL THEN 'PROCEDURE' ELSE 'FUNCTION' END as PROCEDURE_TYPE \n" +
+                "     , CASE WHEN A.DATA_TYPE IS NULL THEN 'PROCEDURE' ELSE 'FUNCTION' END as PROCEDURE_TYPE \n" +
                 "FROM ALL_PROCEDURES P\n" +
                 "LEFT JOIN ALL_ARGUMENTS A \n" +
-                "ON A.OWNER = P.OWNER AND A.PACKAGE_NAME = P.OBJECT_NAME AND A.OBJECT_NAME = P.PROCEDURE_NAME AND A.ARGUMENT_NAME IS NULL AND A.DATA_LEVEL = 0\n" +
+                "  ON A.OWNER = P.OWNER\n" +
+                " AND A.PACKAGE_NAME = P.OBJECT_NAME\n" +
+                " AND A.OBJECT_NAME = P.PROCEDURE_NAME\n" +
+                " AND A.ARGUMENT_NAME IS NULL\n" +
+                " AND A.DATA_LEVEL = 0\n" +
                 "WHERE P.OWNER=? AND P.OBJECT_NAME=?\n" +
                 "ORDER BY P.PROCEDURE_NAME");
             dbStat.setString(1, owner.getSchema().getName());
@@ -129,16 +134,20 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
         }
 
         @Override
-        protected TiberoProcedurePackaged fetchObject(@NotNull JDBCSession session
-                                                    , @NotNull OraclePackage owner
-                                                    , @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
-            return new TiberoProcedurePackaged(TiberoPackage.this, dbResult);
+        protected TiberoProcedurePackaged fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull OraclePackage owner,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException, DBException {
+            return new TiberoProcedurePackaged(owner, dbResult);
         }
 
         @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor
-                                       , OraclePackage owner
-                                       , Iterator<TiberoProcedurePackaged> objectIter) {
+        protected void invalidateObjects(
+            DBRProgressMonitor monitor,
+            OraclePackage owner,
+            Iterator<TiberoProcedurePackaged> objectIter
+        ) {
             Map<String, TiberoProcedurePackaged> overloads = new HashMap<>();
             while (objectIter.hasNext()) {
                 TiberoProcedurePackaged proc = objectIter.next();

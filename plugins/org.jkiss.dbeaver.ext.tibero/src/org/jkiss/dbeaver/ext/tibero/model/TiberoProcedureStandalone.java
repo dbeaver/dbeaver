@@ -16,12 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
@@ -34,6 +28,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * TiberoProcedure
@@ -63,10 +63,12 @@ public class TiberoProcedureStandalone extends OracleProcedureStandalone {
         return parameters;
     }
 
-    private void loadParameters(@NotNull JDBCSession session
-                              , @NotNull DBRProgressMonitor monitor
-                              , @NotNull List<OracleProcedureArgument> parameters
-                              , boolean strict) throws SQLException {
+    private void loadParameters(
+        @NotNull JDBCSession session,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<OracleProcedureArgument> parameters,
+        boolean strict
+    ) throws SQLException {
         try (JDBCPreparedStatement dbStat = prepareParametersStatement(session, strict)) {
             try (JDBCResultSet resultSet = dbStat.executeQuery()) {
                 while (resultSet.next()) {
@@ -79,14 +81,16 @@ public class TiberoProcedureStandalone extends OracleProcedureStandalone {
         }
     }
 
-    private JDBCPreparedStatement prepareParametersStatement(@NotNull JDBCSession session
-                                                           , boolean strict) throws SQLException {
+    private JDBCPreparedStatement prepareParametersStatement(
+        @NotNull JDBCSession session,
+        boolean strict
+    ) throws SQLException {
         String whereClause = strict
             ? "OWNER = ? AND OBJECT_NAME = ? AND (PACKAGE_NAME IS NULL OR PACKAGE_NAME='') "
             : "OWNER = ? AND OBJECT_NAME = ? AND DATA_LEVEL=0 ";
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT A.*\n" +
-                 ", A.POSITION AS SEQUENCE \n" +
+            "     , A.POSITION AS SEQUENCE \n" +
             "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS A \n" +
             "WHERE " + whereClause + "\n" +
             "ORDER BY POSITION, DATA_LEVEL");

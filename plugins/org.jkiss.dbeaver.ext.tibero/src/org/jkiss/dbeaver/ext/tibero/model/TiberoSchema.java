@@ -16,16 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -69,14 +59,22 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * TiberoSchema
  */
 public class TiberoSchema extends OracleSchema {
 
     private static final Log log = Log.getLog(TiberoSchema.class);
-    private final JDBCObjectCache<OracleSchema, OracleSequence> sequenceCache = new SequenceCache();
-    private final JDBCObjectCache<OracleSchema, OraclePackage> packageCache = new PackageCache();
 
     public TiberoSchema(@NotNull TiberoDataSource dataSource, long id, @NotNull String name) {
         super(dataSource, id, name);
@@ -93,9 +91,10 @@ public class TiberoSchema extends OracleSchema {
     }
 
     @Override
-    public TiberoTable createTableImpl(@NotNull DBRProgressMonitor monitor
-                                     , @NotNull OracleSchema owner
-                                     , @NotNull JDBCResultSet dbResult
+    public TiberoTable createTableImpl(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleSchema owner,
+        @NotNull JDBCResultSet dbResult
     ) {
         return new TiberoTable(monitor, owner, dbResult);
     }
@@ -948,7 +947,7 @@ public class TiberoSchema extends OracleSchema {
     @Override
     public Collection<OracleSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
         cacheSequences(monitor);
-        return sequenceCache.getAllObjects(monitor, this);
+        return super.getSequences(monitor);
     }
 
     @NotNull
@@ -956,7 +955,7 @@ public class TiberoSchema extends OracleSchema {
     @Override
     public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor) throws DBException {
         cachePackages(monitor);
-        return packageCache.getAllObjects(monitor, this);
+        return super.getPackages(monitor);
     }
 
     @NotNull
@@ -1030,9 +1029,9 @@ public class TiberoSchema extends OracleSchema {
             children.addAll(super.getSynonyms(monitor));
         }
         if (isSequencesAsChildrenEnabled()) {
-            children.addAll(sequenceCache.getAllObjects(monitor, this));
+            children.addAll(super.getSequences(monitor));
         }
-        children.addAll(packageCache.getAllObjects(monitor, this));
+        children.addAll(super.getPackages(monitor));
         return children;
     }
 
@@ -1061,12 +1060,12 @@ public class TiberoSchema extends OracleSchema {
             }
         }
         if (isSequencesAsChildrenEnabled()) {
-            child = sequenceCache.getObject(monitor, this, childName);
+            child = getSequence(monitor, childName);
             if (child != null) {
                 return child;
             }
         }
-        return packageCache.getObject(monitor, this, childName);
+        return getPackage(monitor, childName);
     }
 
     @Override
@@ -1082,9 +1081,27 @@ public class TiberoSchema extends OracleSchema {
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        sequenceCache.clearCache();
-        packageCache.clearCache();
         return super.refreshObject(monitor);
+    }
+
+    @Nullable
+    private OracleSequence getSequence(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        for (OracleSequence sequence : super.getSequences(monitor)) {
+            if (name.equalsIgnoreCase(sequence.getName())) {
+                return sequence;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private OraclePackage getPackage(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        for (OraclePackage packageObject : super.getPackages(monitor)) {
+            if (name.equalsIgnoreCase(packageObject.getName())) {
+                return packageObject;
+            }
+        }
+        return null;
     }
 
     private boolean isSynonymsAsChildrenEnabled() {
@@ -1095,42 +1112,5 @@ public class TiberoSchema extends OracleSchema {
     private boolean isSequencesAsChildrenEnabled() {
         DBPConnectionConfiguration cfg = getDataSource().getContainer().getConnectionConfiguration();
         return CommonUtils.getBoolean(cfg.getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES));
-    }
-
-    private class SequenceCache extends JDBCObjectCache<OracleSchema, OracleSequence> {
-        @NotNull
-        @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
-                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SEQUENCES") +
-                " WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
-            dbStat.setString(1, owner.getName());
-            return dbStat;
-        }
-
-        @Override
-        protected OracleSequence fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new TiberoSequence(owner, resultSet);
-        }
-    }
-
-    private class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
-        @NotNull
-        @Override
-        protected JDBCPreparedStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
-                " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
-                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
-                " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? ORDER BY OBJECT_NAME");
-            dbStat.setString(1, owner.getName());
-            return dbStat;
-        }
-
-        @Override
-        protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
-            return new TiberoPackage(owner, dbResult);
-        }
     }
 }
