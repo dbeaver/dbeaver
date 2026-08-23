@@ -65,7 +65,8 @@ You can find the list of all databases supported in commercial versions <a href=
 
 ## AI integration
 
-- All DBeaver products contain AI Chat view similar to classic LLM chats.
+- All DBeaver products contain AI Chat view similar to classic LLM chats. 
+- You can generate/analyse/optimize your SQL queries, work with database structure or even work with databases with a very little knowledge of SQL.
 - We use smart chat context which provides LLMs details about database structure, SQL dialect, etc. 
 - LLM integration uses context-dependent dynamic tools and is very efficient from token consumption point of view.
 - AI providers in Community version:
