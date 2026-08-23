@@ -77,6 +77,16 @@ For OSS repos every Java file must begin with Apache 2.0 license header (it is a
 - Mark associations (child collections) with `@Association`.
 - Use `@ForTest` on members that exist solely for unit-testing access.
 
+### Code style
+
+- Follow code style of the existing code. The most recent code has good code style.
+- Leave comments in code for all non-obvious algorithms. Do not comment simple or obvious functions.
+
+### Hardcode
+
+- Do not hardcode constants, use constants declared in libraries or existing *Constants classes in dbeaver codebase or create new ones if needed.
+- Do not hardcode UI text messages, use NLS *Messages bundles instead. But messages in exceptions should be in English.
+
 ### Logging
 
 Use `org.jkiss.dbeaver.Log`. Do not use `System.out/err` or SLF4J directly.
@@ -87,27 +97,30 @@ Use `org.jkiss.dbeaver.Log`. Do not use `System.out/err` or SLF4J directly.
 - Wrap JDBC `SQLException` in `DBException` when surfacing to upper layers.
 - Using unchecked runtime exceptions is allowed only in exceptional cases (when there are no other options).
 
-### Progress monitoring
+### Long-running tasks
 
-- Long-running operations always accept a `DBRProgressMonitor`. 
-- Use `new VoidProgressMonitor()` in tests when a real monitor is not needed.
+- Long-running methods should accept a `DBRProgressMonitor monitor` as the first parameter. 
+- Use Jobs (by default extend AbstractJob class) or utils like RuntimeUtils to perform asynchronous tasks.
 
-### NLS / Localization
+### NLS / Localizations
 
 - Each plugin that has user-visible strings has a `*Messages.java` + `*Messages.properties` (and locale variants).
 - Reference strings as `*Messages.MY_STRING_KEY`.
 - `plugin.xml` uses `%key` references to the `plugin.properties` file.
+- Whenever adding text constant add English localization at least.
 
 ## Architecture Patterns
 
 ### Model / UI separation
 
-Plugins are split into pure-model (e.g. `o.j.d.ext.mysql`, `o.j.d.model.ai`) and UI (`o.j.d.ext.mysql.ui`, `o.j.d.ui.charts`) bundles. 
-Model plugins must not depend on SWT, JFace or any other UI-related bundles.
+- Plugins are split into model (e.g. `o.j.d.ext.mysql`, `o.j.d.model.ai`) and UI (`o.j.d.ext.mysql.ui`, `o.j.d.ui.charts`) bundles. 
+- Model plugins must not depend on SWT, JFace or any other UI-related bundles.
+- Do not execute SQL queries or any other model-level things directly from UI modules, use abstracts in model layer.
 
 ### Extension-point driven design
 
-Features are contributed via Eclipse extension points declared in `plugin.xml`.
+- Features are contributed via Eclipse extension points declared in `plugin.xml`.
+- New extensible features should be formed as extension points/extensions.
 
 ### Adding a new database driver
 
@@ -123,6 +136,7 @@ Note: For many drivers, updating `plugin.xml` alone is enough — you only need 
 
 ## Testing
 
+- Create unit tests for all model (non-UI) functions if possible.
 - Test plugins are in the `test/` directory.
 - Each test plugin mirrors a production plugin: `test/org.jkiss.dbeaver.ext.postgresql.test/`.
 - Tests extend `DBeaverUnitTest` (from `org.jkiss.dbeaver.osgi.test.runner`) or use `@RunWithApplication`/`@RunWithProduct` annotations for integration tests that need a running OSGi container.
@@ -145,14 +159,6 @@ Note: For many drivers, updating `plugin.xml` alone is enough — you only need 
 - UI thread safety: All SWT/UI updates must run on the display thread. Use functions like `UIUtils.asyncExec(Runnable)` if needed.
 - `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
 - Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.
-
-## Code rules and style
-
-- Follow code style of the existing code. The most recent code has good code style.
-- Do not hardcode constants, use constants declared in libraries or existing *Constants classes in dbeaver codebase or create new ones if needed.
-- Do not hardcode UI text messages, use NLS *Messages bundles instead. But messages in exceptions should be in English.
-- Leave comments in code for all non-obvious algorithms. Do not comment simple or obvious functions.
-- Create unit tests for all model (non-UI) functions if possible.
 
 ## Code Contribution Guide
 
