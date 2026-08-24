@@ -19,11 +19,12 @@ package org.jkiss.dbeaver.tools.transfer.processor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.utils.CommonUtils;
@@ -43,7 +44,10 @@ public class ExecuteCommandEventProcessor implements IDataTransferEventProcessor
         final DBRShellCommand command = new DBRShellCommand(commandLine);
         command.setWorkingDirectory(workingDirectory);
 
-        ConfirmedShellCommandsManager.getInstance().validateCommandByUser(command, "task completion");
+        UIServiceShellCommands shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
+        if (shellCommandsService != null) {
+            shellCommandsService.validateByUser(command, Map.of("Context", "task completion"));
+        }
 
         final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command);
         processDescriptor.execute();
