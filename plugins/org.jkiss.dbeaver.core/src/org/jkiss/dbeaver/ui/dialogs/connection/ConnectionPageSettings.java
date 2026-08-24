@@ -68,8 +68,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -232,6 +232,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     void saveSettings(DataSourceDescriptor dataSource) {
+        dataSource.getConnectionConfiguration().setConfigProfile(getActiveProfile());
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (ArrayUtils.contains(extraPages, page)) {
