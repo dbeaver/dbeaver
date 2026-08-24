@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.app.config;
 
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigAction;
 import org.jkiss.dbeaver.ui.config.sample.SampleDatabaseUtil;
 
@@ -35,7 +36,9 @@ public final class ProductConfigCreateSampleDatabaseAction implements ProductCon
         if (project == null) {
             return;
         }
-        SampleDatabaseUtil.createSampleDatabase(project.getDataSourceRegistry());
+        UIUtils.asyncExec(() -> {
+            SampleDatabaseUtil.createSampleDatabase(project.getDataSourceRegistry());
+        });
     }
 
     @Override
@@ -45,6 +48,6 @@ public final class ProductConfigCreateSampleDatabaseAction implements ProductCon
             return false;
         }
         // Don't show the option to create a sample database if it already exists in the workspace
-        return !SampleDatabaseUtil.isSampleDatabaseExists(project.getDataSourceRegistry());
+        return !SampleDatabaseUtil.isSampleDatabaseExists(project);
     }
 }
