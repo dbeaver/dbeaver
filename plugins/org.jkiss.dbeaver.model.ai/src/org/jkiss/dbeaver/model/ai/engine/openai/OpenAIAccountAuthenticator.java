@@ -25,16 +25,13 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.BindException;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -43,18 +40,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
     private static final String ISSUER = "https://auth.openai.com";
@@ -314,7 +301,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
     private JsonObject sendForm(@NotNull String url, @NotNull Map<String, String> parameters) throws DBException {
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
             .timeout(requestTimeout)
-            .header("Content-Type", "application/x-www-form-urlencoded")
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_APP_FORM)
             .POST(HttpRequest.BodyPublishers.ofString(toForm(parameters)))
             .build();
         return send(request);
@@ -324,7 +311,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
     private JsonObject sendJson(@NotNull String url, @NotNull JsonObject body) throws DBException {
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
             .timeout(requestTimeout)
-            .header("Content-Type", "application/json")
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
             .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
             .build();
@@ -338,7 +325,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         body.addProperty("user_code", authorization.userCode());
         HttpRequest request = HttpRequest.newBuilder(URI.create(ISSUER + "/api/accounts/deviceauth/token"))
             .timeout(requestTimeout)
-            .header("Content-Type", "application/json")
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
             .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
             .build();
@@ -374,7 +361,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
 
     @NotNull
     private static JsonObject parseResponse(@NotNull HttpResponse<String> response) throws DBException {
-        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+        if (response.statusCode() < HttpConstants.CODE_OK || response.statusCode() >= 300) {
             String responseBody = response.body();
             if (responseBody.length() > 1_000) {
                 responseBody = responseBody.substring(0, 1_000) + "...";
@@ -401,26 +388,26 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         Map<String, String> parameters = parseQuery(exchange.getRequestURI().getRawQuery());
         String error = parameters.get("error");
         if (!expectedState.equals(parameters.get("state"))) {
-            writeCallbackResponse(exchange, 400, "OpenAI authorization failed: invalid state.");
+            writeCallbackResponse(exchange, HttpConstants.CODE_BAD_REQUEST, "OpenAI authorization failed: invalid state.");
         } else if (error != null) {
             String description = parameters.get("error_description");
             authorizationCode.completeExceptionally(new DBException(description == null ? error : description));
-            writeCallbackResponse(exchange, 200, "OpenAI authorization was cancelled. You can close this tab.");
+            writeCallbackResponse(exchange, HttpConstants.CODE_OK, "OpenAI authorization was cancelled. You can close this tab.");
         } else if (parameters.get("code") == null) {
             authorizationCode.completeExceptionally(new DBException("OpenAI callback did not contain authorization code"));
-            writeCallbackResponse(exchange, 400, "OpenAI authorization failed: authorization code is missing.");
+            writeCallbackResponse(exchange, HttpConstants.CODE_BAD_REQUEST, "OpenAI authorization failed: authorization code is missing.");
         } else {
             authorizationCode.complete(parameters.get("code"));
-            writeCallbackResponse(exchange, 200, "OpenAI authorization succeeded. You can close this tab.");
+            writeCallbackResponse(exchange, HttpConstants.CODE_OK, "OpenAI authorization succeeded. You can close this tab.");
         }
     }
 
     private static void writeCallbackResponse(@NotNull HttpExchange exchange, int status, @NotNull String message) throws IOException {
-        byte[] body = ("<html><body>" + message + "</body></html>").getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/html; charset=UTF-8");
-        exchange.sendResponseHeaders(status, body.length);
+        String authStatus = DBAuthUtils.getExternalBrowserSuccessResponse(message);
+        exchange.getResponseHeaders().set(HttpConstants.HEADER_CONTENT_TYPE, "text/html; charset=UTF-8");
+        exchange.sendResponseHeaders(status, authStatus.length());
         try (OutputStream stream = exchange.getResponseBody()) {
-            stream.write(body);
+            stream.write(authStatus.getBytes(StandardCharsets.UTF_8));
         }
     }
 
@@ -511,7 +498,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
             }
             if (claims.has("organizations")) {
                 JsonArray organizations = claims.getAsJsonArray("organizations");
-                if (organizations.size() > 0 && organizations.get(0).isJsonObject()) {
+                if (!organizations.isEmpty() && organizations.get(0).isJsonObject()) {
                     JsonObject organization = organizations.get(0).getAsJsonObject();
                     if (organization.has("id")) {
                         return organization.get("id").getAsString();

@@ -46,7 +46,7 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
     public void createControl(Composite parent) {
         final FormToolkit toolkit = new FormToolkit(parent.getDisplay());
 
-        final Composite composite = toolkit.createComposite(parent, SWT.BORDER);
+        final Composite composite = toolkit.createComposite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
 

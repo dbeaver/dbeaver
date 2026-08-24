@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 
@@ -75,6 +77,9 @@ public class JSONTextEditor extends BaseTextEditor {
 
 	@Override
 	public void doSetInput(IEditorInput input) throws CoreException {
+		if (input instanceof FileStoreEditorInput && !(getDocumentProvider() instanceof TextFileDocumentProvider)) {
+			setDocumentProvider(new TextFileDocumentProvider());
+		}
 		super.doSetInput(input);
 		setupDocument();
 	}
