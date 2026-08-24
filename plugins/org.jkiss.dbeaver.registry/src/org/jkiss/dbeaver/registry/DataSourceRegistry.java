@@ -620,11 +620,35 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    @Override
+    public void updateDataSources(@NotNull List<? extends DBPDataSourceContainer> dataSources) throws DBException {
+        List<DBPDataSourceContainer> existingDataSources = new ArrayList<>();
+        for (DBPDataSourceContainer dataSource : dataSources) {
+            if (dataSource instanceof DataSourceDescriptor && this.dataSources.containsKey(dataSource.getId())) {
+                existingDataSources.add(dataSource);
+            }
+        }
+        if (existingDataSources.isEmpty()) {
+            return;
+        }
+
+        persistDataSourceUpdates(existingDataSources);
+        checkForErrors();
+
+        for (DBPDataSourceContainer dataSource : existingDataSources) {
+            this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
+        }
+    }
+
     protected void persistDataSourceCreate(@NotNull DBPDataSourceContainer container) {
         persistDataSourceUpdate(container);
     }
 
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        persistDataSourceUpdates(List.of(container));
+    }
+
+    protected void persistDataSourceUpdates(@NotNull List<? extends DBPDataSourceContainer> containers) {
         saveDataSources();
     }
 

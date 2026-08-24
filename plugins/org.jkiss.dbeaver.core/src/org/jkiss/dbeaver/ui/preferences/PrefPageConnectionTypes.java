@@ -51,6 +51,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageConnectionTypes
@@ -580,6 +581,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             // Flush projects configs (as they cache connection type information)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
+                List<DBPDataSourceContainer> affectedDataSources = new ArrayList<>();
                 for (DBPDataSourceContainer ds : projectRegistry.getDataSources()) {
                     DBPConnectionConfiguration cnnCfg = ds.getConnectionConfiguration();
                     DBPConnectionType cnnType = cnnCfg.getConnectionType();
@@ -587,18 +589,19 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         if (toRemove.contains(cnnType)) {
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         }
-                        try {
-                            projectRegistry.updateDataSource(ds, false);
-                            projectRegistry.checkForErrors();
-                        } catch (DBException e) {
-                            DBWorkbench.getPlatformUI().showError(
-                                CoreMessages.pref_page_connection_types_label_delete_connection_type,
-                                e.getMessage(),
-                                e);
-                            return false;
-                        }
-                        affectedDataSourceRegs.add(projectRegistry);
+                        affectedDataSources.add(ds);
                     }
+                }
+                try {
+                    projectRegistry.updateDataSources(affectedDataSources);
+                    affectedDataSourceRegs.add(projectRegistry);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        CoreMessages.pref_page_connection_types_label_delete_connection_type,
+                        e.getMessage(),
+                        e
+                    );
+                    return false;
                 }
             }
         }

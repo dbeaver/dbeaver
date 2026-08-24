@@ -34,7 +34,9 @@ import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
@@ -71,15 +73,31 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
 
     @Override
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        persistDataSourceUpdates(List.of(container));
+    }
+
+    @Override
+    protected void persistDataSourceUpdates(@NotNull List<? extends DBPDataSourceContainer> containers) {
         if (getProject().isInMemory()) {
             return;
         }
+        Set<String> dataSourceIds = new LinkedHashSet<>();
+        for (DBPDataSourceContainer container : containers) {
+            dataSourceIds.add(container.getId());
+        }
+        if (dataSourceIds.isEmpty()) {
+            return;
+        }
+
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
-        saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dsc.equals(container));
+        saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dataSourceIds.contains(dsc.getId()));
+        if (hasError()) {
+            return;
+        }
 
         try {
             rmController.updateProjectDataSources(
-                getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.of(container.getId()));
+                getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.copyOf(dataSourceIds));
             lastError = null;
         } catch (DBException e) {
             lastError = e;
