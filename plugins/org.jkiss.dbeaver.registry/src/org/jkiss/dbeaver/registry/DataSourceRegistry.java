@@ -622,12 +622,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @Override
     public void updateDataSources(@NotNull List<? extends DBPDataSourceContainer> dataSources) throws DBException {
-        List<DBPDataSourceContainer> existingDataSources = new ArrayList<>();
-        for (DBPDataSourceContainer dataSource : dataSources) {
-            if (dataSource instanceof DataSourceDescriptor && this.dataSources.containsKey(dataSource.getId())) {
-                existingDataSources.add(dataSource);
-            }
-        }
+        List<DBPDataSourceContainer> existingDataSources = dataSources
+            .stream()
+            .filter(ds -> this.dataSources.containsKey(ds.getId()))
+            .collect(Collectors.toList());
+        
         if (existingDataSources.isEmpty()) {
             return;
         }
