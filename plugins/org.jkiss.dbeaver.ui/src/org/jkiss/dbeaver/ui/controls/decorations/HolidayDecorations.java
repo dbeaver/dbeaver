@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.awt.*;
@@ -156,6 +157,12 @@ public class HolidayDecorations implements IDisposable {
         }
 
         control.redraw();
+        UIUtils.showMessageBox(
+            control.getShell(),
+            UIMessages.holiday_decorations_disabled_title,
+            UIMessages.holiday_decorations_disabled_message,
+            SWT.ICON_INFORMATION
+        );
     }
 
     private void paint(@NotNull GC gc) {
