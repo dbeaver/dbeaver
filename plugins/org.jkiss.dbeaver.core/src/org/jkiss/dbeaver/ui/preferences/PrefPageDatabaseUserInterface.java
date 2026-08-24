@@ -259,7 +259,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         Composite breadcrumbs = UIUtils.createTitledComposite(
             composite,
             CoreMessages.pref_page_ui_status_bar,
-            3,
+            2,
             GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
         );
         statusBarShowBreadcrumbsCheck = UIUtils.createCheckbox(
@@ -269,20 +269,19 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             true,
             1
         );
-        if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
-            statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(
-                e -> statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection()))
-            );
+        if (isStandalone) {
+            statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection())));
         }
 
         statusBarBreadcrumbPositionCombo = new Combo(breadcrumbs, SWT.READ_ONLY | SWT.DROP_DOWN);
         statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_status_bar_label);
         statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_editors_label);
-        if (!DBWorkbench.getPlatform().getApplication().isStandalone()) {
-            statusBarBreadcrumbPositionCombo.setEnabled(false);
-            statusBarBreadcrumbPositionCombo.select(1);
-        } else {
+        if (isStandalone) {
             statusBarBreadcrumbPositionCombo.select(0);
+        } else {
+            statusBarBreadcrumbPositionCombo.select(1);
+            statusBarBreadcrumbPositionCombo.setEnabled(false);
         }
 
         statusBarShowStatusCheck = UIUtils.createCheckbox(
@@ -392,10 +391,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         BreadcrumbLocation breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.get(store);
         statusBarShowBreadcrumbsCheck.setSelection(breadcrumbLocation != DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN);
-        statusBarBreadcrumbPositionCombo.select(
-            breadcrumbLocation == DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS || DBWorkbench.getPlatform().getApplication().isStandalone() ? 1 : 0
-        );
-        statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection() && DBWorkbench.getPlatform().getApplication().isStandalone());
+        if (isStandalone) {
+            statusBarBreadcrumbPositionCombo.select(breadcrumbLocation == DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS ? 1 : 0);
+            statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
+        }
         statusBarShowStatusCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
         if (RuntimeUtils.isLinux()) {
             zoomRestartPromptCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
@@ -421,9 +420,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         BreadcrumbLocation location = BreadcrumbLocation.getDefault(store);
         statusBarShowBreadcrumbsCheck.setSelection(location != BreadcrumbLocation.HIDDEN);
-        statusBarBreadcrumbPositionCombo.select(
-            location == BreadcrumbLocation.IN_STATUS_BAR && DBWorkbench.getPlatform().getApplication().isStandalone() ? 0 : 1
-        );
+        if (isStandalone) {
+            statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
+        }
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
         if (RuntimeUtils.isLinux()) {
             zoomRestartPromptCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
@@ -471,23 +470,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 }
             }
 
-            BreadcrumbLocation breadcrumbLocation;
-            if (!statusBarShowBreadcrumbsCheck.getSelection()) {
-                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN;
-            } else if (
-                statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0 && DBWorkbench.getPlatform().getApplication().isStandalone()
-            ) {
-                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_STATUS_BAR;
-            } else {
-                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
-            }
-
-            store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
-            store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
-            if (RuntimeUtils.isLinux()) {
-                store.setValue(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, zoomRestartPromptCheck.getSelection());
-            }
-
             if (workspaceLanguage.getSelectionIndex() >= 0) {
                 PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
                     .get(workspaceLanguage.getSelectionIndex());
@@ -507,6 +489,27 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                     }
                 }
             }
+        }
+
+        BreadcrumbLocation breadcrumbLocation;
+        if (!statusBarShowBreadcrumbsCheck.getSelection()) {
+            breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN;
+        } else {
+            if (isStandalone) {
+                if (statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0) {
+                    breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_STATUS_BAR;
+                } else {
+                    breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
+                }
+            } else {
+                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
+            }
+        }
+
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
+        if (RuntimeUtils.isLinux()) {
+            store.setValue(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, zoomRestartPromptCheck.getSelection());
         }
 
         if (this.fontsController != null) {
