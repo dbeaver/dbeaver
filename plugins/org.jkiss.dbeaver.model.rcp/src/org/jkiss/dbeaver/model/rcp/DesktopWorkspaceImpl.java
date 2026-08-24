@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.rcp;
 
+import com.google.gson.reflect.TypeToken;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
@@ -53,7 +55,8 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     private static final Log log = Log.getLog(DesktopWorkspaceImpl.class);
 
-    private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
+    private static final String EXT_FILES_PROPS_STORE_LEGACY = "dbeaver-external-files.data";
+    private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.json";
 
     private final Map<String, Map<String, String>> externalFileProperties = new HashMap<>();
 
@@ -512,12 +515,28 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void loadExternalFileProperties() {
         synchronized (externalFileProperties) {
             externalFileProperties.clear();
-            Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath()).resolve(EXT_FILES_PROPS_STORE);
+            Path basePath = GeneralUtils.getMetadataFolder(getAbsolutePath());
+
+            Path propsFile = basePath.resolve(EXT_FILES_PROPS_STORE);
             if (Files.exists(propsFile)) {
-                try (InputStream is = Files.newInputStream(propsFile)) {
+                try (Reader reader = Files.newBufferedReader(propsFile)) {
+                    var mapStringString = TypeToken.getParameterized(Map.class, String.class, String.class).getType();
+                    var mapStringMapStringString = TypeToken.getParameterized(Map.class, String.class, mapStringString).getType();
+                    externalFileProperties.putAll(JSONUtils.PRETTY_GSON.fromJson(reader, mapStringMapStringString));
+                } catch (Exception e) {
+                    log.error("Error loading external files properties", e);
+                }
+                return;
+            }
+
+            // NOTE: Only left for backward compatibility. Remove in some future version
+            Path legacyPropsFile = basePath.resolve(EXT_FILES_PROPS_STORE_LEGACY);
+            if (Files.exists(legacyPropsFile)) {
+                try (InputStream is = Files.newInputStream(legacyPropsFile)) {
                     try (ObjectInputStream ois = new ObjectInputStream(is)) {
                         final Object object = ois.readObject();
                         if (object instanceof Map) {
@@ -548,13 +567,16 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (externalFileProperties) {
-                Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath()).resolve(EXT_FILES_PROPS_STORE);
-                try (OutputStream os = Files.newOutputStream(propsFile)) {
-                    try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
-                        oos.writeObject(externalFileProperties);
-                    }
+                Path basePath = GeneralUtils.getMetadataFolder(getAbsolutePath());
+                try (var writer = Files.newBufferedWriter(basePath.resolve(EXT_FILES_PROPS_STORE))) {
+                    JSONUtils.PRETTY_GSON.toJson(externalFileProperties, writer);
                 } catch (Exception e) {
                     log.error("Error saving external files properties", e);
+                }
+                try {
+                    Files.deleteIfExists(basePath.resolve(EXT_FILES_PROPS_STORE_LEGACY));
+                } catch (IOException e) {
+                    log.error("Error deleting legacy external files properties", e);
                 }
             }
             return Status.OK_STATUS;
