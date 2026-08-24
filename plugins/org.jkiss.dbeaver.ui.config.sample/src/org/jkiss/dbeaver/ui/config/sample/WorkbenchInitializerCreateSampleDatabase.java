@@ -56,7 +56,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             return;
         }
         DBPDataSourceRegistry registry = activeProject.getDataSourceRegistry();
-        if (SampleDatabaseUtil.isSampleDatabaseExists(registry)) {
+        if (SampleDatabaseUtil.isSampleDatabaseExists(activeProject)) {
             // Already exist
             return;
         }
@@ -76,4 +76,3 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
     }
 
 }
-
