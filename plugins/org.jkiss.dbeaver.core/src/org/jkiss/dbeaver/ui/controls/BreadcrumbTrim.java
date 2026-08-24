@@ -52,8 +52,12 @@ public class BreadcrumbTrim {
 
     @PostConstruct
     public void createControls(@NotNull Composite parent) {
+        if (!DBWorkbench.getPlatform().getApplication().isStandalone()) {
+            // don't add breadcrumb to status line for DBeaver as Eclipse plugin
+            return;
+        }
         Composite composite = UIUtils.createPlaceholder(parent, 2, 0);
-        ((GridLayout)composite.getLayout()).marginLeft = 5;
+        ((GridLayout) composite.getLayout()).marginLeft = 5;
         ProjectsPanel projectsPanel = new ProjectsPanel(composite);
         var viewer = new NodeBreadcrumbViewer(composite, SWT.BOTTOM);
 
