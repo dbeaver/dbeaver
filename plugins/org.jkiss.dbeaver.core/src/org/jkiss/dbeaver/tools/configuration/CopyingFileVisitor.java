@@ -29,27 +29,37 @@ import java.nio.file.attribute.BasicFileAttributes;
 final class CopyingFileVisitor extends SimpleFileVisitor<Path> {
     private static final Log log = Log.getLog(CopyingFileVisitor.class);
 
-    private final Path source;
-    private final Path target;
+    private final Path sourceRoot;
+    private final Path targetRoot;
 
     /**
      * Constructs a new CopyingFileVisitor with the specified source and target paths.
      *
-     * @param source the source directory from which files will be copied
-     * @param target the target directory to which files will be copied
+     * @param sourceRoot the source root directory from which files will be copied
+     * @param targetRoot the target root directory to which files will be copied
      */
-    CopyingFileVisitor(@NotNull Path source, @NotNull Path target) {
-        this.source = source;
-        this.target = target;
+    CopyingFileVisitor(@NotNull Path sourceRoot, @NotNull Path targetRoot) {
+        this.sourceRoot = sourceRoot;
+        this.targetRoot = targetRoot;
     }
 
     @NotNull
     @Override
     public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-        var result = target.resolve(source.relativize(file).toString());
+        var result = resolveTargetPath(file);
         log.debug("Copying file " + result);
         Files.createDirectories(result.getParent());
         Files.copy(file, result, StandardCopyOption.REPLACE_EXISTING);
         return FileVisitResult.CONTINUE;
+    }
+
+    @NotNull
+    private Path resolveTargetPath(@NotNull Path sourcePath) {
+        var relative = sourceRoot.relativize(sourcePath);
+        var target = targetRoot;
+        for (Path element : relative) {
+            target = target.resolve(element.toString());
+        }
+        return target;
     }
 }
