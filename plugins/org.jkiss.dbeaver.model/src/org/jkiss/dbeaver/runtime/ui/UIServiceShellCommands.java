@@ -14,16 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.connection;
+package org.jkiss.dbeaver.runtime.ui;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 
-/**
- * Driver stub. Just describes/advertises the driver which exists in another product edition.
- */
-public record DBPDriverStub(
-    @NotNull String nonAvailabilityReason,
-    @NotNull String nonAvailabilityTitle,
-    @NotNull String nonAvailabilityDescription
-) {
+import java.util.Map;
+
+public interface UIServiceShellCommands {
+
+    String FEATURE_CONNECTION_SHELL_COMMANDS = "enableConnectionShellCmd";
+
+    boolean isShellCommandExecutionEnabled();
+
+    boolean addConfirmedCommand(@NotNull DBRShellCommand command) throws DBException;
+
+    void validateByUser(@NotNull DBRShellCommand command, @NotNull Map<String, String> approvalContext) throws DBException;
 }

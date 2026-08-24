@@ -11,7 +11,7 @@ Free multi-platform database tool for developers, SQL programmers, database admi
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI integration, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
 * Out of the box supports more than <a href="#supported-databases">100 database drivers</a>.
 * Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
-* Supports smart AI completion and code generation with OpenAI or Copilot
+* Integrates AI tools for work with data, SQL and database structure
 
 <a href="https://dbeaver.io/product/dbeaver-sql-editor.png"><img src="https://dbeaver.io/product/dbeaver-sql-editor.png" width="400"/></a>
 <a href="https://dbeaver.io/product/dbeaver-gis-viewer.png"><img src="https://dbeaver.io/product/dbeaver-gis-viewer.png" width="400"/></a>
@@ -63,6 +63,17 @@ ODBC, MongoDB, Cassandra, Couchbase, CouchDB, Redis, InfluxDB, Firestore, BigTab
 Also, we support flat files as databases: CSV, XLSX, Json, XML, Parquet.  
 You can find the list of all databases supported in commercial versions <a href="https://dbeaver.com/databases/">here</a>.
 
+## AI integration
+
+- All DBeaver products contain AI Chat view similar to classic LLM chats. 
+- You can generate/analyse/optimize your SQL queries, work with database structure or even work with databases with a very little knowledge of SQL.
+- We use smart chat context which provides LLMs details about database structure, SQL dialect, etc. 
+- LLM integration uses context-dependent dynamic tools and is very efficient from token consumption point of view.
+- AI providers in Community version:
+  - OpenAI (allows to configure most of existing LLMs with custom endpoint)
+  - Copilot
+- Pro versions provide additional AI tools + native support of Anthropic/Grok/Azure/Bedrock/Gemini/Ollama providers.
+
 ## Feedback
 
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
@@ -87,8 +98,7 @@ Thank you!
 
 ---------
 
-Our other open-source products:
+## Our other open-source products:
 
 - <a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> - web-based database management tool built on the DBeaver platform.<br/>Runs as server (docker) and provides rich web interface (SPA).  
 - <a href="https://github.com/dbeaver/dbvr">dbvr</a> - CLI database management tool. Useful in CI/CD pipelines and all sort of automations. 
-

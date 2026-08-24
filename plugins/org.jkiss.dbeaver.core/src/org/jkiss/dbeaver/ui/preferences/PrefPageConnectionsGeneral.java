@@ -29,6 +29,7 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -62,7 +63,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
-    private static final String VALUE_TRUST_STORE_TYPE_WINDOWS_MY = "WINDOWS-MY"; //$NON-NLS-1$
+    //private static final String VALUE_TRUST_STORE_TYPE_WINDOWS_MY = "WINDOWS-MY"; //$NON-NLS-1$
     private static final String HELP_CONNECTIONS_LINK = "Create-Connection";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
@@ -104,22 +105,37 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
                     defaultConnectionType = connectionTypeCombo.getSelectedItem();
                 }
             });
-            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(groupComposite, this, null);
-            connectionDefaultNamePatternText = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern, CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip);
+            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(
+                groupComposite, this, null);
+            connectionDefaultNamePatternText = UIUtils.createLabelText(
+                groupComposite,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip
+            );
             ContentAssistUtils.installContentProposal(
                 connectionDefaultNamePatternText,
                 new SmartTextContentAdapter(),
-                new StringContentProposalProvider(Arrays.stream(ConnectionNameResolver.getConnectionVariables()).map(GeneralUtils::variablePattern).toArray(String[]::new))
+                new StringContentProposalProvider(
+                    Arrays.stream(ConnectionNameResolver.getConnectionVariables())
+                        .map(GeneralUtils::variablePattern).toArray(String[]::new))
             );
             connectionDefaultNamePatternText.setText(connectionNamePattern);
             UIUtils.setContentProposalToolTip(connectionDefaultNamePatternText, "Connection name patterns",
                 ConnectionNameResolver.getConnectionVariables());
 
             fakeConnectionNameResolver = generateSampleDatasourceResolver();
-            sampleConnectionName = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip);
+            sampleConnectionName = UIUtils.createLabelText(
+                groupComposite,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip
+            );
             sampleConnectionName.setEditable(false);
-            sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
-            connectionDefaultNamePatternText.addModifyListener(e -> sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver)));
+            sampleConnectionName.setText(GeneralUtils.replaceVariables(
+                connectionDefaultNamePatternText.getText(),
+                fakeConnectionNameResolver
+            ));
+            connectionDefaultNamePatternText.addModifyListener(e -> sampleConnectionName.setText(
+                GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver)));
 
             new VariablesHintLabel(
                     groupDefaults,
@@ -226,7 +242,10 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     }
 
     private ConnectionNameResolver generateSampleDatasourceResolver() {
-        final DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        assert activeProject != null;
+
+        final DataSourceRegistry<?> dataSourceRegistry = new DataSourceRegistry<>(activeProject);
         DBPDriver driver = DriverUtils.getRecentDrivers(DriverUtils.getAllDrivers(), 1).getFirst();
         DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
         conConfig.setHostName("hostname");
@@ -235,7 +254,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         conConfig.setHostPort("42");
         conConfig.setServerName("server1");
         conConfig.setUrl("sample//url");
-        DataSourceDescriptor fakeDataSource = (DataSourceDescriptor) dataSourceRegistry.createDataSource(
+        DataSourceDescriptor fakeDataSource = dataSourceRegistry.createDataSource(
             DataSourceDescriptor.generateNewId(driver),
             driver,
             conConfig
