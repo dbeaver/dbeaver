@@ -78,15 +78,12 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
 
     @Override
     protected void persistDataSourceUpdates(@NotNull List<? extends DBPDataSourceContainer> containers) {
-        if (getProject().isInMemory()) {
+        if (getProject().isInMemory() || containers.isEmpty()) {
             return;
         }
         Set<String> dataSourceIds = new LinkedHashSet<>();
         for (DBPDataSourceContainer container : containers) {
             dataSourceIds.add(container.getId());
-        }
-        if (containers.isEmpty()) {
-            return;
         }
 
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
