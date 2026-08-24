@@ -31,15 +31,17 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
-import org.jkiss.dbeaver.model.runtime.ConfirmedShellCommandsManager;
+import org.jkiss.dbeaver.model.preferences.ConfirmedShellCommandsStore;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,8 +57,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
 
     public static final String PAGE_NAME = ConnectionPageShellCommands.class.getSimpleName();
 
-    private static final String CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title = null;
     private final DataSourceDescriptor dataSource;
+    @Nullable
+    private final UIServiceShellCommands shellCommandsService;
     private Text commandText;
     private Button showProcessCheck;
     private Button waitFinishCheck;
@@ -71,12 +74,11 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
     private final Set<String> originalCommands = new HashSet<>();
 
-    private final ConfirmedShellCommandsManager confirmedShellCommandsManager = ConfirmedShellCommandsManager.getInstance();
-
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
         super(PAGE_NAME);
         this.dataSource = dataSource;
+        this.shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
         setTitle(CoreMessages.dialog_connection_edit_wizard_shell_cmd);
         setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.EVENT));
@@ -94,9 +96,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         Composite root = UIUtils.createPlaceholder(parent, 1, 2);
         root.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (DBWorkbench.isDistributed()) {
+        if (DBWorkbench.isDistributed() && !isShellCommandExecutionAllowed()) {
             UIUtils.createWarningLabel(
-                parent,
+                root,
                 CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
                 GridData.FILL_BOTH,
                 1
@@ -136,7 +138,10 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                     DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
                     boolean enabled = ((TableItem) e.item).getChecked();
                     if (enabled || (command != null && enabled != command.isEnabled())) {
-                        if (enabled && eventType != null && command == null && !DBWorkbench.isDistributed()) {
+                        if (enabled
+                            && eventType != null
+                            && command == null
+                            && isShellCommandExecutionAllowed()) {
                             createNewCommand(eventType);
                         }
                         updateEvent(false);
@@ -184,7 +189,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             pauseAfterExecute.addSelectionListener(eventEditAdapter);
 
             UIUtils.createControlLabel(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_label);
-            workingDirectory = new TextWithOpenFolder(settingsGroup, CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title);
+            workingDirectory = new TextWithOpenFolder(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_title);
             workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             workingDirectory.getTextControl().addModifyListener(e -> {
                 DBRShellCommand command = getActiveCommand();
@@ -200,6 +205,14 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
                 dataSource.getConnectionConfiguration()));
+            if (!DBWorkbench.isDistributed() && shellCommandsService != null) {
+                Link confirmedCommandsLink = UIUtils.createInfoLink(
+                    detailsGroup,
+                    "<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_link + "</a>",
+                    this::openConfirmedShellCommandsEditor
+                );
+                confirmedCommandsLink.setToolTipText(CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_tooltip);
+            }
             removeButton = createClearButton(settingsGroup);
         }
 
@@ -293,7 +306,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     {
         DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
         boolean isCommandPresent = command != null && command.isEnabled();
-        boolean isCommandControlEnabled = !DBWorkbench.isDistributed() && isCommandPresent;
+        boolean isCommandControlEnabled = isShellCommandExecutionAllowed() && isCommandPresent;
         commandText.setEnabled(isCommandControlEnabled);
         showProcessCheck.setEnabled(isCommandControlEnabled);
         waitFinishCheck.setEnabled(isCommandControlEnabled);
@@ -317,6 +330,10 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         }
     }
 
+    private boolean isShellCommandExecutionAllowed() {
+        return shellCommandsService == null || shellCommandsService.isShellCommandExecutionEnabled();
+    }
+
     private void cleanActiveCommand() {
         commandText.setText(""); //$NON-NLS-1$
         showProcessCheck.setSelection(false);
@@ -333,7 +350,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             DBRShellCommand command = entry.getValue();
             try {
                 if (isAddCommandToConfirmed(command)) {
-                    confirmedShellCommandsManager.addConfirmedShellCommand(command);
+                    if (shellCommandsService != null) {
+                        shellCommandsService.addConfirmedCommand(command);
+                    }
                 }
                 dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), command);
             } catch (DBException e) {
@@ -355,7 +374,26 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         return command != null
             && command.isEnabled()
             && !command.isBlank()
+            && !DBWorkbench.isDistributed()
             && !originalCommands.contains(command.getCommand());
+    }
+
+    private void openConfirmedShellCommandsEditor() {
+        try {
+            var filePath = ConfirmedShellCommandsStore.getInstance().prepareFile();
+            if (EditorUtils.openExternalFileEditor(filePath, UIUtils.getActiveWorkbenchWindow()) == null) {
+                DBWorkbench.getPlatformUI().showError(
+                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,
+                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message
+                );
+            }
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message,
+                e
+            );
+        }
     }
 
 }
