@@ -148,8 +148,8 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         showTip();
 
         if (displayShowOnStartup) {
-            Button showTipButton = toolkit.createButton(form.getBody(), TipOfTheDayMessages.show_tips_on_startup, SWT.CHECK);
-            showTipButton.setSelection(isShowOnStartup());
+            Button showTipButton = UIUtils.createCheckbox(form.getBody(), TipOfTheDayMessages.show_tips_on_startup, isShowOnStartup());
+            showTipButton.setBackground(form.getBody().getBackground());
 
             showTipButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
                 setShowOnStartup(showTipButton.getSelection())));
