@@ -79,14 +79,18 @@ public class DataSourceUtils {
     private static final Log log = Log.getLog(DataSourceUtils.class);
     
     @NotNull
-    public static String generateUniqueDataSourceName(@NotNull DBPDataSourceRegistry registry, @NotNull String baseName, int startIndex) {
+    public static String generateUniqueDataSourceName(
+        @NotNull DBPDataSourceRegistry registry,
+        @NotNull String baseName,
+        int startIndex
+    ) {
         if (registry.findDataSourceByName(baseName) == null) {
             return baseName;
         }
         int index = startIndex;
         String finalName = baseName;
         while (registry.findDataSourceByName(finalName) != null) {
-            finalName = baseName + " " + index;
+            finalName = baseName + " (" + index + ")";
             index++;
         }
         return finalName;

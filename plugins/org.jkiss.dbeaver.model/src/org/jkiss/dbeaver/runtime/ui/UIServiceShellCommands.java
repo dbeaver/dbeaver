@@ -14,12 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.runtime.ui;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 
-public record DDWorkspaceData(
-    @NotNull String dataType,
-    @NotNull String dataValue
-) {
+import java.util.Map;
+
+public interface UIServiceShellCommands {
+
+    String FEATURE_CONNECTION_SHELL_COMMANDS = "enableConnectionShellCmd";
+
+    boolean isShellCommandExecutionEnabled();
+
+    boolean addConfirmedCommand(@NotNull DBRShellCommand command) throws DBException;
+
+    void validateByUser(@NotNull DBRShellCommand command, @NotNull Map<String, String> approvalContext) throws DBException;
 }

@@ -14,12 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public record DDSyncBinding(
-    @NotNull String workspaceId,
-    @Nullable String label
-) { }
+import java.util.Map;
+
+/**
+ * Single stored value: a set of named resources addressed by one key.
+ * Version is reserved for optimistic locking and is not used yet.
+ */
+public record DDSyncEntry(
+    @NotNull String key,
+    @Nullable String label,
+    @Nullable String version,
+    @NotNull Map<String, byte[]> resources
+) {
+}
