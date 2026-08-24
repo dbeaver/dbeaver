@@ -55,7 +55,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
 
-    private final Map<String, Map<String, Object>> externalFileProperties = new HashMap<>();
+    private final Map<String, Map<String, String>> externalFileProperties = new HashMap<>();
 
     private final AbstractJob externalFileSaver = new WorkspaceFilesMetadataJob();
 
@@ -470,7 +470,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     @NotNull
     @Override
-    public Map<String, Object> getFileProperties(File file) {
+    public Map<String, String> getFileProperties(@NotNull File file) {
         synchronized (externalFileProperties) {
             return externalFileProperties.get(file.getAbsolutePath());
         }
@@ -478,18 +478,18 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     @Nullable
     @Override
-    public Object getFileProperty(File file, String property) {
+    public String getFileProperty(@NotNull File file, @NotNull String property) {
         synchronized (externalFileProperties) {
-            final Map<String, Object> fileProps = externalFileProperties.get(file.getAbsolutePath());
+            final Map<String, String> fileProps = externalFileProperties.get(file.getAbsolutePath());
             return fileProps == null ? null : fileProps.get(property);
         }
     }
 
     @Override
-    public void setFileProperty(File file, String property, Object value) {
+    public void setFileProperty(@NotNull File file, @NotNull String property, String value) {
         synchronized (externalFileProperties) {
             final String filePath = file.getAbsolutePath();
-            Map<String, Object> fileProps = externalFileProperties.get(filePath);
+            Map<String, String> fileProps = externalFileProperties.get(filePath);
             if (fileProps == null) {
                 fileProps = new HashMap<>();
                 externalFileProperties.put(filePath, fileProps);
@@ -506,7 +506,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     @NotNull
     @Override
-    public Map<String, Map<String, Object>> getAllFiles() {
+    public Map<String, Map<String, String>> getAllFiles() {
         synchronized (externalFileProperties) {
             return new LinkedHashMap<>(externalFileProperties);
         }

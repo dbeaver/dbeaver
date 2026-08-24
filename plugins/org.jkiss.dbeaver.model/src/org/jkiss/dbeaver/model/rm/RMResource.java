@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public class RMResource extends RMObject {
     private Long lastModified;
 
     private List<RMResourceChange> changes;
-    private Map<String, Object> properties;
+    private Map<String, String> properties;
 
     public RMResource() {
 
@@ -83,11 +83,11 @@ public class RMResource extends RMObject {
         this.changes = changes;
     }
 
-    public Map<String, Object> getProperties() {
+    public Map<String, String> getProperties() {
         return properties == null ? Map.of() : properties;
     }
 
-    public void setProperties(Map<String, Object> properties) {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 

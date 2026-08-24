@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,15 @@ import java.util.Map;
 /**
  * External file manager
  */
-public interface DBPExternalFileManager
-{
+public interface DBPExternalFileManager {
     @NotNull
-    Map<String, Object> getFileProperties(File file);
+    Map<String, String> getFileProperties(@NotNull File file);
 
     @Nullable
-    Object getFileProperty(File file, String property);
+    String getFileProperty(@NotNull File file, @NotNull String property);
 
-    void setFileProperty(File file, String property, Object value);
+    void setFileProperty(@NotNull File file, @NotNull String property, @Nullable String value);
 
     @NotNull
-    Map<String, Map<String, Object>> getAllFiles();
+    Map<String, Map<String, String>> getAllFiles();
 }
