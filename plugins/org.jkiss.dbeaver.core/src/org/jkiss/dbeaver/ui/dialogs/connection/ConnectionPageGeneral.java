@@ -264,7 +264,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
             final ConnectionNameResolver resolver = new ConnectionNameResolver(dataSource, connectionInfo, dataSourceDescriptor);
             newName = GeneralUtils.replaceVariables(resultName, resolver);
-            newName = DataSourceUtils.generateUniqueDataSourceName(settings.getDataSourceRegistry(), newName, 2);
+            newName = DataSourceUtils.generateUniqueDataSourceName(settings.getDataSourceRegistry(), newName, 1);
         } else {
             newName = wizard.getSelectedDriver().getName();
         }
