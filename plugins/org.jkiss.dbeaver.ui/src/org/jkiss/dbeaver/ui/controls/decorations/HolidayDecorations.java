@@ -134,7 +134,7 @@ public class HolidayDecorations implements IDisposable {
         return switch (current.getMonth()) {
             case DECEMBER -> current.getDayOfMonth() >= 24;
             case JANUARY -> current.getDayOfMonth() <= 7;
-            default -> true;
+            default -> false;
         };
     }
 
@@ -144,7 +144,7 @@ public class HolidayDecorations implements IDisposable {
     }
 
     private void disable() {
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(PREF_UI_SHOW_HOLIDAY_DECORATIONS, false);
         PrefUtils.savePreferenceStore(store);
 
