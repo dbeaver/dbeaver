@@ -250,8 +250,7 @@ public class DataSourceDescriptor
         this.originalShareCredentials = this.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         if (navigatorSettings.isUserSettings()) {
-            navigatorSettings.setOriginalSettings(
-                new DataSourceNavigatorSettings(source.getOriginalNavigatorSettings()));
+            navigatorSettings.setOriginalSettings(source.getOriginalNavigatorSettings());
         }
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
