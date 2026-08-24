@@ -38,7 +38,7 @@ public class DBWNetworkProfileManagerTest {
 
         Assertions.assertEquals(
             List.of("Profile 1", "Profile 2", "Profile 10"),
-            getSortedNames(manager.getProfiles())
+            getCurrentOrderNames(manager.getProfiles())
         );
     }
 
@@ -53,7 +53,7 @@ public class DBWNetworkProfileManagerTest {
 
         Assertions.assertEquals(
             List.of("Profile 1", "Profile 2", "Profile 10"),
-            getSortedNames(manager.getProfiles())
+            getCurrentOrderNames(manager.getProfiles())
         );
     }
 
@@ -71,7 +71,7 @@ public class DBWNetworkProfileManagerTest {
 
         Assertions.assertEquals(
             List.of("Global 2", "Global 10", "Project 2", "Project 10"),
-            getSortedNames(manager.getAllProfiles())
+            getCurrentOrderNames(manager.getAllProfiles())
         );
     }
 
@@ -83,7 +83,7 @@ public class DBWNetworkProfileManagerTest {
     }
 
     @NotNull
-    private List<String> getSortedNames(@NotNull List<DBWNetworkProfile> profiles) {
+    private List<String> getCurrentOrderNames(@NotNull List<DBWNetworkProfile> profiles) {
         return profiles.stream().map(DBWNetworkProfile::getProfileName).toList();
     }
 
