@@ -266,13 +266,6 @@ public class ModelMessages extends NLS {
     public static String duration_formatter_seconds;
     public static String duration_formatter_milliseconds;
 
-
-    public static String shell_cmd_manager_add_command_confirmation_label;
-    public static String shell_cmd_manager_add_command_confirmation_text;
-    public static String shell_cmd_manager_add_command_confirmation_button;
-    public static String shell_cmd_manager_add_command_error_message;
-    public static String shell_cmd_manager_add_command_error_message_te_specific;
-
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
