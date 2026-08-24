@@ -80,7 +80,7 @@ class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> impleme
                 DriverSelectViewer.SelectorViewType.browser
             ) {
                 @Override
-                protected void createExtraFilterControlsBefore(Composite filterGroup) {
+                protected void createExtraFilterControlsBefore(@NotNull Composite filterGroup) {
                     ((GridLayout) filterGroup.getLayout()).numColumns++;
                     filterIndentLabel = UIUtils.createEmptyLabel(filterGroup, 1, 1);
                     GridData gd = new GridData();
@@ -89,7 +89,7 @@ class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> impleme
                 }
 
                 @Override
-                protected void createExtraFilterControlsAfter(Composite filterGroup) {
+                protected void createExtraFilterControlsAfter(@NotNull Composite filterGroup) {
                     ((GridLayout) filterGroup.getLayout()).numColumns++;
                     Composite extraControlsComposite = UIUtils.createComposite(filterGroup, 1);
                     extraControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));

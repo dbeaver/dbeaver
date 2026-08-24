@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
@@ -149,7 +150,9 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
         if (displayShowOnStartup) {
             Button showTipButton = UIUtils.createCheckbox(form.getBody(), TipOfTheDayMessages.show_tips_on_startup, isShowOnStartup());
-            showTipButton.setBackground(form.getBody().getBackground());
+            if (!RuntimeUtils.isMacOS()) {
+                showTipButton.setBackground(form.getBody().getBackground());
+            }
 
             showTipButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
                 setShowOnStartup(showTipButton.getSelection())));
