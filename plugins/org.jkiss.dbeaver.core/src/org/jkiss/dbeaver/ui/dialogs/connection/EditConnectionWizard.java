@@ -88,7 +88,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         this.originalDriverLibsIdVersion = getLibsIdVersion(dataSource);
         this.dataSource = dataSource.getRegistry().createDataSource(dataSource);
         this.dataSource.setId(dataSource.getId());
-        if (!this.dataSource.isSavePassword()) {
+        if (!this.dataSource.isSavePassword() && !this.dataSource.isCredentialsFromEnvironment()) {
             this.dataSource.resetPassword();
         }
 
@@ -399,7 +399,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         super.savePrefPageSettings();
 
         // Reset password if "Save password" was disabled
-        if (!dataSource.isSavePassword()) {
+        if (!dataSource.isSavePassword() && !dataSource.isCredentialsFromEnvironment()) {
             dataSource.resetPassword();
         }
     }

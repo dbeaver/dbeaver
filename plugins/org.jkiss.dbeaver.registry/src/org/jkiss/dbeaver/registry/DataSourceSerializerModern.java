@@ -618,23 +618,30 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
 
-                        final SecureCredentials creds = configurationManager.isSecure() ?
-                            DataSourceParser.readPlainCredentials(cfgObject) :
-                            DataSourceParser.readSecuredCredentials(contextParameters, dataSource, null, null);
+                    final SecureCredentials creds = readConnectionCredentials(
+                        configurationManager,
+                        contextParameters,
+                        dataSource,
+                        cfgObject
+                    );
                     if (shouldUpdateCreds(creds)) {
-                        config.setUserName(creds.getUserName());
-                        if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
-                            config.setUserPassword(creds.getUserPassword());
-                        } else {
-                            config.setUserPassword(null);
+                        final boolean hasStoredCredentials = !CommonUtils.isEmpty(creds.getUserName())
+                            || !CommonUtils.isEmpty(creds.getUserPassword());
+                        if (!dataSource.isCredentialsFromEnvironment() || hasStoredCredentials) {
+                            config.setUserName(creds.getUserName());
+                            if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
+                                config.setUserPassword(creds.getUserPassword());
+                            } else {
+                                config.setUserPassword(null);
+                            }
+                            boolean savePasswordApplicable = (!dataSource.getProject()
+                                .isUseSecretStorage() || dataSource.isSharedCredentials());
+                            if (savePasswordApplicable && !CommonUtils.isEmpty(creds.getUserPassword())) {
+                                dataSource.setSavePassword(true);
+                            }
+                            dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
+                            dataSource.resetAllSecrets();
                         }
-                        boolean savePasswordApplicable = (!dataSource.getProject()
-                            .isUseSecretStorage() || dataSource.isSharedCredentials());
-                        if (savePasswordApplicable && !CommonUtils.isEmpty(creds.getUserPassword())) {
-                            dataSource.setSavePassword(true);
-                        }
-                        dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
-                        dataSource.resetAllSecrets();
                     }
                     {
                         // Still try to read credentials directly from configuration (#6564)
@@ -842,6 +849,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             conObject,
             RegistryConstants.ATTR_SHARED_CREDENTIALS));
         dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
+        dataSource.setCredentialsFromEnvironment(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_CREDENTIALS_FROM_ENV));
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
@@ -898,6 +906,40 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         return isCredsResolved
             // in TE secrets must be resolved by dataSource itself, if not present here
             || !DBWorkbench.isDistributed();
+    }
+
+    /**
+     * Reads connection credentials from configuration and/or project credential storage.
+     */
+    @NotNull
+    private SecureCredentials readConnectionCredentials(
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceParser.ContextParameters contextParameters,
+        @NotNull T dataSource,
+        @NotNull Map<String, Object> cfgObject
+    ) {
+        if (dataSource.isCredentialsFromEnvironment()) {
+            SecureCredentials creds = DataSourceParser.readPlainCredentials(cfgObject);
+            if (CommonUtils.isEmpty(creds.getUserName()) && CommonUtils.isEmpty(creds.getUserPassword())) {
+                SecureCredentials securedCreds = DataSourceParser.readSecuredCredentials(
+                    contextParameters,
+                    dataSource,
+                    null,
+                    null
+                );
+                if (!CommonUtils.isEmpty(securedCreds.getUserName())) {
+                    creds.setUserName(securedCreds.getUserName());
+                }
+                if (!CommonUtils.isEmpty(securedCreds.getUserPassword())) {
+                    creds.setUserPassword(securedCreds.getUserPassword());
+                }
+            }
+            return creds;
+        }
+        if (configurationManager.isSecure()) {
+            return DataSourceParser.readPlainCredentials(cfgObject);
+        }
+        return DataSourceParser.readSecuredCredentials(contextParameters, dataSource, null, null);
     }
 
 
@@ -1087,6 +1129,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         JSONUtils.field(json, RegistryConstants.ATTR_NAME, dataSource.getName());
         JSONUtils.fieldNE(json, RegistryConstants.TAG_DESCRIPTION, dataSource.getDescription());
         if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
+        if (dataSource.isCredentialsFromEnvironment()) {
+            JSONUtils.field(json, RegistryConstants.ATTR_CREDENTIALS_FROM_ENV, true);
+        }
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
 
         DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getOriginalNavigatorSettings());
@@ -1118,8 +1163,11 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, connectionInfo.getUrl());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
 
-            if (dataSource.getProject().isUseSecretStorage()) {
-                // should be stored in secrets
+            if (dataSource.isCredentialsFromEnvironment() && dataSource.isSavePassword()) {
+                // Local CE projects store credentials in credentials-config.json; env-var patterns must live in data-sources.json
+                DataSourceParser.savePlainCredentials(json, new SecureCredentials(dataSource));
+            } else if (dataSource.getProject().isUseSecretStorage()) {
+                // other credentials should be stored in secrets
             } else if (configurationManager.isTrusted()) {
                 if (configurationManager.isSecure()) {
                     // Secure manager == save to buffer

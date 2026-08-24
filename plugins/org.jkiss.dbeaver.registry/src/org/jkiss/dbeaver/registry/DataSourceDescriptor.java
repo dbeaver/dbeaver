@@ -76,6 +76,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * DataSourceDescriptor
@@ -123,6 +124,8 @@ public class DataSourceDescriptor
     private String description;
     // Password is saved in configuration
     private boolean savePassword;
+    // Credentials are resolved from OS environment variables at connect time
+    private boolean credentialsFromEnvironment;
     // Password is shared.
     // It will be saved in local configuration even if project uses secured storage
     private boolean sharedCredentials;
@@ -250,6 +253,7 @@ public class DataSourceDescriptor
         this.name = source.name;
         this.description = source.description;
         this.savePassword = source.savePassword;
+        this.credentialsFromEnvironment = source.credentialsFromEnvironment;
         this.sharedCredentials = source.sharedCredentials;
         this.originalShareCredentials = this.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
@@ -430,6 +434,7 @@ public class DataSourceDescriptor
         return description;
     }
 
+    @Override
     public boolean isSavePassword() {
         return savePassword;
     }
@@ -439,6 +444,23 @@ public class DataSourceDescriptor
         this.savePassword = savePassword;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isCredentialsFromEnvironment() {
+        return credentialsFromEnvironment;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCredentialsFromEnvironment(boolean credentialsFromEnvironment) {
+        this.credentialsFromEnvironment = credentialsFromEnvironment;
+    }
+
+    @Override
     public boolean isCredentialsSaved() throws DBException {
         if (!getProject().isUseSecretStorage()) {
             return savePassword;
@@ -1143,7 +1165,7 @@ public class DataSourceDescriptor
                     authProvidedFromCredProvider = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
                 } else {
                     // 3. Use legacy password provider
-                    if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
+                    if (!isSavePassword() && !isCredentialsFromEnvironment() && !getDriver().isAnonymousAccess()) {
                         // Ask for password
                         authProvidedFromCredProvider = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                     }
@@ -1359,7 +1381,7 @@ public class DataSourceDescriptor
             }
         }
         // Process variables
-        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) || credentialsFromEnvironment) {
             IVariableResolver variableResolver = new DataSourceVariableResolver(
                 this, this.resolvedConnectionInfo);
             this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
@@ -1940,6 +1962,7 @@ public class DataSourceDescriptor
         this.tags.putAll(descriptor.tags);
         this.extensions.putAll(descriptor.extensions);
         this.savePassword = descriptor.savePassword;
+        this.credentialsFromEnvironment = descriptor.credentialsFromEnvironment;
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
@@ -1970,6 +1993,7 @@ public class DataSourceDescriptor
     public boolean equalConfiguration(DataSourceDescriptor source) {
         return
             CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
+                CommonUtils.equalObjects(this.credentialsFromEnvironment, source.credentialsFromEnvironment) &&
                 CommonUtils.equalObjects(this.sharedCredentials, source.sharedCredentials) &&
                 CommonUtils.equalObjects(this.connectionReadOnly, source.connectionReadOnly) &&
                 CommonUtils.equalObjects(this.forceUseSingleConnection, source.forceUseSingleConnection) &&
@@ -2211,7 +2235,7 @@ public class DataSourceDescriptor
     public String saveToSecret() {
         Map<String, Object> props = new LinkedHashMap<>();
 
-        if (isSavePassword()) {
+        if (isSavePassword() && !credentialsFromEnvironment) {
             // Primary props
             if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
                 props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());
@@ -2273,6 +2297,19 @@ public class DataSourceDescriptor
         return DBInfoUtils.SECRET_GSON.toJson(propsFull);
     }
 
+    /**
+     * Applies a value from secret storage unless credentials are configured to use environment variables.
+     *
+     * @param secretValue value loaded from secret storage
+     * @param setter connection property setter
+     */
+    private void applySecretCredential(@Nullable String secretValue, @NotNull Consumer<String> setter) {
+        if (credentialsFromEnvironment) {
+            return;
+        }
+        setter.accept(secretValue);
+    }
+
     public void loadFromSecret(@Nullable String secretValue) {
         if (secretValue == null) {
             if (DBWorkbench.isDistributed()) {
@@ -2299,8 +2336,8 @@ public class DataSourceDescriptor
         var dbUserName = JSONUtils.getString(props, RegistryConstants.ATTR_USER);
         var dbPassword = JSONUtils.getString(props, RegistryConstants.ATTR_PASSWORD);
         var dbAuthProperties = JSONUtils.deserializeStringMapOrNull(props, RegistryConstants.TAG_PROPERTIES);
-        connectionInfo.setUserName(dbUserName);
-        connectionInfo.setUserPassword(dbPassword);
+        applySecretCredential(dbUserName, connectionInfo::setUserName);
+        applySecretCredential(dbPassword, connectionInfo::setUserPassword);
         // Additional auth props
         if (!CommonUtils.isEmpty(dbAuthProperties)) {
             for (Map.Entry<String, String> ap : dbAuthProperties.entrySet()) {
@@ -2373,8 +2410,10 @@ public class DataSourceDescriptor
                 String secretId = secret.getId();
                 String secretValue = secretController.getPrivateSecretValue(secretId);
                 switch (secret.getName()) {
-                    case RegistryConstants.ATTR_USER -> connectionInfo.setUserName(secretValue);
-                    case RegistryConstants.ATTR_PASSWORD -> connectionInfo.setUserPassword(secretValue);
+                    case RegistryConstants.ATTR_USER -> applySecretCredential(
+                        secretValue, connectionInfo::setUserName);
+                    case RegistryConstants.ATTR_PASSWORD -> applySecretCredential(
+                        secretValue, connectionInfo::setUserPassword);
                     default -> connectionInfo.setAuthProperty(secretId, secretValue);
                 }
             }

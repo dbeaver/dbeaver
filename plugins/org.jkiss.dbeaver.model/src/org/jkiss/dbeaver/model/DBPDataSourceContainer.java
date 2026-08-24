@@ -141,6 +141,23 @@ public interface DBPDataSourceContainer extends
     void setSavePassword(boolean savePassword);
 
     /**
+     * Credentials are resolved from OS environment variables at connect time.
+     * User/password are kept in connection configuration instead of secret storage.
+     */
+    default boolean isCredentialsFromEnvironment() {
+        return false;
+    }
+
+    /**
+     * Enables or disables environment-variable credential mode for this connection.
+     *
+     * @param credentialsFromEnvironment {@code true} to resolve credentials from OS environment variables
+     */
+    default void setCredentialsFromEnvironment(boolean credentialsFromEnvironment) {
+        // no-op; implemented by DataSourceDescriptor
+    }
+
+    /**
      * Determines that credentials for this datasource are saved
      */
     boolean isCredentialsSaved() throws DBException;
