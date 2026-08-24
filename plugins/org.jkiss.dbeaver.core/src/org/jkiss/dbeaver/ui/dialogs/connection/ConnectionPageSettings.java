@@ -181,7 +181,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         Control control = getControl();
         control.setRedraw(false);
         try {
-            setDescription(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
+            setTitle(getDriver().getFullName());
+            setDescription(getDriver().getDescription());
             DataSourceDescriptor connectionInfo = getActiveDataSource();
             if (!activated.contains(connectionInfo)) {
                 if (this.connectionEditor != null) {
