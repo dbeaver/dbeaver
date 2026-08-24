@@ -22,7 +22,7 @@
                     description="PolarDB-X JDBC Driver"
                     icon="icons/polardbx_icon.svg"
                     iconBig="icons/polardbx_icon_big.svg"
-                    logoImage="platform:/plugin/org.jkiss.dbeaver.ext.polardbx.ui/icons/polardbx_logo.svg">
+                    logoImage="icons/polardbx_logo.svg">
                     <file type="jar" path="maven:/com/alibaba/polardbx:polardbx-connector-java:RELEASE[2.2.12]" bundle="!drivers.polardbx"/>
                     <file type="jar" path="maven:/dnsjava:dnsjava:RELEASE[3.6.1]" bundle="!drivers.polardbx"/>
                     <file type="jar" path="drivers/polardbx/polardbx-connector-java.jar" bundle="drivers.polardbx"/>

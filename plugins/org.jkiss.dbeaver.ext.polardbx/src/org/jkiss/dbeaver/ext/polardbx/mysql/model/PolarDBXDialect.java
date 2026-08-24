@@ -16,14 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.polardbx.mysql.model;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDialect;
-
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 
