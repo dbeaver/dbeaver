@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,17 +32,11 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public class ConfigurationImportWizard extends Wizard implements IImportWizard {
     private static final Log log = Log.getLog(ConfigurationExportWizard.class);
@@ -71,42 +65,18 @@ public class ConfigurationImportWizard extends Wizard implements IImportWizard {
         }
         ConfigurationImportData configurationImportData = mainPage.getConfigurationImportData();
         new Job("Importing workspace configuration") {
+            @NotNull
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                String zipFilepath = configurationImportData.getFilePath();
-                File zipFile = Path.of(zipFilepath).toFile();
-                if (!zipFile.exists() || !zipFile.canRead()) {
+            protected IStatus run(@NotNull IProgressMonitor monitor) {
+                var zipFile = Path.of(configurationImportData.getFilePath());
+                if (!Files.exists(zipFile) || !Files.isReadable(zipFile)) {
                     return Status.error("Can't read configuration file");
                 }
-                try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile))) {
-                    ZipEntry nextEntry = zipInputStream.getNextEntry();
-                    while (nextEntry != null) {
-                        String name = nextEntry.getName();
-                        Path rawConfigFilePath = workbench.resolve(name);
-                        Path configFilePath = rawConfigFilePath.normalize();
-                        if (configFilePath.startsWith(workbench)) {
-                            if (!configFilePath.toFile().getParentFile().canWrite()) {
-                                throw new IOException("Workspace directory is read-only");
-                            }
-                            if (configFilePath.toFile().exists()) {
-                                File listFile = configFilePath.toFile();
-                                if (listFile.getName().equals(name)) {
-                                    writeZipEntryToFile(zipInputStream, listFile);
-                                }
-                            } else {
-                                Files.createFile(configFilePath);
-                                writeZipEntryToFile(zipInputStream, configFilePath.toFile());
-                            }
-                        } else {
-                            log.warn("Skipping illegal configuration file targeting outside of the current configuration location: "
-                                + rawConfigFilePath);
-                        }
-                        nextEntry = zipInputStream.getNextEntry();
-                    }
-                } catch (FileNotFoundException exception) {
-                    return Status.error("File not found", exception);
-                } catch (IOException exception) {
-                    return Status.error("Error reading file", exception);
+                try (var fs = FileSystems.newFileSystem(zipFile)) {
+                    var root = fs.getPath("/");
+                    Files.walkFileTree(root, new CopyingFileVisitor(root, workbench));
+                } catch (IOException e) {
+                    return Status.error("Error importing workspace configuration", e);
                 }
                 if (UIUtils.confirmAction(getShell(),
                     NLS.bind(CoreMessages.dialog_workspace_import_wizard_window_restart_dialog_title, GeneralUtils.getProductName()),
@@ -121,13 +91,4 @@ public class ConfigurationImportWizard extends Wizard implements IImportWizard {
         return true;
     }
 
-    private void writeZipEntryToFile(@NotNull ZipInputStream zipInputStream, @NotNull File listFile) throws IOException {
-        byte[] buffer = new byte[IOUtils.DEFAULT_BUFFER_SIZE];
-        try (var os = Files.newOutputStream(listFile.toPath(), StandardOpenOption.TRUNCATE_EXISTING)) {
-            for (int br = zipInputStream.read(buffer); br != -1; br = zipInputStream.read(buffer)) {
-                os.write(buffer, 0, br);
-            }
-        }
-        zipInputStream.closeEntry();
-    }
 }

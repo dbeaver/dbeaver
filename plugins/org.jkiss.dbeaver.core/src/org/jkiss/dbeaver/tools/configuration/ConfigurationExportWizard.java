@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,22 +25,16 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.IOUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.Map;
 
 public class ConfigurationExportWizard extends Wizard implements IExportWizard {
     private static final Log log = Log.getLog(ConfigurationExportWizard.class);
@@ -74,47 +68,24 @@ public class ConfigurationExportWizard extends Wizard implements IExportWizard {
         }
         Path zipFile = Path.of(path);
         new Job("Copying workspace configuration") {
+            @NotNull
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
+            protected IStatus run(@NotNull IProgressMonitor monitor) {
                 Path parent = zipFile.getParent();
-                if (parent != null && !parent.toFile().canWrite()) {
+                if (parent != null && !Files.isWritable(parent)) {
                     return Status.error("Can't create a file, because the export destination is read-only");
                 }
-                if (zipFile.toFile().exists()) {
-                    boolean delete = zipFile.toFile().delete();
-                    if (!delete) {
-                        return Status.error("Error deleting previous ZIP file contents");
-                    }
-                }
-                try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile.toFile()))) {
-                    Files.walkFileTree(workbench, new SimpleFileVisitor<>() {
-                        @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                            zos.putNextEntry(new ZipEntry(file.toFile().getName()));
-                            File confFile = file.toFile();
-                            try (FileInputStream fis = new FileInputStream(confFile)) {
-                                byte[] writeBuffer = new byte[IOUtils.DEFAULT_BUFFER_SIZE];
-                                for (int br = fis.read(writeBuffer); br != -1; br =
-                                    fis.read(writeBuffer)) {
-                                    zos.write(writeBuffer, 0, br);
-                                }
-                                zos.flush();
-                            }
-                            zos.closeEntry();
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                        @Override
-                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                            zos.finish();
-                            return super.postVisitDirectory(dir, exc);
-                        }
-                    });
+                try {
+                    Files.deleteIfExists(zipFile);
                 } catch (IOException e) {
-                    log.error("Error copying file configuration:" + e);
-                    Status.error(e.getMessage());
+                    log.error("Error deleting existing configuration file", e);
                 }
-            return Status.OK_STATUS;
+                try (var fs = FileSystems.newFileSystem(zipFile, Map.of("create", true))) {
+                    Files.walkFileTree(workbench, new CopyingFileVisitor(workbench, fs.getPath("/")));
+                } catch (IOException e) {
+                    return Status.error("Error exporting workspace configuration", e);
+                }
+                return Status.OK_STATUS;
             }
         }.schedule();
 
