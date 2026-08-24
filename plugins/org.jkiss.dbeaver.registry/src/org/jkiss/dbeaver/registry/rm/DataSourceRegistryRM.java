@@ -85,7 +85,7 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
         for (DBPDataSourceContainer container : containers) {
             dataSourceIds.add(container.getId());
         }
-        if (dataSourceIds.isEmpty()) {
+        if (containers.isEmpty()) {
             return;
         }
 
