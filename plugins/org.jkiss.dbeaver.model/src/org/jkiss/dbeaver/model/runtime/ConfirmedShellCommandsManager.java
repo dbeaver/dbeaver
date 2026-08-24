@@ -22,12 +22,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConfigurationController;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -54,12 +54,15 @@ public class ConfirmedShellCommandsManager {
     private ConfirmedShellCommandsManager() {
     }
 
-    public void validateCommandByUser(@NotNull DBRShellCommand command, @NotNull DBPConnectionEventType eventType) throws DBException {
+    public void validateCommandByUser(@NotNull DBRShellCommand command, @NotNull String approveByUserAdditionalContext) throws DBException {
         if (!command.isBlank()) {
             validateNotDistributed();
-            boolean isApprovedByUser = confirmedCommands().contains(command.getCommand()) || askApproveForCommand(command);
+            boolean isApprovedByUser = confirmedCommands().contains(command.getCommand()) || askApproveForCommand(
+                command,
+                approveByUserAdditionalContext
+            );
             if (!isApprovedByUser) {
-                throw new DBException(NLS.bind(ModelMessages.shell_cmd_manager_add_command_error_message, eventType.getTitle()));
+                throw new DBException(NLS.bind(ModelMessages.shell_cmd_manager_add_command_error_message, approveByUserAdditionalContext));
             }
         }
     }
@@ -87,10 +90,15 @@ public class ConfirmedShellCommandsManager {
         }
     }
 
-    private boolean askApproveForCommand(@NotNull DBRShellCommand command) throws DBException {
+    private boolean askApproveForCommand(@NotNull DBRShellCommand command, @NotNull String approveByUserAdditionalContext)
+    throws DBException {
         if (DBWorkbench.getPlatformUI().confirmAction(
             ModelMessages.shell_cmd_manager_add_command_confirmation_label,
-            NLS.bind(ModelMessages.shell_cmd_manager_add_command_confirmation_text, command.getCommand())
+            NLS.bind(
+                ModelMessages.shell_cmd_manager_add_command_confirmation_text, approveByUserAdditionalContext, command.getCommand()
+            ),
+            ModelMessages.shell_cmd_manager_add_command_confirmation_button,
+            false
         )) {
             addConfirmedShellCommand(command);
             return true;
@@ -111,12 +119,13 @@ public class ConfirmedShellCommandsManager {
     @NotNull
     private Set<String> loadConfirmedCommandsForRepo() throws DBException {
         Set<String> confirmedCommands = null;
-        String loaded = getConfigurationController().loadConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME);
-        if (loaded != null) {
-            confirmedCommands = (Set<String>) JSONUtils.GSON.fromJson(
-                loaded,
-                TypeToken.getParameterized(Set.class, String.class)
-            );
+        var path = getConfigFilePath();
+        if (Files.exists(path)) {
+            try (var reader = Files.newBufferedReader(path)) {
+                confirmedCommands = (Set<String>) JSONUtils.GSON.fromJson(reader, TypeToken.getParameterized(Set.class, String.class));
+            } catch (Exception e) {
+                log.error("Error loading confirmed shell commands from " + path, e);
+            }
         }
         return Objects.requireNonNullElse(confirmedCommands, new HashSet<>());
     }
@@ -141,13 +150,21 @@ public class ConfirmedShellCommandsManager {
         }
     }
 
-    @NotNull
-    private DBConfigurationController getConfigurationController() {
-        return DBWorkbench.getPlatform().getConfigurationController();
+    private void saveCommands() throws DBException {
+        var path = getConfigFilePath();
+        try {
+            Files.createDirectories(path.getParent());
+            try (var writer = Files.newBufferedWriter(path)) {
+                JSONUtils.PRETTY_GSON.toJson(confirmedCommands, writer);
+            }
+        } catch (Exception e) {
+            throw new DBException("Error saving confirmed commands, file: %s".formatted(path), e);
+        }
+        log.debug("Saved confirmed commands to file '%s'".formatted(CONFIRMED_COMMANDS_FILE_NAME));
     }
 
-    private void saveCommands() throws DBException {
-        getConfigurationController().saveConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME, JSONUtils.PRETTY_GSON.toJson(confirmedCommands));
-        log.debug("Saved confirmed commands to file '%s'".formatted(CONFIRMED_COMMANDS_FILE_NAME));
+    @NotNull
+    private Path getConfigFilePath() {
+        return DBWorkbench.getPlatform().getGlobalConfigurationFile(CONFIRMED_COMMANDS_FILE_NAME);
     }
 }
