@@ -70,6 +70,7 @@ public abstract class DBWNetworkProfileManager {
                 return profiles;
             }
             profiles = new ArrayList<>(pl);
+            profiles.sort(DBWNetworkProfile.PROFILE_NAME_COMPARATOR);
         }
 
         return profiles;
@@ -118,10 +119,12 @@ public abstract class DBWNetworkProfileManager {
             for (int i = 0; i < profilesSafe.size(); i++) {
                 if (CommonUtils.equalObjects(profilesSafe.get(i).getProfileName(), profile.getProfileName())) {
                     profilesSafe.set(i, profile);
+                    profilesSafe.sort(DBWNetworkProfile.PROFILE_NAME_COMPARATOR);
                     return;
                 }
             }
             profilesSafe.add(profile);
+            profilesSafe.sort(DBWNetworkProfile.PROFILE_NAME_COMPARATOR);
         }
     }
 
