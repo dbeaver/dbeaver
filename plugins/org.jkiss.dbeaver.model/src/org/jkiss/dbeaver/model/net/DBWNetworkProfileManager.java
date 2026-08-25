@@ -69,8 +69,9 @@ public abstract class DBWNetworkProfileManager {
             if (profiles != null) {
                 return profiles;
             }
-            profiles = new ArrayList<>(pl);
-            profiles.sort(DBWNetworkProfile.PROFILE_NAME_COMPARATOR);
+            List<DBWNetworkProfile> sortedProfiles = new ArrayList<>(pl);
+            sortedProfiles.sort(DBWNetworkProfile.PROFILE_NAME_COMPARATOR);
+            profiles = sortedProfiles;
         }
 
         return profiles;
