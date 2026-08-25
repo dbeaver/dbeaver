@@ -20,6 +20,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -48,6 +50,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -421,11 +424,14 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         );
 
         if (configurationMap != null) {
-            // Folders
-            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(configurationMap, CONFIGURATION_FOLDERS)) {
-                String name = folderMap.getKey();
-                String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
-                String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
+            // Folder names are not unique across hierarchy levels, so they are stored as an ordered list.
+            @SuppressWarnings("unchecked")
+            List<Pair<String, Map<String, Object>>> folders =
+                (List<Pair<String, Map<String, Object>>>) configurationMap.get(CONFIGURATION_FOLDERS);
+            for (Pair<String, Map<String, Object>> folderData : CommonUtils.safeList(folders)) {
+                String name = folderData.getFirst();
+                String description = JSONUtils.getObjectProperty(folderData.getSecond(), RegistryConstants.ATTR_DESCRIPTION);
+                String parentFolder = JSONUtils.getObjectProperty(folderData.getSecond(), RegistryConstants.ATTR_PARENT);
                 DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true, parseResults);
                 DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true, parseResults) : parent.getChild(name);
                 if (folder == null) {
@@ -952,7 +958,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         }
         try (is) {
             final String data = loadConfigFile(is, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
-            return JSONUtils.parseMap(CONFIG_GSON, new StringReader(data));
+            return readConfigurationMap(data);
         } catch (DBInterruptedException e) {
             // happens only if user cancelled entering password
             // not a community level
@@ -961,6 +967,39 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             // intercept exceptions for crypted configuration
             // for community provide a dialog
             throw new DBException(e.getMessage(), e);
+        }
+    }
+
+    @NotNull
+    @SuppressWarnings("unchecked")
+    protected static Map<String, Object> readConfigurationMap(@NotNull String data) throws IOException {
+        try (JsonReader json = CONFIG_GSON.newJsonReader(new StringReader(data))) {
+            Map<String, Object> configurationMap = new LinkedHashMap<>();
+            json.beginObject();
+            while (json.hasNext()) {
+                String name = json.nextName();
+                if (!CONFIGURATION_FOLDERS.equals(name)) {
+                    configurationMap.put(name, CONFIG_GSON.fromJson(json, Object.class));
+                    continue;
+                }
+                // Read entries manually because deserializing the object to a map would discard duplicate folder names.
+                if (json.peek() == JsonToken.NULL) {
+                    json.nextNull();
+                    configurationMap.put(name, List.of());
+                    continue;
+                }
+                List<Pair<String, Map<String, Object>>> folders = new ArrayList<>();
+                json.beginObject();
+                while (json.hasNext()) {
+                    String folderName = json.nextName();
+                    Map<String, Object> configuration = CONFIG_GSON.fromJson(json, JSONUtils.MAP_TYPE_TOKEN);
+                    folders.add(new Pair<>(folderName, configuration));
+                }
+                json.endObject();
+                configurationMap.put(name, folders);
+            }
+            json.endObject();
+            return configurationMap;
         }
     }
 
