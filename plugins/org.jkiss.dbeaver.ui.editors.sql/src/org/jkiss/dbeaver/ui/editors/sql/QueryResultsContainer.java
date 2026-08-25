@@ -129,7 +129,11 @@ abstract class QueryResultsContainer implements
         try {
             detached = true;
             this.getOwner().getSite().getPage().openEditor(
-                new SQLResultsEditorInput(this),
+                new SQLResultsEditorInput(
+                    this,
+                    getResultsTab().getText(),
+                    getResultsTab().getToolTipText()
+                ),
                 SQLResultsEditor.class.getName(),
                 true,
                 IWorkbenchPage.MATCH_NONE
@@ -487,6 +491,7 @@ abstract class QueryResultsContainer implements
         }
     }
 
+    @NotNull
     public abstract CTabItem getResultsTab();
 
     public abstract boolean isPinned();
