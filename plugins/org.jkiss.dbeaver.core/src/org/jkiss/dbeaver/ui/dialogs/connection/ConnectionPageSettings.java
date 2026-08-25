@@ -171,6 +171,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return originalConnectionEditor;
     }
 
+    @NotNull
+    @Override
+    public String getPageSubTitle() {
+        return CoreMessages.dialog_setting_connection_wizard_title;
+    }
+
     @Override
     public void activatePage() {
         if (connectionEditor == null) {
