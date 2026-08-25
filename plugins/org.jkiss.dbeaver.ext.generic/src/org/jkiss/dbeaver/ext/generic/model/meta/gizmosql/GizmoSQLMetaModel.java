@@ -24,8 +24,12 @@ import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,12 +45,29 @@ import java.util.Map;
  * catalog view wraps. If neither is available (typically the SQLite backend), we return an
  * informative stub rather than failing the view-DDL tab.
  */
-public class GizmoSQLMetaModel extends GenericMetaModel {
+public class GizmoSQLMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
 
     private static final String DDL_UNAVAILABLE = "-- View definition not available";
     private static final String DDL_UNSUPPORTED_SQLITE =
         "-- View DDL not supported on this GizmoSQL server: "
             + "duckdb_views() is unavailable (typically means the SQLite backend).";
+
+    /**
+     * Page result sets with {@code LIMIT n OFFSET m} instead of DBeaver's generic
+     * fallback of re-executing the whole query and skipping rows client-side.
+     * Arrow Flight SQL result streams are forward-only with no server-side cursor,
+     * so without this every "fetch next page" re-ran the full statement and
+     * transferred all preceding rows again. Both GizmoSQL backends (DuckDB and
+     * SQLite) accept {@code LIMIT ... OFFSET ...}.
+     */
+    @Nullable
+    @Override
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new QueryTransformerLimit(false, true);
+        }
+        return null;
+    }
 
     @Override
     public String getViewDDL(
