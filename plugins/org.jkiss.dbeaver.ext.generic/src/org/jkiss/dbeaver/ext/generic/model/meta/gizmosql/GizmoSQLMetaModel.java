@@ -25,12 +25,15 @@ import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProviderExt;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -45,7 +48,7 @@ import java.util.Map;
  * catalog view wraps. If neither is available (typically the SQLite backend), we return an
  * informative stub rather than failing the view-DDL tab.
  */
-public class GizmoSQLMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
+public class GizmoSQLMetaModel extends GenericMetaModel implements DBCQueryTransformProvider, DBCQueryTransformProviderExt {
 
     private static final String DDL_UNAVAILABLE = "-- View definition not available";
     private static final String DDL_UNSUPPORTED_SQLITE =
@@ -67,6 +70,21 @@ public class GizmoSQLMetaModel extends GenericMetaModel implements DBCQueryTrans
             return new QueryTransformerLimit(false, true);
         }
         return null;
+    }
+
+    /**
+     * Always page via SQL: Arrow Flight SQL has no scrollable cursor, so the JDBC
+     * {@code setMaxRows} fallback re-executes the whole statement for every page
+     * and discards the preceding rows client-side.
+     */
+    @Override
+    public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
+        return true;
+    }
+
+    @Override
+    public boolean isLimitApplicableTo(SQLQuery query) {
+        return true;
     }
 
     @Override

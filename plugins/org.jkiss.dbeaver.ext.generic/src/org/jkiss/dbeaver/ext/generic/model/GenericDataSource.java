@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -62,7 +63,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, GenericStructContainer {
+public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, GenericStructContainer, DBCQueryTransformProviderExt {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
@@ -643,6 +644,26 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             }
         }
         return super.createQueryTransformer(type);
+    }
+
+    /**
+     * Meta models may force SQL-level result-set limiting (e.g. dialects whose
+     * JDBC drivers cannot page a result set without re-executing the query).
+     */
+    @Override
+    public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
+        if (metaModel instanceof DBCQueryTransformProviderExt ext) {
+            return ext.isForceTransform(session, sqlQuery);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isLimitApplicableTo(SQLQuery query) {
+        if (metaModel instanceof DBCQueryTransformProviderExt ext) {
+            return ext.isLimitApplicableTo(query);
+        }
+        return true;
     }
 
     /**
