@@ -155,7 +155,7 @@ public class DialogUtils {
         return Arrays.stream(fileNames).map(filterPath::resolve).toArray(Path[]::new);
     }
 
-    @NotNull
+    @Nullable
     public static String openFileDialog(@NotNull FileDialog fileDialog) {
         if (curDialogFolder != null) {
             fileDialog.setFilterPath(curDialogFolder);
