@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLResultsEditorInput implements IEditorInput {
+
+    private static final int MAX_TAB_NAME_LENGTH = 50;
+
     private final IResultSetContainer container;
 
     public SQLResultsEditorInput(@NotNull IResultSetContainer container) {
@@ -45,7 +48,12 @@ public class SQLResultsEditorInput implements IEditorInput {
         if (dataContainer == null) {
             return "Data";
         } else {
-            return CommonUtils.getSingleLineString(dataContainer.getName());
+            // Data container name for a SQL query result is the raw query text, which can be
+            // arbitrarily long. Truncate it so the detached tab gets a readable title instead
+            // of the whole query.
+            return CommonUtils.truncateString(
+                CommonUtils.getSingleLineString(dataContainer.getName()),
+                MAX_TAB_NAME_LENGTH);
         }
     }
 
