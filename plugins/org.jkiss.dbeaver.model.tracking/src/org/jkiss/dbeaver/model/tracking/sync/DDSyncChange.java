@@ -14,16 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync.core;
+package org.jkiss.dbeaver.model.tracking.sync;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-/**
- * Remote container holding synchronized resources.
- */
-public record DDContainer(
-    @NotNull String id,
-    @Nullable String label
-) {
+public enum DDSyncChange {
+    UNCHANGED,
+    LOCAL,
+    SERVER,
+    CONFLICT
 }

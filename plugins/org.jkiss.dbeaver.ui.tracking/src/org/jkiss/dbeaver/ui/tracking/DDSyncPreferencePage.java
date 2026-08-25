@@ -35,13 +35,15 @@ import org.jkiss.dbeaver.model.tracking.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.tracking.auth.DDCryptoState;
 import org.jkiss.dbeaver.model.tracking.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.tracking.auth.DDKeyStore;
+import org.jkiss.dbeaver.model.tracking.sync.DDLocalSyncConflictException;
 import org.jkiss.dbeaver.model.tracking.sync.DDSyncBinding;
+import org.jkiss.dbeaver.model.tracking.sync.DDSyncResult;
 import org.jkiss.dbeaver.model.tracking.sync.DDSyncService;
-import org.jkiss.dbeaver.model.tracking.sync.core.DDContainer;
-import org.jkiss.dbeaver.model.tracking.sync.core.DDWorkspaceNotFoundException;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDConfigurationConflictException;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDConfigurationNotFoundException;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDConfigurationSummary;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -61,11 +63,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private Text accountText;
     private Text urlText;
-    private Text workspaceText;
+    private Text configurationText;
     private Button loginButton;
     private Button deleteButton;
     private Button uploadButton;
     private Button downloadButton;
+    private Button downloadOptionsButton;
 
     private String savedUrl = "";
 
@@ -118,13 +121,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
         Composite syncGroup = UIUtils.createTitledComposite(
             composite,
-            "Workspace",
+            "Configuration",
             2,
             GridData.FILL_HORIZONTAL,
             SWT.DEFAULT);
-        workspaceText = UIUtils.createLabelText(syncGroup, "Bound to", "", SWT.READ_ONLY, idFieldLayout());
+        configurationText = UIUtils.createLabelText(syncGroup, "Bound to", "", SWT.READ_ONLY, idFieldLayout());
 
-        Composite syncButtons = UIUtils.createComposite(syncGroup, 2);
+        Composite syncButtons = UIUtils.createComposite(syncGroup, 3);
         GridData syncGd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         syncGd.horizontalSpan = 2;
         syncButtons.setLayoutData(syncGd);
@@ -132,6 +135,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             syncButtons, "Upload", null, SelectionListener.widgetSelectedAdapter(e -> upload()));
         downloadButton = UIUtils.createPushButton(
             syncButtons, "Download", null, SelectionListener.widgetSelectedAdapter(e -> download()));
+        downloadOptionsButton = UIUtils.createPushButton(
+            syncButtons, "Download...", null, SelectionListener.widgetSelectedAdapter(e -> downloadOptions()));
 
         refresh();
         return composite;
@@ -143,46 +148,41 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return;
         }
         try {
-            String containerId = resolveUploadContainer(service);
-            if (containerId == null) {
-                return;
-            }
-            List<String> uploaded;
-            try {
-                uploaded = service.upload(containerId);
-            } catch (DDWorkspaceNotFoundException e) {
-                containerId = createNewContainer(service);
-                if (containerId == null) {
+            DDSyncResult result;
+            if (service.getBinding() == null) {
+                result = createNewConfiguration(service);
+                if (result == null) {
                     return;
                 }
-                uploaded = service.upload(containerId);
+            } else {
+                try {
+                    result = service.upload();
+                } catch (DDConfigurationNotFoundException e) {
+                    result = createNewConfiguration(service);
+                    if (result == null) {
+                        return;
+                    }
+                }
             }
             refresh();
+            showChanged("Nothing to upload", "Uploaded: ", result);
+        } catch (DDLocalSyncConflictException e) {
             DBWorkbench.getPlatformUI().showMessageBox(
-                SYNC_TITLE,
-                uploaded.isEmpty() ? "Nothing to upload" : "Uploaded: " + String.join(", ", uploaded),
-                false);
+                SYNC_TITLE, "Upload was refused, local changes conflict with the server: " + e.getMessage(), true);
+        } catch (DDConfigurationConflictException e) {
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "Upload was rejected: " + e.getMessage(), true);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Upload failed", e);
         }
     }
 
     @Nullable
-    private String resolveUploadContainer(@NotNull DDSyncService service) throws DBException {
-        DDSyncBinding binding = service.getBinding();
-        if (binding != null) {
-            return binding.containerId();
-        }
-        return createNewContainer(service);
-    }
-
-    @Nullable
-    private String createNewContainer(@NotNull DDSyncService service) throws DBException {
-        String label = askContainerLabel();
-        if (label == null) {
+    private DDSyncResult createNewConfiguration(@NotNull DDSyncService service) throws DBException {
+        DDCreateConfigurationDialog dialog = new DDCreateConfigurationDialog(getShell(), service.getAvailableParts());
+        if (dialog.open() != Window.OK) {
             return null;
         }
-        return service.createContainer(label);
+        return service.createConfiguration(dialog.getName(), dialog.getSelectedKeys());
     }
 
     private void download() {
@@ -190,50 +190,70 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         if (service == null) {
             return;
         }
-        try {
-            String containerId = resolveDownloadContainer(service);
-            if (containerId == null) {
-                return;
-            }
-            List<String> restored;
-            try {
-                restored = service.download(containerId);
-            } catch (DDWorkspaceNotFoundException e) {
-                containerId = pickExistingContainer(service);
-                if (containerId == null) {
-                    return;
-                }
-                restored = service.download(containerId);
-            }
-            refresh();
+        if (service.getBinding() == null) {
             DBWorkbench.getPlatformUI().showMessageBox(
-                SYNC_TITLE,
-                restored.isEmpty()
-                    ? "Nothing to download"
-                    : "Downloaded: " + String.join(", ", restored),
-                false);
+                SYNC_TITLE, "Nothing is bound yet. Use Download... to pick a configuration.", true);
+            return;
+        }
+        try {
+            DDSyncResult result = service.download();
+            refresh();
+            showChanged("Nothing to download", "Downloaded: ", result);
+        } catch (DDLocalSyncConflictException e) {
+            DBWorkbench.getPlatformUI().showMessageBox(
+                SYNC_TITLE, "Download was refused, local changes conflict with the server: " + e.getMessage(), true);
+        } catch (DDConfigurationNotFoundException e) {
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "This configuration no longer exists", true);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Download failed", e);
         }
     }
 
-    @Nullable
-    private String resolveDownloadContainer(@NotNull DDSyncService service) throws DBException {
-        DDSyncBinding binding = service.getBinding();
-        if (binding != null) {
-            return binding.containerId();
+    private void downloadOptions() {
+        DDSyncService service = createSyncService();
+        if (service == null) {
+            return;
         }
-        return pickExistingContainer(service);
+        try {
+            DDConfigurationSummary selected = askConfiguration(service.listConfigurations());
+            if (selected == null) {
+                return;
+            }
+            DDSyncResult result = service.downloadAndBind(selected.configurationId());
+            refresh();
+            showChanged("Nothing to download", "Downloaded: ", result);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Download failed", e);
+        }
+    }
+
+    private void showChanged(@NotNull String emptyMessage, @NotNull String prefix, @NotNull DDSyncResult result) {
+        DBWorkbench.getPlatformUI().showMessageBox(
+            SYNC_TITLE,
+            result.changedParts().isEmpty() ? emptyMessage : prefix + String.join(", ", result.changedParts()),
+            false);
     }
 
     @Nullable
-    private String pickExistingContainer(@NotNull DDSyncService service) throws DBException {
-        DDContainer selected = askContainer(service.listContainers());
-        if (selected == null) {
+    private DDConfigurationSummary askConfiguration(@NotNull List<DDConfigurationSummary> configurations) {
+        if (configurations.isEmpty()) {
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "No account configurations found", true);
             return null;
         }
-        service.bind(selected.id(), selected.label());
-        return selected.id();
+        ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), new LabelProvider() {
+            @NotNull
+            @Override
+            public String getText(@NotNull Object element) {
+                return ((DDConfigurationSummary) element).name();
+            }
+        });
+        dialog.setTitle(SYNC_TITLE);
+        dialog.setMessage("Select configuration");
+        dialog.setElements(configurations.toArray());
+        if (dialog.open() != Window.OK) {
+            return null;
+        }
+        return (DDConfigurationSummary) dialog.getFirstResult();
     }
 
     @Nullable
@@ -260,34 +280,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = UIUtils.getFontHeight(Display.getCurrent().getSystemFont()) * 22;
         return gd;
-    }
-
-    @Nullable
-    private String askContainerLabel() {
-        String label = EnterNameDialog.chooseName(getShell(), "Workspace name", "");
-        return CommonUtils.isEmpty(label) ? null : label;
-    }
-
-    @Nullable
-    private DDContainer askContainer(@NotNull List<DDContainer> containers) {
-        if (containers.isEmpty()) {
-            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "No synchronized workspaces found", true);
-            return null;
-        }
-        ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), new LabelProvider() {
-            @NotNull
-            @Override
-            public String getText(@NotNull Object element) {
-                return ((DDContainer) element).label();
-            }
-        });
-        dialog.setTitle(SYNC_TITLE);
-        dialog.setMessage("Select workspace");
-        dialog.setElements(containers.toArray());
-        if (dialog.open() != Window.OK) {
-            return null;
-        }
-        return (DDContainer) dialog.getFirstResult();
     }
 
     @NotNull
@@ -396,11 +388,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         DDSyncBinding binding = DDSyncService.readBinding(
             DBWorkbench.getPlatform().getWorkspace().getAbsolutePath());
         boolean boundToCurrentAccount = binding != null && present && bundle.accountId().equals(binding.accountId());
-        workspaceText.setText(!boundToCurrentAccount
+        configurationText.setText(!boundToCurrentAccount
             ? ""
-            : CommonUtils.isEmpty(binding.label()) ? binding.containerId() : binding.label());
+            : CommonUtils.isEmpty(binding.name()) ? binding.configurationId() : binding.name());
         uploadButton.setEnabled(present);
-        downloadButton.setEnabled(present);
+        downloadButton.setEnabled(present && boundToCurrentAccount);
+        downloadOptionsButton.setEnabled(present);
 
         savedUrl = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SERVER_URL);
         if (savedUrl == null) {

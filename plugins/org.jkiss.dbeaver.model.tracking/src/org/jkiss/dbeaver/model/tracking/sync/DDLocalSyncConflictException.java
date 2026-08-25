@@ -17,18 +17,21 @@
 package org.jkiss.dbeaver.model.tracking.sync;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
-import java.util.Map;
+import java.util.List;
 
-/**
- * Link between the local workspace and a remote configuration.
- */
-public record DDSyncBinding(
-    @NotNull String configurationId,
-    @Nullable String name,
-    @NotNull String accountId,
-    long configurationVersion,
-    @NotNull Map<String, DDSyncPartState> parts
-) {
+public class DDLocalSyncConflictException extends DBException {
+
+    private final List<String> conflictingParts;
+
+    public DDLocalSyncConflictException(@NotNull List<String> conflictingParts) {
+        super("Conflicting local changes: " + String.join(", ", conflictingParts));
+        this.conflictingParts = conflictingParts;
+    }
+
+    @NotNull
+    public List<String> conflictingParts() {
+        return conflictingParts;
+    }
 }

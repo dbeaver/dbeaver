@@ -32,6 +32,7 @@ public class AISyncUnit extends DBPFileSyncUnit {
     public AISyncUnit() {
         super(
             "ai",
+            "AI Settings",
             DBPWorkspace.METADATA_FOLDER + "/" + BasePlatformImpl.CONFIG_FOLDER
                 + "/" + AISettingsManager.AI_CONFIGURATION_FILE_NAME,
             DBPSyncScope.WORKSPACE,

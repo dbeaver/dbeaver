@@ -17,12 +17,10 @@
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-record DDContainerData(
-    @NotNull String workspaceId,
-    @NotNull String label,
-    long version,
-    @Nullable String createdAt,
-    @Nullable String lastSyncAt
-) { }
+record DDUpdateConfigurationPartRequest(
+    @NotNull String key,
+    long expectedVersion,
+    @NotNull String encryptedValue
+) {
+}

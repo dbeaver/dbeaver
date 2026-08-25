@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync;
+package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.Map;
+import java.util.List;
 
-/**
- * Link between the local workspace and a remote configuration.
- */
-public record DDSyncBinding(
+record DDConfigurationData(
     @NotNull String configurationId,
-    @Nullable String name,
-    @NotNull String accountId,
-    long configurationVersion,
-    @NotNull Map<String, DDSyncPartState> parts
+    @NotNull String name,
+    long version,
+    @Nullable String createdAt,
+    @Nullable String lastSyncAt,
+    @NotNull List<DDConfigurationPartData> parts
 ) {
 }

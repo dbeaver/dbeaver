@@ -30,6 +30,9 @@ public interface DBPSyncUnit {
     String getId();
 
     @NotNull
+    String getDisplayName();
+
+    @NotNull
     DBPSyncScope getScope();
 
     default boolean isEnabledByDefault() {
