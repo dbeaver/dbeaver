@@ -313,6 +313,9 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_provider_element_tooltip_datasource_provided;
     public static String navigator_provider_element_tooltip_datasource_error;
 
+    public static String confirm_commit_after_defaults_change_title;
+    public static String confirm_commit_after_defaults_change_message;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UINavigatorMessages.class);

@@ -305,4 +305,9 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         String schemaName = (getDefaultSchema() != null) ? getDefaultSchema().getName() : null;
         return new DBCCachedContextDefaults(getOwnerInstance().getName(), schemaName);
     }
+
+    @Override
+    public boolean isDefaultsChangeTransactional() {
+        return true;
+    }
 }
