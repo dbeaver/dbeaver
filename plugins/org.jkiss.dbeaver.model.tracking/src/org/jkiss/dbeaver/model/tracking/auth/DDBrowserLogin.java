@@ -153,7 +153,9 @@ public class DDBrowserLogin {
             accountId,
             CommonUtils.toBoolean(form.get("cryptoConfigured")),
             form.get("encryptedBundle"),
-            CommonUtils.isEmpty(form.get("generation")) ? null : CommonUtils.toLong(form.get("generation"))
+            CommonUtils.isEmpty(form.get("generation")) ? null : CommonUtils.toLong(form.get("generation")),
+            form.get("salt"),
+            CommonUtils.isEmpty(form.get("iterations")) ? null : CommonUtils.toInt(form.get("iterations"))
         );
     }
 

@@ -26,7 +26,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.SecretKey;
 
 /**
  * Keeps the working keys of the account. Written and erased as a whole.
@@ -35,10 +35,10 @@ public class DDKeyStore {
 
     private static final Log log = Log.getLog(DDKeyStore.class);
 
+    @Deprecated(forRemoval = true)
     public static final String ACCESS_KEY_PREFIX = "ddgk_";
 
     private static final String SECRET_KEY_BUNDLE = "datadam.key-bundle";
-    private static final String KEY_ALGORITHM = "AES";
     private static final String BUNDLE_SEPARATOR = "\\.";
 
     private DDKeyStore() {
@@ -62,19 +62,24 @@ public class DDKeyStore {
     @NotNull
     public static DDKeyBundle unpack(
         @NotNull DDCryptoState state,
-        @NotNull String accessKey
+        @NotNull String recoveryPhrase
     ) throws DBException {
         if (!state.cryptoConfigured() || CommonUtils.isEmpty(state.encryptedBundle())) {
             throw new DBException("Encryption is not configured for this account");
         }
-        byte[] key = decodeAccessKey(accessKey);
+        if (CommonUtils.isEmpty(state.salt()) || state.iterations() == null) {
+            throw new DBException("Key derivation settings are not configured for this account");
+        }
+        byte[] salt;
         byte[] encryptedBundle;
         try {
+            salt = Base64.getDecoder().decode(state.salt());
             encryptedBundle = Base64.getDecoder().decode(state.encryptedBundle());
         } catch (IllegalArgumentException e) {
             throw new DBException("Invalid encrypted bundle", e);
         }
-        byte[] bundle = DDCrypto.decrypt(new SecretKeySpec(key, KEY_ALGORITHM), encryptedBundle);
+        SecretKey kek = DDCrypto.deriveKek(DDRecoveryPhrase.normalizeAndValidate(recoveryPhrase), salt, state.iterations());
+        byte[] bundle = DDCrypto.decrypt(kek, encryptedBundle);
 
         String[] parts = new String(bundle, StandardCharsets.UTF_8).split(BUNDLE_SEPARATOR, 2);
         if (parts.length != 2 || CommonUtils.isEmpty(parts[0]) || CommonUtils.isEmpty(parts[1])) {
@@ -108,6 +113,7 @@ public class DDKeyStore {
         controller.flushChanges();
     }
 
+    @Deprecated(forRemoval = true)
     @NotNull
     public static byte[] decodeAccessKey(@NotNull String accessKey) throws DBException {
         String value = accessKey.trim();

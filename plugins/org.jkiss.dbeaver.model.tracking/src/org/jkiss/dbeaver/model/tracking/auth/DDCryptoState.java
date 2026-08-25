@@ -26,6 +26,8 @@ public record DDCryptoState(
     @NotNull String accountId,
     boolean cryptoConfigured,
     @Nullable String encryptedBundle,
-    @Nullable Long generation
+    @Nullable Long generation,
+    @Nullable String salt,
+    @Nullable Integer iterations
 ) {
 }

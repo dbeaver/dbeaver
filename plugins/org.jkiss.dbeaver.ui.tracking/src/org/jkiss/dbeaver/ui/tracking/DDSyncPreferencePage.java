@@ -367,12 +367,22 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         if (dialog.open() != Window.OK) {
             return;
         }
+        DDKeyBundle[] keyBundle = new DDKeyBundle[1];
         try {
-            DDKeyStore.save(DDKeyStore.unpack(state, dialog.getKey()));
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    keyBundle[0] = DDKeyStore.unpack(state, dialog.getPhrase());
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+            DDKeyStore.save(keyBundle[0]);
             DDTrackingInitializer.start();
             refresh();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Login failed", e);
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Login failed", e.getTargetException());
         }
     }
 
