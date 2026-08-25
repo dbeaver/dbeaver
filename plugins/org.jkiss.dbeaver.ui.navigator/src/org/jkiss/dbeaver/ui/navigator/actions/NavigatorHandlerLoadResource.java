@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -41,9 +42,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.Map;
 
 public class NavigatorHandlerLoadResource extends AbstractHandler implements IElementUpdater {
+
+    private static final Log log = Log.getLog(NavigatorHandlerLoadResource.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -82,48 +86,55 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
     }
 
     private void loadLocalFiles(DBRProgressMonitor monitor, Path[] srcFiles, Path targetPath) {
-        try {
-            long totalFilesSize = 0;
-            for (Path srcFile : srcFiles) {
-                totalFilesSize += Files.size(srcFile);
+        long totalFilesSize = 0;
+        Map<Path, Long> fileSizes = new HashMap<>();
+        for (Path srcFile : srcFiles) {
+            try {
+                long size = Files.size(srcFile);
+                fileSizes.put(srcFile, size);
+                totalFilesSize += size;
+            } catch (IOException e) {
+                log.debug("Cannot get file '" + srcFile + "' size", e);
             }
-
-            monitor.beginTask("Load resources", (int) totalFilesSize);
-            for (Path srcFile : srcFiles) {
-                if (monitor.isCanceled()) {
-                    return;
-                }
-                monitor.subTask(srcFile.getFileName() + " (" + ByteNumberFormat.getInstance().format(Files.size(srcFile)) + ")");
-
-                Path targetFilePath = targetPath.resolve(srcFile.getFileName());
-                byte[] buffer = new byte[10000];
-                try (InputStream is = Files.newInputStream(srcFile)) {
-                    try (OutputStream os = Files.newOutputStream(
-                        targetFilePath,
-                        StandardOpenOption.WRITE,
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.TRUNCATE_EXISTING
-                    )) {
-                        for (;;) {
-                            if (monitor.isCanceled()) {
-                                break;
-                            }
-                            int count = is.read(buffer);
-                            if (count <= 0) {
-                                break;
-                            }
-                            monitor.worked(count);
-                            os.write(buffer, 0, count);
-                        }
-                    }
-                } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("Error copying file " + srcFile, null, e);
-                }
-            }
-            monitor.done();
-        } catch (IOException e) {
-            DBWorkbench.getPlatformUI().showError("IO error", null, e);
         }
+
+        monitor.beginTask("Load resources", (int) totalFilesSize);
+        for (Path srcFile : srcFiles) {
+            if (monitor.isCanceled()) {
+                return;
+            }
+            Long fileSize = fileSizes.get(srcFile);
+            if (fileSize == null) {
+                continue;
+            }
+            monitor.subTask(srcFile.getFileName() + " (" + ByteNumberFormat.getInstance().format(fileSize) + ")");
+
+            Path targetFilePath = targetPath.resolve(srcFile.getFileName());
+            byte[] buffer = new byte[10000];
+            try (InputStream is = Files.newInputStream(srcFile)) {
+                try (OutputStream os = Files.newOutputStream(
+                    targetFilePath,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+                )) {
+                    for (;;) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        int count = is.read(buffer);
+                        if (count <= 0) {
+                            break;
+                        }
+                        monitor.worked(count);
+                        os.write(buffer, 0, count);
+                    }
+                }
+            } catch (IOException e) {
+                DBWorkbench.getPlatformUI().showError("Error copying file " + srcFile, null, e);
+            }
+        }
+        monitor.done();
     }
 
 
