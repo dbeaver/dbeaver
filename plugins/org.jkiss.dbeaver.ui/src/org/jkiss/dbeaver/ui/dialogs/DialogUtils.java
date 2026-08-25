@@ -26,7 +26,6 @@ import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -37,7 +36,6 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -46,8 +44,6 @@ import java.util.Arrays;
  * DialogUtils
  */
 public class DialogUtils {
-
-    private static final Log log = Log.getLog(DialogUtils.class);
 
     private static final String DIALOG_FOLDER_PROPERTY = "dialog.default.folder";
     
@@ -294,10 +290,12 @@ public class DialogUtils {
     /* SWT 2021-06-02 bug: file extension is not appended on Windows */
     @NotNull
     private static String fixMissingFileExtension(@NotNull FileDialog dialog, @NotNull String filePath) {
-        if (CommonUtils.isBitSet(dialog.getStyle(), SWT.SAVE) && new File(filePath).getName().indexOf('.') < 0 && RuntimeUtils.isWindows()) {
-            final String[] filters = dialog.getFilterExtensions();
+        if (CommonUtils.isBitSet(dialog.getStyle(), SWT.SAVE) &&
+            Path.of(filePath).getFileName().toString().indexOf('.') < 0 && RuntimeUtils.isWindows()
+        ) {
+            String[] filters = dialog.getFilterExtensions();
             if (dialog.getFilterIndex() >= 0 && dialog.getFilterIndex() < filters.length) {
-                final String filter = filters[dialog.getFilterIndex()];
+                String filter = filters[dialog.getFilterIndex()];
                 if (!filter.equals("*") && !filter.equals("*.*") && filter.indexOf('.') >= 0) {
                     return filePath + filter.substring(filter.lastIndexOf('.'));
                 }

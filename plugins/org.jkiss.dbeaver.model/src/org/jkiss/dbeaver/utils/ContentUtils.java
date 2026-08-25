@@ -174,26 +174,7 @@ public class ContentUtils {
         }
     }
 
-    public static long calculateContentLength(
-        File file,
-        String charset)
-        throws IOException {
-        return calculateContentLength(
-            new FileInputStream(file),
-            charset);
-    }
-
-    public static long calculateContentLength(
-        InputStream stream,
-        String charset)
-        throws IOException {
-        return calculateContentLength(
-            new InputStreamReader(
-                stream,
-                charset));
-    }
-
-    public static long calculateContentLength(Reader reader) throws IOException {
+    public static long calculateContentLength(@NotNull Reader reader) throws IOException {
         try (reader) {
             long length = 0;
             char[] buffer = new char[STREAM_COPY_BUFFER_SIZE];
@@ -208,7 +189,7 @@ public class ContentUtils {
         }
     }
 
-    public static void close(Closeable closeable) {
+    public static void close(@NotNull Closeable closeable) {
         try {
             closeable.close();
         } catch (IOException e) {
@@ -216,11 +197,12 @@ public class ContentUtils {
         }
     }
 
-    public static String readToString(InputStream is, Charset charset) throws IOException {
+    @NotNull
+    public static String readToString(@NotNull InputStream is, @NotNull Charset charset) throws IOException {
         return IOUtils.readToString(new UnicodeReader(is, charset));
     }
 
-    public static boolean isTextContent(DBDContent content) {
+    public static boolean isTextContent(@Nullable DBDContent content) {
         String contentType = content == null ? null : content.getContentType();
         return contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
@@ -325,13 +307,7 @@ public class ContentUtils {
         return null;
     }
 
-    public static void deleteTempFile(File tempFile) {
-        if (!tempFile.delete()) {
-            log.warn("Can't delete temp file '" + tempFile.getAbsolutePath() + "'");
-        }
-    }
-
-    public static void deleteTempFile(Path tempFile) {
+    public static void deleteTempFile(@NotNull Path tempFile) {
         try {
             Files.delete(tempFile);
         } catch (IOException e) {
@@ -339,21 +315,7 @@ public class ContentUtils {
         }
     }
 
-    public static boolean deleteFileRecursive(File file) {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            if (files != null) {
-                for (File ch : files) {
-                    if (!deleteFileRecursive(ch)) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return file.delete();
-    }
-
-    public static boolean deleteFileRecursive(Path file) {
+    public static boolean deleteFileRecursive(@NotNull Path file) {
         if (Files.isDirectory(file)) {
             try (Stream<Path> list = Files.list(file)) {
                 List<Path> files = list.toList();
