@@ -175,6 +175,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
             public void createPartControl(Composite parent) {
                 super.createPartControl(parent);
                 getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES).setEnabled(false);
+                updateVerticalRulerColors();
             }
 
             @Override

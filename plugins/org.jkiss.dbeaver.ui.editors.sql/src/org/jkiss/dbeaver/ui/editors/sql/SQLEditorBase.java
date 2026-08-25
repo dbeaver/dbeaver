@@ -41,8 +41,10 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
@@ -541,6 +543,28 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     protected ISharedTextColors getSharedColors() {
         return UIUtils.getSharedTextColors();
+    }
+
+    protected void updateVerticalRulerColors() {
+        if (!UIStyles.isDarkTheme()) {
+            return;
+        }
+        IVerticalRuler verticalRuler = getVerticalRuler();
+        if (verticalRuler == null) {
+            return;
+        }
+        Control rulerControl = verticalRuler.getControl();
+        if (rulerControl == null || rulerControl.isDisposed()) {
+            return;
+        }
+        Color background = UIStyles.getDefaultTextBackground();
+        rulerControl.setBackground(background);
+        if (rulerControl instanceof Composite composite) {
+            // Each ruler column owns a canvas that does not inherit the background on its own
+            for (Control column : composite.getChildren()) {
+                column.setBackground(background);
+            }
+        }
     }
 
     @Override
