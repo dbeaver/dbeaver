@@ -174,7 +174,10 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         try (var session = openSession(monitor, DBCExecutionPurpose.META, "Read context defaults")) {
             monitor.subTask("Retrieve active search path");
 
-            var searchPathStr = CommonUtils.notEmpty(JDBCUtils.queryString(session, "SHOW search_path"));
+            var searchPathStr = CommonUtils.notEmpty(JDBCUtils.queryString(
+                session,
+                "SELECT boot_val FROM pg_settings WHERE name = 'search_path'"
+            ));
             for (String str : searchPathStr.split(",")) {
                 searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str.trim()));
             }
