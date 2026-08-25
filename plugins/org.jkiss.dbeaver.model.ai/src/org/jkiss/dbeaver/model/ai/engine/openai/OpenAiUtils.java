@@ -80,8 +80,8 @@ public class OpenAiUtils {
                 tool.type = OAITool.TYPE_FUNCTION;
                 tool.name = fd.getFullId();
                 tool.description = fd.getAiDescription();
+                tool.parameters = new OAIToolParameters();
                 if (fd.getParameters().length > 0) {
-                    tool.parameters = new OAIToolParameters();
                     tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                     List<String> requiredFields = new ArrayList<>();
                     for (AIFunctionParameter param : fd.getParameters()) {
@@ -104,6 +104,21 @@ public class OpenAiUtils {
         }
 
         return oaiRequest;
+    }
+
+    static void prepareChatGptAccountRequest(@NotNull OAIResponsesRequest request) {
+        if (request.input == null) {
+            return;
+        }
+        String instructions = request.input.stream()
+            .filter(message -> "system".equals(message.role))
+            .map(OAIMessage::getFullText)
+            .filter(CommonUtils::isNotEmpty)
+            .collect(Collectors.joining("\n"));
+        request.instructions = CommonUtils.isEmpty(instructions) ? null : instructions;
+        request.input = request.input.stream()
+            .filter(message -> !"system".equals(message.role))
+            .toList();
     }
 
     @NotNull
@@ -136,7 +151,9 @@ public class OpenAiUtils {
     }
 
     public static boolean isTemperatureNotSupported(@Nullable String message) {
-        return message != null && message.contains("Unsupported parameter: 'temperature'");
+        return message != null
+            && message.contains("Unsupported parameter")
+            && message.contains("temperature");
     }
 
     public static boolean processErrors(
