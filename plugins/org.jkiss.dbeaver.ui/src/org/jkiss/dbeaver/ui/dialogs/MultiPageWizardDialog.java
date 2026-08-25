@@ -499,7 +499,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         TreeItem item = parentItem == null ?
             new TreeItem(pagesTree, SWT.NONE) :
             new TreeItem(parentItem, SWT.NONE);
-        item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
+        String title = page.getTitle();
+        if (page instanceof IWizardPageActive wpa) {
+            title = wpa.getPageSubTitle();
+        }
+        item.setText(CommonUtils.toString(title, page.getClass().getSimpleName()));
         item.setForeground(computePageColor(page));
         item.setData(page);
 
@@ -610,6 +614,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         var page = getCurrentPage();
         if (page != null) {
             var title = CommonUtils.notEmpty(page.getTitle());
+            if (page instanceof IWizardPageActive wpa) {
+                title = wpa.getPageSubTitle();
+            }
             setTitle(title);
 
             var item = findPageTreeItem(page);
