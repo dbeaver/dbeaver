@@ -27,13 +27,17 @@ import java.util.List;
 public interface DDSyncTransport {
 
     @NotNull
-    List<DDContainer> listContainers() throws DBException;
+    List<DDConfigurationSummaryData> listConfigurations() throws DBException;
 
     @NotNull
-    DDContainer createContainer(@NotNull String label) throws DBException;
+    DDConfigurationData getConfiguration(@NotNull String configurationId) throws DBException;
 
     @NotNull
-    List<DDRawEntry> load(@NotNull String containerId) throws DBException;
+    DDConfigurationData createConfiguration(@NotNull DDCreateConfigurationRequest request) throws DBException;
 
-    void save(@NotNull String containerId, @NotNull String key, @NotNull byte[] value) throws DBException;
+    @NotNull
+    DDConfigurationData updateConfiguration(
+        @NotNull String configurationId,
+        @NotNull DDUpdateConfigurationRequest request
+    ) throws DBException;
 }

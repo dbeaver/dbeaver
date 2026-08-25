@@ -14,17 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync.core;
+package org.jkiss.dbeaver.model.tracking.sync;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 
-/**
- * Thrown when the remote workspace a local binding points to no longer exists
- * for the currently authenticated account.
- */
-public class DDWorkspaceNotFoundException extends DBException {
-    public DDWorkspaceNotFoundException(@NotNull String message) {
-        super(message);
-    }
+public record DDPartSelection(
+    @NotNull String key,
+    @NotNull String displayName
+) {
 }

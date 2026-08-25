@@ -22,12 +22,9 @@ package org.jkiss.dbeaver.model.tracking.sync.core;
 interface DDSyncApi {
 
     String DATA_KEY_ENDPOINT = "/data/key";
-    String WORKSPACE_ENDPOINT = "/workspace";
-    String WORKSPACE_DATA_ENDPOINT = "/workspace/{workspaceId}/data";
-    String WORKSPACE_DATA_TYPE_ENDPOINT = "/workspace/{workspaceId}/data/{dataType}";
+    String CONFIGURATION_ENDPOINT = "/configurations";
+    String CONFIGURATION_ITEM_ENDPOINT = "/configurations/{configurationId}";
 
-    String PARAM_LABEL = "label";
-    String VAR_WORKSPACE_ID = "{workspaceId}";
-    String VAR_DATA_TYPE = "{dataType}";
+    String VAR_CONFIGURATION_ID = "{configurationId}";
 
 }

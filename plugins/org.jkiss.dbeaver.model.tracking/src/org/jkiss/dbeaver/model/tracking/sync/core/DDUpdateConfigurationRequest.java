@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
 
-public record DDRawEntry(
-    @NotNull String key,
-    @NotNull byte[] value
+import java.util.List;
+
+record DDUpdateConfigurationRequest(
+    long expectedVersion,
+    @NotNull List<DDUpdateConfigurationPartRequest> parts
 ) {
 }

@@ -27,17 +27,20 @@ import java.util.Map;
 public class DBPFileSyncUnit implements DBPSyncUnit {
 
     private final String id;
+    private final String displayName;
     private final String path;
     private final DBPSyncScope scope;
     private final boolean enabledByDefault;
 
     public DBPFileSyncUnit(
         @NotNull String id,
+        @NotNull String displayName,
         @NotNull String path,
         @NotNull DBPSyncScope scope,
         boolean enabledByDefault
     ) {
         this.id = id;
+        this.displayName = displayName;
         this.path = path;
         this.scope = scope;
         this.enabledByDefault = enabledByDefault;
@@ -47,6 +50,12 @@ public class DBPFileSyncUnit implements DBPSyncUnit {
     @Override
     public String getId() {
         return id;
+    }
+
+    @NotNull
+    @Override
+    public String getDisplayName() {
+        return displayName;
     }
 
     @NotNull

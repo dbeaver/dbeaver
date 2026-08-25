@@ -17,11 +17,10 @@
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-import java.util.Map;
-
-record DDSyncEnvelope(
-    @Nullable String label,
-    @NotNull Map<String, String> resources
-) { }
+record DDConfigurationSummaryData(
+    @NotNull String configurationId,
+    @NotNull String name,
+    long version
+) {
+}

@@ -22,11 +22,15 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.tracking.auth.DDCrypto;
 
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.crypto.SecretKey;
 
 /**
@@ -34,6 +38,8 @@ import javax.crypto.SecretKey;
  * the transport below sees opaque bytes only.
  */
 public class DDSyncStore {
+
+    private static final int SCHEMA_VERSION = 1;
 
     private final DDSyncTransport transport;
     private final DDSyncCredentials credentials;
@@ -50,55 +56,113 @@ public class DDSyncStore {
     }
 
     @NotNull
-    public List<DDContainer> listContainers() throws DBException {
-        return transport.listContainers();
-    }
-
-    @NotNull
-    public DDContainer createContainer(@NotNull String label) throws DBException {
-        return transport.createContainer(label);
-    }
-
-    @NotNull
-    public List<DDSyncEntry> load(@NotNull String containerId) throws DBException {
-        SecretKey key = getDataKey();
-        List<DDSyncEntry> entries = new ArrayList<>();
-        for (DDRawEntry raw : transport.load(containerId)) {
-            DDSyncEnvelope envelope = JSONUtils.GSON.fromJson(
-                new String(DDCrypto.decrypt(key, raw.value()), StandardCharsets.UTF_8),
-                DDSyncEnvelope.class);
-            entries.add(new DDSyncEntry(
-                raw.key(),
-                envelope.label(),
-                null,
-                decode(envelope.resources())));
+    public List<DDConfigurationSummary> listConfigurations() throws DBException {
+        List<DDConfigurationSummary> configurations = new ArrayList<>();
+        for (DDConfigurationSummaryData data : transport.listConfigurations()) {
+            configurations.add(new DDConfigurationSummary(data.configurationId(), data.name(), data.version()));
         }
-        return entries;
+        return configurations;
     }
 
-    public void save(@NotNull String containerId, @NotNull DDSyncEntry entry) throws DBException {
-        byte[] content = JSONUtils.GSON
-            .toJson(new DDSyncEnvelope(entry.label(), encode(entry.resources())))
+    @NotNull
+    public DDConfiguration getConfiguration(@NotNull String configurationId) throws DBException {
+        return decode(transport.getConfiguration(configurationId));
+    }
+
+    @NotNull
+    public DDConfiguration createConfiguration(
+        @NotNull String name,
+        @NotNull List<DDConfigurationPart> parts
+    ) throws DBException {
+        List<DDCreateConfigurationPartRequest> requests = new ArrayList<>(parts.size());
+        for (DDConfigurationPart part : parts) {
+            requests.add(new DDCreateConfigurationPartRequest(
+                part.key(), part.kind().name(), part.projectId(), encrypt(part)));
+        }
+        return decode(transport.createConfiguration(new DDCreateConfigurationRequest(name, requests)));
+    }
+
+    @NotNull
+    public DDConfiguration updateConfiguration(
+        @NotNull String configurationId,
+        long expectedVersion,
+        @NotNull List<DDConfigurationPart> parts
+    ) throws DBException {
+        List<DDUpdateConfigurationPartRequest> requests = new ArrayList<>(parts.size());
+        for (DDConfigurationPart part : parts) {
+            requests.add(new DDUpdateConfigurationPartRequest(part.key(), part.version(), encrypt(part)));
+        }
+        return decode(transport.updateConfiguration(
+            configurationId, new DDUpdateConfigurationRequest(expectedVersion, requests)));
+    }
+
+    @NotNull
+    public String fingerprint(@NotNull DDConfigurationPart part) throws DBException {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(serialize(part));
+            return HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new DBException("SHA-256 is not available", e);
+        }
+    }
+
+    @NotNull
+    private DDConfiguration decode(@NotNull DDConfigurationData data) throws DBException {
+        List<DDConfigurationPart> parts = new ArrayList<>(data.parts().size());
+        for (DDConfigurationPartData part : data.parts()) {
+            parts.add(decode(part));
+        }
+        return new DDConfiguration(data.configurationId(), data.name(), data.version(), parts);
+    }
+
+    @NotNull
+    private DDConfigurationPart decode(@NotNull DDConfigurationPartData part) throws DBException {
+        byte[] encrypted = Base64.getDecoder().decode(part.encryptedValue());
+        DDPartEnvelope envelope = JSONUtils.GSON.fromJson(
+            new String(DDCrypto.decrypt(getDataKey(), encrypted), StandardCharsets.UTF_8),
+            DDPartEnvelope.class);
+        if (envelope.schemaVersion() != SCHEMA_VERSION) {
+            throw new DBException("Unsupported synchronization part format: " + envelope.schemaVersion());
+        }
+        return new DDConfigurationPart(
+            part.key(),
+            DDConfigurationPartKind.valueOf(part.kind()),
+            part.projectId(),
+            part.version(),
+            envelope.name(),
+            decodeUnits(envelope.units()));
+    }
+
+    @NotNull
+    private String encrypt(@NotNull DDConfigurationPart part) throws DBException {
+        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(getDataKey(), serialize(part)));
+    }
+
+    @NotNull
+    private static byte[] serialize(@NotNull DDConfigurationPart part) {
+        Map<String, Map<String, String>> units = new TreeMap<>();
+        for (Map.Entry<String, Map<String, byte[]>> unit : part.units().entrySet()) {
+            Map<String, String> resources = new TreeMap<>();
+            for (Map.Entry<String, byte[]> resource : unit.getValue().entrySet()) {
+                resources.put(resource.getKey(), Base64.getEncoder().encodeToString(resource.getValue()));
+            }
+            units.put(unit.getKey(), resources);
+        }
+        return JSONUtils.GSON.toJson(new DDPartEnvelope(SCHEMA_VERSION, part.name(), units))
             .getBytes(StandardCharsets.UTF_8);
-        transport.save(containerId, entry.key(), DDCrypto.encrypt(getDataKey(), content));
     }
 
     @NotNull
-    private static Map<String, String> encode(@NotNull Map<String, byte[]> resources) {
-        Map<String, String> encoded = new LinkedHashMap<>();
-        for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
-            encoded.put(resource.getKey(), Base64.getEncoder().encodeToString(resource.getValue()));
+    private static Map<String, Map<String, byte[]>> decodeUnits(@NotNull Map<String, Map<String, String>> encoded) {
+        Map<String, Map<String, byte[]>> units = new LinkedHashMap<>();
+        for (Map.Entry<String, Map<String, String>> unit : encoded.entrySet()) {
+            Map<String, byte[]> resources = new LinkedHashMap<>();
+            for (Map.Entry<String, String> resource : unit.getValue().entrySet()) {
+                resources.put(resource.getKey(), Base64.getDecoder().decode(resource.getValue()));
+            }
+            units.put(unit.getKey(), resources);
         }
-        return encoded;
-    }
-
-    @NotNull
-    private static Map<String, byte[]> decode(@NotNull Map<String, String> resources) {
-        Map<String, byte[]> decoded = new LinkedHashMap<>();
-        for (Map.Entry<String, String> resource : resources.entrySet()) {
-            decoded.put(resource.getKey(), Base64.getDecoder().decode(resource.getValue()));
-        }
-        return decoded;
+        return units;
     }
 
     @NotNull
