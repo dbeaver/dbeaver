@@ -129,7 +129,6 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_duplicate_profile_tip;
     public static String ai_engines_page_delete_profile_tip;
     public static String ai_engines_page_no_active_engine;
-    public static String ai_engines_page_group_profile;
     public static String ai_engines_page_profile_id_label;
     public static String ai_engines_page_profile_name_label;
     public static String ai_engines_page_group_settings;
