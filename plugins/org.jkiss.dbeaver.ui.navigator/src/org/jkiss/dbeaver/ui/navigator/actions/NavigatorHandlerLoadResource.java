@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,7 +49,7 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Shell shell = HandlerUtil.getActiveShell(event);
 
-        File[] srcFiles = DialogUtils.openFileList(shell, "Open file(s)", null);
+        Path[] srcFiles = DialogUtils.openFileList(shell, "Open file(s)", null);
         if (srcFiles == null) {
             return null;
         }
@@ -82,24 +81,29 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
         return null;
     }
 
-    private void loadLocalFiles(DBRProgressMonitor monitor, File[] srcFiles, Path targetPath) {
-        long totalFilesSize = 0;
-        for (File srcFile : srcFiles) {
-            totalFilesSize += srcFile.length();
-        }
-
-        monitor.beginTask("Load resources", (int) totalFilesSize);
-        for (File srcFile : srcFiles) {
-            if (monitor.isCanceled()) {
-                return;
+    private void loadLocalFiles(DBRProgressMonitor monitor, Path[] srcFiles, Path targetPath) {
+        try {
+            long totalFilesSize = 0;
+            for (Path srcFile : srcFiles) {
+                totalFilesSize += Files.size(srcFile);
             }
-            monitor.subTask(srcFile.getName() + " (" + ByteNumberFormat.getInstance().format(srcFile.length()) + ")");
 
-            Path targetFilePath = targetPath.resolve(srcFile.getName());
-            try {
+            monitor.beginTask("Load resources", (int) totalFilesSize);
+            for (Path srcFile : srcFiles) {
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                monitor.subTask(srcFile.getFileName() + " (" + ByteNumberFormat.getInstance().format(Files.size(srcFile)) + ")");
+
+                Path targetFilePath = targetPath.resolve(srcFile.getFileName());
                 byte[] buffer = new byte[10000];
-                try (InputStream is = Files.newInputStream(srcFile.toPath())) {
-                    try (OutputStream os = Files.newOutputStream(targetFilePath, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                try (InputStream is = Files.newInputStream(srcFile)) {
+                    try (OutputStream os = Files.newOutputStream(
+                        targetFilePath,
+                        StandardOpenOption.WRITE,
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING
+                    )) {
                         for (;;) {
                             if (monitor.isCanceled()) {
                                 break;
@@ -113,11 +117,11 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
                         }
                     }
                 }
-            } catch (IOException e) {
-                DBWorkbench.getPlatformUI().showError("IO error", null, e);
             }
+            monitor.done();
+        } catch (IOException e) {
+            DBWorkbench.getPlatformUI().showError("IO error", null, e);
         }
-        monitor.done();
     }
 
 

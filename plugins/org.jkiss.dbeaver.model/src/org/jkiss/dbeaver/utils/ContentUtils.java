@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,30 +82,37 @@ public class ContentUtils {
         return tempFile;
     }
 
-    public static void saveContentToFile(InputStream contentStream, File file, DBRProgressMonitor monitor)
-        throws IOException {
-        try (OutputStream os = new FileOutputStream(file)) {
-            copyStreams(contentStream, file.length(), os, monitor);
+    public static void saveContentToFile(InputStream contentStream, Path file, DBRProgressMonitor monitor) throws IOException {
+        try (OutputStream os = Files.newOutputStream(file)) {
+            copyStreams(contentStream, Files.size(file), os, monitor);
         }
         // Check for cancel
         if (monitor.isCanceled()) {
             // Delete output file
-            if (!file.delete()) {
-                log.warn("Can't delete incomplete file '" + file.getAbsolutePath() + "'");
+            try {
+                Files.delete(file);
+            } catch (IOException e) {
+                log.warn("Can't delete incomplete file '" + file.toAbsolutePath() + "'");
             }
         }
     }
 
-    public static void saveContentToFile(Reader contentReader, File file, String charset, DBRProgressMonitor monitor)
-        throws IOException {
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), charset)) {
-            copyStreams(contentReader, file.length(), writer, monitor);
+    public static void saveContentToFile(
+        Reader contentReader,
+        Path file,
+        String charset,
+        DBRProgressMonitor monitor
+    ) throws IOException {
+        try (Writer writer = Files.newBufferedWriter(file, Charset.forName(charset))) {
+            copyStreams(contentReader, Files.size(file), writer, monitor);
         }
         // Check for cancel
         if (monitor.isCanceled()) {
             // Delete output file
-            if (!file.delete()) {
-                log.warn("Can't delete incomplete file '" + file.getAbsolutePath() + "'");
+            try {
+                Files.delete(file);
+            } catch (IOException e) {
+                log.warn("Can't delete incomplete file '" + file.toAbsolutePath() + "'");
             }
         }
     }
