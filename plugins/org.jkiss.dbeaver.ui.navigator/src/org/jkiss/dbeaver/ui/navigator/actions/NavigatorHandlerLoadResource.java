@@ -116,6 +116,8 @@ public class NavigatorHandlerLoadResource extends AbstractHandler implements IEl
                             os.write(buffer, 0, count);
                         }
                     }
+                } catch (IOException e) {
+                    DBWorkbench.getPlatformUI().showError("Error copying file " + srcFile, null, e);
                 }
             }
             monitor.done();
