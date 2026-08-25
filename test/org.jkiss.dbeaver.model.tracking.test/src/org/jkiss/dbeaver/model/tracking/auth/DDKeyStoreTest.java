@@ -28,19 +28,43 @@ import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HexFormat;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 class DDKeyStoreTest {
     private static final String ACCOUNT_ID = "8decb064-2709-4914-b6b6-68eaef98cac3";
+    // canonical BIP-39 test vector (all-zero entropy) - valid checksum, used across the test suite
+    private static final String RECOVERY_PHRASE =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+    private static final int KDF_ITERATIONS = 1000;
+
+    @Test
+    void deriveKekMatchesWebCryptoVector() throws Exception {
+        // cross-checked against the browser vault's PBKDF2 (Web Crypto), independently of this
+        // codebase's own round-trip tests - catches a future regression that breaks interop with
+        // the browser while staying internally self-consistent.
+        byte[] salt = new byte[16];
+        for (int i = 0; i < salt.length; i++) {
+            salt[i] = (byte) i;
+        }
+
+        SecretKey kek = DDCrypto.deriveKek(RECOVERY_PHRASE, salt, 600_000);
+
+        Assertions.assertEquals(
+            "726f8606c64cafa3be0ca9659c211b6124b4b469d03a3bc86a9e0b00159dedc3",
+            HexFormat.of().formatHex(kek.getEncoded())
+        );
+    }
 
     @Test
     void unpackDecryptsValidBundle() throws Exception {
         BundleFixture fixture = createFixture(7);
 
-        DDKeyBundle bundle = DDKeyStore.unpack(fixture.state(), fixture.accessKey());
+        DDKeyBundle bundle = DDKeyStore.unpack(fixture.state(), RECOVERY_PHRASE);
 
         Assertions.assertEquals(ACCOUNT_ID, bundle.accountId());
         Assertions.assertEquals(fixture.signingKey(), bundle.signingKey());
@@ -49,11 +73,14 @@ class DDKeyStoreTest {
     }
 
     @Test
-    void unpackRejectsWrongAccessKey() throws Exception {
+    void unpackRejectsInvalidPhrase() throws Exception {
+        // rejected by DDRecoveryPhrase's checksum check inside unpack() itself, not by a
+        // failed decrypt - see DDRecoveryPhraseTest for validation-specific coverage
         BundleFixture fixture = createFixture(1);
-        String wrongAccessKey = Base64.getUrlEncoder().withoutPadding().encodeToString(generateAesKey().getEncoded());
+        String invalidPhrase =
+            "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon";
 
-        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(fixture.state(), wrongAccessKey));
+        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(fixture.state(), invalidPhrase));
     }
 
     @Test
@@ -61,23 +88,27 @@ class DDKeyStoreTest {
         BundleFixture fixture = createFixture(1);
         byte[] encrypted = Base64.getDecoder().decode(fixture.state().encryptedBundle());
         String truncated = Base64.getEncoder().encodeToString(Arrays.copyOf(encrypted, 12));
-        DDCryptoState state = new DDCryptoState(ACCOUNT_ID, true, truncated, 1L);
+        DDCryptoState state = new DDCryptoState(
+            ACCOUNT_ID, true, truncated, 1L, fixture.state().salt(), KDF_ITERATIONS);
 
-        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, fixture.accessKey()));
+        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, RECOVERY_PHRASE));
     }
 
     @Test
     void unpackRejectsBundleWithoutSeparator() throws Exception {
-        SecretKey accessKey = generateAesKey();
-        byte[] encrypted = DDCrypto.encrypt(accessKey, "incomplete".getBytes(StandardCharsets.UTF_8));
+        byte[] salt = randomSalt();
+        SecretKey kek = DDCrypto.deriveKek(RECOVERY_PHRASE, salt, KDF_ITERATIONS);
+        byte[] encrypted = DDCrypto.encrypt(kek, "incomplete".getBytes(StandardCharsets.UTF_8));
         DDCryptoState state = new DDCryptoState(
             ACCOUNT_ID,
             true,
             Base64.getEncoder().encodeToString(encrypted),
-            1L
+            1L,
+            Base64.getEncoder().encodeToString(salt),
+            KDF_ITERATIONS
         );
 
-        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, accessKeyValue(accessKey)));
+        Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, RECOVERY_PHRASE));
     }
 
     @Test
@@ -118,21 +149,35 @@ class DDKeyStoreTest {
 
     @NotNull
     private static BundleFixture createFixture(long generation) throws Exception {
-        SecretKey accessKey = generateAesKey();
+        byte[] salt = randomSalt();
+        SecretKey kek = DDCrypto.deriveKek(RECOVERY_PHRASE, salt, KDF_ITERATIONS);
         String signingKey = Base64.getEncoder().encodeToString(
             KeyPairGenerator.getInstance("RSA").generateKeyPair().getPrivate().getEncoded()
         );
         String dataKey = Base64.getEncoder().encodeToString(generateAesKey().getEncoded());
         byte[] encrypted = DDCrypto.encrypt(
-            accessKey,
+            kek,
             (signingKey + "." + dataKey).getBytes(StandardCharsets.UTF_8)
         );
         return new BundleFixture(
-            new DDCryptoState(ACCOUNT_ID, true, Base64.getEncoder().encodeToString(encrypted), generation),
-            accessKeyValue(accessKey),
+            new DDCryptoState(
+                ACCOUNT_ID,
+                true,
+                Base64.getEncoder().encodeToString(encrypted),
+                generation,
+                Base64.getEncoder().encodeToString(salt),
+                KDF_ITERATIONS
+            ),
             signingKey,
             dataKey
         );
+    }
+
+    @NotNull
+    private static byte[] randomSalt() {
+        byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
+        return salt;
     }
 
     @NotNull
@@ -142,15 +187,8 @@ class DDKeyStoreTest {
         return generator.generateKey();
     }
 
-    @NotNull
-    private static String accessKeyValue(@NotNull SecretKey accessKey) {
-        return DDKeyStore.ACCESS_KEY_PREFIX + ACCOUNT_ID + "."
-            + Base64.getUrlEncoder().withoutPadding().encodeToString(accessKey.getEncoded());
-    }
-
     private record BundleFixture(
         @NotNull DDCryptoState state,
-        @NotNull String accessKey,
         @NotNull String signingKey,
         @NotNull String dataKey
     ) {
