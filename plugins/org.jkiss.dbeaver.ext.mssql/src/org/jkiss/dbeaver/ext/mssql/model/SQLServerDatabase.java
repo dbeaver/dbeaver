@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -57,7 +59,8 @@ public class SQLServerDatabase
         DBPRefreshableObject,
         DBPSystemObject,
         DBPNamedObject2,
-        DBPObjectStatistics {
+        DBPObjectStatistics,
+        DBPStatefulObject {
 
     private static final Log log = Log.getLog(SQLServerDatabase.class);
 
@@ -67,6 +70,8 @@ public class SQLServerDatabase
     private boolean persisted;
     private String name;
     private String description;
+    private String stateDesc;
+    private DBSObjectState objectState = DBSObjectState.NORMAL;
     private DataTypeCache typesCache = new DataTypeCache();
     private SchemaCache schemaCache = new SchemaCache();
     private TriggerCache triggerCache = new TriggerCache();
@@ -84,6 +89,7 @@ public class SQLServerDatabase
         this.name = name;
         this.isTempDatabase = name.equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE);
         //this.description = JDBCUtils.safeGetString(resultSet, "description");
+        setStateDesc(JDBCUtils.safeGetString(resultSet, "state_desc"));
 
         this.persisted = true;
 
@@ -134,6 +140,47 @@ public class SQLServerDatabase
         this.description = description;
     }
 
+    @Nullable
+    @Property(viewable = true, order = 5)
+    public String getState() {
+        return stateDesc;
+    }
+
+    @NotNull
+    @Override
+    public DBSObjectState getObjectState() {
+        return objectState;
+    }
+
+    @Override
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        // sys.databases is queried on the data source context: an offline database cannot host the query itself
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read database state")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT state_desc FROM sys.databases WHERE database_id = ?"))
+            {
+                dbStat.setLong(1, databaseId);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        setStateDesc(JDBCUtils.safeGetString(dbResult, "state_desc"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading database state", e);
+        }
+    }
+
+    private void setStateDesc(@Nullable String stateDesc) {
+        this.stateDesc = stateDesc;
+        if (stateDesc == null || SQLServerConstants.DATABASE_STATE_ONLINE.equalsIgnoreCase(stateDesc)) {
+            // Servers without state_desc (pre-2005) report no state at all - keep them unmarked
+            this.objectState = DBSObjectState.NORMAL;
+        } else {
+            this.objectState = new DBSObjectState(stateDesc, DBIcon.OVER_ERROR);
+        }
+    }
+
     public long getDatabaseId() {
         return databaseId;
     }
@@ -170,6 +217,11 @@ public class SQLServerDatabase
         schemaCache.clearCache();
         triggerCache.clearCache();
         databaseTotalSize = null;
+        try {
+            refreshObjectState(monitor);
+        } catch (DBCException e) {
+            log.debug("Error refreshing database state", e);
+        }
         return this;
     }
 
