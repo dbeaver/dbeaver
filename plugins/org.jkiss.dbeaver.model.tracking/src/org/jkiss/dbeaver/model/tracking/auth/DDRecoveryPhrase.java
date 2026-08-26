@@ -25,11 +25,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * BIP-39 mnemonic normalization and checksum validation. Mirrors the browser
- * vault's isValidRecoveryPhrase (datadam static/js/crypto.js) so a mistyped
- * word is caught here, before it reaches PBKDF2.
- */
 public final class DDRecoveryPhrase {
 
     private static final int WORD_COUNT = 12;
