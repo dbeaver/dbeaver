@@ -117,20 +117,24 @@ public class DDSyncStore {
 
     @NotNull
     private DDConfigurationPart decode(@NotNull DDConfigurationPartData part) throws DBException {
-        byte[] encrypted = Base64.getDecoder().decode(part.encryptedValue());
-        DDPartEnvelope envelope = JSONUtils.GSON.fromJson(
-            new String(DDCrypto.decrypt(getDataKey(), encrypted), StandardCharsets.UTF_8),
-            DDPartEnvelope.class);
-        if (envelope.schemaVersion() != SCHEMA_VERSION) {
-            throw new DBException("Unsupported synchronization part format: " + envelope.schemaVersion());
+        try {
+            byte[] encrypted = Base64.getDecoder().decode(part.encryptedValue());
+            DDPartEnvelope envelope = JSONUtils.GSON.fromJson(
+                new String(DDCrypto.decrypt(getDataKey(), encrypted), StandardCharsets.UTF_8),
+                DDPartEnvelope.class);
+            if (envelope == null || envelope.schemaVersion() != SCHEMA_VERSION) {
+                throw new DBException("Unsupported synchronization part format");
+            }
+            return new DDConfigurationPart(
+                part.key(),
+                DDConfigurationPartKind.valueOf(part.kind()),
+                part.projectId(),
+                part.version(),
+                envelope.name(),
+                decodeUnits(envelope.units()));
+        } catch (RuntimeException e) {
+            throw new DBException("Invalid synchronization part: " + part.key(), e);
         }
-        return new DDConfigurationPart(
-            part.key(),
-            DDConfigurationPartKind.valueOf(part.kind()),
-            part.projectId(),
-            part.version(),
-            envelope.name(),
-            decodeUnits(envelope.units()));
     }
 
     @NotNull
