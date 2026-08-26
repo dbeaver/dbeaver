@@ -115,7 +115,12 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                 );
                 DDTracking tracking = client.start(credentials, info);
                 if (tracking != null) {
-                    session.trackingId.set(tracking.trackingId());
+                    if (ACTIVE_SESSION.get() == session) {
+                        session.trackingId.set(tracking.trackingId());
+                    } else {
+                        // stop() already ran and saw no trackingId yet - clean up the session we just started
+                        client.stop(credentials, tracking.trackingId());
+                    }
                 }
                 return Status.OK_STATUS;
             }
