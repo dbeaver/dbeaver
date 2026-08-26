@@ -26,6 +26,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -74,6 +75,8 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 } else {
                     uiServiceFilterConfig.configFilterInDialog(shell, dbNode, parentNode, itemsMeta);
                 }
+            } else if (log.isDebugEnabled()) {
+                log.debug("Cannot find items meta for node: " + parentNode.getNodeUri());
             }
         } catch (DBException e) {
             log.error(e);
@@ -92,6 +95,12 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         if (node != null) {
             element.setText(NLS.bind(UINavigatorMessages.actions_navigator_filter_objects, node.getNodeTypeLabel()));
         }
+    }
+
+    public static boolean isGlobalFilter(@NotNull DBNDatabaseNode originalNode, @Nullable DBNNode parentNode) {
+        return originalNode.getValueObject() instanceof DBPDataSource
+            // if the parent node is at datasource level, child is database/catalog
+            || (parentNode instanceof DBNDatabaseNode dbNode && dbNode.getValueObject() instanceof DBPDataSource);
     }
 
     public static class FilterConfigDelegate {
@@ -121,7 +130,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         }
 
         public void configFilterInDialog() throws DBException {
-            boolean globalFilter = originalNode.getValueObject() instanceof DBPDataSource;
+            boolean globalFilter = isGlobalFilter(originalNode, parentNode);
             String dialogObjectTitle = createDialogTitle(globalFilter);
             DBSObjectFilter objectFilter = getObjectFilter();
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
@@ -162,9 +171,9 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             if (originalNode instanceof DBNDatabaseFolder folder) {
                 childrenClass = folder.getChildrenClass();
             } else {
-                List<DBXTreeNode> childMeta = originalNode.getMeta().getChildren(originalNode);
-                if (!childMeta.isEmpty() && childMeta.get(0) instanceof DBXTreeItem item) {
-                    childrenClass = originalNode.getChildrenClass(item);
+                List<DBXTreeNode> childMeta = parentNode.getMeta().getChildren(parentNode);
+                if (!childMeta.isEmpty() && childMeta.getFirst() instanceof DBXTreeItem item) {
+                    childrenClass = parentNode.getChildrenClass(item);
                 }
             }
             if (childrenClass == null) {

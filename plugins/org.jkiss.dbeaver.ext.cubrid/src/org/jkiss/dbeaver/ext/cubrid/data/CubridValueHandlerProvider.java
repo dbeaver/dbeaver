@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -33,7 +34,11 @@ import org.jkiss.utils.BeanUtils;
 public class CubridValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
+    public DBDValueHandler getValueHandler(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBDFormatSettings preferences,
+        @NotNull DBSTypedObject typedObject
+    ) {
         boolean isEnableOID = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(CubridConstants.OID_NAVIGATOR);
         if (typedObject instanceof JDBCColumnMetaData columnMeta) {
             String columnName = columnMeta.getName();
@@ -48,7 +53,7 @@ public class CubridValueHandlerProvider implements DBDValueHandlerProvider {
 
     class CubridOIDValueHandler extends DefaultValueHandler {
         @Override
-        public Object fetchValueObject(DBCSession session, DBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException {
+        public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
             String oidValue = null;
             Object originalValue = resultSet.getAttributeValue(index);
             try {

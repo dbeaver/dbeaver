@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,7 +141,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         // Recreate URL from parameters
         // Driver settings and URL template may have change since connection creation
         String connectionURL = getContainer().getDriver().getConnectionURL(connectionInfo);
@@ -215,7 +215,11 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return new GenericExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        JDBCExecutionContext initFrom
+    ) throws DBException {
         super.initializeContextState(monitor, context, initFrom);
         if (initFrom != null) {
             GenericExecutionContext metaContext = (GenericExecutionContext) initFrom;
@@ -240,7 +244,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(
+        DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
         return new GenericDataSourceInfo(container.getDriver(), metaData);
     }
 
@@ -275,9 +282,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
                 final Driver driver = getDriverInstance(new VoidProgressMonitor()); // Use void monitor - driver already loaded
                 if (driver != null) {
-                    driver.connect(
+                    try (var con = driver.connect(
                         getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown,
-                        shutdownProps.isEmpty() ? null : shutdownProps);
+                        shutdownProps.isEmpty() ? null : shutdownProps)
+                    ) {
+                        // just close it
+                    }
                 }
             } catch (Exception e) {
                 log.debug("Shutdown finished: :" + e.getMessage());
@@ -626,8 +636,8 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     @Nullable
     @Override
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
-        if (metaModel instanceof DBCQueryTransformProvider) {
-            DBCQueryTransformer transformer = ((DBCQueryTransformProvider) metaModel).createQueryTransformer(type);
+        if (metaModel instanceof DBCQueryTransformProvider qtp) {
+            DBCQueryTransformer transformer = qtp.createQueryTransformer(type);
             if (transformer != null) {
                 return transformer;
             }
@@ -921,7 +931,11 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         }
 
         @Override
-        protected GenericTableType fetchObject(@NotNull JDBCSession session, @NotNull GenericDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected GenericTableType fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull GenericDataSource owner,
+            @NotNull JDBCResultSet resultSet
+        ) {
             return new GenericTableType(
                 GenericDataSource.this,
                 GenericUtils.safeGetString(

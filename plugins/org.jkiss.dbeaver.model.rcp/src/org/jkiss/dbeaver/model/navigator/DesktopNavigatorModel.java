@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,16 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-
-import java.util.List;
 
 public class DesktopNavigatorModel extends DBNModel {
 
     private NavigatorResourceListener resourceListener;
 
-    public DesktopNavigatorModel(DBPPlatform platform, @Nullable List<? extends DBPProject> modelProjects) {
-        super(platform, modelProjects);
+    public DesktopNavigatorModel(DBPPlatform platform, @Nullable DBPWorkspace workspace) {
+        super(platform, workspace);
     }
 
     public void initialize() {

@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -108,6 +110,10 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDriver driver) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
+            if (!DBWorkbench.getPlatform().getWorkspace().supportsRealmFeature(DBAPermissionRealm.FEATURE_SSH_TUNNELING)
+                && d.getType() == DBWHandlerType.TUNNEL) {
+                continue;
+            }
             if ((d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver))
                 && hasRequiredPermissions(d, DBWorkbench.getPlatform().getWorkspace())) {
                 result.add(d);

@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
+import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,17 +37,19 @@ import org.jkiss.dbeaver.registry.ResourceTypeDescriptor;
 import org.jkiss.dbeaver.registry.ResourceTypeRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
  * DBeaver desktop workspace.
  */
-public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWorkspaceDesktop, DBPExternalFileManager {
+public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWorkspaceDesktop, DBPExternalFileManager, DBFResourceAdapter {
 
     private static final Log log = Log.getLog(DesktopWorkspaceImpl.class);
 
@@ -63,6 +67,22 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
         loadExtensions(Platform.getExtensionRegistry());
         loadExternalFileProperties();
+    }
+
+    @Nullable
+    @Override
+    public <T> T adaptResource(DBFVirtualFileSystemRoot fsRoot, Path path, Class<T> adapter) {
+        if (adapter == IResource.class) {
+            // For Eclipse VFS we always need a project
+            // Although path is a remote file we have to represent it as IFile
+            // thus we need any IProject we have
+            // This is a bit inconsistent but we can just blame Eclipse VFS
+            if (!(activeProject instanceof DesktopProjectImpl dp)) {
+                return null;
+            }
+            return adapter.cast(ResourceUtils.createResourceFromPath(fsRoot, dp.getEclipseProject(), path));
+        }
+        return null;
     }
 
     private void loadExtensions(@NotNull IExtensionRegistry registry) {
@@ -170,7 +190,11 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
-    public IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull Class<? extends DBPResourceHandler> handlerType, boolean forceCreate) {
+    public IFolder getResourceDefaultRoot(
+        @NotNull DBPProject project,
+        @NotNull Class<? extends DBPResourceHandler> handlerType,
+        boolean forceCreate
+    ) {
         if (!(project instanceof RCPProject rcpProject)) {
             return null;
         }
@@ -312,14 +336,14 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         try {
             project = getEclipseWorkspace().getRoot().getProject(name);
             NullProgressMonitor monitor = new NullProgressMonitor();
-            if (project.exists()) {
+            if (!project.exists()) {
                 project.create(monitor);
             }
             final IProjectDescription pDescription = getEclipseWorkspace().newProjectDescription(project.getName());
             if (!CommonUtils.isEmpty(description)) {
                 pDescription.setComment(description);
             }
-            pDescription.setNatureIds(new String[]{DBeaverNature.NATURE_ID});
+            pDescription.setNatureIds(new String[] {DBeaverNature.NATURE_ID});
             project.setDescription(pDescription, monitor);
             project.open(monitor);
         } catch (Exception e) {
@@ -327,6 +351,93 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         }
 
         return getProject(project);
+    }
+
+    @NotNull
+    @Override
+    public DBPProject linkProject(@NotNull Path projectPath, @Nullable String projectName, @NotNull DBRProgressMonitor monitor)
+            throws DBException {
+        if (!Files.exists(projectPath) || !Files.isDirectory(projectPath)) {
+            throw new DBException("Path '" + projectPath + "' does not exist or is not a directory");
+        }
+        try {
+            IWorkspace workspace = getEclipseWorkspace();
+            IWorkspaceRoot root = workspace.getRoot();
+
+            Path targetFolder = projectPath.toAbsolutePath().normalize();
+            for (IProject existing : root.getProjects()) {
+                IPath existingLocation = existing.getLocation();
+                if (existingLocation != null && existingLocation.toFile().toPath().toAbsolutePath().normalize().equals(targetFolder)) {
+                    DBPProject alreadyLinked = getProject(existing);
+                    if (alreadyLinked != null && alreadyLinked.getName().equals(projectName)) {
+                        log.debug("Project '" + alreadyLinked.getName() + "' is already linked from " + targetFolder);
+                        return alreadyLinked;
+                    }
+                }
+            }
+
+            Path descriptionFile = projectPath.resolve(IProjectDescription.DESCRIPTION_FILE_NAME);
+            boolean hasDescriptionFile = Files.exists(descriptionFile);
+
+            if (CommonUtils.isEmpty(projectName)) {
+                if (hasDescriptionFile) {
+                    IProjectDescription loaded
+                        = workspace.loadProjectDescription(new org.eclipse.core.runtime.Path(descriptionFile.toAbsolutePath().toString()));
+                    projectName = loaded.getName();
+                }
+                if (CommonUtils.isEmpty(projectName)) {
+                    projectName = projectPath.getFileName().toString();
+                }
+            }
+
+            if (root.getProject(projectName).exists()) {
+                throw new DBException("Project '" + projectName + "' already exists in the workspace");
+            }
+
+            IProjectDescription description;
+            if (hasDescriptionFile) {
+                description = workspace.loadProjectDescription(new org.eclipse.core.runtime.Path(descriptionFile.toAbsolutePath()
+                    .toString()));
+                description.setName(projectName);
+            } else {
+                description = workspace.newProjectDescription(projectName);
+                description.setNatureIds(new String[] {DBeaverNature.NATURE_ID});
+            }
+            IProject project = root.getProject(projectName);
+
+            IPath locationPath = new org.eclipse.core.runtime.Path(projectPath.toAbsolutePath().toString());
+            if (root.getLocation().isPrefixOf(locationPath)) {
+                description.setLocation(null);
+            } else {
+                IStatus locationStatus = workspace.validateProjectLocationURI(project, locationPath.toFile().toURI());
+                if (!locationStatus.isOK()) {
+                    throw new DBException("Cannot link project at '" + projectPath + "': " + locationStatus.getMessage());
+                }
+                description.setLocation(locationPath);
+            }
+
+            IProgressMonitor nestedMonitor = monitor.getNestedMonitor();
+            project.create(description, nestedMonitor);
+            project.open(nestedMonitor);
+
+            IProjectDescription openDescription = project.getDescription();
+            String[] natureIds = openDescription.getNatureIds();
+            if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
+                openDescription.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
+                project.setDescription(openDescription, nestedMonitor);
+            }
+
+            workspace.save(true, nestedMonitor);
+
+            DBPProject linkedProject = getProject(project);
+            if (linkedProject == null) {
+                throw new DBException("Project '" + projectName + "' was linked but could not be resolved");
+            }
+            log.info("Project '" + projectName + "' linked from " + projectPath.toAbsolutePath());
+            return linkedProject;
+        } catch (CoreException e) {
+            throw new DBException("Error linking project from '" + projectPath + "'", e);
+        }
     }
 
     @Override
@@ -404,8 +515,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     private void loadExternalFileProperties() {
         synchronized (externalFileProperties) {
             externalFileProperties.clear();
-            java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath())
-                .resolve(EXT_FILES_PROPS_STORE);
+            Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath()).resolve(EXT_FILES_PROPS_STORE);
             if (Files.exists(propsFile)) {
                 try (InputStream is = Files.newInputStream(propsFile)) {
                     try (ObjectInputStream ois = new ObjectInputStream(is)) {
@@ -438,8 +548,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (externalFileProperties) {
-                java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath())
-                    .resolve(EXT_FILES_PROPS_STORE);
+                Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath()).resolve(EXT_FILES_PROPS_STORE);
                 try (OutputStream os = Files.newOutputStream(propsFile)) {
                     try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
                         oos.writeObject(externalFileProperties);

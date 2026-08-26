@@ -25,6 +25,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -39,8 +42,8 @@ import java.util.Map;
 /**
  * OracleConnectionPage
  */
-public class DB2ConnectionTracePage extends ConnectionPageAbstract
-{
+public class DB2ConnectionTracePage extends ConnectionPageAbstract {
+    private static final Log log = Log.getLog(DB2ConnectionTracePage.class);
 
     private Button enableTraceCheck;
     private Text fileNameText;
@@ -193,7 +196,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         super.saveSettings(dataSource);
         Map<String, String> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();

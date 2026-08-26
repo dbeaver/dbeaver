@@ -34,7 +34,7 @@
                         propertiesURL="https://github.com/FirebirdSQL/jaybird/wiki/Connection-properties"
                         description="Firebird Jaybird driver"
                         supportedConfigurationTypes="MANUAL,URL"
-                        categories="sql,embedded">
+                        categories="sql">
                     <replace provider="generic" driver="firebird_jaybird"/>
                     <replace provider="generic" driver="firebird_jaybird3"/>
 
@@ -47,6 +47,37 @@
                     <property name="encoding" value="UTF8"/>
 
                     <parameter name="supports-embedded-database-creation" value="false"/>
+                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <driver
+                        id="jaybird_embedded"
+                        label="Firebird Embedded"
+                        icon="icons/firebird_icon.png"
+                        iconBig="icons/firebird_icon_big.png"
+                        class="org.firebirdsql.jdbc.FBDriver"
+                        sampleURL="jdbc:firebirdsql:embedded:{file}"
+                        defaultUser="SYSDBA"
+                        webURL="https://firebirdsql.org/en/jdbc-driver/"
+                        propertiesURL="https://github.com/FirebirdSQL/jaybird/wiki/Connection-properties"
+                        description="Firebird embedded driver (local file, no server needed)"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        embedded="true"
+                        categories="sql,embedded">
+
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[5.0.4.java11]" bundle="!drivers.firebird"/>
+                    <file type="jar" path="maven:/net.java.dev.jna:jna:RELEASE[5.14.0]" bundle="!drivers.firebird"/>
+                    <file type="license" path="licenses/external/lgpl-3.0.txt"/>
+
+                    <file type="license" path="drivers/jaybird/LICENSE.txt" bundle="drivers.firebird"/>
+                    <file type="jar" path="drivers/jaybird" bundle="drivers.firebird"/>
+
+                    <property name="encoding" value="UTF8"/>
+
+                    <parameter name="supports-embedded-database-creation" value="true"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
@@ -71,6 +102,23 @@
         <dialect id="firebird" parent="generic" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdSQLDialect" label="Firebird" description="Firebird SQL dialect." icon="icons/firebird_icon.png">
             <property name="insertMethods" value="firebirdReplaceIgnore"/>
         </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="firebirdUpdateOrInsert"
+            class="org.jkiss.dbeaver.ext.firebird.model.sql.generator.SQLGeneratorUpdateOrInsert"
+            label="UPDATE OR INSERT"
+            description="UPDATE OR INSERT INTO with MATCHING clause"
+            order="7">
+            <objectType name="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        </generator>
+        <generator id="firebirdExecuteBlock"
+            class="org.jkiss.dbeaver.ext.firebird.model.sql.generator.SQLGeneratorExecuteBlock"
+            label="EXECUTE BLOCK"
+            description="EXECUTE BLOCK with variable declarations"
+            order="8">
+            <objectType name="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        </generator>
     </extension>
 
 </plugin>

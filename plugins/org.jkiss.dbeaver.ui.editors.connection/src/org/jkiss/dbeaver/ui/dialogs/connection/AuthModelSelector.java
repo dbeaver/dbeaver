@@ -36,12 +36,14 @@ import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.IElementFilter;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -153,9 +155,23 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
 
         this.selectedAuthModel = activeAuthModel;
         this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
-        this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
+
+        DBPDriver driver = null;
+        if (activeDataSource.getDriverSubstitution() != null) {
+            var driverSubstitution = activeDataSource.getDriverSubstitution();
+            var dataSourceProvider = DBWorkbench.getPlatform().getDataSourceProviderRegistry()
+                .getDataSourceProvider(driverSubstitution.getProviderId());
+            if (dataSourceProvider != null) {
+                driver = dataSourceProvider.getDriver(driverSubstitution.getDriverId());;
+            }
+        }
+        if (driver == null) {
+            driver = activeDataSource.getDriver();
+        }
+
+        this.allAuthModels = driver == DriverDescriptor.NULL_DRIVER ?
             DataSourceProviderRegistry.getInstance().getAllAuthModels() :
-            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
+            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(driver);
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
             o1.isDefaultModel() && !o2.isDefaultModel() ? -1 :

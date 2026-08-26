@@ -77,7 +77,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDat
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         DBPConnectionConfiguration configToUse = connectionInfo;
         String databaseName = connectionInfo.getDatabaseName();
 
@@ -135,7 +135,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDat
      * Solution: move all JNA-dependent functions to a separate bundle.
      */
     @Override
-    public boolean providesDriverClasses() {
+    public boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return true;
     }
 

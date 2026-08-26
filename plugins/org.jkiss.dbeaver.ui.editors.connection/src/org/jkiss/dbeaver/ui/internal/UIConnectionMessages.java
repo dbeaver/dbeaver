@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,10 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_auth_label_password;
     public static String dialog_connection_auth_label_username;
     public static String dialog_connection_auth_label_show_password;
+    public static String dialog_connection_auth_shell_command_label;
+    public static String dialog_connection_auth_shell_command_hint;
+    public static String dialog_connection_auth_shell_command_workdir_label;
+    public static String dialog_connection_auth_shell_command_timeout_label;
 
     public static String dialog_connection_network_socket_label_host;
     public static String dialog_connection_network_socket_label_port;
@@ -319,19 +323,27 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_create_dialog_profile_name;
     public static String pref_page_network_profiles_tool_create_dialog_error_title;
     public static String pref_page_network_profiles_tool_create_dialog_error_info;
+    public static String pref_page_network_profiles_tool_create_dialog_error_global_info;
     public static String pref_page_network_profiles_tool_delete_title;
     public static String pref_page_network_profiles_tool_delete_text;
     public static String pref_page_network_profiles_tool_copy_title;
     public static String pref_page_network_profiles_tool_copy_text;
     public static String pref_page_network_profiles_tool_delete_dialog_error_title;
     public static String pref_page_network_profiles_tool_delete_dialog_error_info;
+    public static String pref_page_network_profiles_tool_delete_dialog_error_message;
     public static String pref_page_network_profiles_tool_delete_confirmation_title;
     public static String pref_page_network_profiles_tool_delete_confirmation_question;
+    public static String pref_page_network_profiles_tool_delete_private_projects_warning;
+    public static String pref_page_network_profiles_tool_delete_used_confirmation_question;
     public static String pref_page_network_profiles_tool_no_profile_error_title;
     public static String pref_page_network_profiles_tool_no_profile_error_info;
     public static String pref_page_network_profiles_tool_no_profile_error_information;
     public static String pref_page_network_profiles_global_project_label;
     public static String pref_page_network_profiles_global_project_hint;
+    public static String pref_page_network_profiles_global_project_name_used_in_local_label;
+    public static String pref_page_network_profiles_global_project_name_used_in_local_question;
+    public static String pref_page_network_profiles_local_name_used_in_global_label;
+    public static String pref_page_network_profiles_local_name_used_in_global_question;
     public static String dialog_tunnel_checkbox_use_handler;
     public static String dialog_tunnel_title;
 

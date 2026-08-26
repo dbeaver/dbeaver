@@ -164,6 +164,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         IWizardPage firstPage = getStartingPage();
         setTitle(firstPage.getTitle());
         setTitleImage(firstPage.getImage());
+        // The label is initially sized for JFace's default banner, so recalculate it after replacing the image.
+        getTitleImageLabel().getParent().layout(true, true);
         setMessage(firstPage.getDescription());
 
         // Afterwards show the starting page
@@ -497,7 +499,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         TreeItem item = parentItem == null ?
             new TreeItem(pagesTree, SWT.NONE) :
             new TreeItem(parentItem, SWT.NONE);
-        item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
+        String title = page.getTitle();
+        if (page instanceof IWizardPageActive wpa) {
+            title = wpa.getPageSubTitle();
+        }
+        item.setText(CommonUtils.toString(title, page.getClass().getSimpleName()));
         item.setForeground(computePageColor(page));
         item.setData(page);
 
@@ -605,7 +611,46 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateTitleBar() {
-        //setTitleImage(getCurrentPage().getImage());
+        var page = getCurrentPage();
+        if (page != null) {
+            var title = CommonUtils.notEmpty(page.getTitle());
+            if (page instanceof IWizardPageActive wpa) {
+                title = wpa.getPageSubTitle();
+            }
+            setTitle(title);
+
+            var item = findPageTreeItem(page);
+            if (item != null) {
+                item.setText(title);
+            }
+
+            updateMessage();
+        }
+    }
+
+    @Nullable
+    private TreeItem findPageTreeItem(@NotNull IWizardPage page) {
+        for (TreeItem parent : pagesTree.getItems()) {
+            var item = findPageTreeItem(parent, page);
+            if (item != null) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static TreeItem findPageTreeItem(@NotNull TreeItem parent, @NotNull IWizardPage page) {
+        if (parent.getData() == page) {
+            return parent;
+        }
+        for (TreeItem child : parent.getItems()) {
+            var item = findPageTreeItem(child, page);
+            if (item != null) {
+                return item;
+            }
+        }
+        return null;
     }
 
     @Override

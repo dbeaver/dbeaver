@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 
 import java.util.Map;
 
@@ -79,8 +80,10 @@ public interface IResultSetPresentation {
 
     void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent);
 
+    @NotNull
     IResultSetController getController();
 
+    @Nullable
     Control getControl();
 
     /**
@@ -130,6 +133,9 @@ public interface IResultSetPresentation {
     @Nullable
     DBDAttributeBinding getFocusAttribute();
 
+    @Nullable
+    ResultSetCellLocation getCurrentCellLocation();
+
     void setCurrentAttribute(@NotNull DBDAttributeBinding attribute);
 
     void showAttribute(@NotNull DBDAttributeBinding attribute);
@@ -144,9 +150,14 @@ public interface IResultSetPresentation {
      * Copies selected cells in supported Transfer formats.
      */
     @NotNull
-    Map<Transfer, Object> copySelection(ResultSetCopySettings settings);
+    Map<Transfer, Object> copySelection(@NotNull ResultSetCopySettings settings);
 
     void printResultSet();
+
+    @Nullable
+    default FindReplaceOverlay getFindReplaceOverlay() {
+        return null;
+    }
 
     /**
      * Retrieves font identifier to increase or decrease its size as the user zooms in/out on the presentation.

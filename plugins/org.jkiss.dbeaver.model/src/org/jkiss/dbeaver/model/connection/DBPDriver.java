@@ -43,7 +43,7 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
      * Driver contributor
      */
     @NotNull
-    DBPDataSourceProvider getDataSourceProvider();
+    DBPDataSourceProvider<?> getDataSourceProvider();
 
     @NotNull
     DBPDataSourceProviderDescriptor getProviderDescriptor();
@@ -143,16 +143,9 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
     @Nullable
     DBPDriver getReplacedBy();
 
-    boolean isNotAvailable();
-
+    // Driver stub. If not null then this driver instance cannot be created
     @Nullable
-    String getNonAvailabilityTitle();
-
-    @Nullable
-    String getNonAvailabilityDescription();
-
-    @Nullable
-    String getNonAvailabilityReason();
+    DBPDriverStub getDriverStub();
 
     /**
      * @return a pair of providerId and driverId for each of driver replacement
@@ -217,7 +210,7 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
     void resetDriverInstance();
 
     @Nullable
-    String getConnectionURL(DBPConnectionConfiguration configuration);
+    String getConnectionURL(DBPConnectionConfiguration configuration) throws DBException;
 
     /**
      * Create copy of

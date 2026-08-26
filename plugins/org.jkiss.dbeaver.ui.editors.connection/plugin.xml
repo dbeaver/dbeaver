@@ -8,6 +8,7 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseShellCommand" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.ShellCommandAuthModelConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
@@ -82,9 +83,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles"
-              id="org.jkiss.dbeaver.project.settings.networkProfiles"
-              name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name" >
+        <page id="org.jkiss.dbeaver.project.settings.networkProfiles" class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles" name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name">
             <enabledWhen>
                 <adapt type="org.eclipse.core.resources.IProject">
                     <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>

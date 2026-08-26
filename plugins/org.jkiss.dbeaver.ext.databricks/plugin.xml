@@ -40,8 +40,10 @@
                     <replace provider="databricks" driver="databricks"/>
                     <replace provider="databricks" driver="databricks-native"/>
 
-                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:1.0.9-oss" bundle="!drivers.databricks_native"/>
+                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:3.4.1" bundle="!drivers.databricks_native"/>
                     <file type="jar" path="drivers/databricks_native" bundle="drivers.databricks_native"/>
+                    <file type="jar" path="bundle:/org.jkiss.bundle.jackson" bundle="drivers.databricks_native"/>
+                    <file type="jar" path="bundle:/org.apache.commons.lang3" bundle="drivers.databricks_native"/>
 
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-multi-insert" value="true"/>

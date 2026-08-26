@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -50,7 +50,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
     @Mock
     private JDBCRemoteInstance mockRemoteInstance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws DBException {
         // We do not have generic driver, so use SQLite one.
         DBPDataSourceContainer mockDataSourceContainer = configureTestContainer("sqlite_jdbc");
@@ -98,7 +98,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             "\tColumn2 INTEGER" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             "\tColumn2 INTEGER NOT NULL" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -181,7 +181,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             "\tCONSTRAINT NEWTABLE_PK PRIMARY KEY (Column1)" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -225,7 +225,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             "COMMENT ON COLUMN CATALOG_GENERIC.SCHEMA_GENERIC.NewTable.Column1 IS 'Test comment 1';" + lineBreak +
             "COMMENT ON COLUMN CATALOG_GENERIC.SCHEMA_GENERIC.NewTable.Column2 IS 'Test comment 2';" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -244,7 +244,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
 
         String expectedDDL = "DROP TABLE CATALOG_GENERIC.TABLE_GENERIC;" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -268,7 +268,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             "\tCOLUMN3 CHAR(13)" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(tableDDL, expectedDDL);
+        Assertions.assertEquals(tableDDL, expectedDDL);
     }
 
     @Test
@@ -294,7 +294,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             "\tCOLUMN2 BIGINT" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(tableDDL, expectedDDL);
+        Assertions.assertEquals(tableDDL, expectedDDL);
     }
 
     @Test
@@ -323,7 +323,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             "\tCOLUMN3 BLOB NOT NULL" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(tableDDL, expectedDDL);
+        Assertions.assertEquals(tableDDL, expectedDDL);
     }
 
     private GenericTableColumn addColumn(

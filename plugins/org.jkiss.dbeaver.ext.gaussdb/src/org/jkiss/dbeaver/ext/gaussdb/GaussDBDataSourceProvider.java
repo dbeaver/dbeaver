@@ -65,7 +65,7 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider<GaussDBDat
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         DBAAuthModel<DBAAuthCredentials> authModel = connectionInfo.getAuthModel();
         if (authModel instanceof DBPDataSourceURLProvider) {
             String connectionURL = ((DBPDataSourceURLProvider) authModel).getConnectionURL(driver, connectionInfo);
@@ -96,7 +96,7 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider<GaussDBDat
     }
 
     @Override
-    public boolean providesDriverClasses() {
+    public boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return false;
     }
 }

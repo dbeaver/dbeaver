@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,18 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -49,10 +54,15 @@ import java.util.ResourceBundle;
 public class ConfirmationDialog extends MessageDialogWithToggle {
 
     private static final Log log = Log.getLog(UIStyles.class);
+    private static final int CODE_BLOCK_HEIGHT_IN_LINES = 12;
 
     public static final int CONFIRM_WITH_YES_TO_ALL = 7;
 
     private final boolean hideToggle;
+    @Nullable
+    private final String codeBlockText;
+    @Nullable
+    private final String confirmationId;
 
     public ConfirmationDialog(
         Shell parentShell,
@@ -62,11 +72,41 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         int dialogImageType,
         String[] dialogButtonLabels,
         int defaultIndex,
-        String toggleMessage,
+        @Nullable String toggleMessage,
         boolean toggleState)
+    {
+        this(
+            parentShell,
+            dialogTitle,
+            image,
+            message,
+            dialogImageType,
+            dialogButtonLabels,
+            defaultIndex,
+            toggleMessage,
+            toggleState,
+            null,
+            null
+        );
+    }
+
+    public ConfirmationDialog(
+        Shell parentShell,
+        String dialogTitle,
+        Image image,
+        String message,
+        int dialogImageType,
+        String[] dialogButtonLabels,
+        int defaultIndex,
+        @Nullable String toggleMessage,
+        boolean toggleState,
+        @Nullable String codeBlockText,
+        @Nullable String confirmationId)
     {
         super(parentShell, dialogTitle, image, message, dialogImageType, dialogButtonLabels, defaultIndex, toggleMessage, toggleState);
         this.hideToggle = toggleMessage == null;
+        this.codeBlockText = codeBlockText;
+        this.confirmationId = confirmationId;
     }
 
     @Override
@@ -81,6 +121,41 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     @Override
     protected void initializeBounds() {
         super.initializeBounds();
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return CommonUtils.isNotEmpty(codeBlockText) || super.isResizable();
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return CommonUtils.isNotEmpty(confirmationId) ? UIUtils.getDialogSettings("ConfirmationDialog." + confirmationId) : super.getDialogBoundsSettings();
+    }
+
+    @Override
+    protected void createDialogAndButtonArea(Composite parent) {
+        if (CommonUtils.isEmpty(codeBlockText)) {
+            super.createDialogAndButtonArea(parent);
+            return;
+        }
+
+        dialogArea = createDialogArea(parent);
+        if (dialogArea.getLayoutData() instanceof GridData gridData) {
+            gridData.grabExcessVerticalSpace = false;
+        }
+
+        Text codeBlock = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL);
+        codeBlock.setFont(JFaceResources.getTextFont());
+        codeBlock.setText(codeBlockText);
+
+        GridData gridData = new GridData(GridData.FILL_BOTH);
+        gridData.heightHint = UIUtils.getFontHeight(codeBlock) * CODE_BLOCK_HEIGHT_IN_LINES + 10;
+        gridData.horizontalSpan = 2;
+        codeBlock.setLayoutData(gridData);
+
+        buttonBar = createButtonBar(parent);
+        applyDialogFont(parent);
     }
 
     /**
@@ -111,12 +186,27 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     public static int open(
         int kind,
         int imageKind,
-        Shell parent,
-        String title,
-        String message,
-        String toggleMessage,
+        @Nullable Shell parent,
+        @NotNull String title,
+        @NotNull String message,
+        @Nullable String toggleMessage,
         boolean toggleState,
-        String key)
+        @NotNull String key)
+    {
+        return open(kind, imageKind, parent, title, message, toggleMessage, toggleState, key, null, null);
+    }
+
+    public static int open(
+        int kind,
+        int imageKind,
+        @Nullable Shell parent,
+        @NotNull String title,
+        @NotNull String message,
+        @Nullable String toggleMessage,
+        boolean toggleState,
+        @NotNull String key,
+        @Nullable String confirmationId,
+        @Nullable String codeBlockText)
     {
         DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (toggleMessage != null) {
@@ -145,7 +235,9 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             getButtonLabels(kind),
             getDefaultIndex(kind, imageKind),
             toggleMessage,
-            toggleState);
+            toggleState,
+            codeBlockText,
+            confirmationId);
         dialog.setPrefStore(new PreferenceStoreDelegate(prefStore));
         dialog.setPrefKey(key);
         return dialog.open();
@@ -200,6 +292,17 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     }
 
     public static int confirmAction(@Nullable Shell shell, int imageType, @NotNull String id, int type, @NotNull Object... args) {
+        return confirmAction(shell, imageType, id, type, null, args);
+    }
+
+    public static int confirmAction(
+        @Nullable Shell shell,
+        int imageType,
+        @NotNull String id,
+        int type,
+        @Nullable String codeBlockText,
+        @NotNull Object... args)
+    {
         ConfirmationDescriptor descriptor = ConfirmationRegistry.getInstance().getConfirmation(id);
         String toggleMessage = descriptor.getToggleMessage();
         if ("default".equals(descriptor.getToggleMessage())) {
@@ -222,7 +325,9 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             NLS.bind(descriptor.getMessage(), args),
             toggleMessage != null ? NLS.bind(toggleMessage, args) : null,
             false,
-            ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id
+            ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id,
+            id,
+            codeBlockText
         );
     }
 

@@ -63,7 +63,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         this.dataContainer = new GroupingDataContainer(presentation.getController());
         this.groupingViewer = new ResultSetViewer(parent, presentation.getController().getSite(), this) {
             @Override
-            public void refreshWithFilter(DBDDataFilter filter) {
+            public void refreshWithFilter(@Nullable DBDDataFilter filter) {
                 currentFilter.set(filter);
                 super.refreshWithFilter(filter);
             }

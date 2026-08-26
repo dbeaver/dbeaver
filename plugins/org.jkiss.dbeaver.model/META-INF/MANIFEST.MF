@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver API
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 2.0.38.qualifier
-Bundle-Release-Date: 20260504
+Bundle-Version: 2.0.47.qualifier
+Bundle-Release-Date: 20260921
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
@@ -16,6 +16,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.app,
  org.jkiss.dbeaver.model.auth,
  org.jkiss.dbeaver.model.auth.impl,
+ org.jkiss.dbeaver.model.config,
  org.jkiss.dbeaver.model.connection,
  org.jkiss.dbeaver.model.data,
  org.jkiss.dbeaver.model.data.aggregate,
@@ -40,6 +41,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.impl.admin.locks,
  org.jkiss.dbeaver.model.impl.app,
  org.jkiss.dbeaver.model.impl.auth,
+ org.jkiss.dbeaver.model.impl.config,
  org.jkiss.dbeaver.model.impl.data,
  org.jkiss.dbeaver.model.impl.data.formatters,
  org.jkiss.dbeaver.model.impl.data.transformers,
@@ -70,8 +72,8 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.secret,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.sql.parser,
- org.jkiss.dbeaver.model.security,
  org.jkiss.dbeaver.model.struct,
+ org.jkiss.dbeaver.model.sync,
  org.jkiss.dbeaver.model.struct.cache,
  org.jkiss.dbeaver.model.struct.rdb,
  org.jkiss.dbeaver.model.task,
@@ -102,7 +104,7 @@ Import-Package: org.bouncycastle.asn1,
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,
- org.apache.commons.jexl;visibility:=reexport,
+ org.apache.commons.jexl3;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  com.google.gson;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport

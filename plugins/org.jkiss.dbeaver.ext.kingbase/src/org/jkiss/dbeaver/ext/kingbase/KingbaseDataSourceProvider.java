@@ -57,7 +57,7 @@ public class KingbaseDataSourceProvider extends PostgreDataSourceProvider {
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         DBAAuthModel authModel = connectionInfo.getAuthModel();
         if (authModel instanceof DBPDataSourceURLProvider) {
             String connectionURL = ((DBPDataSourceURLProvider) authModel).getConnectionURL(driver, connectionInfo);
@@ -95,7 +95,7 @@ public class KingbaseDataSourceProvider extends PostgreDataSourceProvider {
     }
     
     @Override
-    public boolean providesDriverClasses() {
+    public boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return false;
     }
 

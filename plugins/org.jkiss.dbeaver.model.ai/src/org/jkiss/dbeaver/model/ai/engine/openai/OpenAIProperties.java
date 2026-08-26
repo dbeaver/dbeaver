@@ -20,25 +20,26 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
-import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
+import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
+public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
+    protected static final String GPT_BASE_URL = "gpt.base_url";
+    protected static final String GPT_TOKEN = "gpt.token";
+    protected static final String GPT_MODEL = "gpt.model";
+    protected static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
+    public static final String AUTHENTICATION_API_TOKEN = "apiToken";
+    public static final String AUTHENTICATION_CHATGPT_ACCOUNT = "chatgptAccount";
+    public static final int DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE = 272_000;
+    private static final String ACCESS_TOKEN = "openai.account.accessToken";
+    private static final String REFRESH_TOKEN = "openai.account.refreshToken";
 
-public class OpenAIProperties implements OpenAIBaseProperties {
-    private static final String GPT_BASE_URL = "gpt.base_url";
-    private static final String GPT_TOKEN = "gpt.token";
-    private static final String GPT_MODEL = "gpt.model";
-    private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
-    private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    private static final String GPT_LOG_QUERY = "gpt.log.query";
-    private static final String GPT_LEGACY_API = "gpt.api.legacy";
 
     @Nullable
     @SerializedName(GPT_BASE_URL)
@@ -51,20 +52,28 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @SerializedName(GPT_MODEL)
-    private String model;
+    protected String model;
 
     @Nullable
     @SerializedName(GPT_CONTEXT_WINDOW_SIZE)
-    private Integer contextWindowSize;
+    protected Integer contextWindowSize;
 
-    @SerializedName(GPT_MODEL_TEMPERATURE)
-    private Double temperature;
-
-    @SerializedName(GPT_LOG_QUERY)
-    private Boolean loggingEnabled;
-
-    @SerializedName(GPT_LEGACY_API)
-    private boolean useLegacyApi;
+    @SerializedName("openai.authentication")
+    private String authentication = AUTHENTICATION_API_TOKEN;
+    @SecureProperty
+    @SerializedName(ACCESS_TOKEN)
+    private String accessToken;
+    @SecureProperty
+    @SerializedName(REFRESH_TOKEN)
+    private String refreshToken;
+    @SerializedName("openai.account.expiresAt")
+    private long expiresAt;
+    @SerializedName("openai.account.accountId")
+    private String accountId;
+    @SerializedName("openai.account.email")
+    private String accountEmail;
+    private transient AIConfigurationProfile profile;
+    private transient volatile OpenAIProperties accountCredentialsSource;
 
     public OpenAIProperties() {
     }
@@ -74,7 +83,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Property(order = 2, required = true)
     public String getBaseUrl() {
         if (baseUrl == null || baseUrl.isEmpty()) {
-            return OpenAIClient.OPENAI_ENDPOINT;
+            return OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         return baseUrl;
     }
@@ -90,23 +99,13 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         return token;
     }
 
-    @Override
-    @Property(order = 7)
-    public boolean isLegacyApi() {
-        return useLegacyApi;
-    }
-
-    public void setLegacyApi(boolean useLegacyApi) {
-        this.useLegacyApi = useLegacyApi;
-    }
-
     public void setToken(@Nullable String token) {
         this.token = token;
     }
 
     @Nullable
     @Override
-    @Property(order = 3, listProvider = OpenAIModelListProvider.class)
+    @Property(order = 3)
     public String getModel() {
         if (model != null) {
             return OpenAIModels.getEffectiveModelName(model);
@@ -125,7 +124,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (temperature != null) {
+        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
 
@@ -134,12 +133,8 @@ public class OpenAIProperties implements OpenAIBaseProperties {
             .getDouble(OpenAIConstants.AI_TEMPERATURE);
     }
 
-    public void setTemperature(double temperature) {
-        this.temperature = temperature;
-    }
-
     @Override
-    @Property(order = 5)
+    @Property(order = 1000)
     public boolean isLoggingEnabled() {
         if (loggingEnabled != null) {
             return loggingEnabled;
@@ -150,13 +145,9 @@ public class OpenAIProperties implements OpenAIBaseProperties {
             .getBoolean(OpenAIConstants.AI_LOG_QUERY);
     }
 
-    public void setLoggingEnabled(boolean loggingEnabled) {
-        this.loggingEnabled = loggingEnabled;
-    }
-
     @Nullable
     @Override
-    @Property(order = 6)
+    @Property(order = 6, min = 1)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -171,32 +162,184 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         this.contextWindowSize = contextWindowSize;
     }
 
-    @Override
-    public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault(OpenAIConstants.GPT_API_TOKEN, token);
+    @NotNull
+    public String getAuthentication() {
+        return AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
+            ? AUTHENTICATION_CHATGPT_ACCOUNT
+            : AUTHENTICATION_API_TOKEN;
+    }
+
+    public boolean isChatGptAccountAuthentication() {
+        return AUTHENTICATION_CHATGPT_ACCOUNT.equals(getAuthentication());
+    }
+
+    public boolean isAccountAuthentication() {
+        return isChatGptAccountAuthentication();
+    }
+
+    public void setAuthentication(@Nullable String authentication) {
+        this.authentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
+            ? AUTHENTICATION_CHATGPT_ACCOUNT
+            : AUTHENTICATION_API_TOKEN;
+    }
+
+    public boolean isChatGptAccountConnected() {
+        return isAccountConnected();
+    }
+
+    public boolean isAccountConnected() {
+        OpenAIProperties credentials = getAccountCredentialsOwner();
+        synchronized (credentials) {
+            return !CommonUtils.isEmpty(credentials.refreshToken);
+        }
     }
 
     @Override
-    public void saveSecrets() throws DBException {
-        if (token != null) {
-            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
+    public boolean isValidConfiguration() {
+        return isChatGptAccountAuthentication()
+            ? OpenAIAccountAuthenticator.isSupported() && isChatGptAccountConnected()
+            : !CommonUtils.isEmpty(token);
+    }
+
+    @Nullable
+    public String getAccountId() {
+        OpenAIProperties credentials = getAccountCredentialsOwner();
+        synchronized (credentials) {
+            return credentials.accountId;
         }
     }
 
-    public static class OpenAIModelListProvider implements IPropertyValueListProvider<OpenAIProperties> {
-
-        @Override
-        public boolean allowCustomValue() {
-            return false;
+    @Nullable
+    public String getAccountEmail() {
+        OpenAIProperties credentials = getAccountCredentialsOwner();
+        synchronized (credentials) {
+            return credentials.accountEmail;
         }
+    }
 
-        @Nullable
-        @Override
-        public Object[] getPossibleValues(OpenAIProperties object) {
-            return OpenAIModels.KNOWN_MODELS.entrySet().stream()
-                .filter(entry -> !entry.getValue().features().contains(AIModelFeature.SPEECH_TO_TEXT))
-                .map(Map.Entry::getKey)
-                .toArray();
+    public synchronized void setAccountTokens(@NotNull AIAccountAuthenticator.Tokens tokens) {
+        accessToken = tokens.accessToken();
+        refreshToken = tokens.refreshToken();
+        if (tokens.accountId() != null) {
+            accountId = tokens.accountId();
         }
+        if (tokens.email() != null) {
+            accountEmail = tokens.email();
+        }
+        expiresAt = System.currentTimeMillis() + tokens.expiresInSeconds() * 1000;
+    }
+
+    public void clearAccountTokens() {
+        OpenAIProperties credentials = getAccountCredentialsOwner();
+        synchronized (credentials) {
+            credentials.accessToken = null;
+            credentials.refreshToken = null;
+            credentials.expiresAt = 0;
+            credentials.accountId = null;
+            credentials.accountEmail = null;
+        }
+    }
+
+    public synchronized void copyAccountTokensFrom(@NotNull OpenAIProperties source) {
+        OpenAIProperties credentials = source.getAccountCredentialsOwner();
+        synchronized (credentials) {
+            accessToken = credentials.accessToken;
+            refreshToken = credentials.refreshToken;
+            expiresAt = credentials.expiresAt;
+            accountId = credentials.accountId;
+            accountEmail = credentials.accountEmail;
+        }
+    }
+
+    public void useAccountCredentialsFrom(@NotNull OpenAIProperties source) {
+        accountCredentialsSource = source.getAccountCredentialsOwner();
+    }
+
+    @NotNull
+    public String getValidAccessToken(@NotNull AIAccountAuthenticator authenticator) throws DBException {
+        OpenAIProperties credentials = getAccountCredentialsOwner();
+        synchronized (credentials) {
+            if (!CommonUtils.isEmpty(credentials.accessToken)
+                && credentials.expiresAt > System.currentTimeMillis() + 60_000
+            ) {
+                return credentials.accessToken;
+            }
+            if (CommonUtils.isEmpty(credentials.refreshToken)) {
+                throw new DBException(getAccountProviderName() + " account is not connected");
+            }
+            credentials.setAccountTokens(authenticator.refresh(credentials.refreshToken));
+            if (credentials.profile != null) {
+                credentials.saveSecrets(credentials.profile);
+            }
+            return credentials.accessToken;
+        }
+    }
+
+    public synchronized void saveAccountTokens() throws DBException {
+        if (profile != null) {
+            saveSecrets(profile);
+        }
+    }
+
+    @Override
+    public void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        if (token == null) {
+            token = AIUtils.getSecretValueOrDefault(profile, OpenAIConstants.GPT_API_TOKEN, token);
+        }
+        this.profile = profile;
+        if (accessToken == null) {
+            accessToken = AIUtils.getSecretValueOrDefault(profile, getAccessTokenSecretId(), null);
+        }
+        if (refreshToken == null) {
+            refreshToken = AIUtils.getSecretValueOrDefault(profile, getRefreshTokenSecretId(), null);
+        }
+        String resolvedAccountId = OpenAIAccountAuthenticator.extractAccountId(null, accessToken);
+        if (resolvedAccountId != null) {
+            accountId = resolvedAccountId;
+        }
+        String resolvedEmail = OpenAIAccountAuthenticator.extractEmail(null, accessToken);
+        if (resolvedEmail != null) {
+            accountEmail = resolvedEmail;
+        }
+        long resolvedExpiresAt = OpenAIAccountAuthenticator.extractExpiresAt(accessToken);
+        if (resolvedExpiresAt > 0) {
+            expiresAt = resolvedExpiresAt;
+        }
+    }
+
+    @Override
+    public void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.setSecretValue(profile, OpenAIConstants.GPT_API_TOKEN, token);
+        this.profile = profile;
+        AIUtils.setSecretValue(profile, getRefreshTokenSecretId(), refreshToken);
+        AIUtils.setSecretValue(profile, getAccessTokenSecretId(), accessToken);
+    }
+
+    @Override
+    public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.deleteSecretValue(profile, OpenAIConstants.GPT_API_TOKEN);
+        AIUtils.deleteSecretValue(profile, getAccessTokenSecretId());
+        AIUtils.deleteSecretValue(profile, getRefreshTokenSecretId());
+    }
+
+    @NotNull
+    protected String getAccountProviderName() {
+        return "ChatGPT";
+    }
+
+    @NotNull
+    protected String getAccessTokenSecretId() {
+        return ACCESS_TOKEN;
+    }
+
+    @NotNull
+    protected String getRefreshTokenSecretId() {
+        return REFRESH_TOKEN;
+    }
+
+    @NotNull
+    private OpenAIProperties getAccountCredentialsOwner() {
+        OpenAIProperties source = accountCredentialsSource;
+        return source == null ? this : source.getAccountCredentialsOwner();
     }
 }

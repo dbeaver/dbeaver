@@ -61,11 +61,14 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
 
     private final DBPProject project;
     private final String selectorId;
+    private final String containerTitle;
+    private final String containerHint;
     private final Label containerIcon;
     private final Combo containerNameCombo;
 
     private final List<HistoryItem> historyItems = new ArrayList<>();
     private final Button browseButton;
+    private String containerHintOverride;
 
     private static class HistoryItem {
         private final String containerName;
@@ -103,6 +106,8 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
 
         this.project = project;
         this.selectorId = selectorId;
+        this.containerTitle = containerTitle;
+        this.containerHint = containerHint;
 
         GridLayout layout = new GridLayout(4, false);
         layout.marginHeight = 0;
@@ -117,9 +122,8 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
         containerNameCombo = new Combo(this, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         containerNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         containerNameCombo.setText("");
-        if (containerHint != null) {
-            UIUtils.addEmptyTextHint(containerNameCombo, text -> containerHint);
-        }
+        UIUtils.addEmptyTextHint(containerNameCombo, text ->
+            containerHintOverride != null ? containerHintOverride : containerHint);
         containerNameCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -127,50 +131,52 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
             }
         });
 
-        Runnable containerSelector = () -> {
-            if (project != null) {
-                DBNModel navigatorModel = project.getNavigatorModel();
-                assert navigatorModel != null;
-                DBNProject rootNode = navigatorModel.getRoot().getProjectNode(project);
-                assert rootNode != null;
-                DBNNode selectedNode = getSelectedNode();
-                DBNNode node = DBWorkbench.getPlatformUI().selectObject(
-                    getShell(),
-                    containerHint != null ? containerHint : containerTitle,
-                    rootNode.getDatabases(),
-                    selectedNode,
-                    new Class[]{ DBSInstance.class, DBSObjectContainer.class },
-                    new Class[] { DBSObjectContainer.class },
-                    new Class[]{ DBSSchema.class });
-                if (node != null) {
-                    try {
-                        checkValidContainerNode(node);
-                        setSelectedNode((DBNDatabaseNode) node);
-                        addNodeToHistory((DBNDatabaseNode) node);
-                        saveHistory();
-                    } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError(UIMessages.bad_container_node,
-                            NLS.bind(UIMessages.bad_container_node_message, node.getName()), e);
-                    }
-                }
-                updateToolTips();
-            }
-        };
         browseButton = UIUtils.createPushButton(
             this,
             UIMessages.browse_button_choose,
             UIMessages.browse_button_choose_tooltip,
             UIIcon.OPEN,
-            SelectionListener.widgetSelectedAdapter(e -> containerSelector.run()));
+            SelectionListener.widgetSelectedAdapter(e -> browseContainer()));
         containerNameCombo.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
-                containerSelector.run();
+                browseContainer();
             }
         });
 
         loadHistory();
 
+        updateToolTips();
+    }
+
+    public void browseContainer() {
+        if (project == null) {
+            return;
+        }
+        DBNModel navigatorModel = project.getNavigatorModel();
+        assert navigatorModel != null;
+        DBNProject rootNode = navigatorModel.getRoot().getProjectNode(project);
+        assert rootNode != null;
+        DBNNode selectedNode = getSelectedNode();
+        DBNNode node = DBWorkbench.getPlatformUI().selectObject(
+            getShell(),
+            containerHint != null ? containerHint : containerTitle,
+            rootNode.getDatabases(),
+            selectedNode,
+            new Class[]{ DBSInstance.class, DBSObjectContainer.class },
+            new Class[] { DBSObjectContainer.class },
+            new Class[]{ DBSSchema.class });
+        if (node != null) {
+            try {
+                checkValidContainerNode(node);
+                setSelectedNode((DBNDatabaseNode) node);
+                addNodeToHistory((DBNDatabaseNode) node);
+                saveHistory();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(UIMessages.bad_container_node,
+                    NLS.bind(UIMessages.bad_container_node_message, node.getName()), e);
+            }
+        }
         updateToolTips();
     }
 
@@ -309,6 +315,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
     }
 
     public void setContainerInfo(DBNDatabaseNode node) {
+        setContainerText(null);
         if (node == null) {
             containerIcon.setImage(DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN));
             containerNameCombo.select(-1);
@@ -318,6 +325,13 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
         containerIcon.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
 
         moveHistoryItemToBeginning(item);
+    }
+
+    public void setContainerText(@Nullable String text) {
+        containerHintOverride = CommonUtils.isEmpty(text) ? null : text;
+        if (!containerNameCombo.isDisposed()) {
+            containerNameCombo.redraw();
+        }
     }
 
     protected abstract void setSelectedNode(@NotNull DBNDatabaseNode node);
