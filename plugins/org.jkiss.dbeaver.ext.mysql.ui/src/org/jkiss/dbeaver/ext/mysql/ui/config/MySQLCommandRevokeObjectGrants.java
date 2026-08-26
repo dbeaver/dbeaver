@@ -41,13 +41,18 @@ public class MySQLCommandRevokeObjectGrants extends DBECommandAbstract<MySQLUser
     private final boolean grantOption;
 
     /**
+     * Creates a command that revokes the given privileges on a single object from a user.
+     *
      * @param objectSpec     fully rendered grant target, e.g. {@code `db`.*}, {@code `db`.`tbl`}
      *                       or {@code PROCEDURE `db`.`proc`}
      * @param privilegeNames rendered privilege names, possibly with column lists,
      *                       e.g. {@code SELECT}, {@code UPDATE (`col1`, `col2`)}, {@code ALL PRIVILEGES}
      */
-    public MySQLCommandRevokeObjectGrants(MySQLUser user, String objectSpec, List<String> privilegeNames, boolean grantOption)
-    {
+    public MySQLCommandRevokeObjectGrants(
+        @NotNull MySQLUser user,
+        @NotNull String objectSpec,
+        @NotNull List<String> privilegeNames,
+        boolean grantOption) {
         super(user, MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
         this.objectSpec = objectSpec;
         this.privilegeNames = new ArrayList<>(privilegeNames);
@@ -55,15 +60,16 @@ public class MySQLCommandRevokeObjectGrants extends DBECommandAbstract<MySQLUser
     }
 
     @Override
-    public void updateModel()
-    {
+    public void updateModel() {
         getObject().clearGrantsCache();
     }
 
     @Nullable
     @Override
-    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
-    {
+    public DBEPersistAction[] getPersistActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Map<String, Object> options) {
         List<DBEPersistAction> actions = new ArrayList<>();
         List<String> revoked = new ArrayList<>(privilegeNames);
         // Fold grant option into the same REVOKE statement when there are other privileges;

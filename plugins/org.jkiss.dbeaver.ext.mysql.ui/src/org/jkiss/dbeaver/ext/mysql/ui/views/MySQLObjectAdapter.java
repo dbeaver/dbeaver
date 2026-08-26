@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.mysql.ui.views;
 
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
@@ -29,7 +31,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public class MySQLObjectAdapter implements IAdapterFactory {
 
     @Override
-    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+    @Nullable
+    public <T> T getAdapter(@NotNull Object adaptableObject, @NotNull Class<T> adapterType) {
         if (DBSObject.class.isAssignableFrom(adapterType)) {
             DBSObject dbObject = null;
             if (adaptableObject instanceof DBNDatabaseNode node) {
@@ -43,7 +46,7 @@ public class MySQLObjectAdapter implements IAdapterFactory {
     }
 
     @Override
-    public Class<?>[] getAdapterList() {
+    public @NotNull Class<?>[] getAdapterList() {
         return new Class<?>[]{MySQLCatalog.class, MySQLTableBase.class, MySQLProcedure.class};
     }
 }

@@ -41,8 +41,10 @@ import java.util.regex.Pattern;
  */
 public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
 
-    public static final Pattern TABLE_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
-    public static final Pattern PROCEDURE_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+(PROCEDURE|FUNCTION)\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
+    public static final Pattern TABLE_GRANT_PATTERN = Pattern.compile(
+        "GRANT\\s+(.+)\\s+ON\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
+    public static final Pattern PROCEDURE_GRANT_PATTERN = Pattern.compile(
+        "GRANT\\s+(.+)\\s+ON\\s+(PROCEDURE|FUNCTION)\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
     public static final Pattern GLOBAL_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+(.+)\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
 
     public enum ObjectType {
@@ -65,13 +67,26 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     // e.g. GRANT SELECT (col1, col2) ON db.tbl
     private final Map<MySQLPrivilege, Set<String>> columnPrivileges = new LinkedHashMap<>();
 
-    public MySQLGrant(MySQLUser user, List<MySQLPrivilege> privileges, @Nullable String catalogName, @Nullable String tableName, boolean allPrivileges, boolean grantOption)
-    {
+    public MySQLGrant(
+        @NotNull MySQLUser user,
+        @NotNull List<MySQLPrivilege> privileges,
+        @Nullable String catalogName,
+        @Nullable String tableName,
+        boolean allPrivileges,
+        boolean grantOption
+    ) {
         this(user, privileges, catalogName, tableName, allPrivileges, grantOption, ObjectType.TABLE);
     }
 
-    public MySQLGrant(MySQLUser user, List<MySQLPrivilege> privileges, @Nullable String catalogName, @Nullable String tableName, boolean allPrivileges, boolean grantOption, @NotNull ObjectType objectType)
-    {
+    public MySQLGrant(
+        @NotNull MySQLUser user,
+        @NotNull List<MySQLPrivilege> privileges,
+        @Nullable String catalogName,
+        @Nullable String tableName,
+        boolean allPrivileges,
+        boolean grantOption,
+        @NotNull ObjectType objectType
+    ) {
         this.user = user;
         this.privileges = privileges;
         this.catalogName = catalogName;
@@ -82,8 +97,7 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     }
 
     @NotNull
-    public ObjectType getObjectType()
-    {
+    public ObjectType getObjectType() {
         return objectType;
     }
 
@@ -202,8 +216,7 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         this.grantOption = grantOption;
     }
 
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return privileges.isEmpty() && columnPrivileges.isEmpty() && !isAllPrivileges() && !isGrantOption();
     }
 
@@ -212,16 +225,14 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
      * The original case of the column name is preserved: the server matches column names
      * case-sensitively when revoking column privileges.
      */
-    public void addColumnPrivilege(@NotNull MySQLPrivilege privilege, @NotNull String columnName)
-    {
+    public void addColumnPrivilege(@NotNull MySQLPrivilege privilege, @NotNull String columnName) {
         Set<String> columns = columnPrivileges.computeIfAbsent(privilege, p -> new LinkedHashSet<>());
         if (findColumn(columns, columnName) == null) {
             columns.add(columnName);
         }
     }
 
-    public void removeColumnPrivilege(@NotNull MySQLPrivilege privilege, @NotNull String columnName)
-    {
+    public void removeColumnPrivilege(@NotNull MySQLPrivilege privilege, @NotNull String columnName) {
         Set<String> columns = columnPrivileges.get(privilege);
         if (columns != null) {
             String existing = findColumn(columns, columnName);
@@ -234,23 +245,20 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         }
     }
 
-    public boolean hasColumnPrivilege(@NotNull MySQLPrivilege privilege, @NotNull String columnName)
-    {
+    public boolean hasColumnPrivilege(@NotNull MySQLPrivilege privilege, @NotNull String columnName) {
         Set<String> columns = columnPrivileges.get(privilege);
         return columns != null && findColumn(columns, columnName) != null;
     }
 
     @NotNull
-    public Map<MySQLPrivilege, Set<String>> getColumnPrivileges()
-    {
+    public Map<MySQLPrivilege, Set<String>> getColumnPrivileges() {
         return columnPrivileges;
     }
 
     /**
      * Returns true if any privilege of this grant is restricted to the given column.
      */
-    public boolean hasColumnPrivileges(@NotNull String columnName)
-    {
+    public boolean hasColumnPrivileges(@NotNull String columnName) {
         for (Set<String> columns : columnPrivileges.values()) {
             if (findColumn(columns, columnName) != null) {
                 return true;
@@ -261,7 +269,7 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
 
     /** Case-insensitive lookup that returns the stored column name (with its original case). */
     @Nullable
-    private static String findColumn(Set<String> columns, String columnName) {
+    private static String findColumn(@NotNull Set<String> columns, @NotNull String columnName) {
         for (String column : columns) {
             if (column.equalsIgnoreCase(columnName)) {
                 return column;
@@ -280,8 +288,7 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
             && SQLUtils.matchesLike(catalog.getName(), catalogName));
     }
 
-    public boolean matches(MySQLTableBase table)
-    {
+    public boolean matches(@Nullable MySQLTableBase table) {
         return objectType == ObjectType.TABLE
             && ((table == null && isAllTables()) || (table != null && table.getName().equalsIgnoreCase(tableName)));
     }
@@ -289,8 +296,7 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     /**
      * Returns true if this is a routine grant and the given procedure/function is its target.
      */
-    public boolean matchesProcedure(@Nullable MySQLProcedure procedure)
-    {
+    public boolean matchesProcedure(@Nullable MySQLProcedure procedure) {
         if (procedure == null || objectType == ObjectType.TABLE) {
             return false;
         }

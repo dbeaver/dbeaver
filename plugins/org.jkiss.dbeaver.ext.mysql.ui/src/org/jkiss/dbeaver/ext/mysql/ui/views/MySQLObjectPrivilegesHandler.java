@@ -21,6 +21,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
@@ -38,7 +40,7 @@ public class MySQLObjectPrivilegesHandler extends AbstractHandler {
     private static final String PRIVILEGES_EDITOR_ID = "org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLObjectPrivilegesEditor"; //$NON-NLS-1$
 
     @Override
-    public Object execute(ExecutionEvent event) {
+    public @Nullable Object execute(@NotNull ExecutionEvent event) {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!(selection instanceof IStructuredSelection structuredSelection) || structuredSelection.isEmpty()) {
             return null;

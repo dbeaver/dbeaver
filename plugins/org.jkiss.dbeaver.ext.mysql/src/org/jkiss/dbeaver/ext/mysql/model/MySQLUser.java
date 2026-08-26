@@ -184,7 +184,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
                         // Keep the original case: object names are needed verbatim for generated REVOKE statements
                         String grantString = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1)).trim();
                         if (grantString.toUpperCase(Locale.ENGLISH).endsWith(" WITH GRANT OPTION")) {
-                            grantOption = true;//privileges.add(getDataSource().getPrivilege(monitor, MySQLPrivilege.GRANT_PRIVILEGE));
+                            grantOption = true;
                         }
                         String privString;
                         MySQLGrant.ObjectType objectType = MySQLGrant.ObjectType.TABLE;
