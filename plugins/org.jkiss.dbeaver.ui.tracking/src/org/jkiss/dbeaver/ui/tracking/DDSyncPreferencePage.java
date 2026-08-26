@@ -29,7 +29,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.tracking.auth.DDBrowserLogin;
 import org.jkiss.dbeaver.model.tracking.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.tracking.auth.DDCryptoState;
