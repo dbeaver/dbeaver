@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.tracking.sync.DDPartSelection;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.tracking.internal.DDTrackingUIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class DDCreateConfigurationDialog extends BaseDialog {
     private List<String> selectedKeys = List.of();
 
     public DDCreateConfigurationDialog(@NotNull Shell parentShell, @NotNull List<DDPartSelection> availableParts) {
-        super(parentShell, "Create Configuration", null);
+        super(parentShell, DDTrackingUIMessages.create_configuration_dialog_title, null);
         this.availableParts = availableParts;
     }
 
@@ -53,11 +54,11 @@ public class DDCreateConfigurationDialog extends BaseDialog {
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
-        UIUtils.createControlLabel(composite, "Configuration name");
+        UIUtils.createControlLabel(composite, DDTrackingUIMessages.create_configuration_dialog_name_label);
         nameText = new Text(composite, SWT.BORDER);
         nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createControlLabel(composite, "Include");
+        UIUtils.createControlLabel(composite, DDTrackingUIMessages.create_configuration_dialog_include_label);
         for (DDPartSelection part : availableParts) {
             Button button = new Button(composite, SWT.CHECK);
             button.setText(part.displayName());
@@ -70,7 +71,7 @@ public class DDCreateConfigurationDialog extends BaseDialog {
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, "Create", true);
+        createButton(parent, IDialogConstants.OK_ID, DDTrackingUIMessages.create_configuration_dialog_create_button, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
