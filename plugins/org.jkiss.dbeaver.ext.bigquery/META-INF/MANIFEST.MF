@@ -13,4 +13,5 @@ Export-Package: org.jkiss.dbeaver.ext.bigquery,
  org.jkiss.dbeaver.ext.bigquery.model,
  org.jkiss.dbeaver.ext.bigquery.auth
 Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql,
  slf4j.api;visibility:=reexport

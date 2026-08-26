@@ -18,7 +18,17 @@ package org.jkiss.dbeaver.ext.bigquery.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondition;
 
 import java.util.EnumSet;
 
@@ -38,6 +48,8 @@ public class BQSQLDialect extends GenericSQLDialect {
         {"FOR", SQLConstants.BLOCK_END + " FOR"},
         {"REPEAT", SQLConstants.BLOCK_END + " REPEAT"}
     };
+
+    private SQLTokenPredicateSet cachedDialectSkipTokenPredicates = null;
 
     public BQSQLDialect() {
         super("BigQuery", "google_bigquery");
@@ -83,5 +95,61 @@ public class BQSQLDialect extends GenericSQLDialect {
             ProjectionAliasVisibilityScope.HAVING,
             ProjectionAliasVisibilityScope.ORDER_BY
         );
+    }
+
+    @NotNull
+    @Override
+    public SQLTokenPredicateSet getSkipTokenPredicates() {
+        return cachedDialectSkipTokenPredicates == null ? super.getSkipTokenPredicates() : cachedDialectSkipTokenPredicates;
+    }
+
+    @Override
+    public void initDriverSettings(@NotNull JDBCSession session, @NotNull JDBCDataSource dataSource, @NotNull JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(session, dataSource, metaData);
+        cachedDialectSkipTokenPredicates = this.makeDialectSkipTokenPredicates(dataSource);
+    }
+
+    @NotNull
+    protected SQLTokenPredicateSet makeDialectSkipTokenPredicates(@NotNull JDBCDataSource dataSource) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(dataSource, false);
+        TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
+        return this.makeDialectSkipTokenPredicatesImpl(dataSource, tt);
+    }
+
+    @NotNull
+    protected TokenPredicateSet makeDialectSkipTokenPredicatesImpl(@NotNull JDBCDataSource dataSource, @NotNull TokenPredicateFactory tt) {
+        return TokenPredicateSet.of(new TokenPredicatesCondition(
+            SQLParserActionKind.END_BLOCK,
+            tt.sequence(
+                tt.alternative(
+                    "CREATE", "ALTER", "DROP", "UNDROP", "BEGIN"
+                )
+            ),
+            tt.sequence(
+                tt.alternative(
+                    "SCHEMA",
+                    "CONNECTION",
+                    "MODEL",
+                    "GRAPH",
+                    "FUNCTION",
+                    "PROCEDURE",
+                    "TABLE",
+                    "VIEW",
+                    "INDEX",
+                    "POLICY",
+                    "DATA_POLICY",
+                    "COLUMN",
+                    "CONSTRAINT",
+                    "KEY",
+                    "CAPACITY",
+                    "RESERVATION",
+                    "ASSIGNMENT"
+                ),
+                "IF", tt.optional("NOT"), "EXISTS"
+            )
+        ));
     }
 }
