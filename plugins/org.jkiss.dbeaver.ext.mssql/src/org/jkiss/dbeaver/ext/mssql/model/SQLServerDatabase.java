@@ -57,7 +57,8 @@ public class SQLServerDatabase
         DBPRefreshableObject,
         DBPSystemObject,
         DBPNamedObject2,
-        DBPObjectStatistics {
+        DBPObjectStatistics,
+        DBPObjectWithLazyDescription {
 
     private static final Log log = Log.getLog(SQLServerDatabase.class);
 
@@ -83,7 +84,6 @@ public class SQLServerDatabase
         this.databaseId = JDBCUtils.safeGetLong(resultSet, "database_id");
         this.name = name;
         this.isTempDatabase = name.equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE);
-        //this.description = JDBCUtils.safeGetString(resultSet, "description");
 
         this.persisted = true;
 
@@ -124,9 +124,34 @@ public class SQLServerDatabase
         name = newName;
     }
 
+    @Nullable
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
-    public String getDescription() {
+    public String getDescription(@NotNull DBRProgressMonitor monitor) {
+        if (description != null) {
+            return description;
+        }
+        // Database-level extended properties live in the database itself, so they cannot be read
+        // together with the database list and are not readable at all while the database is not online
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Read database description")) {
+            description = JDBCUtils.queryString(
+                session,
+                "SELECT CAST([value] AS nvarchar(max)) FROM " + SQLServerUtils.getExtendedPropsTableName(this) +
+                    " WHERE [class] = ? AND [major_id] = 0 AND [minor_id] = 0 AND [name] = ?",
+                SQLServerObjectClass.DATABASE.getClassId(),
+                SQLServerConstants.PROP_MS_DESCRIPTION);
+        } catch (Exception e) {
+            log.debug("Error reading description of database " + getName(), e);
+        }
+        if (description == null) {
+            description = "";
+        }
         return description;
     }
 
@@ -170,6 +195,7 @@ public class SQLServerDatabase
         schemaCache.clearCache();
         triggerCache.clearCache();
         databaseTotalSize = null;
+        description = null;
         return this;
     }
 

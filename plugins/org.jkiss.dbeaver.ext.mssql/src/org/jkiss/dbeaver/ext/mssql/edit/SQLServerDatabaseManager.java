@@ -19,8 +19,12 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
@@ -28,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
@@ -90,6 +95,43 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
                 "Rename database",
                 "ALTER DATABASE " + oldName + " MODIFY NAME = " + newName + ";"
         ));
+    }
+
+    @Override
+    protected void addObjectExtraActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<SQLServerDatabase, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        // The property is present with a null value when the description is cleared, so the key
+        // has to be tested rather than the value - otherwise clearing a description does nothing
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            return;
+        }
+        final SQLServerDatabase database = command.getObject();
+        final String description = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_DESCRIPTION), null);
+        final boolean commentSet = SQLServerUtils.isCommentSet(
+            monitor,
+            database,
+            SQLServerObjectClass.DATABASE,
+            0,
+            0);
+        if (CommonUtils.isEmpty(description) && !commentSet) {
+            return;
+        }
+        final StringBuilder sql = new StringBuilder("EXEC ")
+            .append(SQLServerUtils.getSystemTableName(
+                database,
+                CommonUtils.isEmpty(description)
+                    ? "sp_dropextendedproperty"
+                    : commentSet ? "sp_updateextendedproperty" : "sp_addextendedproperty"))
+            .append(" '").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
+        if (!CommonUtils.isEmpty(description)) {
+            sql.append(", ").append(SQLUtils.quoteString(database, description));
+        }
+        actions.add(new SQLDatabasePersistAction("Set database comment", sql.toString()));
     }
 
     @Override
