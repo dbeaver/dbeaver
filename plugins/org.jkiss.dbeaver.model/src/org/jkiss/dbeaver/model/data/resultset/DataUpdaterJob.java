@@ -58,14 +58,12 @@ public class DataUpdaterJob extends DataSourceJob {
     @NotNull
     @Override
     public IStatus run(@NotNull DBRProgressMonitor monitor) {
-        resultSetPersister.before(this);
-
         Map<String, Object> options = new LinkedHashMap<>();
         options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, settings.isUseFullyQualifiedNames());
         try {
-            error = resultSetPersister.executeStatements(monitor, options, resultSetPersister.getSmartTransactionManager(), generateScript);
+            error = executeUpdate(monitor, options);
         } finally {
-            resultSetPersister.after();
+            resultSetPersister.releaseClonedValues();
         }
 
         if (!generateScript) {
@@ -78,5 +76,15 @@ public class DataUpdaterJob extends DataSourceJob {
         }
 
         return Status.OK_STATUS;
+    }
+
+    @Nullable
+    protected Throwable executeUpdate(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) {
+        return resultSetPersister.executeStatements(
+            monitor,
+            options,
+            resultSetPersister.getSmartTransactionManager(),
+            generateScript
+        );
     }
 }

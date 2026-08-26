@@ -27,9 +27,11 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.resultset.DBDDataStatementInfo;
+import org.jkiss.dbeaver.model.data.resultset.DBDDataUpdateListener;
 import org.jkiss.dbeaver.model.data.resultset.DBDResultSetDataUpdater;
 import org.jkiss.dbeaver.model.data.resultset.DataUpdaterJob;
 import org.jkiss.dbeaver.model.data.resultset.ISmartTransactionManager;
+import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -87,6 +89,32 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
         }
     }
 
+    private final class ResultSetUpdaterJob extends DataUpdaterJob {
+        private ResultSetUpdaterJob(
+            boolean generateScript,
+            @NotNull ResultSetSaveSettings settings,
+            @Nullable DBDDataUpdateListener listener,
+            @NotNull DBCExecutionContext executionContext
+        ) {
+            super(ResultSetPersister.this, generateScript, settings, listener, executionContext);
+        }
+
+        @Nullable
+        @Override
+        protected Throwable executeUpdate(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull Map<String, Object> options
+        ) {
+            model.setUpdateInProgress(this);
+            UIUtils.asyncExec(viewer::fireResultSetChange);
+            try {
+                return super.executeUpdate(monitor, options);
+            } finally {
+                model.setUpdateInProgress(null);
+            }
+        }
+    }
+
     @NotNull
     private final ResultSetViewer viewer;
     @NotNull
@@ -97,6 +125,17 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
         this.viewer = viewer;
         this.columns = viewer.getModel().getAttributes();
         collectChanges();
+    }
+
+    @NotNull
+    @Override
+    protected DataUpdaterJob createDataUpdaterJob(
+        boolean generateScript,
+        @NotNull ResultSetSaveSettings settings,
+        @Nullable DBDDataUpdateListener listener,
+        @NotNull DBCExecutionContext executionContext
+    ) {
+        return new ResultSetUpdaterJob(generateScript, settings, listener, executionContext);
     }
 
     @NotNull
@@ -543,22 +582,6 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
     @Override
     public void showError(@NotNull Throwable error) {
         DBWorkbench.getPlatformUI().showError("Data error", "Error generating script", error);
-    }
-
-    @Override
-    public void before(@NotNull DataUpdaterJob job) {
-        model.setUpdateInProgress(job);
-        UIUtils.asyncExec(viewer::fireResultSetChange); // Update "save" and "cancel" buttons
-    }
-
-    @Override
-    public void after() {
-        model.setUpdateInProgress(null);
-
-        for (DBDValue value : clonedValues) {
-            value.release();
-        }
-        clonedValues.clear();
     }
 
     @Nullable

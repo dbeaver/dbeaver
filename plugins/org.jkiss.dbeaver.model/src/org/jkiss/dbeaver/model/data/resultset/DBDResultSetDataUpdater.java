@@ -54,7 +54,7 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
     protected final List<R> deletedRows = new ArrayList<>();
     protected final List<R> addedRows = new ArrayList<>();
     protected final List<R> changedRows = new ArrayList<>();
-    protected final List<DBDValue> clonedValues = new ArrayList<>();
+    private final List<DBDValue> clonedValues = new ArrayList<>();
     protected final Map<R, Map<DBDRowIdentifier, List<DBDAttributeBinding>>> rowIdentifiers = new LinkedHashMap<>();
     protected final List<T> updateStatements;
     protected final List<T> insertStatements;
@@ -249,7 +249,7 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
             throw new DBCException("No execution context");
         }
         if (monitor == null) {
-            DataUpdaterJob job = new DataUpdaterJob(this, generateScript, settings, listener, executionContext);
+            DataUpdaterJob job = createDataUpdaterJob(generateScript, settings, listener, executionContext);
             job.schedule();
             return true;
         } else {
@@ -268,9 +268,19 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
         if (executionContext == null) {
             throw new DBCException("No execution context");
         }
-        DataUpdaterJob job = new DataUpdaterJob(this, generateScript, settings, listener, executionContext);
+        DataUpdaterJob job = createDataUpdaterJob(generateScript, settings, listener, executionContext);
         job.run(monitor);
         return new ExecutionResult(job.getError());
+    }
+
+    @NotNull
+    protected DataUpdaterJob createDataUpdaterJob(
+        boolean generateScript,
+        @NotNull ResultSetSaveSettings settings,
+        @Nullable DBDDataUpdateListener listener,
+        @NotNull DBCExecutionContext executionContext
+    ) {
+        return new DataUpdaterJob(this, generateScript, settings, listener, executionContext);
     }
 
     @Nullable
@@ -326,12 +336,6 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
     }
 
     public void showError(@NotNull Throwable error) {
-    }
-
-    public void before(@NotNull DataUpdaterJob job) {
-    }
-
-    public void after() {
     }
 
     @Nullable
@@ -580,6 +584,13 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
                 rowIdentifiers.put(row, identifierGroups);
             }
         }
+    }
+
+    final void releaseClonedValues() {
+        for (DBDValue value : clonedValues) {
+            value.release();
+        }
+        clonedValues.clear();
     }
 
     protected abstract void collectUpdatedRows();
