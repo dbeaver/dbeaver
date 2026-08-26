@@ -306,12 +306,33 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     @NotNull
-    private static String withPort(@NotNull String url, int port) {
-        if (CommonUtils.isEmpty(url)) {
-            return url;
-        }
-        return CommonUtils.removeTrailingSlash(url) + ":" + port;
+private static String withPort(@NotNull String url, int port) {
+    if (CommonUtils.isEmpty(url)) {
+        return url;
     }
+    String normalized = CommonUtils.removeTrailingSlash(url);
+    try {
+        java.net.URI uri = java.net.URI.create(normalized);
+        if (uri.getHost() != null) {
+            // If the user configured an explicit port, keep it as-is.
+            if (uri.getPort() != -1) {
+                return normalized;
+            }
+            return new java.net.URI(
+                uri.getScheme(),
+                uri.getUserInfo(),
+                uri.getHost(),
+                port,
+                uri.getPath(),
+                uri.getQuery(),
+                uri.getFragment()
+            ).toString();
+        }
+    } catch (IllegalArgumentException | java.net.URISyntaxException e) {
+        // ignore and fall back
+    }
+    return normalized + ":" + port;
+}
 
     private void updateApplyState() {
         Button applyButton = getApplyButton();
