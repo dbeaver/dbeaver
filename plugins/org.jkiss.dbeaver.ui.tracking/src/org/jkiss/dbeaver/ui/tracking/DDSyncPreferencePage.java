@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
@@ -298,33 +299,32 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     @NotNull
-private static String withPort(@NotNull String url, int port) {
-    if (CommonUtils.isEmpty(url)) {
-        return url;
-    }
-    String normalized = CommonUtils.removeTrailingSlash(url);
-    try {
-        java.net.URI uri = java.net.URI.create(normalized);
-        if (uri.getHost() != null) {
-            // If the user configured an explicit port, keep it as-is.
-            if (uri.getPort() != -1) {
-                return normalized;
-            }
-            return new java.net.URI(
-                uri.getScheme(),
-                uri.getUserInfo(),
-                uri.getHost(),
-                port,
-                uri.getPath(),
-                uri.getQuery(),
-                uri.getFragment()
-            ).toString();
+    private static String withPort(@NotNull String url, int port) {
+        if (CommonUtils.isEmpty(url)) {
+            return url;
         }
-    } catch (IllegalArgumentException | java.net.URISyntaxException e) {
-        // ignore and fall back
+        String normalized = CommonUtils.removeTrailingSlash(url);
+        try {
+            java.net.URI uri = java.net.URI.create(normalized);
+            if (uri.getHost() != null) {
+                if (uri.getPort() != -1) {
+                    return normalized;
+                }
+                return new java.net.URI(
+                    uri.getScheme(),
+                    uri.getUserInfo(),
+                    uri.getHost(),
+                    port,
+                    uri.getPath(),
+                    uri.getQuery(),
+                    uri.getFragment()
+                ).toString();
+            }
+        } catch (IllegalArgumentException | URISyntaxException e) {
+            // ignore and fall back
+        }
+        return normalized + ":" + port;
     }
-    return normalized + ":" + port;
-}
 
     private void updateApplyState() {
         Button applyButton = getApplyButton();
