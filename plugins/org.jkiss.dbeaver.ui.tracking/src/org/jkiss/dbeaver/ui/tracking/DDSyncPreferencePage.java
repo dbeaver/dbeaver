@@ -275,7 +275,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return null;
         }
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), new LabelProvider() {
-            @NotNull
+            @Nullable
             @Override
             public String getText(@NotNull Object element) {
                 return ((DDContainer) element).label();
