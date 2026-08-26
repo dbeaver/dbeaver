@@ -49,26 +49,26 @@ public class PostgreServerTimescaleTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void getServerTypeName_returnsTimescale() {
+    public void getServerTypeNameReturnsTimescale() {
         Assertions.assertEquals("Timescale", server.getServerTypeName());
     }
 
     @Test
-    public void supportsGeneratedColumns_whenServerVersionIsAtLeast12_returnsTrue() {
+    public void supportsGeneratedColumnsWhenServerVersionIsAtLeast12ReturnsTrue() {
         when(mockDataSource.isServerVersionAtLeast(12, 0)).thenReturn(true);
 
         Assertions.assertTrue(server.supportsGeneratedColumns());
     }
 
     @Test
-    public void supportsGeneratedColumns_whenServerVersionIsLessThan12_returnsFalse() {
+    public void supportsGeneratedColumnsWhenServerVersionIsLessThan12ReturnsFalse() {
         when(mockDataSource.isServerVersionAtLeast(12, 0)).thenReturn(false);
 
         Assertions.assertFalse(server.supportsGeneratedColumns());
     }
 
     @Test
-    public void createRelationOfClass_whenTableTypeIsRegular_returnsInstanceOfTimescaleTable() {
+    public void createRelationOfClassWhenTableTypeIsRegularReturnsInstanceOfTimescaleTable() {
         Assertions.assertEquals(
             TimescaleTable.class,
             server.createRelationOfClass(mockSchema, PostgreClass.RelKind.r, mockResults).getClass());
