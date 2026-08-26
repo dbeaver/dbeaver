@@ -195,7 +195,9 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     ) throws DBException {
         DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
         profilesRegistry.removeProfile(profile);
-        profilesRegistry.saveSettings();
+        if (!DBWorkbench.isDistributed()) {
+            profilesRegistry.saveSettings();
+        }
     }
 
     @NotNull
@@ -236,7 +238,9 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         newProfile.setProfileName(profileName);
 
         profilesRegistry.addOrUpdateProfile(newProfile);
-        profilesRegistry.saveSettings();
+        if (!DBWorkbench.isDistributed()) {
+            profilesRegistry.saveSettings();
+        }
 
         return newProfile;
     }
