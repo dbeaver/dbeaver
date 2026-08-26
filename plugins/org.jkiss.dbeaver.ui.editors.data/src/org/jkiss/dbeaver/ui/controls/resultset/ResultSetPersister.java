@@ -96,6 +96,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
         super(viewer.getModel(), viewer.getExecutionContext());
         this.viewer = viewer;
         this.columns = viewer.getModel().getAttributes();
+        collectChanges();
     }
 
     @NotNull
