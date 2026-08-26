@@ -780,10 +780,10 @@ public class SQLEditor extends SQLEditorBase implements
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
         if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
-            CSSUtils.refreshConnectionTypeToolbar(topBar);
+            //CSSUtils.refreshConnectionTypeToolbar(topBar);
         }
         if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
-            CSSUtils.refreshConnectionTypeToolbar(bottomBar);
+            //CSSUtils.refreshConnectionTypeToolbar(bottomBar);
         }
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
@@ -1255,13 +1255,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void createControlsBar(Composite sqlEditorPanel) {
-        Composite leftToolPanel = new Composite(sqlEditorPanel, SWT.LEFT) {
-            // hack to prevent eclipse from overriding this Composite's class
-            @Override
-            public void setBackground(Color color) {
-                super.setBackground(color);
-            }
-        };
+        Composite leftToolPanel = new Composite(sqlEditorPanel, SWT.NONE);
         GridLayout panelsLayout = new GridLayout(1, true);
         panelsLayout.marginHeight = 2;
         panelsLayout.marginWidth = 1;
@@ -2961,9 +2955,13 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean processQueries(
-        @NotNull final List<SQLScriptElement> queries, final boolean forceScript,
-        boolean newTab, final boolean export, final boolean checkSession,
-        @Nullable final SQLQueryListener queryListener, @Nullable final SQLScriptContext context
+        @NotNull final List<SQLScriptElement> queries,
+        final boolean forceScript,
+        boolean newTab,
+        final boolean export,
+        final boolean checkSession,
+        @Nullable final SQLQueryListener queryListener,
+        @Nullable final SQLScriptContext context
     ) {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -3386,11 +3384,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
-
-        // Re-apply CSS so connection-type colored widgets (side toolbars, sash, etc.)
-        // refresh immediately instead of waiting for the next CSS engine pass
-        CSSUtils.applyStyles(resultsSash);
-        CSSUtils.refreshConnectionTypeControls(resultsSash);
 
         // Repaint the workbench editor tab folder so the custom tab renderer
         // picks up the new connection color immediately after a connection change
