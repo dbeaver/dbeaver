@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.*;
@@ -172,7 +173,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     ) throws DBException {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
-            addColumnCommentAction(actions, command.getObject(), false);
+            addColumnCommentAction(actions, command.getObject(), command.getObject().getDescription(), false);
         }
     }
 
@@ -186,7 +187,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     {
         final SQLServerTableColumn column = command.getObject();
         int totalProps = command.getProperties().size();
-        boolean hasComment = command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null;
+        boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
         if (hasComment) totalProps--;
         if (column.isPersisted() && command.hasProperty("defaultValue")) {
             totalProps--;
@@ -204,13 +205,16 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
             }
         }
         if (hasComment) {
-            boolean isUpdate = SQLServerUtils.isCommentSet(
+            final String description = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_DESCRIPTION), null);
+            boolean commentSet = SQLServerUtils.isCommentSet(
                 monitor,
                 column.getTable().getDatabase(),
                 SQLServerObjectClass.OBJECT_OR_COLUMN,
                 column.getTable().getObjectId(),
                 column.getObjectId());
-            addColumnCommentAction(actionList, column, isUpdate);
+            if (!CommonUtils.isEmpty(description) || commentSet) {
+                addColumnCommentAction(actionList, column, description, commentSet);
+            }
         }
         if (totalProps > 0) {
             actionList.add(new SQLDatabasePersistAction(
@@ -220,14 +224,20 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         }
     }
 
-    static void addColumnCommentAction(List<DBEPersistAction> actionList, SQLServerTableColumn column, boolean isUpdate) {
+    static void addColumnCommentAction(
+        List<DBEPersistAction> actionList,
+        SQLServerTableColumn column,
+        @Nullable String description,
+        boolean commentSet
+    ) {
         actionList.add(
             new SQLDatabasePersistAction(
-                "Add column comment",
+                "Set column comment",
                 "EXEC " + SQLServerUtils.getSystemTableName(
                     column.getTable().getDatabase(),
-                    isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                    " 'MS_Description', " + SQLUtils.quoteString(column, column.getDescription()) + "," +
+                    SQLServerUtils.getCommentProcedureName(description, commentSet)) +
+                    " '" + SQLServerConstants.PROP_MS_DESCRIPTION + "'" +
+                    SQLServerUtils.getCommentValueArgument(column.getDataSource(), description) + "," +
                     " 'schema', " + SQLUtils.quoteString(column, column.getTable().getSchema().getName()) + "," +
                     " 'table', " + SQLUtils.quoteString(column, column.getTable().getName()) + "," +
                     " 'column', " + SQLUtils.quoteString(column, column.getName())));

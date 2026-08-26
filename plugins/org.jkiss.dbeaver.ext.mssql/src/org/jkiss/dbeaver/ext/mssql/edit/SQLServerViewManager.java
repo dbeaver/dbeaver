@@ -106,7 +106,7 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
         @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
+        if (command.getProperties().size() > 1 || !command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             createOrReplaceViewQuery(monitor, executionContext, actionList, command.getObject(), ViewAction.ALTER);
         }
     }
