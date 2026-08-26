@@ -30,7 +30,7 @@ public interface DBPSyncUnit {
     String getId();
 
     @NotNull
-    String getDisplayName();
+    String getName();
 
     @NotNull
     DBPSyncScope getScope();

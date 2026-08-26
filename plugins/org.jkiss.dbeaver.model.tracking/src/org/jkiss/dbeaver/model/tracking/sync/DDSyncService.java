@@ -81,7 +81,7 @@ public class DDSyncService {
     public List<DDPartSelection> getAvailableParts() {
         List<DDPartSelection> parts = new ArrayList<>();
         for (DBPSyncUnit unit : enabledUnits(DBPSyncScope.WORKSPACE)) {
-            parts.add(new DDPartSelection(KEY_ACCOUNT_PREFIX + unit.getId(), unit.getDisplayName()));
+            parts.add(new DDPartSelection(KEY_ACCOUNT_PREFIX + unit.getId(), unit.getName()));
         }
         if (!enabledUnits(DBPSyncScope.PROJECT).isEmpty()) {
             for (DBPProject project : workspace.getProjects()) {
@@ -288,7 +288,7 @@ public class DDSyncService {
             DBPSyncUnit unit = requireUnit(unitId, DDConfigurationPartKind.ACCOUNT);
             Map<String, byte[]> resources = unit.read(new DBPSyncTarget(workspace, null));
             return new DDConfigurationPart(
-                remote.key(), DDConfigurationPartKind.ACCOUNT, null, 0, unit.getDisplayName(), Map.of(unitId, resources));
+                remote.key(), DDConfigurationPartKind.ACCOUNT, null, 0, unit.getName(), Map.of(unitId, resources));
         }
         DBPProject project = findProjectById(remote.projectId());
         if (project == null) {
@@ -314,7 +314,7 @@ public class DDSyncService {
             }
             Map<String, byte[]> resources = unit.read(new DBPSyncTarget(workspace, null));
             return new DDConfigurationPart(
-                key, DDConfigurationPartKind.ACCOUNT, null, 0, unit.getDisplayName(), Map.of(unitId, resources));
+                key, DDConfigurationPartKind.ACCOUNT, null, 0, unit.getName(), Map.of(unitId, resources));
         }
         String projectId = key.substring(KEY_PROJECT_PREFIX.length());
         DBPProject project = findProjectById(projectId);

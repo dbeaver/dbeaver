@@ -55,7 +55,7 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
 
     @NotNull
     @Override
-    public String getDisplayName() {
+    public String getName() {
         return "Connections";
     }
 
