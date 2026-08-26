@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import com.google.gson.FormattingStyle;
-import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
@@ -28,24 +26,19 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
@@ -54,7 +47,6 @@ import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.registry.settings.GlobalSettings;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.*;
@@ -64,7 +56,6 @@ import org.osgi.framework.Bundle;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -106,7 +97,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     protected Path tempFolder;
 
     public BasePlatformImpl() {
-        this.networkProfileManager = new GlobalNetworkProfileManager();
+        this.networkProfileManager = new GlobalNetworkProfileManager(this);
     }
 
     protected void initialize() throws DBException {
@@ -456,7 +447,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 } else {
                     tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 }
-                monitor.subTask("Create temp folder '" + tempFolderPath + "'");
+                //monitor.subTask("Create temp folder '" + tempFolderPath + "'");
                 Path tmpFolder = Paths.get(tempFolderPath);
                 if (!Files.exists(tmpFolder)) {
                     log.debug("Create global temp folder '" + tmpFolder + "'");
@@ -498,81 +489,4 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return localTemp;
     }
 
-    private class GlobalNetworkProfileManager extends DBWNetworkProfileManager {
-        public static final String CONFIG_FILE_NAME = "network-profiles.json";
-
-        public GlobalNetworkProfileManager() {
-            super();
-            WorkspaceConfigEventManager.addConfigChangedListener(
-                CONFIG_FILE_NAME, o -> {
-                    reloadProfiles();
-                }
-            );
-        }
-
-        @NotNull
-        @Override
-        protected List<DBWNetworkProfile> loadProfiles() {
-            try {
-                String npConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
-                if (!CommonUtils.isEmpty(npConfig)) {
-                    Map<String, Object> json = JSONUtils.GSON.fromJson(npConfig, JSONUtils.MAP_TYPE_TOKEN);
-                    return DataSourceParser.parseProfiles(
-                        new DataSourceParser.ContextParameters(
-                            null,
-                            DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
-                            Map.of()
-                        ),
-                        json);
-                }
-            } catch (DBException e) {
-                log.error("Error loading global network profiles", e);
-            }
-            return super.loadProfiles();
-        }
-
-        @Override
-        public void saveSettings() {
-            try {
-                List<DBWNetworkProfile> profiles = getProfiles();
-                DataSourceParser.ContextParameters contextParameters = new DataSourceParser.ContextParameters(
-                    null,
-                    DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
-                    new LinkedHashMap<>()
-                );
-                StringWriter strWriter = new StringWriter();
-                JsonWriter jsonWriter = new JsonWriter(strWriter);
-                jsonWriter.setFormattingStyle(FormattingStyle.PRETTY);
-                jsonWriter.setIndent("\t");
-                jsonWriter.beginObject();
-                DataSourceParser.saveNetworkProfiles(
-                    contextParameters,
-                    jsonWriter,
-                    profiles);
-                jsonWriter.endObject();
-                jsonWriter.flush();
-                String cfg = strWriter.toString();
-                DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(CONFIG_FILE_NAME, cfg);
-                if (!DBWorkbench.isMultiuserOrDistributed()) {
-                    for (DBWNetworkProfile profile : profiles) {
-                        profile.persistSecrets(DBSSecretController.getGlobalSecretController());
-                    }
-                }
-             } catch (IOException | DBException e) {
-                log.error("Error loading global network profiles", e);
-            }
-        }
-
-        @NotNull
-        @Override
-        protected DBSSecretController getSecretController() throws DBException {
-            return DBSSecretController.getGlobalSecretController();
-        }
-
-        @Nullable
-        @Override
-        protected DBWNetworkProfileProvider getProfileProvider() {
-            return RuntimeUtils.getObjectAdapter(BasePlatformImpl.this, DBWNetworkProfileProvider.class);
-        }
-    }
 }

@@ -68,8 +68,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -171,6 +171,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return originalConnectionEditor;
     }
 
+    @NotNull
+    @Override
+    public String getPageSubTitle() {
+        return CoreMessages.dialog_setting_connection_wizard_title;
+    }
+
     @Override
     public void activatePage() {
         if (connectionEditor == null) {
@@ -181,7 +187,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         Control control = getControl();
         control.setRedraw(false);
         try {
-            setDescription(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
+            setTitle(getDriver().getFullName());
+            setDescription(getDriver().getDescription());
             DataSourceDescriptor connectionInfo = getActiveDataSource();
             if (!activated.contains(connectionInfo)) {
                 if (this.connectionEditor != null) {
@@ -232,6 +239,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     void saveSettings(DataSourceDescriptor dataSource) {
+        dataSource.getConnectionConfiguration().setConfigProfile(getActiveProfile());
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (ArrayUtils.contains(extraPages, page)) {

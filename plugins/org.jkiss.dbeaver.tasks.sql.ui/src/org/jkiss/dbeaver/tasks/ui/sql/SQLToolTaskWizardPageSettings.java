@@ -94,6 +94,8 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
         SashForm settingsPanel = new SashForm(previewSplitter, SWT.HORIZONTAL);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        settingsPanel.setBackground(composite.getBackground());
+        settingsPanel.setBackgroundMode(SWT.INHERIT_DEFAULT);
         Composite objectsPanel;
         {
             objectsPanel = UIUtils.createTitledComposite(

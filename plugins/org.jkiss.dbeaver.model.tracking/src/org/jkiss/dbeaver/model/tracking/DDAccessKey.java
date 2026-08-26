@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.tracking;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncCredentials;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -39,7 +40,7 @@ import javax.crypto.spec.SecretKeySpec;
 public record DDAccessKey(
     @NotNull UUID accountId,
     @NotNull PrivateKey privateKey
-) {
+) implements DDSyncCredentials {
 
     public static final String PREFIX = "ddgk_";
 
@@ -96,6 +97,7 @@ public record DDAccessKey(
     }
 
     @NotNull
+    @Override
     public String buildToken() throws DBException {
         String payload = accountId + "." + System.currentTimeMillis();
         try {
@@ -111,6 +113,7 @@ public record DDAccessKey(
     }
 
     @NotNull
+    @Override
     public SecretKey decryptDataKey(@NotNull byte[] encryptedDataKey) throws DBException {
         try {
             Cipher cipher = Cipher.getInstance(KEY_TRANSFORMATION);

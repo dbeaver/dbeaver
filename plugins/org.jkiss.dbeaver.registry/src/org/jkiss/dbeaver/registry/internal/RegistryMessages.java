@@ -50,6 +50,10 @@ public class RegistryMessages extends NLS {
     public static String project_open_cannot_read_configuration_title;
     public static String project_open_cannot_read_configuration_message;
 
+    public static String connection_add_shell_cmd_context_project;
+    public static String connection_add_shell_cmd_context_data_source;
+    public static String connection_add_shell_cmd_context_event_type;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, RegistryMessages.class);

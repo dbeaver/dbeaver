@@ -84,7 +84,7 @@ public class HtmlEditorPart extends EditorPart implements IRefreshablePart {
         long configuredLimit = Math.max(store.getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE), 0) * 1000L;
         int maxContentLength = (int) Math.min(configuredLimit, Integer.MAX_VALUE);
         try (Reader reader = new InputStreamReader(storage.getContents(), input.getEncoding())) {
-            browser.setText(HtmlPanelEditor.readContent(reader, maxContentLength));
+            browser.setText(HtmlPanelEditor.prepareContent(HtmlPanelEditor.readContent(reader, maxContentLength)));
         } catch (CoreException | IOException e) {
             log.error("Error reading HTML content", e); //$NON-NLS-1$
             browser.setText(""); //$NON-NLS-1$

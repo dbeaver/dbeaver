@@ -49,7 +49,22 @@ public record CopilotModel(
     public record CopilotModelPolicy(@SerializedName("state") @Nullable String state) {
     }
 
-    public record CopilotModelCapabilities(@SerializedName("type") @Nullable String type) {
+    public record CopilotModelLimits(
+        @SerializedName("max_context_window_tokens")
+        Integer contextWindowTokens,
+        @SerializedName("max_output_tokens")
+        Integer maxOutputTokens,
+        @SerializedName("max_prompt_tokens")
+        Integer maxPromptTokens
+    ) {
+    };
+
+    public record CopilotModelCapabilities(
+        @Nullable
+        String type,
+        @Nullable
+        CopilotModelLimits limits
+    ) {
     }
 }
 

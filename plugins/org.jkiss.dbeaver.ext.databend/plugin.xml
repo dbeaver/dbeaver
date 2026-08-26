@@ -20,11 +20,12 @@
                 icon="icons/databend_icon.png"
                 dialect="databend">
             <drivers managable="true">
+                <driver id="databend"/>
                 <driver
-                    id="databend"
+                    id="databend_jdbc"
                     label="Databend"
                     class="com.databend.jdbc.DatabendDriver"
-                    sampleURL="jdbc:databend://{username}:{password}@{host}:{port}[/{database}]"
+                    sampleURL="jdbc:databend://{host}:{port}[/{database}]"
                     defaultPort="8000"
                     icon="icons/databend_icon.png"
                     iconBig="icons/databend_icon_big.png"
@@ -49,6 +50,8 @@
                     <parameter name="omit-schema" value="false"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
                     <parameter name="query-set-active-db" value="USE &quot;?&quot;"/>
+
+                    <replace provider="databend" driver="databend"/>
                 </driver>
             </drivers>
 
@@ -69,7 +72,7 @@
                 label="SSL"
                 description="SSL settings"
                 secured="false"
-                desktop="true"
+                desktop="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.databend.DatabendDataSourceProvider"/>
