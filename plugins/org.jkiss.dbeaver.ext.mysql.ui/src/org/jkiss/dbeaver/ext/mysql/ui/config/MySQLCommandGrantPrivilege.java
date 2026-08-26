@@ -54,9 +54,17 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     // Commands on the same object merge into one GRANT/REVOKE statement with several privileges
     private final List<MySQLPrivilege> privileges = new ArrayList<>();
 
-    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, boolean withGrantOption, MySQLCatalog schema, MySQLTableBase table, MySQLPrivilege privilege)
-    {
-        super(user, grant ? MySQLUIMessages.edit_command_grant_privilege_action_grant_privilege : MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
+    public MySQLCommandGrantPrivilege(
+        @NotNull MySQLUser user,
+        boolean grant,
+        boolean withGrantOption,
+        @Nullable MySQLCatalog schema,
+        @Nullable MySQLTableBase table,
+        @NotNull MySQLPrivilege privilege
+    ) {
+        super(user, grant
+            ? MySQLUIMessages.edit_command_grant_privilege_action_grant_privilege
+            : MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
         this.grant = grant;
         this.withGrantOption = withGrantOption;
         this.schema = schema;
@@ -64,9 +72,17 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         this.privileges.add(privilege);
     }
 
-    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, boolean withGrantOption, MySQLCatalog schema, MySQLProcedure procedure, MySQLPrivilege privilege)
-    {
-        super(user, grant ? MySQLUIMessages.edit_command_grant_privilege_action_grant_privilege : MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
+    public MySQLCommandGrantPrivilege(
+        @NotNull MySQLUser user,
+        boolean grant,
+        boolean withGrantOption,
+        @Nullable MySQLCatalog schema,
+        @Nullable MySQLProcedure procedure,
+        @NotNull MySQLPrivilege privilege
+    ) {
+        super(user, grant
+            ? MySQLUIMessages.edit_command_grant_privilege_action_grant_privilege
+            : MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
         this.grant = grant;
         this.withGrantOption = withGrantOption;
         this.schema = schema;
@@ -74,9 +90,18 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         this.privileges.add(privilege);
     }
 
-    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, boolean withGrantOption, MySQLCatalog schema, MySQLTableBase table, List<MySQLTableColumn> columns, MySQLPrivilege privilege)
-    {
-        super(user, grant ? MySQLUIMessages.edit_command_grant_privilege_action_grant_privilege : MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
+    public MySQLCommandGrantPrivilege(
+        @NotNull MySQLUser user,
+        boolean grant,
+        boolean withGrantOption,
+        @Nullable MySQLCatalog schema,
+        @Nullable MySQLTableBase table,
+        @Nullable List<MySQLTableColumn> columns,
+        @NotNull MySQLPrivilege privilege
+    ) {
+        super(user, grant
+            ? MySQLUIMessages.edit_command_grant_privilege_action_grant_privilege
+            : MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
         this.grant = grant;
         this.withGrantOption = withGrantOption;
         this.schema = schema;
@@ -86,15 +111,17 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     }
 
     @Override
-    public void updateModel()
-    {
+    public void updateModel() {
         getObject().clearGrantsCache();
     }
 
     @Nullable
     @Override
-    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
-    {
+    public DBEPersistAction[] getPersistActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Map<String, Object> options
+    ) {
         StringJoiner privList = new StringJoiner(", "); //$NON-NLS-1$
         for (MySQLPrivilege privilege : privileges) {
             if (grant && privilege.isGrantOption()) {
@@ -128,8 +155,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
 
     @Nullable
     @Override
-    public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
-    {
+    public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
         // Consolidation of pending commands happens in the editor at toggle time
         // (see MySQLUserEditorPrivileges); here only exact duplicates are merged.
         // The merge must stay free of side effects: the command queue may be rebuilt many times.
@@ -145,46 +171,43 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         return super.merge(prevCommand, userParams);
     }
 
-    public boolean isGrant()
-    {
+    public boolean isGrant() {
         return grant;
     }
 
-    public boolean isWithGrantOption()
-    {
+    public boolean isWithGrantOption() {
         return withGrantOption;
     }
 
-    public void setWithGrantOption(boolean withGrantOption)
-    {
+    public void setWithGrantOption(boolean withGrantOption) {
         this.withGrantOption = withGrantOption;
     }
 
-    public boolean hasSameTarget(MySQLCatalog schema, MySQLTableBase table, MySQLProcedure procedure, List<MySQLTableColumn> columns)
-    {
+    public boolean hasSameTarget(
+        @Nullable MySQLCatalog schema,
+        @Nullable MySQLTableBase table,
+        @Nullable MySQLProcedure procedure,
+        @Nullable List<MySQLTableColumn> columns
+    ) {
         return this.schema == schema && this.table == table && this.procedure == procedure
             && CommonUtils.equalObjects(this.columns, columns);
     }
 
-    public void addPrivilege(MySQLPrivilege privilege)
-    {
+    public void addPrivilege(@NotNull MySQLPrivilege privilege) {
         if (!privileges.contains(privilege)) {
             privileges.add(privilege);
         }
     }
 
-    public boolean removePrivilege(MySQLPrivilege privilege)
-    {
+    public boolean removePrivilege(@NotNull MySQLPrivilege privilege) {
         return privileges.remove(privilege);
     }
 
-    public boolean isEmptyCommand()
-    {
+    public boolean isEmptyCommand() {
         return privileges.isEmpty() && !withGrantOption;
     }
 
-    private String getObjectName()
-    {
+    private @NotNull String getObjectName() {
         if (procedure != null) {
             return procedure.getProcedureType().name() + " " + //$NON-NLS-1$
                 (schema == null ? "*" : DBUtils.getQuotedIdentifier(schema)) + "." + //$NON-NLS-1$ //$NON-NLS-2$

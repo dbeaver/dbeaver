@@ -61,8 +61,7 @@ import java.util.*;
 /**
  * MySQLUserEditorPrivileges
  */
-public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
-{
+public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     private static final Log log = Log.getLog(MySQLUserEditorPrivileges.class);
 
     private static final String ADD_ITEM_TEXT = "+"; //$NON-NLS-1$
@@ -116,7 +115,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private List<MySQLPrivilege> procedurePrivilegeTypes;
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         pageControl = new PageControl(parent);
 
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -140,7 +139,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             catalogsTable.setLayoutData(gd);
             catalogsTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     if (catalogsTable.getSelectionIndex() < 0) {
                         return;
                     }
@@ -169,13 +168,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             Composite catalogButtons = UIUtils.createComposite(catalogGroup, 2);
             UIUtils.createPushButton(catalogButtons, ADD_ITEM_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleAddCatalog();
                 }
             });
             catalogsRemoveButton = UIUtils.createPushButton(catalogButtons, REMOVE_ITEM_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleRemoveCatalog();
                 }
             });
@@ -199,7 +198,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             tablesTable.setLayoutData(gd);
             tablesTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     if (tablesTable.getSelectionIndex() < 0) {
                         return;
                     }
@@ -224,14 +223,14 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             Composite tableButtons = UIUtils.createComposite(tablesGroup, 2);
             tablesAddButton = UIUtils.createPushButton(tableButtons, ADD_ITEM_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleAddTable();
                 }
             });
             tablesAddButton.setEnabled(false);
             tablesRemoveButton = UIUtils.createPushButton(tableButtons, REMOVE_ITEM_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleRemoveTable();
                 }
             });
@@ -250,7 +249,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             proceduresTable.setLayoutData(gd);
             proceduresTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     if (proceduresTable.getSelectionIndex() < 0) {
                         return;
                     }
@@ -275,14 +274,14 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             Composite procedureButtons = UIUtils.createComposite(proceduresGroup, 2);
             proceduresAddButton = UIUtils.createPushButton(procedureButtons, ADD_ITEM_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleAddProcedure();
                 }
             });
             proceduresAddButton.setEnabled(false);
             proceduresRemoveButton = UIUtils.createPushButton(procedureButtons, REMOVE_ITEM_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleRemoveProcedure();
                 }
             });
@@ -303,7 +302,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             columnsTable.setLayoutData(gd);
             columnsTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     if (columnsTable.getSelectionIndex() < 0) {
                         return;
                     }
@@ -325,14 +324,14 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             Composite columnButtons = UIUtils.createComposite(columnsGroup, 2);
             columnsAddButton = UIUtils.createPushButton(columnButtons, ADD_ITEM_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleAddColumn();
                 }
             });
             columnsAddButton.setEnabled(false);
             columnsRemoveButton = UIUtils.createPushButton(columnButtons, REMOVE_ITEM_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleRemoveColumn();
                 }
             });
@@ -341,19 +340,23 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         Composite ph = UIUtils.createPlaceholder(sash, 1);
         ph.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        tablePrivilegesTable = new PrivilegeTableControl(ph, MySQLUIMessages.editors_user_editor_privileges_control_table_privileges, false);
+        tablePrivilegesTable = new PrivilegeTableControl(
+            ph, MySQLUIMessages.editors_user_editor_privileges_control_table_privileges, false);
         gd = new GridData(GridData.FILL_BOTH);
         tablePrivilegesTable.setLayoutData(gd);
 
-        columnPrivilegesTable = new PrivilegeTableControl(ph, MySQLUIMessages.editors_user_editor_privileges_control_column_privileges, false);
+        columnPrivilegesTable = new PrivilegeTableControl(
+            ph, MySQLUIMessages.editors_user_editor_privileges_control_column_privileges, false);
         gd = new GridData(GridData.FILL_BOTH);
         columnPrivilegesTable.setLayoutData(gd);
 
-        procedurePrivilegesTable = new PrivilegeTableControl(ph, MySQLUIMessages.editors_user_editor_privileges_control_procedure_privileges, false);
+        procedurePrivilegesTable = new PrivilegeTableControl(
+            ph, MySQLUIMessages.editors_user_editor_privileges_control_procedure_privileges, false);
         gd = new GridData(GridData.FILL_BOTH);
         procedurePrivilegesTable.setLayoutData(gd);
 
-        otherPrivilegesTable = new PrivilegeTableControl(ph, MySQLUIMessages.editors_user_editor_privileges_control_other_privileges, false);
+        otherPrivilegesTable = new PrivilegeTableControl(
+            ph, MySQLUIMessages.editors_user_editor_privileges_control_other_privileges, false);
         gd = new GridData(GridData.FILL_BOTH);
         otherPrivilegesTable.setLayoutData(gd);
 
@@ -371,8 +374,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         addProcedureGrantListener(procedurePrivilegesTable);
     }
 
-    private void addGrantListener(final PrivilegeTableControl privTable)
-    {
+    private void addGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
@@ -413,10 +415,10 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
      * and check+uncheck cancels out to no SQL at all.
      */
     private void applyPrivilegeChange(
-        MySQLPrivilege privilege,
+        @NotNull MySQLPrivilege privilege,
         boolean isGrant,
         boolean withGrantOption,
-        MySQLCatalog schema,
+        @Nullable MySQLCatalog schema,
         @Nullable MySQLTableBase table,
         @Nullable MySQLProcedure procedure,
         @Nullable List<MySQLTableColumn> columns
@@ -469,7 +471,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     @Nullable
     private MySQLCommandGrantPrivilege findPendingCommand(
         boolean grantDirection,
-        MySQLCatalog schema,
+        @Nullable MySQLCatalog schema,
         @Nullable MySQLTableBase table,
         @Nullable MySQLProcedure procedure,
         @Nullable List<MySQLTableColumn> columns
@@ -493,14 +495,15 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
      * In multi-selection mode objects already in the desired state are skipped:
      * a GRANT would be redundant and a REVOKE of a non-existing grant fails on the server.
      */
-    private boolean tablePrivilegeChangeNeeded(MySQLCatalog catalog, MySQLTableBase table, MySQLPrivilege privilege, boolean isGrant) {
+    private boolean tablePrivilegeChangeNeeded(
+        @Nullable MySQLCatalog catalog, @Nullable MySQLTableBase table, @NotNull MySQLPrivilege privilege, boolean isGrant) {
         if (grants == null) {
             return true;
         }
         return hasTablePrivilege(catalog, table, privilege) != isGrant;
     }
 
-    private boolean hasTablePrivilege(MySQLCatalog catalog, @Nullable MySQLTableBase table, MySQLPrivilege privilege) {
+    private boolean hasTablePrivilege(@Nullable MySQLCatalog catalog, @Nullable MySQLTableBase table, @NotNull MySQLPrivilege privilege) {
         if (grants == null) {
             return false;
         }
@@ -516,8 +519,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         return false;
     }
 
-    private void addColumnGrantListener(final PrivilegeTableControl privTable)
-    {
+    private void addColumnGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
@@ -548,14 +550,18 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         );
     }
 
-    private boolean columnPrivilegeChangeNeeded(MySQLCatalog catalog, MySQLTableBase table, MySQLTableColumn column, MySQLPrivilege privilege, boolean isGrant) {
+    private boolean columnPrivilegeChangeNeeded(
+        @Nullable MySQLCatalog catalog, @Nullable MySQLTableBase table, @NotNull MySQLTableColumn column,
+        @NotNull MySQLPrivilege privilege, boolean isGrant) {
         if (grants == null) {
             return true;
         }
         return hasColumnPrivilegeState(catalog, table, column, privilege) != isGrant;
     }
 
-    private boolean hasColumnPrivilegeState(MySQLCatalog catalog, MySQLTableBase table, MySQLTableColumn column, MySQLPrivilege privilege) {
+    private boolean hasColumnPrivilegeState(
+        @Nullable MySQLCatalog catalog, @Nullable MySQLTableBase table,
+        @NotNull MySQLTableColumn column, @NotNull MySQLPrivilege privilege) {
         if (grants == null) {
             return false;
         }
@@ -569,7 +575,14 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         return false;
     }
 
-    private void updateLocalColumnData(MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption, MySQLCatalog curCatalog, MySQLTableBase curTable, MySQLTableColumn curColumn) {
+    private void updateLocalColumnData(
+        @NotNull MySQLPrivilege privilege,
+        boolean isGrant,
+        boolean withGrantOption,
+        @NotNull MySQLCatalog curCatalog,
+        @NotNull MySQLTableBase curTable,
+        @NotNull MySQLTableColumn curColumn
+    ) {
         getDatabaseObject().clearGrantsCache();
         boolean found = false;
         for (MySQLGrant grant : grants) {
@@ -603,8 +616,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         highlightColumns();
     }
 
-    private void addProcedureGrantListener(final PrivilegeTableControl privTable)
-    {
+    private void addProcedureGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
@@ -626,14 +638,16 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         );
     }
 
-    private boolean procedurePrivilegeChangeNeeded(MySQLCatalog catalog, MySQLProcedure procedure, MySQLPrivilege privilege, boolean isGrant) {
+    private boolean procedurePrivilegeChangeNeeded(
+        @Nullable MySQLCatalog catalog, @NotNull MySQLProcedure procedure, @NotNull MySQLPrivilege privilege, boolean isGrant) {
         if (grants == null) {
             return true;
         }
         return hasProcedurePrivilege(catalog, procedure, privilege) != isGrant;
     }
 
-    private boolean hasProcedurePrivilege(MySQLCatalog catalog, MySQLProcedure procedure, MySQLPrivilege privilege) {
+    private boolean hasProcedurePrivilege(
+        @Nullable MySQLCatalog catalog, @NotNull MySQLProcedure procedure, @NotNull MySQLPrivilege privilege) {
         if (grants == null) {
             return false;
         }
@@ -649,7 +663,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         return false;
     }
 
-    private void updateLocalProcedureData(MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption, MySQLCatalog curCatalog, MySQLProcedure curProcedure) {
+    private void updateLocalProcedureData(
+        @NotNull MySQLPrivilege privilege,
+        boolean isGrant,
+        boolean withGrantOption,
+        @NotNull MySQLCatalog curCatalog,
+        @NotNull MySQLProcedure curProcedure
+    ) {
         getDatabaseObject().clearGrantsCache();
         boolean found = false;
         for (MySQLGrant grant : grants) {
@@ -687,7 +707,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         highlightProcedures();
     }
 
-    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption, MySQLCatalog curCatalog, MySQLTableBase curTable) {
+    private void updateLocalData(
+        @NotNull MySQLPrivilege privilege,
+        boolean isGrant,
+        boolean withGrantOption,
+        @Nullable MySQLCatalog curCatalog,
+        @Nullable MySQLTableBase curTable
+    ) {
         // Modify local grants (and clear grants cache in user objects)
         getDatabaseObject().clearGrantsCache();
         boolean found = false;
@@ -724,8 +750,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         highlightTables();
     }
 
-    private void fillCatalogs()
-    {
+    private void fillCatalogs() {
         if (catalogsTable == null || catalogsTable.isDisposed()) {
             return;
         }
@@ -771,8 +796,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private void fillTables()
-    {
+    private void fillTables() {
         if (tablesTable == null || tablesTable.isDisposed()) {
             return;
         }
@@ -825,8 +849,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private void fillColumns()
-    {
+    private void fillColumns() {
         if (columnsTable == null || columnsTable.isDisposed()) {
             return;
         }
@@ -876,8 +899,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private void fillProcedures()
-    {
+    private void fillProcedures() {
         if (proceduresTable == null || proceduresTable.isDisposed()) {
             return;
         }
@@ -927,8 +949,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private boolean hasCatalogGrants(MySQLCatalog catalog)
-    {
+    private boolean hasCatalogGrants(@Nullable MySQLCatalog catalog) {
         if (grants != null) {
             for (MySQLGrant grant : grants) {
                 if (grant.matches(catalog) && !grant.isEmpty()) {
@@ -939,8 +960,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         return false;
     }
 
-    private boolean hasTableGrants(MySQLTableBase table)
-    {
+    private boolean hasTableGrants(@Nullable MySQLTableBase table) {
         if (grants != null) {
             for (MySQLGrant grant : grants) {
                 if (grant.matches(selectedCatalog) && grant.matches(table) && !grant.isEmpty()) {
@@ -951,8 +971,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         return false;
     }
 
-    private boolean hasColumnGrants(MySQLTableColumn column)
-    {
+    private boolean hasColumnGrants(@NotNull MySQLTableColumn column) {
         if (grants != null) {
             for (MySQLGrant grant : grants) {
                 if (grant.matches(selectedCatalog) && grant.matches(selectedTable) && grant.hasColumnPrivileges(column.getName())) {
@@ -963,8 +982,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         return false;
     }
 
-    private boolean hasProcedureGrants(MySQLProcedure procedure)
-    {
+    private boolean hasProcedureGrants(@NotNull MySQLProcedure procedure) {
         if (grants != null) {
             for (MySQLGrant grant : grants) {
                 if (grant.matches(selectedCatalog) && grant.matchesProcedure(procedure) && !grant.isEmpty()) {
@@ -975,8 +993,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         return false;
     }
 
-    private void handleAddCatalog()
-    {
+    private void handleAddCatalog() {
         List<MySQLCatalog> candidates = new ArrayList<>();
         for (MySQLCatalog catalog : getDatabaseObject().getDataSource().getCatalogs()) {
             if (!hasCatalogGrants(catalog) && !extraCatalogs.contains(catalog)) {
@@ -1018,8 +1035,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         });
     }
 
-    private void handleAddTable()
-    {
+    private void handleAddTable() {
         if (selectedCatalog == null || catalogTables == null) {
             return;
         }
@@ -1065,8 +1081,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         });
     }
 
-    private void handleAddColumn()
-    {
+    private void handleAddColumn() {
         if (selectedCatalog == null || selectedTable == null || tableColumns == null) {
             return;
         }
@@ -1108,8 +1123,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         });
     }
 
-    private void handleAddProcedure()
-    {
+    private void handleAddProcedure() {
         if (selectedCatalog == null || catalogProcedures == null) {
             return;
         }
@@ -1158,7 +1172,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
      * Sizes the list to its content (min 2, max 15 visible rows - then it scrolls) so the "+"
      * button below it stays right under the last row.
      */
-    private static void adjustListHeight(Table table) {
+    private static void adjustListHeight(@NotNull Table table) {
         int rows = Math.max(2, Math.min(table.getItemCount(), 15));
         GridData gd = (GridData) table.getLayoutData();
         int heightHint = table.getHeaderHeight() + table.getItemHeight() * rows + 8;
@@ -1168,8 +1182,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private void handleRemoveCatalog()
-    {
+    private void handleRemoveCatalog() {
         if (grants == null || selectedCatalogs.isEmpty()) {
             return;
         }
@@ -1199,8 +1212,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         showGrants();
     }
 
-    private void handleRemoveTable()
-    {
+    private void handleRemoveTable() {
         if (grants == null || selectedCatalog == null || selectedTables.isEmpty()) {
             return;
         }
@@ -1227,8 +1239,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         showGrants();
     }
 
-    private void handleRemoveColumn()
-    {
+    private void handleRemoveColumn() {
         if (grants == null || selectedCatalog == null || selectedTable == null || selectedColumns.isEmpty()) {
             return;
         }
@@ -1267,6 +1278,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                             }
                             refreshObjectLists();
                         }
+
                         @Override
                         public void undoCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
                             for (MySQLPrivilege priv : affected) {
@@ -1289,8 +1301,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         showGrants();
     }
 
-    private void handleRemoveProcedure()
-    {
+    private void handleRemoveProcedure() {
         if (grants == null || selectedCatalog == null || selectedProcedures.isEmpty()) {
             return;
         }
@@ -1317,8 +1328,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
      * Creates a REVOKE command covering everything the given grant holds and drops the grant
      * from the local model.
      */
-    private void revokeWholeGrant(MySQLGrant grant, String objectSpec)
-    {
+    private void revokeWholeGrant(@NotNull MySQLGrant grant, @NotNull String objectSpec) {
         // Revoke exactly the privileges the grant holds, each at its own level. Table-level and
         // column-level privileges go in separate statements: mixing them (or listing a privilege
         // that isn't actually held) makes the server reject the whole statement.
@@ -1348,6 +1358,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     grants.remove(curGrant);
                     refreshObjectLists();
                 }
+
                 @Override
                 public void undoCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
                     if (!grants.contains(curGrant)) {
@@ -1358,11 +1369,17 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             };
         boolean grantOptionEmitted = false;
         if (!tablePrivNames.isEmpty()) {
-            addChangeCommand(new MySQLCommandRevokeObjectGrants(getDatabaseObject(), objectSpec, tablePrivNames, grant.isGrantOption()), reflector);
+            addChangeCommand(
+                new MySQLCommandRevokeObjectGrants(
+                    getDatabaseObject(), objectSpec, tablePrivNames, grant.isGrantOption()),
+                reflector);
             grantOptionEmitted = grant.isGrantOption();
         }
         if (!columnPrivNames.isEmpty()) {
-            addChangeCommand(new MySQLCommandRevokeObjectGrants(getDatabaseObject(), objectSpec, columnPrivNames, !grantOptionEmitted && grant.isGrantOption()), reflector);
+            addChangeCommand(
+                new MySQLCommandRevokeObjectGrants(
+                    getDatabaseObject(), objectSpec, columnPrivNames, !grantOptionEmitted && grant.isGrantOption()),
+                reflector);
             grantOptionEmitted |= grant.isGrantOption();
         }
         if (!grantOptionEmitted && grant.isGrantOption()) {
@@ -1370,8 +1387,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private String grantObjectSpec(MySQLGrant grant, MySQLCatalog catalog)
-    {
+    private @NotNull String grantObjectSpec(@NotNull MySQLGrant grant, @NotNull MySQLCatalog catalog) {
         if (grant.getObjectType() != MySQLGrant.ObjectType.TABLE) {
             return procedureSpec(catalog, grant.getObjectType(), grant.getTable());
         }
@@ -1380,21 +1396,19 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             : tableSpec(catalog, grant.getTable());
     }
 
-    private String tableSpec(MySQLCatalog catalog, String tableName)
-    {
+    private @NotNull String tableSpec(@NotNull MySQLCatalog catalog, @NotNull String tableName) {
         return DBUtils.getQuotedIdentifier(catalog) + "." //$NON-NLS-1$
             + DBUtils.getQuotedIdentifier(catalog.getDataSource(), tableName);
     }
 
-    private String procedureSpec(MySQLCatalog catalog, MySQLGrant.ObjectType objectType, String procedureName)
-    {
+    private @NotNull String procedureSpec(
+        @NotNull MySQLCatalog catalog, @NotNull MySQLGrant.ObjectType objectType, @NotNull String procedureName) {
         return (objectType == MySQLGrant.ObjectType.FUNCTION ? "FUNCTION " : "PROCEDURE ") //$NON-NLS-1$ //$NON-NLS-2$
             + DBUtils.getQuotedIdentifier(catalog) + "." //$NON-NLS-1$
             + DBUtils.getQuotedIdentifier(catalog.getDataSource(), procedureName);
     }
 
-    private void refreshObjectLists()
-    {
+    private void refreshObjectLists() {
         fillCatalogs();
         fillTables();
         fillColumns();
@@ -1406,8 +1420,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
      * Shows the Tables/Columns/Procedures sections only when the selected parent object actually
      * has entities of that kind (a schema without procedures gets no Procedures section etc.).
      */
-    private void updateObjectSections()
-    {
+    private void updateObjectSections() {
         if (tablesGroup == null || tablesGroup.isDisposed()) {
             return;
         }
@@ -1420,8 +1433,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private static boolean setSectionVisible(Composite group, boolean visible)
-    {
+    private static boolean setSectionVisible(@NotNull Composite group, boolean visible) {
         // createTitledComposite() returns the inner client area; the layout data belongs
         // to its parent (the titled wrapper), which is what has to be hidden
         Composite host = group.getParent();
@@ -1434,8 +1446,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         return false;
     }
 
-    private void updateRemoveButtons()
-    {
+    private void updateRemoveButtons() {
         if (catalogsRemoveButton == null || catalogsRemoveButton.isDisposed()) {
             return;
         }
@@ -1445,7 +1456,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         proceduresRemoveButton.setEnabled(selectedProcedure != null);
     }
 
-    private static void selectItemsByData(Table table, List<? extends DBSObject> objects) {
+    private static void selectItemsByData(@NotNull Table table, @NotNull List<? extends DBSObject> objects) {
         List<Integer> indices = new ArrayList<>();
         for (int i = 0; i < table.getItemCount(); i++) {
             Object data = table.getItem(i).getData();
@@ -1464,7 +1475,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
      * Deferred repaint of the list after it was rebuilt right after a modal dialog closed
      * (belt-and-braces against stale native row rendering on macOS).
      */
-    private static void scheduleRepaint(Table table) {
+    private static void scheduleRepaint(@NotNull Table table) {
         Runnable repaint = () -> {
             if (!table.isDisposed()) {
                 table.redraw();
@@ -1477,16 +1488,16 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     @Nullable
     @SuppressWarnings("unchecked")
-    private <T extends DBSObject> List<T> selectObjects(List<T> candidates, String title, String message, DBIcon icon)
-    {
+    private <T extends DBSObject> List<T> selectObjects(
+        @NotNull List<T> candidates, @NotNull String title, @NotNull String message, @NotNull DBIcon icon) {
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getSite().getShell(), new LabelProvider() {
             @Override
-            public String getText(Object element) {
+            public @NotNull String getText(@NotNull Object element) {
                 return ((DBSObject) element).getName();
             }
 
             @Override
-            public Image getImage(Object element) {
+            public @NotNull Image getImage(@NotNull Object element) {
                 return DBeaverIcons.getImage(icon);
             }
         });
@@ -1529,12 +1540,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             .schedule();
     }
 
-    private void showTableColumns()
-    {
+    private void showTableColumns() {
         LoadingJob.createService(
                 new DatabaseLoadService<>(MySQLUIMessages.editors_user_editor_privileges_service_load_columns, getExecutionContext()) {
                     @Override
-                    public Collection<MySQLTableColumn> evaluate(@NotNull DBRProgressMonitor monitor) {
+                    public @Nullable Collection<MySQLTableColumn> evaluate(@NotNull DBRProgressMonitor monitor) {
                         if (selectedTable == null) {
                             return Collections.emptyList();
                         }
@@ -1550,12 +1560,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             .schedule();
     }
 
-    private void showCatalogProcedures()
-    {
+    private void showCatalogProcedures() {
         LoadingJob.createService(
                 new DatabaseLoadService<>(MySQLUIMessages.editors_user_editor_privileges_service_load_procedures, getExecutionContext()) {
                     @Override
-                    public Collection<MySQLProcedure> evaluate(@NotNull DBRProgressMonitor monitor) {
+                    public @Nullable Collection<MySQLProcedure> evaluate(@NotNull DBRProgressMonitor monitor) {
                         if (selectedCatalog == null) {
                             return Collections.emptyList();
                         }
@@ -1571,8 +1580,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             .schedule();
     }
 
-    private void showGrants()
-    {
+    private void showGrants() {
         updateRemoveButtons();
         if (grants == null) {
             return;
@@ -1680,10 +1688,10 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
      * checked - all selected objects have the privilege, partial - only some of them.
      */
     private void fillTriState(
-        PrivilegeTableControl panel,
+        @NotNull PrivilegeTableControl panel,
         @Nullable List<MySQLPrivilege> privilegeTypes,
         int totalCount,
-        java.util.function.ToIntFunction<MySQLPrivilege> counter
+        @NotNull java.util.function.ToIntFunction<MySQLPrivilege> counter
     ) {
         List<MySQLPrivilege> checked = new ArrayList<>();
         List<MySQLPrivilege> partial = new ArrayList<>();
@@ -1719,7 +1727,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private static boolean setPanelVisible(PrivilegeTableControl panel, boolean visible) {
+    private static boolean setPanelVisible(@NotNull PrivilegeTableControl panel, boolean visible) {
         GridData gd = (GridData) panel.getLayoutData();
         if (gd.exclude == visible) {
             gd.exclude = !visible;
@@ -1811,8 +1819,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private void highlightColumns()
-    {
+    private void highlightColumns() {
         if (columnsTable != null && !columnsTable.isDisposed()) {
             for (TableItem item : columnsTable.getItems()) {
                 MySQLTableColumn column = (MySQLTableColumn) item.getData();
@@ -1829,8 +1836,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
-    private void highlightProcedures()
-    {
+    private void highlightProcedures() {
         if (proceduresTable != null && !proceduresTable.isDisposed()) {
             for (TableItem item : proceduresTable.getItems()) {
                 MySQLProcedure procedure = (MySQLProcedure) item.getData();
@@ -1848,8 +1854,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     }
 
     @Override
-    public RefreshResult refreshPart(Object source, boolean force)
-    {
+    public @NotNull RefreshResult refreshPart(@Nullable Object source, boolean force) {
         if (force ||
             (source instanceof DBNEvent event && event.getSource() == DBNEvent.UPDATE_ON_SAVE) ||
             !isLoaded
@@ -1900,7 +1905,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             };
         }
 
-        public ProgressVisualizer<Collection<MySQLTableColumn>> createColumnsLoadVisualizer() {
+        public @NotNull ProgressVisualizer<Collection<MySQLTableColumn>> createColumnsLoadVisualizer() {
             return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable Collection<MySQLTableColumn> columns) {
@@ -1917,7 +1922,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             };
         }
 
-        public ProgressVisualizer<Collection<MySQLProcedure>> createProceduresLoadVisualizer() {
+        public @NotNull ProgressVisualizer<Collection<MySQLProcedure>> createProceduresLoadVisualizer() {
             return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable Collection<MySQLProcedure> procedures) {

@@ -136,7 +136,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         resolveRoot();
         pageControl = new PageControl(parent);
 
@@ -150,7 +150,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             usersTable.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
             usersTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     int index = usersTable.getSelectionIndex();
                     selectedUser = index < 0 ? null : (MySQLUser) usersTable.getItem(index).getData();
                     selectedTable = null;
@@ -164,13 +164,13 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             Composite userButtons = UIUtils.createComposite(usersGroup, 2);
             UIUtils.createPushButton(userButtons, ADD_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleAddUser();
                 }
             });
             usersRemoveButton = UIUtils.createPushButton(userButtons, REMOVE_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleRemoveUser();
                 }
             });
@@ -190,7 +190,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 tablesTable.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
                 tablesTable.addSelectionListener(new SelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(@NotNull SelectionEvent e) {
                         int index = tablesTable.getSelectionIndex();
                         selectedTable = index < 0 ? null : (MySQLTableBase) tablesTable.getItem(index).getData();
                         selectedColumn = null;
@@ -206,14 +206,14 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 Composite tableButtons = UIUtils.createComposite(tablesGroup, 2);
                 tablesAddButton = UIUtils.createPushButton(tableButtons, ADD_TEXT, null, new SelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(@NotNull SelectionEvent e) {
                         handleAddTable();
                     }
                 });
                 tablesAddButton.setEnabled(false);
                 tablesRemoveButton = UIUtils.createPushButton(tableButtons, REMOVE_TEXT, null, new SelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(@NotNull SelectionEvent e) {
                         handleRemoveTable();
                     }
                 });
@@ -226,7 +226,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 proceduresTable.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
                 proceduresTable.addSelectionListener(new SelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(@NotNull SelectionEvent e) {
                         int index = proceduresTable.getSelectionIndex();
                         selectedProcedure = index < 0 ? null : (MySQLProcedure) proceduresTable.getItem(index).getData();
                         selectedTable = null;
@@ -240,14 +240,14 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 Composite procButtons = UIUtils.createComposite(proceduresGroup, 2);
                 proceduresAddButton = UIUtils.createPushButton(procButtons, ADD_TEXT, null, new SelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(@NotNull SelectionEvent e) {
                         handleAddProcedure();
                     }
                 });
                 proceduresAddButton.setEnabled(false);
                 proceduresRemoveButton = UIUtils.createPushButton(procButtons, REMOVE_TEXT, null, new SelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void widgetSelected(@NotNull SelectionEvent e) {
                         handleRemoveProcedure();
                     }
                 });
@@ -259,7 +259,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             columnsTable.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
             columnsTable.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     selectedColumns.clear();
                     for (TableItem item : columnsTable.getSelection()) {
                         if (item.getData() != null) {
@@ -274,14 +274,14 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             Composite columnButtons = UIUtils.createComposite(columnsGroup, 2);
             columnsAddButton = UIUtils.createPushButton(columnButtons, ADD_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleAddColumn();
                 }
             });
             columnsAddButton.setEnabled(false);
             columnsRemoveButton = UIUtils.createPushButton(columnButtons, REMOVE_TEXT, null, new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     handleRemoveColumn();
                 }
             });
@@ -291,16 +291,21 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         {
             Composite panelsPane = UIUtils.createPlaceholder(sash, 1);
             panelsPane.setLayoutData(new GridData(GridData.FILL_BOTH));
-            tablePanel = new PrivilegeTableControl(panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_table_privileges, false);
+            tablePanel = new PrivilegeTableControl(
+                panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_table_privileges, false);
             tablePanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-            columnPanel = new PrivilegeTableControl(panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_column_privileges, false);
+            columnPanel = new PrivilegeTableControl(
+                panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_column_privileges, false);
             columnPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-            procedurePanel = new PrivilegeTableControl(panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_procedure_privileges, false);
+            procedurePanel = new PrivilegeTableControl(
+                panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_procedure_privileges, false);
             procedurePanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-            otherPanel = new PrivilegeTableControl(panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_other_privileges, false);
+            otherPanel = new PrivilegeTableControl(
+                panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_other_privileges, false);
             otherPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
             // Editable panel for schema-wide (db.*) privileges that also apply to the selected object
-            inheritedPanel = new PrivilegeTableControl(panelsPane, MySQLUIMessages.editors_object_privileges_control_schema_inherited, false);
+            inheritedPanel = new PrivilegeTableControl(
+                panelsPane, MySQLUIMessages.editors_object_privileges_control_schema_inherited, false);
             inheritedPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             addGrantListener(tablePanel, PanelKind.TABLE);
@@ -330,7 +335,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         LoadingJob.createService(
             new DatabaseLoadService<PrivData>(MySQLUIMessages.dialog_object_privileges_title, getExecutionContext()) {
                 @Override
-                public PrivData evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
+                public @NotNull PrivData evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
                         return loadData(monitor);
                     } catch (DBException e) {
@@ -343,7 +348,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     @Override
-    public RefreshResult refreshPart(Object source, boolean force) {
+    public @NotNull RefreshResult refreshPart(@Nullable Object source, boolean force) {
         if (force
             || (source instanceof DBNEvent event && event.getSource() == DBNEvent.UPDATE_ON_SAVE)
             || !isLoaded
@@ -375,7 +380,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         List<MySQLTableColumn> rootTableColumns = new ArrayList<>();
     }
 
-    private PrivData loadData(DBRProgressMonitor monitor) throws DBException {
+    private @NotNull PrivData loadData(@NotNull DBRProgressMonitor monitor) throws DBException {
         PrivData data = new PrivData();
         MySQLDataSource dataSource = catalog.getDataSource();
         for (MySQLPrivilege priv : dataSource.getPrivileges(monitor)) {
@@ -461,7 +466,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         return data;
     }
 
-    private void applyData(PrivData data) {
+    private void applyData(@NotNull PrivData data) {
         users = data.users;
         userGrants.clear();
         userGrants.putAll(data.userGrants);
@@ -501,15 +506,15 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
 
     // ==== user/grant helpers ====
 
-    private static String userKey(String user, String host) {
+    private static @NotNull String userKey(@NotNull String user, @NotNull String host) {
         return user + "@" + host; //$NON-NLS-1$
     }
 
-    private static boolean isSchemaLevelGrant(MySQLGrant grant) {
+    private static boolean isSchemaLevelGrant(@NotNull MySQLGrant grant) {
         return grant.getObjectType() == MySQLGrant.ObjectType.TABLE && grant.isAllTables();
     }
 
-    private static boolean hasAnyProcedurePrivilege(MySQLGrant grant, List<MySQLPrivilege> procedurePrivs) {
+    private static boolean hasAnyProcedurePrivilege(@NotNull MySQLGrant grant, @NotNull List<MySQLPrivilege> procedurePrivs) {
         if (grant.isAllPrivileges()) {
             return true;
         }
@@ -521,7 +526,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         return false;
     }
 
-    private static Set<String> findCandidateUsers(DBRProgressMonitor monitor, MySQLDataSource dataSource, MySQLCatalog catalog) throws DBException {
+    private static @NotNull Set<String> findCandidateUsers(
+        @NotNull DBRProgressMonitor monitor, @NotNull MySQLDataSource dataSource, @NotNull MySQLCatalog catalog) throws DBException {
         Set<String> keys = new HashSet<>();
         String catalogName = catalog.getName();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find users with grants on object")) { //$NON-NLS-1$
@@ -550,7 +556,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         return keys;
     }
 
-    private static void collectGrantees(JDBCSession session, Set<String> keys, String sql, @Nullable String param) {
+    private static void collectGrantees(
+        @NotNull JDBCSession session, @NotNull Set<String> keys, @NotNull String sql, @Nullable String param) {
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             if (param != null) {
                 dbStat.setString(1, param);
@@ -580,7 +587,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         return userKey(unquote(grantee.substring(0, at)), unquote(grantee.substring(at + 1)));
     }
 
-    private static String unquote(String value) {
+    private static @NotNull String unquote(@NotNull String value) {
         String trimmed = value.trim();
         if (trimmed.length() >= 2) {
             char q = trimmed.charAt(0);
@@ -591,7 +598,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         return trimmed;
     }
 
-    private List<MySQLGrant> grantsOfSelectedUser() {
+    private @NotNull List<MySQLGrant> grantsOfSelectedUser() {
         List<MySQLGrant> grants = selectedUser == null ? null : userGrants.get(selectedUser);
         return grants == null ? Collections.emptyList() : grants;
     }
@@ -622,7 +629,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             }
             tablesTable.setSelection(0);
             UIUtils.packColumns(tablesTable);
-        adjustListHeight(tablesTable);
+            adjustListHeight(tablesTable);
 
             proceduresTable.removeAll();
             Set<MySQLProcedure> shownProcedures = new LinkedHashSet<>(catalogProcedures);
@@ -644,12 +651,12 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 }
             }
             UIUtils.packColumns(proceduresTable);
-        adjustListHeight(proceduresTable);
+            adjustListHeight(proceduresTable);
         }
         fillColumnsList();
     }
 
-    private boolean userHasTableGrant(MySQLTableBase table) {
+    private boolean userHasTableGrant(@NotNull MySQLTableBase table) {
         for (MySQLGrant grant : grantsOfSelectedUser()) {
             if (grant.matches(table)) {
                 return true;
@@ -689,7 +696,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         updateObjectSections();
     }
 
-    private List<MySQLTableColumn> loadColumns(MySQLTableBase table) {
+    private @NotNull List<MySQLTableColumn> loadColumns(@NotNull MySQLTableBase table) {
         List<MySQLTableColumn> columns = tableColumnsCache.get(table);
         if (columns != null) {
             return columns;
@@ -787,9 +794,10 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     /**
      * Fills the editable "schema privileges" panel with the user's schema-wide (db.*) grants.
      * Toggling there grants/revokes on db.* (affecting the whole schema).
+     *
      * @return true if there is at least one such grant (panel should be shown)
      */
-    private boolean fillInherited(List<MySQLGrant> grants, List<MySQLPrivilege> privTypes, boolean editable) {
+    private boolean fillInherited(@NotNull List<MySQLGrant> grants, @NotNull List<MySQLPrivilege> privTypes, boolean editable) {
         List<MySQLGrant> schemaGrants = new ArrayList<>();
         for (MySQLGrant grant : grants) {
             if (isSchemaLevelGrant(grant)) {
@@ -807,7 +815,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     // SCHEMA targets db.* (schema-wide) - used by the editable "schema inherited" panel
     private enum PanelKind { TABLE, COLUMN, PROCEDURE, OTHER, SCHEMA }
 
-    private void addGrantListener(PrivilegeTableControl panel, PanelKind kind) {
+    private void addGrantListener(@NotNull PrivilegeTableControl panel, @NotNull PanelKind kind) {
         panel.addListener(SWT.Modify, event -> {
             if (selectedUser == null) {
                 return;
@@ -847,7 +855,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
      * check followed by an uncheck cancels out to no SQL at all.
      */
     private void applyUserPrivilegeChange(
-        MySQLUser user, MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
+        @NotNull MySQLUser user, @NotNull MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable List<MySQLTableColumn> columns
     ) {
         DBECommandContext ctx = getEditorInput().getCommandContext();
@@ -887,7 +895,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
 
     @Nullable
     private MySQLCommandGrantPrivilege findPendingUserCommand(
-        MySQLUser user, boolean grantDirection,
+        @NotNull MySQLUser user, boolean grantDirection,
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable List<MySQLTableColumn> columns
     ) {
         DBECommandContext ctx = getEditorInput().getCommandContext();
@@ -909,14 +917,14 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     // The commands operate on MySQLUser while this editor's object is the schema/table/procedure;
     // the command context handles them by their own object manager, so a raw cast is safe here.
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void addUserCommand(MySQLCommandGrantPrivilege command) {
+    private void addUserCommand(@NotNull MySQLCommandGrantPrivilege command) {
         addChangeCommand((DBECommand) command, null);
     }
 
-    private MySQLCommandGrantPrivilege createCommand(
-        MySQLUser user, boolean isGrant, boolean withGrantOption,
+    private @NotNull MySQLCommandGrantPrivilege createCommand(
+        @NotNull MySQLUser user, boolean isGrant, boolean withGrantOption,
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure,
-        @Nullable List<MySQLTableColumn> columns, MySQLPrivilege privilege
+        @Nullable List<MySQLTableColumn> columns, @NotNull MySQLPrivilege privilege
     ) {
         if (procedure != null) {
             return new MySQLCommandGrantPrivilege(user, isGrant, withGrantOption, catalog, procedure, privilege);
@@ -932,7 +940,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
      * before the change is saved.
      */
     private void updateLocalGrant(
-        MySQLUser user, MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
+        @NotNull MySQLUser user, @NotNull MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable MySQLTableColumn column
     ) {
         List<MySQLGrant> grants = userGrants.computeIfAbsent(user, u -> new ArrayList<>());
@@ -998,7 +1006,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
     }
 
-    private static boolean setSectionVisible(Composite group, boolean visible) {
+    private static boolean setSectionVisible(@NotNull Composite group, boolean visible) {
         Composite host = group.getParent();
         GridData gd = (GridData) host.getLayoutData();
         if (gd.exclude == visible) {
@@ -1010,7 +1018,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     /** Sizes the list to its content (min 2, max 15 rows) so the +/- buttons stay under the list. */
-    private static void adjustListHeight(Table table) {
+    private static void adjustListHeight(@Nullable Table table) {
         if (table == null || table.isDisposed()) {
             return;
         }
@@ -1095,7 +1103,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 candidates.add(t);
             }
         }
-        List<MySQLTableBase> chosen = selectObjects(candidates, MySQLUIMessages.editors_user_editor_privileges_dialog_add_table_title, DBIcon.TREE_TABLE);
+        List<MySQLTableBase> chosen = selectObjects(
+            candidates, MySQLUIMessages.editors_user_editor_privileges_dialog_add_table_title, DBIcon.TREE_TABLE);
         if (chosen == null) {
             return;
         }
@@ -1125,7 +1134,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 candidates.add(p);
             }
         }
-        List<MySQLProcedure> chosen = selectObjects(candidates, MySQLUIMessages.editors_user_editor_privileges_dialog_add_procedure_title, DBIcon.TREE_PROCEDURE);
+        List<MySQLProcedure> chosen = selectObjects(
+            candidates, MySQLUIMessages.editors_user_editor_privileges_dialog_add_procedure_title, DBIcon.TREE_PROCEDURE);
         if (chosen == null) {
             return;
         }
@@ -1152,7 +1162,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 candidates.add(column);
             }
         }
-        List<MySQLTableColumn> chosen = selectObjects(candidates, MySQLUIMessages.editors_user_editor_privileges_dialog_add_column_title, DBIcon.TREE_COLUMN);
+        List<MySQLTableColumn> chosen = selectObjects(
+            candidates, MySQLUIMessages.editors_user_editor_privileges_dialog_add_column_title, DBIcon.TREE_COLUMN);
         if (chosen == null) {
             return;
         }
@@ -1280,7 +1291,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         updateButtons();
     }
 
-    private static void selectItemsByData(Table table, List<? extends DBSObject> objects) {
+    private static void selectItemsByData(@NotNull Table table, @NotNull List<? extends DBSObject> objects) {
         List<Integer> indices = new ArrayList<>();
         for (int i = 0; i < table.getItemCount(); i++) {
             Object data = table.getItem(i).getData();
@@ -1296,7 +1307,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     /** Creates a REVOKE for the whole grant and drops it from the user's local grant list. */
-    private void revokeWholeGrant(MySQLUser user, MySQLGrant grant) {
+    private void revokeWholeGrant(@NotNull MySQLUser user, @NotNull MySQLGrant grant) {
         // Revoke exactly the privileges the grant holds, each at its own level. Table-level and
         // column-level privileges go in separate statements: mixing them (or listing a privilege
         // that isn't actually held) makes the server reject the whole statement.
@@ -1333,7 +1344,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             grantOptionEmitted = grant.isGrantOption();
         }
         if (!columnPrivNames.isEmpty()) {
-            addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(user, objectSpec, columnPrivNames, !grantOptionEmitted && grant.isGrantOption()));
+            addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(
+                user, objectSpec, columnPrivNames, !grantOptionEmitted && grant.isGrantOption()));
             grantOptionEmitted |= grant.isGrantOption();
         }
         if (!grantOptionEmitted && grant.isGrantOption()) {
@@ -1341,7 +1353,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
     }
 
-    private String grantObjectSpec(MySQLGrant grant) {
+    private @NotNull String grantObjectSpec(@NotNull MySQLGrant grant) {
         if (grant.getObjectType() != MySQLGrant.ObjectType.TABLE) {
             return (grant.getObjectType() == MySQLGrant.ObjectType.FUNCTION ? "FUNCTION " : "PROCEDURE ") //$NON-NLS-1$ //$NON-NLS-2$
                 + DBUtils.getQuotedIdentifier(catalog) + "." //$NON-NLS-1$
@@ -1354,12 +1366,12 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             + DBUtils.getQuotedIdentifier(catalog.getDataSource(), grant.getTable());
     }
 
-    private String tableSpec(MySQLTableBase table) {
+    private @NotNull String tableSpec(@NotNull MySQLTableBase table) {
         return DBUtils.getQuotedIdentifier(catalog) + "." + DBUtils.getQuotedIdentifier(table); //$NON-NLS-1$
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void addUserRevokeCommand(MySQLCommandRevokeObjectGrants command) {
+    private void addUserRevokeCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
         addChangeCommand((DBECommand) command, null);
     }
 
@@ -1393,10 +1405,10 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     private interface LoadTask {
-        void run(DBRProgressMonitor monitor) throws DBException;
+        void run(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 
-    private boolean runLoad(LoadTask task) {
+    private boolean runLoad(@NotNull LoadTask task) {
         try {
             UIUtils.runInProgressService(monitor -> {
                 try {
@@ -1416,14 +1428,15 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
 
     @Nullable
     @SuppressWarnings("unchecked")
-    private <T extends DBSObject> List<T> selectObjects(List<T> candidates, String title, DBIcon icon) {
+    private <T extends DBSObject> List<T> selectObjects(@NotNull List<T> candidates, @NotNull String title, @NotNull DBIcon icon) {
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getSite().getShell(), new LabelProvider() {
             @Override
-            public String getText(Object element) {
+            public @NotNull String getText(@NotNull Object element) {
                 return ((DBSObject) element).getName();
             }
+
             @Override
-            public Image getImage(Object element) {
+            public @NotNull Image getImage(@NotNull Object element) {
                 return DBeaverIcons.getImage(icon);
             }
         });
@@ -1445,7 +1458,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         return selected;
     }
 
-    private static Set<Object> shownData(Table table) {
+    private static @NotNull Set<Object> shownData(@NotNull Table table) {
         Set<Object> data = new HashSet<>();
         for (TableItem item : table.getItems()) {
             if (item.getData() != null) {
@@ -1475,7 +1488,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         adjustListHeight(usersTable);
     }
 
-    private static void selectTableByData(Table table, Object data) {
+    private static void selectTableByData(@NotNull Table table, @NotNull Object data) {
         for (int i = 0; i < table.getItemCount(); i++) {
             if (table.getItem(i).getData() == data) {
                 table.setSelection(i);
@@ -1484,7 +1497,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
     }
 
-    private void showPanels(boolean tableVisible, boolean columnVisible, boolean procedureVisible, boolean otherVisible, boolean inheritedVisible) {
+    private void showPanels(
+        boolean tableVisible, boolean columnVisible, boolean procedureVisible, boolean otherVisible, boolean inheritedVisible) {
         boolean changed = setVisible(tablePanel, tableVisible);
         changed |= setVisible(columnPanel, columnVisible);
         changed |= setVisible(procedurePanel, procedureVisible);
@@ -1495,7 +1509,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
     }
 
-    private static boolean setVisible(Composite control, boolean visible) {
+    private static boolean setVisible(@NotNull Composite control, boolean visible) {
         GridData gd = (GridData) control.getLayoutData();
         if (gd.exclude == visible) {
             gd.exclude = !visible;
@@ -1506,14 +1520,14 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     private class PageControl extends ObjectEditorPageControl {
-        PageControl(Composite parent) {
+        PageControl(@NotNull Composite parent) {
             super(parent, SWT.NONE, MySQLObjectPrivilegesEditor.this);
         }
 
-        ProgressVisualizer<PrivData> createLoadVisualizer() {
+        @NotNull ProgressVisualizer<PrivData> createLoadVisualizer() {
             return new ProgressVisualizer<>() {
                 @Override
-                public void completeLoading(PrivData data) {
+                public void completeLoading(@Nullable PrivData data) {
                     super.completeLoading(data);
                     if (data != null && !pageControl.isDisposed()) {
                         applyData(data);

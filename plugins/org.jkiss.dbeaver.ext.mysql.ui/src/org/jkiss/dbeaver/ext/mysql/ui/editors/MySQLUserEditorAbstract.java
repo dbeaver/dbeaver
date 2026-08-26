@@ -81,8 +81,9 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         }
     }
 
-    protected abstract UserPageControl getPageControl();
-    protected abstract void processGrants(List<MySQLGrant> grants);
+    protected abstract @Nullable UserPageControl getPageControl();
+
+    protected abstract void processGrants(@Nullable List<MySQLGrant> grants);
 
     /**
      * Reads the user grants from the server (SHOW GRANTS) and shows them as an SQL script.
@@ -129,7 +130,7 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
     }
 
     protected class UserPageControl extends ObjectEditorPageControl {
-        public UserPageControl(Composite parent) {
+        public UserPageControl(@NotNull Composite parent) {
             super(parent, SWT.NONE, MySQLUserEditorAbstract.this);
         }
 
