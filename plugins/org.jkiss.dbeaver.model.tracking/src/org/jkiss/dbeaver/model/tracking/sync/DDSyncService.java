@@ -45,7 +45,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class DDSyncService {
 
@@ -106,7 +108,13 @@ public class DDSyncService {
             return null;
         }
         try {
-            return JSONUtils.GSON.fromJson(Files.readString(file), DDSyncBinding.class);
+            DDSyncBinding binding = JSONUtils.GSON.fromJson(Files.readString(file), DDSyncBinding.class);
+            return binding != null
+                && !CommonUtils.isEmpty(binding.configurationId())
+                && !CommonUtils.isEmpty(binding.accountId())
+                && binding.parts() != null
+                ? binding
+                : null;
         } catch (IOException | RuntimeException e) {
             log.debug("Error reading synchronization binding", e);
             return null;
@@ -177,12 +185,13 @@ public class DDSyncService {
             ? remote
             : store.updateConfiguration(remote.configurationId(), remote.version(), changed);
 
+        Set<String> uploadedKeys = changed.stream().map(DDConfigurationPart::key).collect(Collectors.toSet());
         Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
         for (DDConfigurationPart part : result.parts()) {
             String fingerprint = localFingerprints.get(part.key());
-            DDSyncPartState state = fingerprint == null
-                ? binding.parts().get(part.key())
-                : new DDSyncPartState(part.version(), fingerprint);
+            DDSyncPartState state = uploadedKeys.contains(part.key()) && fingerprint != null
+                ? new DDSyncPartState(part.version(), fingerprint)
+                : binding.parts().get(part.key());
             if (state != null) {
                 baselines.put(part.key(), state);
             }
