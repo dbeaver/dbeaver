@@ -40,6 +40,12 @@ import java.util.Map;
 public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R extends DBDValueRow, M extends DBDResultSetModel> {
     private static final Log log = Log.getLog(DBDResultSetDataUpdater.class);
 
+    public record ExecutionResult(@Nullable Throwable error) {
+        public boolean isSuccess() {
+            return error == null;
+        }
+    }
+
     private final DBCExecutionContext executionContext;
     private final List<DBEPersistAction> actions;
     protected boolean autocommit;
@@ -242,14 +248,29 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
         if (executionContext == null) {
             throw new DBCException("No execution context");
         }
-        DataUpdaterJob job = new DataUpdaterJob(this, generateScript, settings, listener, executionContext);
         if (monitor == null) {
+            DataUpdaterJob job = new DataUpdaterJob(this, generateScript, settings, listener, executionContext);
             job.schedule();
             return true;
         } else {
-            job.run(monitor);
-            return job.getError() == null;
+            return executeSynchronously(monitor, generateScript, settings, listener).isSuccess();
         }
+    }
+
+    @NotNull
+    public ExecutionResult executeSynchronously(
+        @NotNull DBRProgressMonitor monitor,
+        boolean generateScript,
+        @NotNull ResultSetSaveSettings settings,
+        @Nullable DBDDataUpdateListener listener
+    ) throws DBException {
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            throw new DBCException("No execution context");
+        }
+        DataUpdaterJob job = new DataUpdaterJob(this, generateScript, settings, listener, executionContext);
+        job.run(monitor);
+        return new ExecutionResult(job.getError());
     }
 
     @Nullable
