@@ -9,6 +9,7 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  com.dbeaver.rest.client
 Export-Package: org.jkiss.dbeaver.model.tracking,
+ org.jkiss.dbeaver.model.tracking.auth,
  org.jkiss.dbeaver.model.tracking.sync.core,
  org.jkiss.dbeaver.model.tracking.sync
 Automatic-Module-Name: org.jkiss.dbeaver.model.tracking

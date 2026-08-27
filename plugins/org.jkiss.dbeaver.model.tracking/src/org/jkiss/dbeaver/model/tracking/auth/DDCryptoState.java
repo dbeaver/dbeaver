@@ -14,27 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync.core;
+package org.jkiss.dbeaver.model.tracking.auth;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-
-import javax.crypto.SecretKey;
+import org.jkiss.code.Nullable;
 
 /**
- * Credentials used to sign requests and to encrypt data.
+ * Crypto configuration of the account, as returned after login.
  */
-public interface DDSyncCredentials {
-
-    @NotNull
-    String buildToken(
-        @NotNull String method,
-        @NotNull String pathAndQuery,
-        @NotNull byte[] body
-    ) throws DBException;
-
-    void updateServerTime(long serverTimeMillis);
-
-    @NotNull
-    SecretKey getDataKey() throws DBException;
+public record DDCryptoState(
+    @NotNull String accountId,
+    boolean cryptoConfigured,
+    @Nullable String encryptedBundle,
+    @Nullable Long generation,
+    @Nullable String salt,
+    @Nullable Integer iterations
+) {
 }

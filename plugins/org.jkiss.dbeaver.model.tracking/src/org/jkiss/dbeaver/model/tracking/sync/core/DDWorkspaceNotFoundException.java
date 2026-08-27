@@ -19,22 +19,12 @@ package org.jkiss.dbeaver.model.tracking.sync.core;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
-import javax.crypto.SecretKey;
-
 /**
- * Credentials used to sign requests and to encrypt data.
+ * Thrown when the remote workspace a local binding points to no longer exists
+ * for the currently authenticated account.
  */
-public interface DDSyncCredentials {
-
-    @NotNull
-    String buildToken(
-        @NotNull String method,
-        @NotNull String pathAndQuery,
-        @NotNull byte[] body
-    ) throws DBException;
-
-    void updateServerTime(long serverTimeMillis);
-
-    @NotNull
-    SecretKey getDataKey() throws DBException;
+public class DDWorkspaceNotFoundException extends DBException {
+    public DDWorkspaceNotFoundException(@NotNull String message) {
+        super(message);
+    }
 }
