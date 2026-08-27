@@ -37,7 +37,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -353,11 +352,13 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             if (DBUtils.isNullValue(value)) {
                 continue;
             }
+            // Linearize curved geometry first - curved geometry isn't supported by Leaflet
+            value = value.linearize();
             if (flipCoordinates) {
                 try {
                     value = value.flipCoordinates();
                 } catch (DBException e) {
-                    log.error(e);
+                    log.error("Error flipping geometry coordinates", e);
                 }
             }
             try {
@@ -366,9 +367,6 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 log.error("Error forcing geometry to 2D", e);
             }
             Object targetValue = value.getRawValue();
-            if (WKGUtils.isCurve(targetValue)) {
-                targetValue = WKGUtils.linearize((org.cugos.wkg.Geometry) targetValue);
-            }
             int srid = sourceSRID;
             if (srid == UNDEFINED_SRID && value.getSRID() != 0) {
                 srid = value.getSRID();
