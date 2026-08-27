@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -247,6 +249,16 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         });
         removeItem.setEnabled(false);
 
+        ToolItem resetItem = new ToolItem(toolBar, SWT.NONE);
+        resetItem.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
+        resetItem.setToolTipText(
+            UIMessages.ui_properties_tree_viewer_action_reset_value + UIMessages.ui_properties_tree_viewer__to_default);
+        resetItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> resetSelectedPropertyToDefault()));
+        resetItem.setEnabled(false);
+
+
+        Runnable updateResetItem = () -> resetItem.setEnabled(
+            !USER_PROPERTIES_CATEGORY.equals(getSelectedCategory()) && canResetSelectedProperty());
         addSelectionChangedListener(event -> {
             addItem.setEnabled(getCategoryNode(USER_PROPERTIES_CATEGORY) != null);
             boolean hasDelete = false;
@@ -254,7 +266,10 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
                 hasDelete = true;
             }
             removeItem.setEnabled(hasDelete);
+            updateResetItem.run();
         });
+        addPropertyChangeListener(event -> updateResetItem.run());
+        addEditorValueChangeListener(updateResetItem);
     }
 
 }

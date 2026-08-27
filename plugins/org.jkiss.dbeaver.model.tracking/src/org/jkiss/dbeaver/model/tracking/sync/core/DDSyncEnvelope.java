@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public record DDWorkspace(
-    @NotNull String workspaceId,
-    @NotNull String label,
-    long version,
-    @Nullable String createdAt,
-    @Nullable String lastSyncAt
+import java.util.Map;
+
+record DDSyncEnvelope(
+    @Nullable String label,
+    @NotNull Map<String, String> resources
 ) { }

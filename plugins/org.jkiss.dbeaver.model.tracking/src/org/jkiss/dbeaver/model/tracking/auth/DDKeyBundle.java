@@ -14,12 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.auth;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-public record DDSyncEnvelope(
-    @Nullable String project,
-    @NotNull String content
-) { }
+/**
+ * Working keys of the account: request signing key and data encryption key.
+ */
+public record DDKeyBundle(
+    @NotNull String accountId,
+    @NotNull String signingKey,
+    @NotNull String dataKey,
+    long generation
+) {
+}

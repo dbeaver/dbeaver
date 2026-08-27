@@ -1,32 +1,31 @@
 # DBeaver – AI Agent Instructions
 
-## What is DBeaver?
+## Overview
 
 DBeaver Community Edition (CE) is a free, open-source, multi-platform database management tool written in Java. 
-It supports 100+ database drivers out of the box and is built on Eclipse RCP with an OSGi plugin architecture.
-The commercial products share the same model layer as DBeaver CE and the browser-based [CloudBeaver](https://github.com/dbeaver/cloudbeaver).
+It supports 100+ database drivers (mostly JDBC) and is built on Eclipse RCP with an OSGi plugin architecture.
+The commercial products share the same model layer as DBeaver CE + browser-based (GitHub repo `cloudbeaver`) and CLI (GitHub repo `dbvr`).
 
 ## Repository Layout
 
-- plugins: main source code, OSGi bundles
+- plugins/bundles: main source code, OSGi bundles
 - test: test plugins
 - features: Eclipse feature descriptors
 - product: Eclipse product configurations + aggregator
 
 ## Technology Stack
 
-- Language - Java (language level 21)
-- Platform - OSGi / Eclipse Equinox
-- UI framework - Eclipse RCP (SWT + JFace)
-- Build system - Apache  or custom Maven + Eclipse Tycho
-- DB connectivity - JDBC or custom implementation (e.g. WMI)
-- SQL parsing - JSQLParser, ANTLR4 (LSM module)
-- Testing - JUnit 5, Mockito, custom OSGi test runner
+- Language: Java (21)
+- Platform: OSGi / Eclipse Equinox
+- UI: Eclipse RCP (SWT + JFace)
+- DB connectivity: JDBC or custom implementation (e.g. WMI)
+- SQL parsing: JSQLParser, ANTLR4 (LSM module)
+- Testing: JUnit 5, Mockito, custom OSGi test runner
 
 ## Build System
 
-Eclipse Tycho (Maven plugin for OSGi). 
-Each plugin is packaged as `eclipse-plugin`; test plugins as `eclipse-test-plugin`.
+- Apache Maven + Eclipse Tycho. 
+- Each plugin is packaged as `eclipse-plugin`; test plugins as `eclipse-test-plugin`.
 
 ### Building
 
@@ -36,12 +35,19 @@ To perform full product build run
 To build only a single bundle run `mvn verify` in bundle folder.  
 It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
 
-### Dependencies
+### Repo dependencies
 
-All OSGI dependencies come from P2 repositories (not Maven repos).
-You can find them in root POMs (repos with layout=p2).
-This includes standard Eclipse P2 for RCP development + DBeaver custom P2 (see `repo.p2.eclipse.url`).
-Custom P2 repo source repo is `dbeaver-deps-ce` - it converts classic Maven dependencies into P2 bundles.
+- All dbeaver-related repositories are in organization https://github.com/dbeaver
+- Each repo may have file `project.deps` in its root. This file is a simple text file, each line contains short name of repository this repository depends on.
+- All GitHub repos must be cloned in the same folder (DBEAVER_DEV_HOME - the parent folder of this repository)
+- If dep repo is missing on disk AI agent can clone it in DBEAVER_DEV_HOME
+
+### Bundle dependencies
+
+- All OSGI dependencies come from Eclipse P2 repos (not Maven).
+- You can find them in root POMs (repos with layout=p2).
+- This includes standard Eclipse P2 for RCP development + DBeaver custom P2 (see `repo.p2.eclipse.url`).
+- Custom P2 repo source repo is `dbeaver-deps-ce` - it converts classic Maven dependencies into P2 bundles.
 
 ### Plugin packaging rules
 
@@ -59,11 +65,10 @@ Custom P2 repo source repo is `dbeaver-deps-ce` - it converts classic Maven depe
 - `DBC*` - Connectivity (execution context) (`DBCSession`, `DBCException`)
 - `DBD*` - Data values/formatting (`DBDValueHandler`, `DBDDataFilter`)
 - `DBR*` - Runtime (progress, jobs) (`DBRProgressMonitor`, `DBRRunnableWithProgress`)
-- `JDBC*`- JDBC-specific implementations (`JDBCDataSource`, `JDBCSQLDialect`)
 
 ### License header
 
-Every Java file must begin with Apache 2.0 license header (it is also in `docs/license_header.txt`)
+For OSS repos every Java file must begin with Apache 2.0 license header (it is also in `docs/license_header.txt`)
 
 ### Annotations
 
@@ -71,6 +76,16 @@ Every Java file must begin with Apache 2.0 license header (it is also in `docs/l
 - Expose object properties to the UI via `@Property` (from `org.jkiss.dbeaver.model.meta`) on getter methods.
 - Mark associations (child collections) with `@Association`.
 - Use `@ForTest` on members that exist solely for unit-testing access.
+
+### Code style
+
+- Follow code style of the existing code. The most recent code has good code style.
+- Leave comments in code for all non-obvious algorithms. Do not comment simple or obvious functions.
+
+### Hardcode
+
+- Do not hardcode constants, use constants declared in libraries or existing *Constants classes in dbeaver codebase or create new ones if needed.
+- Do not hardcode UI text messages, use NLS *Messages bundles instead. But messages in exceptions should be in English.
 
 ### Logging
 
@@ -82,32 +97,30 @@ Use `org.jkiss.dbeaver.Log`. Do not use `System.out/err` or SLF4J directly.
 - Wrap JDBC `SQLException` in `DBException` when surfacing to upper layers.
 - Using unchecked runtime exceptions is allowed only in exceptional cases (when there are no other options).
 
-### Progress monitoring
+### Long-running tasks
 
-- Long-running operations always accept a `DBRProgressMonitor`. 
-- Use `new VoidProgressMonitor()` in tests when a real monitor is not needed.
+- Long-running methods should accept a `DBRProgressMonitor monitor` as the first parameter. 
+- Use Jobs (by default extend AbstractJob class) or utils like RuntimeUtils to perform asynchronous tasks.
 
-### NLS / Localization
+### NLS / Localizations
 
 - Each plugin that has user-visible strings has a `*Messages.java` + `*Messages.properties` (and locale variants).
 - Reference strings as `*Messages.MY_STRING_KEY`.
 - `plugin.xml` uses `%key` references to the `plugin.properties` file.
+- Whenever adding text constant add English localization at least.
 
 ## Architecture Patterns
 
 ### Model / UI separation
 
-Plugins are split into pure-model (`ext.mysql`) and UI (`ext.mysql.ui`) bundles. 
-Model plugins must not depend on SWT, JFace or any other UI-related bundles
+- Plugins are split into model (e.g. `o.j.d.ext.mysql`, `o.j.d.model.ai`) and UI (`o.j.d.ext.mysql.ui`, `o.j.d.ui.charts`) bundles. 
+- Model plugins must not depend on SWT, JFace or any other UI-related bundles.
+- Do not execute SQL queries or any other model-level things directly from UI modules, use abstracts in model layer.
 
 ### Extension-point driven design
 
-Features are contributed via Eclipse extension points declared in `plugin.xml`. Key extension points:
-
-- `org.jkiss.dbeaver.dataSourceProvider` - Register a new database driver/provider
-- `org.jkiss.dbeaver.navigator` (via tree config in plugin.xml) - Define the navigator tree structure for a database
-- `org.jkiss.dbeaver.service` - Register a service implementation
-- etc
+- Features are contributed via Eclipse extension points declared in `plugin.xml`.
+- New extensible features should be formed as extension points/extensions.
 
 ### Adding a new database driver
 
@@ -123,20 +136,12 @@ Note: For many drivers, updating `plugin.xml` alone is enough — you only need 
 
 ## Testing
 
-### Test structure
-
+- Create unit tests for all model (non-UI) functions if possible.
 - Test plugins are in the `test/` directory.
 - Each test plugin mirrors a production plugin: `test/org.jkiss.dbeaver.ext.postgresql.test/`.
 - Tests extend `DBeaverUnitTest` (from `org.jkiss.dbeaver.osgi.test.runner`) or use `@RunWithApplication`/`@RunWithProduct` annotations for integration tests that need a running OSGi container.
-
-### Running tests
-
-Tests are run by Maven Tycho as part of the standard build. 
-There is no separate test-only Maven command; tests execute during `mvn install` or `mvn verify` when the `desktop`.
-
-### Writing tests
-
-Use Mockito for mocking.
+- Tests are run by Maven Tycho as part of the standard build. 
+- There is no separate test-only Maven command; tests execute during `mvn install` or `mvn verify` when the `desktop`.
 
 ## Branches and Git Workflow
 
@@ -151,17 +156,9 @@ Use Mockito for mocking.
 
 ## Common Pitfalls / Known Issues
 
-- All GitHub repos must be cloned in the same folder (DBEAVER_DEV_HOME - the parent folder of this repository)
-- If repository is missing AI agent can clone it in DBEAVER_DEV_HOME
-- Each repository may have file `project.deps` in its root. This file is a simple text file, each line contains short name of repository this repository depends on. Dependencies must be cloned too if missing.
 - UI thread safety: All SWT/UI updates must run on the display thread. Use functions like `UIUtils.asyncExec(Runnable)` if needed.
 - `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
 - Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.
-
-## Key Files Quick Reference
-
-- `pom.xml` (root) - Tycho build configuration, Java version, target platforms 
-- `product/aggregate/pom.xml` - Top-level build entry point used by CI 
 
 ## Code Contribution Guide
 

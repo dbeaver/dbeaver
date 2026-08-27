@@ -14,9 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.model.tracking.sync.core;
 
-public enum DDSyncScope {
-    WORKSPACE,
-    PROJECT
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+
+import javax.crypto.SecretKey;
+
+/**
+ * Credentials used to sign requests and to encrypt data.
+ */
+public interface DDSyncCredentials {
+
+    @NotNull
+    String buildToken(
+        @NotNull String method,
+        @NotNull String pathAndQuery,
+        @NotNull byte[] body
+    ) throws DBException;
+
+    void updateServerTime(long serverTimeMillis);
+
+    @NotNull
+    SecretKey getDataKey() throws DBException;
 }
