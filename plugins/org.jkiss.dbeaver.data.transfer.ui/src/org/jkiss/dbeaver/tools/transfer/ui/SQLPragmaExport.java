@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.ui;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -68,7 +69,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
         final DataTransferRegistry registry = DataTransferRegistry.getInstance();
         final DataTransferNodeDescriptor producerNode = registry.getNodeById(PRODUCER_NODE_ID);
         final DataTransferNodeDescriptor consumerNode = registry.getNodeById(CONSUMER_NODE_ID);
-        final DataTransferProcessorDescriptor processor = registry.getProcessor(PROCESSOR_ID_PREFIX + type);
+        final DataTransferProcessorDescriptor processor = findProcessor(registry, consumerNode, type);
 
         if (processor == null) {
             throw new DBException("Can't find processor of type '" + type + "'");
@@ -106,6 +107,30 @@ public class SQLPragmaExport implements SQLPragmaHandler {
         });
 
         return RESULT_CONSUME_PRAGMA | RESULT_CONSUME_QUERY;
+    }
+
+    @Nullable
+    private static DataTransferProcessorDescriptor findProcessor(
+        @NotNull DataTransferRegistry registry,
+        @NotNull DataTransferNodeDescriptor consumerNode,
+        @NotNull String type
+    ) {
+        DataTransferProcessorDescriptor processor = registry.getProcessor(PROCESSOR_ID_PREFIX + type);
+        if (processor != null) {
+            return processor;
+        }
+
+        for (DataTransferProcessorDescriptor descriptor : consumerNode.getProcessors()) {
+            if (type.equalsIgnoreCase(descriptor.getShortId())) {
+                return descriptor;
+            }
+        }
+        for (DataTransferProcessorDescriptor descriptor : consumerNode.getProcessors()) {
+            if (type.equalsIgnoreCase(descriptor.getProcessorFileExtension())) {
+                return descriptor;
+            }
+        }
+        return null;
     }
 
     @NotNull
