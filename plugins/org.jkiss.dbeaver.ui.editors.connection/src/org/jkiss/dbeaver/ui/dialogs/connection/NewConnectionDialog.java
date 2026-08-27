@@ -26,11 +26,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.function.Consumer;
 
@@ -61,7 +61,7 @@ public class NewConnectionDialog extends ActiveWizardDialog {
     protected void createButtonsForButtonBar(Composite parent) {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        testButton = createButton(parent, TEST_BUTTON_ID, CoreMessages.dialog_connection_button_test, false);
+        testButton = createButton(parent, TEST_BUTTON_ID, UIConnectionMessages.dialog_connection_button_test, false);
         testButton.setEnabled(false);
         testButton.moveAbove(getButton(IDialogConstants.BACK_ID));
 

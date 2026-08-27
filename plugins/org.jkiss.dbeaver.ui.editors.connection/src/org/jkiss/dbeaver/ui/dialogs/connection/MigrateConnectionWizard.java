@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
@@ -76,7 +76,7 @@ public class MigrateConnectionWizard extends Wizard
                 }
             }
         }
-        setWindowTitle(CoreMessages.dialog_migrate_wizard_window_title);
+        setWindowTitle(UIConnectionMessages.dialog_migrate_wizard_window_title);
     }
 
     /**
@@ -119,8 +119,8 @@ public class MigrateConnectionWizard extends Wizard
         if (!changedConnections.isEmpty()) {
             boolean isReconnect = UIUtils.confirmAction(
                 UIUtils.getActiveWorkbenchShell(),
-                CoreMessages.dialog_migrate_wizard_connection_changed_title,
-                NLS.bind(CoreMessages.dialog_migrate_wizard_connection_changed_message, changedConnections.size())
+                UIConnectionMessages.dialog_migrate_wizard_connection_changed_title,
+                NLS.bind(UIConnectionMessages.dialog_migrate_wizard_connection_changed_message, changedConnections.size())
             );
             if (isReconnect) {
                 changedConnections.forEach(c -> DataSourceHandler.reconnectDataSource(null, c));
@@ -135,9 +135,9 @@ public class MigrateConnectionWizard extends Wizard
 
         protected PageConnections()
         {
-            super(CoreMessages.dialog_migrate_wizard_name);
-            setTitle(CoreMessages.dialog_migrate_wizard_start_title);
-            setDescription(CoreMessages.dialog_migrate_wizard_start_description);
+            super(UIConnectionMessages.dialog_migrate_wizard_name);
+            setTitle(UIConnectionMessages.dialog_migrate_wizard_start_title);
+            setDescription(UIConnectionMessages.dialog_migrate_wizard_start_description);
         }
 
         @Override
@@ -206,8 +206,8 @@ public class MigrateConnectionWizard extends Wizard
         PageDriver()
         {
             super("migrateConnectionDriver"); //$NON-NLS-1$
-            setTitle(CoreMessages.dialog_migrate_wizard_choose_driver_title);
-            setDescription(CoreMessages.dialog_migrate_wizard_choose_driver_description);
+            setTitle(UIConnectionMessages.dialog_migrate_wizard_choose_driver_title);
+            setDescription(UIConnectionMessages.dialog_migrate_wizard_choose_driver_description);
         }
 
         @Override

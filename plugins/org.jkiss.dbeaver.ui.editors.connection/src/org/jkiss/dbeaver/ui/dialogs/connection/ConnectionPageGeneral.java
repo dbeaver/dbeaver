@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
@@ -49,6 +48,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -110,13 +110,13 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     ConnectionPageGeneral(ConnectionWizard wizard) {
         super(PAGE_NAME);
         this.wizard = wizard;
-        setTitle(CoreMessages.dialog_connection_edit_wizard_general);
-        setDescription(CoreMessages.dialog_connection_wizard_final_description);
+        setTitle(UIConnectionMessages.dialog_connection_edit_wizard_general);
+        setDescription(UIConnectionMessages.dialog_connection_wizard_final_description);
 
-        filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));
-        filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
-        filters.add(new FilterInfo(DBSEntity.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
-        filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
+        filters.add(new FilterInfo(DBSCatalog.class, UIConnectionMessages.dialog_connection_wizard_final_filter_catalogs));
+        filters.add(new FilterInfo(DBSSchema.class, UIConnectionMessages.dialog_connection_wizard_final_filter_schemas_users));
+        filters.add(new FilterInfo(DBSEntity.class, UIConnectionMessages.dialog_connection_wizard_final_filter_tables));
+        filters.add(new FilterInfo(DBSEntityAttribute.class, UIConnectionMessages.dialog_connection_wizard_final_filter_attributes));
     }
 
     ConnectionPageGeneral(@NotNull ConnectionWizard wizard, @NotNull DataSourceDescriptor dataSourceDescriptor) {
@@ -235,7 +235,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         if (enable) {
             filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
             filterInfo.link.setToolTipText(NLS.bind(
-                CoreMessages.dialog_connection_wizard_final_filter_link_tooltip,
+                UIConnectionMessages.dialog_connection_wizard_final_filter_link_tooltip,
                 filterInfo.title
             ));
             if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
@@ -244,9 +244,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 filterInfo.link.setFont(getFont());
             }
         } else {
-            //filterInfo.link.setText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
+            //filterInfo.link.setText(NLS.bind(UIConnectionMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
             filterInfo.link.setToolTipText(NLS.bind(
-                CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip,
+                UIConnectionMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip,
                 filterInfo.title,
                 getWizard().getSelectedDriver().getName()
             ));
@@ -297,7 +297,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         {
             Composite miscGroup = UIUtils.createTitledComposite(
                 group,
-                CoreMessages.pref_page_ui_general_group_general,
+                UIConnectionMessages.pref_page_ui_general_group_general,
                 2,
                 GridData.FILL_HORIZONTAL
             );
@@ -305,7 +305,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
             connectionNameText = UIUtils.createLabelText(
                 miscGroup,
-                CoreMessages.dialog_connection_wizard_final_label_connection_name,
+                UIConnectionMessages.dialog_connection_wizard_final_label_connection_name,
                 CommonUtils.toString(connectionName)
             );
             UIUtils.setDefaultTextControlWidthHint(connectionNameText);
@@ -325,7 +325,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             );
             UIUtils.setContentProposalToolTip(connectionNameText, "Connection name patterns",
                 ConnectionNameResolver.getConnectionVariables());
-            descriptionText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_description, null);
+            descriptionText = UIUtils.createLabelText(miscGroup, UIConnectionMessages.dialog_connection_wizard_description, null);
             UIUtils.setDefaultTextControlWidthHint(descriptionText);
             {
                 connectionTypeCombo = createConnectionTypeCombo(miscGroup);
@@ -343,7 +343,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 UIUtils.createPushButton(
                     ctGroup,
                     null,
-                    CoreMessages.dialog_connection_wizard_final_label_connection_types_edit,
+                    UIConnectionMessages.dialog_connection_wizard_final_label_connection_types_edit,
                     UIIcon.CONFIGURATION,
                     SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                         DBPConnectionType curConType = connectionTypeCombo.getSelectedItem();
@@ -382,18 +382,18 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             // Security
             Composite securityGroup = UIUtils.createTitledComposite(
                 refsGroup,
-                CoreMessages.dialog_connection_wizard_final_group_security,
+                UIConnectionMessages.dialog_connection_wizard_final_group_security,
                 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             readOnlyConnection = UIUtils.createCheckbox(
                 securityGroup,
-                CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
                 dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
             readOnlyConnection.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             UIUtils.createDialogButton(
                 securityGroup,
-                CoreMessages.pref_page_label_edit_permissions,
+                UIConnectionMessages.pref_page_label_edit_permissions,
                 SelectionListener.widgetSelectedAdapter(selectionEvent -> editPermissions()));
         }
 
@@ -401,7 +401,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             // Filters
             filtersGroup = UIUtils.createTitledComposite(
                 refsGroup,
-                CoreMessages.dialog_connection_wizard_final_group_filters,
+                UIConnectionMessages.dialog_connection_wizard_final_group_filters,
                 1,
                 GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
             );
@@ -490,7 +490,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
             {
                 Link initConfigLink = new Link(linkGroup, SWT.NONE);
-                initConfigLink.setText("<a>" + CoreMessages.dialog_connection_wizard_connection_init_description + "</a>");
+                initConfigLink.setText("<a>" + UIConnectionMessages.dialog_connection_wizard_connection_init_description + "</a>");
                 initConfigLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                     DataSourceDescriptor dataSource = getActiveDataSource();
                     EditWizardPageDialog dialog = new EditWizardPageDialog(
@@ -502,7 +502,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 initConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 Link shellConfigLink = new Link(linkGroup, SWT.NONE);
-                shellConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd + "</a>");
+                shellConfigLink.setText("<a>" + UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd + "</a>");
                 shellConfigLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                     DataSourceDescriptor dataSource = getActiveDataSource();
                     EditWizardPageDialog dialog = new EditWizardPageDialog(
@@ -526,7 +526,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         NavigatorSettingsStorage settingsStorage,
         DBPDataSourceContainer dataSourceDescriptor
     ) {
-        UIUtils.createControlLabel(composite, CoreMessages.dialog_connection_wizard_final_label_navigator_settings);
+        UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_wizard_final_label_navigator_settings);
 
         Composite ctGroup = UIUtils.createComposite(composite, 2);
         Combo navigatorSettingsCombo = new Combo(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -552,7 +552,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         UIUtils.createPushButton(
             ctGroup,
             null,
-            CoreMessages.dialog_connection_wizard_final_label_navigator_settings_customize,
+            UIConnectionMessages.dialog_connection_wizard_final_label_navigator_settings_customize,
             UIIcon.CONFIGURATION,
             SelectionListener.widgetSelectedAdapter(e ->
                 settingsStorage.setNavigatorSettings(
@@ -565,7 +565,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     public static CSmartCombo<DBPConnectionType> createConnectionTypeCombo(Composite composite) {
-        UIUtils.createControlLabel(composite, CoreMessages.dialog_connection_wizard_final_label_connection_type);
+        UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_wizard_final_label_connection_type);
 
         Composite ctGroup = UIUtils.createComposite(composite, 1);
 

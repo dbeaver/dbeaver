@@ -24,11 +24,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -43,7 +43,7 @@ public class ConnectionTestDialog extends BaseDialog {
     private final long elapsedTime;
 
     public ConnectionTestDialog(Shell parentShell, DataSourceDescriptor descriptor, String serverVersion, String clientVersion, long elapsedTime) {
-        super(parentShell, CoreMessages.dialog_connection_test_title, DBIcon.TREE_DATABASE);
+        super(parentShell, UIConnectionMessages.dialog_connection_test_title, DBIcon.TREE_DATABASE);
         this.descriptor = descriptor;
         this.serverVersion = serverVersion;
         this.clientVersion = clientVersion;
@@ -69,7 +69,7 @@ public class ConnectionTestDialog extends BaseDialog {
 
         {
             UIUtils.createEmptyLabel(composite, 1, 1);
-            UIUtils.createControlLabel(composite, CoreMessages.dialog_connection_test_label_server).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_test_label_server).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 300;
             Text serverText = new Text(composite, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
@@ -79,7 +79,7 @@ public class ConnectionTestDialog extends BaseDialog {
 
         {
             UIUtils.createEmptyLabel(composite, 1, 1);
-            UIUtils.createControlLabel(composite, CoreMessages.dialog_connection_test_label_driver).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_test_label_driver).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             Text driverText = new Text(composite, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
             driverText.setText(clientVersion.trim());
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -115,7 +115,7 @@ public class ConnectionTestDialog extends BaseDialog {
     private class PropertiesDialog extends BaseDialog {
         public PropertiesDialog(Shell shell) {
             super(shell, NLS.bind(
-                CoreMessages.dialog_connection_test_properties_title, descriptor.getName() != null ?
+                UIConnectionMessages.dialog_connection_test_properties_title, descriptor.getName() != null ?
                 descriptor.getName() :
                 descriptor.getDriver().getName()
             ), null);

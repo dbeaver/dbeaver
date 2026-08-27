@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
@@ -79,8 +79,8 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         super(PAGE_NAME);
         this.dataSource = dataSource;
         this.shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
-        setTitle(CoreMessages.dialog_connection_edit_wizard_shell_cmd);
-        setDescription(CoreMessages.dialog_connection_events_title);
+        setTitle(UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd);
+        setDescription(UIConnectionMessages.dialog_connection_events_title);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.EVENT));
         for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
             DBRShellCommand command = dataSource.getConnectionConfiguration().getEvent(eventType);
@@ -99,7 +99,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
         if (DBWorkbench.isDistributed() && !isShellCommandExecutionAllowed()) {
             UIUtils.createWarningLabel(
                 root,
-                CoreMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
+                UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_te_warning_label,
                 GridData.FILL_BOTH,
                 1
             );
@@ -111,7 +111,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             Composite eventGroup = UIUtils.createPlaceholder(group, 1);
             eventGroup.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-            UIUtils.createControlLabel(eventGroup, CoreMessages.dialog_connection_events_label_event);
+            UIUtils.createControlLabel(eventGroup, UIConnectionMessages.dialog_connection_events_label_event);
             eventTypeTable = new Table(eventGroup, SWT.BORDER | SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION);
             eventTypeTable.setLayoutData(new GridData(GridData.FILL_VERTICAL));
             eventTypeTable.addListener(SWT.Selection, event -> {
@@ -153,7 +153,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             Composite detailsGroup = UIUtils.createComposite(group, 2);
             detailsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            UIUtils.createControlLabel(detailsGroup, CoreMessages.dialog_connection_events_label_command, 2);
+            UIUtils.createControlLabel(detailsGroup, UIConnectionMessages.dialog_connection_events_label_command, 2);
             commandText = new Text(detailsGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             commandText.addModifyListener(e -> updateEvent(true));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -170,26 +170,26 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 }
             };
 
-            Composite settingsGroup = UIUtils.createTitledComposite(detailsGroup, CoreMessages.dialog_connection_events_settings_group, 2, GridData.FILL_HORIZONTAL);
+            Composite settingsGroup = UIUtils.createTitledComposite(detailsGroup, UIConnectionMessages.dialog_connection_events_settings_group, 2, GridData.FILL_HORIZONTAL);
 
-            showProcessCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.dialog_connection_events_checkbox_show_process, false);
+            showProcessCheck = UIUtils.createCheckbox(settingsGroup, UIConnectionMessages.dialog_connection_events_checkbox_show_process, false);
             showProcessCheck.addSelectionListener(eventEditAdapter);
             showProcessCheck.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
-            terminateCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.dialog_connection_events_checkbox_terminate_at_disconnect, false);
+            terminateCheck = UIUtils.createCheckbox(settingsGroup, UIConnectionMessages.dialog_connection_events_checkbox_terminate_at_disconnect, false);
             terminateCheck.addSelectionListener(eventEditAdapter);
             terminateCheck.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
-            waitFinishCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish, false);
+            waitFinishCheck = UIUtils.createCheckbox(settingsGroup, UIConnectionMessages.dialog_connection_events_checkbox_wait_finish, false);
             waitFinishCheck.addSelectionListener(eventEditAdapter);
-            waitFinishTimeoutMs = UIUtils.createSpinner(settingsGroup, CoreMessages.dialog_connection_events_checkbox_wait_finish_timeout, 0, DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER, DBRShellCommand.WAIT_PROCESS_TIMEOUT_MAX_SELECTION);
+            waitFinishTimeoutMs = UIUtils.createSpinner(settingsGroup, UIConnectionMessages.dialog_connection_events_checkbox_wait_finish_timeout, 0, DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER, DBRShellCommand.WAIT_PROCESS_TIMEOUT_MAX_SELECTION);
             waitFinishTimeoutMs.addSelectionListener(eventEditAdapter);
 
-            pauseAfterExecute = UIUtils.createLabelSpinner(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_pause_label, CoreMessages.dialog_connection_edit_wizard_shell_cmd_pause_tooltip, 0, 0, Integer.MAX_VALUE);
+            pauseAfterExecute = UIUtils.createLabelSpinner(settingsGroup, UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_pause_label, UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_pause_tooltip, 0, 0, Integer.MAX_VALUE);
             pauseAfterExecute.addSelectionListener(eventEditAdapter);
 
-            UIUtils.createControlLabel(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_label);
-            workingDirectory = new TextWithOpenFolder(settingsGroup, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_title);
+            UIUtils.createControlLabel(settingsGroup, UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_directory_label);
+            workingDirectory = new TextWithOpenFolder(settingsGroup, UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_directory_title);
             workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             workingDirectory.getTextControl().addModifyListener(e -> {
                 DBRShellCommand command = getActiveCommand();
@@ -200,18 +200,18 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
 
             VariablesHintLabel variablesHintLabel = new VariablesHintLabel(
                 detailsGroup,
-                CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
-                CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
+                UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
+                UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
                 dataSource.getConnectionConfiguration()));
             if (!DBWorkbench.isDistributed() && shellCommandsService != null) {
                 Link confirmedCommandsLink = UIUtils.createInfoLink(
                     detailsGroup,
-                    "<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_link + "</a>",
+                    "<a>" + UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_link + "</a>",
                     this::openConfirmedShellCommandsEditor
                 );
-                confirmedCommandsLink.setToolTipText(CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_tooltip);
+                confirmedCommandsLink.setToolTipText(UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_tooltip);
             }
             removeButton = createClearButton(settingsGroup);
         }
@@ -224,7 +224,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private Button createClearButton(@NotNull Composite parent) {
         return UIUtils.createPushButton(
             parent,
-            CoreMessages.dialog_connection_edit_wizard_shell_cmd_clear_button_label,
+            UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_clear_button_label,
             DBeaverIcons.getImage(UIIcon.CLEAN),
             SelectionListener.widgetSelectedAdapter(e -> {
                 DBPConnectionEventType eventType = getSelectedEventType();
@@ -358,9 +358,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             } catch (DBException e) {
                 UIUtils.showMessageBox(
                     getShell(),
-                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_label,
+                    UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_label,
                     NLS.bind(
-                        CoreMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_text,
+                        UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_error_adding_cmd_text,
                         entry.getKey().getTitle(),
                         e.getMessage()
                     ),
@@ -383,14 +383,14 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             var filePath = ConfirmedShellCommandsStore.getInstance().prepareFile();
             if (EditorUtils.openExternalFileEditor(filePath, UIUtils.getActiveWorkbenchWindow()) == null) {
                 DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,
-                    CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message
+                    UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,
+                    UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message
                 );
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
-                CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,
-                CoreMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message,
+                UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_title,
+                UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_manage_confirmed_error_message,
                 e
             );
         }

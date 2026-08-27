@@ -22,10 +22,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.utils.CommonUtils;
@@ -99,7 +99,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
 
     @Override
     protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
-        testButton = createButton(parent, TEST_BUTTON_ID, "   " + CoreMessages.dialog_connection_button_test + "   ", false);
+        testButton = createButton(parent, TEST_BUTTON_ID, "   " + UIConnectionMessages.dialog_connection_button_test + "   ", false);
         testButton.setEnabled(false);
     }
 

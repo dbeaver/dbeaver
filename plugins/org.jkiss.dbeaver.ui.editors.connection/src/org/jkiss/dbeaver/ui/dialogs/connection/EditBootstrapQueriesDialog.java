@@ -25,12 +25,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
@@ -65,13 +64,13 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
-        getShell().setText(CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_title);
+        getShell().setText(UIConnectionMessages.dialog_connection_edit_wizard_general_bootstrap_query_title);
 
         Composite composite = super.createDialogArea(parent);
 
         Composite group = UIUtils.createTitledComposite(
             composite,
-            CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_sql_label,
+            UIConnectionMessages.dialog_connection_edit_wizard_general_bootstrap_query_sql_label,
             2,
             GridData.FILL_BOTH
         );
@@ -111,7 +110,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 tableEditor.closeEditor();
-                String sql = EditTextDialog.editText(getShell(), CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_sql_title, "");
+                String sql = EditTextDialog.editText(getShell(), UIConnectionMessages.dialog_connection_edit_wizard_general_bootstrap_query_sql_title, "");
                 if (sql != null) {
                     TableItem newItem = new TableItem(queriesTable, SWT.LEFT);
                     newItem.setText(sql);
@@ -155,11 +154,11 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             }
         });
 
-        ignoreErrorButton = UIUtils.createCheckbox(composite, CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable, ignoreErrors);
+        ignoreErrorButton = UIUtils.createCheckbox(composite, UIConnectionMessages.dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable, ignoreErrors);
         VariablesHintLabel variablesHintLabel = new VariablesHintLabel(
             composite,
-            CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
-            CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
+            UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
+            UIConnectionMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
             DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
         if (dataSourceDescriptor != null) {
             variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSourceDescriptor,
@@ -185,7 +184,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        return UIUtils.getSettingsSection(DBeaverActivator.getInstance().getDialogSettings(), DIALOG_ID);
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override

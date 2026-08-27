@@ -29,10 +29,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -46,8 +44,10 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
+import org.jkiss.dbeaver.ui.ConnectionPreferences;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -78,10 +78,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     @Override
     public String getWindowTitle() {
         if (isNew()) {
-            return CoreMessages.dialog_new_connection_wizard_title;
+            return UIConnectionMessages.dialog_new_connection_wizard_title;
         } else {
             DataSourceDescriptor activeDataSource = getActiveDataSource();
-            return NLS.bind( CoreMessages.dialog_connection_edit_title, activeDataSource.getName());
+            return NLS.bind( UIConnectionMessages.dialog_connection_edit_title, activeDataSource.getName());
         }
     }
 
@@ -174,7 +174,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             int decision = ConfirmationDialog.confirmAction(
                 getShell(),
                 ConfirmationDialog.WARNING,
-                DBeaverPreferences.CONFIRM_TEST_CONNECTION_PERSIST,
+                ConnectionPreferences.CONFIRM_TEST_CONNECTION_PERSIST,
                 ConfirmationDialog.CONFIRM
             );
             if (decision != IDialogConstants.OK_ID) {
@@ -253,19 +253,19 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
             } catch (InterruptedException ex) {
                 if (!"cancel".equals(ex.getMessage())) {
-                    DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
-                        CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
+                    DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_wizard_start_dialog_interrupted_title,
+                        UIConnectionMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                 }
             } catch (InvocationTargetException ex) {
                 Throwable targetException = ex.getTargetException();
                 DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    UIConnectionMessages.dialog_connection_wizard_start_dialog_error_title,
                     GeneralUtils.getExceptionMessage(targetException),
                     GeneralUtils.makeExceptionStatus(targetException)
                 );
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    UIConnectionMessages.dialog_connection_wizard_start_dialog_error_title,
                     null,
                     GeneralUtils.makeExceptionStatus(ex));
             }

@@ -22,11 +22,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
@@ -99,26 +99,26 @@ public class PrefPageConnectionClient extends TargetPrefPage {
         {
             Composite clientNameGroup = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_database_client_name_group,
+                UIConnectionMessages.pref_page_database_client_name_group,
                 2,
                 GridData.FILL_HORIZONTAL);
 
             disableClientApplicationNameCheck = UIUtils.createCheckbox(
                 clientNameGroup,
-                CoreMessages.pref_page_database_label_disable_client_application_name,
+                UIConnectionMessages.pref_page_database_label_disable_client_application_name,
                 null,
                 false,
                 2
             );
 
             final Label label = UIUtils.createLabel(clientNameGroup,
-                CoreMessages.pref_page_database_client_name_group_description);
+                UIConnectionMessages.pref_page_database_client_name_group_description);
             GridData gd = new GridData();
             gd.horizontalSpan = 2;
             label.setLayoutData(gd);
             overrideClientApplicationNameCheck = UIUtils.createCheckbox(
                 clientNameGroup,
-                CoreMessages.pref_page_database_label_override_client_application_name,
+                UIConnectionMessages.pref_page_database_label_override_client_application_name,
                 null,
                 false,
                 2
@@ -131,7 +131,7 @@ public class PrefPageConnectionClient extends TargetPrefPage {
             });
             clientApplicationNameText = UIUtils.createLabelText(
                 clientNameGroup,
-                CoreMessages.pref_page_database_label_client_application_name,
+                UIConnectionMessages.pref_page_database_label_client_application_name,
                 "" //$NON-NLS-1$
             );
 
@@ -141,7 +141,7 @@ public class PrefPageConnectionClient extends TargetPrefPage {
                 new StringContentProposalProvider(ALLOWED_VARIABLES));
             UIUtils.setContentProposalToolTip(
                 clientApplicationNameText,
-                CoreMessages.pref_page_connections_application_name_text,
+                UIConnectionMessages.pref_page_connections_application_name_text,
                 ALLOWED_VARIABLES
             );
         }
@@ -149,12 +149,12 @@ public class PrefPageConnectionClient extends TargetPrefPage {
         {
             Composite connGroup = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_connection_label_general,
+                UIConnectionMessages.pref_page_connection_label_general,
                 2,
                 GridData.FILL_HORIZONTAL);
             connUseEnvVariables = UIUtils.createCheckbox(
                 connGroup,
-                CoreMessages.pref_page_connection_label_use_environment,
+                UIConnectionMessages.pref_page_connection_label_use_environment,
                 null,
                 false,
                 2

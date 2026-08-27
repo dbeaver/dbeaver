@@ -30,7 +30,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
@@ -88,8 +88,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
 
     private ConnectionPageInitialization() {
         super(PAGE_NAME); //$NON-NLS-1$
-        setTitle(CoreMessages.dialog_connection_wizard_connection_init);
-        setDescription(CoreMessages.dialog_connection_wizard_connection_init_description);
+        setTitle(UIConnectionMessages.dialog_connection_wizard_connection_init);
+        setDescription(UIConnectionMessages.dialog_connection_wizard_connection_init_description);
     }
 
     ConnectionPageInitialization(@NotNull DataSourceDescriptor dataSourceDescriptor) {
@@ -104,8 +104,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
             pageConnectionClient.setElement(dataSourceDescriptor);
             clientAppPage = new WizardPrefPage(
                 pageConnectionClient,
-                CoreMessages.dialog_connection_edit_wizard_connections,
-                CoreMessages.dialog_connection_edit_wizard_connections_description
+                UIConnectionMessages.dialog_connection_edit_wizard_connections,
+                UIConnectionMessages.dialog_connection_edit_wizard_connections_description
             );
         }
     }
@@ -297,14 +297,14 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         {
             Composite txnGroup = UIUtils.createTitledComposite(
                 group,
-                CoreMessages.dialog_connection_edit_wizard_transactions,
+                UIConnectionMessages.dialog_connection_edit_wizard_transactions,
                 2,
                 GridData.HORIZONTAL_ALIGN_BEGINNING
             );
 
             autocommit = UIUtils.createLabelCombo(
                 txnGroup,
-                CoreMessages.action_menu_transactionMonitor_autocommitMode,
+                UIConnectionMessages.action_menu_transactionMonitor_autocommitMode,
                 "Sets auto-commit mode for this connection.\nIf set to default then connection type configuration will be used.",
                 SWT.DROP_DOWN | SWT.READ_ONLY);
             autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -312,12 +312,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
             autocommit.add("Auto commit");
             autocommit.add("Manual commit");
 
-            isolationLevel = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_isolation_level,
-                CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            isolationLevel = UIUtils.createLabelCombo(txnGroup, UIConnectionMessages.dialog_connection_wizard_final_label_isolation_level,
+                UIConnectionMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
         }
         UIUtils.createPreferenceLink(
             group,
-            CoreMessages.action_menu_transaction_pref_page_link_extended,
+            UIConnectionMessages.action_menu_transaction_pref_page_link_extended,
             PrefPageConnectionTypes.PAGE_ID,
             null, null
         );
@@ -325,34 +325,34 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         {
             Composite conGroup = UIUtils.createTitledComposite(
                 group,
-                CoreMessages.dialog_connection_wizard_final_label_connection,
+                UIConnectionMessages.dialog_connection_wizard_final_label_connection,
                 2,
                 GridData.HORIZONTAL_ALIGN_BEGINNING
             );
 
-            defaultCatalog = UIUtils.createLabelCombo(conGroup, CoreMessages.dialog_connection_wizard_final_label_default_database,
-                    CoreMessages.dialog_connection_wizard_final_label_default_database_tooltip, SWT.DROP_DOWN);
+            defaultCatalog = UIUtils.createLabelCombo(conGroup, UIConnectionMessages.dialog_connection_wizard_final_label_default_database,
+                    UIConnectionMessages.dialog_connection_wizard_final_label_default_database_tooltip, SWT.DROP_DOWN);
             ((GridData)defaultCatalog.getLayoutData()).widthHint = UIUtils.getFontHeight(defaultCatalog) * 20;
-            defaultSchema = UIUtils.createLabelCombo(conGroup, CoreMessages.dialog_connection_wizard_final_label_default_schema,
-                CoreMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
+            defaultSchema = UIUtils.createLabelCombo(conGroup, UIConnectionMessages.dialog_connection_wizard_final_label_default_schema,
+                UIConnectionMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
             ((GridData)defaultSchema.getLayoutData()).widthHint = UIUtils.getFontHeight(defaultSchema) * 20;
-            keepAliveInterval = UIUtils.createLabelSpinner(conGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
-                CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
+            keepAliveInterval = UIUtils.createLabelSpinner(conGroup, UIConnectionMessages.dialog_connection_wizard_final_label_keepalive,
+                UIConnectionMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
 
             Composite idleConComp = UIUtils.createComposite(conGroup, 2);
             idleConComp.setLayoutData(GridDataFactory.create(GridData.FILL_HORIZONTAL).span(2, 1).create());
             closeIdleConnectionsCheck = UIUtils.createCheckbox(idleConComp,
-                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
-                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, true, 1);
+                UIConnectionMessages.dialog_connection_wizard_final_label_close_idle_connections,
+                UIConnectionMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, true, 1);
             closeIdleConnectionsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent ->
                 closeIdleConnectionsPeriod.setEnabled(closeIdleConnectionsCheck.getSelection())));
             closeIdleConnectionsPeriod = UIUtils.createSpinner(idleConComp,
-                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, 0, 0, Short.MAX_VALUE);
+                UIConnectionMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, 0, 0, Short.MAX_VALUE);
 
             {
-                String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
-                UIUtils.createControlLabel(conGroup, CoreMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);
-                final Button queriesConfigButton = UIUtils.createPushButton(conGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
+                String bootstrapTooltip = UIConnectionMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
+                UIUtils.createControlLabel(conGroup, UIConnectionMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);
+                final Button queriesConfigButton = UIUtils.createPushButton(conGroup, UIConnectionMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
                 queriesConfigButton.setToolTipText(bootstrapTooltip);
                 if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
                     queriesConfigButton.setFont(BaseThemeSettings.instance.baseFontBold);
@@ -374,12 +374,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
             }
         }
 
-        Control infoLabel = UIUtils.createInfoLabel(group, CoreMessages.dialog_connection_wizard_connection_init_hint);
-        infoLabel.setToolTipText(CoreMessages.dialog_connection_wizard_connection_init_hint_tip);
+        Control infoLabel = UIUtils.createInfoLabel(group, UIConnectionMessages.dialog_connection_wizard_connection_init_hint);
+        infoLabel.setToolTipText(UIConnectionMessages.dialog_connection_wizard_connection_init_hint_tip);
 
         Link urlHelpLabel = UIUtils.createLink(
             group,
-            CoreMessages.dialog_connection_wizard_connection_init_docs_hint,
+            UIConnectionMessages.dialog_connection_wizard_connection_init_docs_hint,
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {

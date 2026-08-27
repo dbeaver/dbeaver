@@ -25,9 +25,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
@@ -67,14 +67,14 @@ public class PasswordChangeDialog extends BaseDialog
         gd.widthHint = 300;
         infoLabel.setLayoutData(gd);
 
-        Text userNameText = UIUtils.createLabelText(credGroup, CoreMessages.dialog_password_change_username, passwordInfo.getUserName(), SWT.BORDER);
+        Text userNameText = UIUtils.createLabelText(credGroup, UIConnectionMessages.dialog_password_change_username, passwordInfo.getUserName(), SWT.BORDER);
         userNameText.addModifyListener(e -> passwordInfo.setUserName(userNameText.getText()));
         userNameText.setEditable(userEditable);
         if (oldPasswordVisible) {
-            Text oldPasswordText = UIUtils.createLabelText(credGroup, CoreMessages.dialog_password_change_old_password, passwordInfo.getOldPassword(), SWT.BORDER | SWT.PASSWORD);
+            Text oldPasswordText = UIUtils.createLabelText(credGroup, UIConnectionMessages.dialog_password_change_old_password, passwordInfo.getOldPassword(), SWT.BORDER | SWT.PASSWORD);
             oldPasswordText.addModifyListener(e -> passwordInfo.setOldPassword(oldPasswordText.getText()));
         }
-        Text newPasswordText = UIUtils.createLabelText(credGroup, CoreMessages.dialog_password_change_new_password, "", SWT.BORDER | SWT.PASSWORD);
+        Text newPasswordText = UIUtils.createLabelText(credGroup, UIConnectionMessages.dialog_password_change_new_password, "", SWT.BORDER | SWT.PASSWORD);
         newPasswordText.addModifyListener(e -> {
             passwordInfo.setNewPassword(newPasswordText.getText());
             updateButtons();
@@ -82,7 +82,7 @@ public class PasswordChangeDialog extends BaseDialog
         if (!userEditable) {
             newPasswordText.setFocus();
         }
-        Text verifyPasswordText = UIUtils.createLabelText(credGroup, CoreMessages.dialog_password_change_verify_password, "", SWT.BORDER | SWT.PASSWORD);
+        Text verifyPasswordText = UIUtils.createLabelText(credGroup, UIConnectionMessages.dialog_password_change_verify_password, "", SWT.BORDER | SWT.PASSWORD);
         verifyPasswordText.addModifyListener(e -> {
             verifyText = verifyPasswordText.getText();
             updateButtons();

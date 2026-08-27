@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -133,7 +134,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (isStandalone && !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             Composite groupObjects = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_ui_general_group_general,
+                UIConnectionMessages.pref_page_ui_general_group_general,
                 2,
                 GridData.VERTICAL_ALIGN_BEGINNING
             );

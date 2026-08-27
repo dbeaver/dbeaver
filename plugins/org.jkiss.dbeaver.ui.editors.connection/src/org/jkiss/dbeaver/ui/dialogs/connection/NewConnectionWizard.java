@@ -23,7 +23,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
@@ -66,7 +66,7 @@ public class NewConnectionWizard extends ConnectionWizard
     }
 
     public NewConnectionWizard(@Nullable DBPDriver initialDriver, @Nullable DBPConnectionConfiguration initialConfiguration) {
-        setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
+        setWindowTitle(UIConnectionMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
         this.initialConfiguration = initialConfiguration;
 

@@ -30,7 +30,6 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
@@ -92,7 +92,7 @@ public class EditConnectionWizard extends ConnectionWizard {
             this.dataSource.resetPassword();
         }
 
-        setWindowTitle(CoreMessages.dialog_connection_wizard_title);
+        setWindowTitle(UIConnectionMessages.dialog_connection_wizard_title);
         setDriverSubstitution(dataSource.getDriverSubstitution());
 
         addPropertyChangeListener(event -> {
@@ -190,15 +190,15 @@ public class EditConnectionWizard extends ConnectionWizard {
             pageSettings.addSubPage(pageInit);
             pageSettings.addSubPage(createPreferencePage(
                 new PrefPageTransactions(),
-                CoreMessages.dialog_connection_edit_wizard_transactions,
-                CoreMessages.dialog_connection_edit_wizard_transactions_description
+                UIConnectionMessages.dialog_connection_edit_wizard_transactions,
+                UIConnectionMessages.dialog_connection_edit_wizard_transactions_description
             ));
 
             pageSettings.addSubPage(pageInternalParameters);
         }
 
-        addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);
-        addPreferencePage(new PrefPageErrorHandle(), CoreMessages.pref_page_error_handle_name,  CoreMessages.pref_page_error_handle_description);
+        addPreferencePage(new PrefPageMetaData(), UIConnectionMessages.dialog_connection_edit_wizard_metadata,  UIConnectionMessages.dialog_connection_edit_wizard_metadata_description);
+        addPreferencePage(new PrefPageErrorHandle(), UIConnectionMessages.pref_page_error_handle_name,  UIConnectionMessages.pref_page_error_handle_description);
 
         for (DataSourcePageDescriptor page : DataSourceViewRegistry.getInstance().getRootDataSourcePages(dataSource)) {
             addDataSourcePage(null, page);
@@ -323,8 +323,8 @@ public class EditConnectionWizard extends ConnectionWizard {
     public boolean performFinish() {
         PersistResult result = persistDataSource();
         if (result == PersistResult.CHANGED && originalDataSource.isConnected()) {
-            if (UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-                NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question,
+            if (UIUtils.confirmAction(getShell(), UIConnectionMessages.dialog_connection_edit_wizard_conn_change_title,
+                NLS.bind(UIConnectionMessages.dialog_connection_edit_wizard_conn_change_question,
                 originalDataSource.getName()) )
             ) {
                 DataSourceHandler.reconnectDataSource(null, originalDataSource);
@@ -342,7 +342,7 @@ public class EditConnectionWizard extends ConnectionWizard {
     }
 
     private boolean checkLockPassword() {
-        BaseAuthDialog dialog = new BaseAuthDialog(getShell(), CoreMessages.dialog_connection_edit_wizard_lock_pwd_title, true, false);
+        BaseAuthDialog dialog = new BaseAuthDialog(getShell(), UIConnectionMessages.dialog_connection_edit_wizard_lock_pwd_title, true, false);
         if (dialog.open() == IDialogConstants.OK_ID) {
             final String userPassword = dialog.getUserPassword();
             if (!CommonUtils.isEmpty(userPassword)) {
@@ -352,9 +352,9 @@ public class EditConnectionWizard extends ConnectionWizard {
                     if (hexString.equals(dataSource.getLockPasswordHash())) {
                         return true;
                     }
-                    UIUtils.showMessageBox(getShell(), CoreMessages.dialog_connection_edit_wizard_bad_pwd_title, CoreMessages.dialog_connection_edit_wizard_bad_pwd_msg, SWT.ICON_ERROR);
+                    UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_connection_edit_wizard_bad_pwd_title, UIConnectionMessages.dialog_connection_edit_wizard_bad_pwd_msg, SWT.ICON_ERROR);
                 } catch (Throwable e) {
-                    DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_connection_edit_wizard_error_md5_title, CoreMessages.dialog_connection_edit_wizard_error_md5_msg, e);
+                    DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_connection_edit_wizard_error_md5_title, UIConnectionMessages.dialog_connection_edit_wizard_error_md5_msg, e);
                 }
             }
         }

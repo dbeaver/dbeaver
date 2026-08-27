@@ -30,7 +30,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -97,8 +97,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         {
             typeTable = new Table(composite, SWT.SINGLE | SWT.BORDER);
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_name);
-            UIUtils.createTableColumn(typeTable, SWT.LEFT, CoreMessages.pref_page_connection_types_label_table_column_description);
+            UIUtils.createTableColumn(typeTable, SWT.LEFT, UIConnectionMessages.pref_page_connection_types_label_table_column_name);
+            UIUtils.createTableColumn(typeTable, SWT.LEFT, UIConnectionMessages.pref_page_connection_types_label_table_column_description);
             //typeTable.setHeaderVisible(true);
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             typeTable.addSelectionListener(new SelectionAdapter() {
@@ -148,8 +148,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         DBPConnectionType connectionType = getSelectedType();
                         if (!UIUtils.confirmAction(
                             getShell(),
-                            CoreMessages.pref_page_connection_types_label_delete_connection_type, NLS.bind(
-                                CoreMessages.pref_page_connection_types_label_delete_connection_type_description,
+                            UIConnectionMessages.pref_page_connection_types_label_delete_connection_type, NLS.bind(
+                                UIConnectionMessages.pref_page_connection_types_label_delete_connection_type_description,
                                 connectionType.getName(), DBPConnectionType.DEFAULT_TYPE.getName()
                             )
                         )) {
@@ -169,29 +169,29 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         {
             Composite groupSettings = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_connection_types_group_parameters,
+                UIConnectionMessages.pref_page_connection_types_group_parameters,
                 2,
                 GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL,
                 300);
 
-            typeId = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_id, null);
+            typeId = UIUtils.createLabelText(groupSettings, UIConnectionMessages.pref_page_connection_types_label_id, null);
             typeId.addModifyListener(e -> {
                 getSelectedType().setId(typeId.getText());
                 updateTableInfo();
             });
-            typeName = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_name, null);
+            typeName = UIUtils.createLabelText(groupSettings, UIConnectionMessages.pref_page_connection_types_label_name, null);
             typeName.addModifyListener(e -> {
                 getSelectedType().setName(typeName.getText());
                 updateTableInfo();
             });
-            typeDescription = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_description, null);
+            typeDescription = UIUtils.createLabelText(groupSettings, UIConnectionMessages.pref_page_connection_types_label_description, null);
             typeDescription.addModifyListener(e -> {
                 getSelectedType().setDescription(typeDescription.getText());
                 updateTableInfo();
             });
 
             {
-                UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color);
+                UIUtils.createControlLabel(groupSettings, UIConnectionMessages.pref_page_connection_types_label_color);
                 Composite panel = UIUtils.createComposite(groupSettings, 3);
                 panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 colorPicker = new ColorSelector(panel);
@@ -200,7 +200,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     updateTableInfo();
                 });
 
-                UIUtils.createControlLabel(panel, CoreMessages.pref_page_connection_types_label_color_alternative);
+                UIUtils.createControlLabel(panel, UIConnectionMessages.pref_page_connection_types_label_color_alternative);
                 alternativeColorPicker = new ColorSelector(panel);
                 alternativeColorPicker.addListener(event -> {
                     getSelectedType().setColorDark(StringConverter.asString(alternativeColorPicker.getColorValue()));
@@ -212,15 +212,15 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         {
             Composite placeholder = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_connection_types_group_settings,
+                UIConnectionMessages.pref_page_connection_types_group_settings,
                 2,
                 GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL,
                 300);
 
             confirmCheck = UIUtils.createCheckbox(
                 placeholder,
-                CoreMessages.pref_page_connection_types_label_confirm_sql_execution,
-                CoreMessages.pref_page_connection_types_label_confirm_sql_execution_tip,
+                UIConnectionMessages.pref_page_connection_types_label_confirm_sql_execution,
+                UIConnectionMessages.pref_page_connection_types_label_confirm_sql_execution_tip,
                 false,
                 2);
             confirmCheck.addSelectionListener(new SelectionAdapter() {
@@ -232,8 +232,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
             confirmDataChangeCheck = UIUtils.createCheckbox(
                 placeholder,
-                CoreMessages.pref_page_connection_types_label_confirm_data_change,
-                CoreMessages.pref_page_connection_types_label_confirm_data_change_tip,
+                UIConnectionMessages.pref_page_connection_types_label_confirm_data_change,
+                UIConnectionMessages.pref_page_connection_types_label_confirm_data_change_tip,
                 false,
                 2);
             confirmDataChangeCheck.addSelectionListener(new SelectionAdapter() {
@@ -245,8 +245,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
             autocommitCheck = UIUtils.createCheckbox(
                 placeholder,
-                CoreMessages.pref_page_connection_types_label_auto_commit_by_default,
-                CoreMessages.pref_page_connection_types_label_auto_commit_by_default_tip,
+                UIConnectionMessages.pref_page_connection_types_label_auto_commit_by_default,
+                UIConnectionMessages.pref_page_connection_types_label_auto_commit_by_default_tip,
                 false,
                 2);
             autocommitCheck.addSelectionListener(new SelectionAdapter() {
@@ -257,8 +257,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             });
 
             smartCommitCheck = UIUtils.createCheckbox(placeholder,
-                CoreMessages.action_menu_transaction_smart_auto_commit,
-                CoreMessages.action_menu_transaction_smart_auto_commit_tip,
+                UIConnectionMessages.action_menu_transaction_smart_auto_commit,
+                UIConnectionMessages.action_menu_transaction_smart_auto_commit_tip,
                 false,
                 2);
             smartCommitCheck.addSelectionListener(new SelectionAdapter() {
@@ -269,8 +269,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             });
             smartCommitRecoverCheck = UIUtils.createCheckbox(placeholder,
-                CoreMessages.action_menu_transaction_smart_auto_commit_recover,
-                CoreMessages.action_menu_transaction_smart_auto_commit_recover_tip,
+                UIConnectionMessages.action_menu_transaction_smart_auto_commit_recover,
+                UIConnectionMessages.action_menu_transaction_smart_auto_commit_recover_tip,
                 false,
                 2);
             smartCommitRecoverCheck.addSelectionListener(new SelectionAdapter() {
@@ -282,8 +282,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             // transactions
             autoCloseTransactionsCheck = UIUtils.createCheckbox(
                 placeholder,
-                CoreMessages.action_menu_transaction_auto_close_enabled,
-                CoreMessages.pref_page_connection_types_label_auto_close_enabled_tip,
+                UIConnectionMessages.action_menu_transaction_auto_close_enabled,
+                UIConnectionMessages.pref_page_connection_types_label_auto_close_enabled_tip,
                 true,
                 1);
             autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
@@ -293,7 +293,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             });
             autoCloseTransactionsTtlText = new Text(placeholder, SWT.BORDER);
-            autoCloseTransactionsTtlText.setToolTipText(CoreMessages.pref_page_connection_types_label_auto_close_ttl_tip);
+            autoCloseTransactionsTtlText.setToolTipText(UIConnectionMessages.pref_page_connection_types_label_auto_close_ttl_tip);
             autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
             GridData grd = new GridData();
             grd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
@@ -304,8 +304,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             // connections
             autoCloseConnectionsCheck = UIUtils.createCheckbox(
                 placeholder,
-                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
-                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip,
+                UIConnectionMessages.dialog_connection_wizard_final_label_close_idle_connections,
+                UIConnectionMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip,
                 true,
                 1);
             autoCloseConnectionsCheck.addSelectionListener(new SelectionAdapter() {
@@ -315,7 +315,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             });
             autoCloseConnectionsTtlText = new Text(placeholder, SWT.BORDER);
-            autoCloseConnectionsTtlText.setToolTipText(CoreMessages.pref_page_connection_types_label_auto_close_ttl_tip);
+            autoCloseConnectionsTtlText.setToolTipText(UIConnectionMessages.pref_page_connection_types_label_auto_close_ttl_tip);
             autoCloseConnectionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
             GridData grdConnections = new GridData();
             grdConnections.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
@@ -327,7 +327,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             if (canEdit) {
                 Button editPermissionsButton = UIUtils.createDialogButton(
                     placeholder,
-                    CoreMessages.pref_page_label_edit_permissions,
+                    UIConnectionMessages.pref_page_label_edit_permissions,
                     new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -348,7 +348,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 
         UIUtils.createLink(
             composite,
-            "<a>" + CoreMessages.pref_page_connection_types_wiki_link + "</a>",
+            "<a>" + UIConnectionMessages.pref_page_connection_types_wiki_link + "</a>",
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {

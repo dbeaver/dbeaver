@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -103,7 +103,7 @@ public class ConnectionNameResolver implements IVariableResolver {
                 newName = getDataSourceContainer().getDriver().getName();
             }
             if (CommonUtils.isEmpty(newName)) {
-                newName = CoreMessages.dialog_connection_wizard_final_default_new_connection_name;
+                newName = UIConnectionMessages.dialog_connection_wizard_final_default_new_connection_name;
             }
             StringTokenizer st = new StringTokenizer(newName, "/\\"); //$NON-NLS-1$
             while (st.hasMoreTokens()) {

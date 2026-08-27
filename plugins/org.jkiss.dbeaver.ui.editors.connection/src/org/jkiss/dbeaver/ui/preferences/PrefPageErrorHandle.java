@@ -23,10 +23,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Spinner;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -84,30 +84,30 @@ public class PrefPageErrorHandle extends TargetPrefPage {
         {
             Composite timeoutsGroup = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_error_handle_group_timeouts_title,
+                UIConnectionMessages.pref_page_error_handle_group_timeouts_title,
                 2
             );
 
             connectionOpenTimeout = UIUtils.createLabelSpinner(
                 timeoutsGroup,
-                CoreMessages.pref_page_error_handle_connection_open_timeout_label + UIMessages.label_ms,
-                CoreMessages.pref_page_error_handle_connection_open_timeout_label_tip,
+                UIConnectionMessages.pref_page_error_handle_connection_open_timeout_label + UIMessages.label_ms,
+                UIConnectionMessages.pref_page_error_handle_connection_open_timeout_label_tip,
                 0,
                 0,
                 Integer.MAX_VALUE
             );
             connectionCloseTimeout = UIUtils.createLabelSpinner(
                 timeoutsGroup,
-                CoreMessages.pref_page_error_handle_connection_close_timeout_label + UIMessages.label_ms,
-                CoreMessages.pref_page_error_handle_connection_close_timeout_label_tip,
+                UIConnectionMessages.pref_page_error_handle_connection_close_timeout_label + UIMessages.label_ms,
+                UIConnectionMessages.pref_page_error_handle_connection_close_timeout_label_tip,
                 0,
                 0,
                 Integer.MAX_VALUE
             );
             connectionValidateTimeout = UIUtils.createLabelSpinner(
                 timeoutsGroup,
-                CoreMessages.pref_page_error_handle_connection_validate_timeout_label + UIMessages.label_ms,
-                CoreMessages.pref_page_error_handle_connection_validate_timeout_label_tip,
+                UIConnectionMessages.pref_page_error_handle_connection_validate_timeout_label + UIMessages.label_ms,
+                UIConnectionMessages.pref_page_error_handle_connection_validate_timeout_label_tip,
                 0,
                 0,
                 Integer.MAX_VALUE
@@ -118,28 +118,28 @@ public class PrefPageErrorHandle extends TargetPrefPage {
         {
             Composite errorGroup = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_error_handle_group_execute_title,
+                UIConnectionMessages.pref_page_error_handle_group_execute_title,
                 2
             );
 
             rollbackOnErrorCheck = UIUtils.createCheckbox(
                 errorGroup,
-                CoreMessages.pref_page_database_general_checkbox_rollback_on_error,
+                UIConnectionMessages.pref_page_database_general_checkbox_rollback_on_error,
                 null,
                 false,
                 2
             );
             connectionAutoRecoverEnabled = UIUtils.createCheckbox(
                 errorGroup,
-                CoreMessages.pref_page_error_handle_recover_enabled_label,
-                CoreMessages.pref_page_error_handle_recover_enabled_tip,
+                UIConnectionMessages.pref_page_error_handle_recover_enabled_label,
+                UIConnectionMessages.pref_page_error_handle_recover_enabled_tip,
                 false,
                 2
             );
             connectionAutoRecoverRetryCount = UIUtils.createLabelSpinner(
                 errorGroup,
-                CoreMessages.pref_page_error_handle_recover_retry_count_label,
-                CoreMessages.pref_page_error_handle_recover_retry_count_tip,
+                UIConnectionMessages.pref_page_error_handle_recover_retry_count_label,
+                UIConnectionMessages.pref_page_error_handle_recover_retry_count_tip,
                 0,
                 0,
                 Integer.MAX_VALUE
@@ -150,14 +150,14 @@ public class PrefPageErrorHandle extends TargetPrefPage {
         {
             Composite errorGroup = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_error_handle_group_cancel_title,
+                UIConnectionMessages.pref_page_error_handle_group_cancel_title,
                 2,
                 GridData.VERTICAL_ALIGN_BEGINNING);
 
             cancelCheckTimeout = UIUtils.createLabelSpinner(
                 errorGroup,
-                CoreMessages.pref_page_error_handle_cancel_check_timeout,
-                CoreMessages.pref_page_error_handle_cancel_check_timeout_tip,
+                UIConnectionMessages.pref_page_error_handle_cancel_check_timeout,
+                UIConnectionMessages.pref_page_error_handle_cancel_check_timeout_tip,
                 0,
                 0,
                 Integer.MAX_VALUE

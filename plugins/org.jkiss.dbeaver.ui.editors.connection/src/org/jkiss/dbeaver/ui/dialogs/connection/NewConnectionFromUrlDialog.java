@@ -33,7 +33,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -67,7 +67,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
     private DriverInfo driver;
 
     public NewConnectionFromUrlDialog(@NotNull Shell shell) {
-        super(shell, CoreMessages.dialog_connection_from_url_title, null);
+        super(shell, UIConnectionMessages.dialog_connection_from_url_title, null);
         setShellStyle(SWT.TITLE | SWT.CLOSE | SWT.RESIZE | SWT.BORDER);
     }
 
@@ -80,10 +80,10 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
             ((GridData) composite.getLayoutData()).widthHint = 500;
 
-            final Text urlText = UIUtils.createLabelText(composite, CoreMessages.dialog_connection_from_url_url, null);
+            final Text urlText = UIUtils.createLabelText(composite, UIConnectionMessages.dialog_connection_from_url_url, null);
             urlText.setMessage("jdbc:postgresql://localhost:5432/dbeaver");
 
-            UIUtils.createControlLabel(composite, CoreMessages.dialog_connection_from_url_drivers);
+            UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_from_url_drivers);
             driverViewer = new TreeViewer(composite, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
             driverViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
             driverViewer.setContentProvider(new DriverContentProvider());
@@ -216,11 +216,11 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
 
     private void updateCompletion() {
         if (driverViewer.getTree().getItemCount() == 0) {
-            setCompleted(false, CoreMessages.dialog_connection_from_url_error_no_drivers_found);
+            setCompleted(false, UIConnectionMessages.dialog_connection_from_url_error_no_drivers_found);
             return;
         }
         if (!(driverViewer.getStructuredSelection().getFirstElement() instanceof DriverInfo)) {
-            setCompleted(false, CoreMessages.dialog_connection_from_url_error_no_driver_selected);
+            setCompleted(false, UIConnectionMessages.dialog_connection_from_url_error_no_driver_selected);
             return;
         }
         setCompleted(true, "");

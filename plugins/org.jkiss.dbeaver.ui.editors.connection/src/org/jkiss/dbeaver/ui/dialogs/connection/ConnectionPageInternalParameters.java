@@ -27,11 +27,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourcePreferenceStore;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
@@ -43,8 +43,8 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
         super(ConnectionPageInternalParameters.class.getSimpleName());
         this.dataSourceDescriptor = dataSourceDescriptor;
 
-        setTitle(CoreMessages.dialog_connection_internal_parameters_title);
-        setDescription(CoreMessages.dialog_connection_internal_parameters_description);
+        setTitle(UIConnectionMessages.dialog_connection_internal_parameters_title);
+        setDescription(UIConnectionMessages.dialog_connection_internal_parameters_description);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
 
         UIUtils.createInfoLink(
             host,
-            CoreMessages.dialog_connection_internal_parameters_tip,
+            UIConnectionMessages.dialog_connection_internal_parameters_tip,
             () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Admin-Manage-Preferences")),
             SWT.NONE,
             1,
@@ -72,14 +72,14 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
     private void createParametersGroup(@NotNull Composite parent) {
         Composite group = UIUtils.createTitledComposite(
             parent,
-            CoreMessages.dialog_connection_internal_parameters_parameters,
+            UIConnectionMessages.dialog_connection_internal_parameters_parameters,
             4,
             GridData.FILL_HORIZONTAL
         );
 
         Text projectIdText = UIUtils.createLabelText(
             group,
-            CoreMessages.dialog_connection_internal_parameters_parameters_project_id,
+            UIConnectionMessages.dialog_connection_internal_parameters_parameters_project_id,
             dataSourceDescriptor.getProject().getId()
         );
         projectIdText.setEditable(false);
@@ -87,7 +87,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
 
         Text connectionIdText = UIUtils.createLabelText(
             group,
-            CoreMessages.dialog_connection_internal_parameters_parameters_connection_id,
+            UIConnectionMessages.dialog_connection_internal_parameters_parameters_connection_id,
             dataSourceDescriptor.getId()
         );
         connectionIdText.setEditable(false);
@@ -97,14 +97,14 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
 
         Text driverIdText = UIUtils.createLabelText(
             group,
-            CoreMessages.dialog_connection_internal_parameters_parameters_driver_id,
+            UIConnectionMessages.dialog_connection_internal_parameters_parameters_driver_id,
             driver.getId()
         );
         driverIdText.setEditable(false);
 
         Text driverProviderIdText = UIUtils.createLabelText(
             group,
-            CoreMessages.dialog_connection_internal_parameters_parameters_driver_provider_id,
+            UIConnectionMessages.dialog_connection_internal_parameters_parameters_driver_provider_id,
             driver.getProviderId()
         );
         driverProviderIdText.setEditable(false);
@@ -113,7 +113,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
     private void createCustomPropertiesGroup(@NotNull Composite parent) {
         Composite group = UIUtils.createTitledComposite(
             parent,
-            CoreMessages.dialog_connection_internal_parameters_custom,
+            UIConnectionMessages.dialog_connection_internal_parameters_custom,
             1,
             GridData.FILL_BOTH
         );
@@ -127,7 +127,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
             .applyTo(viewer.getControl());
 
         TableViewerColumn keyColumn = new TableViewerColumn(viewer, SWT.NONE);
-        keyColumn.getColumn().setText(CoreMessages.dialog_connection_internal_parameters_custom_key);
+        keyColumn.getColumn().setText(UIConnectionMessages.dialog_connection_internal_parameters_custom_key);
         keyColumn.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -138,7 +138,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
         DataSourcePreferenceStore preferences = dataSourceDescriptor.getPreferenceStore();
 
         TableViewerColumn valueColumn = new TableViewerColumn(viewer, SWT.NONE);
-        valueColumn.getColumn().setText(CoreMessages.dialog_connection_internal_parameters_custom_value);
+        valueColumn.getColumn().setText(UIConnectionMessages.dialog_connection_internal_parameters_custom_value);
         valueColumn.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {

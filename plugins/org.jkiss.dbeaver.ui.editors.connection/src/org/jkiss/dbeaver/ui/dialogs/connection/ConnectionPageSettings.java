@@ -34,9 +34,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -61,6 +59,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -139,12 +138,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             this.substitutedViewDescriptor = null;
         }
 
-        String pageTitle = wizard.isNew() ? viewDescriptor.getLabel() : CoreMessages.dialog_setting_connection_wizard_title;
+        String pageTitle = wizard.isNew() ? viewDescriptor.getLabel() : UIConnectionMessages.dialog_setting_connection_wizard_title;
         if (isTemporaryConnection()) {
             pageTitle += " / TEMPORARY";
         }
         setTitle(pageTitle);
-        setDescription(CoreMessages.dialog_connection_description);
+        setDescription(UIConnectionMessages.dialog_connection_description);
     }
 
     @NotNull
@@ -174,7 +173,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     @Override
     public String getPageSubTitle() {
-        return CoreMessages.dialog_setting_connection_wizard_title;
+        return UIConnectionMessages.dialog_setting_connection_wizard_title;
     }
 
     @Override
@@ -389,7 +388,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         });
 
         var toolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
-        toolItem.setText(CoreMessages.dialog_connection_network_add_tunnel_label);
+        toolItem.setText(UIConnectionMessages.dialog_connection_network_add_tunnel_label);
         toolItem.setImage(DBeaverIcons.getImage(UIIcon.ADD));
         toolItem.addDisposeListener(e -> handlerManager.dispose());
         toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -756,7 +755,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             final int decision = ConfirmationDialog.confirmAction(
                 getShell(),
                 ConfirmationDialog.INFORMATION,
-                DBeaverPreferences.CONFIRM_DISABLE_NETWORK_HANDLER,
+                ConnectionPreferences.CONFIRM_DISABLE_NETWORK_HANDLER,
                 ConfirmationDialog.CONFIRM,
                 descriptor.getCodeName(),
                 descriptor.getCodeName()
@@ -801,7 +800,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private CTabItem createPageTab(@NotNull IDialogPage page, int index) {
         final CTabItem item = new CTabItem(tabFolder, isHandlerPage(page) ? SWT.CLOSE : SWT.NONE, index);
         item.setData(page);
-        item.setText(CommonUtils.isEmpty(page.getTitle()) ? CoreMessages.dialog_setting_connection_general : page.getTitle());
+        item.setText(CommonUtils.isEmpty(page.getTitle()) ? UIConnectionMessages.dialog_setting_connection_general : page.getTitle());
         item.setToolTipText(page.getDescription());
 
         if (page.getControl() == null) {

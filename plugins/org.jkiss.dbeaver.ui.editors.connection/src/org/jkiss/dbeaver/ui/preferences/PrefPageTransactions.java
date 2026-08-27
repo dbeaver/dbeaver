@@ -27,11 +27,11 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -80,15 +80,15 @@ public class PrefPageTransactions extends TargetPrefPage {
         boolean dataSourcePreferencePage = isDataSourcePreferencePage();
         Composite txnNameGroup = UIUtils.createTitledComposite(
             composite,
-            CoreMessages.dialog_connection_edit_wizard_transactions,
+            UIConnectionMessages.dialog_connection_edit_wizard_transactions,
             2,
             GridData.FILL_HORIZONTAL);
         String settingsTipString;
         if (dataSourcePreferencePage) {
             smartCommitCheck = UIUtils.createCheckbox(
                 txnNameGroup,
-                CoreMessages.action_menu_transaction_smart_auto_commit,
-                CoreMessages.action_menu_transaction_smart_auto_commit_tip,
+                UIConnectionMessages.action_menu_transaction_smart_auto_commit,
+                UIConnectionMessages.action_menu_transaction_smart_auto_commit_tip,
                 false,
                 2);
             smartCommitCheck.addSelectionListener(new SelectionAdapter() {
@@ -99,26 +99,26 @@ public class PrefPageTransactions extends TargetPrefPage {
             });
             smartCommitRecoverCheck = UIUtils.createCheckbox(
                 txnNameGroup,
-                CoreMessages.action_menu_transaction_smart_auto_commit_recover,
-                CoreMessages.action_menu_transaction_smart_auto_commit_recover_tip,
+                UIConnectionMessages.action_menu_transaction_smart_auto_commit_recover,
+                UIConnectionMessages.action_menu_transaction_smart_auto_commit_recover_tip,
                 false,
                 2);
 
             autoCloseTransactionsCheck = UIUtils.createCheckbox(
                 txnNameGroup,
-                CoreMessages.action_menu_transaction_auto_close_enabled,
-                CoreMessages.action_menu_transaction_auto_close_enabled_tip,
+                UIConnectionMessages.action_menu_transaction_auto_close_enabled,
+                UIConnectionMessages.action_menu_transaction_auto_close_enabled_tip,
                 true,
                 1);
             autoCloseTransactionsTtlText = new Text(txnNameGroup, SWT.BORDER);
-            autoCloseTransactionsTtlText.setToolTipText(CoreMessages.action_menu_transaction_auto_close_ttl_tip);
+            autoCloseTransactionsTtlText.setToolTipText(UIConnectionMessages.action_menu_transaction_auto_close_ttl_tip);
             autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
             //autoCloseTransactionsTtlText.setEnabled(false);
             GridData gd = new GridData();
             gd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
             autoCloseTransactionsTtlText.setLayoutData(gd);
 
-            settingsTipString = CoreMessages.action_menu_transaction_pref_page_link_extended;
+            settingsTipString = UIConnectionMessages.action_menu_transaction_pref_page_link_extended;
 
 /*
             autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
@@ -129,7 +129,7 @@ public class PrefPageTransactions extends TargetPrefPage {
             });
 */
         } else {
-            settingsTipString = CoreMessages.action_menu_transaction_pref_page_link;
+            settingsTipString = UIConnectionMessages.action_menu_transaction_pref_page_link;
         }
 
         if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
@@ -144,11 +144,11 @@ public class PrefPageTransactions extends TargetPrefPage {
 
         {
             Composite notifyNameGroup = UIUtils.createTitledComposite(
-                composite, CoreMessages.pref_page_transactions_notify_name_group_label, 2, GridData.FILL_HORIZONTAL);
+                composite, UIConnectionMessages.pref_page_transactions_notify_name_group_label, 2, GridData.FILL_HORIZONTAL);
             showTransactionNotificationsCheck = UIUtils.createCheckbox(
                 notifyNameGroup,
-                CoreMessages.pref_page_transactions_notifications_show_check_label,
-                CoreMessages.pref_page_transactions_notifications_show_check_description,
+                UIConnectionMessages.pref_page_transactions_notifications_show_check_label,
+                UIConnectionMessages.pref_page_transactions_notifications_show_check_description,
                 false,
                 2
             );

@@ -26,11 +26,11 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -88,14 +88,14 @@ public class PrefPageMetaData extends TargetPrefPage
         {
             Composite metadataGroup = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_database_general_group_metadata,
+                UIConnectionMessages.pref_page_database_general_group_metadata,
                 1,
                 GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             separateMetaConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(metadataGroup, 3),
-                CoreMessages.pref_page_database_general_separate_meta_connection,
-                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers()),
+                UIConnectionMessages.pref_page_database_general_separate_meta_connection,
+                NLS.bind(UIConnectionMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers()),
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
             if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
@@ -105,25 +105,25 @@ public class PrefPageMetaData extends TargetPrefPage
                     .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             }
             separateMetaConnectionCombo.setToolTipText(
-                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers())
+                NLS.bind(UIConnectionMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers())
             );
             ((GridData) separateMetaConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             caseSensitiveNamesCheck = UIUtils.createCheckbox(
                 metadataGroup,
-                CoreMessages.pref_page_database_general_checkbox_case_sensitive_names,
-                CoreMessages.pref_page_database_general_checkbox_case_sensitive_names_tip,
+                UIConnectionMessages.pref_page_database_general_checkbox_case_sensitive_names,
+                UIConnectionMessages.pref_page_database_general_checkbox_case_sensitive_names_tip,
                 false,
                 1);
             addExtraDDLInfo = UIUtils.createCheckbox(
                 metadataGroup,
-                CoreMessages.pref_page_database_general_checkbox_add_special_DDL_info,
-                CoreMessages.pref_page_database_general_checkbox_add_special_DDL_info_tip,
+                UIConnectionMessages.pref_page_database_general_checkbox_add_special_DDL_info,
+                UIConnectionMessages.pref_page_database_general_checkbox_add_special_DDL_info_tip,
                 true,
                 1);
             serverSideFiltersCheck = UIUtils.createCheckbox(
                 metadataGroup,
-                CoreMessages.pref_page_database_general_server_side_object_filters,
-                CoreMessages.pref_page_database_general_server_side_object_filters_tip,
+                UIConnectionMessages.pref_page_database_general_server_side_object_filters,
+                UIConnectionMessages.pref_page_database_general_server_side_object_filters_tip,
                 false,
                 1);
         }
@@ -131,20 +131,20 @@ public class PrefPageMetaData extends TargetPrefPage
         {
             Composite performanceGroup = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_database_general_group_performance,
+                UIConnectionMessages.pref_page_database_general_group_performance,
                 1,
                 GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             disableExtraMetadataRead = UIUtils.createCheckbox(
                 performanceGroup,
-                CoreMessages.pref_page_database_general_checkbox_disable_extra_metadata,
-                CoreMessages.pref_page_database_general_checkbox_disable_extra_metadata_tip,
+                UIConnectionMessages.pref_page_database_general_checkbox_disable_extra_metadata,
+                UIConnectionMessages.pref_page_database_general_checkbox_disable_extra_metadata_tip,
                 false,
                 1);
             readExpensiveCheck = UIUtils.createCheckbox(
                 performanceGroup,
-                CoreMessages.pref_page_database_general_checkbox_show_row_count,
-                CoreMessages.pref_page_database_general_checkbox_show_row_count_tip,
+                UIConnectionMessages.pref_page_database_general_checkbox_show_row_count,
+                UIConnectionMessages.pref_page_database_general_checkbox_show_row_count_tip,
                 false,
                 1);
         }

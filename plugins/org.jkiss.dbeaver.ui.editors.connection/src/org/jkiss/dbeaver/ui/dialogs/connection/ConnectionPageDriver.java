@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
@@ -58,8 +58,8 @@ class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> impleme
 
     ConnectionPageDriver(NewConnectionWizard wizard) {
         super("newConnectionDrivers");
-        setTitle(CoreMessages.dialog_new_connection_wizard_start_title);
-        setDescription(CoreMessages.dialog_new_connection_wizard_start_description);
+        setTitle(UIConnectionMessages.dialog_new_connection_wizard_start_title);
+        setDescription(UIConnectionMessages.dialog_new_connection_wizard_start_description);
     }
 
     @Override
@@ -129,7 +129,7 @@ class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> impleme
         Composite orderGroup = new Composite(controlsGroup, SWT.NONE);
         orderGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         orderGroup.setLayout(new RowLayout());
-        new Label(orderGroup, SWT.NONE).setText(CoreMessages.driver_connection_sort_by + " ");
+        new Label(orderGroup, SWT.NONE).setText(UIConnectionMessages.driver_connection_sort_by + " ");
         DriverSelectViewer.OrderBy defaultOrderBy = DriverSelectViewer.getDefaultOrderBy();
 
         for (DriverSelectViewer.OrderBy ob : DriverSelectViewer.OrderBy.values()) {
