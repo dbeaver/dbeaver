@@ -276,7 +276,7 @@ public class DataSourceParser {
         String handlerId = handlerObject.getKey();
         Map<String, Object> handlerCfg = handlerObject.getValue();
 
-        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
+        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getRawDescriptor(handlerId);
         if (handlerDescriptor == null) {
             log.warn("Can't find network handler '" + handlerId + "'");
             return null;
