@@ -50,6 +50,7 @@ public class DDAutoSyncCoordinator {
     private static final long DEBOUNCE_DELAY_MS = 15_000L;
     private static final long INITIAL_RETRY_DELAY_MS = 10_000L;
     private static final long MAX_RETRY_DELAY_MS = 300_000L;
+    private static final long POLL_INTERVAL_MS = 900_000L;
 
     private static final AtomicReference<Session> ACTIVE_SESSION = new AtomicReference<>();
 
@@ -189,6 +190,9 @@ public class DDAutoSyncCoordinator {
                 retryDelayMs = Math.min(retryDelayMs * 2, MAX_RETRY_DELAY_MS);
             } else if (!transportFailed) {
                 retryDelayMs = INITIAL_RETRY_DELAY_MS;
+                if (ACTIVE_SESSION.get() == this) {
+                    scheduleTick(POLL_INTERVAL_MS);
+                }
             }
         }
     }
