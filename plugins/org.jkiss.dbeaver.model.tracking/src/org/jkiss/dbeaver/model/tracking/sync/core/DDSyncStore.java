@@ -83,17 +83,17 @@ public class DDSyncStore {
     }
 
     @NotNull
-    public DDConfiguration updateConfiguration(
+    public DDUpdateConfigurationResult updateConfiguration(
         @NotNull String configurationId,
-        long expectedVersion,
         @NotNull List<DDConfigurationPart> parts
     ) throws DBException {
         List<DDUpdateConfigurationPartRequest> requests = new ArrayList<>(parts.size());
         for (DDConfigurationPart part : parts) {
             requests.add(new DDUpdateConfigurationPartRequest(part.key(), part.version(), encrypt(part)));
         }
-        return decode(transport.updateConfiguration(
-            configurationId, new DDUpdateConfigurationRequest(expectedVersion, requests)));
+        DDUpdateConfigurationResultData result = transport.updateConfiguration(
+            configurationId, new DDUpdateConfigurationRequest(requests));
+        return new DDUpdateConfigurationResult(decode(result.configuration()), result.conflictingKeys());
     }
 
     @NotNull

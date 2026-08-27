@@ -19,8 +19,13 @@ package org.jkiss.dbeaver.model.tracking.sync.core;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
-public class DDConfigurationConflictException extends DBException {
-    public DDConfigurationConflictException(@NotNull String message) {
+public class DDTransportException extends DBException {
+
+    public DDTransportException(@NotNull String message) {
         super(message);
+    }
+
+    public DDTransportException(@NotNull String message, @NotNull Throwable cause) {
+        super(message, cause);
     }
 }

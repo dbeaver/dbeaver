@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -79,12 +80,12 @@ class DDRestTransport extends AbstractRestClient implements DDSyncTransport {
 
     @NotNull
     @Override
-    public DDConfigurationData updateConfiguration(
+    public DDUpdateConfigurationResultData updateConfiguration(
         @NotNull String configurationId,
         @NotNull DDUpdateConfigurationRequest request
     ) throws DBException {
         String endpoint = DDSyncApi.CONFIGURATION_ITEM_ENDPOINT.replace(DDSyncApi.VAR_CONFIGURATION_ID, configurationId);
-        return execute(jsonRequest(endpoint, "PUT", request), DDConfigurationData.class);
+        return execute(jsonRequest(endpoint, "PUT", request), DDUpdateConfigurationResultData.class);
     }
 
     @NotNull
@@ -154,10 +155,21 @@ class DDRestTransport extends AbstractRestClient implements DDSyncTransport {
         if (code == 404) {
             return new DDConfigurationNotFoundException(message);
         }
-        if (code == 409) {
-            return new DDConfigurationConflictException(message);
+        if (code >= 500) {
+            return new DDTransportException(message);
         }
         return super.mapErrorResponse(code, message, uri);
+    }
+
+    @Override
+    protected void handleRequestException(@NotNull String message, @NotNull Throwable e) throws DBException {
+        if (e instanceof DBException exception) {
+            throw exception;
+        }
+        if (e instanceof IOException) {
+            throw new DDTransportException(message, e);
+        }
+        super.handleRequestException(message, e);
     }
 
     @Nullable

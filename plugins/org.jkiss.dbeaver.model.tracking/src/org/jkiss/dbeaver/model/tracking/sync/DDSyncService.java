@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.tracking.sync.core.DDConfigurationPartKind;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDConfigurationSummary;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncCredentials;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncStore;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDUpdateConfigurationResult;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -42,12 +43,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class DDSyncService {
 
@@ -58,6 +59,7 @@ public class DDSyncService {
 
     private static final String KEY_ACCOUNT_PREFIX = "account:";
     private static final String KEY_PROJECT_PREFIX = "project:";
+    private static final Object SYNC_LOCK = new Object();
 
     private final DDSyncStore store;
     private final DBPWorkspace workspace;
@@ -126,126 +128,231 @@ public class DDSyncService {
         @NotNull String name,
         @NotNull List<String> selectedKeys
     ) throws DBException {
-        List<DDConfigurationPart> parts = new ArrayList<>();
-        for (String key : selectedKeys) {
-            DDConfigurationPart part = buildNewPart(key);
-            if (part == null) {
-                throw new DBException("Synchronization part is not available: " + key);
+        synchronized (SYNC_LOCK) {
+            List<DDConfigurationPart> parts = new ArrayList<>();
+            for (String key : selectedKeys) {
+                DDConfigurationPart part = readLocalPart(key);
+                if (part == null) {
+                    throw new DBException("Synchronization part is not available: " + key);
+                }
+                parts.add(part);
             }
-            parts.add(part);
-        }
-        if (parts.isEmpty()) {
-            throw new DBException("Select at least one synchronization part");
-        }
-        DDConfiguration configuration = store.createConfiguration(name, parts);
-        Map<String, String> localFingerprints = new LinkedHashMap<>();
-        for (DDConfigurationPart part : parts) {
-            localFingerprints.put(part.key(), store.fingerprint(part));
-        }
-        Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
-        for (DDConfigurationPart part : configuration.parts()) {
-            String fingerprint = localFingerprints.get(part.key());
-            if (fingerprint != null) {
-                baselines.put(part.key(), new DDSyncPartState(part.version(), fingerprint));
+            if (parts.isEmpty()) {
+                throw new DBException("Select at least one synchronization part");
             }
+            DDConfiguration configuration = store.createConfiguration(name, parts);
+            Map<String, String> localFingerprints = new LinkedHashMap<>();
+            for (DDConfigurationPart part : parts) {
+                localFingerprints.put(part.key(), store.fingerprint(part));
+            }
+            Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
+            for (DDConfigurationPart part : configuration.parts()) {
+                String fingerprint = localFingerprints.get(part.key());
+                if (fingerprint != null) {
+                    baselines.put(part.key(), new DDSyncPartState(part.version(), fingerprint));
+                }
+            }
+            bind(configuration.configurationId(), configuration.name(), configuration.version(), baselines);
+            return new DDSyncResult(configuration.name(), parts.stream().map(DDConfigurationPart::name).toList());
         }
-        bind(configuration.configurationId(), configuration.name(), configuration.version(), baselines);
-        return new DDSyncResult(configuration.name(), parts.stream().map(DDConfigurationPart::name).toList());
     }
 
     @NotNull
     public DDSyncResult upload() throws DBException {
-        DDSyncBinding binding = requireBinding();
-        DDConfiguration remote = store.getConfiguration(binding.configurationId());
-        List<DDConfigurationPart> changed = new ArrayList<>();
-        List<String> conflicts = new ArrayList<>();
-        Map<String, String> localFingerprints = new LinkedHashMap<>();
+        synchronized (SYNC_LOCK) {
+            DDSyncBinding binding = requireBinding();
+            List<DDConfigurationPart> candidates = new ArrayList<>();
+            Map<String, String> localFingerprints = new LinkedHashMap<>();
 
-        for (DDConfigurationPart remotePart : remote.parts()) {
-            DDConfigurationPart local = readCurrentPart(remotePart);
-            if (local == null) {
-                continue;
+            for (Map.Entry<String, DDSyncPartState> entry : binding.parts().entrySet()) {
+                String key = entry.getKey();
+                DDConfigurationPart local = readLocalPart(key);
+                if (local == null) {
+                    continue;
+                }
+                String fingerprint = store.fingerprint(local);
+                if (fingerprint.equals(entry.getValue().fingerprint())) {
+                    continue;
+                }
+                localFingerprints.put(key, fingerprint);
+                candidates.add(new DDConfigurationPart(
+                    local.key(), local.kind(), local.projectId(), entry.getValue().version(), local.name(), local.units()));
             }
-            String fingerprint = store.fingerprint(local);
-            localFingerprints.put(remotePart.key(), fingerprint);
-            DDSyncChange change = classify(
-                binding.parts().get(remotePart.key()), fingerprint, remotePart.version());
-            if (change == DDSyncChange.CONFLICT) {
-                conflicts.add(remotePart.name());
-            } else if (change == DDSyncChange.LOCAL) {
-                changed.add(new DDConfigurationPart(
-                    local.key(), local.kind(), local.projectId(), remotePart.version(), local.name(), local.units()));
-            }
-        }
-        if (!conflicts.isEmpty()) {
-            throw new DDLocalSyncConflictException(conflicts);
-        }
 
-        DDConfiguration result = changed.isEmpty()
-            ? remote
-            : store.updateConfiguration(remote.configurationId(), remote.version(), changed);
+            List<String> uploaded = new ArrayList<>();
+            List<String> conflicts = new ArrayList<>();
+            String configurationName = binding.name();
 
-        Set<String> uploadedKeys = changed.stream().map(DDConfigurationPart::key).collect(Collectors.toSet());
-        Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
-        for (DDConfigurationPart part : result.parts()) {
-            String fingerprint = localFingerprints.get(part.key());
-            DDSyncPartState state = uploadedKeys.contains(part.key()) && fingerprint != null
-                ? new DDSyncPartState(part.version(), fingerprint)
-                : binding.parts().get(part.key());
-            if (state != null) {
-                baselines.put(part.key(), state);
+            if (!candidates.isEmpty()) {
+                DDUpdateConfigurationResult result = store.updateConfiguration(binding.configurationId(), candidates);
+                DDConfiguration configuration = result.configuration();
+                configurationName = configuration.name();
+                Set<String> conflictingKeys = new HashSet<>(result.conflictingKeys());
+                Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
+                for (DDConfigurationPart candidate : candidates) {
+                    DDConfigurationPart updated = findPart(configuration, candidate.key());
+                    String localFingerprint = localFingerprints.get(candidate.key());
+                    if (conflictingKeys.contains(candidate.key()) && !store.fingerprint(updated).equals(localFingerprint)) {
+                        conflicts.add(candidate.name());
+                        continue;
+                    }
+                    baselines.put(candidate.key(), new DDSyncPartState(updated.version(), localFingerprint));
+                    uploaded.add(candidate.name());
+                }
+                bind(configuration.configurationId(), configuration.name(), configuration.version(), baselines);
             }
+
+            if (!conflicts.isEmpty()) {
+                throw new DDLocalSyncConflictException(conflicts);
+            }
+            return new DDSyncResult(configurationName, uploaded);
         }
-        bind(result.configurationId(), result.name(), result.version(), baselines);
-        return new DDSyncResult(result.name(), changed.stream().map(DDConfigurationPart::name).toList());
     }
 
     @NotNull
     public DDSyncResult download() throws DBException {
-        DDSyncBinding binding = requireBinding();
-        DDConfiguration remote = store.getConfiguration(binding.configurationId());
-        List<DDConfigurationPart> toApply = new ArrayList<>();
-        List<String> conflicts = new ArrayList<>();
-        Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
+        synchronized (SYNC_LOCK) {
+            DDSyncBinding binding = requireBinding();
+            DDConfiguration remote = store.getConfiguration(binding.configurationId());
+            List<DDConfigurationPart> toApply = new ArrayList<>();
+            List<String> conflicts = new ArrayList<>();
+            Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
 
-        for (DDConfigurationPart remotePart : remote.parts()) {
-            DDConfigurationPart local = readCurrentPart(remotePart);
-            if (local == null) {
-                toApply.add(remotePart);
-                continue;
+            for (DDConfigurationPart remotePart : remote.parts()) {
+                DDConfigurationPart local = readCurrentPart(remotePart);
+                if (local == null) {
+                    toApply.add(remotePart);
+                    continue;
+                }
+                DDSyncChange change = classify(
+                    binding.parts().get(remotePart.key()), store.fingerprint(local), remotePart.version());
+                if (change == DDSyncChange.CONFLICT) {
+                    conflicts.add(remotePart.name());
+                } else if (change == DDSyncChange.SERVER) {
+                    toApply.add(remotePart);
+                }
             }
-            DDSyncChange change = classify(
-                binding.parts().get(remotePart.key()), store.fingerprint(local), remotePart.version());
-            if (change == DDSyncChange.CONFLICT) {
-                conflicts.add(remotePart.name());
-            } else if (change == DDSyncChange.SERVER) {
-                toApply.add(remotePart);
-            }
-        }
-        if (!conflicts.isEmpty()) {
-            throw new DDLocalSyncConflictException(conflicts);
-        }
 
-        validateParts(toApply);
-        for (DDConfigurationPart part : toApply) {
-            apply(part);
-            baselines.put(part.key(), new DDSyncPartState(part.version(), store.fingerprint(part)));
+            validateParts(toApply);
+            try {
+                for (DDConfigurationPart part : toApply) {
+                    apply(part);
+                    baselines.put(part.key(), new DDSyncPartState(part.version(), store.fingerprint(part)));
+                }
+            } finally {
+                bind(remote.configurationId(), remote.name(), remote.version(), baselines);
+            }
+
+            if (!conflicts.isEmpty()) {
+                throw new DDLocalSyncConflictException(conflicts);
+            }
+            return new DDSyncResult(remote.name(), toApply.stream().map(DDConfigurationPart::name).toList());
         }
-        bind(remote.configurationId(), remote.name(), remote.version(), baselines);
-        return new DDSyncResult(remote.name(), toApply.stream().map(DDConfigurationPart::name).toList());
     }
 
     @NotNull
     public DDSyncResult downloadAndBind(@NotNull String configurationId) throws DBException {
-        DDConfiguration remote = store.getConfiguration(configurationId);
-        validateParts(remote.parts());
-        Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
-        for (DDConfigurationPart part : remote.parts()) {
-            apply(part);
-            baselines.put(part.key(), new DDSyncPartState(part.version(), store.fingerprint(part)));
+        synchronized (SYNC_LOCK) {
+            DDConfiguration remote = store.getConfiguration(configurationId);
+            validateParts(remote.parts());
+            Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
+            for (DDConfigurationPart part : remote.parts()) {
+                apply(part);
+                baselines.put(part.key(), new DDSyncPartState(part.version(), store.fingerprint(part)));
+            }
+            bind(remote.configurationId(), remote.name(), remote.version(), baselines);
+            return new DDSyncResult(remote.name(), remote.parts().stream().map(DDConfigurationPart::name).toList());
         }
-        bind(remote.configurationId(), remote.name(), remote.version(), baselines);
-        return new DDSyncResult(remote.name(), remote.parts().stream().map(DDConfigurationPart::name).toList());
+    }
+
+    @NotNull
+    public List<DDSyncConflict> getConflicts() throws DBException {
+        synchronized (SYNC_LOCK) {
+            DDSyncBinding binding = getBinding();
+            if (binding == null) {
+                return List.of();
+            }
+            DDConfiguration remote = store.getConfiguration(binding.configurationId());
+            List<DDSyncConflict> conflicts = new ArrayList<>();
+            for (DDConfigurationPart remotePart : remote.parts()) {
+                DDConfigurationPart local = readCurrentPart(remotePart);
+                if (local == null) {
+                    continue;
+                }
+                DDSyncChange change = classify(
+                    binding.parts().get(remotePart.key()), store.fingerprint(local), remotePart.version());
+                if (change == DDSyncChange.CONFLICT) {
+                    conflicts.add(new DDSyncConflict(remotePart.key(), remotePart.name()));
+                }
+            }
+            return conflicts;
+        }
+    }
+
+    @NotNull
+    public DDSyncResult forceUpload(@NotNull String partKey) throws DBException {
+        synchronized (SYNC_LOCK) {
+            DDSyncBinding binding = requireBinding();
+            DDConfiguration remote = store.getConfiguration(binding.configurationId());
+            DDConfigurationPart remotePart = findPart(remote, partKey);
+            DDConfigurationPart local = readLocalPart(partKey);
+            if (local == null) {
+                throw new DBException("Local data is not available: " + remotePart.name());
+            }
+            String fingerprint = store.fingerprint(local);
+            requireConflict(binding, remotePart, fingerprint);
+            DDConfigurationPart toUpload = new DDConfigurationPart(
+                local.key(), local.kind(), local.projectId(), remotePart.version(), local.name(), local.units());
+            DDUpdateConfigurationResult result = store.updateConfiguration(remote.configurationId(), List.of(toUpload));
+            if (result.conflictingKeys().contains(partKey)) {
+                throw new DDLocalSyncConflictException(List.of(remotePart.name()));
+            }
+            DDConfiguration configuration = result.configuration();
+            DDConfigurationPart updated = findPart(configuration, partKey);
+            Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
+            baselines.put(partKey, new DDSyncPartState(updated.version(), fingerprint));
+            bind(configuration.configurationId(), configuration.name(), configuration.version(), baselines);
+            return new DDSyncResult(configuration.name(), List.of(remotePart.name()));
+        }
+    }
+
+    @NotNull
+    public DDSyncResult forceDownload(@NotNull String partKey) throws DBException {
+        synchronized (SYNC_LOCK) {
+            DDSyncBinding binding = requireBinding();
+            DDConfiguration remote = store.getConfiguration(binding.configurationId());
+            DDConfigurationPart remotePart = findPart(remote, partKey);
+            DDConfigurationPart local = readCurrentPart(remotePart);
+            if (local != null) {
+                requireConflict(binding, remotePart, store.fingerprint(local));
+            }
+            apply(remotePart);
+            Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
+            baselines.put(partKey, new DDSyncPartState(remotePart.version(), store.fingerprint(remotePart)));
+            bind(remote.configurationId(), remote.name(), remote.version(), baselines);
+            return new DDSyncResult(remote.name(), List.of(remotePart.name()));
+        }
+    }
+
+    @NotNull
+    private static DDConfigurationPart findPart(@NotNull DDConfiguration configuration, @NotNull String key) throws DBException {
+        for (DDConfigurationPart part : configuration.parts()) {
+            if (part.key().equals(key)) {
+                return part;
+            }
+        }
+        throw new DBException("Unknown synchronization part: " + key);
+    }
+
+    private void requireConflict(
+        @NotNull DDSyncBinding binding,
+        @NotNull DDConfigurationPart remote,
+        @NotNull String localFingerprint
+    ) throws DBException {
+        DDSyncChange change = classify(binding.parts().get(remote.key()), localFingerprint, remote.version());
+        if (change != DDSyncChange.CONFLICT) {
+            throw new DBException("Synchronization part is no longer in conflict: " + remote.name());
+        }
     }
 
     @NotNull
@@ -314,7 +421,7 @@ public class DDSyncService {
     }
 
     @Nullable
-    private DDConfigurationPart buildNewPart(@NotNull String key) throws DBException {
+    private DDConfigurationPart readLocalPart(@NotNull String key) throws DBException {
         if (key.startsWith(KEY_ACCOUNT_PREFIX)) {
             String unitId = key.substring(KEY_ACCOUNT_PREFIX.length());
             DBPSyncUnit unit = DBPSyncRegistry.getInstance().findById(unitId);

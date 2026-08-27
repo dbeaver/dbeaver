@@ -17,27 +17,11 @@
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
 
-/**
- * Remote storage of opaque values. Knows nothing about their content or encryption.
- */
-public interface DDSyncTransport {
-
-    @NotNull
-    List<DDConfigurationSummaryData> listConfigurations() throws DBException;
-
-    @NotNull
-    DDConfigurationData getConfiguration(@NotNull String configurationId) throws DBException;
-
-    @NotNull
-    DDConfigurationData createConfiguration(@NotNull DDCreateConfigurationRequest request) throws DBException;
-
-    @NotNull
-    DDUpdateConfigurationResultData updateConfiguration(
-        @NotNull String configurationId,
-        @NotNull DDUpdateConfigurationRequest request
-    ) throws DBException;
+record DDUpdateConfigurationResultData(
+    @NotNull DDConfigurationData configuration,
+    @NotNull List<String> conflictingKeys
+) {
 }

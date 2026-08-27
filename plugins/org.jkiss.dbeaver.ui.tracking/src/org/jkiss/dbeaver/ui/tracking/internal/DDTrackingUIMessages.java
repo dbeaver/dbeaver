@@ -38,7 +38,6 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_nothing_to_upload;
     public static String sync_preference_page_uploaded_label;
     public static String sync_preference_page_upload_conflict;
-    public static String sync_preference_page_upload_rejected;
     public static String sync_preference_page_upload_failed;
     public static String sync_preference_page_nothing_bound;
     public static String sync_preference_page_nothing_to_download;
@@ -53,6 +52,12 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_encryption_not_configured;
     public static String sync_preference_page_login_failed;
     public static String sync_preference_page_cannot_forget_keys;
+    public static String sync_preference_page_auto_sync_checkbox;
+    public static String sync_preference_page_conflicts_label;
+    public static String sync_preference_page_take_remote_button;
+    public static String sync_preference_page_keep_local_button;
+    public static String sync_preference_page_conflict_resolved_label;
+    public static String sync_preference_page_conflict_resolve_failed;
 
     public static String create_configuration_dialog_title;
     public static String create_configuration_dialog_name_label;
