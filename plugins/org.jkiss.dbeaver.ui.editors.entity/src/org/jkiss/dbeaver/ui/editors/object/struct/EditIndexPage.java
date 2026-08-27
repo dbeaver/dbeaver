@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -83,7 +84,7 @@ public class EditIndexPage extends AttributesSelectorPage<DBSEntity, DBSEntityAt
     }
 
     @Override
-    protected void createContentsBeforeColumns(Composite panel)
+    protected void createContentsBeforeColumns(@NotNull Composite panel)
     {
         // Usually index name is auto-generated from column names
 /*
@@ -138,7 +139,7 @@ public class EditIndexPage extends AttributesSelectorPage<DBSEntity, DBSEntityAt
     }
 
     @Override
-    protected void createAttributeColumns(Table columnsTable) {
+    protected void createAttributeColumns(@NotNull Table columnsTable) {
         super.createAttributeColumns(columnsTable);
 
         TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE,
@@ -147,7 +148,8 @@ public class EditIndexPage extends AttributesSelectorPage<DBSEntity, DBSEntityAt
     }
 
     @Override
-    protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo<DBSEntityAttribute> attributeInfo, TableItem columnItem) {
+    protected int fillAttributeColumns(@NotNull DBSEntityAttribute attribute, @NotNull AttributeInfo<DBSEntityAttribute> attributeInfo, @NotNull
+    TableItem columnItem) {
         descColumnIndex = super.fillAttributeColumns(attribute, attributeInfo, columnItem) + 1;
 
         boolean isDesc = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_DESC));
@@ -156,7 +158,8 @@ public class EditIndexPage extends AttributesSelectorPage<DBSEntity, DBSEntityAt
         return descColumnIndex;
     }
 
-    protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo<DBSEntityAttribute> attributeInfo) {
+    @Nullable
+    protected Control createCellEditor(@NotNull Table table, int index, @NotNull TableItem item, @NotNull AttributeInfo<DBSEntityAttribute> attributeInfo) {
         if (index == descColumnIndex) {
             boolean isDesc = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_DESC));
             CCombo combo = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -168,7 +171,7 @@ public class EditIndexPage extends AttributesSelectorPage<DBSEntity, DBSEntityAt
         return super.createCellEditor(table, index, item, attributeInfo);
     }
 
-    protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo<DBSEntityAttribute> attributeInfo) {
+    protected void saveCellValue(@NotNull Control control, int index, @NotNull TableItem item, @NotNull AttributeInfo<DBSEntityAttribute> attributeInfo) {
         if (index == descColumnIndex) {
             CCombo combo = (CCombo) control;
             boolean isDesc = combo.getSelectionIndex() == 1;
