@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -105,17 +107,12 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
         Composite tipArea = new Composite(dialogArea, SWT.BORDER);
         tipArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-        GridLayout gl = new GridLayout(1, false);
-        tipArea.setLayout(gl);
+        tipArea.setLayout(GridLayoutFactory.fillDefaults().create());
 
         this.tipText = new StyledText(tipArea, SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.NO_FOCUS);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 300;
-        gd.heightHint = 100;
-        this.tipText.setLayoutData(gd);
+        this.tipText.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(300, 100).create());
+        this.tipText.setMargins(5, 5, 5, 5);
         this.tipText.setFont(largeFont);
-        this.tipText.setBackground(tipArea.getBackground());
-        this.tipText.setForeground(tipArea.getForeground());
         this.tipText.addMouseListener(MouseListener.mouseUpAdapter(e -> {
             LinkRange link = this.getLinkAt(new Point(e.x, e.y));
             if (link != null) {
@@ -130,15 +127,13 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
         if (this.displayShowOnStartup) {
             Button showTipButton = UIUtils.createCheckbox(
-                tipArea,
+                dialogArea,
                 TipOfTheDayMessages.show_tips_on_startup,
                 isShowOnStartup()
             );
 
             showTipButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
                 setShowOnStartup(showTipButton.getSelection())));
-
-            tipArea.setTabList(new Control[] { showTipButton });
         }
 
         return dialogArea;
