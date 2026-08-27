@@ -508,7 +508,7 @@ public class DBPConnectionConfiguration implements DBPObject {
      * <p>
      * If {@code null} is passed, only the profile configuration is cleared.
      * Otherwise, the profile configuration is updated, and the connection's
-     * network handlers are replaced with the profile's.
+     * network handlers are replaced with the profile's outside of Team Edition.
      *
      * @param profile the network profile
      */
@@ -523,10 +523,11 @@ public class DBPConnectionConfiguration implements DBPObject {
             if (handlers != null) {
                 handlers.clear();
             }
-
-            for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
-                if (handlerConfig.isEnabled()) {
-                    updateHandler(new DBWHandlerConfiguration(handlerConfig));
+            if (!DBWorkbench.isDistributed()) {
+                for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
+                    if (handlerConfig.isEnabled()) {
+                        updateHandler(new DBWHandlerConfiguration(handlerConfig));
+                    }
                 }
             }
         }

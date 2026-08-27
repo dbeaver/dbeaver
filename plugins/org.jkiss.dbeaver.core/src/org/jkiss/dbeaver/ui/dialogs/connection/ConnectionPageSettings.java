@@ -550,7 +550,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     private boolean unselectProfile(@Nullable DBWHandlerDescriptor handlerToKeep) {
-        if (getActiveProfile() == null) {
+        DBWNetworkProfile activeProfile = getActiveProfile();
+        if (activeProfile == null) {
             return true;
         }
 
@@ -584,6 +585,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
         }
 
+        if (DBWorkbench.isDistributed()) {
+            for (DBWHandlerConfiguration configuration : activeProfile.getConfigurations()) {
+                if (configuration.isEnabled() && !handlersToRemove.contains(configuration.getHandlerDescriptor())) {
+                    getActiveDataSource().getConnectionConfiguration().updateHandler(new DBWHandlerConfiguration(configuration));
+                }
+            }
+        }
         selectProfile0(null);
 
         for (DBWHandlerDescriptor descriptor : handlersToRemove) {
