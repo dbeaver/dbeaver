@@ -9,6 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.junit
 Require-Bundle: org.jkiss.dbeaver.headless,
+  org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.data.transfer,
@@ -19,4 +20,5 @@ Require-Bundle: org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.snowflake,
  org.jkiss.dbeaver.ext.hana,
- org.jkiss.dbeaver.ext.mssql
+ org.jkiss.dbeaver.ext.mssql,
+ org.jkiss.dbeaver.ext.bigquery
