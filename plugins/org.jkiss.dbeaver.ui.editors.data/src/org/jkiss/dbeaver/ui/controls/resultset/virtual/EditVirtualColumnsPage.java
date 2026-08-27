@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -68,8 +69,9 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
         return vEntity;
     }
 
+    @NotNull
     @Override
-    protected Composite createPageContents(Composite parent) {
+    protected Composite createPageContents(@NotNull Composite parent) {
         ConComposite panel = new ConComposite(parent);
         panel.setLayout(new GridLayout(1, false));
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));

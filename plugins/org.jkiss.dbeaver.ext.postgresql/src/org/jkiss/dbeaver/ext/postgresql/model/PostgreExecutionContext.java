@@ -174,7 +174,10 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         try (var session = openSession(monitor, DBCExecutionPurpose.META, "Read context defaults")) {
             monitor.subTask("Retrieve active search path");
 
-            var searchPathStr = CommonUtils.notEmpty(JDBCUtils.queryString(session, "SHOW search_path"));
+            var searchPathStr = CommonUtils.notEmpty(JDBCUtils.queryString(
+                session,
+                "SELECT boot_val FROM pg_settings WHERE name = 'search_path'"
+            ));
             for (String str : searchPathStr.split(",")) {
                 searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str.trim()));
             }
@@ -245,7 +248,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
      */
     @NotNull
     public List<String> computeSearchPath() {
-        var path = new ArrayList<String>(searchPath);
+        var path = new ArrayList<>(searchPath);
 
         var activeSchema = getDefaultSchema();
         if (activeSchema != null) {
@@ -263,7 +266,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
 
         var searchPath = computeSearchPath().stream()
-            .map(name -> DBUtils.getQuotedIdentifier(getDataSource(), name))
+            .map(name -> DBUtils.getQuotedIdentifier(getDataSource(), name, true, true))
             .collect(Collectors.joining(","));
 
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {

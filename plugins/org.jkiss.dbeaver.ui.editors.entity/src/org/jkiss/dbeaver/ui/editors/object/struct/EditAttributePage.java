@@ -154,6 +154,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
         validateProperties();
     }
 
+    @Nullable
     @Override
     protected String getEditError() {
         if (isUnique) {

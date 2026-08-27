@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.HttpUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -215,7 +216,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
             throw new DBException("Bad path: " + path, e);
         }
         // Detect file system and path
-        String fsId = DBFUtils.getQueryParameters(uri.getRawQuery()).get(DBFFileSystemManager.QUERY_PARAM_FS_ID);
+        String fsId = HttpUtils.parseQuery(uri.getRawQuery()).get(DBFFileSystemManager.QUERY_PARAM_FS_ID);
         if (fsId != null) {
             curPath = getFileSystem(uri.getScheme(), fsId);
         }

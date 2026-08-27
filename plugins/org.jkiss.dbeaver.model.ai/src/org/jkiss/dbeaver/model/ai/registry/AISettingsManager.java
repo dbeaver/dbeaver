@@ -302,15 +302,15 @@ public class AISettingsManager {
             in.beginObject();
             while (in.hasNext()) {
                 String engineId = in.nextName();
-                in.beginObject();
-
                 AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
                 if (engineDescriptor == null) {
                     log.error("AI engine '" + engineId + "' not found. Ignore config");
+                    in.skipValue();
                     continue;
                 }
 
-                in.nextName();// properties
+                in.beginObject();
+                in.nextName(); // properties
                 AIEngineProperties engineProperties = AISettingsManager.READ_PROPS_GSON.fromJson(
                     in, engineDescriptor.getPropertiesType());
                 result.put(engineId, engineProperties);

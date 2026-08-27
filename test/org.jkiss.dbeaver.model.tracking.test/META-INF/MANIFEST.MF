@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Tracking Model Tests
+Bundle-SymbolicName: org.jkiss.dbeaver.model.tracking.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Vendor: DBeaver Corp
+Require-Bundle: org.jkiss.dbeaver.model.tracking,
+ org.jkiss.dbeaver.model,
+ junit-jupiter-api,
+ org.mockito.mockito-core
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: org.jkiss.dbeaver.model.tracking.test

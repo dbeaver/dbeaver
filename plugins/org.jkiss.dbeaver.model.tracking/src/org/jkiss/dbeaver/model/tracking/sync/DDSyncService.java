@@ -23,13 +23,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.sync.DBPSyncRegistry;
-import org.jkiss.dbeaver.model.sync.DBPSyncScope;
-import org.jkiss.dbeaver.model.sync.DBPSyncSettings;
-import org.jkiss.dbeaver.model.sync.DBPSyncTarget;
-import org.jkiss.dbeaver.model.sync.DBPSyncUnit;
-import org.jkiss.dbeaver.model.tracking.DDAccessKey;
+import org.jkiss.dbeaver.model.sync.*;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDContainer;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncCredentials;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncEntry;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncStore;
 import org.jkiss.utils.CommonUtils;
@@ -53,14 +49,17 @@ public class DDSyncService {
 
     private final DDSyncStore store;
     private final DBPWorkspace workspace;
+    private final String accountId;
 
     public DDSyncService(
         @NotNull String url,
-        @NotNull DDAccessKey accessKey,
-        @NotNull DBPWorkspace workspace
+        @NotNull DDSyncCredentials credentials,
+        @NotNull DBPWorkspace workspace,
+        @NotNull String accountId
     ) {
-        this.store = new DDSyncStore(url, accessKey);
+        this.store = new DDSyncStore(url, credentials);
         this.workspace = workspace;
+        this.accountId = accountId;
     }
 
     @NotNull
@@ -70,7 +69,11 @@ public class DDSyncService {
 
     @Nullable
     public DDSyncBinding getBinding() {
-        return readBinding(workspace.getAbsolutePath());
+        DDSyncBinding binding = readBinding(workspace.getAbsolutePath());
+        if (binding == null || !accountId.equals(binding.accountId())) {
+            return null;
+        }
+        return binding;
     }
 
     @Nullable
@@ -91,7 +94,7 @@ public class DDSyncService {
         try {
             Files.writeString(
                 workspace.getAbsolutePath().resolve(BINDING_FILE),
-                JSONUtils.GSON.toJson(new DDSyncBinding(containerId, label)));
+                JSONUtils.GSON.toJson(new DDSyncBinding(containerId, label, accountId)));
         } catch (IOException e) {
             throw new DBException("Error writing synchronization binding", e);
         }

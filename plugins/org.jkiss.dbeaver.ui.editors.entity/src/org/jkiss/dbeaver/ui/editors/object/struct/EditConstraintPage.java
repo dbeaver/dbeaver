@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -98,8 +99,9 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
         this.constraintTypes = constraintTypes;
     }
 
+    @NotNull
     @Override
-    protected Composite createPageContents(Composite parent) {
+    protected Composite createPageContents(@NotNull Composite parent) {
         final Composite pageContents = super.createPageContents(parent);
         toggleEditAreas();
         return pageContents;
@@ -124,7 +126,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     }
 
     @Override
-    protected void createContentsBeforeColumns(Composite panel) {
+    protected void createContentsBeforeColumns(@NotNull Composite panel) {
         final Text nameText = object != null ? UIUtils.createLabelText(
             panel,
             ObjectEditorMessages.dialog_struct_edit_constrain_label_name,
@@ -193,7 +195,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     }
 
     @Override
-    protected void createContentsAfterColumns(Composite panel) {
+    protected void createContentsAfterColumns(@NotNull Composite panel) {
         expressionGroup = UIUtils.createTitledComposite(
             panel,
             ObjectEditorMessages.edit_constraints_expression_text,
@@ -233,6 +235,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
         return constraint;
     }
 
+    @Nullable
     @Override
     protected String getEditError() {
         // Constraint name may be empty (auto-generated)
@@ -260,7 +263,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     }
 
     @Override
-    public boolean isColumnSelected(DBSEntityAttribute attribute) {
+    public boolean isColumnSelected(@NotNull DBSEntityAttribute attribute) {
         if (!CommonUtils.isEmpty(attributes)) {
             for (DBSEntityAttributeRef ref : attributes) {
                 if (ref.getAttribute() == attribute) {

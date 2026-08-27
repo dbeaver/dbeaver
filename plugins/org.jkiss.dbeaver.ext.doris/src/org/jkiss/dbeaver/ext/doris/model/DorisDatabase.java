@@ -20,9 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.List;
 
@@ -49,12 +47,6 @@ public class DorisDatabase extends GenericSchema {
     @Override
     public DorisCatalog getCatalog() {
         return (DorisCatalog) super.getCatalog();
-    }
-
-    @NotNull
-    @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
-        return GenericTableBase.class;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -327,7 +327,7 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
         contributionManager.add(item);
         contributionManager.add(new RemoveFunctionAction());
         contributionManager.add(new ResetFunctionsAction());
-        contributionManager.add(new ToolbarSeparatorContribution(true));
+        contributionManager.add(contributionManager instanceof IToolBarManager ? new ToolbarSeparatorContribution(true) : new Separator());
         contributionManager.add(new GroupByColumnsAction());
         contributionManager.add(new ValueTypeToggleAction());
     }

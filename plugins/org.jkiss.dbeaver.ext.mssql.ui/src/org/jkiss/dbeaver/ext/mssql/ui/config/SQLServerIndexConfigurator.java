@@ -96,20 +96,21 @@ public class SQLServerIndexConfigurator implements DBEObjectConfigurator<SQLServ
         }
 
         @Override
-        protected void createAttributeColumns(Table columnsTable) {
+        protected void createAttributeColumns(@NotNull Table columnsTable) {
             super.createAttributeColumns(columnsTable);
             UIUtils.createTableColumn(columnsTable, SWT.NONE, "Included");
         }
 
         @Override
-        protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
+        protected int fillAttributeColumns(@NotNull DBSEntityAttribute attribute, @NotNull AttributeInfo attributeInfo, @NotNull TableItem columnItem) {
             includedColumnIndex = super.fillAttributeColumns(attribute, attributeInfo, columnItem) + 1;
             columnItem.setText(includedColumnIndex, Boolean.TRUE.equals(attributeInfo.getProperty(PROP_INCLUDED)) ? "YES" : "NO");
             return includedColumnIndex;
         }
 
+        @Nullable
         @Override
-        protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo attributeInfo) {
+        protected Control createCellEditor(@NotNull Table table, int index, @NotNull TableItem item, @NotNull AttributeInfo attributeInfo) {
             if (index == includedColumnIndex) {
                 final boolean isIncluded = Boolean.TRUE.equals(attributeInfo.getProperty(PROP_INCLUDED));
                 final CCombo combo = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -122,7 +123,7 @@ public class SQLServerIndexConfigurator implements DBEObjectConfigurator<SQLServ
         }
 
         @Override
-        protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo attributeInfo) {
+        protected void saveCellValue(@NotNull Control control, int index, @NotNull TableItem item, @NotNull AttributeInfo attributeInfo) {
             if (index == includedColumnIndex) {
                 final boolean isIncluded = ((CCombo) control).getSelectionIndex() == 0;
                 item.setText(index, isIncluded ? "YES" : "NO");

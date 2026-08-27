@@ -98,8 +98,9 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 Collections.emptyMap());
         }
 
+        @NotNull
         @Override
-        protected Composite createPageContents(Composite parent) {
+        protected Composite createPageContents(@NotNull Composite parent) {
             Composite panel = super.createPageContents(parent);
 
             final Composite defGroup = UIUtils.createComposite(panel, 2);

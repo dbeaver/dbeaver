@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.tracking.sync.core;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.tracking.auth.DDCrypto;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class DDSyncStore {
         List<DDSyncEntry> entries = new ArrayList<>();
         for (DDRawEntry raw : transport.load(containerId)) {
             DDSyncEnvelope envelope = JSONUtils.GSON.fromJson(
-                new String(DDSyncCrypto.decrypt(key, raw.value()), StandardCharsets.UTF_8),
+                new String(DDCrypto.decrypt(key, raw.value()), StandardCharsets.UTF_8),
                 DDSyncEnvelope.class);
             entries.add(new DDSyncEntry(
                 raw.key(),
@@ -79,7 +80,7 @@ public class DDSyncStore {
         byte[] content = JSONUtils.GSON
             .toJson(new DDSyncEnvelope(entry.label(), encode(entry.resources())))
             .getBytes(StandardCharsets.UTF_8);
-        transport.save(containerId, entry.key(), DDSyncCrypto.encrypt(getDataKey(), content));
+        transport.save(containerId, entry.key(), DDCrypto.encrypt(getDataKey(), content));
     }
 
     @NotNull
@@ -103,7 +104,7 @@ public class DDSyncStore {
     @NotNull
     private SecretKey getDataKey() throws DBException {
         if (dataKey == null) {
-            dataKey = credentials.decryptDataKey(transport.loadWrappedDataKey());
+            dataKey = credentials.getDataKey();
         }
         return dataKey;
     }

@@ -71,8 +71,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * EditForeignKeyPage
@@ -318,7 +318,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         super.createControl(parent);
         updateControlsVisibility();
         if (curRefTable != null) {
@@ -327,8 +327,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         UIUtils.asyncExec(() -> UIUtils.packColumns(columnsTable, true));
     }
 
+    @NotNull
     @Override
-    protected Composite createPageContents(Composite parent) {
+    protected Composite createPageContents(@NotNull Composite parent) {
         final Composite panel = UIUtils.createComposite(parent, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -390,7 +391,14 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 tablesNode,
                 SWT.BORDER | SWT.FULL_SELECTION,
                 false,
-                new DatabaseNavigatorTreeFilter()) {
+                new DatabaseNavigatorTreeFilter() {
+                    @NotNull
+                    @Override
+                    public Set<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
+                        return Set.of(DatabaseNavigatorTreeFilterObjectType.table);
+                    }
+                }
+            ) {
                 @NotNull
                 @Override
                 protected DatabaseNavigatorContentProvider createContentProvider(boolean showRoot) {
@@ -406,6 +414,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     };
                 }
             };
+            tableList.setFilterShowConnected(false);
             tableList.getViewer().addFilter(new ViewerFilter() {
                 @Override
                 public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -797,25 +806,25 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         if (containerObject != null && containerObject.getParentObject() instanceof DBSObjectContainer) {
             containerObject = containerObject.getParentObject();
         }
-        if (containerObject instanceof DBVContainer) {
+        if (containerObject instanceof DBVContainer container) {
             try {
-                containerObject = ((DBVContainer) containerObject).getRealContainer(new VoidProgressMonitor());
+                containerObject = container.getRealContainer(new VoidProgressMonitor());
             } catch (DBException e) {
                 log.error("Error getting real object container", e);
             }
         }
-        return navigatorModel.getNodeByObject(containerObject);
+        return containerObject == null ? null : navigatorModel.getNodeByObject(containerObject);
     }
 
-    private void loadTableList(DBNDatabaseNode newContainerNode) {
+    private void loadTableList(@NotNull DBNDatabaseNode newContainerNode) {
         tableList.setInput(newContainerNode);
     }
 
-    private void handleRefTableSelect(DBNDatabaseNode refTableNode) {
+    private void handleRefTableSelect(@Nullable DBNDatabaseNode refTableNode) {
         if (refTableNode != null) {
             DBSObject object = refTableNode.getObject();
-            if (object instanceof DBSEntity) {
-                curRefTable = (DBSEntity) refTableNode.getObject();
+            if (object instanceof DBSEntity entity) {
+                curRefTable = entity;
             }
         } else {
             curRefTable = null;
@@ -943,7 +952,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
     }
 
-    private boolean isConstraintIndex(DBRProgressMonitor monitor, List<DBSEntityConstraint> constraints, DBSTableIndex index) throws DBException {
+    private boolean isConstraintIndex(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<DBSEntityConstraint> constraints,
+        @NotNull DBSTableIndex index
+    ) throws DBException {
         List<? extends DBSEntityAttribute> iAttrs = Objects.requireNonNull(index.getAttributeReferences(monitor))
             .stream().map(DBSEntityAttributeRef::getAttribute).toList();
 
@@ -959,7 +972,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         return false;
     }
 
-    private boolean isValidRefConstraint(DBRProgressMonitor monitor, DBSEntityReferrer constraint) throws DBException {
+    private boolean isValidRefConstraint(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer constraint
+    ) throws DBException {
         if (!CommonUtils.isEmpty(refAttributes)) {
             // Constraint must include ref attributes
             for (DBSEntityAttribute refAttr : refAttributes) {
@@ -1075,7 +1091,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         setErrorMessage(errorMessage);
     }
 
-    private static List<DBSEntityAttribute> getValidAttributes(DBSEntity table) throws DBException {
+    @NotNull
+    private static List<DBSEntityAttribute> getValidAttributes(@NotNull DBSEntity table) throws DBException {
         List<DBSEntityAttribute> result = new ArrayList<>();
         for (DBSEntityAttribute attr : CommonUtils.safeList(table.getAttributes(new VoidProgressMonitor()))) {
             if (!DBUtils.isHiddenObject(attr) && !DBUtils.isPseudoAttribute(attr)) {
@@ -1085,7 +1102,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         return result;
     }
 
-    private Image getColumnIcon(DBSEntityAttribute column) {
+    @NotNull
+    private Image getColumnIcon(@NotNull DBSEntityAttribute column) {
         return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(column));
     }
 
@@ -1102,18 +1120,22 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         return true;
     }
 
+    @NotNull
     public List<FKColumnInfo> getColumns() {
         return fkColumns;
     }
 
+    @NotNull
     public DBSForeignKeyModifyRule getOnDeleteRule() {
         return onDeleteRule;
     }
 
+    @NotNull
     public DBSForeignKeyModifyRule getOnUpdateRule() {
         return onUpdateRule;
     }
 
+    @Nullable
     public DBSEntityConstraint getUniqueConstraint() {
         return curConstraint;
     }
@@ -1122,7 +1144,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         private final TableEditor tableEditor;
         private final Table columnsTable;
 
-        ColumnsMouseListener(TableEditor tableEditor, Table columnsTable) {
+        ColumnsMouseListener(@NotNull TableEditor tableEditor, @NotNull Table columnsTable) {
             this.tableEditor = tableEditor;
             this.columnsTable = columnsTable;
         }
@@ -1191,7 +1213,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         }
     }
 
-    private void assignForeignKeyRefConstraint(FKColumnInfo fkInfo, CCombo columnsCombo, TableItem item) {
+    private void assignForeignKeyRefConstraint(@NotNull FKColumnInfo fkInfo, @NotNull CCombo columnsCombo, @NotNull TableItem item) {
         int selectionIndex = columnsCombo.getSelectionIndex();
         if (selectionIndex == 0) {
             // New auto column

@@ -36,7 +36,4 @@ public interface DDSyncTransport {
     List<DDRawEntry> load(@NotNull String containerId) throws DBException;
 
     void save(@NotNull String containerId, @NotNull String key, @NotNull byte[] value) throws DBException;
-
-    @NotNull
-    byte[] loadWrappedDataKey() throws DBException;
 }
