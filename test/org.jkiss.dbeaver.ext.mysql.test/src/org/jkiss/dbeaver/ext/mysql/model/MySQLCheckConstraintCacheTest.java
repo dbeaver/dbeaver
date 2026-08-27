@@ -30,7 +30,7 @@ public class MySQLCheckConstraintCacheTest extends DBeaverUnitTest {
     private static final String TABLE_CONSTRAINTS = "TABLE_CONSTRAINTS";
 
     @Test
-    public void buildCheckConstraintsQuery_whenMariaDB_thenDoesNotReadTableConstraints() {
+    public void mariaDBQueryDoesNotReadTableConstraints() {
         // MariaDB hides TABLE_CONSTRAINTS from accounts holding only SELECT, which used to
         // wipe out every check constraint for read-only users (#41909)
         String sql = CheckConstraintCache.buildCheckConstraintsQuery(true, false);
@@ -38,7 +38,7 @@ public class MySQLCheckConstraintCacheTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void buildCheckConstraintsQuery_whenMariaDB_thenTakesTableNameFromCheckConstraints() {
+    public void mariaDBQueryTakesTableNameFromCheckConstraints() {
         // Reading TABLE_NAME from cc is what keeps same-named constraints of different
         // tables apart (#41941)
         String sql = CheckConstraintCache.buildCheckConstraintsQuery(true, false);
@@ -46,7 +46,7 @@ public class MySQLCheckConstraintCacheTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void buildCheckConstraintsQuery_whenMySQL_thenJoinsTableConstraints() {
+    public void mySQLQueryJoinsTableConstraints() {
         // MySQL has no TABLE_NAME in CHECK_CONSTRAINTS, so the join is the only source
         String sql = CheckConstraintCache.buildCheckConstraintsQuery(false, false);
         Assertions.assertTrue(sql.contains(TABLE_CONSTRAINTS), sql);
@@ -54,20 +54,20 @@ public class MySQLCheckConstraintCacheTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void buildCheckConstraintsQuery_whenWholeSchema_thenBindsSchemaOnly() {
+    public void wholeSchemaQueryBindsSchemaOnly() {
         Assertions.assertEquals(1, countBinds(CheckConstraintCache.buildCheckConstraintsQuery(true, false)));
         Assertions.assertEquals(1, countBinds(CheckConstraintCache.buildCheckConstraintsQuery(false, false)));
     }
 
     @Test
-    public void buildCheckConstraintsQuery_whenForSingleTable_thenBindsSchemaAndTable() {
+    public void singleTableQueryBindsSchemaAndTable() {
         // prepareObjectsStatement binds the schema first and the table second
         Assertions.assertEquals(2, countBinds(CheckConstraintCache.buildCheckConstraintsQuery(true, true)));
         Assertions.assertEquals(2, countBinds(CheckConstraintCache.buildCheckConstraintsQuery(false, true)));
     }
 
     @Test
-    public void buildCheckConstraintsQuery_whenForSingleTable_thenFiltersByTableName() {
+    public void singleTableQueryFiltersByTableName() {
         Assertions.assertTrue(
             CheckConstraintCache.buildCheckConstraintsQuery(true, true).contains("cc.TABLE_NAME = ?"));
         Assertions.assertTrue(
