@@ -68,15 +68,6 @@ public record DBPSyncFiles(
                 Files.delete(root);
                 return;
             }
-            if (Files.isDirectory(root)) {
-                try (Stream<Path> list = Files.list(root)) {
-                    for (Path file : list.filter(Files::isRegularFile).toList()) {
-                        if (!resources.containsKey(file.getFileName().toString())) {
-                            Files.delete(file);
-                        }
-                    }
-                }
-            }
             for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
                 Path path = resolve(resource.getKey());
                 if (path == null) {
@@ -85,6 +76,15 @@ public record DBPSyncFiles(
                 }
                 Files.createDirectories(path.getParent());
                 Files.write(path, resource.getValue());
+            }
+            if (Files.isDirectory(root)) {
+                try (Stream<Path> list = Files.list(root)) {
+                    for (Path file : list.filter(Files::isRegularFile).toList()) {
+                        if (!resources.containsKey(file.getFileName().toString())) {
+                            Files.delete(file);
+                        }
+                    }
+                }
             }
         } catch (IOException e) {
             throw new DBException("Error writing " + root, e);

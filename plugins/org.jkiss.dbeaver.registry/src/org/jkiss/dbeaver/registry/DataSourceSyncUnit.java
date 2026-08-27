@@ -90,18 +90,6 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
     @Override
     public void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException {
         Path folder = target.root().resolve(DBPProject.METADATA_FOLDER);
-        if (Files.isDirectory(folder)) {
-            try (Stream<Path> list = Files.list(folder)) {
-                for (Path file : list.filter(Files::isRegularFile).toList()) {
-                    String name = file.getFileName().toString();
-                    if (isManagedFile(name) && !resources.containsKey(name)) {
-                        Files.delete(file);
-                    }
-                }
-            } catch (IOException e) {
-                throw new DBException("Error cleaning up " + folder, e);
-            }
-        }
         for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
             String name = resource.getKey();
             if (!isSyncedFile(name)) {
@@ -118,6 +106,18 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
                 Files.write(file, resource.getValue());
             } catch (IOException e) {
                 throw new DBException("Error writing " + file, e);
+            }
+        }
+        if (Files.isDirectory(folder)) {
+            try (Stream<Path> list = Files.list(folder)) {
+                for (Path file : list.filter(Files::isRegularFile).toList()) {
+                    String name = file.getFileName().toString();
+                    if (isManagedFile(name) && !resources.containsKey(name)) {
+                        Files.delete(file);
+                    }
+                }
+            } catch (IOException e) {
+                throw new DBException("Error cleaning up " + folder, e);
             }
         }
     }

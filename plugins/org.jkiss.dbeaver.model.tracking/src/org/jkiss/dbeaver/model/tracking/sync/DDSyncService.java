@@ -240,7 +240,7 @@ public class DDSyncService {
                 for (DDConfigurationPart part : toApply) {
                     apply(part);
                     baselines.put(part.key(), new DDSyncPartState(
-                        part.version(), store.fingerprint(part), new LinkedHashSet<>(part.units().keySet())));
+                        part.version(), fingerprintAfterApply(part), new LinkedHashSet<>(part.units().keySet())));
                 }
             } finally {
                 bind(remote.configurationId(), remote.name(), remote.version(), baselines);
@@ -262,7 +262,7 @@ public class DDSyncService {
             for (DDConfigurationPart part : remote.parts()) {
                 apply(part);
                 baselines.put(part.key(), new DDSyncPartState(
-                    part.version(), store.fingerprint(part), new LinkedHashSet<>(part.units().keySet())));
+                    part.version(), fingerprintAfterApply(part), new LinkedHashSet<>(part.units().keySet())));
             }
             bind(remote.configurationId(), remote.name(), remote.version(), baselines);
             return new DDSyncResult(remote.name(), remote.parts().stream().map(DDConfigurationPart::name).toList());
@@ -334,7 +334,7 @@ public class DDSyncService {
             apply(remotePart);
             Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
             baselines.put(partKey, new DDSyncPartState(
-                remotePart.version(), store.fingerprint(remotePart), new LinkedHashSet<>(remotePart.units().keySet())));
+                remotePart.version(), fingerprintAfterApply(remotePart), new LinkedHashSet<>(remotePart.units().keySet())));
             bind(remote.configurationId(), remote.name(), remote.version(), baselines);
             return new DDSyncResult(remote.name(), List.of(remotePart.name()));
         }
@@ -379,6 +379,12 @@ public class DDSyncService {
             return DDSyncChange.LOCAL;
         }
         return remoteChanged ? DDSyncChange.SERVER : DDSyncChange.UNCHANGED;
+    }
+
+    @NotNull
+    private String fingerprintAfterApply(@NotNull DDConfigurationPart remote) throws DBException {
+        DDConfigurationPart applied = readCurrentPart(remote);
+        return store.fingerprint(applied != null ? applied : remote);
     }
 
     private void apply(@NotNull DDConfigurationPart part) throws DBException {
