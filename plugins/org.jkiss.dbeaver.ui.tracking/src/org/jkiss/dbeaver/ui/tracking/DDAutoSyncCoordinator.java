@@ -98,7 +98,7 @@ public class DDAutoSyncCoordinator {
                 @NotNull
                 @Override
                 protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                    tick();
+                    tick(monitor);
                     return Status.OK_STATUS;
                 }
             };
@@ -155,8 +155,8 @@ public class DDAutoSyncCoordinator {
             job.schedule(delayMs);
         }
 
-        private void tick() {
-            if (ACTIVE_SESSION.get() != this || !isEnabled()) {
+        private void tick(@NotNull DBRProgressMonitor monitor) {
+            if (monitor.isCanceled() || ACTIVE_SESSION.get() != this || !isEnabled()) {
                 return;
             }
             DDSyncService service = createSyncService();
@@ -171,6 +171,9 @@ public class DDAutoSyncCoordinator {
                 log.debug("DataDam auto-sync upload failed", e);
             } catch (DBException e) {
                 log.debug("DataDam auto-sync upload needs manual resolution, not retrying automatically", e);
+            }
+            if (monitor.isCanceled()) {
+                return;
             }
             try {
                 service.download();

@@ -30,7 +30,9 @@ public interface DBPSyncUnit {
     String getId();
 
     @NotNull
-    String getName();
+    default String getName() {
+        return getId();
+    }
 
     @NotNull
     DBPSyncScope getScope();

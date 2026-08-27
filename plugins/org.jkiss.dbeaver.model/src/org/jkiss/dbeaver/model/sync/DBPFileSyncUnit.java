@@ -34,6 +34,15 @@ public class DBPFileSyncUnit implements DBPSyncUnit {
 
     public DBPFileSyncUnit(
         @NotNull String id,
+        @NotNull String path,
+        @NotNull DBPSyncScope scope,
+        boolean enabledByDefault
+    ) {
+        this(id, id, path, scope, enabledByDefault);
+    }
+
+    public DBPFileSyncUnit(
+        @NotNull String id,
         @NotNull String name,
         @NotNull String path,
         @NotNull DBPSyncScope scope,
