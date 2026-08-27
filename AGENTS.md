@@ -30,10 +30,18 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ### Building
 
 To perform full product build run
-`mvn package -f product/aggregate/pom.xml -T 1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`
+`mvn package -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`
 
 To build only a single bundle run `mvn verify` in bundle folder.  
 It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
+
+### Running tests
+
+Running tests in a single bundle usually fail because OSGI needs entire bundle to be included in build be installed in .m2.
+To run tests over full repo run
+`mvn verify -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`
+This will run tests for desktop dbeaver ce and dbeaver eclipse plugin.
+To build it for other products(s) use different profiles. You can find maven profiles list in file `product/pom.xml`.
 
 ### Repo dependencies
 
@@ -134,7 +142,7 @@ Note: For many drivers, updating `plugin.xml` alone is enough — you only need 
 - Add the new plugin to `plugins/pom.xml` `<modules>` list.
 - Add a test plugin `test/org.jkiss.dbeaver.ext.{db}.test/` and register it in `test/pom.xml`.
 
-## Testing
+## Creating unit tests
 
 - Create unit tests for all model (non-UI) functions if possible.
 - Test plugins are in the `test/` directory.
