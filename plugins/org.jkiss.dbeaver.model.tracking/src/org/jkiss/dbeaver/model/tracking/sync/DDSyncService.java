@@ -45,6 +45,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -131,7 +132,7 @@ public class DDSyncService {
         synchronized (SYNC_LOCK) {
             List<DDConfigurationPart> parts = new ArrayList<>();
             for (String key : selectedKeys) {
-                DDConfigurationPart part = readLocalPart(key);
+                DDConfigurationPart part = readLocalPart(key, null);
                 if (part == null) {
                     throw new DBException("Synchronization part is not available: " + key);
                 }
@@ -149,7 +150,7 @@ public class DDSyncService {
             for (DDConfigurationPart part : configuration.parts()) {
                 String fingerprint = localFingerprints.get(part.key());
                 if (fingerprint != null) {
-                    baselines.put(part.key(), new DDSyncPartState(part.version(), fingerprint));
+                    baselines.put(part.key(), new DDSyncPartState(part.version(), fingerprint, new LinkedHashSet<>(part.units().keySet())));
                 }
             }
             bind(configuration.configurationId(), configuration.name(), configuration.version(), baselines);
@@ -166,7 +167,7 @@ public class DDSyncService {
 
             for (Map.Entry<String, DDSyncPartState> entry : binding.parts().entrySet()) {
                 String key = entry.getKey();
-                DDConfigurationPart local = readLocalPart(key);
+                DDConfigurationPart local = readLocalPart(key, entry.getValue().unitIds());
                 if (local == null) {
                     continue;
                 }
@@ -196,7 +197,8 @@ public class DDSyncService {
                         conflicts.add(candidate.name());
                         continue;
                     }
-                    baselines.put(candidate.key(), new DDSyncPartState(updated.version(), localFingerprint));
+                    baselines.put(candidate.key(), new DDSyncPartState(
+                        updated.version(), localFingerprint, new LinkedHashSet<>(candidate.units().keySet())));
                     uploaded.add(candidate.name());
                 }
                 bind(configuration.configurationId(), configuration.name(), configuration.version(), baselines);
@@ -237,7 +239,8 @@ public class DDSyncService {
             try {
                 for (DDConfigurationPart part : toApply) {
                     apply(part);
-                    baselines.put(part.key(), new DDSyncPartState(part.version(), store.fingerprint(part)));
+                    baselines.put(part.key(), new DDSyncPartState(
+                        part.version(), store.fingerprint(part), new LinkedHashSet<>(part.units().keySet())));
                 }
             } finally {
                 bind(remote.configurationId(), remote.name(), remote.version(), baselines);
@@ -258,7 +261,8 @@ public class DDSyncService {
             Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
             for (DDConfigurationPart part : remote.parts()) {
                 apply(part);
-                baselines.put(part.key(), new DDSyncPartState(part.version(), store.fingerprint(part)));
+                baselines.put(part.key(), new DDSyncPartState(
+                    part.version(), store.fingerprint(part), new LinkedHashSet<>(part.units().keySet())));
             }
             bind(remote.configurationId(), remote.name(), remote.version(), baselines);
             return new DDSyncResult(remote.name(), remote.parts().stream().map(DDConfigurationPart::name).toList());
@@ -295,7 +299,8 @@ public class DDSyncService {
             DDSyncBinding binding = requireBinding();
             DDConfiguration remote = store.getConfiguration(binding.configurationId());
             DDConfigurationPart remotePart = findPart(remote, partKey);
-            DDConfigurationPart local = readLocalPart(partKey);
+            DDSyncPartState baseline = binding.parts().get(partKey);
+            DDConfigurationPart local = readLocalPart(partKey, baseline != null ? baseline.unitIds() : null);
             if (local == null) {
                 throw new DBException("Local data is not available: " + remotePart.name());
             }
@@ -310,7 +315,7 @@ public class DDSyncService {
             DDConfiguration configuration = result.configuration();
             DDConfigurationPart updated = findPart(configuration, partKey);
             Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
-            baselines.put(partKey, new DDSyncPartState(updated.version(), fingerprint));
+            baselines.put(partKey, new DDSyncPartState(updated.version(), fingerprint, new LinkedHashSet<>(local.units().keySet())));
             bind(configuration.configurationId(), configuration.name(), configuration.version(), baselines);
             return new DDSyncResult(configuration.name(), List.of(remotePart.name()));
         }
@@ -328,7 +333,8 @@ public class DDSyncService {
             }
             apply(remotePart);
             Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
-            baselines.put(partKey, new DDSyncPartState(remotePart.version(), store.fingerprint(remotePart)));
+            baselines.put(partKey, new DDSyncPartState(
+                remotePart.version(), store.fingerprint(remotePart), new LinkedHashSet<>(remotePart.units().keySet())));
             bind(remote.configurationId(), remote.name(), remote.version(), baselines);
             return new DDSyncResult(remote.name(), List.of(remotePart.name()));
         }
@@ -421,7 +427,7 @@ public class DDSyncService {
     }
 
     @Nullable
-    private DDConfigurationPart readLocalPart(@NotNull String key) throws DBException {
+    private DDConfigurationPart readLocalPart(@NotNull String key, @Nullable Set<String> unitIds) throws DBException {
         if (key.startsWith(KEY_ACCOUNT_PREFIX)) {
             String unitId = key.substring(KEY_ACCOUNT_PREFIX.length());
             DBPSyncUnit unit = DBPSyncRegistry.getInstance().findById(unitId);
@@ -439,8 +445,15 @@ public class DDSyncService {
         }
         Map<String, Map<String, byte[]>> units = new LinkedHashMap<>();
         DBPSyncTarget target = new DBPSyncTarget(workspace, project);
-        for (DBPSyncUnit unit : enabledUnits(DBPSyncScope.PROJECT)) {
-            units.put(unit.getId(), unit.read(target));
+        if (unitIds != null) {
+            for (String unitId : unitIds) {
+                DBPSyncUnit unit = requireUnit(unitId, DDConfigurationPartKind.PROJECT);
+                units.put(unitId, unit.read(target));
+            }
+        } else {
+            for (DBPSyncUnit unit : enabledUnits(DBPSyncScope.PROJECT)) {
+                units.put(unit.getId(), unit.read(target));
+            }
         }
         return new DDConfigurationPart(key, DDConfigurationPartKind.PROJECT, projectId, 0, project.getName(), units);
     }

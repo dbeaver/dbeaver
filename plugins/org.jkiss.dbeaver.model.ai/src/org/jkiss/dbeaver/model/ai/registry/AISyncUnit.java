@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.sync.DBPFileSyncUnit;
 import org.jkiss.dbeaver.model.sync.DBPSyncScope;
 import org.jkiss.dbeaver.model.sync.DBPSyncTarget;
@@ -32,7 +33,7 @@ public class AISyncUnit extends DBPFileSyncUnit {
     public AISyncUnit() {
         super(
             "ai",
-            "AI Settings",
+            AIMessages.ai_sync_unit_name,
             DBPWorkspace.METADATA_FOLDER + "/" + BasePlatformImpl.CONFIG_FOLDER
                 + "/" + AISettingsManager.AI_CONFIGURATION_FILE_NAME,
             DBPSyncScope.WORKSPACE,

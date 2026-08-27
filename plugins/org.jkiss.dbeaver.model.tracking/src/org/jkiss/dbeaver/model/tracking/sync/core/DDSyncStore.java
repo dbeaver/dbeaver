@@ -99,7 +99,7 @@ public class DDSyncStore {
     @NotNull
     public String fingerprint(@NotNull DDConfigurationPart part) throws DBException {
         try {
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(serialize(part));
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(serializeUnits(part));
             return HexFormat.of().formatHex(digest);
         } catch (NoSuchAlgorithmException e) {
             throw new DBException("SHA-256 is not available", e);
@@ -144,6 +144,17 @@ public class DDSyncStore {
 
     @NotNull
     private static byte[] serialize(@NotNull DDConfigurationPart part) {
+        return JSONUtils.GSON.toJson(new DDPartEnvelope(SCHEMA_VERSION, part.name(), serializeUnitsMap(part)))
+            .getBytes(StandardCharsets.UTF_8);
+    }
+
+    @NotNull
+    private static byte[] serializeUnits(@NotNull DDConfigurationPart part) {
+        return JSONUtils.GSON.toJson(serializeUnitsMap(part)).getBytes(StandardCharsets.UTF_8);
+    }
+
+    @NotNull
+    private static Map<String, Map<String, String>> serializeUnitsMap(@NotNull DDConfigurationPart part) {
         Map<String, Map<String, String>> units = new TreeMap<>();
         for (Map.Entry<String, Map<String, byte[]>> unit : part.units().entrySet()) {
             Map<String, String> resources = new TreeMap<>();
@@ -152,8 +163,7 @@ public class DDSyncStore {
             }
             units.put(unit.getKey(), resources);
         }
-        return JSONUtils.GSON.toJson(new DDPartEnvelope(SCHEMA_VERSION, part.name(), units))
-            .getBytes(StandardCharsets.UTF_8);
+        return units;
     }
 
     @NotNull

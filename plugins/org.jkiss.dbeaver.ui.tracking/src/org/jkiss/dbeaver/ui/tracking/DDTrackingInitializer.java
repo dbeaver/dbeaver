@@ -77,7 +77,6 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
      * Safe to call again after a login, it is a no-op while a session is already active.
      */
     public static void start() {
-        DDAutoSyncCoordinator.start();
         DDKeyBundle bundle = DDKeyStore.load();
         if (bundle == null) {
             log.debug("DataDam tracking disabled (not logged in)");
@@ -88,6 +87,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             log.debug("DataDam tracking disabled (no server URL)");
             return;
         }
+        DDAutoSyncCoordinator.start();
         DDSyncCredentials credentials = new DDBundleCredentials(bundle);
         DDTrackingClient client = new DDTrackingClient(url);
         Session session = new Session(client, credentials);

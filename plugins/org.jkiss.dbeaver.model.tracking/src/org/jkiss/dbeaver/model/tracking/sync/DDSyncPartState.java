@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.model.tracking.sync;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
+import java.util.Set;
 
 public record DDSyncPartState(
     long version,
-    @NotNull String fingerprint
+    @NotNull String fingerprint,
+    @Nullable Set<String> unitIds
 ) {
 }

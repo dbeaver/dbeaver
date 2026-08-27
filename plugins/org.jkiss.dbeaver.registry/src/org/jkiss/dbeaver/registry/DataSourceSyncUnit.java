@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.sync.DBPSyncScope;
 import org.jkiss.dbeaver.model.sync.DBPSyncTarget;
 import org.jkiss.dbeaver.model.sync.DBPSyncUnit;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -56,7 +57,7 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
     @NotNull
     @Override
     public String getName() {
-        return "Connections";
+        return RegistryMessages.data_source_sync_unit_name;
     }
 
     @NotNull
