@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver;
 
+import org.eclipse.osgi.internal.debug.Debug;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.function.Predicate;
@@ -36,12 +38,14 @@ public class LogOutputStream extends OutputStream {
     public static final String LOGS_MAX_FILE_SIZE = "logs.files.output.maxSize";
     public static final String LOGS_MAX_FILES_COUNT = "logs.files.output.maxCount";
 
+    private static final int FILE_OPERATIONS_RETRY_LIMIT = 5;
 
+    private final File originalLogFile;
     /**
-     * The File object to store messages.  This value may be null.
+     * The File object to store messages.  This value may NOT be null.
      */
-    private final File currentLogFile;
-    
+    private File currentLogFile;
+
     private final File logFileLocation;
 
     /**
@@ -66,6 +70,7 @@ public class LogOutputStream extends OutputStream {
 
         // Use ModelPReferences because we don't want to trigger platform activation by logger initialization
         final DBPPreferenceStore prefStore = ModelPreferences.getPreferences();
+        this.originalLogFile = debugLogFile;
         this.currentLogFile = debugLogFile;
         this.logFileLocation = debugLogFile.getParentFile();
         this.maxLogSize = prefStore.getLong(LOGS_MAX_FILE_SIZE);
@@ -146,10 +151,11 @@ public class LogOutputStream extends OutputStream {
             && (this.currentLogSize > this.maxLogSize || force)
         ) {
             this.close();
-            
-            File newFile = new File(this.logFileLocation, this.logFileName + "-" + System.currentTimeMillis() + this.logFileNameExtension);
-            if (!this.currentLogFile.renameTo(newFile)) {
-                return false;
+
+            long stamp = System.currentTimeMillis();
+            File newFile = new File(this.logFileLocation, this.logFileName + "-" + stamp + this.logFileNameExtension);
+            if (!doWithRetry(() -> this.currentLogFile.renameTo(newFile))) {
+                this.currentLogFile = new File(this.logFileLocation, this.logFileName + "-since-" + stamp + this.logFileNameExtension);
             }
             this.currentLogSize = 0;
             
@@ -159,7 +165,7 @@ public class LogOutputStream extends OutputStream {
             }
             Arrays.sort(logFiles, Comparator.comparing(File::getName));
             for (int i = 0, count = logFiles.length; i < logFiles.length && count > maxLogFiles; i++, count--) {
-                logFiles[i].delete();
+                //doWithRetry(() -> logFiles[i].delete());
             }
             
             return true;
@@ -167,5 +173,25 @@ public class LogOutputStream extends OutputStream {
             return false;
         }
     }
-    
+
+    private interface RetryableIO<T> {
+        T run() throws IOException;
+    }
+
+    private static <T> T doWithRetry(@NotNull RetryableIO<T> retryable) throws IOException {
+        for (int i = 0; i <= FILE_OPERATIONS_RETRY_LIMIT - 1; i++) {
+            try {
+                return retryable.run();
+            } catch (IOException e) {
+                Debug.println(e.toString());
+                try {
+                    Thread.sleep(Duration.ofMillis(100)); // wait a bit for filesystem
+                } catch (InterruptedException ex) {
+                    // do nothing
+                }
+            }
+        }
+        // retry one last attempt for the exception to propagate on its own
+        return retryable.run();
+    }
 }
