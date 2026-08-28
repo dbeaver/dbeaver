@@ -47,9 +47,9 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 public abstract class BaseSQLDialog extends BaseDialog {
@@ -175,7 +175,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     }
 
     protected boolean saveToFile() {
-        final File file = DialogUtils.selectFileForSave(
+        Path file = DialogUtils.selectFileForSave(
             this.getShell(),
             this.getTitle() + " : " + ModelMessages.model_jdbc_save_to_file_,
             new String[]{"*.sql", "*.txt", "*", "*.*"},
@@ -184,7 +184,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         if (file != null) {
             CharSequence sqlText = getSQLText();
             try {
-                Files.writeString(file.toPath(), sqlText);
+                Files.writeString(file, sqlText);
                 return true;
             } catch (IOException e) {
                 DBWorkbench.getPlatformUI().showError(
