@@ -134,7 +134,21 @@ public class DBeaverLauncher {
     protected boolean splashDown = false;
     protected boolean cliMode = false;
 
-    private Thread splashHandler = null;
+    public final class SplashHandler extends Thread {
+        @Override
+        public void run() {
+            takeDownSplash();
+        }
+
+        // Called reflectively by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor
+        public void updateSplash() {
+            if (bridge != null && !splashDown) {
+                bridge.updateSplash();
+            }
+        }
+    }
+
+    private final Thread splashHandler = new SplashHandler();
 
     //splash screen system properties
     public static final String SPLASH_HANDLE = "org.eclipse.equinox.launcher.splash.handle"; //$NON-NLS-1$
@@ -2808,13 +2822,14 @@ public class DBeaverLauncher {
             return;
         }
 
-        if (splashHandler == null) {
-            splashHandler = new Thread(() -> {
-                // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
-                if (bridge != null && !splashDown) {
-                    bridge.updateSplash();
-                }
-            });
+        if (showSplash || endSplash != null) {
+            // Register the endSplashHandler to be run at VM shutdown. This hook will be
+            // removed once the splash screen has been taken down.
+            try {
+                Runtime.getRuntime().addShutdownHook(splashHandler);
+            } catch (Throwable ex) {
+                // Best effort to register the handler
+            }
         }
 
         // if -endsplash is specified, use it and ignore any -showsplash command
@@ -2856,6 +2871,12 @@ public class DBeaverLauncher {
 
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
+
+        try {
+            Runtime.getRuntime().removeShutdownHook(splashHandler);
+        } catch (Throwable e) {
+            // OK to ignore this, happens when the VM is already shutting down
+        }
     }
 
     /*
