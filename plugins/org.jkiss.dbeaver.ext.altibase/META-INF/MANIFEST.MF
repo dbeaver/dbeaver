@@ -6,7 +6,6 @@ Bundle-Version: 1.0.47.qualifier
 Bundle-Release-Date: 20260831
 Require-Bundle: org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis,
- org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.tasks.native
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21

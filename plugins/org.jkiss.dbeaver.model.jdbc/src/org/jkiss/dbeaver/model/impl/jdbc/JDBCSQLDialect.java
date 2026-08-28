@@ -27,10 +27,11 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLStateType;
+import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
@@ -73,6 +74,9 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     private boolean supportsSubqueries = false;
 
     private transient boolean typesLoaded = false;
+
+    @Nullable
+    protected SQLTokenPredicateSet cachedDialectSkipTokenPredicates = null;
 
     public JDBCSQLDialect(String name, String id) {
         this.name = name;
@@ -376,6 +380,30 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
             Collections.addAll(dataTypes, SQLConstants.DEFAULT_TYPES);
         }
         addDataTypes(dataTypes);
+    }
+
+    @Override
+    @NotNull
+    public final SQLTokenPredicateSet getSkipTokenPredicates() {
+        return cachedDialectSkipTokenPredicates == null ? super.getSkipTokenPredicates() : cachedDialectSkipTokenPredicates;
+    }
+
+    @NotNull
+    protected final TokenPredicateSet makeDialectSkipTokenPredicates(@NotNull JDBCDataSource dataSource) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(dataSource, false);
+        TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
+        return this.makeDialectSkipTokenPredicatesImpl(dataSource, tt);
+    }
+
+    @NotNull
+    protected TokenPredicateSet makeDialectSkipTokenPredicatesImpl(
+        @NotNull JDBCDataSource dataSource,
+        @NotNull TokenPredicateFactory tt
+    ) {
+        return new TokenPredicateSet();
     }
 
     private void loadDriverKeywords(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
