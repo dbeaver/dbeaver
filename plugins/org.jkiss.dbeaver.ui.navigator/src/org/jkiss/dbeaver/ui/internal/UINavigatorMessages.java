@@ -213,6 +213,7 @@ public class UINavigatorMessages extends NLS {
     public static String editors_entity_monitor_add_node;
     public static String editors_entity_monitor_preview_changes;
     public static String editors_entity_properties_text;
+    public static String editors_entity_properties_name_tooltip;
     public static String editors_entity_properties_tooltip_suffix;
     public static String editors_entity_title_uninitialized;
     public static String editors_entity_title_initializing;
