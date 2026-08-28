@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core.ui.services;
+package org.jkiss.dbeaver.ui.actions;
 
-public interface UIServiceApplicationVersionUpdater {
-
-    boolean isAutoUpdateEnabled();
-
-    boolean handleVersionUpdate();
-
+/**
+ * Core module commands (some).
+ */
+public interface CoreCommandConstants {
+    String CMD_ADD_BOOKMARK = "org.jkiss.dbeaver.core.navigator.bookmark.add";
+    String CMD_LINK_EDITOR = "org.jkiss.dbeaver.core.navigator.linkeditor";
 }

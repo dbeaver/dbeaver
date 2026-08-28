@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.ui.services;
 
-/**
- * Core module commands (some).
- */
-public interface CoreCommands {
-    String CMD_ADD_BOOKMARK = "org.jkiss.dbeaver.core.navigator.bookmark.add";
-    String CMD_LINK_EDITOR = "org.jkiss.dbeaver.core.navigator.linkeditor";
+public interface UIServiceApplicationVersionUpdater {
+
+    boolean isAutoUpdateEnabled();
+
+    boolean handleVersionUpdate();
+
 }

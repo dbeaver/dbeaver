@@ -10,7 +10,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.core.ui.services,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tools.project,
  org.jkiss.dbeaver.tools.scripts,
@@ -25,6 +24,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.resources.bookmarks,
  org.jkiss.dbeaver.ui.resources.projects,
  org.jkiss.dbeaver.ui.resources.shortcuts,
+ org.jkiss.dbeaver.ui.services,
  org.jkiss.dbeaver.ui.views,
  org.jkiss.dbeaver.ui.views.process,
  org.jkiss.dbeaver.ui.views.qm
