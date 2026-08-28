@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -331,7 +332,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     }
 
     private static boolean canUseTemporaryDataSource(@NotNull DataSourceDescriptor descriptor) {
-        for (DBWHandlerConfiguration handler : descriptor.getConnectionConfiguration().getHandlers()) {
+        List<DBWHandlerConfiguration> handlers = DBWorkbench.isDistributed()
+            ? DBWUtils.getActualNetworkHandlers(descriptor)
+            : descriptor.getConnectionConfiguration().getHandlers();
+        for (DBWHandlerConfiguration handler : handlers) {
             if (handler.isEnabled() && handler.getHandlerDescriptor().isDistributed()) {
                 return false;
             }
