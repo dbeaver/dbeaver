@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -27,6 +26,7 @@ import org.mockito.Mockito;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -90,10 +90,12 @@ class DBDReferenceUtilsTest {
         );
 
         when(association.getReferencedConstraint()).thenReturn(referencedConstraint);
-        when(exposeAttrRefsList(((DBSEntityReferrer) association).getAttributeReferences(monitor)))
-            .thenReturn(attributeRefs(sourceAttributes));
-        when(exposeAttrRefsList(referencedConstraint.getAttributeReferences(monitor)))
-            .thenReturn(attributeRefs(targetAttributes));
+        doReturn(attributeRefs(sourceAttributes))
+                .when((DBSEntityReferrer) association)
+                .getAttributeReferences(monitor);
+        doReturn(attributeRefs(targetAttributes))
+                .when(referencedConstraint)
+                .getAttributeReferences(monitor);
         when(referencedConstraint.getParentObject()).thenReturn(targetEntity);
         return association;
     }
@@ -126,10 +128,5 @@ class DBDReferenceUtilsTest {
         assertSame(attribute, constraint.getAttribute());
         assertEquals(DBCLogicalOperator.IN, constraint.getOperator());
         assertArrayEquals(values, (Object[]) constraint.getValue());
-    }
-
-    @Nullable
-    private static List<DBSEntityAttributeRef> exposeAttrRefsList(@Nullable List<? extends DBSEntityAttributeRef> list) {
-        return list == null ? null : List.copyOf(list);
     }
 }
