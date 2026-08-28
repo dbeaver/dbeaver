@@ -34,11 +34,11 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 
@@ -100,13 +100,17 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
             UIUtils.createDialogButton(buttonsPanel, "Save ...", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    final File saveFile = DialogUtils.selectFileForSave(
+                    Path saveFile = DialogUtils.selectFileForSave(
                         buttonsPanel.getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*", "*.*"}, null);
                     if (saveFile != null) {
                         try {
-                            IOUtils.writeFileFromString(saveFile, scriptText);
+                            Files.writeString(saveFile, scriptText);
                         } catch (IOException e1) {
-                            DBWorkbench.getPlatformUI().showError("Save scritp to file", "Error saving script to file " + saveFile.getAbsolutePath(), e1);
+                            DBWorkbench.getPlatformUI().showError(
+                                "Save scritp to file",
+                                "Error saving script to file " + saveFile.toAbsolutePath(),
+                                e1
+                            );
                         }
                     }
                 }
