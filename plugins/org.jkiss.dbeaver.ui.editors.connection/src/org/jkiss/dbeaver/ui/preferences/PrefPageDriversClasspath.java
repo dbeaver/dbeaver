@@ -43,9 +43,9 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.StringJoiner;
 
@@ -86,9 +86,9 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
             UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_add, UIIcon.ADD, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    final File[] files = DialogUtils.openFileList(getShell(), UIConnectionMessages.pref_page_drivers_classpath_global_libraries_choose_files, new String[]{"*.jar"});
+                    Path[] files = DialogUtils.openFileList(getShell(), UIConnectionMessages.pref_page_drivers_classpath_global_libraries_choose_files, new String[]{"*.jar"});
                     if (files != null) {
-                        for (File file : files) {
+                        for (Path file : files) {
                             final String path = file.toString();
                             if (globalLibrariesList.indexOf(path) < 0) {
                                 globalLibrariesList.add(path);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,8 +118,8 @@ public class ContentValueManager extends BaseValueManager {
                             String str = controller.getValueHandler()
                                     .getValueDisplayString(controller.getValueType(), 
                                             controller.getValue(), DBDDisplayFormat.EDIT);
-                            String charset = 
-                                    DBValueFormatting.getDefaultBinaryFileEncoding(controller.getExecutionContext().getDataSource());
+                            String charset = DBValueFormatting.getDefaultBinaryFileEncoding(
+                                controller.getExecutionContext().getDataSource());
                             byte[] bytes = str.getBytes(charset);
                             openOctetStream(bytes);
                         }
@@ -254,7 +254,7 @@ public class ContentValueManager extends BaseValueManager {
         }
 
         Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File openFile = DialogUtils.openFile(shell);
+        Path openFile = DialogUtils.openFile(shell);
         if (openFile == null) {
             return false;
         }
@@ -262,9 +262,9 @@ public class ContentValueManager extends BaseValueManager {
             try {
                 DBDContentStorage storage;
                 if (ContentUtils.isTextContent(value)) {
-                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile.toPath(), GeneralUtils.UTF8_ENCODING);
+                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile, GeneralUtils.UTF8_ENCODING);
                 } else {
-                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile.toPath());
+                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile);
                 }
                 value.updateContents(monitor, storage);
                 controller.updateValue(value, true);
@@ -283,7 +283,7 @@ public class ContentValueManager extends BaseValueManager {
         }
 
         Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File saveFile = DialogUtils.selectFileForSave(shell, controller.getValueName());
+        Path saveFile = DialogUtils.selectFileForSave(shell, controller.getValueName());
         if (saveFile == null) {
             return;
         }
@@ -294,11 +294,10 @@ public class ContentValueManager extends BaseValueManager {
                     if (ContentUtils.isTextContent(value)) {
                         try (Reader cr = storage.getContentReader()) {
                             ContentUtils.saveContentToFile(
-                                    cr,
-                                    saveFile,
-                                    GeneralUtils.UTF8_ENCODING,
-                                    monitor
-                                    );
+                                cr,
+                                saveFile,
+                                GeneralUtils.UTF8_ENCODING,
+                                monitor);
                         }
                     } else {
                         try (InputStream cs = storage.getContentStream()) {
@@ -313,7 +312,7 @@ public class ContentValueManager extends BaseValueManager {
         catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
                     ResultSetMessages.model_jdbc_could_not_save_content,
-                    ResultSetMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
+                    ResultSetMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.toAbsolutePath() + "'", //$NON-NLS-2$
                     e.getTargetException());
         }
         catch (InterruptedException e) {

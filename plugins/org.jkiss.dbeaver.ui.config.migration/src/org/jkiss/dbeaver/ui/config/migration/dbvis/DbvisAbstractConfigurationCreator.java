@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.config.migration.dbvis;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportDriverInfo;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -55,12 +57,12 @@ public abstract class DbvisAbstractConfigurationCreator implements DbvisConfigur
         }
     }
 
-    public File getConfigurationAsset(File folder) {
-        File configFile = null;
-        File configFolder = new File(folder, getConfigurationFolder());
-        if (configFolder.exists()) {
-            configFile = new File(configFolder, getConfigurationFile());
-            if (configFile.exists()) {
+    public Path getConfigurationAsset(@NotNull Path folder) {
+        Path configFile = null;
+        Path configFolder = folder.resolve(getConfigurationFolder());
+        if (Files.exists(configFolder)) {
+            configFile = configFolder.resolve(getConfigurationFile());
+            if (Files.exists(configFile)) {
                 return configFile;
             }
         }

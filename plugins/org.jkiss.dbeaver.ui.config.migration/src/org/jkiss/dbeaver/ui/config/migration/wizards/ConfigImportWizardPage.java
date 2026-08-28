@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -210,7 +211,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
         super.deactivatePage();
     }
 
-    protected abstract void loadConnections(ImportData importData) throws DBException;
+    protected abstract void loadConnections(@NotNull ImportData importData) throws DBException;
 
     @Override
     public boolean isPageComplete() {

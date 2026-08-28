@@ -35,10 +35,12 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCreator {
     private static final Log log = Log.getLog(DbvisConfigurationCreatorv233.class);
@@ -59,13 +61,13 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
     @Override
     public ImportData create(
         @NotNull ImportData importData,
-        @NotNull File configFile
+        @NotNull Path configFile
     ) throws DBException {
         try {
             Map<String, DbvisSshServerConfiguration> sshServerConfigurations = new LinkedHashMap<>();
             DbvisSshServerConfiguration sshConfiguration = null;
-            File sshServersFile = new File(configFile.getParent(), SSH_CONFIG_FILE);
-            if (sshServersFile.exists()) {
+            Path sshServersFile = configFile.getParent().resolve(SSH_CONFIG_FILE);
+            if (Files.exists(sshServersFile)) {
                 Document sshConfigDocument = XMLUtils.parseDocument(sshServersFile);
                 Element sshServersElement = XMLUtils.getChildElement(sshConfigDocument.getDocumentElement(), "SshServers");
                 if (sshServersElement != null) {
@@ -128,8 +130,8 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 .append("_")
                                 .append(driverIdSegments[0])
                                 .append(".xml");
-                            File driverFile = new File(configFile.getParent(), builder.toString());
-                            if (driverFile.exists()) {
+                            Path driverFile = configFile.getParent().resolve(builder.toString());
+                            if (Files.exists(driverFile)) {
                                 Document driverTypeDocument = XMLUtils.parseDocument(driverFile);
                                 Element driverTypeDocumentElement = driverTypeDocument.getDocumentElement();
                                 String name = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Label");
@@ -158,14 +160,14 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                         log.error("Driver descriptor not found for: " + driverName);
                                     }
                                 } else {
-                                    log.error("Driver descriptor not found by path: " + driverFile.getAbsolutePath());
+                                    log.error("Driver descriptor not found by path: " + driverFile.toAbsolutePath());
                                 }
                             }
                             Element sshServers = XMLUtils.getChildElement(dbElement, "SshServers");
                             if (sshServers != null) {
                                 for (Element sshServer : XMLUtils.getChildElementList(sshServers, "SshServer")) {
                                     String enabled = XMLUtils.getChildElementBody(sshServer, "Enabled");
-                                    if (enabled.equals("true")) {
+                                    if (Objects.equals(enabled, "true")) {
                                         sshConfiguration = sshServerConfigurations.get(sshServer.getAttribute("id"));
                                         break;
                                     }
