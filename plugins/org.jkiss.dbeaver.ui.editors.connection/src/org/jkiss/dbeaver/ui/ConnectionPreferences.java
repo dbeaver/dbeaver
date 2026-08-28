@@ -23,5 +23,7 @@ public interface ConnectionPreferences {
 
     String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
     String CONFIRM_TXN_RECONNECT = "reconnect_txn"; //$NON-NLS-1$
+    String CONFIRM_DISABLE_NETWORK_HANDLER = "disable_network_handler"; //$NON-NLS-1$
+    String CONFIRM_TEST_CONNECTION_PERSIST = "test_connection_persist"; //$NON-NLS-1$
 
 }
