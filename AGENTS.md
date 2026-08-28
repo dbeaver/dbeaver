@@ -29,18 +29,14 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 
 ### Building
 
-To perform full product build run
-`mvn package -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`
-To build only a single bundle run `mvn package` in bundle folder.  
-It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
-To build other products(s) use different profiles. You can find maven profiles list in file `product/pom.xml`.
+- To perform full product build run `mvn package -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`  
+- To build only a single bundle run `mvn package` in bundle folder. It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
+- To build other products(s) use different profiles. You can find maven profiles list in file `product/pom.xml`.
 
 ### Running tests
 
-Running tests in a single bundle usually fail because OSGI needs entire bundle to be included in build be installed in .m2.
-To run tests over full repo run
-`mvn verify -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`
-This will run tests for desktop dbeaver ce and dbeaver eclipse plugin.
+- Running tests in a single bundle usually fail because OSGI needs entire bundle to be included in build be installed in .m2.
+- To run tests over full repo run `mvn verify -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`. This will run tests for desktop dbeaver ce and dbeaver eclipse plugin.
 
 ### Repo dependencies
 
@@ -65,9 +61,8 @@ This will run tests for desktop dbeaver ce and dbeaver eclipse plugin.
 
 ### License header
 
-For OSS repos every Java file must begin with Apache 2.0 license header (`docs/license_header.txt`).
-Variable ${current-year} must be set to the current year.
-If any existing Java file is modified then current year must be updated too.
+- For OSS repos every Java file must begin with Apache 2.0 license header (`docs/license_header.txt`). Variable ${current-year} must be set to the current year.
+- If any existing Java file is modified then current year must be updated too.
 
 ### Annotations
 
@@ -80,6 +75,8 @@ If any existing Java file is modified then current year must be updated too.
 
 - Follow code style of the existing code. The most recent code has good code style.
 - Leave comments in code for all non-obvious algorithms. Do not comment simple or obvious functions.
+- Java package imports must be in alphabetical order. SDK import must be separated with one empty line from others and be in the end imports section.
+- After code changes/refactoring imports which no longer needed must be removed.
 
 ### Hardcode
 
@@ -88,7 +85,8 @@ If any existing Java file is modified then current year must be updated too.
 
 ### Logging
 
-Use `org.jkiss.dbeaver.Log`. Do not use `System.out` or any other logging system unless directly requested.
+- Use `org.jkiss.dbeaver.Log`.
+- Do not use `System.out` or any other logging system unless directly requested.
 
 ### Exception handling
 
