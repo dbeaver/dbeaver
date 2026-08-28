@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.h2.ui;
 
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.ext.h2.ui.internal.H2Messages;
 import org.jkiss.dbeaver.ext.h2.util.H2Utils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -85,6 +87,16 @@ public final class PrefPageH2 extends AbstractPrefPage implements IWorkbenchPref
     @Override
     public boolean performOk() {
         H2Utils.setUserAllowedClasses(currentAllowedClasses);
+
+        if (!currentAllowedClasses.equals(actualAllowedClasses)) {
+            if (UIUtils.confirmAction(
+                getShell(),
+                NLS.bind(H2Messages.pref_restart_title, GeneralUtils.getProductName()),
+                NLS.bind(H2Messages.pref_restart_message, GeneralUtils.getProductName())
+            )) {
+                restartWorkbenchOnPrefChange();
+            }
+        }
 
         return super.performOk();
     }

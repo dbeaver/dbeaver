@@ -23,6 +23,8 @@ public final class H2Messages extends NLS {
     public static String pref_security_allowed_classes_label;
     public static String pref_security_allowed_classes_hint;
     public static String pref_unsaved_changes_hint;
+    public static String pref_restart_title;
+    public static String pref_restart_message;
 
     static {
         NLS.initializeMessages(H2Messages.class.getName(), H2Messages.class);
