@@ -13,7 +13,7 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 - features: Eclipse feature descriptors
 - product: Eclipse product configurations + aggregator
 
-## Technology Stack
+## Codebase
 
 - Language: Java (21)
 - Platform: OSGi / Eclipse Equinox
@@ -22,7 +22,7 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 - SQL parsing: JSQLParser, ANTLR4 (LSM module)
 - Testing: JUnit 5, Mockito, custom OSGi test runner
 
-## Build System
+### Build System
 
 - Apache Maven + Eclipse Tycho. 
 - Each plugin is packaged as `eclipse-plugin`; test plugins as `eclipse-test-plugin`.
@@ -55,23 +55,13 @@ This will run tests for desktop dbeaver ce and dbeaver eclipse plugin.
 - You can find them in root POMs (repos with layout=p2).
 - This includes standard Eclipse P2 for RCP development + DBeaver custom P2 (see `repo.p2.eclipse.url`).
 - Custom P2 repo source repo is `dbeaver-deps-ce` - it converts classic Maven dependencies into P2 bundles.
+- Dependencies between bundles are declared in `Require-Bundle` manifest header, not in `pom.xml`.
 
 ### Plugin packaging rules
 
-- Every plugin has a `META-INF/MANIFEST.MF` (bundle metadata) and a `pom.xml` with `<packaging>eclipse-plugin</packaging>`.
-- Dependencies between plugins are declared in `MANIFEST.MF` under `Require-Bundle:`, not in `pom.xml`.
+- Every plugin has a `META-INF/MANIFEST.MF` (bundle metadata) and a `pom.xml` with packaging `eclipse-plugin`.
 - `plugin.xml` declares Eclipse extension points and extensions.
 - Bundle source code is in the `src` folder specified in `build.properties` (as required by Tycho).
-
-## Code Conventions
-
-### Package and class naming
-
-- `DBP*` - Platform-level capability (`DBPDataSource`, `DBPObject`)
-- `DBS*` - Database structure/metadata (`DBSObject`, `DBSTable`, `DBSSchema`)
-- `DBC*` - Connectivity (execution context) (`DBCSession`, `DBCException`)
-- `DBD*` - Data values/formatting (`DBDValueHandler`, `DBDDataFilter`)
-- `DBR*` - Runtime (progress, jobs) (`DBRProgressMonitor`, `DBRRunnableWithProgress`)
 
 ### License header
 
@@ -98,13 +88,13 @@ If any existing Java file is modified then current year must be updated too.
 
 ### Logging
 
-Use `org.jkiss.dbeaver.Log`. Do not use `System.out/err` or SLF4J directly.
+Use `org.jkiss.dbeaver.Log`. Do not use `System.out` or any other logging system unless directly requested.
 
 ### Exception handling
 
-- `DBException` (and its subclasses like `DBCException`, `DBDatabaseException`) are the standard checked exceptions for database errors.
-- Wrap JDBC `SQLException` in `DBException` when surfacing to upper layers.
-- Using unchecked runtime exceptions is allowed only in exceptional cases (when there are no other options).
+- `DBException` and its subclasses are the standard checked exceptions for database errors.
+- Wrap `SQLException` and other exception from libraries in `DBException` when surfacing to upper layers.
+- Using unchecked runtime exceptions is allowed only in rare cases (when there are no other options).
 
 ### Long-running tasks
 
@@ -118,30 +108,11 @@ Use `org.jkiss.dbeaver.Log`. Do not use `System.out/err` or SLF4J directly.
 - `plugin.xml` uses `%key` references to the `plugin.properties` file.
 - Whenever adding text constant add English localization at least.
 
-## Architecture Patterns
+## Common Pitfalls / Known Issues
 
-### Model / UI separation
-
-- Plugins are split into model (e.g. `o.j.d.ext.mysql`, `o.j.d.model.ai`) and UI (`o.j.d.ext.mysql.ui`, `o.j.d.ui.charts`) bundles. 
-- Model plugins must not depend on SWT, JFace or any other UI-related bundles.
-- Do not execute SQL queries or any other model-level things directly from UI modules, use abstracts in model layer.
-
-### Extension-point driven design
-
-- Features are contributed via Eclipse extension points declared in `plugin.xml`.
-- New extensible features should be formed as extension points/extensions.
-
-### Adding a new database driver
-
-Note: For many drivers, updating `plugin.xml` alone is enough — you only need to implement Java classes when the existing JDBC infrastructure does not cover your use case.
-
-- Create `plugins/org.jkiss.dbeaver.ext.{db}/` with `META-INF/MANIFEST.MF`, `plugin.xml`, and a `pom.xml` (`eclipse-plugin`).
-- Add an optionally-UI sibling `plugins/org.jkiss.dbeaver.ext.{db}.ui/`.
-- Implement `DBPDataSourceProvider<YourDataSource>` → register it in `plugin.xml` under `org.jkiss.dbeaver.dataSourceProvider`.
-- Implement `JDBCDataSource` (from `org.jkiss.dbeaver.model.jdbc`) for JDBC-based drivers.
-- Implement `SQLDialect` (or extend `JDBCSQLDialect`) for SQL syntax specifics.
-- Add the new plugin to `plugins/pom.xml` `<modules>` list.
-- Add a test plugin `test/org.jkiss.dbeaver.ext.{db}.test/` and register it in `test/pom.xml`.
+- UI thread safety: All SWT/UI updates must run on the display thread. Use functions like `UIUtils.asyncExec(Runnable)` if needed.
+- `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
+- Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.
 
 ## Creating unit tests
 
@@ -163,11 +134,10 @@ Note: For many drivers, updating `plugin.xml` alone is enough — you only need 
 - Keep AI-assisted contributions focused and small, and ensure each change is understood and reviewed by a human contributor.
 - AI tools disclosure: if AI tools were used to generate code, mention it in the PR description. Example: *This PR was generated with AI (GitHub Copilot)*.
 
-## Common Pitfalls / Known Issues
+## Specific instruction
 
-- UI thread safety: All SWT/UI updates must run on the display thread. Use functions like `UIUtils.asyncExec(Runnable)` if needed.
-- `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
-- Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.
+- [DBeaver architecture for new features design/refactoring](AGENTS-Architecture.md)
+- [Adding new database drivers](AGENTS-New-Database-Driver.md)
 
 ## Code Contribution Guide
 
