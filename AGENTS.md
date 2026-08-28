@@ -75,7 +75,9 @@ This will run tests for desktop dbeaver ce and dbeaver eclipse plugin.
 
 ### License header
 
-For OSS repos every Java file must begin with Apache 2.0 license header (it is also in `docs/license_header.txt`)
+For OSS repos every Java file must begin with Apache 2.0 license header (`docs/license_header.txt`).
+Variable ${current-year} must be set to the current year.
+If any existing Java file is modified then current year must be updated too.
 
 ### Annotations
 
