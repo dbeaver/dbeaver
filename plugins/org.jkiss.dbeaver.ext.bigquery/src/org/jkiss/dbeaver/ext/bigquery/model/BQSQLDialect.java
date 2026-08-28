@@ -49,8 +49,6 @@ public class BQSQLDialect extends GenericSQLDialect {
         {"REPEAT", SQLConstants.BLOCK_END + " REPEAT"}
     };
 
-    private SQLTokenPredicateSet cachedDialectSkipTokenPredicates = null;
-
     public BQSQLDialect() {
         super("BigQuery", "google_bigquery");
     }
@@ -97,29 +95,14 @@ public class BQSQLDialect extends GenericSQLDialect {
         );
     }
 
-    @NotNull
-    @Override
-    public SQLTokenPredicateSet getSkipTokenPredicates() {
-        return cachedDialectSkipTokenPredicates == null ? super.getSkipTokenPredicates() : cachedDialectSkipTokenPredicates;
-    }
-
     @Override
     public void initDriverSettings(@NotNull JDBCSession session, @NotNull JDBCDataSource dataSource, @NotNull JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
-        cachedDialectSkipTokenPredicates = this.makeDialectSkipTokenPredicates(dataSource);
+        super.cachedDialectSkipTokenPredicates = this.makeDialectSkipTokenPredicates(dataSource);
     }
 
     @NotNull
-    protected SQLTokenPredicateSet makeDialectSkipTokenPredicates(@NotNull JDBCDataSource dataSource) {
-        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
-        TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
-        return this.makeDialectSkipTokenPredicatesImpl(dataSource, tt);
-    }
-
-    @NotNull
+    @Override
     protected TokenPredicateSet makeDialectSkipTokenPredicatesImpl(@NotNull JDBCDataSource dataSource, @NotNull TokenPredicateFactory tt) {
         return TokenPredicateSet.of(new TokenPredicatesCondition(
             SQLParserActionKind.END_BLOCK,
