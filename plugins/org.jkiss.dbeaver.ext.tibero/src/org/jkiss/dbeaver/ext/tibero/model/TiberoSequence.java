@@ -29,7 +29,7 @@ public class TiberoSequence extends OracleSequence {
 
     private volatile String sourceText;
 
-    public TiberoSequence(OracleSchema schema, ResultSet dbResult) {
+    public TiberoSequence(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 

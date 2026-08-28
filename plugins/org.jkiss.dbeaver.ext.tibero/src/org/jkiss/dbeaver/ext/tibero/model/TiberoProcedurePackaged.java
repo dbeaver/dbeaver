@@ -16,12 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
@@ -35,18 +29,26 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class TiberoProcedurePackaged extends OracleProcedurePackaged {
 
-    public TiberoProcedurePackaged(OraclePackage ownerPackage, ResultSet dbResult) {
+    public TiberoProcedurePackaged(@NotNull OraclePackage ownerPackage, @NotNull ResultSet dbResult) {
         super(ownerPackage, dbResult);
     }
 
+    @NotNull
     @Override
     @Association
     public Collection<OracleProcedureArgument> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
         return loadParameters(monitor);
     }
 
+    @NotNull
     private Collection<OracleProcedureArgument> loadParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleProcedureArgument> parameters = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getSchema(), "Load Tibero packaged procedure parameters")) {
@@ -66,6 +68,7 @@ public class TiberoProcedurePackaged extends OracleProcedurePackaged {
         return parameters;
     }
 
+    @NotNull
     private JDBCPreparedStatement prepareParametersStatement(@NotNull JDBCSession session) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT A.*\n" +

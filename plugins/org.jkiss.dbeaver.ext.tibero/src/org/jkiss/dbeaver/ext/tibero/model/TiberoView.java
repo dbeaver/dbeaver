@@ -67,11 +67,11 @@ public class TiberoView extends OracleView {
     private volatile List<OracleTableColumn> columnsCache;
     private volatile String sourceText;
 
-    public TiberoView(OracleSchema schema, String name) {
+    public TiberoView(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name);
     }
 
-    public TiberoView(OracleSchema schema, ResultSet dbResult) {
+    public TiberoView(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 
@@ -83,13 +83,16 @@ public class TiberoView extends OracleView {
     @Association
     @Override
     public List<OracleTableTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return ((TiberoSchema) getContainer()).getTableTriggers(monitor, this);
+        return ((TiberoSchema) getContainer()).getTableTriggersForTable(monitor, this);
     }
 
     @NotNull
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     @Override
-    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull java.util.Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull java.util.Map<String, Object> options
+    ) throws DBException {
         String definitionText = sourceText;
         if (definitionText != null) {
             return definitionText;
@@ -128,8 +131,9 @@ public class TiberoView extends OracleView {
 
     @PropertyGroup
     @LazyProperty(cacheValidator = OracleTableBase.AdditionalInfoValidator.class)
+    @NotNull
     @Override
-    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException {
+    public AdditionalInfo getAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBException {
         markAdditionalInfoLoaded();
         return super.getAdditionalInfo();
     }
@@ -176,6 +180,7 @@ public class TiberoView extends OracleView {
         TABLE_ADDITIONAL_INFO_LOADED_HANDLE.set(info, true);
     }
 
+    @NotNull
     private List<OracleTableColumn> loadAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleTableColumn> columns = new ArrayList<>();
         final String colsView = getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, "ALL_TAB_COLS")
@@ -209,6 +214,7 @@ public class TiberoView extends OracleView {
         return Collections.unmodifiableList(columns);
     }
 
+    @Nullable
     private String loadViewText(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero view definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

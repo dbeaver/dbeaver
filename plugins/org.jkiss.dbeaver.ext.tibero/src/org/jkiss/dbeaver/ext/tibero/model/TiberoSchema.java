@@ -90,6 +90,7 @@ public class TiberoSchema extends OracleSchema {
         return (TiberoDataSource) super.getDataSource();
     }
 
+    @NotNull
     @Override
     public TiberoTable createTableImpl(
         @NotNull DBRProgressMonitor monitor,
@@ -181,6 +182,7 @@ public class TiberoSchema extends OracleSchema {
         cache.setCache(indexes);
     }
 
+    @NotNull
     private List<OracleTableIndex> loadIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleTableIndex> indexes = new ArrayList<>();
         AtomicReference<OracleTableIndex> curIndex = new AtomicReference<>();
@@ -299,6 +301,7 @@ public class TiberoSchema extends OracleSchema {
         cache.setCache(loadSchemaTriggers(monitor));
     }
 
+    @NotNull
     private List<OracleSchemaTrigger> loadSchemaTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleSchemaTrigger> triggers = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero schema triggers")) {
@@ -336,12 +339,14 @@ public class TiberoSchema extends OracleSchema {
         cache.setCache(loadTableTriggers(monitor));
     }
 
+    @NotNull
     private List<OracleTableTrigger> loadTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheTables(monitor);
         List<OracleTableTrigger> triggers = loadTableTriggerRows(monitor);
         return triggers;
     }
 
+    @NotNull
     private List<OracleTableTrigger> loadTableTriggerRows(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleTableTrigger> triggers = new ArrayList<>();
         AtomicReference<OracleTableTrigger> curTrigger = new AtomicReference<>();
@@ -440,14 +445,17 @@ public class TiberoSchema extends OracleSchema {
         }
     }
 
+    @NotNull
     private OracleSchemaTrigger createSchemaTrigger(@NotNull JDBCResultSet dbResult) {
         return new OracleSchemaTrigger(this, dbResult);
     }
 
+    @NotNull
     private OracleTableTrigger createTableTrigger(@NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult) {
         return new OracleTableTrigger(table, dbResult);
     }
 
+    @NotNull
     private OracleTriggerColumn createTriggerColumn(
         @NotNull DBRProgressMonitor monitor,
         @NotNull OracleTableTrigger trigger,
@@ -458,7 +466,10 @@ public class TiberoSchema extends OracleSchema {
     }
 
     @NotNull
-    List<OracleTableTrigger> getTableTriggers(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+    List<OracleTableTrigger> getTableTriggersForTable(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleTableBase table
+    ) throws DBException {
         cacheTableTriggers(monitor);
         List<OracleTableTrigger> result = new ArrayList<>();
         for (OracleTableTrigger trigger : super.getTableTriggers(monitor)) {
@@ -470,22 +481,34 @@ public class TiberoSchema extends OracleSchema {
     }
 
     @NotNull
-    List<OracleTableConstraint> getTableConstraints(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
-        List<OracleTableConstraint> constraints = loadTableConstraints(monitor, table);
-        return constraints;
+    List<OracleTableConstraint> getTableConstraints(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleTableBase table
+    ) throws DBException {
+        return loadTableConstraints(monitor, table);
     }
 
     @NotNull
-    List<OracleTableForeignKey> getTableForeignKeys(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+    List<OracleTableForeignKey> getTableForeignKeys(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleTableBase table
+    ) throws DBException {
         return loadTableForeignKeys(monitor, table);
     }
 
     @NotNull
-    List<OracleTableForeignKey> getTableForeignKeyReferences(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+    List<OracleTableForeignKey> getTableForeignKeyReferences(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleTableBase table
+    ) throws DBException {
         return loadTableForeignKeyReferences(monitor, table);
     }
 
-    private List<OracleTableConstraint> loadTableConstraints(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+    @NotNull
+    private List<OracleTableConstraint> loadTableConstraints(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleTableBase table
+    ) throws DBException {
         Map<String, OracleTableConstraint> constraints = new LinkedHashMap<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table constraints")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -552,7 +575,11 @@ public class TiberoSchema extends OracleSchema {
         return new ArrayList<>(constraints.values());
     }
 
-    private List<OracleTableForeignKey> loadTableForeignKeys(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+    @NotNull
+    private List<OracleTableForeignKey> loadTableForeignKeys(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleTableBase table
+    ) throws DBException {
         Map<String, OracleTableForeignKey> foreignKeys = new LinkedHashMap<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table foreign keys")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -626,7 +653,11 @@ public class TiberoSchema extends OracleSchema {
         return new ArrayList<>(foreignKeys.values());
     }
 
-    private List<OracleTableForeignKey> loadTableForeignKeyReferences(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+    @NotNull
+    private List<OracleTableForeignKey> loadTableForeignKeyReferences(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleTableBase table
+    ) throws DBException {
         cacheTables(monitor);
         Map<String, OracleTableForeignKey> foreignKeys = new LinkedHashMap<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table foreign key references")) {
@@ -724,6 +755,7 @@ public class TiberoSchema extends OracleSchema {
         return new ArrayList<>(foreignKeys.values());
     }
 
+    @NotNull
     private String getForeignKeyCacheKey(@Nullable String tableName, @Nullable String constraintName) {
         return tableName + "." + constraintName;
     }
@@ -760,6 +792,7 @@ public class TiberoSchema extends OracleSchema {
         cache.setCache(loadPackages(monitor));
     }
 
+    @NotNull
     private List<OracleProcedureStandalone> loadProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleProcedureStandalone> procedures = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero procedures")) {
@@ -786,6 +819,7 @@ public class TiberoSchema extends OracleSchema {
         return procedures;
     }
 
+    @NotNull
     private List<OracleSequence> loadSequences(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleSequence> sequences = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero sequences")) {
@@ -811,6 +845,7 @@ public class TiberoSchema extends OracleSchema {
         return sequences;
     }
 
+    @NotNull
     private List<OraclePackage> loadPackages(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OraclePackage> packages = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero packages")) {
@@ -841,6 +876,7 @@ public class TiberoSchema extends OracleSchema {
         return packages;
     }
 
+    @NotNull
     private OracleSynonym createSynonym(@NotNull JDBCResultSet dbResult) {
         return new OracleSynonym(this, dbResult);
     }
@@ -857,6 +893,7 @@ public class TiberoSchema extends OracleSchema {
         cache.setCache(loadSynonyms(monitor));
     }
 
+    @NotNull
     private List<OracleSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
         final String ownerName = getName();
         final boolean readAllSynonyms = getDataSource().getContainer().getPreferenceStore()
@@ -916,6 +953,7 @@ public class TiberoSchema extends OracleSchema {
         return synonyms;
     }
 
+    @NotNull
     private TiberoProcedureStandalone createProcedure(@NotNull JDBCResultSet dbResult) {
         return new TiberoProcedureStandalone(this, dbResult);
     }
@@ -923,13 +961,14 @@ public class TiberoSchema extends OracleSchema {
     @NotNull
     @Association
     @Override
-    public Collection<? extends OracleTable> getTables(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends OracleTable> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheTables(monitor);
         return super.getTables(monitor);
     }
 
+    @Nullable
     @Override
-    public OracleTable getTable(DBRProgressMonitor monitor, String name) throws DBException {
+    public OracleTable getTable(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         cacheTables(monitor);
         return super.getTable(monitor, name);
     }
@@ -937,7 +976,7 @@ public class TiberoSchema extends OracleSchema {
     @NotNull
     @Association
     @Override
-    public Collection<OracleView> getViews(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleView> getViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheTables(monitor);
         return super.getViews(monitor);
     }
@@ -945,7 +984,7 @@ public class TiberoSchema extends OracleSchema {
     @NotNull
     @Association
     @Override
-    public Collection<OracleSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleSequence> getSequences(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheSequences(monitor);
         return super.getSequences(monitor);
     }
@@ -953,7 +992,7 @@ public class TiberoSchema extends OracleSchema {
     @NotNull
     @Association
     @Override
-    public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OraclePackage> getPackages(@NotNull DBRProgressMonitor monitor) throws DBException {
         cachePackages(monitor);
         return super.getPackages(monitor);
     }
@@ -961,7 +1000,7 @@ public class TiberoSchema extends OracleSchema {
     @NotNull
     @Association
     @Override
-    public Collection<OracleMaterializedView> getMaterializedViews(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleMaterializedView> getMaterializedViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheTables(monitor);
         return super.getMaterializedViews(monitor);
     }
@@ -969,7 +1008,7 @@ public class TiberoSchema extends OracleSchema {
     @NotNull
     @Association
     @Override
-    public Collection<OracleTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheIndexes(monitor);
         return super.getIndexes(monitor);
     }
@@ -977,7 +1016,7 @@ public class TiberoSchema extends OracleSchema {
     @NotNull
     @Association
     @Override
-    public Collection<OracleSchemaTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleSchemaTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheSchemaTriggers(monitor);
         return super.getTriggers(monitor);
     }
@@ -985,38 +1024,43 @@ public class TiberoSchema extends OracleSchema {
     @NotNull
     @Association
     @Override
-    public Collection<OracleTableTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleTableTrigger> getTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheTableTriggers(monitor);
         return super.getTableTriggers(monitor);
     }
 
+    @NotNull
     @Association
     @Override
-    public Collection<OracleSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleSynonym> getSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheSynonyms(monitor);
         return super.getSynonyms(monitor);
     }
 
+    @Nullable
     @Association
     @Override
-    public OracleSynonym getSynonym(DBRProgressMonitor monitor, String name) throws DBException {
+    public OracleSynonym getSynonym(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         cacheSynonyms(monitor);
         return super.getSynonym(monitor, name);
     }
 
+    @NotNull
     @Association
     @Override
-    public Collection<OracleProcedureStandalone> getProcedures(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedureStandalone> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheProcedures(monitor);
         return super.getProcedures(monitor);
     }
 
+    @Nullable
     @Override
-    public OracleProcedureStandalone getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+    public OracleProcedureStandalone getProcedure(@NotNull DBRProgressMonitor monitor, @NotNull String uniqueName) throws DBException {
         cacheProcedures(monitor);
         return super.getProcedure(monitor, uniqueName);
     }
 
+    @NotNull
     @Override
     public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheTables(monitor);
@@ -1079,6 +1123,7 @@ public class TiberoSchema extends OracleSchema {
         }
     }
 
+    @Nullable
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return super.refreshObject(monitor);

@@ -54,11 +54,11 @@ public class TiberoTable extends OracleTable {
 
     private volatile List<OracleTableColumn> columnsCache;
 
-    public TiberoTable(OracleSchema schema, String name) {
+    public TiberoTable(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name);
     }
 
-    public TiberoTable(DBRProgressMonitor monitor, OracleSchema schema, ResultSet dbResult) {
+    public TiberoTable(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(monitor, schema, dbResult);
     }
 
@@ -77,9 +77,10 @@ public class TiberoTable extends OracleTable {
     @Association
     @Override
     public List<OracleTableTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return ((TiberoSchema) getContainer()).getTableTriggers(monitor, this);
+        return ((TiberoSchema) getContainer()).getTableTriggersForTable(monitor, this);
     }
 
+    @Nullable
     @Override
     public Object getTablespace(@NotNull DBRProgressMonitor monitor) throws DBException {
         // Keep the raw tablespace name instead of resolving OracleTablespace.
@@ -147,8 +148,9 @@ public class TiberoTable extends OracleTable {
 
     @PropertyGroup
     @LazyProperty(cacheValidator = OracleTableBase.AdditionalInfoValidator.class)
+    @NotNull
     @Override
-    public OracleTable.AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) {
+    public OracleTable.AdditionalInfo getAdditionalInfo(@NotNull DBRProgressMonitor monitor) {
         return (OracleTable.AdditionalInfo) super.getAdditionalInfo();
     }
 
@@ -164,11 +166,13 @@ public class TiberoTable extends OracleTable {
         return ((TiberoSchema) getContainer()).getTableForeignKeys(monitor, this);
     }
 
+    @NotNull
     @Override
     public Collection<OracleTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return ((TiberoSchema) getContainer()).getTableForeignKeyReferences(monitor, this);
     }
 
+    @NotNull
     private List<OracleTableColumn> loadAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleTableColumn> columns = new ArrayList<>();
         final String colsView = getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, "ALL_TAB_COLS")

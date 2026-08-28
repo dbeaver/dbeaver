@@ -40,16 +40,18 @@ import java.util.List;
  */
 public class TiberoProcedureStandalone extends OracleProcedureStandalone {
 
-    public TiberoProcedureStandalone(OracleSchema schema, ResultSet dbResult) {
+    public TiberoProcedureStandalone(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 
+    @NotNull
     @Override
     @Association
     public Collection<OracleProcedureArgument> getParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
         return loadParameters(monitor);
     }
 
+    @NotNull
     private Collection<OracleProcedureArgument> loadParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleProcedureArgument> parameters = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getSchema(), "Load Tibero procedure parameters")) {
@@ -81,6 +83,7 @@ public class TiberoProcedureStandalone extends OracleProcedureStandalone {
         }
     }
 
+    @NotNull
     private JDBCPreparedStatement prepareParametersStatement(
         @NotNull JDBCSession session,
         boolean strict

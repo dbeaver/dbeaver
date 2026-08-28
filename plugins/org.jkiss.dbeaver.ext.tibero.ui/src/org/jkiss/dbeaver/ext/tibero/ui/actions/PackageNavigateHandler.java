@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.tibero.ui.actions;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -33,6 +28,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
@@ -50,12 +46,18 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
+
 public class PackageNavigateHandler extends AbstractHandler {
 
     private static final Log log = Log.getLog(PackageNavigateHandler.class);
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         final OracleProcedurePackaged procedure = getSelectedProcedure(event);
         if (procedure != null) {
             OraclePackage procedurePackage = procedure.getParentObject();
@@ -76,7 +78,7 @@ public class PackageNavigateHandler extends AbstractHandler {
         private final OracleProcedurePackaged procedure;
         private final SQLEditorBase sqlEditor;
 
-        NavigateJob(OracleProcedurePackaged procedure, SQLEditorBase sqlEditor) {
+        NavigateJob(@NotNull OracleProcedurePackaged procedure, @NotNull SQLEditorBase sqlEditor) {
             super("Navigate procedure '" + procedure.getFullyQualifiedName(DBPEvaluationContext.UI));
             this.procedure = procedure;
             this.sqlEditor = sqlEditor;
@@ -95,7 +97,7 @@ public class PackageNavigateHandler extends AbstractHandler {
             return org.eclipse.core.runtime.Status.OK_STATUS;
         }
 
-        private void navigate(DBRProgressMonitor monitor) throws InterruptedException, DBException {
+        private void navigate(@NotNull DBRProgressMonitor monitor) throws InterruptedException, DBException {
             if (sqlEditor instanceof SQLEditorNested nested) {
                 int attempts = 0;
                 while (!nested.isDocumentLoaded() && attempts < 10) {
@@ -132,7 +134,8 @@ public class PackageNavigateHandler extends AbstractHandler {
         }
     }
 
-    private OracleProcedurePackaged getSelectedProcedure(ExecutionEvent event) {
+    @Nullable
+    private OracleProcedurePackaged getSelectedProcedure(@NotNull ExecutionEvent event) {
         final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         if (currentSelection instanceof IStructuredSelection structuredSelection && !currentSelection.isEmpty()) {
             Object firstElement = structuredSelection.getFirstElement();

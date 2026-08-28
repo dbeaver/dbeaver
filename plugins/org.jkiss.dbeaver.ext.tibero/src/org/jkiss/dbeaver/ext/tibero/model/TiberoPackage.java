@@ -48,46 +48,52 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
 
     private final TiberoProceduresCache tiberoProceduresCache = new TiberoProceduresCache();
 
-    public TiberoPackage(OracleSchema schema, ResultSet dbResult) {
+    public TiberoPackage(@NotNull OracleSchema schema, @NotNull ResultSet dbResult) {
         super(schema, dbResult);
     }
 
-    public TiberoPackage(OracleSchema schema, String name) {
+    public TiberoPackage(@NotNull OracleSchema schema, @NotNull String name) {
         super(schema, name);
     }
 
+    @NotNull
     @Association
     @Override
-    public Collection<OracleProcedurePackaged> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedurePackaged> getProceduresOnly(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getProcedures(monitor).stream()
                                      .filter(proc -> proc.getProcedureType() == DBSProcedureType.PROCEDURE)
                                      .collect(Collectors.toList());
     }
 
+    @NotNull
     @Association
     @Override
-    public Collection<OracleProcedurePackaged> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedurePackaged> getFunctionsOnly(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getProcedures(monitor).stream()
                                      .filter(proc -> proc.getProcedureType() == DBSProcedureType.FUNCTION)
                                      .collect(Collectors.toList());
     }
 
+    @NotNull
     @Association
     @Override
-    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleProcedurePackaged> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         return new ArrayList<>(tiberoProceduresCache.getAllObjects(monitor, this));
     }
 
+    @Nullable
     @Override
-    public OracleProcedurePackaged getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+    public OracleProcedurePackaged getProcedure(@NotNull DBRProgressMonitor monitor, @NotNull String uniqueName) throws DBException {
         return tiberoProceduresCache.getObject(monitor, this, uniqueName);
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tiberoProceduresCache.getAllObjects(monitor, this);
     }
 
+    @Nullable
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return tiberoProceduresCache.getObject(monitor, this, childName);
@@ -104,6 +110,7 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
         tiberoProceduresCache.getAllObjects(monitor, this);
     }
 
+    @Nullable
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         tiberoProceduresCache.clearCache();
@@ -115,7 +122,7 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
         @NotNull
         @Override
         protected JDBCPreparedStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OraclePackage owner)
-            throws SQLException {
+                throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT P.* \n" +
                 "     , CASE WHEN A.DATA_TYPE IS NULL THEN 'PROCEDURE' ELSE 'FUNCTION' END as PROCEDURE_TYPE \n" +
@@ -133,6 +140,7 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected TiberoProcedurePackaged fetchObject(
             @NotNull JDBCSession session,
@@ -144,9 +152,9 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
 
         @Override
         protected void invalidateObjects(
-            DBRProgressMonitor monitor,
-            OraclePackage owner,
-            Iterator<TiberoProcedurePackaged> objectIter
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull OraclePackage owner,
+            @NotNull Iterator<TiberoProcedurePackaged> objectIter
         ) {
             Map<String, TiberoProcedurePackaged> overloads = new HashMap<>();
             while (objectIter.hasNext()) {

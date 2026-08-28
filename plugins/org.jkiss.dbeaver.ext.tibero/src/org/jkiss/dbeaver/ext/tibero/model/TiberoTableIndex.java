@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
+import java.sql.ResultSet;
 import java.util.Map;
 
 /**
@@ -33,20 +34,20 @@ import java.util.Map;
 public class TiberoTableIndex extends OracleTableIndex {
 
     public TiberoTableIndex(
-        OracleSchema schema,
-        OracleTableBase table,
-        String indexName,
-        java.sql.ResultSet dbResult
+        @NotNull OracleSchema schema,
+        @NotNull OracleTableBase table,
+        @NotNull String indexName,
+        @NotNull ResultSet dbResult
     ) {
         super(schema, table, indexName, dbResult);
     }
 
     public TiberoTableIndex(
-        OracleSchema schema,
-        OracleTableBase parent,
-        String name,
+        @NotNull OracleSchema schema,
+        @NotNull OracleTableBase parent,
+        @NotNull String name,
         boolean unique,
-        DBSIndexType indexType
+        @NotNull DBSIndexType indexType
     ) {
         super(schema, parent, name, unique, indexType);
     }

@@ -17,19 +17,20 @@
 package org.jkiss.dbeaver.ext.tibero.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleGrantee;
 import org.jkiss.dbeaver.ext.oracle.model.OracleRole;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUser;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,13 +46,18 @@ public class TiberoDataSource extends OracleDataSource {
         super(monitor, container, new TiberoSQLDialect());
     }
 
+    @NotNull
     @Override
     public TiberoSchema createSchemaImpl(@NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) {
         return new TiberoSchema(this, resultSet);
     }
 
     @Override
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         // Keep Tibero initialization aligned with Oracle, but skip Oracle-only
         // optimizer session parameters that Tibero does not recognize.
         context.getContextDefaults().refreshDefaults(monitor, true);
@@ -60,7 +66,7 @@ public class TiberoDataSource extends OracleDataSource {
     @NotNull
     @Override
     @Association
-    public Collection<OracleUser> getUsers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleUser> getUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero users");
              JDBCPreparedStatement statement = session.prepareStatement(
                  "SELECT ROWNUM AS USER_ID, u.USERNAME, " +
@@ -86,9 +92,10 @@ public class TiberoDataSource extends OracleDataSource {
         }
     }
 
+    @Nullable
     @Override
     @Association
-    public OracleUser getUser(DBRProgressMonitor monitor, String name) throws DBException {
+    public OracleUser getUser(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         for (OracleUser user : getUsers(monitor)) {
             if (user.getName().equalsIgnoreCase(name)) {
                 return user;
@@ -97,8 +104,9 @@ public class TiberoDataSource extends OracleDataSource {
         return null;
     }
 
+    @Nullable
     @Override
-    public OracleGrantee getGrantee(DBRProgressMonitor monitor, String name) throws DBException {
+    public OracleGrantee getGrantee(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         OracleUser user = getUser(monitor, name);
         if (user != null) {
             return user;
@@ -110,6 +118,4 @@ public class TiberoDataSource extends OracleDataSource {
         }
         return null;
     }
-
-
 }

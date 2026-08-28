@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ext.tibero.ui.views;
 
-import java.util.Map;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -32,6 +30,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+
 public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
 
     private Button showOnlyOneSchema;
@@ -44,7 +44,7 @@ public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         Composite cfgGroup = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, false);
         layout.marginHeight = 10;

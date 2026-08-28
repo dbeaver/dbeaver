@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ext.tibero.ui.views;
 
-import java.util.Locale;
-
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -41,6 +39,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
+
 public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
     private Text hostText;
@@ -50,8 +50,8 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
     private boolean activated;
 
     @Override
-    public void createControl(Composite parent) {
-        ModifyListener textListener = e -> {
+    public void createControl(@NotNull Composite parent) {
+        final ModifyListener textListener = e -> {
             if (activated) {
                 saveAndUpdate();
             }
@@ -62,16 +62,16 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
         page.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite settingsGroup = UIUtils.createTitledComposite(page, "Tibero", 4, GridData.FILL_HORIZONTAL);
-        SelectionAdapter modeSwitcher = new SelectionAdapter() {
+        final SelectionAdapter modeSwitcher = new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(@NotNull SelectionEvent e) {
                 setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
                 saveAndUpdate();
             }
         };
         createConnectionModeSwitcher(settingsGroup, modeSwitcher);
 
-        Label urlLabel = UIUtils.createControlLabel(settingsGroup, "JDBC URL");
+        final Label urlLabel = UIUtils.createControlLabel(settingsGroup, "JDBC URL");
         urlText = new Text(settingsGroup, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
@@ -81,12 +81,12 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
         urlText.addModifyListener(e -> site.updateButtons());
         addControlToGroup(GROUP_URL, urlLabel, urlText);
 
-        Label hostLabel = UIUtils.createControlLabel(settingsGroup, "Host");
+        final Label hostLabel = UIUtils.createControlLabel(settingsGroup, "Host");
         hostText = new Text(settingsGroup, SWT.BORDER);
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hostText.addModifyListener(textListener);
 
-        Label portLabel = UIUtils.createControlLabel(settingsGroup, "Port");
+        final Label portLabel = UIUtils.createControlLabel(settingsGroup, "Port");
         portText = new Text(settingsGroup, SWT.BORDER);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = UIUtils.getFontHeight(portText) * 7;
@@ -94,7 +94,7 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
 
-        Label databaseLabel = UIUtils.createControlLabel(settingsGroup, "Database");
+        final Label databaseLabel = UIUtils.createControlLabel(settingsGroup, "Database");
         databaseText = new Text(settingsGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
@@ -114,7 +114,7 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
 
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
+        final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
 
         hostText.setText(CommonUtils.toString(
             connectionInfo.getHostName(),
