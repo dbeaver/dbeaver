@@ -182,12 +182,6 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
             if (stored == null || updated == null || !stored.equalSettings(updated)) {
                 throw new DBSecurityException("No permissions to configure network handler '" + handlerId + "'");
             }
-            // Restricted credentials may be omitted from a shared configuration sent by the client.
-            // Keep the authoritative server-side values instead of treating omitted secrets as an update.
-            updated.setUserName(stored.getUserName());
-            updated.setPassword(stored.getPassword());
-            updated.setSavePassword(stored.isSavePassword());
-            updated.setSecureProperties(stored.getSecureProperties());
         }
     }
 
