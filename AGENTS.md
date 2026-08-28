@@ -80,6 +80,8 @@ If any existing Java file is modified then current year must be updated too.
 
 - Follow code style of the existing code. The most recent code has good code style.
 - Leave comments in code for all non-obvious algorithms. Do not comment simple or obvious functions.
+- Java package imports must be in alphabetical order. SDK import must be separated with one empty line from others and be in the end imports section.
+- After code changes/refactoring imports which no longer needed must be removed.
 
 ### Hardcode
 
