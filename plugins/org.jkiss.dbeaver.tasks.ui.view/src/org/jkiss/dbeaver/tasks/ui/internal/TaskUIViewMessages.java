@@ -35,7 +35,6 @@ public class TaskUIViewMessages extends NLS {
     public static String db_tasks_tree_column_controller_add_descr_run_duration;
     public static String db_tasks_tree_column_controller_add_name_last_result;
     public static String db_tasks_tree_column_controller_add_descr_last_result;
-    public static String db_tasks_tree_column_cell_text_success;
     public static String db_tasks_tree_column_controller_add_name_next_run;
     public static String db_tasks_tree_column_controller_add_descr_next_run;
     public static String db_tasks_tree_column_controller_add_name_description;
@@ -56,7 +55,6 @@ public class TaskUIViewMessages extends NLS {
     public static String db_tasks_view_column_controller_add_descr_task_result;
     public static String db_tasks_view_cell_text_success;
     public static String db_tasks_view_adapter_label_database_tasks;
-    public static String db_tasks_view_adapter_label_database_tasks_tooltip;
     public static String db_tasks_view_run_log_view;
     public static String db_tasks_view_run_log_delete;
     public static String db_tasks_view_run_log_confirm_remove;
@@ -73,7 +71,6 @@ public class TaskUIViewMessages extends NLS {
     public static String task_handler_delete_confirm_question_delete_tasks;
     public static String task_handler_delete_error_deleting_task_from_scheduler_title;
     public static String task_handler_delete_error_deleting_task_from_scheduler_message;
-    public static String task_handler_delete_confirm_title_delete_task_folder;
     public static String task_handler_delete_confirm_question_delete_task_folder;
     public static String task_handler_delete_folder_error_title;
     public static String task_handler_delete_folder_error_message;

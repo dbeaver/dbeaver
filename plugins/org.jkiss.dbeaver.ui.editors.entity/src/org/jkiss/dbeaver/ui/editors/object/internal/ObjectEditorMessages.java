@@ -83,8 +83,6 @@ public class ObjectEditorMessages extends NLS {
     public static String edit_foreign_key_page_create_schema_container;
     public static String edit_foreign_key_page_create_container_reference_table_container;
     public static String edit_foreign_key_page_create_container_select_reference_table_container;
-    public static String edit_foreign_key_page_error_loading_table_title;
-    public static String edit_foreign_key_page_error_loading_table_message;
     public static String selector_clear_all_text;
 
     static {

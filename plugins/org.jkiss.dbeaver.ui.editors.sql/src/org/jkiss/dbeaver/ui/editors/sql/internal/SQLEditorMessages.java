@@ -56,7 +56,6 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_execution_log_tip;
     public static String editors_sql_variables;
     public static String editors_sql_variables_tip;
-    public static String editors_sql_explain_plan;
     public static String editors_sql_explain_refresh_plan_action_text;
     public static String editors_sql_explain_refresh_tree_viewer_plan_toggle_view_text;
     public static String editors_sql_output;
@@ -66,13 +65,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_statistics;
     public static String editors_sql_job_execute_query;
     public static String editors_sql_job_execute_script;
-    public static String editors_sql_save_on_close_message;
-    public static String editors_sql_save_on_close_text;
     public static String editors_sql_status_cant_obtain_document;
     public static String editors_sql_status_empty_query_string;
-    public static String editors_sql_status_rows_updated;
-    public static String editors_sql_status_statement_executed;
-    public static String editors_sql_status_statement_executed_no_rows_updated;
     public static String editors_sql_staus_connected_to;
     public static String editors_sql_actions_copy_as_source_code;
     public static String editors_sql_actions_copy_as_source_code_tip;
@@ -108,10 +102,6 @@ public class SQLEditorMessages extends NLS {
     public static String action_assign_variables_error_invalid_title;
     public static String action_assign_variables_error_invalid_info;
 
-    public static String action_popup_sqleditor_layout_horizontal;
-    public static String action_popup_sqleditor_layout_vertical;
-    public static String action_popup_sqleditor_layout_detached;
-
     public static String actions_ContentAssistProposal_label;
     public static String actions_ContentAssistProposal_tooltip;
     public static String actions_ContentAssistProposal_description;
@@ -141,7 +131,6 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_auto_save_on_close;
     public static String pref_page_sql_editor_label_save_on_query_execute;
     public static String pref_page_sql_editor_label_save_active_schema;
-    public static String pref_page_sql_editor_label_save_active_schema_tip;
     public static String pref_page_sql_editor_group_result_view;
     public static String pref_page_sql_editor_label_close_results_tab_on_error;
     public static String pref_page_sql_editor_label_close_results_tab_on_error_tip;
@@ -189,10 +178,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_format_label_convert_keyword_case_tip;
     public static String pref_page_sql_format_label_extract_sql_from_source_code;
     public static String pref_page_sql_format_label_extract_sql_from_source_code_tip;
-    public static String pref_page_sql_format_group_style;
     public static String pref_page_sql_format_label_bold_keywords;
     public static String pref_page_sql_format_label_bold_keywords_tip;
-    public static String pref_page_sql_format_group_formatter;
     public static String pref_page_sql_format_label_formatter;
     public static String pref_page_sql_format_label_add_line_feed_before_close_bracket;
     public static String pref_page_sql_format_label_insert_delimiters_in_empty_lines;
@@ -244,7 +231,6 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_show_values_tip;
     public static String pref_page_sql_completion_label_qualified_column_names;
     public static String pref_page_sql_completion_label_qualified_column_names_tip;
-    public static String pref_page_sql_completion_group_folding;
     public static String pref_page_sql_completion_group_misc;
     public static String pref_page_code_editor_group_analysis;
     public static String pref_page_sql_completion_label_folding_enabled;
@@ -272,7 +258,6 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_remove_trailing_delimiter;
     public static String pref_page_sql_editor_checkbox_remove_trailing_delimiter_tip;
     public static String pref_page_sql_editor_checkbox_blank_line_delimiter;
-    public static String pref_page_sql_editor_checkbox_blank_line_delimiter_tip;
     public static String pref_page_sql_editor_checkbox_enable_sql_parameters;
     public static String pref_page_sql_editor_title_pattern;
     public static String pref_page_sql_editor_file_name_pattern;

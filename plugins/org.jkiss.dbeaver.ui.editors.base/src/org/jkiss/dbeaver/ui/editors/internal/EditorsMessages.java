@@ -49,7 +49,6 @@ public class EditorsMessages extends NLS {
 
     public static String lazy_editor_input_cant_find_node;
     public static String dialog_file_type_selector_title;
-    public static String dialog_file_type_selector_group_label;
 
     static {
         // initialize resource bundle

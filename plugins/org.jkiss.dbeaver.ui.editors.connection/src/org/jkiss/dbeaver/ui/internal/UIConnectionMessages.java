@@ -23,11 +23,9 @@ public class UIConnectionMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIConnectionMessages"; //$NON-NLS-1$
 
     public static String dialog_connection_edit_wizard_conn_conf_general_link;
-    public static String dialog_connection_edit_wizard_conn_conf_network_link;
     public static String dialog_connection_edit_connection_settings_variables_hint_label;
     public static String dialog_connection_database_documentation;
     public static String dialog_connection_advanced_settings;
-    public static String dialog_connection_env_variables_hint;
 
     public static String dialog_connection_driver;
     public static String dialog_connection_edit_driver_button;
@@ -102,10 +100,6 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_button_classpath;
     public static String dialog_edit_driver_button_update_version;
     public static String dialog_edit_driver_button_details;
-    public static String dialog_edit_driver_button_down;
-    public static String dialog_edit_driver_button_up;
-    public static String dialog_edit_driver_dialog_driver_error_message;
-    public static String dialog_edit_driver_dialog_driver_error_title;
     public static String dialog_edit_driver_dialog_open_driver_directory;
     public static String dialog_edit_driver_dialog_open_driver_library;
     public static String dialog_edit_driver_dialog_delete_library_title;
@@ -113,7 +107,6 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_dialog_save_exists_title;
     public static String dialog_edit_driver_dialog_save_exists_message;
     public static String dialog_edit_driver_dialog_bad_configuration;
-    public static String dialog_edit_driver_label_category;
     public static String dialog_edit_driver_label_class_name;
     public static String dialog_edit_driver_label_class_name_tip;
     public static String dialog_edit_driver_label_default_port;
@@ -295,7 +288,6 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_edit_maven_load_optional_dependencies;
     public static String dialog_edit_driver_edit_maven_ignore_transient_dependencies;
     public static String dialog_edit_driver_edit_maven_load_optional_dependencies_tip;
-    public static String dialog_edit_driver_edit_maven_ignore_transient_dependencies_tip;
 
     public static String dialog_driver_category_all_label;
     public static String dialog_driver_category_all_tip;
@@ -331,7 +323,6 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_delete_private_projects_warning;
     public static String pref_page_network_profiles_tool_delete_used_confirmation_question;
     public static String pref_page_network_profiles_tool_no_profile_error_title;
-    public static String pref_page_network_profiles_tool_no_profile_error_info;
     public static String pref_page_network_profiles_tool_no_profile_error_information;
     public static String pref_page_network_profiles_global_project_label;
     public static String pref_page_network_profiles_global_project_hint;
@@ -340,7 +331,6 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_local_name_used_in_global_label;
     public static String pref_page_network_profiles_local_name_used_in_global_question;
     public static String dialog_tunnel_checkbox_use_handler;
-    public static String dialog_tunnel_title;
 
 
     public static String action_menu_transactionMonitor_autocommitMode;

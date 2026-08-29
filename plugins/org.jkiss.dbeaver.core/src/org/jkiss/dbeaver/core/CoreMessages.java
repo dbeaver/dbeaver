@@ -27,19 +27,12 @@ public class CoreMessages extends NLS {
 
     public static String actions_menu_about;
     public static String actions_menu_check_update;
-    public static String actions_menu_database;
     public static String actions_menu_edit;
-    public static String actions_menu_edit_ContentFormat;
     public static String actions_menu_file;
     public static String actions_menu_help;
     public static String actions_menu_navigate;
     public static String actions_menu_window;
     public static String actions_menu_window_showView;
-    public static String action_menu_showKeyAssist;
-    public static String action_menu_installNewSoftware;
-    public static String action_menu_installInfo;
-    public static String action_menu_enterpriseEdition;
-    public static String action_menu_marketplace_extensions;
 
     public static String action_menu_transaction_manualcommit_name;
     public static String action_menu_transaction_autocommit_name;
@@ -48,12 +41,6 @@ public class CoreMessages extends NLS {
     public static String action_menu_tools_find_in_navigator;
     public static String action_menu_transaction_commit_mode_edit_restricted_dialog_title;
     public static String action_menu_transaction_commit_mode_edit_restricted_dialog_description;
-
-
-    public static String action_menu_transactionMonitor_totalStatement;
-    public static String action_menu_transactionMonitor_modifyStatement;
-    public static String action_menu_transactionMonitor_uptime;
-    public static String action_menu_transactionMonitor_notConnected;
 
     public static String actions_navigator_bookmark_error_message;
     public static String actions_navigator_bookmark_error_title;
@@ -64,34 +51,13 @@ public class CoreMessages extends NLS {
 
     public static String model_navigator__connections;
     public static String model_navigator_Connection;
-    public static String model_navigator_Connections;
-
-    public static String dialog_about_font;
     public static String dialog_about_label_version;
     public static String dialog_about_title;
 
-
-
-    public static String dialog_connection_message;
-    public static String dialog_connection_wizard_final_button_test;
-    public static String dialog_connection_wizard_final_button_events;
-    public static String dialog_connection_wizard_final_checkbox_filter_catalogs;
-    public static String dialog_connection_wizard_final_checkbox_filter_schemas;
-    public static String dialog_connection_wizard_final_checkbox_auto_commit;
-    public static String dialog_connection_wizard_final_group_misc;
-    public static String dialog_connection_wizard_final_header;
-    public static String dialog_connection_wizard_final_button_tunneling;
-
-    public static String dialog_connection_wizard_final_group_other;
-
-
-
-    public static String dialog_new_connection_wizard_monitor_load_data_sources;
-
     public static String dialog_project_export_wizard_main_page;
     public static String dialog_project_export_wizard_monitor_collect_info;
-    public static String dialog_project_export_wizard_monitor_export_driver_info;
     public static String dialog_project_export_wizard_monitor_export_libraries;
+    public static String dialog_connection_wizard_final_button_test;
     public static String dialog_project_export_wizard_monitor_export_project;
     public static String dialog_project_export_wizard_page_checkbox_overwrite_files;
     public static String dialog_project_export_wizard_page_dialog_choose_export_dir_message;
@@ -150,10 +116,8 @@ public class CoreMessages extends NLS {
     public static String dialog_project_import_wizard_message_success_import_message;
     public static String dialog_project_import_wizard_message_success_import_title;
     public static String dialog_project_import_wizard_monitor_import_drivers;
-    public static String dialog_project_import_wizard_monitor_import_project;
     public static String dialog_project_import_wizard_monitor_import_projects;
     public static String dialog_project_import_wizard_monitor_load_driver;
-    public static String dialog_project_import_wizard_monitor_load_libraries;
     public static String dialog_project_import_wizard_title;
 
     public static String dialog_scripts_export_wizard_page_name;
@@ -182,7 +146,6 @@ public class CoreMessages extends NLS {
     public static String dialog_version_update_button_upgrade;
     public static String dialog_version_update_button_early_access;
     public static String dialog_version_update_current_version;
-    public static String dialog_version_update_n_a;
     public static String dialog_version_update_new_version;
     public static String dialog_version_update_no_new_version;
     public static String dialog_version_update_notes;
@@ -194,26 +157,13 @@ public class CoreMessages extends NLS {
     public static String dialog_version_update_downloader_confirm_install;
     public static String dialog_version_update_downloader_error_cannot_download;
 
-    public static String model_html_read_database_meta_data;
-
     public static String model_navigator_Description;
     public static String model_navigator_load_;
     public static String model_navigator_Model_root;
     public static String model_navigator_Project;
-    public static String model_navigator_resource_exception_already_exists;
     public static String model_navigator_Root;
-
-    public static String model_project_bookmarks_folder;
     public static String model_project_cant_open_bookmark;
     public static String model_project_open_bookmark;
-    public static String model_project_Script;
-    public static String model_project_Scripts;
-
-    public static String pref_page_confirmations_combo_always;
-    public static String pref_page_confirmations_combo_never;
-    public static String pref_page_confirmations_combo_prompt;
-    public static String pref_page_confirmations_group_general_actions;
-    public static String pref_page_confirmations_group_object_editor;
     public static String pref_page_confirmations_table_column_confirmation;
     public static String pref_page_confirmations_table_column_confirmation_tip;
     public static String pref_page_confirmations_table_column_group;
@@ -221,17 +171,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_confirmations_table_column_value_tip;
     public static String pref_page_confirmations_table_column_confirm;
     public static String pref_page_confirmations_table_column_confirm_tip;
-
-    public static String pref_page_database_general_group_ordering;
-
-
-
-
-
-    public static String pref_page_query_manager_checkbox_ddl_executions;
     public static String pref_page_query_manager_checkbox_metadata_read;
     public static String pref_page_query_manager_checkbox_metadata_write;
-    public static String pref_page_query_manager_checkbox_other;
     public static String pref_page_query_manager_checkbox_queries;
     public static String pref_page_query_manager_checkbox_scripts;
     public static String pref_page_query_manager_checkbox_sessions;
@@ -269,7 +210,6 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_disconnect_on_editors_close;
     public static String pref_page_ui_general_disconnect_on_editors_close_tip;
     public static String pref_page_ui_general_group_regional;
-    public static String pref_page_ui_general_group_language;
     public static String pref_page_ui_general_group_editors;
     public static String pref_page_ui_general_link_more_color_and_font_settings;
     public static String pref_page_ui_status_bar;
@@ -287,20 +227,6 @@ public class CoreMessages extends NLS {
 
     public static String pref_page_eclipse_ui_general_connections_group_label;
 
-    public static String runtime_jobs_connect_name;
-    public static String runtime_jobs_connect_status_connected;
-    public static String runtime_jobs_connect_status_error;
-    public static String runtime_jobs_disconnect_name;
-    public static String runtime_jobs_connect_thread_name;
-    public static String runtime_jobs_disconnect_error;
-
-    public static String toolbar_editors_sql_run_statement_name;
-    public static String toolbar_editors_sql_run_statementNew_name;
-    public static String toolbar_editors_sql_run_script_name;
-    public static String toolbar_editors_sql_run_scriptNew_name;
-
-    public static String toolbar_editors_sql_run_explain_name;
-
     public static String editor_file_open_in_explorer;
     public static String editor_file_copy_path;
     public static String editor_file_copy_object_name;
@@ -308,32 +234,18 @@ public class CoreMessages extends NLS {
 
     // New Connection Wizard
 
-    public static String dialog_connection_network_title;
-    public static String dialog_connection_wizard_final_label_edit;
-    public static String dialog_connection_wizard_final_label_shell_command;
-    public static String dialog_connection_wizard_socksproxy_host;
-    public static String dialog_connection_wizard_socksproxy_port;
-    public static String dialog_connection_wizard_socksproxy_username;
-    public static String dialog_connection_wizard_socksproxy_password;
-
 
 
     // Connections
 
     // MetaData
-    public static String pref_page_database_general_group_query_metadata;
     // EntityEditor
     public static String pref_page_ui_general_show_full_name_in_editor;
     public static String pref_page_ui_general_show_preview_on_save;
     // DatabaseGeneral
-    public static String pref_page_ui_general_group_task_bar;
     public static String pref_page_ui_general_label_enable_long_operations;
     public static String pref_page_ui_general_label_enable_long_operations_tip;
     public static String pref_page_ui_general_label_long_operation_timeout;
-    public static String pref_page_ui_general_group_notifications;
-    public static String pref_page_ui_general_group_resources;
-    public static String pref_page_ui_general_label_default_resource_encoding;
-    public static String pref_page_ui_general_label_set_default_resource_encoding_tip;
     public static String pref_page_ui_general_group_debug_logs;
     public static String pref_page_ui_general_label_enable_debug_logs;
     public static String pref_page_ui_general_label_enable_debug_logs_tip;
@@ -354,16 +266,6 @@ public class CoreMessages extends NLS {
 
     public static String pref_page_database_general_label_sync_editor_connection_with_navigator;
     public static String pref_page_database_general_label_sync_editor_connection_with_navigator_tip;
-
-    public static String pref_page_database_general_group_toolbars;
-    public static String pref_page_database_general_label_show_general_toolbar_everywhere;
-    public static String pref_page_database_general_label_show_general_toolbar_everywhere_tip;
-    public static String pref_page_database_general_label_show_edit_toolbar;
-    public static String pref_page_database_general_label_show_edit_toolbar_tip;
-    public static String pref_page_database_general_label_database_selector_width;
-    public static String pref_page_database_general_label_database_selector_width_tip;
-    public static String pref_page_database_general_label_schema_selector_width;
-    public static String pref_page_database_general_label_schema_selector_width_tip;
 
     // ConnectionTypes
 
@@ -448,7 +350,6 @@ public class CoreMessages extends NLS {
     public static String toolbar_checkbox_connection_not_readonly_tooltip;
 
     public static String monitor_panel_transaction_monitor_tip;
-    public static String variable_host_or_database;
 
     public static String dialog_data_source_synchronize_title;
     public static String dialog_data_source_synchronize_message;
