@@ -6,7 +6,8 @@ Bundle-Version: 1.0.48.qualifier
 Bundle-Release-Date: 20260921
 Require-Bundle: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.ui,
- org.jkiss.dbeaver.ext.gaussdb
+ org.jkiss.dbeaver.ext.gaussdb,
+ org.jkiss.dbeaver.ui.editors.connection
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
