@@ -30,4 +30,51 @@
             <extension id="parquet" extensions="parquet" icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon_big.png"/>
         </handler>
     </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.ext.duckdb.ui" name="%category.duckdb.name"/>
+        <command
+                id="org.jkiss.dbeaver.ext.duckdb.ui.exportResultSetToParquet"
+                name="%command.duckdb.exportResultSetToParquet.name"
+                description="%command.duckdb.exportResultSetToParquet.description"
+                categoryId="org.jkiss.dbeaver.ext.duckdb.ui"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image
+                commandId="org.jkiss.dbeaver.ext.duckdb.ui.exportResultSetToParquet"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                id="org.jkiss.dbeaver.ext.duckdb.ui.ResultSetPropertyTester"
+                type="org.eclipse.ui.IWorkbenchPart"
+                namespace="org.jkiss.dbeaver.ext.duckdb.ui"
+                properties="isDuckDBResultSet"
+                class="org.jkiss.dbeaver.ext.duckdb.ui.actions.DuckDBResultSetPropertyTester"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler
+                commandId="org.jkiss.dbeaver.ext.duckdb.ui.exportResultSetToParquet"
+                class="org.jkiss.dbeaver.ext.duckdb.ui.actions.ExportResultSetToParquetHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <and>
+                        <test property="org.jkiss.dbeaver.core.resultset.hasData"/>
+                        <test property="org.jkiss.dbeaver.ext.duckdb.ui.isDuckDBResultSet" forcePluginActivation="true"/>
+                    </and>
+                </with>
+            </enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.resultset.export.pulldown">
+            <command commandId="org.jkiss.dbeaver.ext.duckdb.ui.exportResultSetToParquet">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+    </extension>
 </plugin>
