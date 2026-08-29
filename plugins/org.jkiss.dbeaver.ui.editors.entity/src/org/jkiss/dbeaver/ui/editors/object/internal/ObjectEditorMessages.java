@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,6 @@ public class ObjectEditorMessages extends NLS {
     public static String edit_foreign_key_page_create_container_select_reference_table_container;
     public static String edit_foreign_key_page_error_loading_table_title;
     public static String edit_foreign_key_page_error_loading_table_message;
-    public static String selector_select_all_text;
     public static String selector_clear_all_text;
 
     static {

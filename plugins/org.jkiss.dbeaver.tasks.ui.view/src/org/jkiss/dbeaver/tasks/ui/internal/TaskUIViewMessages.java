@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ public class TaskUIViewMessages extends NLS {
     public static String db_tasks_view_column_controller_add_name_result;
     public static String db_tasks_view_column_controller_add_descr_task_result;
     public static String db_tasks_view_cell_text_success;
-    public static String db_tasks_view_context_menu_command_delete_task;
     public static String db_tasks_view_adapter_label_database_tasks;
     public static String db_tasks_view_adapter_label_database_tasks_tooltip;
     public static String db_tasks_view_run_log_view;

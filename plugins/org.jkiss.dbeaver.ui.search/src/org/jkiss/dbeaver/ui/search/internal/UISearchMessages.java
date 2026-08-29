@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.osgi.util.NLS;
 public class UISearchMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.search.internal.UISearchMessages"; //$NON-NLS-1$
 
-    public static String dialog_search_objects_button_close;
     public static String dialog_search_objects_button_search;
     public static String dialog_search_objects_column_description;
     public static String dialog_search_objects_column_type;

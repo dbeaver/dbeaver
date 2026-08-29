@@ -102,7 +102,6 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_button_classpath;
     public static String dialog_edit_driver_button_update_version;
     public static String dialog_edit_driver_button_details;
-    public static String dialog_edit_driver_button_delete;
     public static String dialog_edit_driver_button_down;
     public static String dialog_edit_driver_button_up;
     public static String dialog_edit_driver_dialog_driver_error_message;
@@ -226,11 +225,9 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_page_download_conf_link;
 
     // Driver manager
-    public static String dialog_driver_manager_button_delete;
     public static String dialog_driver_manager_button_undelete;
     public static String dialog_driver_manager_button_edit;
     public static String dialog_driver_manager_button_new;
-    public static String dialog_driver_manager_button_copy;
     public static String dialog_driver_manager_label_unavailable;
     public static String dialog_driver_manager_label_user_defined;
     public static String dialog_driver_manager_message_cant_delete_text;
@@ -324,9 +321,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_create_dialog_error_title;
     public static String pref_page_network_profiles_tool_create_dialog_error_info;
     public static String pref_page_network_profiles_tool_create_dialog_error_global_info;
-    public static String pref_page_network_profiles_tool_delete_title;
     public static String pref_page_network_profiles_tool_delete_text;
-    public static String pref_page_network_profiles_tool_copy_title;
     public static String pref_page_network_profiles_tool_copy_text;
     public static String pref_page_network_profiles_tool_delete_dialog_error_title;
     public static String pref_page_network_profiles_tool_delete_dialog_error_info;

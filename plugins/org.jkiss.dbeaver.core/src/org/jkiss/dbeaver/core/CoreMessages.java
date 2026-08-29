@@ -61,7 +61,6 @@ public class CoreMessages extends NLS {
 
     public static String common_error_sql;
 
-    public static String controls_itemlist_action_copy;
 
     public static String model_navigator__connections;
     public static String model_navigator_Connection;

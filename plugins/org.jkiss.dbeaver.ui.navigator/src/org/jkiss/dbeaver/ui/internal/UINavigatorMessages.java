@@ -45,7 +45,6 @@ public class UINavigatorMessages extends NLS {
     public static String dialog_filter_list_exclude;
     public static String dialog_filter_list_include;
     public static String dialog_filter_title;
-    public static String dialog_filter_save_button;
     public static String dialog_filter_remove_button;
     public static String dialog_filter_save_label;
     public static String dialog_filter_name_label;

@@ -40,7 +40,6 @@ public class TaskUIMessages extends NLS {
     public static String task_config_wizard_button_variables_prompt;
     public static String task_config_wizard_button_variables_prompt_tip;
 
-    public static String task_config_wizard_dialog_button_save;
 
     public static String task_config_wizard_page_settings_create_task;
     public static String task_config_wizard_page_settings_edit_task;

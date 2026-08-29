@@ -32,9 +32,7 @@ public class EditorsMessages extends NLS {
     public static String dialog_morph_delimited_target_group_leading_text;
     public static String dialog_morph_delimited_target_group_trailing_text;
 
-    public static String database_editor_command_save_name;
     public static String database_editor_command_save_tip;
-    public static String database_editor_command_revert_name;
     public static String database_editor_command_revert_tip;
     public static String database_editor_command_refresh_name;
     public static String database_editor_command_refresh_tip;

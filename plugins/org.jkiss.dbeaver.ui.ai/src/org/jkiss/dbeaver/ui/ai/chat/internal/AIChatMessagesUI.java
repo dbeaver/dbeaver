@@ -26,7 +26,6 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_message_role_generated_label;
     public static String ai_chat_message_role_warning_label;
     public static String ai_chat_message_role_error_label;
-    public static String ai_chat_message_copy_to_clipboard_label;
     public static String ai_chat_message_copy_to_clipboard_tip;
     public static String ai_chat_message_copy_to_editor_label;
     public static String ai_chat_message_copy_to_editor_tip;

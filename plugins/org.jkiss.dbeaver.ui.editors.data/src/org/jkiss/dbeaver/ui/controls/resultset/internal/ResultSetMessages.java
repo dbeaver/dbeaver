@@ -140,7 +140,6 @@ public class ResultSetMessages extends NLS {
     public static String controls_rs_pump_job_context_name;
     public static String controls_rs_pump_job_name;
 
-    public static String controls_resultset_edit_save;
     public static String controls_resultset_edit_cancel;
     public static String controls_resultset_edit_script;
     public static String controls_resultset_edit_logical_structure;
@@ -204,7 +203,6 @@ public class ResultSetMessages extends NLS {
 
     public static String dialog_value_view_button_cancel;
     public static String dialog_value_view_button_sat_null;
-    public static String dialog_value_view_button_save;
     public static String dialog_value_view_column_description;
     public static String dialog_value_view_column_value;
     public static String dialog_value_view_context_name;
@@ -339,7 +337,6 @@ public class ResultSetMessages extends NLS {
     public static String dialog_save_script_button_delete_deep_cascade;
     public static String dialog_save_script_button_delete_deep_cascade_tip;
     public static String dialog_save_script_button_bar_button_execute;
-    public static String dialog_save_script_button_bar_button_copy;
 
     //Preference/Properties
     // ResultSetsMain

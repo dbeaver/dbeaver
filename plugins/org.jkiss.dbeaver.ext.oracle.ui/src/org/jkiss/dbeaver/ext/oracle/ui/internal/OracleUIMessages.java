@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,8 +79,6 @@ public final class OracleUIMessages extends NLS {
     public static String views_oracle_compiler_dialog_message_compile_unit;
     public static String views_oracle_compiler_dialog_title;
     public static String views_oracle_compiler_log_viewer_action_clear_log;
-    public static String views_oracle_compiler_log_viewer_action_copy;
-    public static String views_oracle_compiler_log_viewer_action_select_all;
     public static String views_oracle_compiler_log_viewer_column_line;
     public static String views_oracle_compiler_log_viewer_column_message;
     public static String views_oracle_compiler_log_viewer_column_pos;
