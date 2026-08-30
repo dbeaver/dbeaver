@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -260,25 +261,17 @@ public class DriverSelectViewer extends Viewer {
         ToolBar switcherToolbar = new ToolBar(parent, SWT.RIGHT | SWT.HORIZONTAL);
         ToolItem clearItem = new ToolItem(switcherToolbar, SWT.PUSH);
         clearItem.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
-        clearItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+            clearItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 clearText();
                 filterText.setFocus();
-            }
-        });
+            }));
 
         if (forceViewType == null) {
             switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
             switchItem.setText("Switch view");
             switchItem.setWidth(UIUtils.getFontHeight(switcherToolbar) * 15);
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-            switchItem.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    switchSelectorControl();
-                }
-            });
+            switchItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> switchSelectorControl()));
         }
     }
 

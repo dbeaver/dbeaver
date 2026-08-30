@@ -21,8 +21,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -115,15 +114,12 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         settingsGroup.setLayout(gl);
 
         {
-            SelectionAdapter typeSwitcher = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener typeSwitcher = SelectionListener.widgetSelectedAdapter(e -> {
                     if (!controlGroupsByUrl.isEmpty()) {
                         setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), controlGroupsByUrl);
                     }
                     saveAndUpdate();
-                }
-            };
+                });
             createConnectionModeSwitcher(settingsGroup, typeSwitcher);
 
             
@@ -250,15 +246,12 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             //gd.widthHint = 150;
             buttonsPanel.setLayoutData(gd);
 
-            UIUtils.createDialogButton(buttonsPanel, GenericMessages.dialog_connection_browse_button, null, GenericMessages.dialog_connection_browse_button_tip, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createDialogButton(buttonsPanel, GenericMessages.dialog_connection_browse_button, null, GenericMessages.dialog_connection_browse_button_tip, SelectionListener.widgetSelectedAdapter(e -> {
                     final String path = showDatabaseFileSelectorDialog(SWT.OPEN);
                     if (path != null) {
                         pathText.setText(path);
                     }
-                }
-            });
+                }));
 
             if (CommonUtils.toBoolean(site.getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_EMBEDDED_DATABASE_CREATION))) {
                 gl.numColumns += 1;
@@ -267,9 +260,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                     GenericMessages.dialog_connection_create_button,
                     null,
                     GenericMessages.dialog_connection_create_button_tip,
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    SelectionListener.widgetSelectedAdapter(e -> {
                             final String path = showDatabaseFileSelectorDialog(SWT.SAVE);
                             if (path != null) {
                                 pathText.setText(path);
@@ -277,8 +268,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                                     createEmbeddedDatabase();
                                 }
                             }
-                        }
-                    });
+                        }));
             }
 
             addControlToGroup(GROUP_PATH, pathLabel);
