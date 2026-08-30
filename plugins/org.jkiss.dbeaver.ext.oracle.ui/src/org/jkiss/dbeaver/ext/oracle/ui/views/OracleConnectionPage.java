@@ -75,7 +75,6 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
 
     private TextWithOpenFolder tnsPathText;
-
     private boolean activated = false;
     private final Image logoImage;
 
@@ -111,8 +110,9 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
 
         createBasicConnectionControls(connectionTypeFolder);
 		createTNSConnectionControls(connectionTypeFolder);
+        createLDAPConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
-        connectionTypeFolder.setSelection(connectionType.ordinal());
+        selectConnectionTypeTab();
         connectionTypeFolder.addSelectionListener(new SelectionAdapter()
         {
             @Override
@@ -208,6 +208,10 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             populateTnsNameCombo();
             updateUI();
         });
+    }
+
+    protected void createLDAPConnectionControls(@NotNull CTabFolder protocolFolder) {
+        //no implementation
     }
 
     @NotNull
@@ -312,8 +316,13 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             case BASIC -> !CommonUtils.isEmpty(serviceNameCombo.getText());
             case TNS -> !CommonUtils.isEmpty(tnsNameCombo.getText());
             case CUSTOM -> !CommonUtils.isEmpty(connectionUrlText.getText());
-            default -> false;
+            case LDAP -> isLDAPTabComplete();
         };
+    }
+
+    protected boolean isLDAPTabComplete() {
+        //no implementation
+        return false;
     }
 
     @Override
@@ -355,7 +364,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         } else {
             connectionType = OracleConstants.ConnectionType.BASIC;
         }
-        connectionTypeFolder.setSelection(connectionType.ordinal());
+        selectConnectionTypeTab();
         if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             hostText.setText(DBConstants.HOST_LOCALHOST);
         } else {
@@ -378,8 +387,17 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
                 tnsPathText.setText(tnsPathProperty);
             }
         }
+        loadLDAPSettings(site.getActiveDataSource(), connectionInfo);
         connectionUrlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
         activated = true;
+        updateUI();
+    }
+
+    protected void loadLDAPSettings(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
+        //no implementation
     }
 
     @NotNull
@@ -412,6 +430,9 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
                 connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText().trim());
                 connectionInfo.setConfigurationType(DBPDriverConfigurationType.MANUAL);
                 break;
+            case LDAP:
+                saveLDAPSettings(connectionInfo);
+                break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText().trim());
                 connectionInfo.setHostName(hostText.getText().trim());
@@ -425,10 +446,30 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         super.saveSettings(dataSource);
     }
 
-    private void updateUI() {
+    protected void saveLDAPSettings(@NotNull DBPConnectionConfiguration connectionInfo) {
+        //no implementation
+    }
+
+    protected void updateUI() {
         if (activated) {
             site.updateButtons();
         }
+    }
+
+    @NotNull
+    protected OracleConstants.ConnectionType getConnectionType() {
+        return connectionType;
+    }
+
+    private void selectConnectionTypeTab() {
+        for (CTabItem item : connectionTypeFolder.getItems()) {
+            if (item.getData() == connectionType) {
+                connectionTypeFolder.setSelection(item);
+                return;
+            }
+        }
+        connectionTypeFolder.setSelection(0);
+        connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getItem(0).getData();
     }
 
     private class ControlsListener implements ModifyListener, SelectionListener {

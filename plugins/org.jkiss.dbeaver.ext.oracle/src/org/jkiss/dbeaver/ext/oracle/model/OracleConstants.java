@@ -238,6 +238,7 @@ public class OracleConstants {
     public enum ConnectionType {
         BASIC,
         TNS,
+        LDAP,
         CUSTOM
     }
 
