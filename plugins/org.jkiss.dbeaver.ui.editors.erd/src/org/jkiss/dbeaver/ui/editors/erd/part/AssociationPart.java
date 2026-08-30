@@ -36,9 +36,12 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.erd.ERDAssociation;
 import org.jkiss.dbeaver.model.erd.ERDEntityAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.erd.ERDColors;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.connector.ERDConnection;
 import org.jkiss.dbeaver.ui.editors.erd.editor.*;
@@ -256,8 +259,12 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer erdViewer && associatedAttributesHighlighing == null) {
-                Color attributeColor = ERDThemeSettings.instance.fkHighlightColor;
-                Color associationColor = ERDThemeSettings.instance.fkHighlightColor;
+                // If the selected association part is a foreign key, adjust the color of the arrow based on its delete-rule.
+                Color attributeColor =
+                        this.getModel() instanceof ERDAssociation model && model.getObject() instanceof DBSTableForeignKey foreignKey
+                                ? ERDColors.getForeignKeyModifyRuleColor(foreignKey.getDeleteRule(), true)
+                                : ERDThemeSettings.instance.fkHighlightColor;
+                Color associationColor = attributeColor;
                 ERDHighlightingManager highlightingManager = erdViewer.getEditor().getHighlightingManager();
                 ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightRelatedAttributes(this, attributeColor);
                 nodes = highlightingManager.highlightAssociation(nodes, this, associationColor);

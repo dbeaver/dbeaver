@@ -32,8 +32,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.erd.ERDColors;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDAssociationType;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDNotation;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDNotationBase;
@@ -96,6 +100,12 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         }
         conn.setLineWidth(1);
         conn.setLineStyle(SWT.LINE_CUSTOM);
+
+        // Adjust the color of the arrow based on the delete-rule of the foreign key.
+        if (association.getObject() instanceof DBSTableForeignKey foreignKey) {
+            DBSForeignKeyModifyRule deleteRule = foreignKey.getDeleteRule();
+            conn.setForegroundColor(ERDColors.getForeignKeyModifyRuleColor(deleteRule));
+        }
     }
 
     private void createSourceDecorator(PolylineConnection conn, Color bckColor, Color frgColor, ERDAssociationType type, String label) {

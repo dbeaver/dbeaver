@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.model.erd.ERDUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.ui.editors.erd.ERDColors;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDNotation;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDNotationBase;
 import org.jkiss.dbeaver.ui.editors.erd.part.AssociationPart.CircleDecoration;
@@ -73,6 +76,12 @@ public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotatio
                 conn.setLineStyle(SWT.LINE_DOT);
             }
             conn.setLineDash(constraintType.isLogical() ? new float[] { 4 } : new float[] { 5 });
+        }
+
+        // Adjust the color of the arrow based on the delete-rule of the foreign key.
+        if (association.getObject() instanceof DBSTableForeignKey foreignKey) {
+            DBSForeignKeyModifyRule deleteRule = foreignKey.getDeleteRule();
+            conn.setForegroundColor(ERDColors.getForeignKeyModifyRuleColor(deleteRule));
         }
     }
 
