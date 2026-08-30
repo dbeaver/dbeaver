@@ -393,6 +393,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         throw new InvocationTargetException(e);
                     }
                 });
+                updatePageCompletion();
+
             } catch (InvocationTargetException e) {
                 setErrorMessage("Error loading settings: " + e.getTargetException().getMessage());
             } catch (InterruptedException e) {
@@ -526,7 +528,6 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         UIUtils.syncExec(() -> {
             scriptsViewer.setInput(selectedScripts);
             dataSourceViewer.setInput(selectedDataSources);
-            determinePageCompletion();
         });
     }
 
