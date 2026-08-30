@@ -34,6 +34,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -277,7 +278,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
             super.createButtonsForButtonBar(parent);
             Button okButton = getButton(IDialogConstants.OK_ID);
             if (okButton != null) {
-                okButton.setText(SQLEditorMessages.dialog_view_sql_button_copy);
+                okButton.setText(WorkbenchMessages.Workbench_copy);
             }
         }
 

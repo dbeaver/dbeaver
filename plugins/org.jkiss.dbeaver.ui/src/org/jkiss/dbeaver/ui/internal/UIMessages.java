@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,6 @@ public class UIMessages extends NLS {
     public static String ui_properties_value;
     
     public static String save_execution_plan;
-    public static String load_execution_plan;
 
     public static String control_label_connection_folder;
 
@@ -128,7 +127,6 @@ public class UIMessages extends NLS {
     public static String dialog_policy_data_import_title;
     public static String dialog_policy_data_copy_title;
     public static String dialog_policy_data_copy_msg;
-    public static String dialog_policy_data_edit_title;
     public static String dialog_policy_data_edit_msg;
     public static String dialog_policy_sql_execution_title;
     public static String dialog_policy_sql_execution_msg;
