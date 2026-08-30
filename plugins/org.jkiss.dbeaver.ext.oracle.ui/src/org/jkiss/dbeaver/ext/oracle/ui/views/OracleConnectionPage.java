@@ -75,6 +75,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
 
     private TextWithOpenFolder tnsPathText;
+
     private boolean activated = false;
     private final Image logoImage;
 
@@ -322,7 +323,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
 
     protected boolean isLDAPTabComplete() {
         //no implementation
-        return false;
+        return true;
     }
 
     @Override
