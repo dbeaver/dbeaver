@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     private Button compareLazyProperties;
     private Button compareOnlyStructure;
     private Button compareScriptProperties;
+    private Button refreshMetadata;
 
     CompareObjectsPageSettings() {
         super(CompareUIMessages.compare_objects_page_settings_page);
@@ -114,6 +115,15 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                 public void widgetSelected(SelectionEvent e)
                 {
                     settings.setCompareScripts(compareScriptProperties.getSelection());
+                }
+            });
+            refreshMetadata = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_refresh_metadata, settings.isRefreshMetadata());
+            refreshMetadata.setToolTipText(CompareUIMessages.compare_objects_page_settings_checkbox_refresh_metadata_tooltip);
+            refreshMetadata.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    settings.setRefreshMetadata(refreshMetadata.getSelection());
                 }
             });
         }
