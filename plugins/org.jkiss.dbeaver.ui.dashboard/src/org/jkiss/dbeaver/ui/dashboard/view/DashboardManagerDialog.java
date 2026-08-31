@@ -28,6 +28,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -209,7 +210,7 @@ public class DashboardManagerDialog extends BaseDialog {
                 newChartButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             }
 
-            copyButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_copy, null, new SelectionAdapter() {
+            copyButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_copy, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     copyDashboard();
@@ -225,7 +226,7 @@ public class DashboardManagerDialog extends BaseDialog {
             });
             editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            deleteButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_delete, null, new SelectionAdapter() {
+            deleteButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_delete, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     deleteDashboard();

@@ -26,6 +26,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.internal.WorkbenchMessages;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -74,7 +76,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
 
         {
             Composite buttonsPanel = UIUtils.createComposite(placeholder, 5);
-            UIUtils.createDialogButton(buttonsPanel, ImportConfigMessages.config_import_wizard_btn_select_all, new SelectionAdapter() {
+            UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Workbench_selectAll, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     for (TableItem item : getConnectionTable().getItems()) {
@@ -210,7 +212,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
         super.deactivatePage();
     }
 
-    protected abstract void loadConnections(ImportData importData) throws DBException;
+    protected abstract void loadConnections(@NotNull ImportData importData) throws DBException;
 
     @Override
     public boolean isPageComplete() {

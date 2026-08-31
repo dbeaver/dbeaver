@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -200,7 +201,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
         deleteProfileItem = UIUtils.createPushButton(
             toolbar,
-            UIConnectionMessages.pref_page_network_profiles_tool_delete_title,
+            WorkbenchMessages.Workbench_delete,
             UIConnectionMessages.pref_page_network_profiles_tool_delete_text,
             UIIcon.ROW_DELETE,
             new SelectionAdapter() {
@@ -220,7 +221,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
         copyProfileItem = UIUtils.createPushButton(
             toolbar,
-            UIConnectionMessages.pref_page_network_profiles_tool_copy_title,
+            WorkbenchMessages.Workbench_copy,
             UIConnectionMessages.pref_page_network_profiles_tool_copy_text,
             UIIcon.ROW_COPY,
             new SelectionAdapter() {

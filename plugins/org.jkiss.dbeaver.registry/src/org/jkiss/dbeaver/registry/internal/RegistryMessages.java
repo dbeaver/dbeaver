@@ -41,9 +41,6 @@ public class RegistryMessages extends NLS {
     public static String navigator_settings_preset_custom_view_name;
     public static String navigator_settings_preset_custom_view_description;
     public static String navigator_settings_customize_view;
-    public static String navigator_settings_switch_to_advanced_mode;
-    public static String navigator_settings_switch_to_advanced_mode_description;
-    public static String navigator_settings_switch_to_simple_mode;
     public static String project_description_comment;
 
     public static String project_open_cannot_read_credentials_title;

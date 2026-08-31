@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -66,7 +67,7 @@ public abstract class DashboardRendererAbstract implements DashboardItemRenderer
                 }
             });
             manager.add(new Separator());
-            manager.add(new Action("Close", DBeaverIcons.getImageDescriptor(UIIcon.CLOSE)) {
+            manager.add(new Action(WorkbenchMessages.WorkbenchWindow_close, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE)) {
                 @Override
                 public void run() {
                     itemContainer.getGroup().selectItem(itemContainer);

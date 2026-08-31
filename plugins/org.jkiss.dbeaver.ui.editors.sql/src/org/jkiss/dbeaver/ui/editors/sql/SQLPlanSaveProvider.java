@@ -32,11 +32,11 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
 
@@ -47,7 +47,7 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
     private SQLQuery query;
     private DBCPlan plan;
 
-    private SaveAction saveAction;
+    private final SaveAction saveAction;
 
     private DBCQueryPlanner planner;
 
@@ -60,22 +60,23 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
     protected void doSave() {
         if (query != null) {
 
-            if (planner instanceof DBCQueryPlannerSerializable) {
-                final File filePath = DialogUtils.selectFileForSave(viewer.getControl().getShell(), "Save execution plan as", EXT, NAMES, null);
+            if (planner instanceof DBCQueryPlannerSerializable qps) {
+                Path filePath = DialogUtils.selectFileForSave(
+                    viewer.getControl().getShell(),
+                    "Save execution plan as",
+                    EXT,
+                    NAMES,
+                    null
+                );
                 if (filePath == null) {
                     return;
                 }
 
-                try (Writer w = new FileWriter(filePath)) {
-
-                    ((DBCQueryPlannerSerializable) planner).serialize(w, plan);
-
+                try (Writer w = Files.newBufferedWriter(filePath)) {
+                    qps.serialize(w, plan);
                 } catch (IOException | InvocationTargetException e) {
-
                     DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan", e);
-
                 }
-
             } else {
                 saveAction.setEnabled(false);
             }
