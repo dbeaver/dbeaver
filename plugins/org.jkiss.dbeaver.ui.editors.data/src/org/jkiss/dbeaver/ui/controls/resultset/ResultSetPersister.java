@@ -113,6 +113,18 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                 model.setUpdateInProgress(null);
             }
         }
+
+        @Override
+        protected void handleCompletion(@Nullable Throwable error) {
+            if (isGenerateScript()) {
+                if (error != null) {
+                    showError(error);
+                }
+            } else {
+                processReflectChanges(error);
+            }
+            super.handleCompletion(error);
+        }
     }
 
     @NotNull
@@ -549,8 +561,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
         }
     }
 
-    @Override
-    public void processReflectChanges(@Nullable Throwable error) {
+    private void processReflectChanges(@Nullable Throwable error) {
         // Reflect changes
         UIUtils.syncExec(() -> {
             boolean rowsChanged = false;
@@ -579,8 +590,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
         });
     }
 
-    @Override
-    public void showError(@NotNull Throwable error) {
+    private void showError(@NotNull Throwable error) {
         DBWorkbench.getPlatformUI().showError("Data error", "Error generating script", error);
     }
 

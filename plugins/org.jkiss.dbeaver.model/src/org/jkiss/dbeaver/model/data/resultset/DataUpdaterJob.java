@@ -66,16 +66,19 @@ public class DataUpdaterJob extends DataSourceJob {
             resultSetPersister.releaseClonedValues();
         }
 
-        if (!generateScript) {
-            resultSetPersister.processReflectChanges(error);
-            if (this.listener != null) {
-                this.listener.onUpdate(error == null);
-            }
-        } else if (error != null) {
-            resultSetPersister.showError(error);
-        }
+        handleCompletion(error);
 
         return Status.OK_STATUS;
+    }
+
+    protected void handleCompletion(@Nullable Throwable error) {
+        if (!generateScript && listener != null) {
+            listener.onUpdate(error == null);
+        }
+    }
+
+    protected boolean isGenerateScript() {
+        return generateScript;
     }
 
     @Nullable

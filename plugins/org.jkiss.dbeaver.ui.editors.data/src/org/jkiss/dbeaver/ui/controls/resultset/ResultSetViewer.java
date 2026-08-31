@@ -1773,7 +1773,7 @@ public class ResultSetViewer extends Viewer
     @Nullable
     @Override
     public DBDAttributeBinding getDocumentAttribute() {
-        return null;
+        return model.getDocumentAttribute();
     }
 
     @NotNull
