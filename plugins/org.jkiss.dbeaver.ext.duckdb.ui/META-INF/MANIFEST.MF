@@ -6,6 +6,8 @@ Bundle-Version: 1.0.16.qualifier
 Bundle-Release-Date: 20260921
 Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.connection,
+ org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic.ui,
  org.jkiss.dbeaver.ext.duckdb
 Bundle-ActivationPolicy: lazy
