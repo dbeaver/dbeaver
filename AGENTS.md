@@ -30,7 +30,7 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ### Building
 
 - To perform full product build run `mvn package -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`  
-- To build only a single bundle run `mvn package` in bundle folder. It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
+- To build only a single bundle run `mvn package` in bundle folder. It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in `product/aggregate` (do not try build individual modules with `-pl :module-id` - it doesn't work because Tycho requires ALL modules be in scope).
 - To build other products(s) use different profiles. You can find maven profiles list in file `product/pom.xml`.
 
 ### Running tests
