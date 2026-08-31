@@ -546,11 +546,6 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
         return executionContext;
     }
 
-    @NotNull
-    private Map<String, Object> getOptions() {
-        return Map.of();
-    }
-
     public boolean hasInserts() {
         return !addedRows.isEmpty();
     }
