@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ public class TaskNativeUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages"; //$NON-NLS-1$
 
     public static String tools_script_execute_wizard_task_completed;
-    public static String tools_wizard_error_task_error_message;
-    public static String tools_wizard_error_task_error_title;
     public static String tools_wizard_error_no_database_object_selected;
     public static String tools_wizard_error_no_native_client_selected;
     public static String tools_wizard_database_group_title;
@@ -31,9 +29,6 @@ public class TaskNativeUIMessages extends NLS {
     public static String tools_wizard_client_group_client;
     public static String tools_wizard_client_button;
     public static String tools_wizard_client_dialog_title;
-    public static String tools_wizard_error_task_canceled;
-    public static String tools_wizard_log_process_exit_code;
-    public static String tools_wizard_log_io_error;
     public static String tools_wizard_message_client_home_not_found;
     public static String tools_wizard_message_no_client_home;
     public static String tools_wizard_message_no_client_home_link;

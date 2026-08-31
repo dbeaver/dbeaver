@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -164,7 +165,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
         // create OK and Cancel buttons by default
-        createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_value_view_button_save, true)
+        createButton(parent, IDialogConstants.OK_ID, WorkbenchMessages.Save, true)
             .setEnabled(!valueController.isReadOnly());
         boolean required
             = false;//valueController.getValueType() instanceof DBSAttributeBase && ((DBSAttributeBase) valueController.getValueType()).isRequired();

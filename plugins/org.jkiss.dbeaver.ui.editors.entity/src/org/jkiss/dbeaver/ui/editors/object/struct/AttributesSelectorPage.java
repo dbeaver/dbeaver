@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -52,8 +53,8 @@ import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -182,7 +183,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         };
 
         toggleButton = new Button(columnsGroup, SWT.PUSH);
-        toggleButton.setText(ObjectEditorMessages.selector_select_all_text);
+        toggleButton.setText(WorkbenchMessages.Workbench_selectAll);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = 120;
         toggleButton.setLayoutData(gd);
@@ -441,7 +442,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         if (hasCheckedColumns()) {
             toggleButton.setText(ObjectEditorMessages.selector_clear_all_text);
         } else {
-            toggleButton.setText(ObjectEditorMessages.selector_select_all_text);
+            toggleButton.setText(WorkbenchMessages.Workbench_selectAll);
         }
     }
 

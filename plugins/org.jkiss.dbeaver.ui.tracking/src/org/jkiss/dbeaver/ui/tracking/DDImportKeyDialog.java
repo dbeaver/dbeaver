@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.tracking.auth.DDRecoveryPhrase;
@@ -49,7 +50,7 @@ public class DDImportKeyDialog extends BaseDialog {
         gd.widthHint = 500;
         gd.heightHint = UIUtils.getFontHeight(phraseText) * 6;
         phraseText.setLayoutData(gd);
-        UIUtils.createPushButton(composite, "Paste", null, SelectionListener.widgetSelectedAdapter(e -> {
+        UIUtils.createPushButton(composite, WorkbenchMessages.Workbench_paste, null, SelectionListener.widgetSelectedAdapter(e -> {
             phraseText.selectAll();
             phraseText.paste();
         }));
