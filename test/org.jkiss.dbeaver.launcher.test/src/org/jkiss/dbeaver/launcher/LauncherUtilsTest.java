@@ -45,7 +45,7 @@ public class LauncherUtilsTest {
     }
 
     @Test
-    public void toURLDoesNotEscapeSpacesForLegacyConsumer() throws Exception {
+    public void roundTripPreservesPathWithSpacesWhenEncodedInUrl() throws Exception {
         URL url = LauncherUtils.toURL(new File("/tmp/a b"));
         File decoded = LauncherUtils.toFile(url);
         assertEquals(new File("/tmp/a b").getAbsoluteFile(), decoded.getAbsoluteFile());
