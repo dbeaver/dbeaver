@@ -55,21 +55,14 @@ class LauncherUtils {
 
 
     static File toFile(URL url) {
+        if (!"file".equalsIgnoreCase(url.getProtocol())) {
+            throw new IllegalArgumentException("Unsupported protocol: " + url.getProtocol());
+        }
         try {
             return new File(url.toURI());
-        } catch (URISyntaxException e) {
-            // Takes into account the edge case where file urls initially created by deprecated File.toURL calls are
-            // persisted locally. Without this check, conversion would break, as File.toURL can create URLs with
-            // characters that are illegal in URIs like unescaped spaces.
-            return new File(url.getFile());
-        } catch (IllegalArgumentException e) {
-            // A file URL with an authority (the legacy UNC form file://host/share/path produced by File.toURL()) cannot
-            // be turned into a File via URI, so we should rebuild the URL to preserve the server name.
-            String host = url.getHost();
-            if ("file".equalsIgnoreCase(url.getProtocol()) && host != null && !host.isEmpty()) {
-                return new File("//" + host + url.getPath());
-            }
-            throw e;
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            // Handles legacy URLs (e.g. produced by deprecated File.toURL()) which may be unescaped or use authority (UNC form)
+            return toFileURL(url.toExternalForm());
         }
     }
 
