@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sync.DBPSyncRegistry;
 import org.jkiss.dbeaver.model.sync.DBPSyncScope;
 import org.jkiss.dbeaver.model.sync.DBPSyncSettings;
@@ -159,7 +160,7 @@ public class DDSyncService {
     }
 
     @NotNull
-    public DDSyncResult upload() throws DBException {
+    public DDSyncResult upload(@NotNull DBRProgressMonitor monitor) throws DBException {
         synchronized (SYNC_LOCK) {
             DDSyncBinding binding = requireBinding();
             List<DDConfigurationPart> candidates = new ArrayList<>();
@@ -185,7 +186,11 @@ public class DDSyncService {
             String configurationName = binding.name();
 
             if (!candidates.isEmpty()) {
-                DDUpdateConfigurationResult result = store.updateConfiguration(binding.configurationId(), candidates);
+                if (monitor.isCanceled()) {
+                    return new DDSyncResult(configurationName, uploaded);
+                }
+                DDUpdateConfigurationResult result = store.updateConfiguration(
+                    binding.configurationId(), candidates, binding.configurationVersion());
                 DDConfiguration configuration = result.configuration();
                 configurationName = configuration.name();
                 Set<String> conflictingKeys = new HashSet<>(result.conflictingKeys());
@@ -212,9 +217,12 @@ public class DDSyncService {
     }
 
     @NotNull
-    public DDSyncResult download() throws DBException {
+    public DDSyncResult download(@NotNull DBRProgressMonitor monitor) throws DBException {
         synchronized (SYNC_LOCK) {
             DDSyncBinding binding = requireBinding();
+            if (monitor.isCanceled()) {
+                return new DDSyncResult(binding.name(), List.of());
+            }
             DDConfiguration remote = store.getConfiguration(binding.configurationId());
             List<DDConfigurationPart> toApply = new ArrayList<>();
             List<String> conflicts = new ArrayList<>();
@@ -238,6 +246,9 @@ public class DDSyncService {
             validateParts(toApply);
             try {
                 for (DDConfigurationPart part : toApply) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     apply(part);
                     baselines.put(part.key(), new DDSyncPartState(
                         part.version(), fingerprintAfterApply(part), new LinkedHashSet<>(part.units().keySet())));
@@ -259,12 +270,15 @@ public class DDSyncService {
             DDConfiguration remote = store.getConfiguration(configurationId);
             validateParts(remote.parts());
             Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
-            for (DDConfigurationPart part : remote.parts()) {
-                apply(part);
-                baselines.put(part.key(), new DDSyncPartState(
-                    part.version(), fingerprintAfterApply(part), new LinkedHashSet<>(part.units().keySet())));
+            try {
+                for (DDConfigurationPart part : remote.parts()) {
+                    apply(part);
+                    baselines.put(part.key(), new DDSyncPartState(
+                        part.version(), fingerprintAfterApply(part), new LinkedHashSet<>(part.units().keySet())));
+                }
+            } finally {
+                bind(remote.configurationId(), remote.name(), remote.version(), baselines);
             }
-            bind(remote.configurationId(), remote.name(), remote.version(), baselines);
             return new DDSyncResult(remote.name(), remote.parts().stream().map(DDConfigurationPart::name).toList());
         }
     }
@@ -308,7 +322,8 @@ public class DDSyncService {
             requireConflict(binding, remotePart, fingerprint);
             DDConfigurationPart toUpload = new DDConfigurationPart(
                 local.key(), local.kind(), local.projectId(), remotePart.version(), local.name(), local.units());
-            DDUpdateConfigurationResult result = store.updateConfiguration(remote.configurationId(), List.of(toUpload));
+            DDUpdateConfigurationResult result = store.updateConfiguration(
+                remote.configurationId(), List.of(toUpload), remote.version());
             if (result.conflictingKeys().contains(partKey)) {
                 throw new DDLocalSyncConflictException(List.of(remotePart.name()));
             }

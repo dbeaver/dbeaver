@@ -120,6 +120,12 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
                 throw new DBException("Error cleaning up " + folder, e);
             }
         }
+        DBPProject project = target.project();
+        if (project != null) {
+            // the writes above bypass the registry, so it must reload from disk or it will
+            // keep serving its stale in-memory list and can clobber this write on its next save
+            project.getDataSourceRegistry().refreshConfig();
+        }
     }
 
     private static void applySettings(@NotNull DBPSyncTarget target, @NotNull byte[] content) {

@@ -241,7 +241,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         if (dialog.open() != Window.OK) {
             return null;
         }
-        return runInProgress(() -> service.createConfiguration(dialog.getName(), dialog.getSelectedKeys()));
+        return runInProgress(monitor -> service.createConfiguration(dialog.getName(), dialog.getSelectedKeys()));
     }
 
     private void download() {
@@ -281,11 +281,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return;
         }
         try {
-            DDConfigurationSummary selected = askConfiguration(runInProgress(service::listConfigurations));
+            DDConfigurationSummary selected = askConfiguration(runInProgress(monitor -> service.listConfigurations()));
             if (selected == null) {
                 return;
             }
-            DDSyncResult result = runInProgress(() -> service.downloadAndBind(selected.configurationId()));
+            DDSyncResult result = runInProgress(monitor -> service.downloadAndBind(selected.configurationId()));
             refresh();
             showChanged(
                 DDTrackingUIMessages.sync_preference_page_nothing_to_download,
@@ -332,7 +332,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    holder.set(supplier.get());
+                    holder.set(supplier.get(monitor));
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -367,7 +367,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     @FunctionalInterface
     private interface DBSupplier<T> {
-        T get() throws DBException;
+        T get(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 
     @FunctionalInterface

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import java.util.List;
 
 record DDUpdateConfigurationRequest(
+    long expectedConfigurationVersion,
     @NotNull List<DDUpdateConfigurationPartRequest> parts
 ) {
 }

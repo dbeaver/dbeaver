@@ -162,11 +162,14 @@ public class DDAutoSyncCoordinator {
             }
             DDSyncService service = createSyncService();
             if (service == null || service.getBinding() == null) {
+                if (ACTIVE_SESSION.get() == this) {
+                    scheduleTick(POLL_INTERVAL_MS);
+                }
                 return;
             }
             boolean transportFailed = false;
             try {
-                service.upload();
+                service.upload(monitor);
             } catch (DDTransportException e) {
                 transportFailed = true;
                 log.debug("DataDam auto-sync upload failed", e);
@@ -177,7 +180,7 @@ public class DDAutoSyncCoordinator {
                 return;
             }
             try {
-                service.download();
+                service.download(monitor);
             } catch (DDTransportException e) {
                 transportFailed = true;
                 log.debug("DataDam auto-sync download failed", e);
