@@ -18,12 +18,14 @@
 
     <properties>
         <dbeaver-product>DBeaver</dbeaver-product>
+        <product-generator.version>1.0.0-SNAPSHOT</product-generator.version>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
     </properties>
 
     <modules>
+        <module>tools/maven/product-generator</module>
         <module>plugins</module>
         <module>features</module>
         <module>product</module>
@@ -32,6 +34,24 @@
     <build>
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
         <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jkiss.dbeaver</groupId>
+                    <artifactId>product-generator</artifactId>
+                    <version>${product-generator.version}</version>
+                    <executions>
+                        <execution>
+                            <id>generate-product</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>generate-product</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <!-- Tycho build -->
             <plugin>
