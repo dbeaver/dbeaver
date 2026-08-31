@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -54,8 +55,8 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -155,7 +156,7 @@ class GenericFilterValueEdit {
         if (isCheckedTable) {
             buttonsPanel = UIUtils.createComposite(composite, 2);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            toggleButton = UIUtils.createDialogButton(buttonsPanel, "&Select All", new SelectionAdapter() {
+            toggleButton = UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Workbench_selectAll, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
@@ -202,7 +203,7 @@ class GenericFilterValueEdit {
 
     private void updateToggleButton(Button toggleButton) {
         boolean hasCheckedItems = hasCheckedItems();
-        toggleButton.setText(hasCheckedItems ? "&Clear All" : "&Select All");
+        toggleButton.setText(hasCheckedItems ? "&Clear All" : WorkbenchMessages.Workbench_selectAll);
         toggleButton.setData(!hasCheckedItems);
     }
 

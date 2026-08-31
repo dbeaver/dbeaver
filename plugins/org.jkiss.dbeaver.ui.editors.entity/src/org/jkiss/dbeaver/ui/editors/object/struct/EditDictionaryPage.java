@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -51,15 +52,13 @@ import java.util.List;
  */
 public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEntityAttribute> {
 
-    private Text criteriaText;
-    private DBVEntity dictionary;
+    private final DBSEntity entity;
+    private final DBVEntity dictionary;
     private Collection<DBSEntityAttribute> descColumns;
-    private DBSEntity entity;
     private Text columnDividerText;
+    private Text criteriaText;
 
-    public EditDictionaryPage(
-        final DBSEntity entity)
-    {
+    public EditDictionaryPage(@NotNull DBSEntity entity) {
         super("Edit description", entity);
         this.entity = entity;
         this.dictionary = DBVUtils.getVirtualEntity(entity, true);
@@ -84,8 +83,7 @@ public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     }
 
     @Override
-    protected void createContentsBeforeColumns(Composite panel)
-    {
+    protected void createContentsBeforeColumns(@NotNull Composite panel) {
         Link label = UIUtils.createLink(panel, ObjectEditorMessages.dialog_struct_edit_dictionary_tip, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -93,11 +91,11 @@ public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEnt
                 UIUtils.showPreferencesFor(null, null, /*PrefPageDataViewer.PAGE_ID*/ "org.jkiss.dbeaver.preferences.main.dataviewer");
             }
         });
+        label.setLayoutData(GridDataFactory.create(GridData.FILL_HORIZONTAL).span(2, 1).create());
     }
 
     @Override
-    protected void createContentsAfterColumns(Composite panel)
-    {
+    protected void createContentsAfterColumns(@NotNull Composite panel) {
         Composite group = UIUtils.createComposite(panel, 1);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createControlLabel(group, ObjectEditorMessages.dialog_struct_edit_dictionary_custom_criteria);
@@ -125,8 +123,7 @@ public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     }
 
     @Override
-    public boolean isColumnSelected(DBSEntityAttribute attribute)
-    {
+    public boolean isColumnSelected(@NotNull DBSEntityAttribute attribute) {
         return descColumns.contains(attribute);
     }
 
@@ -135,7 +132,7 @@ public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEnt
         descColumns = getSelectedAttributes();
         StringBuilder custom = new StringBuilder();
         for (DBSEntityAttribute column : descColumns) {
-            if (custom.length() > 0) {
+            if (!custom.isEmpty()) {
                 custom.append(",");
             }
             custom.append(DBUtils.getQuotedIdentifier(column));
@@ -166,8 +163,7 @@ public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     }
 
     @Override
-    public void performFinish()
-    {
+    public void performFinish() {
         saveDictionarySettings();
         entity.getDataSource().getContainer().persistConfiguration();
     }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -208,17 +209,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             settingsScroll.setExpandVertical(true);
             settingsPanel = UIUtils.createComposite(settingsScroll, 1);
             settingsScroll.setContent(settingsPanel);
-            Composite profileGroup = UIUtils.createTitledComposite(
-                settingsPanel,
-                AIUIMessages.ai_engines_page_group_profile,
-                4,
-                GridData.FILL_HORIZONTAL
-            );
+            Composite profileGroup = new Composite(settingsPanel, SWT.NONE);
+            GridLayoutFactory.fillDefaults().margins(0, 5).numColumns(4).applyTo(profileGroup);
+            profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            profileIdText = UIUtils.createLabelText(
-                profileGroup, AIUIMessages.ai_engines_page_profile_id_label, "", SWT.BORDER | SWT.READ_ONLY);
             profileNameText = UIUtils.createLabelText(
                 profileGroup, AIUIMessages.ai_engines_page_profile_name_label, "", SWT.BORDER);
+            profileIdText = UIUtils.createLabelText(
+                profileGroup, AIUIMessages.ai_engines_page_profile_id_label, "", SWT.BORDER | SWT.READ_ONLY);
 
             engineGroup = UIUtils.createTitledComposite(
                 settingsPanel,

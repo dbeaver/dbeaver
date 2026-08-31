@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -56,6 +55,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.CoreCommandConstants;
 import org.jkiss.dbeaver.ui.actions.common.AddBookmarkHandler;
 import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -278,13 +278,13 @@ public class DBeaverStackRenderer extends StackRenderer {
                 });
                 if (workbenchPart instanceof EntityEditor) {
                     final MenuItem addBookmarkItem = new MenuItem(menu, SWT.NONE);
-                    String actionText = ActionUtils.findCommandName(CoreCommands.CMD_ADD_BOOKMARK);
-                    String shortcut = ActionUtils.findCommandDescription(CoreCommands.CMD_ADD_BOOKMARK, workbenchPart.getSite(), true);
+                    String actionText = ActionUtils.findCommandName(CoreCommandConstants.CMD_ADD_BOOKMARK);
+                    String shortcut = ActionUtils.findCommandDescription(CoreCommandConstants.CMD_ADD_BOOKMARK, workbenchPart.getSite(), true);
                     if (shortcut != null) {
                         actionText += "\t" + shortcut;
                     }
                     addBookmarkItem.setText(actionText);
-                    ImageDescriptor imageDescriptor = ActionUtils.findCommandImage(CoreCommands.CMD_ADD_BOOKMARK);
+                    ImageDescriptor imageDescriptor = ActionUtils.findCommandImage(CoreCommandConstants.CMD_ADD_BOOKMARK);
                     if (imageDescriptor != null) {
                         Image itemImage = imageDescriptor.createImage();
                         addBookmarkItem.setImage(itemImage);
