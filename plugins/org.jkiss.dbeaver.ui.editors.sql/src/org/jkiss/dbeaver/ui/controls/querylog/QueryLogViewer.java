@@ -39,6 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -755,7 +756,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     openSelectionInEditor();
                 }
             };
-            IAction copyAction = new Action(ModelMessages.controls_querylog_action_copy) {
+            IAction copyAction = new Action(WorkbenchMessages.Workbench_copy) {
                 @Override
                 public void run() {
                     copySelectionToClipboard(false);
@@ -782,7 +783,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             copyAllAction.setEnabled(logTable.getSelectionCount() > 0);
             copyAllAction.setActionDefinitionId(IActionConstants.CMD_COPY_SPECIAL);
 
-            IAction selectAllAction = new Action(ModelMessages.controls_querylog_action_select_all) {
+            IAction selectAllAction = new Action(WorkbenchMessages.Workbench_selectAll) {
                 @Override
                 public void run() {
                     selectAll();

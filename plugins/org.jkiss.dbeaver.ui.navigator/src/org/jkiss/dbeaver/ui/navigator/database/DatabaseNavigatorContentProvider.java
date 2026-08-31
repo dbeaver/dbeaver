@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +125,9 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
                         "Navigator error",
                         ex.getMessage(),
                         ex);
-                    navigatorTree.getViewer().collapseToLevel(parent, 1);
+                    if (!navigatorTree.getViewer().getControl().isDisposed()) {
+                        navigatorTree.getViewer().collapseToLevel(parent, 1);
+                    }
                     //navigatorTree.getViewer().refresh(parent);
                 });
                 return EMPTY_CHILDREN;

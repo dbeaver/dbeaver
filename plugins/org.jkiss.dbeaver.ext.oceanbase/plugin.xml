@@ -36,6 +36,14 @@
                     <parameter name="supports-triggers" value="false"/>
                     <parameter name="supports-users" value="true"/>
                 </driver>
+                <main-properties drivers="*">
+                    <propertyGroup label="Connection">
+                        <property id="host" label="Host" type="string" required="true"/>
+                        <property id="port" label="Port" type="string"/>
+                        <property id="database" label="Database" type="string"/>
+                        <property id="server" label="Tenant" type="string" required="true"/>
+                    </propertyGroup>
+                </main-properties>
             </drivers>
         </datasource>
     </extension>
@@ -53,4 +61,3 @@
     </extension>
 
 </plugin>
-

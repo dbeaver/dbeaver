@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryTextFinder;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.binary.HexManager;
@@ -51,7 +52,7 @@ public class FindReplaceDialog extends Dialog {
     private static final String text1Replacement = BinaryEditorMessages.dialog_find_replace_1_replacement;
     private static final String textBackward = BinaryEditorMessages.dialog_find_replace_backward;
     private static final String textCancel = BinaryEditorMessages.dialog_find_replace_cancel;
-    private static final String textClose = BinaryEditorMessages.dialog_find_replace_close;
+    private static final String textClose = WorkbenchMessages.WorkbenchWindow_close;
     private static final String textDirection = BinaryEditorMessages.dialog_find_replace_direction;
     private static final String textError = BinaryEditorMessages.dialog_find_replace_error_;
     private static final String textFind = BinaryEditorMessages.dialog_find_replace_find;

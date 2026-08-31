@@ -27,11 +27,13 @@ public final class ProductConfigMessages extends NLS {
     public static String appearance_title;
     public static String appearance_description;
     public static String appearance_theme_header;
-    public static String appearance_theme_hint;
     public static String appearance_navigator_header;
     public static String appearance_navigator_simple;
+    public static String appearance_navigator_simple_hint;
     public static String appearance_navigator_advanced;
+    public static String appearance_navigator_advanced_hint;
     public static String appearance_navigator_custom;
+    public static String appearance_navigator_custom_hint;
     public static String appearance_navigator_custom_configure;
     public static String appearance_navigator_hint;
 
