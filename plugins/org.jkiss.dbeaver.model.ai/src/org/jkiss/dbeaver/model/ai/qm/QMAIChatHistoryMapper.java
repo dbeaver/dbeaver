@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.qm;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -135,7 +137,7 @@ public class QMAIChatHistoryMapper {
                 it.message().getRawDisplayMessage(),
                 Objects.requireNonNull(toQMAIChatRole(it.message().getRole()), "Chat role is null"),
                 getFunctionCallsString(it.message()),
-                toJsonString(it.message().getFunctionResult()),
+                toFunctionResultJson(it.message().getFunctionResult()),
                 it.message().getTime().toInstant(ZoneOffset.UTC),
                 false,
                 toQMAIMessageMeta(it.message().getMeta())
@@ -157,6 +159,32 @@ public class QMAIChatHistoryMapper {
             return null;
         }
         return JSONUtils.GSON.toJson(object);
+    }
+
+    @Nullable
+    private static String toFunctionResultJson(@Nullable AIFunctionResult result) {
+        return result == null ? null : JSONUtils.GSON.toJson(new PersistedFunctionResult(result));
+    }
+
+    @NotNull
+    static AIFunctionResult fromFunctionResultJson(@NotNull String json) {
+        PersistedFunctionResult result = Objects.requireNonNull(
+            JSONUtils.GSON.fromJson(json, PersistedFunctionResult.class),
+            "Function result is null"
+        );
+        String value = toString(result.value());
+        Throwable exception = result.exception() == null || result.exception().isJsonNull()
+            ? null
+            : new DBException(toString(result.exception()));
+        return new AIFunctionResult(result.type(), value, null, exception);
+    }
+
+    @NotNull
+    private static String toString(@Nullable JsonElement element) {
+        if (element == null || element.isJsonNull()) {
+            return "";
+        }
+        return element.isJsonPrimitive() ? element.getAsString() : element.toString();
     }
 
     @Nullable
@@ -195,7 +223,7 @@ public class QMAIChatHistoryMapper {
                 } else {
                     AIFunctionCall fc = JSONUtils.GSON.fromJson(fcString, AIFunctionCall.class);
                     setFunctionToFunctionCall(assistant, fc);
-                    AIFunctionResult fr = JSONUtils.GSON.fromJson(frString, AIFunctionResult.class);
+                    AIFunctionResult fr = fromFunctionResultJson(frString);
                     aiMessage = new AIMessage(fc, fr, messageTime, messageMetas);
                 }
             } else {
@@ -217,6 +245,29 @@ public class QMAIChatHistoryMapper {
         AIFunctionDescriptor function = assistant.getToolboxManager().getFunctionByFullId(fc.getFunctionName());
         if (function != null) {
             fc.setFunction(function);
+        }
+    }
+
+    private record PersistedFunctionResult(
+        @NotNull AIFunctionType type,
+        @NotNull JsonElement value,
+        @Nullable JsonElement exception
+    ) {
+        private PersistedFunctionResult(@NotNull AIFunctionResult result) {
+            this(
+                result.getType(),
+                new JsonPrimitive(CommonUtils.toString(result.getValue())),
+                toJsonElement(result.getException())
+            );
+        }
+
+        @Nullable
+        private static JsonElement toJsonElement(@Nullable Throwable exception) {
+            if (exception == null) {
+                return null;
+            }
+            String message = exception.getMessage();
+            return new JsonPrimitive(message != null ? message : exception.toString());
         }
     }
 
