@@ -111,7 +111,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
 
         createBasicConnectionControls(connectionTypeFolder);
 		createTNSConnectionControls(connectionTypeFolder);
-        createLDAPConnectionControls(connectionTypeFolder);
+        createAdditionalTypeConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
         selectConnectionTypeTab();
         connectionTypeFolder.addSelectionListener(new SelectionAdapter()
@@ -211,7 +211,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         });
     }
 
-    protected void createLDAPConnectionControls(@NotNull CTabFolder protocolFolder) {
+    protected void createAdditionalTypeConnectionControls(@NotNull CTabFolder protocolFolder) {
         //no implementation
     }
 
@@ -317,11 +317,11 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             case BASIC -> !CommonUtils.isEmpty(serviceNameCombo.getText());
             case TNS -> !CommonUtils.isEmpty(tnsNameCombo.getText());
             case CUSTOM -> !CommonUtils.isEmpty(connectionUrlText.getText());
-            case LDAP -> isLDAPTabComplete();
+            case LDAP -> isAdditionalTypeTabComplete();
         };
     }
 
-    protected boolean isLDAPTabComplete() {
+    protected boolean isAdditionalTypeTabComplete() {
         //no implementation
         return true;
     }
@@ -388,13 +388,13 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
                 tnsPathText.setText(tnsPathProperty);
             }
         }
-        loadLDAPSettings(site.getActiveDataSource(), connectionInfo);
+        loadAdditionalSettings(site.getActiveDataSource(), connectionInfo);
         connectionUrlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
         activated = true;
         updateUI();
     }
 
-    protected void loadLDAPSettings(
+    protected void loadAdditionalSettings(
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) {
@@ -432,7 +432,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
                 connectionInfo.setConfigurationType(DBPDriverConfigurationType.MANUAL);
                 break;
             case LDAP:
-                saveLDAPSettings(connectionInfo);
+                saveAdditionalSettings(connectionInfo);
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText().trim());
@@ -447,7 +447,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         super.saveSettings(dataSource);
     }
 
-    protected void saveLDAPSettings(@NotNull DBPConnectionConfiguration connectionInfo) {
+    protected void saveAdditionalSettings(@NotNull DBPConnectionConfiguration connectionInfo) {
         //no implementation
     }
 
