@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import org.mockito.Mockito;
 
 class DataTransferJobTest {
 
+    private DataTransferSettings settings;
     private DBTTask task;
     private Log log;
     private IDataTransferProducer producer;
@@ -38,7 +40,7 @@ class DataTransferJobTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        DataTransferSettings settings = Mockito.mock(DataTransferSettings.class);
+        settings = Mockito.mock(DataTransferSettings.class);
         DataTransferNodeDescriptor consumerNode = Mockito.mock(DataTransferNodeDescriptor.class);
         Mockito.when(consumerNode.getName()).thenReturn("test consumer node");
         Mockito.when(settings.getConsumer()).thenReturn(consumerNode);
@@ -106,5 +108,21 @@ class DataTransferJobTest {
 
         Assertions.assertSame(transferError, thrown);
         Mockito.verify(log).error(ArgumentMatchers.any(), ArgumentMatchers.eq(closeError));
+    }
+
+    @Test
+    void closesProducerWhenProcessorConstructionFails() throws Exception {
+        DataTransferPipe pipe = new DataTransferPipe(producer, consumer);
+        DataTransferProcessorDescriptor processorDescriptor = Mockito.mock(DataTransferProcessorDescriptor.class);
+        Mockito.when(processorDescriptor.getInstance()).thenThrow(new IllegalStateException("Can't instantiate data exporter"));
+        Mockito.when(settings.getProcessor()).thenReturn(processorDescriptor);
+
+        Assertions.assertThrows(
+            IllegalStateException.class, () -> job.transferData(new VoidProgressMonitor(), pipe));
+
+        Mockito.verify(producer, Mockito.never()).transferData(
+            ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+            ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.anyLong());
+        Mockito.verify(producer, Mockito.times(1)).close();
     }
 }
