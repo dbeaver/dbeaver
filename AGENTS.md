@@ -30,12 +30,12 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ### Building
 
 - To perform full product build run `mvn package -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`  
-- To build only a single bundle run `mvn package` in bundle folder. It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
+- Building a single bundle with `mvn package` in bundle folder usually fails.
 - To build other products(s) use different profiles. You can find maven profiles list in file `product/pom.xml`.
 
 ### Running tests
 
-- Running tests in a single bundle usually fail because OSGI needs entire bundle to be included in build be installed in .m2.
+- Running tests in a single bundle usually fail because OSGI needs ALL bundles to be included in build OR be installed in .m2.
 - To run tests over full repo run `mvn verify -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`. This will run tests for desktop dbeaver ce and dbeaver eclipse plugin.
 
 ### Repo dependencies
