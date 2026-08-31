@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -55,19 +56,37 @@ public class QMAIChatHistoryMapperTest {
 
         Assertions.assertEquals("INFORMATION", object.get("type").getAsString());
         Assertions.assertEquals("Function result", object.get("value").getAsString());
-        Assertions.assertEquals("Database error", object.get("exception").getAsString());
+        Assertions.assertEquals(
+            "Database error",
+            object.getAsJsonObject("exception").get("detailMessage").getAsString()
+        );
+
+        LegacyFunctionResult legacyResult = JSONUtils.GSON.fromJson(json, LegacyFunctionResult.class);
+        Assertions.assertEquals("Function result", legacyResult.value());
+        Assertions.assertEquals("Database error", legacyResult.exception().detailMessage());
     }
 
     @Test
     public void restoresFunctionResultError() {
         AIFunctionResult result = QMAIChatHistoryMapper.fromFunctionResultJson(
-            "{\"type\":\"INFORMATION\",\"value\":\"Failed\",\"exception\":{}}"
+            "{\"type\":\"INFORMATION\",\"value\":\"Failed\",\"exception\":{\"detailMessage\":\"Database error\"}}"
         );
 
         Assertions.assertEquals(AIFunctionType.INFORMATION, result.getType());
         Assertions.assertEquals("Failed", result.getValue());
         Assertions.assertNotNull(result.getException());
+        Assertions.assertEquals("Database error", result.getException().getMessage());
         Assertions.assertNull(result.getCallback());
+    }
+
+    @Test
+    public void restoresStringFunctionResultError() {
+        AIFunctionResult result = QMAIChatHistoryMapper.fromFunctionResultJson(
+            "{\"type\":\"INFORMATION\",\"value\":\"Failed\",\"exception\":\"Database error\"}"
+        );
+
+        Assertions.assertNotNull(result.getException());
+        Assertions.assertEquals("Database error", result.getException().getMessage());
     }
 
     private static class CyclicValue {
@@ -78,5 +97,15 @@ public class QMAIChatHistoryMapperTest {
         public String toString() {
             return "Function result";
         }
+    }
+
+    private record LegacyFunctionResult(
+        AIFunctionType type,
+        String value,
+        LegacyException exception
+    ) {
+    }
+
+    private record LegacyException(String detailMessage) {
     }
 }

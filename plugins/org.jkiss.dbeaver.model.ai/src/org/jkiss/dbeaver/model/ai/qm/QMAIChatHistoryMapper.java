@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.qm;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -50,6 +51,7 @@ import java.util.stream.Collectors;
 public class QMAIChatHistoryMapper {
 
     private static final Log log = Log.getLog(QMAIChatHistoryMapper.class);
+    private static final String EXCEPTION_MESSAGE_PROPERTY = "detailMessage";
 
     @NotNull
     public static QMAIConversationHistory toQMAIChatHistory(
@@ -175,8 +177,17 @@ public class QMAIChatHistoryMapper {
         String value = toString(result.value());
         Throwable exception = result.exception() == null || result.exception().isJsonNull()
             ? null
-            : new DBException(toString(result.exception()));
+            : new DBException(toExceptionMessage(result.exception(), value));
         return new AIFunctionResult(result.type(), value, null, exception);
+    }
+
+    @NotNull
+    private static String toExceptionMessage(@NotNull JsonElement exception, @NotNull String defaultMessage) {
+        if (exception.isJsonObject()) {
+            JsonElement message = exception.getAsJsonObject().get(EXCEPTION_MESSAGE_PROPERTY);
+            return message == null || message.isJsonNull() ? defaultMessage : toString(message);
+        }
+        return toString(exception);
     }
 
     @NotNull
@@ -267,7 +278,9 @@ public class QMAIChatHistoryMapper {
                 return null;
             }
             String message = exception.getMessage();
-            return new JsonPrimitive(message != null ? message : exception.toString());
+            JsonObject object = new JsonObject();
+            object.addProperty(EXCEPTION_MESSAGE_PROPERTY, message != null ? message : exception.toString());
+            return object;
         }
     }
 
