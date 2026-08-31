@@ -111,7 +111,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
 
         createBasicConnectionControls(connectionTypeFolder);
 		createTNSConnectionControls(connectionTypeFolder);
-        createAdditionalTypeConnectionControls(connectionTypeFolder);
+        createAdditionalConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
         selectConnectionTypeTab();
         connectionTypeFolder.addSelectionListener(new SelectionAdapter()
@@ -211,7 +211,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         });
     }
 
-    protected void createAdditionalTypeConnectionControls(@NotNull CTabFolder protocolFolder) {
+    protected void createAdditionalConnectionControls(@NotNull CTabFolder protocolFolder) {
         //no implementation
     }
 
@@ -317,11 +317,11 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             case BASIC -> !CommonUtils.isEmpty(serviceNameCombo.getText());
             case TNS -> !CommonUtils.isEmpty(tnsNameCombo.getText());
             case CUSTOM -> !CommonUtils.isEmpty(connectionUrlText.getText());
-            case LDAP -> isAdditionalTypeTabComplete();
+            case LDAP -> isAdditionalTabsComplete();
         };
     }
 
-    protected boolean isAdditionalTypeTabComplete() {
+    protected boolean isAdditionalTabsComplete() {
         //no implementation
         return true;
     }
