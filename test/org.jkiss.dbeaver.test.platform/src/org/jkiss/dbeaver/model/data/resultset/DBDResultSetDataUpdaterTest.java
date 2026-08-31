@@ -116,8 +116,6 @@ public class DBDResultSetDataUpdaterTest {
         DBPDataSourceInfo dataSourceInfo = Mockito.mock(DBPDataSourceInfo.class);
         DBDRowIdentifier identifier = Mockito.mock(DBDRowIdentifier.class);
         DBDAttributeBinding keyAttribute = Mockito.mock(DBDAttributeBinding.class);
-        DBDAttributeBinding deleteKeyAttribute = Mockito.mock(DBDAttributeBinding.class);
-        Object keyValue = new Object();
 
         Mockito.when(model.getDefaultRowIdentifier()).thenReturn(identifier);
         Mockito.when(identifier.getEntity()).thenReturn(entity);
@@ -125,6 +123,8 @@ public class DBDResultSetDataUpdaterTest {
         Mockito.when(entity.getDataSource()).thenReturn(dataSource);
         Mockito.when(dataSource.getInfo()).thenReturn(dataSourceInfo);
 
+        DBDAttributeBinding deleteKeyAttribute = Mockito.mock(DBDAttributeBinding.class);
+        Object keyValue = new Object();
         TestDataUpdater updater = new TestDataUpdater(model, row);
         updater.prepareDelete(row, deleteKeyAttribute, keyValue);
         updater.prepareStatements(new VoidProgressMonitor(), new ResultSetSaveSettings());

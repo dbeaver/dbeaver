@@ -81,6 +81,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     }
 
+    @Override
+    public void run(boolean fork, boolean cancelable, @NotNull DBRRunnableWithProgress runnable)
+            throws InvocationTargetException, InterruptedException {
+        runnable.run(activeMonitor);
+    }
+
     @NotNull
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
@@ -157,12 +163,6 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             }
         }
         return taskStatus;
-    }
-
-    @Override
-    public void run(boolean fork, boolean cancelable, @NotNull DBRRunnableWithProgress runnable)
-    throws InvocationTargetException, InterruptedException {
-        runnable.run(activeMonitor);
     }
 
     @NotNull

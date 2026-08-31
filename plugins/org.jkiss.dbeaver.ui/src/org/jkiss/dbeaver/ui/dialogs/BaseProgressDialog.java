@@ -85,10 +85,10 @@ public class BaseProgressDialog extends BaseDialog implements DBRRunnableContext
 
     @Override
     public void run(boolean fork, boolean cancelable, @NotNull DBRRunnableWithProgress runnable)
-    throws InvocationTargetException, InterruptedException {
+            throws InvocationTargetException, InterruptedException {
         // Code copied from WizardDialog
         if (monitorPart != null) {
-            ((GridData)monitorPart.getLayoutData()).exclude = false;
+            ((GridData) monitorPart.getLayoutData()).exclude = false;
             monitorPart.setVisible(true);
             monitorPart.getParent().layout();
             monitorPart.attachToCancelComponent(null);

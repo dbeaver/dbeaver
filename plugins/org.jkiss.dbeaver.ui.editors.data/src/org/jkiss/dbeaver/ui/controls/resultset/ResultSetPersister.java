@@ -294,12 +294,6 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                                 DataStatementInfo cascadeStat = new DataStatementInfo(DBSManipulationType.DELETE, stat.row, refEntity);
                                 cascadeStat.getKeyAttributes().addAll(refKeyValues);
                                 cascadeStats.add(cascadeStat);
-/*
-                                System.out.println("DELETE! " + entity.getName());
-                                for (DBDAttributeValue kv : refKeyValues) {
-                                    System.out.println("\tATTR: " + DBUtils.getObjectFullName(kv.getAttribute(), DBPEvaluationContext.UI) + "=" + kv.getValue());
-                                }
-*/
                             }
                         }
                     }

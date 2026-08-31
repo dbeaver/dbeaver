@@ -32,7 +32,7 @@ public class MonitorRunnableContext implements DBRRunnableContext {
 
     @Override
     public void run(boolean fork, boolean cancelable, @NotNull DBRRunnableWithProgress runnable)
-    throws InvocationTargetException, InterruptedException {
+            throws InvocationTargetException, InterruptedException {
         runnable.run(monitor);
     }
 }

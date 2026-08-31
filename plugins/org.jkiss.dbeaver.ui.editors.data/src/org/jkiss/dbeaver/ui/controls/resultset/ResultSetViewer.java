@@ -4670,6 +4670,7 @@ public class ResultSetViewer extends Viewer
 
     /**
      * Saves changes to database
+     *
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
@@ -4677,8 +4678,7 @@ public class ResultSetViewer extends Viewer
         @Nullable final DBRProgressMonitor monitor,
         @NotNull ResultSetSaveSettings settings,
         @Nullable final DBDDataUpdateListener listener
-    )
-    {
+    ) {
         UIUtils.syncExec(() -> getActivePresentation().applyChanges());
         try {
             final ResultSetPersister persister = createDataPersister(false);
@@ -4700,14 +4700,14 @@ public class ResultSetViewer extends Viewer
             };
 
 
-            return applyChanges(monitor, settings, persister, applyListener, false);
+            return executeChanges(monitor, settings, persister, applyListener, false);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
             return false;
         }
     }
 
-    private boolean applyChanges(
+    private boolean executeChanges(
         @Nullable DBRProgressMonitor monitor,
         @NotNull ResultSetSaveSettings settings,
         @NotNull ResultSetPersister persister,
@@ -4735,8 +4735,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void rejectChanges()
-    {
+    public void rejectChanges() {
         if (!isDirty()) {
             return;
         }
@@ -4766,11 +4765,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @NotNull
     @Override
     public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings) {
         try {
             ResultSetPersister persister = createDataPersister(false);
-            applyChanges(monitor, settings, persister, null, true);
+            executeChanges(monitor, settings, persister, null, true);
             return persister.getActions();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);

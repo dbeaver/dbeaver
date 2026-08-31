@@ -308,6 +308,11 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
     }
 
     @Nullable
+    protected ISmartTransactionManager getSmartTransactionManager() {
+        return null;
+    }
+
+    @Nullable
     public Throwable executeStatements(
         @NotNull DBRProgressMonitor monitor,
         @NotNull Map<String, Object> options,
@@ -354,11 +359,6 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
         } finally {
             monitor.done();
         }
-    }
-
-    @Nullable
-    protected ISmartTransactionManager getSmartTransactionManager() {
-        return null;
     }
 
     @Nullable
@@ -546,6 +546,7 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
         return executionContext;
     }
 
+    @NotNull
     private Map<String, Object> getOptions() {
         return Map.of();
     }
