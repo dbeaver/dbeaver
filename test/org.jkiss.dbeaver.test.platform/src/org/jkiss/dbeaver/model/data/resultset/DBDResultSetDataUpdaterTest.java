@@ -22,7 +22,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.messages.DataMessages;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -129,6 +134,34 @@ public class DBDResultSetDataUpdaterTest {
         Assertions.assertSame(keyValue, statement.getKeyAttributes().getFirst().getValue());
     }
 
+    @Test
+    public void canceledExecutionLeavesStatementPendingWithoutError() throws Exception {
+        DBDResultSetModel model = Mockito.mock(DBDResultSetModel.class);
+        DBDValueRow row = Mockito.mock(DBDValueRow.class);
+        DBSEntity entity = Mockito.mock(DBSEntity.class);
+        DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
+        DBCSession session = Mockito.mock(DBCSession.class);
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class, Mockito.RETURNS_DEEP_STUBS);
+
+        Mockito.when(model.getSingleSource()).thenReturn(entity);
+        Mockito.when(model.getAttributes()).thenReturn(new DBDAttributeBinding[0]);
+        Mockito.when(executionContext.openSession(
+            monitor,
+            DBCExecutionPurpose.USER,
+            DataMessages.controls_resultset_viewer_job_update
+        )).thenReturn(session);
+        Mockito.when(session.getDataSource()).thenReturn(dataSource);
+        Mockito.when(session.getProgressMonitor()).thenReturn(monitor);
+        Mockito.when(monitor.isCanceled()).thenReturn(true);
+
+        TestDataUpdater updater = new TestDataUpdater(model, row, executionContext);
+        updater.prepareStatements(monitor, new ResultSetSaveSettings());
+
+        Assertions.assertNull(updater.executeStatements(monitor, Map.of(), null, false));
+        Assertions.assertFalse(updater.getInsertStatements().getFirst().isExecuted());
+    }
+
     private static class TestDataUpdater extends DBDResultSetDataUpdater<DBDDataStatementInfo, DBDValueRow, DBDResultSetModel> {
         private Object keyValue;
         private DBDAttributeBinding deleteKeyAttribute;
@@ -136,7 +169,15 @@ public class DBDResultSetDataUpdaterTest {
         private Object insertDocumentValue;
 
         private TestDataUpdater(@NotNull DBDResultSetModel model, @NotNull DBDValueRow row) {
-            super(model, null);
+            this(model, row, null);
+        }
+
+        private TestDataUpdater(
+            @NotNull DBDResultSetModel model,
+            @NotNull DBDValueRow row,
+            @Nullable DBCExecutionContext executionContext
+        ) {
+            super(model, executionContext);
             addedRows.add(row);
         }
 

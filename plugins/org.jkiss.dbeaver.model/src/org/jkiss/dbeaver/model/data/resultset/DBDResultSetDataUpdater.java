@@ -388,7 +388,7 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
         try {
             for (DBDDataStatementInfo statement : deleteStatements) {
                 if (monitor.isCanceled()) {
-                    return processCancellation(session, generateScript);
+                    return null;
                 }
                 try {
                     DBSDataManipulator dataContainer = getDataManipulator(statement.getEntity());
@@ -411,7 +411,7 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
             }
             for (DBDDataStatementInfo statement : insertStatements) {
                 if (monitor.isCanceled()) {
-                    return processCancellation(session, generateScript);
+                    return null;
                 }
                 try {
                     DBSDataManipulator dataContainer = getDataManipulator(statement.getEntity());
@@ -444,7 +444,7 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
             }
             for (DBDDataStatementInfo statement : updateStatements) {
                 if (monitor.isCanceled()) {
-                    return processCancellation(session, generateScript);
+                    return null;
                 }
                 try {
                     DBSDataManipulator dataContainer = getDataManipulator(statement.getEntity());
@@ -524,12 +524,6 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
     private void processStatementError(@NotNull DBDDataStatementInfo statement, @NotNull DBCSession session, boolean generateScript) {
         statement.setExecuted(false);
         rollbackChanges(session, generateScript);
-    }
-
-    @NotNull
-    private DBCException processCancellation(@NotNull DBCSession session, boolean generateScript) {
-        rollbackChanges(session, generateScript);
-        return new DBCException("Data update was canceled");
     }
 
     private void rollbackChanges(@NotNull DBCSession session, boolean generateScript) {
