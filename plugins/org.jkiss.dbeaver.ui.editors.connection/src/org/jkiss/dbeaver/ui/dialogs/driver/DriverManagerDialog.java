@@ -30,6 +30,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -142,7 +143,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             });
             newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            copyButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_copy, null, new SelectionAdapter() {
+            copyButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_copy, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     copyDriver();
@@ -158,7 +159,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             });
             editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            deleteButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_delete, null, new SelectionAdapter() {
+            deleteButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_delete, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     deleteDriver();

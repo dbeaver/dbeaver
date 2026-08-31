@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -144,7 +145,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, UINavigatorMessages.dialog_filter_save_button, false);
+        createButton(parent, IDialogConstants.OK_ID, WorkbenchMessages.Save, false);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
     }
 
