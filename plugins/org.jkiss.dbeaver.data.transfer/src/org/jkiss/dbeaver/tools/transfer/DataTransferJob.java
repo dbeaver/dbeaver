@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
@@ -129,7 +130,8 @@ public class DataTransferJob extends AbstractJob {
         super.canceling();
     }
 
-    private void transferData(
+    @ForTest
+    void transferData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DataTransferPipe transferPipe
     ) throws DBException, IOException {
