@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -151,7 +152,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
 
             Composite groupBehavior = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_connection_label_general,
+                UIConnectionMessages.pref_page_connection_label_general,
                 1,
                 GridData.VERTICAL_ALIGN_BEGINNING
             );

@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -52,8 +53,8 @@ import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -73,9 +74,9 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
     protected static class AttributeInfo<T extends DBSAttributeBase> {
         T attribute;
         int position;
-        Map<String, Object> properties = new HashMap<>();
+        private final Map<String, Object> properties = new HashMap<>();
 
-        public AttributeInfo(T attribute) {
+        public AttributeInfo(@NotNull T attribute) {
             this.attribute = attribute;
             this.position = -1;
         }
@@ -88,11 +89,12 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
             return position;
         }
 
-        public Object getProperty(String name) {
+        @Nullable
+        public Object getProperty(@NotNull String name) {
             return properties.get(name);
         }
 
-        public void setProperty(String name, Object value) {
+        public void setProperty(@NotNull String name, @Nullable Object value) {
             if (value == null) {
                 properties.remove(name);
             } else {
@@ -106,7 +108,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         }
     }
 
-    protected AttributesSelectorPage(String title, T_OBJECT object) {
+    protected AttributesSelectorPage(@NotNull String title, @NotNull T_OBJECT object) {
         super(NLS.bind(ObjectEditorMessages.dialog_struct_columns_select_title, title, DBUtils.getObjectFullName(object, DBPEvaluationContext.UI)));
         this.object = object;
     }
@@ -116,16 +118,8 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         this.object = null;
     }
 
-    public Map<String, Object> getAttributeProperties(T_ATTRIBUTE attr) {
-        for (AttributeInfo<T_ATTRIBUTE> attrInfo : attributes) {
-            if (attrInfo.attribute == attr) {
-                return attrInfo.properties;
-            }
-        }
-        return Collections.emptyMap();
-    }
-
-    public Object getAttributeProperty(T_ATTRIBUTE attr, String propName) {
+    @Nullable
+    public Object getAttributeProperty(@NotNull T_ATTRIBUTE attr, @NotNull String propName) {
         for (AttributeInfo<T_ATTRIBUTE> attrInfo : attributes) {
             if (attrInfo.attribute == attr) {
                 return attrInfo.properties.get(propName);
@@ -134,14 +128,15 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return null;
     }
 
+    @NotNull
     @Override
-    protected Composite createPageContents(Composite parent) {
-        final Composite panel = new Composite(parent, SWT.NONE);
+    protected Composite createPageContents(@NotNull Composite parent) {
+        Composite panel = new Composite(parent, SWT.NONE);
         panel.setLayout(new GridLayout(1, false));
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            final Composite tableGroup = createTableNameInput(panel);
+            Composite tableGroup = createTableNameInput(panel);
 
             createContentsBeforeColumns(tableGroup);
         }
@@ -152,7 +147,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return panel;
     }
 
-    protected void createColumnsGroup(Composite panel) {
+    protected void createColumnsGroup(@NotNull Composite panel) {
         columnsGroup = UIUtils.createComposite(panel, 1);
         columnsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -176,7 +171,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
 
         createAttributeColumns(columnsTable);
 
-        final CustomTableEditor tableEditor = new CustomTableEditor(columnsTable) {
+        new CustomTableEditor(columnsTable) {
             @Override
             protected Control createEditor(Table table, final int index, final TableItem item) {
                 return createCellEditor(table, index, item, (AttributeInfo)item.getData());
@@ -188,7 +183,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         };
 
         toggleButton = new Button(columnsGroup, SWT.PUSH);
-        toggleButton.setText(ObjectEditorMessages.selector_select_all_text);
+        toggleButton.setText(WorkbenchMessages.Workbench_selectAll);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = 120;
         toggleButton.setLayoutData(gd);
@@ -219,7 +214,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         });
     }
 
-    protected void createAttributeColumns(Table columnsTable) {
+    protected void createAttributeColumns(@NotNull Table columnsTable) {
         TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, ObjectEditorMessages.dialog_struct_columns_select_column);
         colName.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 0));
 
@@ -230,14 +225,24 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         colType.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 2));
     }
 
-    protected int fillAttributeColumns(T_ATTRIBUTE attribute, AttributeInfo<T_ATTRIBUTE> attributeInfo, TableItem columnItem) {
+    protected int fillAttributeColumns(
+        @NotNull T_ATTRIBUTE attribute,
+        @NotNull AttributeInfo<T_ATTRIBUTE> attributeInfo,
+        @NotNull TableItem columnItem
+    ) {
         columnItem.setText(0, attribute.getName());
         //columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
         columnItem.setText(2, attribute.getFullTypeName());
         return 2;
     }
 
-    protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo<T_ATTRIBUTE> data) {
+    @Nullable
+    protected Control createCellEditor(
+        @NotNull Table table,
+        int index,
+        @NotNull TableItem item,
+        @NotNull AttributeInfo<T_ATTRIBUTE> data
+    ) {
 /*
         final Text text = new Text(table, SWT.BORDER);
         text.setText(item.getText(index));
@@ -247,7 +252,12 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return null;
     }
 
-    protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo<T_ATTRIBUTE> data) {
+    protected void saveCellValue(
+        @NotNull Control control,
+        int index,
+        @NotNull TableItem item,
+        @NotNull AttributeInfo<T_ATTRIBUTE> data
+    ) {
         //item.setText(index, control.getText());
     }
 
@@ -259,7 +269,10 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
     }
 
     @NotNull
-    protected abstract List<? extends T_ATTRIBUTE> getAttributes(@NotNull DBRProgressMonitor monitor, @NotNull T_OBJECT object) throws DBException;
+    protected abstract List<? extends T_ATTRIBUTE> getAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull T_OBJECT object
+    ) throws DBException;
 
     private void fillAttributes(@Nullable T_OBJECT object) {
         if (object == null) {
@@ -324,10 +337,10 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
 
         for (Object selItem: selection) {
             DBNNode selNode = RuntimeUtils.getObjectAdapter(selItem, DBNNode.class);
-            if (!(selNode instanceof DBNDatabaseNode)) {
+            if (!(selNode instanceof DBNDatabaseNode dbNode)) {
                 continue;
             }
-            DBSObject dbsObject = ((DBNDatabaseNode) selNode).getObject();
+            DBSObject dbsObject = dbNode.getObject();
             TableItem[] tableColumns = columnsTable.getItems();
             for (TableItem tableItem: tableColumns) {
                 Object data = tableItem.getData();
@@ -354,10 +367,10 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
             return null;
         }
         ISelection selection = selectionProvider.getSelection();
-        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection ss)) {
             return null;
         }
-        return (IStructuredSelection) selection;
+        return ss;
     }
 
     protected void onAttributesLoad() {
@@ -367,18 +380,19 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return false;
     }
 
-    private Composite createTableNameInput(Composite panel) {
-        final Composite tableGroup = new Composite(panel, SWT.NONE);
-        tableGroup.setLayout(new GridLayout(2, false));
+    private Composite createTableNameInput(@NotNull Composite panel) {
+        final Composite tableGroup = UIUtils.createComposite(panel, 2);
         tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         UIUtils.createLabelText(
             tableGroup,
             ObjectEditorMessages.dialog_struct_columns_select_label_table,
-            DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+            DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL)
+        );
         return tableGroup;
     }
 
-    void handleItemSelect(TableItem item, boolean notify) {
+    void handleItemSelect(@NotNull TableItem item, boolean notify) {
         final AttributeInfo<?> col = (AttributeInfo<?>) item.getData();
         if (item.getChecked() && col.position < 0) {
             // Checked
@@ -413,8 +427,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         }
     }
 
-    private boolean hasCheckedColumns()
-    {
+    private boolean hasCheckedColumns() {
         boolean hasCheckedColumns = false;
         for (AttributeInfo<T_ATTRIBUTE> tmp : attributes) {
             if (tmp.position >= 0) {
@@ -425,12 +438,11 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return hasCheckedColumns;
     }
 
-    private void updateToggleButton()
-    {
+    private void updateToggleButton() {
         if (hasCheckedColumns()) {
             toggleButton.setText(ObjectEditorMessages.selector_clear_all_text);
         } else {
-            toggleButton.setText(ObjectEditorMessages.selector_select_all_text);
+            toggleButton.setText(WorkbenchMessages.Workbench_selectAll);
         }
     }
 
@@ -443,13 +455,11 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
             .toList();
     }
 
-    protected void createContentsBeforeColumns(Composite panel)
-    {
+    protected void createContentsBeforeColumns(@NotNull Composite panel) {
 
     }
 
-    protected void createContentsAfterColumns(Composite panel)
-    {
+    protected void createContentsAfterColumns(@NotNull Composite panel) {
 
     }
 
@@ -501,16 +511,15 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         updateColumnSelection(this::isColumnSelected);
     }
 
-    public boolean isColumnSelected(T_ATTRIBUTE attribute)
-    {
+    public boolean isColumnSelected(@NotNull T_ATTRIBUTE attribute) {
         return false;
     }
 
-    protected void handleColumnsChange()
-    {
+    protected void handleColumnsChange() {
 
     }
 
+    @Nullable
     @Override
     protected String getEditError() {
         if (isColumnsRequired() && !hasCheckedColumns()) {

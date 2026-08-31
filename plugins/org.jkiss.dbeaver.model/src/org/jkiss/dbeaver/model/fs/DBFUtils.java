@@ -42,8 +42,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -166,22 +164,6 @@ public class DBFUtils {
             }
         }
         return uri;
-    }
-
-    @NotNull
-    public static Map<String, String> getQueryParameters(@Nullable String query) {
-        if (query == null || query.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        final Map<String, String> result = new LinkedHashMap<>();
-        final String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            final int idx = pair.indexOf("=");
-            final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8) : pair;
-            final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8) : null;
-            result.put(key, value);
-        }
-        return result;
     }
 
     public static String getFileSystemId(FileSystem fs) {

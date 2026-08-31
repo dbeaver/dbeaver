@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -360,7 +360,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
         editorControl = new SQLEditorControl(parent, this);
@@ -780,7 +780,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
+    public void editorContextMenuAboutToShow(@NotNull IMenuManager menu) {
         menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
 
         super.editorContextMenuAboutToShow(menu);

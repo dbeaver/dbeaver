@@ -1074,7 +1074,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
         // divides editor area and results/panels area
@@ -3561,7 +3561,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
+    public void editorContextMenuAboutToShow(@NotNull IMenuManager menu) {
         super.editorContextMenuAboutToShow(menu);
 
         if (!extraPresentationManager.presentations.isEmpty()) {
@@ -3857,9 +3857,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    protected void afterSaveToFile(File saveFile) {
+    protected void afterSaveToFile(Path saveFile) {
         try {
-            IFileStore fileStore = EFS.getStore(saveFile.toURI());
+            IFileStore fileStore = EFS.getStore(saveFile.toFile().toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
             EditorUtils.setInputDataSource(input, new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext()));
