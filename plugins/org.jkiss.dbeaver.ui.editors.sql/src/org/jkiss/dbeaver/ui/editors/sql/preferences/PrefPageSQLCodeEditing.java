@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -110,23 +109,16 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
                 false,
                 1
             );
-            advancedHighlightingEnabled.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            advancedHighlightingEnabled.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     readMetadataForSemanticValidationEnabled.setEnabled(advancedHighlightingEnabled.getSelection());
                     validateFunctionsEnabled.setEnabled(
                         advancedHighlightingEnabled.getSelection() && readMetadataForSemanticValidationEnabled.getSelection()
                     );
-                }
-            });
-            readMetadataForSemanticValidationEnabled.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    validateFunctionsEnabled.setEnabled(
+                }));
+            readMetadataForSemanticValidationEnabled.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                validateFunctionsEnabled.setEnabled(
                         advancedHighlightingEnabled.getSelection() && readMetadataForSemanticValidationEnabled.getSelection()
-                    );
-                }
-            });
+                    )));
         }
 
         // Autoclose
