@@ -35,14 +35,13 @@ class DDSyncStoreTest {
     private static final String CONFIGURATION_ID = "cfg-1";
 
     private DDSyncTransport transport;
-    private DDSyncCredentials credentials;
     private DDSyncStore store;
     private SecretKey dataKey;
 
     @BeforeEach
     void setUp() throws Exception {
         transport = Mockito.mock(DDSyncTransport.class);
-        credentials = Mockito.mock(DDSyncCredentials.class);
+        DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(256);
         dataKey = keyGenerator.generateKey();
