@@ -18,10 +18,11 @@ package org.jkiss.dbeaver.ui.app.config.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
-import org.jkiss.dbeaver.model.impl.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
@@ -32,10 +33,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
-    private static final String FEATURE_AI = "ai";
-    private static final String AI_DISABLED_PROPERTY = "ai.disabled";
-    private static final String AI_DISABLED_ENV_VARIABLE = "DBEAVER_AI_DISABLED";
-    private static final GlobalPropertyTester GLOBAL_PROPERTY_TESTER = new GlobalPropertyTester();
+    private static final Log log = Log.getLog(ProductConfigFeaturesPage.class);
 
     private final Map<ProductConfigFeatureDescriptor, UIObservable<Boolean>> features = new HashMap<>();
 
@@ -113,23 +111,12 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
     }
 
     private boolean isFeatureVisible(@NotNull ProductConfigFeatureDescriptor descriptor) {
-        return !FEATURE_AI.equals(descriptor.getId()) || checkIsAiAllowed(descriptor);
-    }
-
-    private boolean checkIsAiAllowed(@NotNull ProductConfigFeatureDescriptor descriptor) {
-        return !(
-            GLOBAL_PROPERTY_TESTER.test(
-                descriptor,
-                GlobalPropertyTester.PROP_HAS_PREFERENCE,
-                new Object[0],
-                AI_DISABLED_PROPERTY
-            )
-                || GLOBAL_PROPERTY_TESTER.test(
-                descriptor,
-                GlobalPropertyTester.PROP_HAS_ENV_VARIABLE,
-                new Object[0],
-                AI_DISABLED_ENV_VARIABLE
-            )
-        );
+        try {
+            var tester = descriptor.getAvailabilityTester();
+            return tester == null || tester.isFeatureAvailable();
+        } catch (DBException e) {
+            log.error("Error checking availability of product configuration feature '" + descriptor.getId() + "'", e);
+            return true;
+        }
     }
 }
