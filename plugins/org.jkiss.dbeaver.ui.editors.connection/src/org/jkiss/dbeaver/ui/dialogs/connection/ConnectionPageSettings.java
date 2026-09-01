@@ -95,8 +95,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     private final ConnectionWizard wizard;
     @NotNull
-    private final DataSourceViewDescriptor viewDescriptor;
-    private final DataSourceViewDescriptor substitutedViewDescriptor;
+    private final DataSourceConnectionConfiguratorDescriptor configuratorDescriptor;
+    private final DataSourceConnectionConfiguratorDescriptor substitutedConfiguratorDescriptor;
     private final DBPDriverSubstitutionDescriptor driverSubstitution;
     @Nullable
     private IDataSourceConnectionEditor connectionEditor;
@@ -114,32 +114,30 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
      */
     ConnectionPageSettings(
         @NotNull ConnectionWizard wizard,
-        @NotNull DataSourceViewDescriptor viewDescriptor,
+        @NotNull DataSourceConnectionConfiguratorDescriptor configuratorDescriptor,
         @Nullable DBPDriverSubstitutionDescriptor driverSubstitution
     ) {
-        super(PAGE_NAME + "." + viewDescriptor.getId());
+        super(PAGE_NAME + "." + configuratorDescriptor.getId());
 
         this.wizard = wizard;
-        this.viewDescriptor = viewDescriptor;
+        this.configuratorDescriptor = configuratorDescriptor;
         this.driverSubstitution = driverSubstitution;
 
         if (driverSubstitution != null) {
             DataSourceProviderDescriptor dataSourceProvider = DataSourceProviderRegistry.getInstance()
                 .getDataSourceProvider(driverSubstitution.getProviderId());
             if (dataSourceProvider != null) {
-                this.substitutedViewDescriptor = DataSourceViewRegistry.getInstance().findView(
-                    dataSourceProvider,
-                    IActionConstants.EDIT_CONNECTION_POINT
-                );
+                this.substitutedConfiguratorDescriptor = DataSourceConfiguratorRegistry.getInstance()
+                    .findConnectionConfigurator(dataSourceProvider);
             } else {
                 log.error("Datasource provider " + driverSubstitution.getProviderId() + " not found");
-                this.substitutedViewDescriptor = null;
+                this.substitutedConfiguratorDescriptor = null;
             }
         } else {
-            this.substitutedViewDescriptor = null;
+            this.substitutedConfiguratorDescriptor = null;
         }
 
-        String pageTitle = wizard.isNew() ? viewDescriptor.getLabel() : UIConnectionMessages.dialog_setting_connection_wizard_title;
+        String pageTitle = UIConnectionMessages.dialog_setting_connection_wizard_title;
         if (isTemporaryConnection()) {
             pageTitle += " / TEMPORARY";
         }
@@ -150,10 +148,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     private IDataSourceConnectionEditor getConnectionEditor() {
         if (connectionEditor == null) {
-            if (substitutedViewDescriptor == null) {
+            if (substitutedConfiguratorDescriptor == null) {
                 connectionEditor = getOriginalConnectionEditor();
             } else {
-                connectionEditor = substitutedViewDescriptor.createView(IDataSourceConnectionEditor.class);
+                connectionEditor = substitutedConfiguratorDescriptor.createConfigurator(IDataSourceConnectionEditor.class);
                 connectionEditor.setSite(this);
             }
         }
@@ -164,7 +162,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     private IDataSourceConnectionEditor getOriginalConnectionEditor() {
         if (originalConnectionEditor == null) {
-            originalConnectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
+            originalConnectionEditor = configuratorDescriptor.createConfigurator(IDataSourceConnectionEditor.class);
             originalConnectionEditor.setSite(this);
         }
 

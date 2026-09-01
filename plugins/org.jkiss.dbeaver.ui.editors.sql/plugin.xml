@@ -1568,39 +1568,37 @@
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqleditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqleditor.label"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
-        <dataSourceConfigurator>
-            <dataSourcePage
+    <extension point="org.jkiss.dbeaver.connectionPageConfigurator">
+            <page
                 id="sql-editor.main"
                 after="data-editor-main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqleditor.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.codeeditor"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCodeEditing"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.completion"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.completion.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.completion.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.format"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.format.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.format.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.execute"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.description"/>
-        </dataSourceConfigurator>
     </extension>
 
     <!--
