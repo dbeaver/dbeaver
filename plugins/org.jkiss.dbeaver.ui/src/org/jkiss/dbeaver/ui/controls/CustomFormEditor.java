@@ -150,7 +150,7 @@ public class CustomFormEditor {
                     prop,
                     propertyValue,
                     !editable);
-                String propDescription = prop.getDescription();
+                String propDescription = getPropertyToolTipText(prop);
                 if (!CommonUtils.isEmpty(propDescription)) {
                     editControl.setToolTipText(propDescription);
                 }
@@ -199,6 +199,11 @@ public class CustomFormEditor {
         } finally {
             isLoading = false;
         }
+    }
+
+    @Nullable
+    protected String getPropertyToolTipText(@NotNull DBPPropertyDescriptor property) {
+        return property.getDescription();
     }
 
     private void updatePropertyValue(@NotNull DBPPropertyDescriptor prop, @Nullable Object value) {
