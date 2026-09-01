@@ -231,7 +231,7 @@ public interface RMController extends DBPObjectController, DBPPingController {
         @NotNull String projectId,
         @NotNull String resourcePath,
         @NotNull String propertyName,
-        @Nullable Object propertyValue) throws DBException;
+        @Nullable String propertyValue) throws DBException;
 
 
     /**
@@ -241,6 +241,6 @@ public interface RMController extends DBPObjectController, DBPPingController {
     String setResourceProperties(
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull Map<String, Object> properties
+        @NotNull Map<String, String> properties
     ) throws DBException;
 }
