@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -123,12 +122,8 @@ public class PrefPageConnectionClient extends TargetPrefPage {
                 false,
                 2
             );
-            overrideClientApplicationNameCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateClientAppEnablement();
-                }
-            });
+            overrideClientApplicationNameCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                updateClientAppEnablement()));
             clientApplicationNameText = UIUtils.createLabelText(
                 clientNameGroup,
                 UIConnectionMessages.pref_page_database_label_client_application_name,
