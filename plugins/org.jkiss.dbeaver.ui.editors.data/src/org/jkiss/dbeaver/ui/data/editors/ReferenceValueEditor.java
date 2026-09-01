@@ -700,7 +700,12 @@ public class ReferenceValueEditor {
                         DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, precAttribute);
                         if (rowAttr != null) {
                             Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
-                            restColumns.add(new DBDAttributeValue(precAttribute, precValue));
+                            DBSEntityAttribute referredPrecAttribute = DBUtils.getReferenceAttribute(
+                                monitor, association, precAttribute, false);
+                            if (referredPrecAttribute == null) {
+                                return null;
+                            }
+                            restColumns.add(new DBDAttributeValue(referredPrecAttribute, precValue));
                         }
                     }
                 }
