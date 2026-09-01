@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
+import org.jkiss.dbeaver.model.impl.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
@@ -31,6 +32,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
+    private static final String FEATURE_AI = "ai";
+    private static final String AI_DISABLED_PROPERTY = "ai.disabled";
+    private static final String AI_DISABLED_ENV_VARIABLE = "DBEAVER_AI_DISABLED";
+    private static final GlobalPropertyTester GLOBAL_PROPERTY_TESTER = new GlobalPropertyTester();
+
     private final Map<ProductConfigFeatureDescriptor, UIObservable<Boolean>> features = new HashMap<>();
 
     public ProductConfigFeaturesPage() {
@@ -84,6 +90,9 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                 .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
                 .indent(pb2 -> {
                     for (ProductConfigFeatureDescriptor descriptor : ProductConfigRegistry.getInstance().getFeatures()) {
+                        if (!isFeatureVisible(descriptor)) {
+                            continue;
+                        }
                         pb2.row(rb1 -> rb1
                             .checkBox(descriptor.getLabel(), bb -> bb
                                 .tooltip(StringUtils.wrap(descriptor.getDescription(), UITextUtils.TOOLTIP_WRAP_LENGTH))
@@ -101,5 +110,20 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                     .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)));
+    }
+
+    private boolean isFeatureVisible(@NotNull ProductConfigFeatureDescriptor descriptor) {
+        return !FEATURE_AI.equals(descriptor.getId()) ||
+            !GLOBAL_PROPERTY_TESTER.test(
+                descriptor,
+                GlobalPropertyTester.PROP_HAS_PREFERENCE,
+                new Object[0],
+                AI_DISABLED_PROPERTY
+            ) && !GLOBAL_PROPERTY_TESTER.test(
+                descriptor,
+                GlobalPropertyTester.PROP_HAS_ENV_VARIABLE,
+                new Object[0],
+                AI_DISABLED_ENV_VARIABLE
+            );
     }
 }
