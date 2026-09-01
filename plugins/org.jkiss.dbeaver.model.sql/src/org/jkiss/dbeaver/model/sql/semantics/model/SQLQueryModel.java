@@ -70,6 +70,11 @@ public class SQLQueryModel extends SQLQueryNodeModel {
 
         if (this.queryContent != null) {
             this.queryContent.resolveObjectAndRowsReferences(rowsContext, recognitionContext);
+
+            if (recognitionContext.getMonitor().isCanceled()) {
+                return;
+            }
+
             this.queryContent.resolveValueRelations(rowsContext.makeEmptyTuple(), recognitionContext);
         }
 

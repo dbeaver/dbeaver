@@ -101,6 +101,10 @@ public class SQLQueryModelRecognizer {
             .createAnalyzer(LSMAnalyzerParameters.forDialect(this.dialect, this.recognitionContext.getSyntaxManager()));
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(querySource, new STMSkippingErrorListener());
 
+        if (this.recognitionContext.getMonitor().isCanceled()) {
+            return null;
+        }
+
         if (tree == null || (tree.start == tree.stop && !LSMInspections.prepareOffquerySyntaxInspection().predictedTokenIds().contains(tree.start.getType()))) {
             return tree == null ? null : new SQLQueryModel(tree, null, Collections.emptySet(), Collections.emptyList());
         }
@@ -150,8 +154,16 @@ public class SQLQueryModelRecognizer {
         };
 
         if (contents != null) {
+            if (this.recognitionContext.getMonitor().isCanceled()) {
+                return null;
+            }
+
             SQLQueryModel model = new SQLQueryModel(tree, contents, this.symbolEntries, this.lexicalItems.values().stream().toList());
             model.resolveRelations(rootRowsContext, this.recognitionContext);
+
+            if (this.recognitionContext.getMonitor().isCanceled()) {
+                return null;
+            }
 
             for (SQLQuerySymbolEntry symbolEntry : this.symbolEntries) {
                 if (symbolEntry.isNotClassified() && this.reservedWords.contains(symbolEntry.getRawName().toUpperCase())) {
