@@ -23,60 +23,61 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.tracking.DDAccessKey;
+import org.jkiss.dbeaver.model.tracking.auth.DDRecoveryPhrase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 public class DDImportKeyDialog extends BaseDialog {
 
-    private Text keyText;
-    private String key;
+    private Text phraseText;
+    private String phrase;
 
     public DDImportKeyDialog(@NotNull Shell parentShell) {
-        super(parentShell, "Import Access Key", null);
+        super(parentShell, "Enter Recovery Phrase", null);
     }
 
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite composite = super.createDialogArea(parent);
-        UIUtils.createLabel(composite, "Copy/paste the access key");
-        keyText = new Text(composite, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+        UIUtils.createLabel(composite, "Enter your 12-word recovery phrase");
+        phraseText = new Text(composite, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
-        gd.heightHint = UIUtils.getFontHeight(keyText) * 6;
-        keyText.setLayoutData(gd);
-        UIUtils.createPushButton(composite, "Paste", null, SelectionListener.widgetSelectedAdapter(e -> {
-            keyText.selectAll();
-            keyText.paste();
+        gd.heightHint = UIUtils.getFontHeight(phraseText) * 6;
+        phraseText.setLayoutData(gd);
+        UIUtils.createPushButton(composite, WorkbenchMessages.Workbench_paste, null, SelectionListener.widgetSelectedAdapter(e -> {
+            phraseText.selectAll();
+            phraseText.paste();
         }));
         return composite;
     }
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, "Import", true);
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
     @Override
     protected void okPressed() {
-        String value = keyText.getText().trim();
+        String value;
         try {
-            DDAccessKey.parse(value);
+            value = DDRecoveryPhrase.normalizeAndValidate(phraseText.getText());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Import Access Key", e.getMessage());
+            DBWorkbench.getPlatformUI().showError("Enter Recovery Phrase", e.getMessage());
             return;
         }
-        key = value;
+        phrase = value;
         super.okPressed();
     }
 
     @NotNull
-    public String getKey() {
-        return key;
+    public String getPhrase() {
+        return phrase;
     }
 }

@@ -33,6 +33,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -780,10 +781,10 @@ public class SQLEditor extends SQLEditorBase implements
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
         if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
-            CSSUtils.refreshConnectionTypeToolbar(topBar);
+            //CSSUtils.refreshConnectionTypeToolbar(topBar);
         }
         if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
-            CSSUtils.refreshConnectionTypeToolbar(bottomBar);
+            //CSSUtils.refreshConnectionTypeToolbar(bottomBar);
         }
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
@@ -1073,7 +1074,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
         // divides editor area and results/panels area
@@ -1255,13 +1256,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void createControlsBar(Composite sqlEditorPanel) {
-        Composite leftToolPanel = new Composite(sqlEditorPanel, SWT.LEFT) {
-            // hack to prevent eclipse from overriding this Composite's class
-            @Override
-            public void setBackground(Color color) {
-                super.setBackground(color);
-            }
-        };
+        Composite leftToolPanel = new Composite(sqlEditorPanel, SWT.NONE);
         GridLayout panelsLayout = new GridLayout(1, true);
         panelsLayout.marginHeight = 2;
         panelsLayout.marginWidth = 1;
@@ -1433,9 +1428,7 @@ public class SQLEditor extends SQLEditorBase implements
         CSSUtils.markConnectionTypeColor(resultTabs);
         resultTabsReorder = new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
-        resultTabs.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        resultTabs.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (extraPresentationManager.activePresentationPanel != null) {
                     extraPresentationManager.activePresentationPanel.deactivatePanel();
                     extraPresentationManager.activePresentationPanel = null;
@@ -1454,8 +1447,7 @@ public class SQLEditor extends SQLEditorBase implements
                         getSelectionProvider().setSelection(new TextSelection(planQuery.getOffset(), 0));
                     }
                 }
-            }
-        });
+            }));
         this.addSashRatioSaveListener(resultsSash, SQLPreferenceConstants.RESULTS_PANEL_RATIO);
         this.resultTabs.addListener(TabFolderReorder.ITEM_MOVE_EVENT, event -> {
             CTabItem item = (CTabItem) event.item;
@@ -2961,9 +2953,13 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean processQueries(
-        @NotNull final List<SQLScriptElement> queries, final boolean forceScript,
-        boolean newTab, final boolean export, final boolean checkSession,
-        @Nullable final SQLQueryListener queryListener, @Nullable final SQLScriptContext context
+        @NotNull final List<SQLScriptElement> queries,
+        final boolean forceScript,
+        boolean newTab,
+        final boolean export,
+        final boolean checkSession,
+        @Nullable final SQLQueryListener queryListener,
+        @Nullable final SQLScriptContext context
     ) {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -3387,11 +3383,6 @@ public class SQLEditor extends SQLEditorBase implements
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
 
-        // Re-apply CSS so connection-type colored widgets (side toolbars, sash, etc.)
-        // refresh immediately instead of waiting for the next CSS engine pass
-        CSSUtils.applyStyles(resultsSash);
-        CSSUtils.refreshConnectionTypeControls(resultsSash);
-
         // Repaint the workbench editor tab folder so the custom tab renderer
         // picks up the new connection color immediately after a connection change
         if (resultsSash != null && !resultsSash.isDisposed()) {
@@ -3567,7 +3558,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
+    public void editorContextMenuAboutToShow(@NotNull IMenuManager menu) {
         super.editorContextMenuAboutToShow(menu);
 
         if (!extraPresentationManager.presentations.isEmpty()) {
@@ -3863,9 +3854,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    protected void afterSaveToFile(File saveFile) {
+    protected void afterSaveToFile(Path saveFile) {
         try {
-            IFileStore fileStore = EFS.getStore(saveFile.toURI());
+            IFileStore fileStore = EFS.getStore(saveFile.toFile().toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
             EditorUtils.setInputDataSource(input, new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext()));

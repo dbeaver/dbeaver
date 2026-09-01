@@ -989,7 +989,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
         // Check schemas in search path
         PostgreExecutionContext metaContext = getMetaContext();
-        List<String> searchPath = metaContext == null ? Collections.singletonList(PostgreConstants.CATALOG_SCHEMA_NAME) : metaContext.getSearchPath();
+        List<String> searchPath = metaContext == null ? List.of(PostgreConstants.CATALOG_SCHEMA_NAME) : metaContext.computeSearchPath();
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
             if (schema != null) {
