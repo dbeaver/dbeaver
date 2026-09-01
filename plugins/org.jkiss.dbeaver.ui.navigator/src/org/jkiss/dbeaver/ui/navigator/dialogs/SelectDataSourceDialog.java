@@ -21,8 +21,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -167,9 +166,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         Button showConnectedCheck = new Button(group, SWT.CHECK);
         showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
         showConnectedCheck.setSelection(showConnected);
-        showConnectedCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        showConnectedCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 showConnected = showConnectedCheck.getSelection();
                 treeViewer.getControl().setRedraw(false);
                 try {
@@ -181,15 +178,12 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                     treeViewer.getControl().setRedraw(true);
                 }
                 getDialogBoundsSettings().put(PARAM_SHOW_CONNECTED, showConnected);
-            }
-        });
+            }));
         final Button showAllProjectsCheck = new Button(group, SWT.CHECK);
         showAllProjectsCheck.setLayoutData(GridDataFactory.swtDefaults().exclude(project == null).create());
         showAllProjectsCheck.setText(UINavigatorMessages.label_show_all_projects);
         showAllProjectsCheck.setSelection(showAllProjects);
-        showAllProjectsCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        showAllProjectsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 showAllProjects = showAllProjectsCheck.getSelection();
                 treeViewer.getControl().setRedraw(false);
                 try {
@@ -201,8 +195,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                     treeViewer.getControl().setRedraw(true);
                 }
                 getDialogBoundsSettings().put(PARAM_SHOW_ALL_PROJECTS, showAllProjects);
-            }
-        });
+            }));
 
         if (this.dataSource != null) {
             DBNDatabaseNode dsNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(this.dataSource);
