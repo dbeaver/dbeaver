@@ -62,6 +62,12 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_SKIP_DROPS = "ddl.skipDrops"; //$NON-NLS-1$
 
     String OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS = "ddl.separateForeignKeys"; //$NON-NLS-1$
+    /**
+     * Generate table constraints as separate statements.
+     * Indexes are generated before the constraints which use them, so indexes created
+     * independently of primary key/unique constraints are preserved in the table DDL.
+     */
+    String OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES = "ddl.separateConstraintIndexes"; //$NON-NLS-1$
 
     String OPTION_INCLUDE_NESTED_OBJECTS = "ddl.includeNestedObjects"; //$NON-NLS-1$
     String OPTION_INCLUDE_COMMENTS = "ddl.includeComments"; //$NON-NLS-1$
