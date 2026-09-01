@@ -34,8 +34,8 @@ public class DataSourceConfiguratorRegistry {
 
     private static DataSourceConfiguratorRegistry instance = null;
 
-    private final List<DataSourceConnectionConfiguratorDescriptor> connectionConfigurators = new ArrayList<>();
-    private final List<DataSourcePageDescriptor> pages = new ArrayList<>();
+    private final List<DataSourceConfiguratorDescriptor> connectionConfigurators = new ArrayList<>();
+    private final List<ConnectionPageDescriptor> pages = new ArrayList<>();
 
     @NotNull
     public synchronized static DataSourceConfiguratorRegistry getInstance() {
@@ -47,22 +47,22 @@ public class DataSourceConfiguratorRegistry {
 
     private DataSourceConfiguratorRegistry(@NotNull IExtensionRegistry registry) {
         for (IConfigurationElement element : registry.getConfigurationElementsFor(
-            DataSourceConnectionConfiguratorDescriptor.EXTENSION_ID)) {
+            DataSourceConfiguratorDescriptor.EXTENSION_ID)) {
             if (element.getName().equals("configurator")) {
-                connectionConfigurators.add(new DataSourceConnectionConfiguratorDescriptor(element));
+                connectionConfigurators.add(new DataSourceConfiguratorDescriptor(element));
             }
         }
 
         for (IConfigurationElement element : registry.getConfigurationElementsFor(CONNECTION_PAGE_EXTENSION_ID)) {
             if (element.getName().equals("page")) {
-                pages.add(new DataSourcePageDescriptor(element));
+                pages.add(new ConnectionPageDescriptor(element));
             }
         }
     }
 
     @Nullable
-    public DataSourceConnectionConfiguratorDescriptor findConnectionConfigurator(@NotNull DBPDriver driver) {
-        for (DataSourceConnectionConfiguratorDescriptor configurator : connectionConfigurators) {
+    public DataSourceConfiguratorDescriptor findConnectionConfigurator(@NotNull DBPDriver driver) {
+        for (DataSourceConfiguratorDescriptor configurator : connectionConfigurators) {
             if (configurator.getDrivers().contains(driver.getId())) {
                 return configurator;
             }
@@ -71,11 +71,11 @@ public class DataSourceConfiguratorRegistry {
     }
 
     @Nullable
-    public DataSourceConnectionConfiguratorDescriptor findConnectionConfigurator(
+    public DataSourceConfiguratorDescriptor findConnectionConfigurator(
         @NotNull DBPDataSourceProviderDescriptor provider
     ) {
         for (DBPDataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
-            for (DataSourceConnectionConfiguratorDescriptor configurator : connectionConfigurators) {
+            for (DataSourceConfiguratorDescriptor configurator : connectionConfigurators) {
                 if (configurator.getDataSources().contains(pd.getId())) {
                     return configurator;
                 }
@@ -85,9 +85,9 @@ public class DataSourceConfiguratorRegistry {
     }
 
     @NotNull
-    public List<DataSourcePageDescriptor> getRootDataSourcePages(@NotNull DBPDataSourceContainer dataSource) {
-        List<DataSourcePageDescriptor> roots = new ArrayList<>();
-        for (DataSourcePageDescriptor page : pages) {
+    public List<ConnectionPageDescriptor> getRootDataSourcePages(@NotNull DBPDataSourceContainer dataSource) {
+        List<ConnectionPageDescriptor> roots = new ArrayList<>();
+        for (ConnectionPageDescriptor page : pages) {
             if (CommonUtils.isEmpty(page.getParentId()) && page.appliesTo(dataSource)) {
                 roots.add(page);
             }
@@ -96,9 +96,9 @@ public class DataSourceConfiguratorRegistry {
     }
 
     @NotNull
-    public List<DataSourcePageDescriptor> getChildDataSourcePages(@NotNull DBPDataSourceContainer dataSource, @Nullable String parentId) {
-        List<DataSourcePageDescriptor> children = new ArrayList<>();
-        for (DataSourcePageDescriptor page : pages) {
+    public List<ConnectionPageDescriptor> getChildDataSourcePages(@NotNull DBPDataSourceContainer dataSource, @Nullable String parentId) {
+        List<ConnectionPageDescriptor> children = new ArrayList<>();
+        for (ConnectionPageDescriptor page : pages) {
             if (parentId != null && parentId.equals(page.getParentId()) && page.appliesTo(dataSource)) {
                 children.add(page);
             }
@@ -107,7 +107,7 @@ public class DataSourceConfiguratorRegistry {
     }
 
     @NotNull
-    private List<DataSourcePageDescriptor> sortPages(@NotNull List<DataSourcePageDescriptor> pages) {
+    private List<ConnectionPageDescriptor> sortPages(@NotNull List<ConnectionPageDescriptor> pages) {
         pages.sort((o1, o2) -> {
             if (o1.getId().equals(o2.getAfterPageId())) {
                 return -1;

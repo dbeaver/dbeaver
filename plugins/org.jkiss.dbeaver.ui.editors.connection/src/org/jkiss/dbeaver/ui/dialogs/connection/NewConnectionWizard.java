@@ -31,15 +31,15 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.registry.DataSourceConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceConfiguratorRegistry;
-import org.jkiss.dbeaver.registry.DataSourceConnectionConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.*;
 
@@ -146,11 +146,11 @@ public class NewConnectionWizard extends ConnectionWizard
             addPage(pageDrivers);
         }
 
-        Map<DataSourceConnectionConfiguratorDescriptor, ConnectionPageSettings> configuratorPages = new HashMap<>();
+        Map<DataSourceConfiguratorDescriptor, ConnectionPageSettings> configuratorPages = new HashMap<>();
         for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
             for (DBPDriver driver : provider.getEnabledDrivers()) {
-                DataSourceConnectionConfiguratorDescriptor configurator = DataSourceConfiguratorRegistry.getInstance()
+                DataSourceConfiguratorDescriptor configurator = DataSourceConfiguratorRegistry.getInstance()
                     .findConnectionConfigurator(driver);
                 if (configurator != null) {
                     ConnectionPageSettings pageSettings = configuratorPages.get(configurator);

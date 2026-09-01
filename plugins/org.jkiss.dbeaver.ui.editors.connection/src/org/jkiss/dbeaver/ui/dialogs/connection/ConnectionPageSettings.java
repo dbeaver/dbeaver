@@ -27,7 +27,8 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -95,8 +96,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     private final ConnectionWizard wizard;
     @NotNull
-    private final DataSourceConnectionConfiguratorDescriptor configuratorDescriptor;
-    private final DataSourceConnectionConfiguratorDescriptor substitutedConfiguratorDescriptor;
+    private final DataSourceConfiguratorDescriptor configuratorDescriptor;
+    private final DataSourceConfiguratorDescriptor substitutedConfiguratorDescriptor;
     private final DBPDriverSubstitutionDescriptor driverSubstitution;
     @Nullable
     private IDataSourceConnectionEditor connectionEditor;
@@ -114,7 +115,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
      */
     ConnectionPageSettings(
         @NotNull ConnectionWizard wizard,
-        @NotNull DataSourceConnectionConfiguratorDescriptor configuratorDescriptor,
+        @NotNull DataSourceConfiguratorDescriptor configuratorDescriptor,
         @Nullable DBPDriverSubstitutionDescriptor driverSubstitution
     ) {
         super(PAGE_NAME + "." + configuratorDescriptor.getId());

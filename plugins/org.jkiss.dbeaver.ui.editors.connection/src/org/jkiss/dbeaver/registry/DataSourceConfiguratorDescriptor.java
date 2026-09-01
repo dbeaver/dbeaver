@@ -24,7 +24,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
-public class DataSourceConnectionConfiguratorDescriptor extends AbstractDescriptor {
+public class DataSourceConfiguratorDescriptor extends AbstractDescriptor {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceConfigurator"; //$NON-NLS-1$
 
     private final String id;
@@ -32,7 +32,7 @@ public class DataSourceConnectionConfiguratorDescriptor extends AbstractDescript
     private final List<String> driverIds;
     private final ObjectType configuratorType;
 
-    public DataSourceConnectionConfiguratorDescriptor(@NotNull IConfigurationElement config) {
+    public DataSourceConfiguratorDescriptor(@NotNull IConfigurationElement config) {
         super(config.getContributor().getName());
         this.dataSourceIds = splitIds(config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE));
         this.driverIds = splitIds(config.getAttribute(RegistryConstants.ATTR_DRIVER));
