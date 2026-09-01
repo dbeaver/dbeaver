@@ -51,6 +51,13 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         super(project);
     }
 
+    public DBWNetworkProfile(@NotNull DBWNetworkProfile source) {
+        super(source);
+        source.configurations.stream()
+            .map(DBWHandlerConfiguration::new)
+            .forEach(configurations::add);
+    }
+
     @NotNull
     private final List<DBWHandlerConfiguration> configurations = new ArrayList<>();
 

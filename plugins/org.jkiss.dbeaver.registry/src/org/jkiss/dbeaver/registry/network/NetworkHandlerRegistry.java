@@ -20,16 +20,19 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.runtime.DBSecurityException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     private static NetworkHandlerRegistry instance = null;
@@ -69,15 +72,30 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     @NotNull
     public List<NetworkHandlerDescriptor> getDescriptors() {
         List<NetworkHandlerDescriptor> descList = new ArrayList<>(descriptors);
-        descList.removeIf(nhd -> nhd.getReplacedBy() != null);
+        descList.removeIf(nhd -> !isAvailable(nhd));
         return descList;
     }
 
+    @Nullable
     public NetworkHandlerDescriptor getDescriptor(@NotNull String id) {
+        return getDescriptor(id, DBWorkbench.getPlatform().getWorkspace());
+    }
+
+    @Nullable
+    public NetworkHandlerDescriptor getDescriptor(
+        @NotNull String id,
+        @NotNull DBAPermissionRealm permissionRealm
+    ) {
+        NetworkHandlerDescriptor descriptor = getRawDescriptor(id);
+        return descriptor != null && isAvailable(descriptor, permissionRealm) ? descriptor : null;
+    }
+
+    @Nullable
+    public NetworkHandlerDescriptor getRawDescriptor(@NotNull String id) {
         for (NetworkHandlerDescriptor descriptor : descriptors) {
             if (descriptor.getId().equals(id)) {
                 if (descriptor.getReplacedBy() != null) {
-                    return descriptor.getReplacedBy();
+                    descriptor = descriptor.getReplacedBy();
                 }
                 return descriptor;
             }
@@ -87,22 +105,95 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
 
     @NotNull
     public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDataSourceContainer dataSource) {
-        return getDescriptors(dataSource.getDriver());
+        return getDescriptors(dataSource.getDriver(), dataSource.getProject());
     }
 
     @NotNull
     public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDriver driver) {
+        return getDescriptors(driver, DBWorkbench.getPlatform().getWorkspace());
+    }
+
+    @NotNull
+    private List<NetworkHandlerDescriptor> getDescriptors(
+        @NotNull DBPDriver driver,
+        @NotNull DBAPermissionRealm permissionRealm
+    ) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
-            if (!DBWorkbench.getPlatform().getWorkspace().supportsRealmFeature(DBAPermissionRealm.FEATURE_SSH_TUNNELING)
+            if (d.getReplacedBy() != null ||
+                !permissionRealm.supportsRealmFeature(DBAPermissionRealm.FEATURE_SSH_TUNNELING)
                 && d.getType() == DBWHandlerType.TUNNEL) {
                 continue;
             }
-            if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver)) {
+            if ((!d.hasObjectTypes() || d.matches(driver)) && hasRequiredPermissions(d, permissionRealm)) {
                 result.add(d);
             }
         }
         return result;
+    }
+
+    private boolean isAvailable(@NotNull NetworkHandlerDescriptor descriptor) {
+        return isAvailable(descriptor, DBWorkbench.getPlatform().getWorkspace());
+    }
+
+    private boolean isAvailable(
+        @NotNull NetworkHandlerDescriptor descriptor,
+        @NotNull DBAPermissionRealm permissionRealm
+    ) {
+        return descriptor.getReplacedBy() == null && hasRequiredPermissions(descriptor, permissionRealm);
+    }
+
+    private boolean hasRequiredPermissions(
+        @NotNull NetworkHandlerDescriptor descriptor,
+        @NotNull DBAPermissionRealm permissionRealm
+    ) {
+        return descriptor.getRequiredPermissions().stream()
+            .allMatch(permissionRealm::hasRealmPermission);
+    }
+
+    public void validateHandlerConfigurationUpdate(
+        @Nullable DBPConnectionConfiguration storedConfiguration,
+        @NotNull DBPConnectionConfiguration updatedConfiguration,
+        @NotNull Predicate<String> hasPermission
+    ) throws DBSecurityException {
+        validateHandlerConfigurationUpdate(
+            storedConfiguration == null ? List.of() : storedConfiguration.getHandlers(),
+            updatedConfiguration.getHandlers(),
+            hasPermission
+        );
+    }
+
+    public void validateHandlerConfigurationUpdate(
+        @NotNull Collection<DBWHandlerConfiguration> storedConfigurations,
+        @NotNull Collection<DBWHandlerConfiguration> updatedConfigurations,
+        @NotNull Predicate<String> hasPermission
+    ) throws DBSecurityException {
+        Set<String> handlerIds = new LinkedHashSet<>();
+        storedConfigurations.forEach(configuration -> handlerIds.add(configuration.getId()));
+        updatedConfigurations.forEach(configuration -> handlerIds.add(configuration.getId()));
+
+        for (String handlerId : handlerIds) {
+            DBWHandlerConfiguration stored = findConfiguration(storedConfigurations, handlerId);
+            DBWHandlerConfiguration updated = findConfiguration(updatedConfigurations, handlerId);
+            NetworkHandlerDescriptor descriptor = getRawDescriptor(handlerId);
+            if (descriptor == null || descriptor.getRequiredPermissions().stream().allMatch(hasPermission)) {
+                continue;
+            }
+            if (stored == null || updated == null || !stored.equalSettings(updated)) {
+                throw new DBSecurityException("No permissions to configure network handler '" + handlerId + "'");
+            }
+        }
+    }
+
+    @Nullable
+    private static DBWHandlerConfiguration findConfiguration(
+        @NotNull Collection<DBWHandlerConfiguration> configurations,
+        @NotNull String handlerId
+    ) {
+        return configurations.stream()
+            .filter(configuration -> configuration.getId().equals(handlerId))
+            .findFirst()
+            .orElse(null);
     }
 
 }
