@@ -61,6 +61,27 @@ class DDSyncStoreTest {
     }
 
     @Test
+    void getConfigurationRejectsCiphertextRelabeledAsAnotherPart() throws Exception {
+        String envelopeJson = "{\"schemaVersion\":1,\"name\":\"test\",\"units\":{}}";
+        byte[] encrypted = DDCrypto.encrypt(
+            dataKey,
+            envelopeJson.getBytes(StandardCharsets.UTF_8),
+            DDSyncStore.partAad("k1", DDConfigurationPartKind.ACCOUNT, null));
+        String encryptedValue = Base64.getEncoder().encodeToString(encrypted);
+
+        com.dbeaver.datadam.gateway.model.DDConfigurationPart relabeledPart =
+            new com.dbeaver.datadam.gateway.model.DDConfigurationPart(
+                "k2", DDConfigurationPartKind.PROJECT, "other-project", 1, encryptedValue);
+        com.dbeaver.datadam.gateway.model.DDConfiguration wire = new com.dbeaver.datadam.gateway.model.DDConfiguration(
+            CONFIGURATION_ID, "test", 0, "2026-01-01T00:00:00Z", null, List.of(relabeledPart));
+        Mockito.when(transport.getConfiguration(CONFIGURATION_ID)).thenReturn(wire);
+
+        DBException exception = Assertions.assertThrows(
+            DBException.class, () -> store.getConfiguration(CONFIGURATION_ID));
+        Assertions.assertTrue(exception.getMessage().contains("Invalid synchronization part"));
+    }
+
+    @Test
     void getConfigurationRejectsPartWithUnknownKind() throws Exception {
         com.dbeaver.datadam.gateway.model.DDConfiguration wire = wireConfiguration(null);
         Mockito.when(transport.getConfiguration(CONFIGURATION_ID)).thenReturn(wire);
@@ -74,7 +95,10 @@ class DDSyncStoreTest {
         DDConfigurationPartKind kind
     ) throws Exception {
         String envelopeJson = "{\"schemaVersion\":1,\"name\":\"test\",\"units\":{}}";
-        byte[] encrypted = DDCrypto.encrypt(dataKey, envelopeJson.getBytes(StandardCharsets.UTF_8));
+        byte[] plaintext = envelopeJson.getBytes(StandardCharsets.UTF_8);
+        byte[] encrypted = kind == null
+            ? DDCrypto.encrypt(dataKey, plaintext)
+            : DDCrypto.encrypt(dataKey, plaintext, DDSyncStore.partAad("k1", kind, null));
         String encryptedValue = Base64.getEncoder().encodeToString(encrypted);
 
         com.dbeaver.datadam.gateway.model.DDConfigurationPart part =
