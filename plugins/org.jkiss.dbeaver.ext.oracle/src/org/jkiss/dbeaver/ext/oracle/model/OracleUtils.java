@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -257,22 +257,11 @@ public class OracleUtils {
         return ddl;
     }
 
-    /**
-     * Returns true if table constraints must be generated as separate statements.
-     * In this mode indexes are generated before the constraints, so indexes created independently
-     * of primary key/unique constraints are preserved in the table DDL.
-     */
     private static boolean isSeparateConstraintIndexesDDL(@NotNull OracleTableBase object, Map<String, Object> options) {
         return object instanceof OracleTablePhysical &&
             CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES);
     }
 
-    /**
-     * Reads DDL of the table indexes.
-     *
-     * @param skipConstraintIndexes if true then indexes used by primary key/unique constraints are skipped
-     *                              because such indexes are already included in the constraints DDL
-     */
     private static String invokeDBMSMetadataGetDependentIndexDDL(
         JDBCSession session,
         OracleSchema schema,
