@@ -22,6 +22,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -174,12 +175,8 @@ public class CustomFormEditor {
                 if (editable) {
                     if (editControl instanceof Combo combo) {
                         if ((editControl.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
-                            combo.addSelectionListener(new SelectionAdapter() {
-                                @Override
-                                public void widgetSelected(SelectionEvent e) {
-                                    updatePropertyValue(prop, combo.getText());
-                                }
-                            });
+                            combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                                updatePropertyValue(prop, combo.getText())));
                         } else {
                             combo.addModifyListener(e -> {
                                 try {
@@ -194,12 +191,8 @@ public class CustomFormEditor {
                     } else if (editControl instanceof StyledText text) {
                         text.addModifyListener(e -> updatePropertyValue(prop, text.getText()));
                     } else if (editControl instanceof Button button) {
-                        button.addSelectionListener(new SelectionAdapter() {
-                            @Override
-                            public void widgetSelected(SelectionEvent e) {
-                                updatePropertyValue(prop, button.getSelection());
-                            }
-                        });
+                        button.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                            updatePropertyValue(prop, button.getSelection())));
                     }
                 }
             }

@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -100,12 +99,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
                 GridData.VERTICAL_ALIGN_BEGINNING);
             Composite groupComposite = UIUtils.createComposite(groupDefaults, 2);
             connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupComposite);
-            connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    defaultConnectionType = connectionTypeCombo.getSelectedItem();
-                }
-            });
+            connectionTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                defaultConnectionType = connectionTypeCombo.getSelectedItem()));
             navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(
                 groupComposite, this, null);
             connectionDefaultNamePatternText = UIUtils.createLabelText(
@@ -192,12 +187,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         Link urlHelpLabel = UIUtils.createLink(
             composite,
             "<a>" + CoreMessages.pref_page_connections_wiki_link + "</a>",
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK));
-                }
-            });
+            SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK))));
         GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
         urlHelpLabel.setLayoutData(gridData);
 

@@ -6,12 +6,9 @@ Bundle-Version: 1.0.32.qualifier
 Bundle-Release-Date: 20260921
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.ui,
  org.jkiss.dbeaver.ext.kingbase,
- org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.connection,
- org.jkiss.dbeaver.ui.editors.sql
+ org.jkiss.dbeaver.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp

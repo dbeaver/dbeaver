@@ -18,8 +18,7 @@
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -155,9 +154,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
             typeCombo.select(0);
             selectedConstraintType = constraintTypes[0];
         }
-        typeCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        typeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 selectedConstraintType = constraintTypes[typeCombo.getSelectionIndex()];
                 nameGenerator.setConstraintType(selectedConstraintType);
                 if (nameText != null) {
@@ -165,31 +162,23 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
                 }
                 validateProperties();
                 toggleEditAreas();
-            }
-        });
+            }));
 
         if (showEnable) {
             final Button enableConstraintButton = UIUtils.createCheckbox(panel, ObjectEditorMessages.edit_constraints_enable_constraint_text, ObjectEditorMessages.edit_constraints_enable_constraint_tip, true, 2);
             enableConstraintButton.setVisible(showEnable);
-            enableConstraintButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    enableConstraint = enableConstraintButton.getSelection();
-                }
-            });
+            enableConstraintButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                enableConstraint = enableConstraintButton.getSelection()));
         }
 
         if (isUniqueVirtualKeyEdit()) {
             final Button useAllColumnsCheck = UIUtils.createCheckbox(panel, ObjectEditorMessages.edit_constraints_use_all_columns_text, ObjectEditorMessages.edit_constraints_use_all_columns_tip, useAllColumns, 2);
-            useAllColumnsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            useAllColumnsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     useAllColumns = useAllColumnsCheck.getSelection();
                     columnsTable.setEnabled(!useAllColumns);
                     validateProperties();
                     updatePageState();
-                }
-            });
+                }));
         }
         validateProperties();
     }
