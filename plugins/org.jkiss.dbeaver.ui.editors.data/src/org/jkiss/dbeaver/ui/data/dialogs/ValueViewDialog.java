@@ -20,8 +20,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -135,17 +134,14 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         Composite dialogGroup = super.createDialogArea(parent);
         if (valueController instanceof IAttributeController) {
             final Link columnHideLink = new Link(dialogGroup, SWT.NONE);
-            columnHideLink.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            columnHideLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     columnInfoVisible = !columnInfoVisible;
                     dialogSettings.put(getInfoVisiblePrefId(), columnInfoVisible);
                     initColumnInfoVisibility(columnHideLink);
                     getShell().layout();
                     int width = getShell().getSize().x;
                     getShell().setSize(width, getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-                }
-            });
+                }));
 
             columnPanel = new ColumnInfoPanel(dialogGroup, SWT.NONE, valueController);
             columnPanel.setLayoutData(new GridData(GridData.FILL_BOTH));

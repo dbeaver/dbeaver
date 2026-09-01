@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -83,14 +82,11 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
             settings.isCleanFirst(),
             2
         );
-        cleanFirstButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        cleanFirstButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (cleanFirstButton.getSelection() && !confirmDropDatabaseAction()) {
                     cleanFirstButton.setSelection(false);
                 }
-            }
-        });
+            }));
         cleanFirstButton.addListener(SWT.Selection, updateListener);
 
         createDatabase = UIUtils.createCheckbox(formatGroup,

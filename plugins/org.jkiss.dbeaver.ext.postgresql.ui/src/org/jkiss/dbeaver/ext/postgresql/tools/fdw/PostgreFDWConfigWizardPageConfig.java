@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
@@ -90,14 +89,11 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
             fdwGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             fdwCombo = UIUtils.createLabelCombo(fdwGroup, "Wrapper", SWT.DROP_DOWN | SWT.READ_ONLY);
-            fdwCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            fdwCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     getWizard().setSelectedFDW(fdwList.get(fdwCombo.getSelectionIndex()));
                     refreshFDWProperties();
                     updatePageCompletion();
-                }
-            });
+                }));
             UIUtils.createEmptyLabel(fdwGroup, 1, 1);
             UIUtils.createInfoLabel(fdwGroup, "If you don't see right data wrapper in the list, install it on the server first.");
         }
@@ -111,13 +107,10 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
             fdwServerText.addModifyListener(e -> getWizard().setFdwServerId(fdwServerText.getText()));
 
             schemaCombo = UIUtils.createLabelCombo(settingsGroup, "Target schema", SWT.DROP_DOWN | SWT.READ_ONLY);
-            schemaCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            schemaCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     getWizard().setSelectedSchema(schemaList.get(schemaCombo.getSelectionIndex()));
                     updatePageCompletion();
-                }
-            });
+                }));
 
             //UIUtils.createControlLabel(settingsGroup, "Options", 2);
             propsEditor = new PropertyTreeViewer(settingsGroup, SWT.BORDER);
