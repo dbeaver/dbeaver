@@ -28,6 +28,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -354,12 +355,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     createPageTab(page, tabFolder.getItemCount());
                 }
                 tabFolder.setSelection(0);
-                tabFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        activateCurrentItem();
-                    }
-                });
+                tabFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> activateCurrentItem()));
                 // Set focus to the first tab
                 // Otherwise focus foes into top right control which breaks traverse keys
                 tabFolder.getSelection().getControl().setFocus();

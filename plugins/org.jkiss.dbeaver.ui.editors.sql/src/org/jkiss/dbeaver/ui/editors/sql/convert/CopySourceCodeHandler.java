@@ -27,8 +27,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -140,9 +139,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
             ((GridLayout)composite.getLayout()).numColumns = 2;
 
             {
-                final SelectionAdapter formatChangeListener = new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                final SelectionListener formatChangeListener = SelectionListener.widgetSelectedAdapter(e -> {
                         if (((Button)e.widget).getSelection()) {
                             if (curFormat == e.widget.getData()) {
                                 return;
@@ -152,8 +149,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                             loadOptions();
                             onFormatChange();
                         }
-                    }
-                };
+                    });
 
                 Composite formatPanel = UIUtils.createPlaceholder(composite, 1);
                 GridData gd = new GridData(GridData.FILL_BOTH);
