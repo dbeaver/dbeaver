@@ -113,17 +113,23 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
     }
 
     private boolean isFeatureVisible(@NotNull ProductConfigFeatureDescriptor descriptor) {
-        return !FEATURE_AI.equals(descriptor.getId()) ||
-            !GLOBAL_PROPERTY_TESTER.test(
+        return !FEATURE_AI.equals(descriptor.getId()) || checkIsAiAllowed(descriptor);
+    }
+
+    private boolean checkIsAiAllowed(@NotNull ProductConfigFeatureDescriptor descriptor) {
+        return !(
+            GLOBAL_PROPERTY_TESTER.test(
                 descriptor,
                 GlobalPropertyTester.PROP_HAS_PREFERENCE,
                 new Object[0],
                 AI_DISABLED_PROPERTY
-            ) && !GLOBAL_PROPERTY_TESTER.test(
+            )
+                || GLOBAL_PROPERTY_TESTER.test(
                 descriptor,
                 GlobalPropertyTester.PROP_HAS_ENV_VARIABLE,
                 new Object[0],
                 AI_DISABLED_ENV_VARIABLE
-            );
+            )
+        );
     }
 }
