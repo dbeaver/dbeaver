@@ -244,6 +244,7 @@ public class DDSyncService {
             }
 
             validateParts(toApply);
+            List<String> applied = new ArrayList<>();
             try {
                 for (DDConfigurationPart part : toApply) {
                     if (monitor.isCanceled()) {
@@ -252,6 +253,7 @@ public class DDSyncService {
                     apply(part);
                     baselines.put(part.key(), new DDSyncPartState(
                         part.version(), fingerprintAfterApply(part), new LinkedHashSet<>(part.units().keySet())));
+                    applied.add(part.name());
                 }
             } finally {
                 bind(remote.configurationId(), remote.name(), remote.version(), baselines);
@@ -260,7 +262,7 @@ public class DDSyncService {
             if (!conflicts.isEmpty()) {
                 throw new DDLocalSyncConflictException(conflicts);
             }
-            return new DDSyncResult(remote.name(), toApply.stream().map(DDConfigurationPart::name).toList());
+            return new DDSyncResult(remote.name(), applied);
         }
     }
 
