@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.views;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -118,18 +116,10 @@ public class PrefPageCubrid extends TargetPrefPage {
             Composite planGroup = UIUtils.createTitledComposite(composite, CubridMessages.statistic_group_editor_title, 1, GridData.FILL_HORIZONTAL);
             trace = UIUtils.createCheckbox(planGroup, CubridMessages.statistic_trace_info, false);
 
-            trace.addSelectionListener(new SelectionAdapter()
-            {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    preferenceStore.setValue(CubridConstants.STATISTIC_TRACE, ((Button) e.widget).getSelection());
-                }
-            });
+            trace.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                preferenceStore.setValue(CubridConstants.STATISTIC_TRACE, ((Button) e.widget).getSelection())));
 
-            SelectionListener radioListener = new SelectionAdapter()
-            {
-                @Override
-                public void widgetSelected(final SelectionEvent e) {
+            SelectionListener radioListener = SelectionListener.widgetSelectedAdapter(e -> {
                     if (e.widget.getData().equals(preferenceStore.getString(CubridConstants.STATISTIC))) {
                         ((Button) e.widget).setSelection(false);
                         preferenceStore.setValue(CubridConstants.STATISTIC, "");
@@ -137,8 +127,7 @@ public class PrefPageCubrid extends TargetPrefPage {
                         preferenceStore.setValue(CubridConstants.STATISTIC, e.widget.getData().toString());
                     }
 
-                }
-            };
+                });
             info = UIUtils.createRadioButton(planGroup, CubridMessages.statistic_info, CubridConstants.STATISTIC_INFO, radioListener);
             allInfo = UIUtils.createRadioButton(planGroup, CubridMessages.statistic_all_info,
                 CubridConstants.STATISTIC_ALL_INFO, radioListener);
@@ -160,13 +149,8 @@ public class PrefPageCubrid extends TargetPrefPage {
         );
         oid = UIUtils.createCheckbox(oidNavigator, CubridMessages.pref_page_cubrid_oid_checkbox, false);
 
-        oid.addSelectionListener(new SelectionAdapter()
-        {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                preferenceStore.setValue(CubridConstants.OID_NAVIGATOR, ((Button) e.widget).getSelection());
-            }
-        });
+        oid.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            preferenceStore.setValue(CubridConstants.OID_NAVIGATOR, ((Button) e.widget).getSelection())));
         return composite;
     }
 

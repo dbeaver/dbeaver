@@ -33,6 +33,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -1073,7 +1074,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
         // divides editor area and results/panels area
@@ -1427,9 +1428,7 @@ public class SQLEditor extends SQLEditorBase implements
         CSSUtils.markConnectionTypeColor(resultTabs);
         resultTabsReorder = new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
-        resultTabs.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        resultTabs.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (extraPresentationManager.activePresentationPanel != null) {
                     extraPresentationManager.activePresentationPanel.deactivatePanel();
                     extraPresentationManager.activePresentationPanel = null;
@@ -1448,8 +1447,7 @@ public class SQLEditor extends SQLEditorBase implements
                         getSelectionProvider().setSelection(new TextSelection(planQuery.getOffset(), 0));
                     }
                 }
-            }
-        });
+            }));
         this.addSashRatioSaveListener(resultsSash, SQLPreferenceConstants.RESULTS_PANEL_RATIO);
         this.resultTabs.addListener(TabFolderReorder.ITEM_MOVE_EVENT, event -> {
             CTabItem item = (CTabItem) event.item;
@@ -3560,7 +3558,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
+    public void editorContextMenuAboutToShow(@NotNull IMenuManager menu) {
         super.editorContextMenuAboutToShow(menu);
 
         if (!extraPresentationManager.presentations.isEmpty()) {
@@ -3856,9 +3854,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    protected void afterSaveToFile(File saveFile) {
+    protected void afterSaveToFile(Path saveFile) {
         try {
-            IFileStore fileStore = EFS.getStore(saveFile.toURI());
+            IFileStore fileStore = EFS.getStore(saveFile.toFile().toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
             EditorUtils.setInputDataSource(input, new SQLNavigatorContext(getDataSourceContainer(), getExecutionContext()));

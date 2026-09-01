@@ -23,17 +23,18 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -102,34 +103,42 @@ public class DriverSelectViewer extends Viewer {
     private final Composite composite;
     private StructuredViewer selectorViewer;
     private Text filterText;
-    private Job refreshJob;
-    private Composite selectorComposite;
+    private final Job refreshJob;
+    private final Composite selectorComposite;
 
     private final List<DBPDataSourceContainer> dataSources;
     private OrderBy orderBy;
     private Comparator<DBPDriver> driverComparator;
 
+    @NotNull
     private static SelectorViewType getCurrentSelectorViewType() {
-        String viewTypeStr = DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SELECTOR_VIEW_TYPE);
-        if (viewTypeStr == null) {
-            return SelectorViewType.browser;
-        }
-        try {
-            return SelectorViewType.valueOf(viewTypeStr);
-        } catch (IllegalArgumentException e) {
-            return SelectorViewType.browser;
-        }
+        return CommonUtils.valueOf(
+            SelectorViewType.class,
+            DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SELECTOR_VIEW_TYPE),
+            SelectorViewType.browser
+        );
     }
 
-    private static void setCurrentSelectorViewType(SelectorViewType viewType) {
+    private static void setCurrentSelectorViewType(@NotNull SelectorViewType viewType) {
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SELECTOR_VIEW_TYPE, viewType.name());
     }
 
-    public DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent) {
+    public DriverSelectViewer(
+        @NotNull Composite parent,
+        @NotNull Object site,
+        @NotNull List<DBPDataSourceProviderDescriptor> providers,
+        boolean expandRecent
+    ) {
         this(parent, site, providers, expandRecent, null);
     }
 
-    public DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent, SelectorViewType forceViewType) {
+    public DriverSelectViewer(
+        @NotNull Composite parent,
+        @NotNull Object site,
+        @NotNull List<DBPDataSourceProviderDescriptor> providers,
+        boolean expandRecent,
+        @Nullable SelectorViewType forceViewType
+    ) {
         this.site = site;
         this.providers = providers;
         this.expandRecent = expandRecent;
@@ -174,6 +183,7 @@ public class DriverSelectViewer extends Viewer {
         refreshJob.schedule();
     }
 
+    @NotNull
     public static OrderBy getDefaultOrderBy() {
         return CommonUtils.valueOf(OrderBy.class, DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SELECTOR_ORDER_BY), OrderBy.score);
     }
@@ -182,7 +192,7 @@ public class DriverSelectViewer extends Viewer {
         return orderBy;
     }
 
-    public void setOrderBy(OrderBy orderBy) {
+    public void setOrderBy(@NotNull OrderBy orderBy) {
         this.orderBy = orderBy;
         switch (orderBy) {
             case name:
@@ -192,8 +202,8 @@ public class DriverSelectViewer extends Viewer {
                 this.driverComparator = new DriverUtils.DriverScoreComparator(dataSources);
                 break;
         }
-        if (selectorViewer instanceof DriverTabbedViewer) {
-            ((DriverTabbedViewer) selectorViewer).setListComparator(this.driverComparator);
+        if (selectorViewer instanceof DriverTabbedViewer dtb) {
+            dtb.setListComparator(this.driverComparator);
         }
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SELECTOR_ORDER_BY, orderBy.name());
     }
@@ -238,38 +248,30 @@ public class DriverSelectViewer extends Viewer {
         UIUtils.asyncExec(() -> filterComposite.layout(true, true));
     }
 
-    protected void createExtraFilterControlsBefore(Composite filterGroup) {
+    protected void createExtraFilterControlsBefore(@NotNull Composite filterGroup) {
 
     }
 
-    protected void createExtraFilterControlsAfter(Composite filterGroup) {
+    protected void createExtraFilterControlsAfter(@NotNull Composite filterGroup) {
 
     }
 
-    private void createFilterToolbar(Composite parent) {
+    private void createFilterToolbar(@NotNull Composite parent) {
         // Create browser control toggle
         ToolBar switcherToolbar = new ToolBar(parent, SWT.RIGHT | SWT.HORIZONTAL);
         ToolItem clearItem = new ToolItem(switcherToolbar, SWT.PUSH);
         clearItem.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
-        clearItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+            clearItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 clearText();
                 filterText.setFocus();
-            }
-        });
+            }));
 
         if (forceViewType == null) {
             switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
             switchItem.setText("Switch view");
             switchItem.setWidth(UIUtils.getFontHeight(switcherToolbar) * 15);
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-            switchItem.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    switchSelectorControl();
-                }
-            });
+            switchItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> switchSelectorControl()));
         }
     }
 
@@ -290,10 +292,11 @@ public class DriverSelectViewer extends Viewer {
     }
 
     private void createSelectorControl() {
-
         selectorComposite.setRedraw(false);
         try {
-            if (forceViewType == SelectorViewType.tree || (forceViewType == null && getCurrentSelectorViewType() == SelectorViewType.tree)) {
+            if (forceViewType == SelectorViewType.tree ||
+                (forceViewType == null && getCurrentSelectorViewType() == SelectorViewType.tree)
+            ) {
                 if (forceViewType == null) {
                     switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
                     switchItem.setText(UIConnectionMessages.viewer_selector_control_text_gallery);
@@ -303,8 +306,8 @@ public class DriverSelectViewer extends Viewer {
                 selectorViewer = new DriverTreeViewer(selectorComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
                 selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
                 UIUtils.asyncExec(() -> {
-                    if (selectorViewer instanceof DriverTreeViewer) {
-                        ((DriverTreeViewer) selectorViewer).initDrivers(providers, expandRecent);
+                    if (selectorViewer instanceof DriverTreeViewer dtv) {
+                        dtv.initDrivers(providers, expandRecent);
                     }
                 });
             } else {
@@ -316,19 +319,6 @@ public class DriverSelectViewer extends Viewer {
 
                 selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE, dataSources, driverComparator);
                 selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-
-    /*
-                selectorViewer.getControl().addTraverseListener(e -> {
-                    if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                        if (site instanceof IWizardPage) {
-                            IWizardContainer container = ((IWizardPage) site).getWizard().getContainer();
-                            if (container instanceof Window) {
-                                ((Window) container).close();
-                            }
-                        }
-                    }
-                });
-    */
             }
 
             selectorViewer.addSelectionChangedListener(event -> {
@@ -337,26 +327,13 @@ public class DriverSelectViewer extends Viewer {
                 }
             });
             selectorViewer.addDoubleClickListener(event -> {
-                if (site instanceof IDoubleClickListener) {
-                    ((IDoubleClickListener) site).doubleClick(event);
+                if (site instanceof IDoubleClickListener dcl) {
+                    dcl.doubleClick(event);
                 }
             });
         } finally {
             selectorComposite.setRedraw(true);
         }
-    }
-
-    private Object[] collectDrivers(List<DataSourceProviderDescriptor> provs) {
-        List<DBPDriver> drivers = new ArrayList<>();
-        if (provs != null) {
-            for (DataSourceProviderDescriptor provider : provs) {
-                drivers.addAll(provider.getEnabledDrivers());
-            }
-        }
-        drivers.sort((o1, o2) -> {
-            return o1.getName().compareToIgnoreCase(o2.getName());
-        });
-        return drivers.toArray(new Object[0]);
     }
 
     private void switchSelectorControl() {
@@ -373,9 +350,8 @@ public class DriverSelectViewer extends Viewer {
 
             if (curSelection instanceof StructuredSelection && !curSelection.isEmpty()) {
                 Object element = ((StructuredSelection) curSelection).getFirstElement();
-                UIUtils.asyncExec(() -> {
-                    selectorViewer.setSelection(new StructuredSelection(element), true);
-                });
+                UIUtils.asyncExec(() ->
+                    selectorViewer.setSelection(new StructuredSelection(element), true));
             }
 
             selectorComposite.layout(true, true);
@@ -388,6 +364,7 @@ public class DriverSelectViewer extends Viewer {
         }
     }
 
+    @NotNull
     private WorkbenchJob createRefreshJob() {
         return new WorkbenchJob("Refresh driver filter") {//$NON-NLS-1$
             @Override
@@ -409,8 +386,8 @@ public class DriverSelectViewer extends Viewer {
                         filters.add(new DriverInstalledFilter());
                     }
                     selectorViewer.setFilters(filters.toArray(new ViewerFilter[0]));
-                    if (selectorViewer instanceof AbstractTreeViewer) {
-                        ((AbstractTreeViewer) selectorViewer).expandAll();
+                    if (selectorViewer instanceof AbstractTreeViewer atv) {
+                        atv.expandAll();
                     }
                 } finally {
                     selectorViewer.getControl().setRedraw(true);
@@ -469,9 +446,8 @@ public class DriverSelectViewer extends Viewer {
 
         @Override
         public boolean isElementVisible(Viewer viewer, Object element) {
-            if (viewer instanceof AbstractTreeViewer) {
-                Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) viewer)
-                    .getContentProvider()).getParent(element);
+            if (viewer instanceof AbstractTreeViewer atv && atv.getContentProvider() instanceof ITreeContentProvider tcp) {
+                Object parent = tcp.getParent(element);
                 if (parent != null && isLeafMatch(viewer, parent)) {
                     return true;
                 }
