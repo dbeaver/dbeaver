@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
+import com.dbeaver.datadam.gateway.model.DDCreateConfigurationRequest;
+import com.dbeaver.datadam.gateway.model.DDUpdateConfigurationRequest;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
@@ -52,40 +54,47 @@ class DDRestTransport extends AbstractRestClient implements DDSyncTransport {
 
     @NotNull
     @Override
-    public List<DDConfigurationSummaryData> listConfigurations() throws DBException {
+    public List<com.dbeaver.datadam.gateway.model.DDConfigurationSummary> listConfigurations()
+        throws DBException {
         return List.of(execute(
             request(DDSyncApi.CONFIGURATION_ENDPOINT, Map.of(), "GET", EMPTY_BODY),
-            DDConfigurationSummaryData[].class));
+            com.dbeaver.datadam.gateway.model.DDConfigurationSummary[].class));
     }
 
     @NotNull
     @Override
-    public DDConfigurationData getConfiguration(@NotNull String configurationId) throws DBException {
+    public com.dbeaver.datadam.gateway.model.DDConfiguration getConfiguration(
+        @NotNull String configurationId
+    ) throws DBException {
         return execute(
             request(
                 DDSyncApi.CONFIGURATION_ITEM_ENDPOINT.replace(DDSyncApi.VAR_CONFIGURATION_ID, configurationId),
                 Map.of(),
                 "GET",
                 EMPTY_BODY),
-            DDConfigurationData.class);
+            com.dbeaver.datadam.gateway.model.DDConfiguration.class);
     }
 
     @NotNull
     @Override
-    public DDConfigurationData createConfiguration(@NotNull DDCreateConfigurationRequest request) throws DBException {
+    public com.dbeaver.datadam.gateway.model.DDConfiguration createConfiguration(
+        @NotNull DDCreateConfigurationRequest request
+    ) throws DBException {
         return execute(
             jsonRequest(DDSyncApi.CONFIGURATION_ENDPOINT, "POST", request),
-            DDConfigurationData.class);
+            com.dbeaver.datadam.gateway.model.DDConfiguration.class);
     }
 
     @NotNull
     @Override
-    public DDUpdateConfigurationResultData updateConfiguration(
+    public com.dbeaver.datadam.gateway.model.DDUpdateConfigurationResult updateConfiguration(
         @NotNull String configurationId,
         @NotNull DDUpdateConfigurationRequest request
     ) throws DBException {
         String endpoint = DDSyncApi.CONFIGURATION_ITEM_ENDPOINT.replace(DDSyncApi.VAR_CONFIGURATION_ID, configurationId);
-        return execute(jsonRequest(endpoint, "PUT", request), DDUpdateConfigurationResultData.class);
+        return execute(
+            jsonRequest(endpoint, "PUT", request),
+            com.dbeaver.datadam.gateway.model.DDUpdateConfigurationResult.class);
     }
 
     @NotNull

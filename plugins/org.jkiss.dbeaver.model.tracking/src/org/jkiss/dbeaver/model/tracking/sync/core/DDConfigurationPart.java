@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
+import com.dbeaver.datadam.gateway.model.DDConfigurationPartKind;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 

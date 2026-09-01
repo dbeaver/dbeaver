@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync;
 
+import com.dbeaver.datadam.gateway.model.DDConfigurationPartKind;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -31,7 +32,6 @@ import org.jkiss.dbeaver.model.sync.DBPSyncTarget;
 import org.jkiss.dbeaver.model.sync.DBPSyncUnit;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDConfiguration;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDConfigurationPart;
-import org.jkiss.dbeaver.model.tracking.sync.core.DDConfigurationPartKind;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDConfigurationSummary;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncCredentials;
 import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncStore;

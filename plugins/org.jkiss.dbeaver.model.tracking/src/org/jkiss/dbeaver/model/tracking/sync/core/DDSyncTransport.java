@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
+import com.dbeaver.datadam.gateway.model.DDCreateConfigurationRequest;
+import com.dbeaver.datadam.gateway.model.DDUpdateConfigurationRequest;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
@@ -27,16 +29,20 @@ import java.util.List;
 public interface DDSyncTransport {
 
     @NotNull
-    List<DDConfigurationSummaryData> listConfigurations() throws DBException;
+    List<com.dbeaver.datadam.gateway.model.DDConfigurationSummary> listConfigurations() throws DBException;
 
     @NotNull
-    DDConfigurationData getConfiguration(@NotNull String configurationId) throws DBException;
+    com.dbeaver.datadam.gateway.model.DDConfiguration getConfiguration(
+        @NotNull String configurationId
+    ) throws DBException;
 
     @NotNull
-    DDConfigurationData createConfiguration(@NotNull DDCreateConfigurationRequest request) throws DBException;
+    com.dbeaver.datadam.gateway.model.DDConfiguration createConfiguration(
+        @NotNull DDCreateConfigurationRequest request
+    ) throws DBException;
 
     @NotNull
-    DDUpdateConfigurationResultData updateConfiguration(
+    com.dbeaver.datadam.gateway.model.DDUpdateConfigurationResult updateConfiguration(
         @NotNull String configurationId,
         @NotNull DDUpdateConfigurationRequest request
     ) throws DBException;
