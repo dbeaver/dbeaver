@@ -129,7 +129,11 @@ class ProjectsPanel implements DBPProjectListener {
 
     @Override
     public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
-        setSelectedProject(newValue);
+        UIUtils.asyncExec(() -> {
+            if (!projectCombo.isDisposed()) {
+                setSelectedProject(newValue);
+            }
+        });
     }
 
 }
