@@ -239,8 +239,7 @@ public class LogOutputStream extends OutputStream {
             if (logFiles != null) {
                 // it's ok to sort by name only because of the actual timestamp values not changing the amount of digits in a short term
                 Arrays.sort(logFiles, Comparator.comparing(File::getName));
-                boolean renameFailed = this.currentLogFile != this.initialLogFile; // if rename failed, ignore stuck file with initial name
-                for (int i = renameFailed ? 1 : 0, count = logFiles.length; i < logFiles.length && count > maxLogFiles; i++, count--) {
+                for (int i = 0, count = logFiles.length; i < logFiles.length && count > maxLogFiles; i++, count--) {
                     deleteLogFile(logFiles[i]);
                 }
             } else {

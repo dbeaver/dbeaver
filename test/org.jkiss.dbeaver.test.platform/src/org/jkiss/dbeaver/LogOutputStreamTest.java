@@ -104,7 +104,7 @@ public class LogOutputStreamTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void skipsFirstArchiveWhenInitialLogIsStuck() throws IOException {
+    public void retainsNewestArchiveWhenInitialLogIsStuck() throws IOException {
         TestOperations operations = new TestOperations(100, 1);
         operations.addFile(LOG_FILE);
         operations.addFile("debug-100.log");
@@ -113,9 +113,9 @@ public class LogOutputStreamTest extends DBeaverUnitTest {
         operations.renameResults.addAll(List.of(false, false, false, false, false, false));
 
         try (LogOutputStream output = new LogOutputStream(LOG_FILE, operations)) {
-            Assertions.assertTrue(operations.hasFile("debug-100.log"));
+            Assertions.assertFalse(operations.hasFile("debug-100.log"));
             Assertions.assertFalse(operations.hasFile("debug-200.log"));
-            Assertions.assertFalse(operations.hasFile("debug-300-since.log"));
+            Assertions.assertTrue(operations.hasFile("debug-300-since.log"));
         }
     }
 
