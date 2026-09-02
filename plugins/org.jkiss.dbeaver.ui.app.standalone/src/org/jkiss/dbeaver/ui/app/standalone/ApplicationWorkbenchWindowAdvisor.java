@@ -207,7 +207,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         try {
             runnable.run();
         } finally {
-            // Don't show splash back on Linux because setVisible blocks indefinitely for some reason
             if (splash != null && !splash.isDisposed()) {
                 splash.setVisible(true);
             }
