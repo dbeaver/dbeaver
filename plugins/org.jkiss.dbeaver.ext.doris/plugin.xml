@@ -56,4 +56,9 @@
             <types value="ARRAY,BITMAP,HLL,JSON,MAP,STRUCT,LARGEINT,QUANTILE_STATE"/>
         </dialect>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.doris.edit.DorisTableManager"
+            objectType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
+    </extension>
 </plugin>

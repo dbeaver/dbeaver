@@ -18,8 +18,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -71,14 +70,11 @@ class ProjectsPanel implements DBPProjectListener {
 
         refillCombo();
 
-        projectCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        projectCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 selectedProject = projects.get(projectCombo.getSelectionIndex());
 
                 NavigatorHandlerProjectSetActive.setActiveProject(selectedProject);
-            }
-        });
+            }));
     }
 
     @Nullable
@@ -133,7 +129,11 @@ class ProjectsPanel implements DBPProjectListener {
 
     @Override
     public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
-        setSelectedProject(newValue);
+        UIUtils.asyncExec(() -> {
+            if (!projectCombo.isDisposed()) {
+                setSelectedProject(newValue);
+            }
+        });
     }
 
 }

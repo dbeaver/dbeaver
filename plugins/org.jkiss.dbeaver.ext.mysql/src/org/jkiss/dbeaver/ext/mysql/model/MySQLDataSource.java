@@ -1079,7 +1079,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     public boolean isSystemCatalog(String name) {
         return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name) ||
             MySQLConstants.PERFORMANCE_SCHEMA_NAME.equalsIgnoreCase(name) ||
-            MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(name);
+            MySQLConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(name) ||
+            MySQLConstants.SYS_SCHEMA_NAME.equalsIgnoreCase(name);
     }
 
     /**

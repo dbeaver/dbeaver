@@ -23,8 +23,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -135,46 +133,27 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             buttonBar.setLayoutData(gd);
 
-            newButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_new, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    createDriver();
-                }
-            });
+            newButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_new, null, SelectionListener.widgetSelectedAdapter(e ->
+                createDriver()));
             newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            copyButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_copy, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    copyDriver();
-                }
-            });
+            copyButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_copy, null, SelectionListener.widgetSelectedAdapter(e ->
+                copyDriver()));
             copyButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            editButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_edit, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    editDriver();
-                }
-            });
+            editButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_edit, null, SelectionListener.widgetSelectedAdapter(e ->
+                editDriver()));
             editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            deleteButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_delete, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    deleteDriver();
-                }
-            });
+            deleteButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_delete, null, SelectionListener.widgetSelectedAdapter(e ->
+                deleteDriver()));
             deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            Button unDeleteButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_undelete, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            Button unDeleteButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_undelete, null, SelectionListener.widgetSelectedAdapter(e -> {
                     if (undeleteDrivers()) {
                         treeControl.refresh();
                     }
-                }
-            });
+                }));
             unDeleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             {
@@ -193,12 +172,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
 
             if (SHOW_EXPORT) {
-                UIUtils.createPushButton(buttonBar, "Export", null, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        exportDriverList();
-                    }
-                });
+                UIUtils.createPushButton(buttonBar, "Export", null, SelectionListener.widgetSelectedAdapter(e -> exportDriverList()));
             }
         }
 
