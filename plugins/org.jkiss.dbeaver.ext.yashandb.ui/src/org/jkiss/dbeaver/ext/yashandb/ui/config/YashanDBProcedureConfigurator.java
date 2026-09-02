@@ -41,6 +41,7 @@ public class YashanDBProcedureConfigurator implements DBEObjectConfigurator<Yash
                                                        @NotNull YashanDBProcedureStandalone procedure,
                                                        @NotNull Map<String, Object> options) {
         return new UITask<YashanDBProcedureStandalone>() {
+            @NotNull
             @Override
             protected YashanDBProcedureStandalone runTask() {
                 CreateProcedurePage editPage = new CreateProcedurePage(procedure);

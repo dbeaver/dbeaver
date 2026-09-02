@@ -113,6 +113,7 @@ public class YashanDBServerSessionManager
         oracleServerSessionManager.alterSession(session, sessionId, options);
     }
 
+    @NotNull
     @Override
     public Map<String, Object> getTerminateOptions() {
         return oracleServerSessionManager.getTerminateOptions();
