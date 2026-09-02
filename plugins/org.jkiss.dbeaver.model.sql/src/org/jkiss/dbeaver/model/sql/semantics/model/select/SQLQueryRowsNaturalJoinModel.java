@@ -206,7 +206,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel
             }
 
             if (this.condition != null) {
-                this.condition.resolveValueRelations(combinedContext, statistics);
+                this.condition.tryResolveValueRelations(combinedContext, statistics);
             }
         }
 

@@ -132,11 +132,15 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
             SQLQueryRowsDataContext tableContext = context.makeTuple(null, columns, Collections.emptyList());
 
             for (SQLQueryColumnSpec columnSpec : this.columns) {
-                columnSpec.resolveRelations(context, tableContext, statistics);
+                if (!columnSpec.tryResolveRelations(context, tableContext, statistics)) {
+                    return;
+                }
             }
 
             for (SQLQueryTableConstraintSpec constraintSpec : this.constraints) {
-                constraintSpec.resolveRelations(context, tableContext, statistics);
+                if (!constraintSpec.tryResolveRelations(context, tableContext, statistics)) {
+                    return;
+                }
             }
 
         }
@@ -144,7 +148,8 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
     }
 
     @Override
-    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    public boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        return true;
     }
 
     @Override

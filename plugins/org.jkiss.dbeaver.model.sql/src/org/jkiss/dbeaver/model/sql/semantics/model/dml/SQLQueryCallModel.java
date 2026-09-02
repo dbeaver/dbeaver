@@ -88,7 +88,7 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
     }
 
     @Override
-    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    public boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.nameScope != null) {
             this.nameScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.DbObjectRef(
                 context.getRowsSources(), Set.of(RelationalObjectType.TYPE_PROCEDURE, RelationalObjectType.TYPE_PACKAGE), false
@@ -97,6 +97,7 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
         if (this.tailScope != null) {
             this.setTailOrigin(this.tailScope.getSymbolsOrigin());
         }
+        return true;
     }
 
     @Nullable

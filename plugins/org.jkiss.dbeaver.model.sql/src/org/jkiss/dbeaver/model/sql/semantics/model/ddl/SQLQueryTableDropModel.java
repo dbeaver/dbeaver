@@ -91,16 +91,24 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
     }
 
     @Override
-    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    public boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if  (this.tables != null) {
             if (this.ifExists) {
                 statistics.setTreatErrorAsWarnings(true);
             }
-            this.tables.forEach(t -> t.resolveValueRelations(context, statistics));
-            if (this.ifExists) {
-                statistics.setTreatErrorAsWarnings(false);
+            try {
+                for (SQLQueryRowsTableDataModel table : this.tables) {
+                    if (!table.tryResolveValueRelations(context, statistics)) {
+                        return false;
+                    }
+                }
+            } finally {
+                if (this.ifExists) {
+                    statistics.setTreatErrorAsWarnings(false);
+                }
             }
         }
+        return true;
     }
 
     @Nullable

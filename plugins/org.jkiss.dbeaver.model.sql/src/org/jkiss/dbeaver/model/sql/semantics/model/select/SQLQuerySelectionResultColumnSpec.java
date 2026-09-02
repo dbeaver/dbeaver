@@ -86,10 +86,12 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
     ) {
         if (this.valueExpression != null) {
             this.valueExpression.resolveRowSources(knownValues.getRowsSources(), statistics);
-            this.valueExpression.resolveValueRelations(knownValues, statistics);
+            if (this.valueExpression.tryResolveValueRelations(knownValues, statistics)) {
+                this.collectColumnImpl(rowsSourceModel, resultColumns);
+            }
+        } else {
+            this.collectColumnImpl(rowsSourceModel, resultColumns);
         }
-
-        this.collectColumnImpl(rowsSourceModel, resultColumns);
     }
 
     protected void collectColumnImpl(

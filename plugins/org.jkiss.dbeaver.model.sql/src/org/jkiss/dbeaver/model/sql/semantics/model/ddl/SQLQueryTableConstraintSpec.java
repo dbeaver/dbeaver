@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
@@ -87,7 +86,7 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void resolveRelations(
+    public boolean tryResolveRelations(
         @NotNull SQLQueryRowsSourceContext sourceContext,
         @Nullable SQLQueryRowsDataContext tableContext,
         @NotNull SQLQueryRecognitionContext statistics
@@ -130,7 +129,9 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
 
         if (this.checkExpression != null && tableContext != null) {
             this.checkExpression.resolveRowSources(tableContext.getRowsSources(), statistics);
-            this.checkExpression.resolveValueRelations(tableContext, statistics);
+            return this.checkExpression.tryResolveValueRelations(tableContext, statistics);
+        } else {
+            return true;
         }
     }
 

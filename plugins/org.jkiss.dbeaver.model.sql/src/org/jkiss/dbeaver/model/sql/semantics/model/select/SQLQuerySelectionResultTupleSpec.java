@@ -70,11 +70,12 @@ public class SQLQuerySelectionResultTupleSpec extends SQLQuerySelectionResultSub
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
         this.tupleReference.resolveRowSources(knownValues.getRowsSources(), statistics);
-        this.tupleReference.resolveValueRelations(knownValues, statistics);
 
-        SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
-        if (tupleSource != null) {
-            this.collectForeignColumns(tupleSource.getRowsDataContext().getColumnsList(), rowsSourceModel, resultColumns);
+        if (this.tupleReference.tryResolveValueRelations(knownValues, statistics)) {
+            SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
+            if (tupleSource != null) {
+                this.collectForeignColumns(tupleSource.getRowsDataContext().getColumnsList(), rowsSourceModel, resultColumns);
+            }
         }
     }
 

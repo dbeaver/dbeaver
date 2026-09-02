@@ -73,7 +73,9 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
         for (List<SQLQueryValueExpression> row : this.rows) {
             for (SQLQueryValueExpression value : row) {
                 value.resolveRowSources(this.getRowsSources(), statistics);
-                value.resolveValueRelations(emptyTuple, statistics);
+                if (!value.tryResolveValueRelations(emptyTuple, statistics)) {
+                    return this.getRowsSources().makeEmptyTuple();
+                }
                 if (rowIndex == 0) {
                     resultColumns.addLast(
                         new SQLQueryResultColumn(

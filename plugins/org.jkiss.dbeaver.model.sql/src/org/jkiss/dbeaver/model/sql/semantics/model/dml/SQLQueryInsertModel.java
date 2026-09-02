@@ -108,9 +108,11 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
     }
 
     @Override
-    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    public boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.getTableModel() != null) {
-            this.getTableModel().resolveValueRelations(context, statistics);
+            if (!this.getTableModel().tryResolveValueRelations(context, statistics)) {
+                return false;
+            }
             SQLQueryRowsDataContext columnsContext = this.getTableModel().getRowsDataContext();
             var origin = new SQLQuerySymbolOrigin.ColumnNameFromRowsData(columnsContext);
             if (this.columnsScope != null) {
@@ -128,10 +130,14 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
             }
 
             if (this.valuesRows != null) {
-                this.valuesRows.resolveValueRelations(context, statistics);
-                // TODO validate column tuples consistency
+                if (this.valuesRows.tryResolveValueRelations(context, statistics)) {
+                    // TODO validate column tuples consistency
+                } else {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
     @Nullable

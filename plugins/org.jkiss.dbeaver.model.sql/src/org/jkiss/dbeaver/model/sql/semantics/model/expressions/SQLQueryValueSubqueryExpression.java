@@ -58,7 +58,10 @@ public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        this.source.resolveValueRelations(context, statistics);
-        return SQLQueryExprType.forScalarSubquery(this.source);
+        if (this.source.tryResolveValueRelations(context, statistics)) {
+            return SQLQueryExprType.forScalarSubquery(this.source);
+        } else {
+            return SQLQueryExprType.UNKNOWN;
+        }
     }
 }

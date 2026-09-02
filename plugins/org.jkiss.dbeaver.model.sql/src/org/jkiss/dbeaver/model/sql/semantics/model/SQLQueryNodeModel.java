@@ -242,7 +242,7 @@ public abstract class SQLQueryNodeModel {
     ){
     }
 
-    protected static <N extends SQLQueryNodeModel, C> void traverseSubtreeSmart(
+    protected static <N extends SQLQueryNodeModel, C> boolean tryTraverseSubtreeSmart(
         @NotNull N subroot,
         @NotNull Class<N> childrenType,
         @Nullable C context,
@@ -256,7 +256,7 @@ public abstract class SQLQueryNodeModel {
         while (queue != null && !cancellationChecker.getAsBoolean()) {
             ListNode<NodeEntry<N, C>>  stack = ListNode.of(queue.data);
             queue = queue.next;
-            while (stack != null) {
+            while (stack != null && !cancellationChecker.getAsBoolean()) {
                 if (stack.data != null) {  // first time handling node
                     NodeEntry<N, C> entry = stack.data;
                     N node = entry.node;
@@ -317,6 +317,7 @@ public abstract class SQLQueryNodeModel {
                 }
             }
         }
+        return queue == null && !cancellationChecker.getAsBoolean();
     }
 
     private static <N extends SQLQueryNodeModel, C> void applyActionForNode(
@@ -332,7 +333,7 @@ public abstract class SQLQueryNodeModel {
     /**
      * Just traverse the tree to call action on each node
      */
-    protected static <N extends SQLQueryNodeModel, C> void traverseSubtreeSimple(
+    protected static <N extends SQLQueryNodeModel, C> boolean tryTraverseSubtreeSimple(
         @NotNull N subroot,
         @NotNull Class<N> childrenType,
         @NotNull Consumer<N> action,
@@ -360,5 +361,6 @@ public abstract class SQLQueryNodeModel {
                 stack = stack.next;
             }
         }
+        return stack == null && !cancellationChecker.getAsBoolean();
     }
 }

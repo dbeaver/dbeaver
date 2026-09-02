@@ -63,19 +63,18 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         return this.queryContent;
     }
 
-    /**
-     * Propagate semantics context and establish relations through the query model
-     */
-    public void resolveRelations(@NotNull SQLQueryRowsSourceContext rowsContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
+    public boolean tryResolveRelations(@NotNull SQLQueryRowsSourceContext rowsContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
 
         if (this.queryContent != null) {
             this.queryContent.resolveObjectAndRowsReferences(rowsContext, recognitionContext);
 
             if (recognitionContext.getMonitor().isCanceled()) {
-                return;
+                return false;
             }
 
-            this.queryContent.resolveValueRelations(rowsContext.makeEmptyTuple(), recognitionContext);
+            if (!this.queryContent.tryResolveValueRelations(rowsContext.makeEmptyTuple(), recognitionContext)) {
+                return false;
+            }
         }
 
         int actualTailPosition = this.getSyntaxNode().getRealInterval().b;
@@ -92,6 +91,9 @@ public class SQLQueryModel extends SQLQueryNodeModel {
                 this.setTailOrigin(tailOrigin);
             }
         }
+
+        // ensure we didn't misinterpret cancellation during metadata reading as resolution failure
+        return !recognitionContext.getMonitor().isCanceled();
     }
 
     /**

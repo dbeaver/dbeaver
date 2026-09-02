@@ -196,29 +196,41 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.WHERE)
                 ? filtersContext
                 : unresolvedResult;
-            this.filterExprs.whereClause.resolveValueRelations(clauseCtx, statistics);
-            this.filterScopes.whereClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+            if (this.filterExprs.whereClause.tryResolveValueRelations(clauseCtx, statistics)) {
+                this.filterScopes.whereClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+            } else {
+                return resolvedResult;
+            }
         }
         if (this.filterExprs.havingClause != null) {
             SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.HAVING)
                 ? filtersContext
                 : unresolvedResult;
-            this.filterExprs.havingClause.resolveValueRelations(clauseCtx, statistics);
-            this.filterScopes.havingClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+            if (this.filterExprs.havingClause.tryResolveValueRelations(clauseCtx, statistics)) {
+                this.filterScopes.havingClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+            } else {
+                return resolvedResult;
+            }
         }
         if (this.filterExprs.groupByClause != null) { // TODO consider dropping certain pseudocolumns
             SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.GROUP_BY)
                 ? filtersContext
                 : unresolvedResult;
-            this.filterExprs.groupByClause.resolveValueRelations(clauseCtx, statistics);
-            this.filterScopes.groupByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+            if (this.filterExprs.groupByClause.tryResolveValueRelations(clauseCtx, statistics)) {
+                this.filterScopes.groupByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+            } else {
+                return resolvedResult;
+            }
         }
         if (this.filterExprs.orderByClause != null) {
             SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.ORDER_BY)
                 ? filtersContext
                 : unresolvedResult;
-            this.filterExprs.orderByClause.resolveValueRelations(clauseCtx, statistics);
-            this.filterScopes.orderByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+            if (this.filterExprs.orderByClause.tryResolveValueRelations(clauseCtx, statistics)) {
+                this.filterScopes.orderByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+            } else {
+                return resolvedResult;
+            }
         }
 
         if (this.tailScope != null) {

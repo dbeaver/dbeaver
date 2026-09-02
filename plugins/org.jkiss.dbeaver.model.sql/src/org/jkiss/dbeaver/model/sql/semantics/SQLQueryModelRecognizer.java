@@ -153,15 +153,13 @@ public class SQLQueryModelRecognizer {
             default -> null;
         };
 
+        if (this.recognitionContext.getMonitor().isCanceled()) {
+            return null;
+        }
+
         if (contents != null) {
-            if (this.recognitionContext.getMonitor().isCanceled()) {
-                return null;
-            }
-
             SQLQueryModel model = new SQLQueryModel(tree, contents, this.symbolEntries, this.lexicalItems.values().stream().toList());
-            model.resolveRelations(rootRowsContext, this.recognitionContext);
-
-            if (this.recognitionContext.getMonitor().isCanceled()) {
+            if (!model.tryResolveRelations(rootRowsContext, this.recognitionContext)) {
                 return null;
             }
 
@@ -174,27 +172,26 @@ public class SQLQueryModelRecognizer {
             }
 
             return model;
+        } else {
+            // TODO log query model collection error
+            Predicate<SQLQuerySymbolEntry> tryFallbackForStringLiteral = s -> {
+                String rawString = s.getRawName();
+                SQLQuerySymbolClass forcedClass;
+                if (this.dialect.isQuotedString(rawString)) {
+                    forcedClass = SQLQuerySymbolClass.STRING;
+                } else {
+                    forcedClass = tryFallbackSymbolForStringLiteral(this.dialect, s, false);
+                }
+                boolean forced = forcedClass != null;
+                if (forced) {
+                    s.getSymbol().setSymbolClass(forcedClass);
+                }
+                return forced;
+            };
+
+            classifySymbolsWithoutModel(connectionContext, tree, tryFallbackForStringLiteral, rootRowsContext);
+            return new SQLQueryModel(tree, null, this.symbolEntries, this.lexicalItems.values().stream().toList());
         }
-
-        // TODO log query model collection error
-        Predicate<SQLQuerySymbolEntry> tryFallbackForStringLiteral = s -> {
-            String rawString = s.getRawName();
-            SQLQuerySymbolClass forcedClass;
-            if (this.dialect.isQuotedString(rawString)) {
-                forcedClass = SQLQuerySymbolClass.STRING;
-            } else {
-                forcedClass = tryFallbackSymbolForStringLiteral(this.dialect, s, false);
-            }
-            boolean forced = forcedClass != null;
-            if (forced) {
-                s.getSymbol().setSymbolClass(forcedClass);
-            }
-            return forced;
-        };
-
-
-        classifySymbolsWithoutModel(connectionContext, tree, tryFallbackForStringLiteral, rootRowsContext);
-        return new SQLQueryModel(tree, null, this.symbolEntries, this.lexicalItems.values().stream().toList());
     }
 
     /**

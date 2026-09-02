@@ -96,12 +96,9 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
         @NotNull SQLQueryRecognitionContext statistics
     );
 
-    /**
-     * Propagate information about values and row tuples across the query model
-     */
     @Override
-    public final void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        traverseSubtreeSmart(
+    public final boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        return tryTraverseSubtreeSmart(
             this,
             SQLQueryRowsSourceModel.class,
             context,

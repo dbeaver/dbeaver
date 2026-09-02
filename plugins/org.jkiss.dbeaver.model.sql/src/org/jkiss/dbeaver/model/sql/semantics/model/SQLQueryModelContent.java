@@ -46,9 +46,11 @@ public abstract class SQLQueryModelContent extends SQLQueryNodeModel {
     );
 
     /**
-     * Propagate information about values and row tuples across the query model
+     * Propagate information about values and row tuples across the query model if resolution is not canceled.
+     *
+     * @return {@code true} if resolution completed, or {@code false} if it was canceled
      */
-    public abstract void resolveValueRelations(
+    public abstract boolean tryResolveValueRelations(
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     );

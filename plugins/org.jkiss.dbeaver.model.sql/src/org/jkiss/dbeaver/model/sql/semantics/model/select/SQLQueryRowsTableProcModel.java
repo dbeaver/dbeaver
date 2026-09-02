@@ -61,7 +61,10 @@ public class SQLQueryRowsTableProcModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        this.callExpr.resolveValueRelations(context, statistics);
+        if (!this.callExpr.tryResolveValueRelations(context, statistics)) {
+            return this.getRowsSources().makeEmptyTuple();
+        }
+
         SQLQueryExprType procResult = this.callExpr.getValueType();
         LinkedList<SQLQueryResultColumn> resultColumns = new LinkedList<>();
         if (procResult != SQLQueryExprType.UNKNOWN) {

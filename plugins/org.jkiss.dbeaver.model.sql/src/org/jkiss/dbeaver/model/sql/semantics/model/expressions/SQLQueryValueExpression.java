@@ -76,8 +76,8 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
     /**
      * Propagate information about values and row tuples across the query model
      */
-    public final void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        traverseSubtreeSimple(
+    public final boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        return tryTraverseSubtreeSimple(
             this,
             SQLQueryValueExpression.class,
             n -> n.resolveValueType(context, statistics),

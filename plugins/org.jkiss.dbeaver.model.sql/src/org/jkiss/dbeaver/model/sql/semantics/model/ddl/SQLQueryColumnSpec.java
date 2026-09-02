@@ -101,18 +101,23 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void resolveRelations(
+    public boolean tryResolveRelations(
         @NotNull SQLQueryRowsSourceContext rowsContext,
         @Nullable SQLQueryRowsDataContext tableDataContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         if (this.defaultValueExpression != null && tableDataContext != null) {
             this.defaultValueExpression.resolveRowSources(tableDataContext.getRowsSources(), statistics);
-            this.defaultValueExpression.resolveValueRelations(tableDataContext, statistics);
+            if (!this.defaultValueExpression.tryResolveValueRelations(tableDataContext, statistics)) {
+                return false;
+            }
         }
         for (SQLQueryColumnConstraintSpec constraintSpec : this.constraints) {
-            constraintSpec.resolveRelations(rowsContext, tableDataContext, statistics);
+            if (!constraintSpec.tryResolveRelations(rowsContext, tableDataContext, statistics)) {
+                return false;
+            }
         }
+        return true;
     }
 
     public static SQLQueryColumnSpec recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {

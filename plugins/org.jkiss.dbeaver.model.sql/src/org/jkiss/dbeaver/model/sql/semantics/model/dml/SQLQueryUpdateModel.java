@@ -271,10 +271,12 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
     }
 
     @Override
-    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    public boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         SQLQueryRowsDataContext targetContext;
         if (this.targetRows != null) {
-            this.targetRows.resolveValueRelations(context, statistics);
+            if (!this.targetRows.tryResolveValueRelations(context, statistics)) {
+                return false;
+            }
             targetContext = this.targetRows.getRowsDataContext();
 
             if (this.targetsScope != null) {
@@ -284,7 +286,9 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                 for (SQLQueryUpdateSetClauseModel updateSetClauseModel : this.setClauseList) {
                     // resolve target columns against target set
                     for (SQLQueryValueExpression valueExpression : updateSetClauseModel.targets) {
-                        valueExpression.resolveValueRelations(targetContext, statistics);
+                        if (!valueExpression.tryResolveValueRelations(targetContext, statistics)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -295,7 +299,9 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
 
         SQLQueryRowsDataContext sourceContext;
         if (this.sourceRows != null) {
-            this.sourceRows.resolveValueRelations(context, statistics);
+            if (!this.sourceRows.tryResolveValueRelations(context, statistics)) {
+                return false;
+            }
             sourceContext = this.sourceRows.getRowsDataContext();
         } else {
             sourceContext = context;
@@ -309,16 +315,22 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
             for (SQLQueryUpdateSetClauseModel setClauseModel : this.setClauseList) {
                 // resolve source value expressions against combined participating sets
                 for (SQLQueryValueExpression valueExpression : setClauseModel.sources) {
-                    valueExpression.resolveValueRelations(context, statistics);
+                    if (!valueExpression.tryResolveValueRelations(context, statistics)) {
+                        return false;
+                    }
                 }
             }
         }
         
         if (this.whereClause != null) {
-            this.whereClause.resolveValueRelations(context, statistics);
+            if (!this.whereClause.tryResolveValueRelations(context, statistics)) {
+                return false;
+            }
         }
         if (this.orderByClause != null) {
-            this.orderByClause.resolveValueRelations(context, statistics);
+            if (!this.orderByClause.tryResolveValueRelations(context, statistics)) {
+                return false;
+            }
         }
 
         if (this.conditionsScope != null) {
@@ -328,6 +340,7 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
         if (this.tailScope != null) {
             this.setTailOrigin(this.tailScope.getSymbolsOrigin());
         }
+        return true;
     }
 
     @Override

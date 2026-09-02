@@ -81,7 +81,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void resolveRelations(
+    public boolean tryResolveRelations(
         @NotNull SQLQueryRowsSourceContext rowsContext,
         @Nullable SQLQueryRowsDataContext tableDataContext,
         @NotNull SQLQueryRecognitionContext statistics
@@ -98,8 +98,9 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
 
         if (this.checkExpression != null && tableDataContext != null) {
             this.checkExpression.resolveRowSources(tableDataContext.getRowsSources(), statistics);
-            this.checkExpression.resolveValueRelations(tableDataContext, statistics);
+            return this.checkExpression.tryResolveValueRelations(tableDataContext, statistics);
         }
+        return true;
     }
 
     /**
@@ -114,7 +115,10 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
     ) {
         statistics.setTreatErrorAsWarnings(true);
         referencedTable.resolveObjectAndRowsReferences(rowsContext, statistics);
-        referencedTable.resolveValueRelations(rowsContext.makeEmptyTuple(), statistics);
+        if (!referencedTable.tryResolveValueRelations(rowsContext.makeEmptyTuple(), statistics)) {
+            statistics.setTreatErrorAsWarnings(false);
+            return null;
+        }
         SQLQueryRowsDataContext referencedContext = referencedTable.getRowsDataContext();
         statistics.setTreatErrorAsWarnings(false);
         DBSEntity realTable = referencedTable.getTable();
