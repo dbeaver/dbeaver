@@ -49,6 +49,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
 
     public static final String PARAMETER_TYPE = "type";
     public static final String PARAMETER_INCLUDE_PIPES = "includePipesConfiguration";
+    public static final String PARAMETER_SEARCH_SIMILAR = "searchSimilar";
 
     private static final String PRODUCER_NODE_ID = "database_producer";
     private static final String CONSUMER_NODE_ID = "stream_consumer";
@@ -62,6 +63,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
     ) throws DBException {
         final String type = JSONUtils.getString(parameters, PARAMETER_TYPE);
         final boolean includePipes = JSONUtils.getBoolean(parameters, PARAMETER_INCLUDE_PIPES, false);
+        final boolean searchSimilar = JSONUtils.getBoolean(parameters, PARAMETER_SEARCH_SIMILAR, false);
         if (CommonUtils.isEmpty(type)) {
             throw new DBException("`type` attribute is mandatory");
         }
@@ -69,7 +71,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
         final DataTransferRegistry registry = DataTransferRegistry.getInstance();
         final DataTransferNodeDescriptor producerNode = registry.getNodeById(PRODUCER_NODE_ID);
         final DataTransferNodeDescriptor consumerNode = registry.getNodeById(CONSUMER_NODE_ID);
-        final DataTransferProcessorDescriptor processor = findProcessor(registry, consumerNode, type);
+        final DataTransferProcessorDescriptor processor = findProcessor(registry, consumerNode, type, searchSimilar);
 
         if (processor == null) {
             throw new DBException("Can't find processor of type '" + type + "'");
@@ -113,10 +115,11 @@ public class SQLPragmaExport implements SQLPragmaHandler {
     private static DataTransferProcessorDescriptor findProcessor(
         @NotNull DataTransferRegistry registry,
         @NotNull DataTransferNodeDescriptor consumerNode,
-        @NotNull String type
+        @NotNull String type,
+        boolean searchSimilar
     ) {
         DataTransferProcessorDescriptor processor = registry.getProcessor(PROCESSOR_ID_PREFIX + type);
-        if (processor != null) {
+        if (processor != null || !searchSimilar) {
             return processor;
         }
 
