@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@
 package org.jfree.chart.swt.editor;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -109,12 +108,8 @@ class SWTTitleEditor extends Composite {
         this.showTitleCheckBox.setLayoutData(new GridData(SWT.CENTER,
                 SWT.CENTER, false, false));
         this.showTitleCheckBox.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
-                        SWTTitleEditor.this.showTitle = SWTTitleEditor.this
-                                .showTitleCheckBox.getSelection();
-                    }
-                });
+                SelectionListener.widgetSelectedAdapter(event -> SWTTitleEditor.this.showTitle = SWTTitleEditor.this
+                                .showTitleCheckBox.getSelection()));
         // row 2
         new Label(general, SWT.NONE).setText(localizationResources.getString(
                 "Text"));
@@ -134,8 +129,7 @@ class SWTTitleEditor extends Composite {
         this.selectFontButton.setText(localizationResources.getString(
                 "Select..."));
         this.selectFontButton.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         // Create the font-change dialog
                         FontDialog dlg = new FontDialog(getShell());
                         dlg.setText(localizationResources.getString(
@@ -158,8 +152,7 @@ class SWTTitleEditor extends Composite {
                             SWTTitleEditor.this.titleFont
                                     = SWTTitleEditor.this.font.getFontData()[0];
                         }
-                    }
-                }
+                    })
         );
         // row 4
         new Label(general, SWT.NONE).setText(localizationResources.getString(
@@ -176,8 +169,7 @@ class SWTTitleEditor extends Composite {
         this.selectColorButton.setText(localizationResources.getString(
                 "Select..."));
         this.selectColorButton.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         // Create the color-change dialog
                         ColorDialog dlg = new ColorDialog(getShell());
                         dlg.setText(localizationResources.getString(
@@ -192,8 +184,7 @@ class SWTTitleEditor extends Composite {
                             colorCanvas.setColor(
                                     SWTTitleEditor.this.titleColor);
                         }
-                    }
-                }
+                    })
         );
     }
 

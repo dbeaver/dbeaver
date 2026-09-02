@@ -12,6 +12,7 @@
     <extension-point id="org.jkiss.dbeaver.serialize" name="%extension-point.org.jkiss.dbeaver.serialize.name" schema="schema/org.jkiss.dbeaver.serialize.exsd"/>
     <extension-point id="org.jkiss.dbeaver.navigator" name="%extension-point.org.jkiss.dbeaver.navigator.name" schema="schema/org.jkiss.dbeaver.navigator.exsd"/>
     <extension-point id="org.jkiss.dbeaver.settings" name="DBeaver Settings" schema="schema/org.jkiss.dbeaver.settings.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.syncUnit" name="Synchronization unit" schema="schema/org.jkiss.dbeaver.syncUnit.exsd"/>
     <extension-point id="org.jkiss.dbeaver.fileSystem" name="%extension-point.org.jkiss.dbeaver.fileSystem.name" schema="schema/org.jkiss.dbeaver.fileSystem.exsd"/>
     <extension-point id="org.jkiss.dbeaver.fileTypeHandler" name="File type handlers" schema="schema/org.jkiss.dbeaver.fileTypeHandlers.exsd"/>
 
@@ -33,6 +34,9 @@
                 <property id="useTypeScale" label="%DateFormatter.number.general.useTypeScale.label" type="boolean" description="%DateFormatter.number.general.useTypeScale.description"/>
                 <property id="roundingMode" label="%DateFormatter.number.general.roundingMode.label" type="string" description="%DateFormatter.number.general.roundingMode.description" validValues="UP,DOWN,CEILING,FLOOR,HALF_UP,HALF_DOWN,HALF_EVEN,UNNECESSARY"/>
                 <property id="nativeSpecialValues" label="%DateFormatter.number.general.nativeSpecialValues.label" type="boolean" description="%DateFormatter.number.general.nativeSpecialValues.description"/>
+                <property id="scientificSmallValues" label="%DateFormatter.number.general.scientificSmallValues.label" type="boolean" description="%DateFormatter.number.general.scientificSmallValues.description"/>
+                <property id="scientificExponentSeparator" label="%DateFormatter.number.general.scientificExponentSeparator.label" type="string" description="%DateFormatter.number.general.scientificExponentSeparator.description" required="true"/>
+                <property id="scientificPattern" label="%DateFormatter.number.general.scientificPattern.label" type="string" description="%DateFormatter.number.general.scientificPattern.description" required="true"/>
                 <property id="excludeIdColumns" label="%DateFormatter.number.general.excludeIdColumns.label" type="boolean" description="%DateFormatter.number.general.excludeIdColumns.description"/>
             </propertyGroup>
         </formatter>
@@ -229,5 +233,6 @@
             properties="isFeatureEnabled,isAvailable"
             type="java.lang.Object"/>
     </extension>
+
 
 </plugin>

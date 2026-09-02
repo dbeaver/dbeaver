@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -81,14 +79,11 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                 2,
                 GridData.HORIZONTAL_ALIGN_BEGINNING);
 
-            SelectionListener listener = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener listener = SelectionListener.widgetSelectedAdapter(e -> {
                     processIdText.setEnabled(kindGlobal.getSelection());
                     parametersTable.setEnabled(kindLocal.getSelection());
                     container.updateDialogState();
-                }
-            };
+                });
 
             kindLocal = new Button(kindGroup, SWT.RADIO);
             kindLocal.setText("Local");
