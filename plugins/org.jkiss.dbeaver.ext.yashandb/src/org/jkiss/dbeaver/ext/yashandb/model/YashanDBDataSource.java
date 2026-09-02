@@ -133,6 +133,7 @@ public class YashanDBDataSource extends OracleDataSource {
         return this;
     }
 
+    @Nullable
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBAServerSessionManager.class) {
@@ -146,6 +147,7 @@ public class YashanDBDataSource extends OracleDataSource {
 
     static class YashanDBTablespaceCache extends TablespaceCache {
 
+        @NotNull
         @Override
         protected YashanDBTablespace fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner,
                                                  @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
@@ -155,6 +157,7 @@ public class YashanDBDataSource extends OracleDataSource {
 
     static class YashanDBDataTypeCache extends DataTypeCache {
 
+        @NotNull
         @Override
         protected YashanDBDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner,
                                                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {

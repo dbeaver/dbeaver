@@ -43,6 +43,7 @@ public class YashanDBSchemaConfigurator implements DBEObjectConfigurator<YashanD
                                           @NotNull YashanDBSchema newSchema,
                                           @NotNull Map<String, Object> options) {
         return new UITask<YashanDBSchema>() {
+            @NotNull
             @Override
             protected YashanDBSchema runTask() {
                 NewUserDialog dialog = new OracleSchemaConfigurator.NewUserDialog(UIUtils.getActiveWorkbenchShell(),

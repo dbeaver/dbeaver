@@ -32,7 +32,7 @@ public class YashanDBSQLDialect extends OracleSQLDialect {
     private static final String[] YASHANDB_ADVANCED_KEYWORDS = {"SYNONYM", "CREATE OR REPLACE", "NEXTVAL", "REPLACE",
         "PACKAGE", "FUNCTION", "TYPE", "BODY", "RECORD", "TRIGGER", "MATERIALIZED", "IF", "EACH", "RETURN",
         "WRAPPED", "AFTER", "BEFORE", "DATABASE", "ANALYZE", "VALIDATE", "STRUCTURE", "COMPUTE", "STATISTICS",
-        "LOOP", "WHILE", "BULK", "ELSIF", "EXIT",};
+        "LOOP", "WHILE", "BULK", "ELSIF", "EXIT"};
 
     // V$RESERVED_WORDS
     private static final String[] YASHANDB_ALL_KEYWORD = {"ABORT", "ACCESS", "ACCOUNT", "ACTIONS", "ADD", "ADMINISTER",
@@ -90,7 +90,7 @@ public class YashanDBSQLDialect extends OracleSQLDialect {
         "ZONE", "ZORDER"};
 
     @Override
-    public void initDriverSettings(@NotNull JDBCSession session,@NotNull JDBCDataSource dataSource,@NotNull JDBCDatabaseMetaData metaData) {
+    public void initDriverSettings(@NotNull JDBCSession session, @NotNull JDBCDataSource dataSource, @NotNull JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
 
         // V$FUNCTION
