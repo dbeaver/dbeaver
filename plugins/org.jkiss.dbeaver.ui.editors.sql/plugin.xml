@@ -1625,7 +1625,9 @@
 
     <extension point="org.jkiss.dbeaver.sqlGenerator">
         <generator id="ddlByResultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorDDLFromResultSet" label="CREATE" description="%generator.org.jkiss.dbeaver.ui.editors.sql.ddlByResultSet.description" order="6">
-            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+            <!-- Hidden for dynamic-metadata (schemaless) sources: same condition the generator checks at run time -->
+            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"
+                        if="!object.getDataContainer().getDataSource().getInfo().isDynamicMetadata()"/>
         </generator>
     </extension>
 
