@@ -187,24 +187,16 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             // Only show when the persisted configuration lacks any features defined in the registry, e.g. fresh start
             return;
         }
-        runWithSplashHidden(() -> {
-            var dialog = new ProductConfigWizardDialog(
-                getWindowConfigurer().getWindow(),
-                ProductConfigWizard.Origin.AUTOMATIC
-            );
-            if (dialog.open() == IDialogConstants.CANCEL_ID) {
-                DBRFeatureRegistry.getInstance().endTracking();
-                System.exit(0);
-            }
-        });
-    }
 
-    private static void runWithSplashHidden(@NotNull Runnable runnable) {
-        var splash = WorkbenchPlugin.getSplashShell(Display.getCurrent());
-        if (splash != null && !splash.isDisposed()) {
-            splash.setVisible(false);
+        WorkbenchPlugin.unsetSplashShell(Display.getCurrent());
+        var dialog = new ProductConfigWizardDialog(
+            getWindowConfigurer().getWindow(),
+            ProductConfigWizard.Origin.AUTOMATIC
+        );
+        if (dialog.open() == IDialogConstants.CANCEL_ID) {
+            DBRFeatureRegistry.getInstance().endTracking();
+            System.exit(0);
         }
-        runnable.run();
     }
 
     /**
