@@ -667,6 +667,49 @@
             </nativeClients>
 
         </datasource>
+        <datasource
+                class="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"
+                description="Amazon Aurora PostgreSQL provider"
+                id="aurora-postgresql"
+                parent="postgresql"
+                label="Amazon Aurora PostgreSQL"
+                icon="icons/aurora_icon.svg"
+                dialect="postgresql"
+                inheritAuthModels="false"
+                inheritClients="true"
+                inheritProviderProperties="true">
+            <drivers managable="true">
+                <driver
+                        id="aurora-postgresql"
+                        label="Amazon Aurora PostgreSQL"
+                        icon="icons/aurora_icon.svg"
+                        iconBig="icons/aurora_icon_big.svg"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        useURL="true"
+                        defaultPort="5432"
+                        defaultDatabase="postgres"
+                        defaultUser="postgres"
+                        webURL="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraPostgreSQL.html"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/use/"
+                        description="Amazon Aurora PostgreSQL JDBC driver"
+                        categories="sql,cloud,aws"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        promoted="1"
+                        dialect="postgresql">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" optional="true" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="postgresql"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                    <property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
+                </driver>
+            </drivers>
+        </datasource>
     </extension>
 
     <!-- Unsecure (http) repository. We can't use it by default, sorry -->
