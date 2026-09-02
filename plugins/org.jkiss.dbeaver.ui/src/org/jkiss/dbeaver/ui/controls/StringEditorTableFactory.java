@@ -20,8 +20,7 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -85,12 +84,7 @@ public class StringEditorTableFactory<T> {
         tableEditor = createTableEditor();
         createRightArea();
 
-        valueTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                buttonsRefresher.run();
-            }
-        });
+        valueTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> buttonsRefresher.run()));
         return valueTable;
     }
 
@@ -212,13 +206,10 @@ public class StringEditorTableFactory<T> {
         Button addButton = new Button(buttonsGroup, SWT.PUSH);
         addButton.setText(UIMessages.button_add);
         addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        addButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        addButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 TableItem newItem = new TableItem(valueTable, SWT.LEFT);
                 addTableItem(newItem);
-            }
-        });
+            }));
         return addButton;
     }
 
@@ -253,17 +244,14 @@ public class StringEditorTableFactory<T> {
         Button removeButton = new Button(buttonsGroup, SWT.PUSH);
         removeButton.setText(UIMessages.button_remove);
         removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        removeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        removeButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 int selectionIndex = valueTable.getSelectionIndex();
                 if (selectionIndex >= 0) {
                     tableEditor.closeEditor();
                     valueTable.remove(selectionIndex);
                     buttonsRefresher.run();
                 }
-            }
-        });
+            }));
         removeButton.setEnabled(false);
         return removeButton;
     }
@@ -273,14 +261,11 @@ public class StringEditorTableFactory<T> {
         final Button clearButton = new Button(buttonsGroup, SWT.PUSH);
         clearButton.setText(UIMessages.button_clear);
         clearButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        clearButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        clearButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 tableEditor.closeEditor();
                 valueTable.removeAll();
                 buttonsRefresher.run();
-            }
-        });
+            }));
         return clearButton;
     }
 
@@ -289,9 +274,7 @@ public class StringEditorTableFactory<T> {
         final Button upButton = new Button(buttonsGroup, SWT.PUSH);
         upButton.setImage(DBeaverIcons.getImage(UIIcon.ARROW_UP));
         upButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        upButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        upButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 int selectionIndex = valueTable.getSelectionIndex();
                 if (selectionIndex >= 1 && selectionIndex < valueTable.getItemCount()) {
                     T value = getCustomValue(valueTable.getItem(selectionIndex));
@@ -301,8 +284,7 @@ public class StringEditorTableFactory<T> {
                     valueTable.setSelection(selectionIndex - 1);
                     buttonsRefresher.run();
                 }
-            }
-        });
+            }));
         upButton.setVisible(withReordering);
         return upButton;
     }
@@ -312,9 +294,7 @@ public class StringEditorTableFactory<T> {
         final Button downButton = new Button(buttonsGroup, SWT.PUSH);
         downButton.setImage(DBeaverIcons.getImage(UIIcon.ARROW_DOWN));
         downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        downButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        downButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 int selectionIndex = valueTable.getSelectionIndex();
                 if (selectionIndex >= 0 && selectionIndex < valueTable.getItemCount() - 1) {
                     T value = getCustomValue(valueTable.getItem(selectionIndex));
@@ -324,8 +304,7 @@ public class StringEditorTableFactory<T> {
                     valueTable.setSelection(selectionIndex + 1);
                     buttonsRefresher.run();
                 }
-            }
-        });
+            }));
         downButton.setVisible(withReordering);
         return downButton;
     }

@@ -30,8 +30,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -387,13 +386,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         createContextMenu();
         addDragAndDropSupport();
-        logTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                //TableItem item = (TableItem)e.item;
-                showEventDetails((QMEvent) e.item.getData());
-            }
-        });
+        //TableItem item = (TableItem)e.item;
+        logTable.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(e -> showEventDetails((QMEvent) e.item.getData())));
 
         this.filter = filter;
 

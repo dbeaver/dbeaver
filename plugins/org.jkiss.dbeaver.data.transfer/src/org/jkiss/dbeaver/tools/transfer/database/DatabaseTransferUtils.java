@@ -259,7 +259,7 @@ public class DatabaseTransferUtils {
                     sql.append(",\n");
                 }
                 sql.append("\t");
-                appendAttributeClause(dataSource, sql, attr);
+                appendAttributeClause(monitor, dataSource, sql, attr);
                 mappedAttrs.put(attr.getSource(), attr);
             }
             if (!hasExtraTargetStructure && containerMapping.getSource() instanceof DBSEntity) {
@@ -291,7 +291,7 @@ public class DatabaseTransferUtils {
         } else {
             for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
                 if (attr.getMappingType() == DatabaseMappingType.create) {
-                    actions.add(generateTargetAttributeDDL(dataSource, attr));
+                    actions.add(generateTargetAttributeDDL(monitor, dataSource, attr));
                 }
             }
         }
@@ -499,6 +499,10 @@ public class DatabaseTransferUtils {
                         }
                     }
 
+                    if (newAttribute instanceof DBSAttributeCollation collationAttr) {
+                        collationAttr.setCollationName(attributeMapping.getTargetCollation(monitor));
+                    }
+
                     transferComment(monitor, commandContext, newAttribute, getSourceDescription(attributeMapping.getSource()));
                     var attrCache = attributeManager.getObjectsCache(newAttribute);
                     if (attrCache != null) {
@@ -611,21 +615,30 @@ public class DatabaseTransferUtils {
     }
 
     @NotNull
-    static DBEPersistAction generateTargetAttributeDDL(@NotNull DBPDataSource dataSource, @NotNull DatabaseMappingAttribute attribute) {
+    static DBEPersistAction generateTargetAttributeDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull DatabaseMappingAttribute attribute
+    ) {
         StringBuilder sql = new StringBuilder(500);
         sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL))
             .append(" ADD ");
-        appendAttributeClause(dataSource, sql, attribute);
+        appendAttributeClause(monitor, dataSource, sql, attribute);
         return new SQLDatabasePersistAction(sql.toString());
     }
 
     private static void appendAttributeClause(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,
         @NotNull StringBuilder sql,
         @NotNull DatabaseMappingAttribute attr
     ) {
         String attrName = getTransformedName(dataSource, attr.getTargetName(), false);
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attrName)).append(" ").append(attr.getTargetType(dataSource, true));
+        String collation = attr.getTargetCollation(monitor);
+        if (!CommonUtils.isEmpty(collation)) {
+            sql.append(" COLLATE ").append(collation);
+        }
         if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
             if (attr.getSource() != null && attr.getSource().isRequired()) {
                 sql.append(" NOT NULL");
