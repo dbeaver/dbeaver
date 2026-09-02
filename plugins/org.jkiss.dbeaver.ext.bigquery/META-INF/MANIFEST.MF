@@ -12,5 +12,4 @@ Automatic-Module-Name: org.jkiss.dbeaver.ext.bigquery
 Export-Package: org.jkiss.dbeaver.ext.bigquery,
  org.jkiss.dbeaver.ext.bigquery.model,
  org.jkiss.dbeaver.ext.bigquery.auth
-Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
- slf4j.api;visibility:=reexport
+Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport

@@ -24,5 +24,6 @@ import org.jkiss.code.Nullable;
  */
 public record DDSyncBinding(
     @NotNull String containerId,
-    @Nullable String label
+    @Nullable String label,
+    @Nullable String accountId
 ) { }

@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.equinox.preferences,
  org.eclipse.search,
- org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ui.navigator
 Export-Package: org.jkiss.dbeaver.ui.search,

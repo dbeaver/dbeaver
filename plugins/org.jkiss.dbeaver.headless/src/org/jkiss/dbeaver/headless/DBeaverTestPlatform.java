@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,7 +57,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     private static volatile boolean isClosing = false;
 
-    private File tempFolder;
+    private Path tempFolder;
     private DBeaverTestWorkspace workspace;
 
     private static boolean disposed = false;
@@ -119,7 +118,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         if (tempFolder != null) {
 
             if (!ContentUtils.deleteFileRecursive(tempFolder)) {
-                log.warn("Can't delete temp folder '" + tempFolder.getAbsolutePath() + "'");
+                log.warn("Can't delete temp folder '" + tempFolder.toAbsolutePath() + "'");
             }
             tempFolder = null;
         }
@@ -183,29 +182,35 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
             // Make temp folder
             monitor.subTask("Create temp folder");
             try {
-                final java.nio.file.Path tempDirectory = Files.createTempDirectory(TEMP_PROJECT_NAME);
-                tempFolder = tempDirectory.toFile();
+                tempFolder = Files.createTempDirectory(TEMP_PROJECT_NAME);
             } catch (IOException e) {
-                final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
+                String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 if (!CommonUtils.isEmpty(sysTempFolder)) {
-                    tempFolder = new File(sysTempFolder, TEMP_PROJECT_NAME);
-                    if (!tempFolder.mkdirs()) {
-                        final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
+                    tempFolder = Path.of(sysTempFolder, TEMP_PROJECT_NAME);
+                    try {
+                        Files.createDirectories(tempFolder);
+                    } catch (IOException ex) {
+                        String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
                         if (!CommonUtils.isEmpty(sysUserFolder)) {
-                            tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
-                            if (!tempFolder.mkdirs()) {
-                                tempFolder = new File(TEMP_PROJECT_NAME);
+                            tempFolder = Path.of(sysUserFolder, TEMP_PROJECT_NAME);
+                            try {
+                                Files.createDirectories(tempFolder);
+                            } catch (IOException exc) {
+                                tempFolder = Path.of(TEMP_PROJECT_NAME);
                             }
                         }
-
                     }
                 }
             }
         }
-        if (!tempFolder.exists() && !tempFolder.mkdirs()) {
-            log.error("Can't create temp directory " + tempFolder.getAbsolutePath());
+        if (!Files.exists(tempFolder)) {
+            try {
+                Files.createDirectories(tempFolder);
+            } catch (IOException e) {
+                log.error("Can't create temp directory " + tempFolder.toAbsolutePath());
+            }
         }
-        return tempFolder.toPath();
+        return tempFolder;
     }
 
     @Override

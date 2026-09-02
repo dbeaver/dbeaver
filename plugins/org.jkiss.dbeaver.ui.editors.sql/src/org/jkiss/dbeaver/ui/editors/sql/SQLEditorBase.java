@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,10 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
@@ -360,7 +362,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
         editorControl = new SQLEditorControl(parent, this);
@@ -541,6 +543,28 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     protected ISharedTextColors getSharedColors() {
         return UIUtils.getSharedTextColors();
+    }
+
+    protected void updateVerticalRulerColors() {
+        if (!UIStyles.isDarkTheme()) {
+            return;
+        }
+        IVerticalRuler verticalRuler = getVerticalRuler();
+        if (verticalRuler == null) {
+            return;
+        }
+        Control rulerControl = verticalRuler.getControl();
+        if (rulerControl == null || rulerControl.isDisposed()) {
+            return;
+        }
+        Color background = UIStyles.getDefaultTextBackground();
+        rulerControl.setBackground(background);
+        if (rulerControl instanceof Composite composite) {
+            // Each ruler column owns a canvas that does not inherit the background on its own
+            for (Control column : composite.getChildren()) {
+                column.setBackground(background);
+            }
+        }
     }
 
     @Override
@@ -780,7 +804,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
+    public void editorContextMenuAboutToShow(@NotNull IMenuManager menu) {
         menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
 
         super.editorContextMenuAboutToShow(menu);
