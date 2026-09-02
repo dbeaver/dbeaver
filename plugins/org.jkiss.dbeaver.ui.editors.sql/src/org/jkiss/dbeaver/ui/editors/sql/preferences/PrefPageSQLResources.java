@@ -20,8 +20,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -198,12 +196,8 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 sqlTemplateViewer.createPartControl(sqlTemplateViewerComposite);
                 sqlTemplateViewerComposite.addDisposeListener(e -> sqlTemplateViewer.dispose());
 
-                sqlTemplateEnabledCheckbox.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection());
-                    }
-                });
+                sqlTemplateEnabledCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    UIUtils.enableWithChildren(sqlTemplateViewerComposite, sqlTemplateEnabledCheckbox.getSelection())));
             }
 
             new VariablesHintLabel(
@@ -247,12 +241,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 SQLEditorMessages.pref_page_sql_editor_checkbox_bind_embedded_write_tip,
                 store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE),
                 2);
-            bindEmbeddedWriteCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    enableCommentType();
-                }
-            });
+            bindEmbeddedWriteCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> enableCommentType()));
 
             commentTypeComposite = UIUtils.createComposite(connGroup, 1);
             for (SQLScriptBindingType bt : SQLScriptBindingType.values()) {

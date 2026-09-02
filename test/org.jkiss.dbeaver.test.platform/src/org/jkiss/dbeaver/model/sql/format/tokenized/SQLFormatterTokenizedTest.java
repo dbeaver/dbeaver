@@ -200,6 +200,24 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldKeepTableConstraintColumnsOnTheSameLine() {
+        String inputString = "CREATE TABLE Persons (PersonID int, LastName varchar(255), " +
+            "CONSTRAINT PersonPK PRIMARY KEY (PersonID, LastName), UNIQUE (PersonID, LastName), " +
+            "FOREIGN KEY (PersonID, LastName) REFERENCES Parent (PersonID, LastName));";
+        String expectedString = "CREATE TABLE Persons (" + lineBreak +
+            "\tPersonID int," + lineBreak +
+            "\tLastName varchar(255)," + lineBreak +
+            "\tCONSTRAINT PersonPK PRIMARY KEY (PersonID, LastName)," + lineBreak +
+            "\tUNIQUE (PersonID, LastName)," + lineBreak +
+            "\tFOREIGN KEY (PersonID, LastName) REFERENCES Parent (PersonID, LastName)" + lineBreak +
+            ");";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
+
+        Assertions.assertEquals(expectedString, format(inputString));
+    }
+
+    @Test
     public void shouldDoDefaultFormatForAlterStatementWhenIndentSubstatementsInParenthesesOn() {
         //given
         String inputString = "ALTER TABLE `users` ADD COLUMN (count_copy smallint(6) NOT NULL, status int(10) unsigned NOT NULL) AFTER `lastname`;";

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ package org.jfree.chart.swt.editor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -80,11 +79,7 @@ class SWTNumberAxisEditor extends SWTAxisEditor implements FocusListener {
         this.autoRangeCheckBox.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, 
                 true, false, 2, 1));
         this.autoRangeCheckBox.setSelection(this.autoRange);
-        this.autoRangeCheckBox.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e) { 
-                    toggleAutoRange();
-                }
-            });
+        this.autoRangeCheckBox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> toggleAutoRange()));
         new Label(range, SWT.NONE).setText(localizationResources.getString(
                 "Minimum_range_value"));
         this.minimumRangeValue = new Text(range, SWT.BORDER);
