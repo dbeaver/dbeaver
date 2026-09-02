@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.drivers"
+              id="org.jkiss.dbeaver.preferences.h2.general"
+              class="org.jkiss.dbeaver.ext.h2.ui.PrefPageH2"
+              name="H2">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.h2.general"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.h2.general" label="h2 hydrogen class allow"/>
+    </extension>
+
+</plugin>
