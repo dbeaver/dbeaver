@@ -2,23 +2,12 @@
 <?eclipse version="3.2"?>
 
 <plugin>
-
-    <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.ui.dataSourceConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.dataSourceConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.dataSourceConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceConfigurator" name="%extension-point.org.jkiss.dbeaver.dataSourceConfigurator.name" schema="schema/org.jkiss.dbeaver.dataSourceConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.connectionPageConfigurator" name="%extension-point.org.jkiss.dbeaver.connectionPageConfigurator.name" schema="schema/org.jkiss.dbeaver.connectionPageConfigurator.exsd"/>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseShellCommand" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.ShellCommandAuthModelConfigurator"/>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
-        <dataSourceConfigurator>
-<!--
-            <dataSourcePage class="org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral"/>
-            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData"/>
-            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle"/>
--->
-        </dataSourceConfigurator>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
