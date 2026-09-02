@@ -20,7 +20,9 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -116,7 +118,8 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         createCustomConnectionControls(connectionTypeFolder);
         connectionTypeFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             connectionType = (String) connectionTypeFolder.getSelection().getData();
-            site.getActiveDataSource().getConnectionConfiguration().setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
+            site.getActiveDataSource().getConnectionConfiguration()
+                .setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType);
             updateUI();
         }));
 
