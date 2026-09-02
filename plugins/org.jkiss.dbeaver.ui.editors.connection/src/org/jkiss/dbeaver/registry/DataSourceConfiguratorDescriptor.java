@@ -19,10 +19,12 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class DataSourceConfiguratorDescriptor extends AbstractDescriptor {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceConfigurator"; //$NON-NLS-1$
@@ -38,12 +40,14 @@ public class DataSourceConfiguratorDescriptor extends AbstractDescriptor {
         this.driverIds = splitIds(config.getAttribute(RegistryConstants.ATTR_DRIVER));
         this.configuratorType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         String className = configuratorType.getImplName();
-        this.id = className.substring(className.lastIndexOf('.') + 1);
+        assert className != null;
+        int divPos = className.lastIndexOf('.');
+        this.id = divPos == -1 ? className : className.substring(divPos + 1);
     }
 
     @NotNull
-    private static List<String> splitIds(String ids) {
-        return List.of(CommonUtils.split(ids, ",")).stream().map(String::trim).toList();
+    private static List<String> splitIds(@Nullable String ids) {
+        return Stream.of(CommonUtils.split(ids, ",")).map(String::trim).toList();
     }
 
     @NotNull
