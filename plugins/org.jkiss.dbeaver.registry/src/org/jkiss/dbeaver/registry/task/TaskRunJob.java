@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     }
 
+    @Override
+    public void run(boolean fork, boolean cancelable, @NotNull DBRRunnableWithProgress runnable)
+            throws InvocationTargetException, InterruptedException {
+        runnable.run(activeMonitor);
+    }
+
     @NotNull
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
@@ -157,11 +163,6 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             }
         }
         return taskStatus;
-    }
-
-    @Override
-    public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        runnable.run(activeMonitor);
     }
 
     @NotNull
