@@ -163,32 +163,14 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         if (browser != null) {
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
-            new BrowserFunction(browser, "setClipboardContents") {
-                @Override
-                public Object function(Object[] arguments) {
-                    UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
-                    return null;
-                }
-            };
-
-            if (presentation instanceof SpreadsheetPresentation) {
-                new BrowserFunction(browser, "setPresentationSelection") {
-                    @Override
-                    public Object function(Object[] arguments) {
-                        final List<GridPos> selection = new ArrayList<>();
-                        for (Object pos : ((Object[]) arguments[0])) {
-                            final String[] split = ((String) pos).split(":");
-                            selection.add(new GridPos(CommonUtils.toInt(split[0]), CommonUtils.toInt(split[1])));
-                        }
-                        ((AbstractPresentation) presentation).setSelection(new StructuredSelection(selection), false);
-                        return null;
-                    }
-                };
-            }
-
             browser.addDisposeListener(e -> {
                 server.close();
                 GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
+            });
+            browser.getDisplay().asyncExec(() -> {
+                if (!browser.isDisposed()) {
+                    registerBrowserFunctions(browser);
+                }
             });
         }
 
@@ -240,6 +222,31 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         showLabels = preferences.getBoolean(GeometryViewerConstants.PREF_SHOW_LABELS);
 
         preferences.addPropertyChangeListener(this);
+    }
+
+    private void registerBrowserFunctions(@NotNull Browser browser) {
+        new BrowserFunction(browser, "setClipboardContents") {
+            @Override
+            public Object function(Object[] arguments) {
+                UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
+                return null;
+            }
+        };
+
+        if (presentation instanceof SpreadsheetPresentation) {
+            new BrowserFunction(browser, "setPresentationSelection") {
+                @Override
+                public Object function(Object[] arguments) {
+                    final List<GridPos> selection = new ArrayList<>();
+                    for (Object pos : ((Object[]) arguments[0])) {
+                        final String[] split = ((String) pos).split(":");
+                        selection.add(new GridPos(CommonUtils.toInt(split[0]), CommonUtils.toInt(split[1])));
+                    }
+                    ((AbstractPresentation) presentation).setSelection(new StructuredSelection(selection), false);
+                    return null;
+                }
+            };
+        }
     }
 
     @Override
