@@ -28,8 +28,6 @@ import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -244,17 +242,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 1
             ));
             if (browserCombo != null) {
-                browserCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                browserCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
                             useEmbeddedBrowserAuth.setEnabled(false);
                             useEmbeddedBrowserAuth.setSelection(false);
                         } else {
                             useEmbeddedBrowserAuth.setEnabled(true);
                         }
-                    }
-                });
+                    }));
             }
 
             this.fontsController = this.prepareFontsController(composite, QUICK_FONT_IDS);
