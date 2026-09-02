@@ -17,13 +17,17 @@
 package org.jkiss.dbeaver.ui.tracking;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sync.DBPSyncScope;
 import org.jkiss.dbeaver.model.tracking.sync.DDPartSelection;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -31,15 +35,14 @@ import org.jkiss.dbeaver.ui.tracking.internal.DDTrackingUIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DDCreateConfigurationDialog extends BaseDialog {
 
     private final List<DDPartSelection> availableParts;
-    private final Map<DDPartSelection, Button> partButtons = new LinkedHashMap<>();
+    private final List<Object> rootElements = new ArrayList<>();
 
+    private CheckboxTreeViewer treeViewer;
     private Text nameText;
     private String name;
     private List<String> selectedKeys = List.of();
@@ -59,14 +62,65 @@ public class DDCreateConfigurationDialog extends BaseDialog {
         nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         UIUtils.createControlLabel(composite, DDTrackingUIMessages.create_configuration_dialog_include_label);
+
+        List<DDPartSelection> projectParts = new ArrayList<>();
         for (DDPartSelection part : availableParts) {
-            Button button = new Button(composite, SWT.CHECK);
-            button.setText(part.displayName());
-            button.setSelection(true);
-            partButtons.put(part, button);
+            if (part.scope() == DBPSyncScope.PROJECT) {
+                projectParts.add(part);
+            } else {
+                rootElements.add(part);
+            }
+        }
+        if (!projectParts.isEmpty()) {
+            rootElements.add(new ProjectGroup(projectParts));
         }
 
+        treeViewer = new CheckboxTreeViewer(composite, SWT.BORDER);
+        treeViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
+        treeViewer.setContentProvider(new PartTreeContentProvider());
+        treeViewer.setLabelProvider(new PartTreeLabelProvider());
+        treeViewer.setInput(rootElements);
+        treeViewer.expandAll();
+        treeViewer.setCheckedElements(allElements().toArray());
+        treeViewer.addCheckStateListener(event -> {
+            if (event.getElement() instanceof ProjectGroup group) {
+                treeViewer.setSubtreeChecked(group, event.getChecked());
+                treeViewer.setGrayed(group, false);
+            } else {
+                updateProjectGroupCheckState();
+            }
+        });
+
         return composite;
+    }
+
+    @NotNull
+    private List<Object> allElements() {
+        List<Object> elements = new ArrayList<>(rootElements);
+        for (Object element : rootElements) {
+            if (element instanceof ProjectGroup group) {
+                elements.addAll(group.parts());
+            }
+        }
+        return elements;
+    }
+
+    private void updateProjectGroupCheckState() {
+        for (Object element : rootElements) {
+            if (element instanceof ProjectGroup group) {
+                boolean anyChecked = false;
+                boolean allChecked = true;
+                for (DDPartSelection part : group.parts()) {
+                    if (treeViewer.getChecked(part)) {
+                        anyChecked = true;
+                    } else {
+                        allChecked = false;
+                    }
+                }
+                treeViewer.setChecked(group, anyChecked);
+                treeViewer.setGrayed(group, anyChecked && !allChecked);
+            }
+        }
     }
 
     @Override
@@ -82,11 +136,11 @@ public class DDCreateConfigurationDialog extends BaseDialog {
             return;
         }
         List<String> keys = new ArrayList<>();
-        partButtons.forEach((part, button) -> {
-            if (button.getSelection()) {
+        for (Object element : treeViewer.getCheckedElements()) {
+            if (element instanceof DDPartSelection part) {
                 keys.add(part.key());
             }
-        });
+        }
         if (keys.isEmpty()) {
             return;
         }
@@ -103,5 +157,47 @@ public class DDCreateConfigurationDialog extends BaseDialog {
     @NotNull
     public List<String> getSelectedKeys() {
         return selectedKeys;
+    }
+
+    private record ProjectGroup(@NotNull List<DDPartSelection> parts) {
+    }
+
+    private static class PartTreeContentProvider implements ITreeContentProvider {
+        @NotNull
+        @Override
+        public Object[] getElements(@NotNull Object inputElement) {
+            return ((List<?>) inputElement).toArray();
+        }
+
+        @NotNull
+        @Override
+        public Object[] getChildren(@NotNull Object parentElement) {
+            return parentElement instanceof ProjectGroup group ? group.parts().toArray() : new Object[0];
+        }
+
+        @Nullable
+        @Override
+        public Object getParent(@NotNull Object element) {
+            return null;
+        }
+
+        @Override
+        public boolean hasChildren(@NotNull Object element) {
+            return element instanceof ProjectGroup;
+        }
+    }
+
+    private static class PartTreeLabelProvider extends LabelProvider {
+        @NotNull
+        @Override
+        public String getText(@Nullable Object element) {
+            if (element instanceof DDPartSelection part) {
+                return part.displayName();
+            }
+            if (element instanceof ProjectGroup) {
+                return DDTrackingUIMessages.create_configuration_dialog_project_group;
+            }
+            return String.valueOf(element);
+        }
     }
 }

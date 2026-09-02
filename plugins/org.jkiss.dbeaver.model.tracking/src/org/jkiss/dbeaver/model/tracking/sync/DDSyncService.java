@@ -87,12 +87,13 @@ public class DDSyncService {
     public List<DDPartSelection> getAvailableParts() {
         List<DDPartSelection> parts = new ArrayList<>();
         for (DBPSyncUnit unit : enabledUnits(DBPSyncScope.WORKSPACE)) {
-            parts.add(new DDPartSelection(KEY_ACCOUNT_PREFIX + unit.getId(), unit.getName()));
+            parts.add(new DDPartSelection(KEY_ACCOUNT_PREFIX + unit.getId(), unit.getName(), DBPSyncScope.WORKSPACE));
         }
         if (!enabledUnits(DBPSyncScope.PROJECT).isEmpty()) {
             for (DBPProject project : workspace.getProjects()) {
                 if (DBPSyncSettings.isEnabled(project)) {
-                    parts.add(new DDPartSelection(KEY_PROJECT_PREFIX + getProjectId(project), project.getName()));
+                    parts.add(new DDPartSelection(
+                        KEY_PROJECT_PREFIX + getProjectId(project), project.getName(), DBPSyncScope.PROJECT));
                 }
             }
         }

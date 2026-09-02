@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.model.tracking.sync;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sync.DBPSyncScope;
 
 public record DDPartSelection(
     @NotNull String key,
-    @NotNull String displayName
+    @NotNull String displayName,
+    @NotNull DBPSyncScope scope
 ) {
 }

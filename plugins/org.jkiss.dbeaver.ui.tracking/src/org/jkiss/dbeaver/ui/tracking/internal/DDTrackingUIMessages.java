@@ -62,6 +62,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String create_configuration_dialog_title;
     public static String create_configuration_dialog_name_label;
     public static String create_configuration_dialog_include_label;
+    public static String create_configuration_dialog_project_group;
     public static String create_configuration_dialog_create_button;
 
     public static String import_key_dialog_title;
