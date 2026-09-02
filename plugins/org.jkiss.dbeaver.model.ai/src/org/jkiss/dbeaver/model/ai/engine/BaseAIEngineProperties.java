@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.meta.Property;
  */
 public abstract class BaseAIEngineProperties implements AIEngineProperties {
 
+    private boolean global = true;
+
     @SerializedName(value = "gpt.model.temperature", alternate = {"anthropic.temperature", "aws.temperature"})
     protected double temperature;
 
@@ -36,6 +38,17 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
     @Nullable
     @SerializedName(value = "gpt.timeout")
     private Integer timeout;
+
+    @Override
+    @Property(order = 0, name = "Global credentials")
+    public boolean isGlobal() {
+        return global;
+    }
+
+    @Override
+    public void setGlobal(boolean global) {
+        this.global = global;
+    }
 
     public void setTemperature(double temperature) {
         this.temperature = AIUtils.normalizeTemperature(temperature);

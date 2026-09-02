@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -94,7 +95,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Nullable
     @Override
-    @Property(order = 1, password = true, required = true)
+    @Property(order = 1, password = true, hideExpr = AIConstants.AI_NON_GLOBAL_CREDENTIALS_HIDE_EXPRESSION)
     public String getToken() {
         return token;
     }
