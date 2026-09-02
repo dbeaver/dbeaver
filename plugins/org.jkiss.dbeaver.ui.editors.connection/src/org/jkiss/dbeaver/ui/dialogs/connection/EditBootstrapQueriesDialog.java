@@ -20,8 +20,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -106,9 +105,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
         final Button addButton = new Button(buttonsGroup, SWT.PUSH);
         addButton.setText(UIMessages.button_add);
         addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        addButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        addButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 tableEditor.closeEditor();
                 String sql = EditTextDialog.editText(getShell(), UIConnectionMessages.dialog_connection_edit_wizard_general_bootstrap_query_sql_title, "");
                 if (sql != null) {
@@ -117,32 +114,25 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
                     queriesTable.setSelection(newItem);
                     UIUtils.packColumns(queriesTable, true);
                 }
-            }
-        });
+            }));
 
         final Button removeButton = new Button(buttonsGroup, SWT.PUSH);
         removeButton.setText(UIMessages.button_remove);
         removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        removeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        removeButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 int selectionIndex = queriesTable.getSelectionIndex();
                 if (selectionIndex >= 0) {
                     tableEditor.closeEditor();
                     queriesTable.remove(selectionIndex);
                     removeButton.setEnabled(queriesTable.getSelectionIndex() >= 0);
                 }
-            }
-        });
+            }));
         removeButton.setEnabled(false);
 
-        queriesTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        queriesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 int selectionIndex = queriesTable.getSelectionIndex();
                 removeButton.setEnabled(selectionIndex >= 0);
-            }
-        });
+            }));
         queriesTable.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {

@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -94,13 +92,8 @@ public class ScopeSelectorControl extends Composite {
                 scopeCombo.select(scopeCombo.getItemCount() - 1);
             }
         }
-        scopeCombo.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeScope(CommonUtils.fromOrdinal(AIDatabaseScope.class, scopeCombo.getSelectionIndex()));
-            }
-        });
+        scopeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            changeScope(CommonUtils.fromOrdinal(AIDatabaseScope.class, scopeCombo.getSelectionIndex()))));
 
         scopeText = new Text(this, SWT.READ_ONLY | SWT.BORDER);
         scopeText.setEditable(false);

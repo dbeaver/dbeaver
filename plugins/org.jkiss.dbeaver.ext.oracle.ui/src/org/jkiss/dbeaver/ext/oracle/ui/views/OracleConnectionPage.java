@@ -21,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -113,20 +114,11 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
 		createTNSConnectionControls(connectionTypeFolder);
         createAdditionalConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
-        selectConnectionTypeTab();
-        connectionTypeFolder.addSelectionListener(new SelectionAdapter()
-        {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                connectionType = (String) connectionTypeFolder.getSelection().getData();
-                site.getActiveDataSource().getConnectionConfiguration().setProviderProperty(
-                    OracleConstants.PROP_CONNECTION_TYPE,
-                    connectionType
-                );
-                updateUI();
-            }
-        });
+        connectionTypeFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            connectionType = (String) connectionTypeFolder.getSelection().getData();
+            site.getActiveDataSource().getConnectionConfiguration().setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
+            updateUI();
+        }));
 
         createAuthPanel(addrGroup, 1);
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
