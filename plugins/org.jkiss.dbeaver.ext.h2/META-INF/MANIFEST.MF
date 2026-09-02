@@ -6,11 +6,15 @@ Bundle-Version: 1.0.242.qualifier
 Bundle-Release-Date: 20260921
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.model.sql
+Bundle-Activator: org.jkiss.dbeaver.ext.h2.internal.H2Activator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ext.h2.model,
- org.jkiss.dbeaver.ext.h2.backup
+ org.jkiss.dbeaver.ext.h2.internal,
+ org.jkiss.dbeaver.ext.h2.backup,
+ org.jkiss.dbeaver.ext.h2.util
 Automatic-Module-Name: org.jkiss.dbeaver.ext.h2
