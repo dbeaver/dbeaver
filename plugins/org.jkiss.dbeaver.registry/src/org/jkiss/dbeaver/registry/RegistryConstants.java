@@ -134,6 +134,7 @@ public class RegistryConstants {
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
     public static final String ATTR_OS = "os"; //$NON-NLS-1$
     public static final String ATTR_ARCH = "arch"; //$NON-NLS-1$
+    public static final String ATTR_EXCLUDE = "exclude"; //$NON-NLS-1$
     public static final String ATTR_MAIN = "main"; //$NON-NLS-1$
     public static final String ATTR_POSITION = "position"; //$NON-NLS-1$
     public static final String ATTR_OBJECT_TYPE = "objectType"; //$NON-NLS-1$

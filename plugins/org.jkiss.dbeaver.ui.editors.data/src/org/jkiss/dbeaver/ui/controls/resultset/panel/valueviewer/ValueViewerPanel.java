@@ -31,13 +31,13 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAdaptable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -416,7 +416,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
 
     class SaveValueAction extends Action {
         SaveValueAction() {
-            super(ResultSetMessages.controls_resultset_edit_save, Action.AS_DROP_DOWN_MENU);
+            super(WorkbenchMessages.Save, Action.AS_DROP_DOWN_MENU);
             setActionDefinitionId(ValueViewCommandHandler.CMD_SAVE_VALUE);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SAVE));
             setMenuCreator(new MenuCreator(widget -> {

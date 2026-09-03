@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -85,15 +84,7 @@ public class DorisDataSource extends GenericDataSource {
     ) throws DBException {
         DorisExecutionContext dorisContext = (DorisExecutionContext) context;
         if (initFrom != null) {
-            DorisExecutionContext dorisInitFrom = (DorisExecutionContext) initFrom;
-            String activeCatalog = dorisInitFrom.getActiveCatalogName();
-            String activeDatabase = dorisInitFrom.getActiveDatabaseName();
-            if (!CommonUtils.isEmpty(activeCatalog)) {
-                dorisContext.setActiveCatalogName(activeCatalog);
-            }
-            if (!CommonUtils.isEmpty(activeDatabase)) {
-                dorisContext.setActiveDatabaseName(activeDatabase);
-            }
+            dorisContext.initDefaultsFrom(monitor, (DorisExecutionContext) initFrom);
         } else {
             dorisContext.refreshDefaults(monitor, true);
         }

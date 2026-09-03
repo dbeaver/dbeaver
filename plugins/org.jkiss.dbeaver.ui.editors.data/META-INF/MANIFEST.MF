@@ -8,11 +8,7 @@ Bundle-Release-Date: 20260921
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator
-Require-Bundle: org.eclipse.ui.workbench.texteditor,
- org.jkiss.dbeaver.data.transfer.ui,
- org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.tasks.ui,
- org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
+Require-Bundle: org.jkiss.dbeaver.data.transfer.ui,
  org.jkiss.dbeaver.ui.editors.entity;visibility:=reexport,
  org.jkiss.dbeaver.ui.navigator;visibility:=reexport,
  org.jkiss.dbeaver.registry

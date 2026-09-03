@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.editors.sql.preferences.format.tokenized;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -51,12 +49,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
     @Override
     protected Composite createFormatSettings(Composite parent) {
         Composite settings = UIUtils.createTitledComposite(parent, SQLEditorMessages.pref_page_sql_format_label_settings, 4, GridData.FILL_HORIZONTAL, 0);
-        SelectionListener selectListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeListener.run();
-            }
-        };
+        SelectionListener selectListener = SelectionListener.widgetSelectedAdapter(e -> changeListener.run());
 
         keywordCaseCombo = UIUtils.createLabelCombo(settings, SQLEditorMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
         keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
