@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -26,7 +27,6 @@ import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -208,17 +209,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             settingsScroll.setExpandVertical(true);
             settingsPanel = UIUtils.createComposite(settingsScroll, 1);
             settingsScroll.setContent(settingsPanel);
-            Composite profileGroup = UIUtils.createTitledComposite(
-                settingsPanel,
-                AIUIMessages.ai_engines_page_group_profile,
-                4,
-                GridData.FILL_HORIZONTAL
-            );
+            Composite profileGroup = new Composite(settingsPanel, SWT.NONE);
+            GridLayoutFactory.fillDefaults().margins(0, 5).numColumns(4).applyTo(profileGroup);
+            profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            profileIdText = UIUtils.createLabelText(
-                profileGroup, AIUIMessages.ai_engines_page_profile_id_label, "", SWT.BORDER | SWT.READ_ONLY);
             profileNameText = UIUtils.createLabelText(
                 profileGroup, AIUIMessages.ai_engines_page_profile_name_label, "", SWT.BORDER);
+            profileIdText = UIUtils.createLabelText(
+                profileGroup, AIUIMessages.ai_engines_page_profile_id_label, "", SWT.BORDER | SWT.READ_ONLY);
 
             engineGroup = UIUtils.createTitledComposite(
                 settingsPanel,
@@ -268,6 +266,15 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         });
         relayoutPage();
         UIUtils.packColumns(profilesViewer.getTable(), true);
+
+        if (RuntimeUtils.isLinux()) {
+            UIUtils.asyncExec(() -> {
+                // SWT on Linux can keep a stale header trim unless the table is realized with header state toggled.
+                Table table = profilesViewer.getTable();
+                table.setHeaderVisible(true);
+                table.setHeaderVisible(false);
+            });
+        }
 
         return composite;
     }
@@ -431,23 +438,15 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (partDivider.isDisposed()) {
             return;
         }
-        Shell shell = partDivider.getShell();
-        shell.layout(true, true);
-        int tableHeight = updateSashWeights();
-        int clientHeight = partDivider.getClientArea().height;
-        if (clientHeight <= 0) {
-            UIUtils.asyncExec(this::relayoutPage);
+        partDivider.getShell().layout(true, true);
+        updateSashWeights();
+        if (settingsScroll.getClientArea().height <= 0) {
+            if (settingsStackLayout.topControl == settingsScroll) {
+                UIUtils.asyncExec(this::relayoutPage);
+            }
             return;
         }
-        int settingsHeight = settingsPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-        settingsScroll.setMinHeight(settingsHeight);
-        Point shellSize = shell.getSize();
-        int newHeight = Math.min(
-            shellSize.y + tableHeight + partDivider.getSashWidth() + settingsHeight - clientHeight,
-            shell.getDisplay().getClientArea().height);
-        if (newHeight > shellSize.y) {
-            UIUtils.resizeShell(shell, new Point(shellSize.x, newHeight));
-        }
+        settingsScroll.setMinSize(settingsPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
     private int updateSashWeights() {
@@ -502,10 +501,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 return;
             }
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
-            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor);
+            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor, this::handleConfiguratorChange);
             profileConfiguratorMapping.put(selectedProfile.getEngineId(), activeEngineConfiguratorPage);
         } else {
-            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor);
+            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor, this::handleConfiguratorChange);
         }
 
         try {
@@ -518,6 +517,16 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             );
         }
         updateTestConnectionButton();
+    }
+
+    private void handleConfiguratorChange() {
+        UIUtils.asyncExec(() -> {
+            if (partDivider.isDisposed()) {
+                return;
+            }
+            updateTestConnectionButton();
+            relayoutPage();
+        });
     }
 
     private void updateTestConnectionButton() {
@@ -606,11 +615,11 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             this.configurator = configurator;
         }
 
-        private void createControl(Composite parent, AIEngineDescriptor engine) {
+        private void createControl(Composite parent, AIEngineDescriptor engine, @NotNull Runnable changeListener) {
             composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (configurator != null) {
-                configurator.createControl(composite, engine, () -> {});
+                configurator.createControl(composite, engine, changeListener);
             }
         }
 

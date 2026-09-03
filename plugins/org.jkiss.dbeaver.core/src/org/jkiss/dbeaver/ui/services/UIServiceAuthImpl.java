@@ -36,6 +36,7 @@ public class UIServiceAuthImpl implements UIServiceAuth {
             Shell shell = UIUtils.getActiveWorkbenchShell();
             if (shell == null) {
                 // No shell - can't show the dialog
+                future.cancel(false);
                 return;
             }
             CodeAuthDialog dialog = new CodeAuthDialog(shell, browserUrl, userCode, future);

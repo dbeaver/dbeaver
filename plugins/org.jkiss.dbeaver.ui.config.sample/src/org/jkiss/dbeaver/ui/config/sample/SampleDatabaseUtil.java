@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.nio.file.Files;
 
 public final class SampleDatabaseUtil {
     private static final Log log = Log.getLog(SampleDatabaseUtil.class);
@@ -43,8 +45,14 @@ public final class SampleDatabaseUtil {
     private SampleDatabaseUtil() {
     }
 
-    public static boolean isSampleDatabaseExists(@NotNull DBPDataSourceRegistry registry) {
-        return registry.getDataSource(SAMPLE_DB1_ID) != null;
+    public static boolean isSampleDatabaseExists(@NotNull DBPProject project) {
+        try {
+            String configuration = Files.readString(
+                project.getMetadataFolder(false).resolve(DBPDataSourceRegistry.MODERN_CONFIG_FILE_NAME));
+            return configuration.contains(SAMPLE_DB1_ID);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public static void createSampleDatabase(@NotNull DBPDataSourceRegistry registry) {

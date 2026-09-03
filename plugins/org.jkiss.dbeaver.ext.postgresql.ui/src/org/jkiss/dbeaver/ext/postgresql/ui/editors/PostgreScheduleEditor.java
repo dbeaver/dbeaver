@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -288,14 +286,11 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
         final int cols = ((GridLayout) parent.getLayout()).numColumns;
         final int rows = (int) Math.ceil(input.length / (float) cols);
         final Button[] buttons = new Button[input.length];
-        final SelectionListener listener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        final SelectionListener listener = SelectionListener.widgetSelectedAdapter(e -> {
                 final Button button = (Button) e.widget;
                 final T data = (T) button.getData();
                 decorator.setChecked(data, button.getSelection());
-            }
-        };
+            });
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {

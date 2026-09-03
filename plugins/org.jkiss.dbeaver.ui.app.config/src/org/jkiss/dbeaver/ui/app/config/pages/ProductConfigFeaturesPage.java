@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.app.config.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
@@ -31,6 +33,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
+    private static final Log log = Log.getLog(ProductConfigFeaturesPage.class);
+
     private final Map<ProductConfigFeatureDescriptor, UIObservable<Boolean>> features = new HashMap<>();
 
     public ProductConfigFeaturesPage() {
@@ -84,6 +88,9 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                 .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
                 .indent(pb2 -> {
                     for (ProductConfigFeatureDescriptor descriptor : ProductConfigRegistry.getInstance().getFeatures()) {
+                        if (!isFeatureVisible(descriptor)) {
+                            continue;
+                        }
                         pb2.row(rb1 -> rb1
                             .checkBox(descriptor.getLabel(), bb -> bb
                                 .tooltip(StringUtils.wrap(descriptor.getDescription(), UITextUtils.TOOLTIP_WRAP_LENGTH))
@@ -101,5 +108,15 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                     .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)));
+    }
+
+    private boolean isFeatureVisible(@NotNull ProductConfigFeatureDescriptor descriptor) {
+        try {
+            var tester = descriptor.getAvailabilityTester();
+            return tester == null || tester.isFeatureAvailable();
+        } catch (DBException e) {
+            log.error("Error checking availability of product configuration feature '" + descriptor.getId() + "'", e);
+            return true;
+        }
     }
 }
