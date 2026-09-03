@@ -53,6 +53,7 @@ import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
@@ -344,6 +345,12 @@ public class UIUtils {
             Rectangle clientArea = tree.getClientArea();
             if (clientArea.isEmpty()) {
                 return;
+            }
+            if (RuntimeUtils.isMacOS()) {
+                ScrollBar verticalBar = tree.getVerticalBar();
+                if (verticalBar != null) {
+                    clientArea.width -= verticalBar.getSize().x;
+                }
             }
             int totalWidth = 0;
             for (TreeColumn column : columns) {
@@ -926,15 +933,12 @@ public class UIUtils {
         //editButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         //editButton.setText("...");
         editButton.setImage(DBeaverIcons.getImage(UIIcon.EDIT)); //$NON-NLS-1$
-        editButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        editButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 String newText = EditTextDialog.editText(parent.getShell(), label, text.getText());
                 if (newText != null) {
                     text.setText(newText);
                 }
-            }
-        });
+            }));
         editTB.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         return text;
@@ -2224,19 +2228,24 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbStringOrId)) {
             return null;
         }
+        Color connectionColor;
         if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
             // Some color constant
             RGB rgb = getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
-            return getSharedColor(rgb);
+            connectionColor = getSharedColor(rgb);
         } else {
-            Color connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
-            if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
-                // For white color return just null to avoid explicit color set.
-                // It is important for dark themes
-                return null;
-            }
-            return connectionColor;
+            connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
         }
+        if (connectionColor != null &&
+            connectionColor.getRed() == 255 &&
+            connectionColor.getGreen() == 255 &&
+            connectionColor.getBlue() == 255
+        ) {
+            // For white color return just null to avoid explicit color set.
+            // It is important for dark themes
+            connectionColor = null;
+        }
+        return connectionColor;
     }
 
     /**

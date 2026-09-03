@@ -122,6 +122,15 @@ public final class RuntimeUtils {
     }
 
     @NotNull
+    public static Path getUserHomePath() {
+        String userHome = System.getProperty(StandardConstants.ENV_USER_HOME); //$NON-NLS-1$
+        if (userHome == null) {
+            userHome = ".";
+        }
+        return Path.of(userHome);
+    }
+
+    @NotNull
     public static String getCurrentDate() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_DATE_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
     }
@@ -667,7 +676,8 @@ public final class RuntimeUtils {
     public static <T> void executeJobsForEach(
         @NotNull Collection<? extends T> objects,
         @NotNull DBRRunnableParametrizedWithProgress<? super T> task
-    ) {
+    ) throws DBException {
+        Map<T, Throwable> errors = Collections.synchronizedMap(new LinkedHashMap<>());
         JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, 10, 1);
         for (T object : objects) {
             AbstractJob job = new AbstractJob("Execute for " + object) {
@@ -682,10 +692,9 @@ public final class RuntimeUtils {
                     if (!monitor.isCanceled()) {
                         try {
                             task.run(monitor, object);
-                        } catch (InvocationTargetException e) {
-                            log.debug(e.getTargetException());
-                        } catch (InterruptedException e) {
-                            return Status.CANCEL_STATUS;
+                        } catch (Throwable e) {
+                            errors.put(object, e);
+                            log.debug(e);
                         }
                     }
                     return Status.OK_STATUS;
@@ -700,6 +709,13 @@ public final class RuntimeUtils {
             }
         } catch (InterruptedException e) {
             // ignore
+        }
+        if (!errors.isEmpty()) {
+            Throwable firstError = errors.values().iterator().next();
+            if (firstError instanceof DBException dbe) {
+                throw dbe;
+            }
+            throw new DBException("Error executing task", firstError);
         }
     }
 
@@ -816,6 +832,34 @@ public final class RuntimeUtils {
     // Returns plugin state folder and do not create it (as default Eclipse function does)
     public static Path getPluginStateLocation(Plugin plugin) {
         return InternalPlatform.getDefault().getStateLocation(plugin.getBundle(), false).toPath();
+    }
+
+    /**
+     * Debounces the execution of a runnable by the specified delay.
+     * <p>
+     * If the returned runnable is called multiple times within the
+     * delay period, only the last call will be executed after the delay.
+     *
+     * @param runnable the runnable to debounce
+     * @param delay    the delay duration
+     * @return a debounced runnable
+     */
+    @NotNull
+    public static Runnable debounce(@NotNull Runnable runnable, @NotNull Duration delay) {
+        var job = new AbstractJob("Debouncer[" + runnable + "]") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                runnable.run();
+                return Status.OK_STATUS;
+            }
+        };
+        job.setUser(false);
+        job.setSystem(true);
+        return () -> {
+            job.cancel();
+            job.schedule(delay);
+        };
     }
 
     private enum CommandLineState {

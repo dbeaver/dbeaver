@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver CE MS Store" uid="org.jkiss.dbeaver.core.msstore" id="org.jkiss.dbeaver.ui.app.standalone.msstore"
-         application="org.jkiss.dbeaver.ui.app.standalone.msstore" version="26.1.5.qualifier" useFeatures="true"
+         application="org.jkiss.dbeaver.ui.app.standalone.msstore" version="26.2.1.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -13,6 +13,7 @@
             -XX:+IgnoreUnrecognizedVMOptions
             -Dosgi.requiredJavaVersion=21
             -Dfile.encoding=UTF-8
+            --sun-misc-unsafe-memory-access=allow
             --enable-native-access=ALL-UNNAMED
             --add-modules=ALL-DEFAULT
             --add-opens=java.base/java.io=ALL-UNNAMED

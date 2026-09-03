@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -167,16 +166,13 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             Link netConfigLink = new Link(linksComposite, SWT.NONE);
             if (!CommonUtils.isEmpty(site.getDriver().getWebURL())) {
                 netConfigLink.setText("<a>" + UIConnectionMessages.dialog_setting_connection_driver_properties_docs_web_reference + "</a>");
-                netConfigLink.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                netConfigLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         String url = site.getDriver().getPropertiesWebURL();
                         if (CommonUtils.isEmpty(url)) {
                             url = site.getDriver().getWebURL();
                         }
                         UIUtils.openWebBrowser(url);
-                    }
-                });
+                    }));
             }
             netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }

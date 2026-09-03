@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -1206,20 +1207,13 @@ public class DataSourceDescriptor
                 if (dataSource != null) {
                     DBPDataSourceInfo info = dataSource.getInfo();
                     log.debug(
-                        """
-                        Connected to a datasource:
-                            id='%s',
-                            databaseProductName='%s',
-                            databaseProductVersion='%s',
-                            driverName='%s',
-                            driverVersion='%s'.
-                        """.formatted(
+                        "Connected to a datasource: id='%s', databaseProductName='%s', databaseProductVersion='%s', driverName='%s', driverVersion='%s'."
+                        .formatted(
                             id,
                             info.getDatabaseProductName(),
                             info.getDatabaseProductVersion(),
                             info.getDriverName(),
-                            info.getDriverVersion()
-                        )
+                            info.getDriverVersion())
                     );
                 } else {
                     log.debug("Connected to datasource with id=" + id);
@@ -1443,6 +1437,10 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
+            UIServiceShellCommands shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
+            if (shellCommandsService != null) {
+                shellCommandsService.validateByUser(command, createApprovalContext(eventType));
+            }
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
             monitor.subTask("Execute process " + processDescriptor.getName());
@@ -1483,6 +1481,15 @@ public class DataSourceDescriptor
                 case AFTER_DISCONNECT -> handlerDesc.getInstance().beforeDisconnect(monitor, this);
             }
         }
+    }
+
+    @NotNull
+    private Map<String, String> createApprovalContext(@NotNull DBPConnectionEventType eventType) {
+        Map<String, String> context = new LinkedHashMap<>();
+        context.put(RegistryMessages.connection_add_shell_cmd_context_project, getProject().getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_data_source, getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_event_type, eventType.getTitle());
+        return context;
     }
 
     @Override

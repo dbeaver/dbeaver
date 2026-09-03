@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -105,7 +104,7 @@ class ScriptsExportWizardPage extends WizardPage {
 
         // Project list
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject == null || activeProject.getNavigatorModel() == null) {
+        if (activeProject == null) {
             return;
         }
 
@@ -159,9 +158,7 @@ class ScriptsExportWizardPage extends WizardPage {
 
             Button openFolder = new Button(generalSettings, SWT.PUSH);
             openFolder.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
-            openFolder.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            openFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
                     dialog.setMessage(CoreMessages.dialog_project_export_wizard_page_dialog_choose_export_dir_message);
                     dialog.setText(CoreMessages.dialog_project_export_wizard_page_dialog_choose_export_dir_text);
@@ -173,8 +170,7 @@ class ScriptsExportWizardPage extends WizardPage {
                     if (directory != null) {
                         directoryText.setText(directory);
                     }
-                }
-            });
+                }));
         }
 
         setControl(placeholder);

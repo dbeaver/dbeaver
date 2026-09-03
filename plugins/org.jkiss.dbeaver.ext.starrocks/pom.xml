@@ -11,5 +11,5 @@
     </parent>
     <artifactId>org.jkiss.dbeaver.ext.starrocks</artifactId>
     <packaging>eclipse-plugin</packaging>
-    <version>1.0.6-SNAPSHOT</version>
+    <version>1.0.8-SNAPSHOT</version>
 </project>

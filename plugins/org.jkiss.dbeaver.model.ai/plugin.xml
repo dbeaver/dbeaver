@@ -14,6 +14,7 @@
             icon="icons/engine_openai.svg"
             class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine"
             properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties"
+            promoted="true"
             default="true"
             supportsFunctions="true"
             fallbacks="openai-pro"/>
@@ -22,6 +23,7 @@
             icon="icons/engine_copilot.svg"
             class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"
             properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"
+            promoted="true"
             supportsFunctions="false"
             fallbacks="copilot-pro"/>
     </extension>
@@ -71,7 +73,8 @@
             label="AI integration"
             description="Use AI to create and edit queries, answer questions, troubleshoot errors, or explore database objects."
             enabledByDefault="true"
-            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
+            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"
+            availabilityTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
     </extension>
 
     <extension point="com.dbeaver.ai.function">
@@ -124,6 +127,10 @@
             <parameter name="ddlReferences" required="false" type="boolean" description="Adds foreign keys from other referencing tables in the DDL. Default: false."/>
         </function>
 
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.syncUnit">
+        <unit class="org.jkiss.dbeaver.model.ai.registry.AISyncUnit"/>
     </extension>
 
 </plugin>

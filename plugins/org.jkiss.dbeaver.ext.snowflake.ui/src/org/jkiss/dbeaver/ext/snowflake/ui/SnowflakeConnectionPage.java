@@ -20,8 +20,7 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -151,12 +150,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.grabExcessHorizontalSpace = true;
             testLink.setLayoutData(gd);
-            testLink.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    site.testConnection();
-                }
-            });
+            testLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> site.testConnection()));
         }
 
         createAuthPanel(control, 1);

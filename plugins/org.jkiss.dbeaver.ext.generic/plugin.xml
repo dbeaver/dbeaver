@@ -527,7 +527,7 @@
                     description="Extended JDBC driver for dynamic multi-language queries with optional bridge server for federated datasource connectivity."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/jdbcx/jdbcx"
-                    categories="codeql,graphql,prompt,prql,rest,script,shell,sql"
+                    categories="sql,federated"
                     singleConnection="true"
                     propagateDriverProperties="true">
                     <file type="jar" path="maven:/io.github.jdbcx:jdbcx-driver:RELEASE" load-optional-dependencies="true"/>
@@ -876,7 +876,7 @@
                         description="Community Presto (prestosql) JDBC driver, use Trino for newer releases"
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://prestosql.io/"
-                        categories="sql,bigdata,hadoop">
+                        categories="sql,federated,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
@@ -896,7 +896,7 @@
                     description="Trino JDBC driver, newer replacement for PrestoSQL"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://trino.io/"
-                    categories="sql,bigdata,hadoop">
+                    categories="sql,federated,bigdata,hadoop">
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
@@ -968,7 +968,7 @@
                         label="MonetDB"
                         icon="icons/monetdb_icon.png"
                         iconBig="icons/monetdb_icon_big.png"
-                        class="nl.cwi.monetdb.jdbc.MonetDriver"
+                        class="org.monetdb.jdbc.MonetDriver"
                         sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
                         defaultPort="50000"
                         description="MonetDB JDBC driver"
@@ -1158,13 +1158,13 @@
                     icon="icons/calcite_icon.png"
                     iconBig="icons/calcite_icon_big.png"
                     class="org.apache.calcite.avatica.remote.Driver"
-                    sampleURL="jdbc:avatica:remote:url=http://{host}:{port}/druid/v2/sql/avatica/"
-                    defaultPort="8082"
+                    sampleURL="jdbc:avatica:remote:url=http://{host}:{port}/"
+                    defaultPort="8765"
                     description="Apache Calcite Avatica JDBC driver. Supports Apache Druid"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
-                    categories="sql">
-                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.23.0]" bundle="!drivers.apache_calcite"/>
+                    categories="sql,federated">
+                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.28.0]" bundle="!drivers.apache_calcite"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/apache_calcite" bundle="drivers.apache_calcite"/>
 
@@ -1534,7 +1534,7 @@
                         categories="fulltext">
                     <replace provider="generic" driver="es_generic"/>
                     <file type="jar" path="maven:/org.elasticsearch.plugin:x-pack-sql-jdbc:8.17.1" bundle="!drivers.elasticsearch"/>
-                    <file type="license" path="https://raw.githubusercontent.com/elastic/elasticsearch/main/licenses/SSPL-1.0%2BELASTIC-LICENSE-2.0.txt" bundle="!drivers.elasticsearch"/>
+                    <file type="license" path="https://github.com/elastic/elasticsearch/blob/main/licenses/ELASTIC-LICENSE-2.0.txt" bundle="!drivers.elasticsearch"/>
                     <file type="jar" path="drivers/elasticsearch" bundle="drivers.elasticsearch"/>
                     <file type="license" path="drivers/elasticsearch/LICENSE.txt" bundle="drivers.elasticsearch"/>
                     <parameter name="supports-references" value="false"/>
