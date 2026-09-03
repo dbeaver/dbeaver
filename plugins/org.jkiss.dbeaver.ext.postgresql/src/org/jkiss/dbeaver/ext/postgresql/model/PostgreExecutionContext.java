@@ -176,7 +176,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
             var searchPathStr = CommonUtils.notEmpty(JDBCUtils.queryString(
                 session,
-                "SELECT boot_val FROM pg_settings WHERE name = 'search_path'"
+                "SELECT reset_val FROM pg_settings WHERE name = 'search_path'"
             ));
             for (String str : searchPathStr.split(",")) {
                 searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str.trim()));
