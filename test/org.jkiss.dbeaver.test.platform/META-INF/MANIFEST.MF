@@ -20,4 +20,5 @@ Require-Bundle: org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.ext.snowflake,
  org.jkiss.dbeaver.ext.hana,
  org.jkiss.dbeaver.ext.mssql,
- org.jkiss.dbeaver.ext.bigquery
+ org.jkiss.dbeaver.ext.bigquery,
+ org.jkiss.dbeaver.ext.databricks
