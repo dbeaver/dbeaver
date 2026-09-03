@@ -84,18 +84,18 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
                 contextEntity)
             ) {
                 if (association) {
-                    log.debug("Association hint provider '" + getId() + "' is disabled by configuration");
+                    log.trace("Association hint provider '" + getId() + "' is disabled by configuration");
                 }
                 return false;
             }
         }
         if (association && typedObject != null) {
             if (!(typedObject instanceof DBDAttributeBinding binding)) {
-                log.debug("Association hint provider '" + getId() + "' is not applicable to " + typedObject.getClass().getName());
+                log.trace("Association hint provider '" + getId() + "' is not applicable to " + typedObject.getClass().getName());
                 return false;
             }
             if (CommonUtils.isEmpty(binding.getReferrers())) {
-                log.debug("Association hint provider '" + getId() + "' is not applicable to attribute '" +
+                log.trace("Association hint provider '" + getId() + "' is not applicable to attribute '" +
                     binding.getName() + "': no foreign key metadata was found (entity attribute: " +
                     binding.getEntityAttribute() + ")");
                 return false;

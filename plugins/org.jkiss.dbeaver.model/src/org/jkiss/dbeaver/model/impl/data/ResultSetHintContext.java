@@ -196,7 +196,7 @@ public class ResultSetHintContext implements DBDValueHintContext {
                         ValueHintProviderDescriptor providerDescriptor = hintRegistry.getDescriptorByInstance(provider);
                         pi.enabled = providerDescriptor != null && contextConfiguration.isHintEnabled(providerDescriptor);
                         if (!pi.enabled && providerDescriptor != null && providerDescriptor.isAssociation()) {
-                            log.debug("Association hint provider '" + providerDescriptor.getId() +
+                            log.trace("Association hint provider '" + providerDescriptor.getId() +
                                 "' is disabled by " + contextConfiguration.getLevel().name().toLowerCase(Locale.ENGLISH) +
                                 " configuration");
                         }
