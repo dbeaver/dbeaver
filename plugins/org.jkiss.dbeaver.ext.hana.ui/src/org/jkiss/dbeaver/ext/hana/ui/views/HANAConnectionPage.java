@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.hana.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -119,9 +118,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         databaseText = new Text(addrGroup, SWT.BORDER);
         databaseText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        editionCombo.addSelectionListener(new SelectionAdapter() {
-            @Override public void widgetSelected(SelectionEvent e) { editionUpdated(); site.updateButtons(); }
-        });
+        editionCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> { editionUpdated(); site.updateButtons(); }));
         hostText.addModifyListener(e -> { hostUpdated(); site.updateButtons(); });
         portText.addModifyListener(e -> site.updateButtons());
         instanceText.addModifyListener(e -> { instanceUpdated(); site.updateButtons(); });

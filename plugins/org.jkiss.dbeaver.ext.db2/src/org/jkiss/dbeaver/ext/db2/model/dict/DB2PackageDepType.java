@@ -67,7 +67,7 @@ public enum DB2PackageDepType implements DBPNamedObject {
 
     m("Module", DB2ObjectType.MODULE),
 
-    n("Database Partiton Group"),
+    n("Database Partition Group"),
 
     q("Sequence alias", DB2ObjectType.ALIAS),
 

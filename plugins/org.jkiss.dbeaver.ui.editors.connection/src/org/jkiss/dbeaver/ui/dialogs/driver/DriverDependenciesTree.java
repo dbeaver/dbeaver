@@ -22,8 +22,7 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -310,16 +309,13 @@ class DriverDependenciesTree {
 
         final CCombo editor = new CCombo(filesTree, SWT.DROP_DOWN | SWT.READ_ONLY);
         editor.setVisibleItemCount(15);
-        editor.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        editor.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 String newVersion = allVersions.get(editor.getSelectionIndex());
                 disposeOldEditor();
                 if (dependencyNode.library instanceof DriverLibraryMavenArtifact mavenLib) {
                     setLibraryVersion(mavenLib, newVersion);
                 }
-            }
-        });
+            }));
         for (String version : allVersions) {
             editor.add(version);
         }
