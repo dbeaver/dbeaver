@@ -255,7 +255,11 @@ public class DBExecUtils {
                         } else {
                             log.debug("Invalidate datasource [" + dataSource.getContainer().getName() + "] transactions");
                         }
-                        InvalidateJob.invalidateTransaction(monitor, dataSource, executionContext);
+                        if (!InvalidateJob.invalidateTransaction(monitor, dataSource, executionContext)) {
+                            // Nothing was rolled back, so the transaction the server is rejecting
+                            // commands for is still open and another attempt fails the same way.
+                            break;
+                        }
                     } else {
                         // Do not recover if connection was canceled
                         log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");

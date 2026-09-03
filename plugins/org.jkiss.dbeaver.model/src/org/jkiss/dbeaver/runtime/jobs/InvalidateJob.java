@@ -359,7 +359,13 @@ public class InvalidateJob extends DataSourceJob {
         return results;
     }
 
-    public static void invalidateTransaction(
+    /**
+     * Rolls back the transaction of the given context, or of every context of the data source.
+     *
+     * @return true if a transaction was actually rolled back. False means the state was left as it
+     *         was, so a caller that retries on the strength of this call would repeat the failure.
+     */
+    public static boolean invalidateTransaction(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,
         @Nullable DBCExecutionContext executionContext
@@ -368,18 +374,24 @@ public class InvalidateJob extends DataSourceJob {
         if (executionContext != null) {
             monitor.subTask("Invalidate context [" + executionContext.getDataSource().getContainer().getName() +
                 "/" + executionContext.getContextName() + "] transactions");
-            invalidateTransaction(monitor, executionContext);
+            return invalidateTransaction(monitor, executionContext);
         } else {
             monitor.subTask("Invalidate datasource [" + dataSource.getContainer().getName() + "] transactions");
+            boolean invalidated = false;
             for (DBSInstance instance : dataSource.getAvailableInstances()) {
                 for (DBCExecutionContext context : instance.getAllContexts()) {
-                    invalidateTransaction(monitor, context);
+                    invalidated |= invalidateTransaction(monitor, context);
                 }
             }
+            return invalidated;
         }
     }
 
-    public static void invalidateTransaction(
+    /**
+     * @return true if a transaction was rolled back. False when the context is in auto-commit mode,
+     *         where the transaction manager holds no transaction to end, or when the rollback failed.
+     */
+    public static boolean invalidateTransaction(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext context
     ) {
@@ -393,11 +405,13 @@ public class InvalidateJob extends DataSourceJob {
                         session.enableLogging(false);
                         txnManager.rollback(session, null);
                     }
+                    return true;
                 }
             } catch (DBException e) {
                 log.error("Error invalidating aborted transaction", e);
             }
         }
+        return false;
     }
 
     public static boolean allSucceeded(@NotNull Collection<ContextInvalidateResult> results) {
