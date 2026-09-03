@@ -12,6 +12,7 @@
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
     </url>
     <plugin id="org.jkiss.dbeaver.ext.snowflake.test" version = "0.0.0"/>
+    <plugin id="com.dbeaver.db.cdata.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.oracle.test" version = "0.0.0"/>
     <plugin id="org.jkiss.dbeaver.model.lsm.test" version = "0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.postgresql.test" version = "0.0.0"/>

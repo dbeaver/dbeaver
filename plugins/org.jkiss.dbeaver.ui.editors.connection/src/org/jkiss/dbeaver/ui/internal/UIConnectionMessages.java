@@ -478,6 +478,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_setting_connection_general;
     public static String dialog_setting_connection_wizard_title;
     public static String driver_connection_sort_by;
+    public static String driver_connection_show_commercial_drivers;
     public static String pref_page_connection_label_general;
     public static String pref_page_connection_label_use_environment;
     public static String pref_page_connection_types_group_parameters;

@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver CDATA Model
+Bundle-SymbolicName: com.dbeaver.db.cdata;singleton:=true
+Bundle-Version: 1.0.9.qualifier
+Bundle-Release-Date: 20260914
+Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.jdbc,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.ext.generic
+Bundle-Vendor: DBeaver Corp
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-ActivationPolicy: lazy
+Export-Package: com.dbeaver.db.cdata,
+ com.dbeaver.db.cdata.model,
+ com.dbeaver.db.cdata.registry
+Import-Package: com.google.gson
+Automatic-Module-Name: com.dbeaver.db.cdata

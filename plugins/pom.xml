@@ -35,6 +35,7 @@
         <module>org.jkiss.dbeaver.cmp.simple</module>
 
         <module>org.jkiss.dbeaver.ext.generic</module>
+        <module>com.dbeaver.db.cdata</module>
 
 
         <module>org.jkiss.dbeaver.ext.athena</module>
@@ -125,6 +126,7 @@
                 <module>org.jkiss.dbeaver.ext.duckdb.ui</module>
                 <module>org.jkiss.dbeaver.ext.firebird.ui</module>
                 <module>org.jkiss.dbeaver.ext.generic.ui</module>
+                <module>com.dbeaver.db.cdata.ui</module>
                 <module>org.jkiss.dbeaver.ext.hana.ui</module>
                 <module>org.jkiss.dbeaver.ext.iotdb.ui</module>
                 <module>org.jkiss.dbeaver.ext.kingbase.ui</module>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="cdata" class="com.dbeaver.db.cdata.model.CDataMetaModel" driverClass="cdata.jdbc.*"/>
+    </extension>
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect
+            id="cdata"
+            parent="generic"
+            class="com.dbeaver.db.cdata.model.CDataSQLDialect"
+            label="%dialect.cdata.label"
+            description="%dialect.cdata.description"
+            icon="icons/cdata.svg"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.driverManager">
+        <category
+            id="cdata"
+            name="%category.cdata.name"
+            description="%category.cdata.description"
+            icon="#folder_database"
+            rank="101"
+            promoted="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="cdata-jdbc" name="CData JDBC Repository" url="https://maven.cdata.com/p/jdbc/" order="10">
+            <scope group="cdata"/>
+        </repository>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            id="cdata"
+            class="com.dbeaver.db.cdata.CDataDataSourceProvider"
+            description="%datasource.cdata.description"
+            parent="generic"
+            driverProvider="true"
+            label="%datasource.cdata.label"
+            icon="icons/cdata.svg"
+            dialect="cdata">
+            <drivers managable="false"/>
+        </datasource>
+    </extension>
+
+</plugin>

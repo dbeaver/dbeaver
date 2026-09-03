@@ -31,6 +31,7 @@
                 <module>org.jkiss.dbeaver.db.ui.feature</module>
                 <module>org.jkiss.dbeaver.git.feature</module>
                 <module>org.jkiss.dbeaver.ext.office.feature</module>
+                <module>org.jkiss.dbeaver.cdata.feature</module>
 
                 <module>org.jkiss.dbeaver.ide.feature</module>
                 <module>org.jkiss.dbeaver.app.base.feature</module>

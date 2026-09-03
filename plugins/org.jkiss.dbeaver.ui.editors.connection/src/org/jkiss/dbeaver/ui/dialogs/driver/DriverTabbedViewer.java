@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.DriverCategoryDescriptor;
 import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -67,10 +68,22 @@ public class DriverTabbedViewer extends StructuredViewer {
         @NotNull List<DBPDataSourceContainer> dataSources,
         @NotNull Comparator<DBPDriver> driverComparator
     ) {
+        this(parent, style, dataSources, driverComparator, true);
+    }
+
+    public DriverTabbedViewer(
+        @NotNull Composite parent,
+        int style,
+        @NotNull List<DBPDataSourceContainer> dataSources,
+        @NotNull Comparator<DBPDriver> driverComparator,
+        boolean showCommercialDrivers
+    ) {
         this.dataSources = dataSources;
         this.listComparator = driverComparator;
 
-        List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
+        List<DBPDriver> allDrivers = DriverUtils.getAllDrivers().stream()
+            .filter(driver -> showCommercialDrivers || !(driver instanceof DBPDriverWithLicense))
+            .toList();
         List<DBPDriver> ratedDrivers = new ArrayList<>(allDrivers);
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
 
@@ -172,6 +185,20 @@ public class DriverTabbedViewer extends StructuredViewer {
     @NotNull
     public TabbedFolderComposite getFolderComposite() {
         return folderComposite;
+    }
+
+    @Nullable
+    public String getActiveFolderId() {
+        ITabbedFolder activeFolder = folderComposite.getActiveFolder(false);
+        TabbedFolderInfo[] folders = folderComposite.getFolders();
+        if (activeFolder != null && folders != null) {
+            for (TabbedFolderInfo folder : folders) {
+                if (folder.getContents() == activeFolder) {
+                    return folder.getId();
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable
@@ -350,7 +377,9 @@ public class DriverTabbedViewer extends StructuredViewer {
         private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {
             @Override
             public Image getImage(Object element) {
-                return DBeaverIcons.getImage(((DBPDriver) element).getIconBig());
+                DBPDriver driver = (DBPDriver) element;
+                DriverIconLoader.load(driver, viewer);
+                return DBeaverIcons.getImage(driver.getIconBig());
             }
 
             @Override
