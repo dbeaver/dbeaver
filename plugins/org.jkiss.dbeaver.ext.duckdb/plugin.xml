@@ -30,7 +30,7 @@
                         categories="sql,embedded">
                     <replace provider="generic" driver="duckdb_jdbc"/>
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:windows_arm64:RELEASE" os="win32" arch="aarch64" bundle="!drivers.duckdb"/>
-                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
+                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" os="win32" arch="aarch64" exclude="true" bundle="!drivers.duckdb"/>
                     <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
                     <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
                 </driver>
