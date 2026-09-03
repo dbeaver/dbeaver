@@ -88,10 +88,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
 
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
         saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dataSourceIds.contains(dsc.getId()));
-        if (hasError()) {
-            return;
-        }
-
         try {
             rmController.updateProjectDataSources(
                 getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.copyOf(dataSourceIds));
