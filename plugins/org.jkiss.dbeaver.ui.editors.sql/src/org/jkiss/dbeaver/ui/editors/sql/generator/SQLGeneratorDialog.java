@@ -271,14 +271,11 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 SQLEditorMessages.sql_generator_dialog_button_separate_constraint_indexes,
                 sqlGenerator.isUseSeparateConstraintIndexes());
             useSeparateConstraintIndexes.setToolTipText(SQLEditorMessages.sql_generator_dialog_button_separate_constraint_indexes_tip);
-            useSeparateConstraintIndexes.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    sqlGenerator.setUseSeparateConstraintIndexes(useSeparateConstraintIndexes.getSelection());
-                    getDialogBoundsSettings().put(PROP_USE_SEPARATE_CONSTRAINT_INDEXES, useSeparateConstraintIndexes.getSelection());
-                    startGenerateJob();
-                }
-            });
+            useSeparateConstraintIndexes.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                sqlGenerator.setUseSeparateConstraintIndexes(useSeparateConstraintIndexes.getSelection());
+                getDialogBoundsSettings().put(PROP_USE_SEPARATE_CONSTRAINT_INDEXES, useSeparateConstraintIndexes.getSelection());
+                startGenerateJob();
+            }));
         }
         if (supportsPartitionsDDL) {
             Button supportsPartitionsDDLButton = UIUtils.createCheckbox(
