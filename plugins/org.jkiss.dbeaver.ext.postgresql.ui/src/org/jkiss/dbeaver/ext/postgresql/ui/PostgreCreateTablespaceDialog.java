@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -104,13 +103,10 @@ public class PostgreCreateTablespaceDialog extends BaseDialog
         
         final Combo userCombo = UIUtils.createLabelCombo(group, PostgreMessages.dialog_create_tablespace_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
 
-        userCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        userCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 owner = allUsers.get(userCombo.getSelectionIndex());
                 checkEnabled();
-            }
-        });
+            }));
           
         if (newTablespace.getDataSource().getServerType().supportsTablespaceLocation()) {
             final Text locText = UIUtils.createLabelText(group, PostgreMessages.dialog_create_tablespace_loc, "");

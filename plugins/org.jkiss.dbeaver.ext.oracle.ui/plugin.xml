@@ -155,22 +155,8 @@
         </wizard>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.oracle.dataSourceWizardView"
-                dataSource="oracle"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.oracle.ui.views.OracleConnectionPage"
-                icon="icons/oracle_icon.png">
-        </view>
-        <view
-                id="org.jkiss.dbeaver.ext.oracle.dataSourceEditorView"
-                dataSource="oracle"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.oracle.ui.views.OracleConnectionPage">
-        </view>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="oracle" class="org.jkiss.dbeaver.ext.oracle.ui.views.OracleConnectionPage"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">

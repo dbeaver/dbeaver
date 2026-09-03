@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import org.eclipse.osgi.util.NLS;
 public class DebugCoreMessages extends NLS {
 
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages"; //$NON-NLS-1$
-
-    public static String DebugCore_e_read_attribute_generic;
-    public static String DebugCore_e_read_attribute_null;
     public static String DebugCore_e_unable_to_retrieve_modes;
 
     public static String DatabaseThread_name;

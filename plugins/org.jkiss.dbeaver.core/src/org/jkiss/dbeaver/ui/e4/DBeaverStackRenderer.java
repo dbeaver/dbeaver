@@ -33,8 +33,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -164,12 +163,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 final MenuItem saveAsScriptItem = new MenuItem(menu, SWT.PUSH);
                 saveAsScriptItem.setText(SQLEditorMessages.sql_editor_prefs_save_as_script_text);
                 saveAsScriptItem.setToolTipText(SQLEditorMessages.sql_editor_prefs_save_as_script_tip);
-                saveAsScriptItem.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        sqlEditor.saveAsNewScript();
-                    }
-                });
+                saveAsScriptItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> sqlEditor.saveAsNewScript()));
             }
             
             if (workbenchPart instanceof SQLEditor) {
@@ -181,13 +175,10 @@ public class DBeaverStackRenderer extends StackRenderer {
                 menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
                 menuItemDisableSQLSyntaxParser.setEnabled(ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_SYNTAX_PARSER, workbenchPart.getSite()));
                 
-                menuItemDisableSQLSyntaxParser.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                menuItemDisableSQLSyntaxParser.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         SQLEditorUtils.setSQLSyntaxParserEnabled(editorInput, !SQLEditorUtils.isSQLSyntaxParserEnabled(editorInput));
                         menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
-                    }
-                });
+                    }));
             }
         }
     }
@@ -205,21 +196,15 @@ public class DBeaverStackRenderer extends StackRenderer {
         if (inputFile != null && inputFile.getParent() instanceof IFolder && inputFile.getParent().getLocation() != null) {
             MenuItem menuItemOpenFolder = new MenuItem(menu, SWT.NONE);
             menuItemOpenFolder.setText(CoreMessages.editor_file_open_in_explorer);
-            menuItemOpenFolder.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(inputFile.getParent().getLocation().toFile().getAbsolutePath());
-                }
-            });
+            menuItemOpenFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(inputFile.getParent().getLocation().toFile().getAbsolutePath())));
         }
         if (inputFile != null && (inputFile.getLocation() != null || inputFile.getLocationURI() != null) ||
             file != null && file.getPath() != null
         ) {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
             menuItemOthers.setText(CoreMessages.editor_file_copy_path);
-            menuItemOthers.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            menuItemOthers.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     String filePath;
                     if (inputFile != null) {
                         if (inputFile.getLocation() != null) {
@@ -231,8 +216,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                         filePath = file.getPath();
                     }
                     UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), filePath);
-                }
-            });
+                }));
         }
 
         new MenuItem(menu, SWT.SEPARATOR);
@@ -248,12 +232,8 @@ public class DBeaverStackRenderer extends StackRenderer {
                 renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
 
                 menuItemOthers.setText(renameText);
-                menuItemOthers.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        SQLEditorHandlerRenameFile.renameFile(workbenchPart, inputFile, "file"); //$NON-NLS-1$
-                    }
-                });
+                menuItemOthers.addSelectionListener(SelectionListener.widgetSelectedAdapter(
+                    e -> SQLEditorHandlerRenameFile.renameFile(workbenchPart, inputFile, "file"))); //$NON-NLS-1$
             }
         }
     }
@@ -270,12 +250,8 @@ public class DBeaverStackRenderer extends StackRenderer {
 
                 final MenuItem item = new MenuItem(menu, SWT.NONE);
                 item.setText(NLS.bind(CoreMessages.editor_file_copy_object_name, label));
-                item.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        DBWorkbench.getPlatformUI().copyTextToClipboard(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), false);
-                    }
-                });
+                item.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    DBWorkbench.getPlatformUI().copyTextToClipboard(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), false)));
                 if (workbenchPart instanceof EntityEditor) {
                     final MenuItem addBookmarkItem = new MenuItem(menu, SWT.NONE);
                     String actionText = ActionUtils.findCommandName(CoreCommandConstants.CMD_ADD_BOOKMARK);
@@ -290,9 +266,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                         addBookmarkItem.setImage(itemImage);
                         addBookmarkItem.addDisposeListener(e -> itemImage.dispose());
                     }
-                    addBookmarkItem.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    addBookmarkItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                             try {
                                 AddBookmarkHandler.createBookmarkDialog(node, menu.getShell());
                             } catch (DBException ex) {
@@ -300,8 +274,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                                     CoreMessages.actions_navigator_bookmark_error_title,
                                     CoreMessages.actions_navigator_bookmark_error_message, ex);
                             }
-                        }
-                    });
+                        }));
                 }
             }
         }
@@ -316,12 +289,8 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
         menuItemDelete.setText(actionText);
-        menuItemDelete.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                ActionUtils.runCommand(actionId, workbenchPart.getSite());
-            }
-        });
+        menuItemDelete.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            ActionUtils.runCommand(actionId, workbenchPart.getSite())));
     }
 
     private IWorkbenchPart getWorkbenchPart(MPart part) {
@@ -363,17 +332,25 @@ public class DBeaverStackRenderer extends StackRenderer {
             // See StackRenderer#initializeOnboardingInformationInEditorStack (2024-06)
             if (element instanceof MPerspective perspective) {
                 for (MPartStack stack : modelService.findElements(perspective, null, MPartStack.class, List.of(EDITOR_STACK_ID))) {
-                    Control container = getChild(stack.getWidget(), ONBOARDING_CONTAINER);
-                    if (container == null || !HolidayDecorations.install(container)) {
+                    if (!(getChild(stack.getWidget(), ONBOARDING_CONTAINER) instanceof Composite container)) {
                         continue;
                     }
-                    Control composite = getChild(container, ONBOARDING_COMPOSITE);
-                    if (composite != null && composite.getLayoutData() instanceof GridData data) {
-                        data.exclude = true;
+                    // Onboarding content is brought back if the user turns the decorations off
+                    if (!HolidayDecorations.install(container, () -> setOnboardingVisible(container, true))) {
+                        continue;
                     }
+                    setOnboardingVisible(container, false);
                 }
             }
         });
+    }
+
+    private static void setOnboardingVisible(@NotNull Composite container, boolean visible) {
+        Control composite = getChild(container, ONBOARDING_COMPOSITE);
+        if (composite != null && composite.getLayoutData() instanceof GridData data) {
+            data.exclude = !visible;
+            container.layout(true);
+        }
     }
 
     @Nullable

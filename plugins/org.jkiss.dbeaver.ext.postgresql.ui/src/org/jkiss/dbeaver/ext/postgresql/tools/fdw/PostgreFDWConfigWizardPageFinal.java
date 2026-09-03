@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -91,15 +91,9 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
             }
             Composite buttonsPanel = UIUtils.createComposite(settingsGroup, 2);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createDialogButton(buttonsPanel, "Copy", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    UIUtils.setClipboardContents(buttonsPanel.getDisplay(), TextTransfer.getInstance(), scriptText);
-                }
-            });
-            UIUtils.createDialogButton(buttonsPanel, "Save ...", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Workbench_copy, SelectionListener.widgetSelectedAdapter(e ->
+                UIUtils.setClipboardContents(buttonsPanel.getDisplay(), TextTransfer.getInstance(), scriptText)));
+            UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Save, SelectionListener.widgetSelectedAdapter(e -> {
                     Path saveFile = DialogUtils.selectFileForSave(
                         buttonsPanel.getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*", "*.*"}, null);
                     if (saveFile != null) {
@@ -113,8 +107,7 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
                             );
                         }
                     }
-                }
-            });
+                }));
         }
 
 

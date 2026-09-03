@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -129,10 +127,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 item.setChecked(command != null && command.isEnabled());
             }
 
-            eventTypeTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            eventTypeTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     DBPConnectionEventType eventType = getSelectedEventType();
                     selectEventType(eventType);
                     DBRShellCommand command = eventType == null ? null : eventsCache.get(eventType);
@@ -146,8 +141,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                         }
                         updateEvent(false);
                     }
-                }
-            });
+                }));
         }
         {
             Composite detailsGroup = UIUtils.createComposite(group, 2);
@@ -162,13 +156,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             gd.horizontalSpan = 2;
             commandText.setLayoutData(gd);
 
-            SelectionAdapter eventEditAdapter = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    updateEvent(false);
-                }
-            };
+            SelectionListener eventEditAdapter = SelectionListener.widgetSelectedAdapter(e -> updateEvent(false));
 
             Composite settingsGroup = UIUtils.createTitledComposite(detailsGroup, UIConnectionMessages.dialog_connection_events_settings_group, 2, GridData.FILL_HORIZONTAL);
 
