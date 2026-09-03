@@ -778,9 +778,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
                 agentSockBrowseButton = new Button(agentSockComp, SWT.PUSH);
                 agentSockBrowseButton.setText("..."); //$NON-NLS-1$
-                agentSockBrowseButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                agentSockBrowseButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
                         dialog.setText(SSHUIMessages.model_ssh_configurator_dialog_choose_agent_sock);
                         dialog.setFilterExtensions("*.sock", "*"); //$NON-NLS-1$
@@ -789,7 +787,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                             agentSockText.setText(selected);
                         }
                     }
-                });
+                }));
             }
 
             if (editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
