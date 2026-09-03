@@ -122,6 +122,25 @@
             <objectType name="org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataSourceProvider"/>
         </handler>
     </extension>
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="clickhouse_cloud_sso"
+                label="ClickHouse Cloud SSO"
+                description="Browser based single sign-on to ClickHouse Cloud"
+                class="org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseAuthModelCloudSSO"
+                desktop="true">
+            <datasource id="clickhouse" driver="com_clickhouse"/>
+        </authModel>
+        <authModel
+                id="clickhouse_oidc"
+                label="SSO / OpenID Connect provider"
+                description="Single sign-on with an external identity provider (Microsoft Entra ID, Okta)"
+                class="org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseAuthModelOIDC"
+                desktop="true">
+            <datasource id="clickhouse" driver="com_clickhouse"/>
+        </authModel>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
                 id="ClickhouseValueHandlerProvider"
