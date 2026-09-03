@@ -90,16 +90,17 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                     ? oldSelectedTabFillColors[0]
                     : parent.getSelectionBackground();
                 Color highlightColor = isDarkTheme ? UIStyles.lighten(color, 0.2f) : UIStyles.darken(color, 0.2f);
-                Color selectedColor = UIStyles.mix(highlightColor, fillColor, 0.1f);
+                Color unselectedColor = UIStyles.mix(highlightColor, fillColor, 0.15f); ///0.5?
+                Color hotColor = isDarkTheme ? UIStyles.darken(unselectedColor, 0.05f) : UIStyles.lighten(unselectedColor, 0.05f);
 
-                hotUnselectedTabsColorBackgroundField.set(this, isHot ? selectedColor : color);
-                selectedTabFillColorsField.set(this, new Color[]{selectedColor});
+                hotUnselectedTabsColorBackgroundField.set(this, isHot ? hotColor : unselectedColor);
+                selectedTabFillColorsField.set(this, new Color[]{color});
                 selectedTabHighlightColorField.set(this, highlightColor);
 
                 if (!isSelected) {
                     // The outline bleeds over the hover tab. Since we're relying on SWT.HOT painting
                     // logic, we need to override it to be the same color as the tab itself
-                    tabOutlineColorField.set(this, isHot ? selectedColor : color);
+                    tabOutlineColorField.set(this, isHot ? hotColor : unselectedColor);
                 }
 
                 super.draw(part, state | SWT.HOT, bounds, gc);
