@@ -23,8 +23,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -123,9 +122,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                     s3Group,
                     UIConnectionMessages.controls_client_home_selector_browse,
                     DBeaverIcons.getImage(UIIcon.OPEN),
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    SelectionListener.widgetSelectedAdapter(e -> {
                             DBNFileSystems fsRootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot()
                                 .getExtraNode(DBNFileSystems.class);
                             if (fsRootNode == null) {
@@ -180,8 +177,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                                     }
                                 }
                             }
-                        }
-                    });
+                        }));
             }
 
             UIUtils.addVariablesToControl(s3LocationText, getAvailableVariables(), "S3 location pattern");

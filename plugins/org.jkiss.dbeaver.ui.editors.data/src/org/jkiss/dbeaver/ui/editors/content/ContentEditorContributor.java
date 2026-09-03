@@ -20,8 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -155,9 +154,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 }
                 encodingCombo = UIUtils.createEncodingCombo(parent, curCharset);
                 encodingCombo.setToolTipText("Content Encoding");
-                encodingCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                encodingCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         final ContentEditor contentEditor = getEditor();
                         if (contentEditor != null) {
                             final ContentEditorInput contentEditorInput = contentEditor.getEditorInput();
@@ -166,8 +163,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                             contentEditorInput.setEncoding(charset);
                         }
 
-                    }
-                });
+                    }));
                 return encodingCombo;
             }
 

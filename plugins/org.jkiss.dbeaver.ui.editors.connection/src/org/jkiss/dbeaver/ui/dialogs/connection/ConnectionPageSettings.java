@@ -27,7 +27,9 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -94,8 +96,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     private final ConnectionWizard wizard;
     @NotNull
-    private final DataSourceViewDescriptor viewDescriptor;
-    private final DataSourceViewDescriptor substitutedViewDescriptor;
+    private final DataSourceConfiguratorDescriptor configuratorDescriptor;
+    private final DataSourceConfiguratorDescriptor substitutedConfiguratorDescriptor;
     private final DBPDriverSubstitutionDescriptor driverSubstitution;
     @Nullable
     private IDataSourceConnectionEditor connectionEditor;
@@ -113,32 +115,30 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
      */
     ConnectionPageSettings(
         @NotNull ConnectionWizard wizard,
-        @NotNull DataSourceViewDescriptor viewDescriptor,
+        @NotNull DataSourceConfiguratorDescriptor configuratorDescriptor,
         @Nullable DBPDriverSubstitutionDescriptor driverSubstitution
     ) {
-        super(PAGE_NAME + "." + viewDescriptor.getId());
+        super(PAGE_NAME + "." + configuratorDescriptor.getId());
 
         this.wizard = wizard;
-        this.viewDescriptor = viewDescriptor;
+        this.configuratorDescriptor = configuratorDescriptor;
         this.driverSubstitution = driverSubstitution;
 
         if (driverSubstitution != null) {
             DataSourceProviderDescriptor dataSourceProvider = DataSourceProviderRegistry.getInstance()
                 .getDataSourceProvider(driverSubstitution.getProviderId());
             if (dataSourceProvider != null) {
-                this.substitutedViewDescriptor = DataSourceViewRegistry.getInstance().findView(
-                    dataSourceProvider,
-                    IActionConstants.EDIT_CONNECTION_POINT
-                );
+                this.substitutedConfiguratorDescriptor = DataSourceConfiguratorRegistry.getInstance()
+                    .findConnectionConfigurator(dataSourceProvider);
             } else {
                 log.error("Datasource provider " + driverSubstitution.getProviderId() + " not found");
-                this.substitutedViewDescriptor = null;
+                this.substitutedConfiguratorDescriptor = null;
             }
         } else {
-            this.substitutedViewDescriptor = null;
+            this.substitutedConfiguratorDescriptor = null;
         }
 
-        String pageTitle = wizard.isNew() ? viewDescriptor.getLabel() : UIConnectionMessages.dialog_setting_connection_wizard_title;
+        String pageTitle = UIConnectionMessages.dialog_setting_connection_wizard_title;
         if (isTemporaryConnection()) {
             pageTitle += " / TEMPORARY";
         }
@@ -149,10 +149,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     private IDataSourceConnectionEditor getConnectionEditor() {
         if (connectionEditor == null) {
-            if (substitutedViewDescriptor == null) {
+            if (substitutedConfiguratorDescriptor == null) {
                 connectionEditor = getOriginalConnectionEditor();
             } else {
-                connectionEditor = substitutedViewDescriptor.createView(IDataSourceConnectionEditor.class);
+                connectionEditor = substitutedConfiguratorDescriptor.createConfigurator(IDataSourceConnectionEditor.class);
                 connectionEditor.setSite(this);
             }
         }
@@ -163,7 +163,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     private IDataSourceConnectionEditor getOriginalConnectionEditor() {
         if (originalConnectionEditor == null) {
-            originalConnectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
+            originalConnectionEditor = configuratorDescriptor.createConfigurator(IDataSourceConnectionEditor.class);
             originalConnectionEditor.setSite(this);
         }
 
@@ -354,12 +354,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     createPageTab(page, tabFolder.getItemCount());
                 }
                 tabFolder.setSelection(0);
-                tabFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        activateCurrentItem();
-                    }
-                });
+                tabFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> activateCurrentItem()));
                 // Set focus to the first tab
                 // Otherwise focus foes into top right control which breaks traverse keys
                 tabFolder.getSelection().getControl().setFocus();

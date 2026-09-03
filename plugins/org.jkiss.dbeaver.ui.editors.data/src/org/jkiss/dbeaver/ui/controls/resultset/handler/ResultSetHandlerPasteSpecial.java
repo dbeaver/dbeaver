@@ -21,8 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -130,12 +129,8 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
                 pasteSettings.isInsertNulls(),
                 1
             );
-            insertNullsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    nullValueMarkCombo.setEnabled(insertNullsCheck.getSelection());
-                }
-            });
+            insertNullsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                nullValueMarkCombo.setEnabled(insertNullsCheck.getSelection())));
 
             nullValueMarkCombo = UIUtils.createLabelCombo(
                 UIUtils.createPlaceholder(composite, 2),
