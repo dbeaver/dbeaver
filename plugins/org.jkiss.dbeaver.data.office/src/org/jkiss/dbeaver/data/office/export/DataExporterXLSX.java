@@ -45,6 +45,7 @@ import java.awt.*;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -65,8 +66,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private static final String PROP_ROWNUMBER = "rownumber";
     private static final String PROP_BORDER = "border";
     private static final String PROP_HEADER_FONT = "headerfont";
-
-    private static final String BINARY_FIXED = "[BINARY]";
 
     private static final String PROP_TRUESTRING = "trueString";
     private static final String PROP_FALSESTRING = "falseString";
@@ -458,7 +457,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
                     } else if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cell, cs.getContentReader());
                     } else {
-                        cell.setCellValue(BINARY_FIXED);
+                        writeBinaryCellValue(cell, cs);
                     }
                 } finally {
                     content.release();
@@ -493,6 +492,49 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
         wsh.incRow();
         rowCount++;
+    }
+
+    private void writeBinaryCellValue(@NotNull Cell cell, @NotNull DBDContentStorage contentStorage) throws IOException {
+        CellValueWriter writer = new CellValueWriter();
+        getSite().writeBinaryData(contentStorage, writer);
+        if (writer.isTruncated()) {
+            log.warn("The string value of the row " + (rowCount + 1) + " was more maximum length, so it was cropped.");
+        }
+        cell.setCellValue(getPreparedString(writer.toString()));
+    }
+
+    private static class CellValueWriter extends Writer {
+        private final StringBuilder buffer = new StringBuilder();
+        private boolean truncated;
+
+        @Override
+        public void write(@NotNull char[] chars, int offset, int length) {
+            int available = EXCEL_MAX_CELL_CHARACTERS - buffer.length();
+            if (available <= 0) {
+                truncated = truncated || length > 0;
+                return;
+            }
+            int count = Math.min(available, length);
+            buffer.append(chars, offset, count);
+            truncated = truncated || count < length;
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() {
+        }
+
+        public boolean isTruncated() {
+            return truncated;
+        }
+
+        @Override
+        public String toString() {
+            return buffer.toString();
+        }
     }
 
     private CellType getCellType(DBDAttributeBinding column) {

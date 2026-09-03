@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -58,7 +57,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.DataFileCo
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.io.ByteOrderMark;
@@ -1068,54 +1066,19 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     IOUtils.copyStream(stream, exportSite.getOutputStream());
                 }
             } else {
-                try (final InputStream stream = cs.getContentStream()) {
-                    exportSite.flush();
-                    final DBPDataSource dataSource = dataContainer.getDataSource();
-                    switch (settings.getLobEncoding()) {
-                        case BASE64: {
-                            Base64.encode(stream, cs.getContentLength(), writer);
-                            break;
-                        }
-                        case HEX: {
-                            writer.write("0x"); //$NON-NLS-1$
-                            byte[] buffer = new byte[5000];
-                            for (; ; ) {
-                                int count = stream.read(buffer);
-                                if (count <= 0) {
-                                    break;
-                                }
-                                GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
-                            }
-                            break;
-                        }
-                        case NATIVE: {
-                            if (dataSource != null) {
-                                ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
-                                IOUtils.copyStream(stream, buffer);
-
-                                final byte[] bytes = buffer.toByteArray();
-                                final String binaryString = dataSource.getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
-                                writer.write(binaryString);
-                            }
-                            break;
-                        }
-                        case BINARY:
-                        default: {
-                            byte[] readBuffer = new byte[1000];
-                            for (; ; ) {
-                                int count = stream.read(readBuffer);
-                                if (count <= 0) {
-                                    break;
-                                }
-                                String content = new String(readBuffer, 0, count, cs.getCharset());
-                                String contentAfterEscaping = JSONUtils.escapeJsonString(content);
-                                writer.write(contentAfterEscaping);
-                            }
-                        }
-                        break;
-                    }
-                }
+                exportSite.flush();
+                writeBinaryData(cs, writer);
             }
+        }
+
+        @Override
+        public void writeBinaryData(@NotNull DBDContentStorage cs, @NotNull Writer writer) throws IOException {
+            StreamTransferUtils.writeBinaryData(
+                cs,
+                settings.getLobEncoding(),
+                dataContainer.getDataSource(),
+                writer
+            );
         }
 
         @NotNull
