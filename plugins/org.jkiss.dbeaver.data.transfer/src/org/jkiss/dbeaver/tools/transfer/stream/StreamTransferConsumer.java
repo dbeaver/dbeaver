@@ -728,6 +728,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return firstRow;
     }
 
+    public boolean isOutputClipboard() {
+        return settings.isOutputClipboard();
+    }
+
     @NotNull
     public String getOutputFolder() {
         return translatePattern(settings.getOutputFolder());
