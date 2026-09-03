@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 
 import java.io.IOException;
@@ -29,11 +30,8 @@ import java.io.Reader;
 import java.io.Writer;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 /**
  * XML document
@@ -77,7 +75,7 @@ public class DBDDocumentXML implements DBDDocument {
     @Override
     public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull Writer writer) throws IOException, DBException {
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            Transformer transformer = XMLUtils.newSecureTransformerFactory().newTransformer();
             Result output = new StreamResult(writer);
 
             transformer.transform(
@@ -91,16 +89,10 @@ public class DBDDocumentXML implements DBDDocument {
     @Override
     public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull Reader reader) throws IOException, DBException {
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            DOMResult output = new DOMResult();
-
-            transformer.transform(
-                new StreamSource(reader),
-                output);
-            document = (Document) output.getNode();
+            document = XMLUtils.parseDocument(reader);
             modified = true;
         } catch (Exception e) {
-            throw new DBException("Error transforming XML document", e);
+            throw new DBException("Error parsing XML document", e);
         }
     }
 
