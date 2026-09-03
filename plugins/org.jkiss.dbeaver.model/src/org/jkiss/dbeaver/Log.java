@@ -214,7 +214,7 @@ public class Log {
     }
 
     public boolean isTraceEnabled() {
-        return handler != null && handler.isTraceEnabled(name);
+        return TRACE_LOG_ENABLED || handler != null && handler.isTraceEnabled(name);
     }
 
 
