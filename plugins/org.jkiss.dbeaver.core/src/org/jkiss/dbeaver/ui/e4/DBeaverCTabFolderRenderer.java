@@ -75,42 +75,59 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                 var oldSelectedTabFillColors = selectedTabFillColorsField.get(this);
                 var oldCloseRect = closeRectField.get(item);
                 var oldCloseImageState = closeImageStateField.get(item);
+                Color highlightColor = null;
+                Color unselectedColor = null;
+                Color hotColor = null;
 
-                // Removes the background behind the close button
-                if (oldCloseImageState != null && oldCloseImageState == SWT.BACKGROUND) {
-                    closeRectField.set(item, EMPTY_CLOSE_RECT);
+                try {
+                    // Removes the background behind the close button
+                    if (oldCloseImageState != null && oldCloseImageState == SWT.BACKGROUND) {
+                        closeRectField.set(item, EMPTY_CLOSE_RECT);
+                    }
+
+                    // Replaces unselected and selected tab colors
+                    boolean isHot = (state & SWT.HOT) != 0;
+                    boolean isSelected = (state & SWT.SELECTED) != 0;
+                    boolean isDarkTheme = UIStyles.isDarkTheme();
+
+                    Color fillColor = oldSelectedTabFillColors != null && oldSelectedTabFillColors.length == 1
+                        ? oldSelectedTabFillColors[0]
+                        : parent.getSelectionBackground();
+                    highlightColor = isDarkTheme ? UIStyles.lighten(color, 0.2f) : UIStyles.darken(color, 0.2f);
+                    unselectedColor = UIStyles.mix(highlightColor, fillColor, 0.15f); ///0.5?
+                    hotColor = isDarkTheme
+                        ? UIStyles.darken(unselectedColor, 0.05f)
+                        : UIStyles.lighten(unselectedColor, 0.05f);
+
+                    hotUnselectedTabsColorBackgroundField.set(this, isHot ? hotColor : unselectedColor);
+                    selectedTabFillColorsField.set(this, new Color[]{color});
+                    selectedTabHighlightColorField.set(this, highlightColor);
+
+                    if (!isSelected) {
+                        // The outline bleeds over the hover tab. Since we're relying on SWT.HOT painting
+                        // logic, we need to override it to be the same color as the tab itself
+                        tabOutlineColorField.set(this, isHot ? hotColor : unselectedColor);
+                    }
+
+                    super.draw(part, state | SWT.HOT, bounds, gc);
+                } finally {
+                    // Restore whatever we have changed back to original values
+                    closeRectField.set(item, oldCloseRect);
+                    selectedTabHighlightColorField.set(this, oldSelectedTabHighlightColor);
+                    selectedTabFillColorsField.set(this, oldSelectedTabFillColors);
+                    hotUnselectedTabsColorBackgroundField.set(this, oldHotUnselectedTabsColorBackground);
+                    tabOutlineColorField.set(this, oldTabOutlineColor);
+
+                    if (hotColor != null) {
+                        hotColor.dispose();
+                    }
+                    if (unselectedColor != null && unselectedColor != highlightColor) {
+                        unselectedColor.dispose();
+                    }
+                    if (highlightColor != null) {
+                        highlightColor.dispose();
+                    }
                 }
-
-                // Replaces unselected and selected tab colors
-                boolean isHot = (state & SWT.HOT) != 0;
-                boolean isSelected = (state & SWT.SELECTED) != 0;
-                boolean isDarkTheme = UIStyles.isDarkTheme();
-
-                Color fillColor = oldSelectedTabFillColors != null && oldSelectedTabFillColors.length == 1
-                    ? oldSelectedTabFillColors[0]
-                    : parent.getSelectionBackground();
-                Color highlightColor = isDarkTheme ? UIStyles.lighten(color, 0.2f) : UIStyles.darken(color, 0.2f);
-                Color unselectedColor = UIStyles.mix(highlightColor, fillColor, 0.15f); ///0.5?
-                Color hotColor = isDarkTheme ? UIStyles.darken(unselectedColor, 0.05f) : UIStyles.lighten(unselectedColor, 0.05f);
-
-                hotUnselectedTabsColorBackgroundField.set(this, isHot ? hotColor : unselectedColor);
-                selectedTabFillColorsField.set(this, new Color[]{color});
-                selectedTabHighlightColorField.set(this, highlightColor);
-
-                if (!isSelected) {
-                    // The outline bleeds over the hover tab. Since we're relying on SWT.HOT painting
-                    // logic, we need to override it to be the same color as the tab itself
-                    tabOutlineColorField.set(this, isHot ? hotColor : unselectedColor);
-                }
-
-                super.draw(part, state | SWT.HOT, bounds, gc);
-
-                // Restore whatever we have changed back to original values
-                closeRectField.set(item, oldCloseRect);
-                selectedTabHighlightColorField.set(this, oldSelectedTabHighlightColor);
-                selectedTabFillColorsField.set(this, oldSelectedTabFillColors);
-                hotUnselectedTabsColorBackgroundField.set(this, oldHotUnselectedTabsColorBackground);
-                tabOutlineColorField.set(this, oldTabOutlineColor);
 
                 return;
             }
