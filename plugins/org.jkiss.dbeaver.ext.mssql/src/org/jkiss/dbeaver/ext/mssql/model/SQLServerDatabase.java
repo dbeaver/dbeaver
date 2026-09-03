@@ -166,20 +166,37 @@ public class SQLServerDatabase
         }
         // Database-level extended properties live in the database itself, so they cannot be read
         // together with the database list and are not readable at all while the database is not online
-        try (JDBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Read database description")) {
-            description = JDBCUtils.queryString(
-                session,
-                "SELECT CAST([value] AS nvarchar(max)) FROM " + SQLServerUtils.getExtendedPropsTableName(this) +
-                    " WHERE [class] = ? AND [major_id] = 0 AND [minor_id] = 0 AND [name] = ?",
-                SQLServerObjectClass.DATABASE.getClassId(),
-                SQLServerConstants.PROP_MS_DESCRIPTION);
-        } catch (Exception e) {
-            log.debug("Error reading description of database " + getName(), e);
+        if (isExtendedPropertiesAddressable()) {
+            try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database description")) {
+                description = JDBCUtils.queryString(
+                    session,
+                    "SELECT CAST([value] AS nvarchar(max)) FROM " + SQLServerUtils.getExtendedPropsTableName(this) +
+                        " WHERE [class] = ? AND [major_id] = 0 AND [minor_id] = 0 AND [name] = ?",
+                    SQLServerObjectClass.DATABASE.getClassId(),
+                    SQLServerConstants.PROP_MS_DESCRIPTION);
+            } catch (Exception e) {
+                log.debug("Error reading description of database " + getName(), e);
+            }
         }
         if (description == null) {
             description = "";
         }
         return description;
+    }
+
+    /**
+     * Without cross-database queries the extended properties table cannot be qualified with a catalog name,
+     * so it resolves inside the database the connection currently uses - reading it for any other database
+     * would report that one's description instead.
+     */
+    private boolean isExtendedPropertiesAddressable() {
+        if (SQLServerUtils.supportsCrossDatabaseQueries(dataSource)) {
+            return true;
+        }
+        if (DBUtils.getDefaultContext(this, true) instanceof SQLServerExecutionContext context) {
+            return this == context.getDefaultCatalog();
+        }
+        return false;
     }
 
     public void setDescription(String description) {
