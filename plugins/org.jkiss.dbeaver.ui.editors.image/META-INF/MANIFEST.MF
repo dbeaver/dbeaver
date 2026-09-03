@@ -7,7 +7,6 @@ Bundle-Version: 1.0.187.qualifier
 Bundle-Release-Date: 20260921
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.editors.data
+Require-Bundle: org.jkiss.dbeaver.ui.editors.data
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.image
 

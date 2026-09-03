@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -285,10 +285,9 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Override
-    public void doSaveAs()
-    {
+    public void doSaveAs() {
         Shell shell = getSite().getShell();
-        final File saveFile = DialogUtils.selectFileForSave(shell, getPartName());
+        Path saveFile = DialogUtils.selectFileForSave(shell, getPartName());
         if (saveFile == null) {
             return;
         }
@@ -305,7 +304,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
                     "Can't save content",
-                    "Can't save content to file '" + saveFile.getAbsolutePath() + "'",
+                    "Can't save content to file '" + saveFile.toAbsolutePath() + "'",
                     e.getTargetException());
         }
         catch (InterruptedException e) {
