@@ -71,6 +71,7 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
 
     /**
      * Check whether this is a PolarDB-X Standard Edition.
+     *
      * @return true if it is the Standard Edition, false if it is the regular edition
      */
     public boolean isPolarDBXStandardEdition() {

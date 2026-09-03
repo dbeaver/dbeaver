@@ -166,9 +166,9 @@ public class FunctionDefinitionParser {
      */
     private static int findEndOfReturnsClause(@NotNull String procedureDef, int startPos) {
         // Look for possible end keywords
-        String[] endKeywords = {"DETERMINISTIC", "NOT DETERMINISTIC", "READS SQL DATA", 
-                               "MODIFIES SQL DATA", "NO SQL", "CONTAINS SQL", "SQL SECURITY", 
-                               "COMMENT", "LANGUAGE SQL", "BEGIN", "AS"};
+        String[] endKeywords = {"DETERMINISTIC", "NOT DETERMINISTIC", "READS SQL DATA",
+                                "MODIFIES SQL DATA", "NO SQL", "CONTAINS SQL", "SQL SECURITY",
+                                "COMMENT", "LANGUAGE SQL", "BEGIN", "AS"};
         
         int minEndPos = procedureDef.length();
         

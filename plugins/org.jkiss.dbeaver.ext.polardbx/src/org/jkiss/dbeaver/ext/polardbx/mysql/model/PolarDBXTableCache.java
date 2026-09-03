@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ext.polardbx.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -100,9 +100,9 @@ public class PolarDBXTableCache extends MySQLCatalog.TableCache {
 
                 while (rs.next()) {
                     String columnName = JDBCUtils.safeGetString(rs, "Field");
-                    String typeInfo = JDBCUtils.safeGetString(rs, "Type");
+                    final String typeInfo = JDBCUtils.safeGetString(rs, "Type");
                     String nullable = JDBCUtils.safeGetString(rs, "Null");
-                    String defaultValue = JDBCUtils.safeGetString(rs, "Default");
+                    final String defaultValue = JDBCUtils.safeGetString(rs, "Default");
                     String extra = JDBCUtils.safeGetString(rs, "Extra");
 
                     MySQLTableColumn col = new MySQLTableColumn(viewObject);

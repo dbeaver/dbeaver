@@ -170,7 +170,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
         @NotNull
         @Override
         protected MySQLProcedure fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException {
+                throws SQLException, DBException {
             // Use PolarDBXProcedure instead of MySQLProcedure to support the special handling logic for functions,
             // and to ensure our overridden getName() and getFullyQualifiedName() methods are used.
             return new PolarDBXProcedure((PolarDBXCatalog) owner, dbResult);
@@ -257,9 +257,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             @NotNull JDBCSession session,
             @NotNull MySQLCatalog owner,
             @Nullable MySQLProcedure procedure
-        )
-            throws SQLException
-        {
+        ) throws SQLException {
             if (procedure != null && procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
                 // Warm up the function definition parsing cache.
                 getFunctionParameterInfo(session, procedure.getName());
@@ -365,8 +363,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             @NotNull MySQLCatalog owner,
             @NotNull MySQLProcedure parent,
             @NotNull JDBCResultSet dbResult
-        )
-            throws SQLException, DBException {
+        ) throws SQLException, DBException {
 
             if (parent.getProcedureType() == DBSProcedureType.FUNCTION) {
                 // For functions: parse the parameter length via SHOW CREATE FUNCTION and create the parameter object directly.
@@ -384,7 +381,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
         @NotNull
         private MySQLProcedureParameter createFunctionParameterWithParsedLength(
             @NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLProcedure parent, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException {
+                throws SQLException, DBException {
 
             // Get the parameter information parsed from the function definition.
             Map<String, FunctionDefinitionParser.ParameterInfo> functionParams =
@@ -401,11 +398,21 @@ public class PolarDBXCatalog extends MySQLCatalog {
             // Determine the parameter kind.
             DBSProcedureParameterKind parameterKind;
             switch (columnType) {
-            case 1: parameterKind = DBSProcedureParameterKind.IN; break;
-            case 2: parameterKind = DBSProcedureParameterKind.INOUT; break;
-            case 4: parameterKind = DBSProcedureParameterKind.OUT; break;
-            case 5: parameterKind = DBSProcedureParameterKind.RETURN; break;
-            default: parameterKind = DBSProcedureParameterKind.IN; break;
+                case 1:
+                    parameterKind = DBSProcedureParameterKind.IN;
+                    break;
+                case 2:
+                    parameterKind = DBSProcedureParameterKind.INOUT;
+                    break;
+                case 4:
+                    parameterKind = DBSProcedureParameterKind.OUT;
+                    break;
+                case 5:
+                    parameterKind = DBSProcedureParameterKind.RETURN;
+                    break;
+                default:
+                    parameterKind = DBSProcedureParameterKind.IN;
+                    break;
             }
 
             // Get the data type.
@@ -474,49 +481,51 @@ public class PolarDBXCatalog extends MySQLCatalog {
          * A simplified version providing default lengths for the main types.
          */
         private int getBasicDefaultLengthForType(@Nullable String typeName) {
-            if (typeName == null) return 255;
+            if (typeName == null) {
+                return 255;
+            }
 
             String lowerType = typeName.toLowerCase();
             switch (lowerType) {
-            // Numeric types
-            case "bit": return 1;
-            case "tinyint": return 3;
-            case "bool": case "boolean": return 3;
-            case "smallint": return 5;
-            case "mediumint": return 7;
-            case "int": case "integer": case "int24": return 10;
-            case "bigint": return 19;
-            case "decimal": case "dec": case "numeric": return 65;
-            case "float": return 12;
-            case "real": case "double": case "double precision": return 22;
+                // Numeric types
+                case "bit": return 1;
+                case "tinyint": return 3;
+                case "bool": case "boolean": return 3;
+                case "smallint": return 5;
+                case "mediumint": return 7;
+                case "int": case "integer": case "int24": return 10;
+                case "bigint": return 19;
+                case "decimal": case "dec": case "numeric": return 65;
+                case "float": return 12;
+                case "real": case "double": case "double precision": return 22;
 
-            // String types
-            case "char": return 1;
-            case "varchar": return 65535;
-            case "tinytext": return 255;
-            case "text": return 65535;
-            case "mediumtext": return 16777215;
-            case "longtext": return 2147483647;
-            case "binary": return 255;
-            case "varbinary": return 65535;
-            case "tinyblob": return 255;
-            case "blob": return 65535;
-            case "mediumblob": return 16777215;
-            case "longblob": return 2147483647;
-            case "enum": return 2;
-            case "set": return 3;
+                // String types
+                case "char": return 1;
+                case "varchar": return 65535;
+                case "tinytext": return 255;
+                case "text": return 65535;
+                case "mediumtext": return 16777215;
+                case "longtext": return 2147483647;
+                case "binary": return 255;
+                case "varbinary": return 65535;
+                case "tinyblob": return 255;
+                case "blob": return 65535;
+                case "mediumblob": return 16777215;
+                case "longblob": return 2147483647;
+                case "enum": return 2;
+                case "set": return 3;
 
-            // Date and time types
-            case "date": return 10;        // YYYY-MM-DD
-            case "time": return 8;         // HH:MM:SS
-            case "datetime": return 19;    // YYYY-MM-DD HH:MM:SS
-            case "timestamp": return 19;   // YYYY-MM-DD HH:MM:SS
-            case "year": return 4;         // YYYY
+                // Date and time types
+                case "date": return 10;        // YYYY-MM-DD
+                case "time": return 8;         // HH:MM:SS
+                case "datetime": return 19;    // YYYY-MM-DD HH:MM:SS
+                case "timestamp": return 19;   // YYYY-MM-DD HH:MM:SS
+                case "year": return 4;         // YYYY
 
-            // JSON type
-            case "json": return 1073741824;
+                // JSON type
+                case "json": return 1073741824;
 
-            default: return 255;
+                default: return 255;
             }
         }
 
@@ -538,8 +547,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
 
         @Override
         protected void loadObjects(@NotNull DBRProgressMonitor monitor, @NotNull MySQLCatalog owner, @Nullable MySQLTable forParent)
-            throws DBException
-        {
+                throws DBException {
             synchronized (this) {
                 // New strategy: for a full-database query, always reload to ensure data synchronization.
                 if (forParent == null) {
@@ -573,9 +581,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             @NotNull JDBCSession session,
             @NotNull MySQLCatalog owner,
             @Nullable MySQLTable forTable
-        )
-            throws SQLException
-        {
+        ) throws SQLException {
             // Use the same query logic as MySQL.
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT * FROM ").append(MySQLConstants.META_TABLE_STATISTICS)
@@ -603,9 +609,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             @NotNull MySQLTable parent,
             @NotNull String indexName,
             @NotNull JDBCResultSet dbResult
-        )
-            throws SQLException, DBException
-        {
+        ) throws SQLException, DBException {
             // Replicate the implementation logic of MySQL IndexCache.
             String indexTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_INDEX_TYPE);
             DBSIndexType indexType;
@@ -632,9 +636,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             @NotNull MySQLTable parent,
             @NotNull MySQLTableIndex object,
             @NotNull JDBCResultSet dbResult
-        )
-            throws SQLException, DBException
-        {
+        ) throws SQLException, DBException {
             // Replicate the implementation logic of MySQL IndexCache.
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SEQ_IN_INDEX);
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_COLUMN_NAME);
@@ -662,8 +664,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             @NotNull DBRProgressMonitor monitor,
             @NotNull MySQLTableIndex index,
             @NotNull List<MySQLTableIndexColumn> rows
-        )
-        {
+        ) {
             for (MySQLTableIndexColumn column : rows) {
                 index.addColumn(column);
             }
