@@ -60,6 +60,7 @@
         <module>org.jkiss.dbeaver.ext.informix</module>
         <module>org.jkiss.dbeaver.ext.iotdb</module>
         <module>org.jkiss.dbeaver.ext.kingbase</module>
+        <module>org.jkiss.dbeaver.ext.manticore</module>
         <module>org.jkiss.dbeaver.ext.mssql</module>
         <module>org.jkiss.dbeaver.ext.mysql</module>
         <module>org.jkiss.dbeaver.ext.netezza</module>

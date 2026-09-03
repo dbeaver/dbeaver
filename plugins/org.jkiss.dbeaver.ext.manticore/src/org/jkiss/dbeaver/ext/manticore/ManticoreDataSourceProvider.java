@@ -14,21 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.generic.model;
+package org.jkiss.dbeaver.ext.manticore;
 
-public class ManticoreSQLDialect extends GenericSQLDialect {
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.dbeaver.ext.manticore.model.ManticoreDataSource;
 
-    public ManticoreSQLDialect() {
-        super("Manticore Search", "manticore");
-    }
+public class ManticoreDataSourceProvider extends GenericDataSourceProvider<ManticoreDataSource> {
 
-    @Override
-    public boolean supportsAliasInSelect() {
-        return false;
-    }
-
-    @Override
-    public boolean supportsAliasInConditions() {
-        return false;
+    public ManticoreDataSourceProvider() {
+        super(ManticoreDataSource.class);
     }
 }

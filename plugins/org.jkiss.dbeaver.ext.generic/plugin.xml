@@ -1579,54 +1579,6 @@
 
         </datasource>
 
-        <!-- Manticore Search -->
-        <datasource
-                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
-                description="Manticore Search datasource"
-                id="manticore"
-                parent="generic"
-                label="Manticore Search"
-                icon="icons/manticore_icon.svg"
-                dialect="generic">
-            <drivers managable="true">
-
-                <driver
-                        id="manticore"
-                        label="Manticore Search"
-                        class="com.mysql.cj.jdbc.Driver"
-                        icon="icons/manticore_icon.svg"
-                        iconBig="icons/manticore_icon_big.svg"
-                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                        defaultPort="9306"
-                        description="Manticore Search"
-                        webURL="https://manual.manticoresearch.com/Connecting_to_the_server"
-                        propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
-                        supportedConfigurationTypes="MANUAL,URL"
-                        categories="sql,fulltext"
-                        allowsEmptyPassword="true">
-                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[9.7.0]" bundle="!drivers.mysql"/>
-                    <file type="license" path="licenses/external/gnu3.txt"/>
-                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
-                    <property name="characterEncoding" value="utf8"/>
-                    <property name="maxAllowedPacket" value="512000"/>
-                    <property name="serverTimezone" value="UTC"/>
-                    <property name="useSSL" value="false"/>
-                    <property name="connectTimeout" value="20000"/>
-                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <parameter name="meta-model" value="manticore"/>
-                    <parameter name="omit-catalog" value="true"/>
-                    <parameter name="omit-schema" value="true"/>
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-indexes" value="false"/>
-                    <parameter name="supports-table-constraints" value="false"/>
-                    <parameter name="supports-schema-selection" value="false"/>
-                    <parameter name="supports-catalog-selection" value="false"/>
-                </driver>
-
-            </drivers>
-
-        </datasource>
-
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
@@ -1654,7 +1606,6 @@
 
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="gizmosql" class="org.jkiss.dbeaver.ext.generic.model.meta.gizmosql.GizmoSQLMetaModel" driverClass="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"/>
-        <meta id="manticore" class="org.jkiss.dbeaver.ext.generic.model.ManticoreMetaModel"/>
         <meta id="indexed" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel">
             <object type="catalog">
                 <column id="TABLE_CAT" index="1"/>
