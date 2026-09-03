@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.model.impl.struct.ContextDefaultObjectsReader;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -53,9 +55,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -219,8 +224,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
     private static void changeDataBaseSelection(
         @Nullable IEditorPart activeEditor,
-        DBPDataSourceContainer dsContainer,
-        DBCExecutionContext executionContext,
+        @Nullable DBPDataSourceContainer dsContainer,
+        @Nullable DBCExecutionContext executionContext,
         @Nullable String curInstanceName,
         @Nullable String newInstanceName,
         @Nullable String newObjectName
@@ -235,13 +240,62 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 @Override
                 protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     try {
-                        DBExecUtils.setExecutionContextDefaults(monitor, dataSource, executionContext, newInstanceName, curInstanceName, newObjectName);
-                        return Status.OK_STATUS;
+                        DBExecUtils.setExecutionContextDefaults(
+                            monitor,
+                            dataSource,
+                            executionContext,
+                            newInstanceName,
+                            curInstanceName,
+                            newObjectName
+                        );
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
+                    try {
+                        commitTransactionIfNeeded(monitor, executionContext);
+                    } catch (DBException e) {
+                        log.error("Error committing transaction before changing active database", e);
+                    }
+                    return Status.OK_STATUS;
                 }
             }.schedule();
+        }
+    }
+
+    /**
+     * Check if transaction commit is needed before after active database.
+     *
+     * @param monitor          progress monitor
+     * @param executionContext execution context to check transaction state
+     * @throws DBCException on error committing transaction
+     */
+    private static void commitTransactionIfNeeded(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext
+    ) throws DBCException {
+        var transactionManager = DBUtils.getTransactionManager(executionContext);
+        if (transactionManager == null || transactionManager.isAutoCommit()) {
+            return;
+        }
+        var contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults == null || !contextDefaults.isDefaultsChangeTransactional()) {
+            return;
+        }
+        var reply = UIUtils.syncExec(new RunnableWithResult<Reply>() {
+            @Nullable
+            @Override
+            public Reply runWithResult() {
+                return MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                    .setTitle(UINavigatorMessages.confirm_commit_after_defaults_change_title)
+                    .setMessage(UINavigatorMessages.confirm_commit_after_defaults_change_message)
+                    .setReplies(Reply.YES, Reply.NO)
+                    .setDefaultReply(Reply.CANCEL)
+                    .setPrimaryImage(DBIcon.STATUS_QUESTION)
+                    .showMessageBox();
+            }
+        });
+        if (reply == Reply.YES) {
+            DBExecUtils.commitContextTransaction(monitor, executionContext);
         }
     }
 
