@@ -14,7 +14,7 @@
     <!-- dbeaver common -->
     <module>../../../dbeaver-common</module>
     <!-- datadam api -->
-    <module>../../../datadam-api/apis/com.dbeaver.datadam.gateway.api</module>
+    <module>../../../datadam-api/apis</module>
     <!-- dbeaver ce -->
     <module>../..</module>
   </modules>
