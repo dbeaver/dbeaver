@@ -34,8 +34,9 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
+import java.security.Security;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -363,6 +364,89 @@ public class DBeaverLauncher {
         }
     }
 
+    /**
+     * Searches for the product ID in the provided array of command-line arguments.
+     * The ID follows the `-product` flag.
+     *
+     * @param args an array of command-line arguments to search through
+     * @return the product ID, or empty string if not found
+     */
+    private static String findProductIdInArgs(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (PRODUCT.equals(arg) && i + 1 < args.length) {
+                return args[i + 1];
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Patch `java.security` properties to allow certain legacy crypto to work with non-server DBeaver products.
+     * <p>
+     * As explained in the linked issues and JRE and JDK Cryptographic Roadmap, some of the crypto algorithms are disabled in Java
+     * by default due to their inadequate (by modern standards) security qualities. However, these algorithms are still used by some
+     * legacy databases for encryption in transit. We believe that it's ok to enable them as long as we do it only for non-server products
+     * (i.e., DBeaver desktop, dbvr), since these applications do not have incoming traffic.
+     * <p>
+     * See:
+     * <a href="https://github.com/dbeaver/dbeaver/issues/12668">#12668</a>
+     * <a href="https://github.com/dbeaver/dbeaver/issues/40987">#40987</a>
+     * <a href="https://www.java.com/en/jre-jdk-cryptoroadmap.html">JRE and JDK Cryptographic Roadmap</a>
+     *
+     * @param args command line arguments
+     */
+    private static void patchJavaSecurity(String[] args) {
+        // We need a way to disable this using a Java property just in case
+        if (!Boolean.parseBoolean(System.getProperty("dbeaver.security.enableLegacyAlgorithms", "false"))) {
+            return;
+        }
+        // Let's detect a desktop DBeaver or dbvr using their product ID
+        String productId = findProductIdInArgs(args);
+        if (!productId.startsWith(Constants.PRODUCT_DBEAVER_COMMUNITY_PREFIX) &&
+            !productId.startsWith(Constants.PRODUCT_PROPRIETARY_DBEAVER_DESKTOP_PREFIX) &&
+            !productId.startsWith(Constants.PRODUCT_DBVR_PREFIX)
+        ) {
+            return;
+        }
+        // Let's put these obsolete algorithms into the ` legacyAlgorithms ` category so that they are still in use,
+        // but only if all other TLS protos and ciphers fail.
+        // See `conf/security/java.security` for an explanation of the used properties.
+        try {
+            String disabledAlgosKey = "jdk.tls.disabledAlgorithms";
+            Collection<String> algorithms = getSecurityPropertyValues(disabledAlgosKey);
+            String legacyAlgosKey = "jdk.tls.legacyAlgorithms";
+            getSecurityPropertyValues(legacyAlgosKey, algorithms);
+            Security.setProperty(legacyAlgosKey, String.join(", ", algorithms));
+            Security.setProperty(disabledAlgosKey, "");
+            // We also need to remove `ChaCha20-Poly1305 KeyUpdate 2^37` from `jdk.tls.keyLimits`. The reason for this is lost to history.
+            String keyLimitsKey = "jdk.tls.keyLimits";
+            Collection<String> keyLimits = getSecurityPropertyValues(keyLimitsKey);
+            keyLimits.remove("ChaCha20-Poly1305 KeyUpdate 2^37");
+            Security.setProperty(keyLimitsKey, String.join(", ", keyLimits));
+        } catch (RuntimeException ignore) {
+            // Just in case
+        }
+    }
+
+    private static Collection<String> getSecurityPropertyValues(String propertyKey) {
+        Collection<String> values = new HashSet<>();
+        getSecurityPropertyValues(propertyKey, values);
+        return values;
+    }
+
+    private static void getSecurityPropertyValues(String propertyKey, Collection<? super String> values) {
+        String propertyValue = Security.getProperty(propertyKey);
+        if (propertyValue == null) {
+            return;
+        }
+        // Split by `,` and then strip leading space instead of splitting by `, ` directly for performance reasons
+        String[] valuesArray = propertyValue.split(",");
+        for (String value : valuesArray) {
+            values.add(value.stripLeading());
+        }
+    }
+
     private String getWS() {
         if (ws != null)
             return ws;
@@ -575,6 +659,7 @@ public class DBeaverLauncher {
         disableDefaultProxyServiceActivation();
         commands = args;
         String[] passThruArgs = processCommandLine(args);
+        patchJavaSecurity(passThruArgs);
         if (debug) {
             System.out.println("Processed command line arguments: " + Arrays.toString(passThruArgs));
         }
@@ -862,13 +947,16 @@ public class DBeaverLauncher {
     }
 
     private Path detectDefaultWorkspaceLocation(String[] args, Path dbeaverDataDir) {
-        String productName = "";
-        String customWorkspacePath = null;
+        String customWorkspacePath = System.getenv(Constants.ENV_WORKSPACE_PATH);
+        if (customWorkspacePath != null && !customWorkspacePath.isBlank()) {
+            // Custom location
+            return Path.of(customWorkspacePath);
+        }
+
+
+        String productName = findProductIdInArgs(args);
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            if (PRODUCT.equals(arg)) {
-                productName = args[++i];
-            }
             if (ARG_DATA.equals(arg)) {
                 customWorkspacePath = args[++i];
                 break;
@@ -1837,6 +1925,12 @@ public class DBeaverLauncher {
     public int run(String[] args) {
         int result;
         try {
+            if (DelegateMainLauncher.canHandle(args)) {
+                commands = args;
+                String[] passThruArgs = processCommandLine(Arrays.copyOf(args, args.length));
+                DelegateMainLauncher.run(passThruArgs);
+                return 0;
+            }
             basicRun(args);
             String exitCode = System.getProperty(PROP_EXITCODE);
             try {
@@ -2243,6 +2337,12 @@ public class DBeaverLauncher {
     }
 
     public static String getWorkingDirectory(String defaultWorkspaceLocation) {
+        String customDataPath = System.getenv(Constants.ENV_DATA_PATH);
+        if (customDataPath != null && !customDataPath.isBlank()) {
+            // Custom location
+            return Path.of(customDataPath).resolve(defaultWorkspaceLocation).toAbsolutePath().toString();
+        }
+
         String osName = (System.getProperty("os.name")).toUpperCase();
         String workingDirectory;
         if (osName.contains("WIN")) {
@@ -2716,15 +2816,6 @@ public class DBeaverLauncher {
                 }
             });
         }
-        if (showSplash || endSplash != null) {
-            // Register the endSplashHandler to be run at VM shutdown. This hook will be
-            // removed once the splash screen has been taken down.
-            try {
-                Runtime.getRuntime().addShutdownHook(splashHandler);
-            } catch (Throwable ex) {
-                // Best effort to register the handler
-            }
-        }
 
         // if -endsplash is specified, use it and ignore any -showsplash command
         if (endSplash != null) {
@@ -2765,14 +2856,6 @@ public class DBeaverLauncher {
 
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
-
-        if (splashHandler != null) {
-            try {
-                Runtime.getRuntime().removeShutdownHook(splashHandler);
-            } catch (Throwable e) {
-                // OK to ignore this, happens when the VM is already shutting down
-            }
-        }
     }
 
     /*

@@ -20,8 +20,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -112,7 +111,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
 
     @Override
     public void visualizeLoading() {
-        if (!progressPane.isDisposed()) {
+        if (progressPane != null && !progressPane.isDisposed()) {
             if (shadowColor == null) {
                 shadowColor = progressPane.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
             }
@@ -143,9 +142,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.verticalIndent = DBeaverIcons.getImage(UIIcon.PROGRESS0).getBounds().height * 2;
             cancelButton.setLayoutData(gd);
-            cancelButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            cancelButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     cancelButton.setText("Canceled");
                     cancelButton.setEnabled(false);
                     Point buttonSize = cancelButton.computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -157,8 +154,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                     } catch (InvocationTargetException e1) {
                         log.error(e1.getTargetException());
                     }
-                }
-            });
+                }));
 
             painListener = e -> {
                 if (cancelButton.isDisposed()) {

@@ -471,6 +471,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
+        if (isQuoteIdentifiersAlways()) {
+            return true;
+        }
         // Check for keyword conflict
         final DBPKeywordType keywordType = this.getKeywordType(str);
         boolean hasBadChars = (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
@@ -566,7 +569,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public String unEscapeString(String string) {
+    public String unEscapeString(@Nullable String string) {
         return CommonUtils.notEmpty(string).replace("''", "'");
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,118 +18,87 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
 
 /**
  * A null-op scrollbar proxy.  Used when the grid is not showing scrollbars.
- *
- * @author chris.gross@us.ibm.com
- * @since 2.0.0
  */
-class NullScrollBar implements IGridScrollBar
-{
+class NullScrollBar implements IGridScrollBar {
 
     @Override
-    public int getWidth()
-    {
+    public int getWidth() {
         return 0;
     }
 
     @Override
-    public boolean getVisible()
-    {
+    public boolean getVisible() {
         return false;
     }
 
     @Override
-    public void setVisible(boolean visible)
-    {
+    public void setVisible(boolean visible) {
     }
 
     @Override
-    public int getSelection()
-    {
+    public int getSelection() {
         return 0;
     }
 
     @Override
-    public void setSelection(int selection)
-    {
+    public void setSelection(int selection) {
     }
 
     @Override
-    public void setValues(int selection, int min, int max, int thumb, int increment, int pageIncrement)
-    {
+    public void setValues(int selection, int min, int max, int thumb, int increment, int pageIncrement) {
     }
 
     @Override
-    public void handleMouseWheel(Event e)
-    {
+    public void handleMouseWheel(Event e) {
     }
 
     @Override
-    public void setMinimum(int min)
-    {
+    public void setMinimum(int min) {
     }
 
     @Override
-    public int getMinimum()
-    {
+    public int getMinimum() {
         return 0;
     }
 
     @Override
-    public void setMaximum(int max)
-    {
+    public void setMaximum(int max) {
     }
 
     @Override
-    public int getMaximum()
-    {
+    public int getMaximum() {
         return 0;
     }
 
     @Override
-    public void setThumb(int thumb)
-    {
+    public void setThumb(int thumb) {
     }
 
     @Override
-    public int getThumb()
-    {
+    public int getThumb() {
         return 0;
     }
 
     @Override
-    public void setIncrement(int increment)
-    {
+    public void setIncrement(int increment) {
     }
 
     @Override
-    public int getIncrement()
-    {
+    public int getIncrement() {
         return 0;
     }
 
     @Override
-    public void setPageIncrement(int page)
-    {
+    public void addSelectionListener(@NotNull SelectionListener listener) {
     }
 
     @Override
-    public int getPageIncrement()
-    {
-        return 0;
-    }
+    public void removeSelectionListener(@NotNull SelectionListener listener) {
 
-    @Override
-    public void addSelectionListener(SelectionListener listener)
-    { 
-    }
-
-    @Override
-    public void removeSelectionListener(SelectionListener listener)
-    {
-   
     }
 
 }

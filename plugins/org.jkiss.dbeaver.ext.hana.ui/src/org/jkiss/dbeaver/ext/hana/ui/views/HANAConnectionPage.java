@@ -18,12 +18,13 @@ package org.jkiss.dbeaver.ext.hana.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.hana.model.HANAConstants;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAEdition;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAMessages;
@@ -117,9 +118,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         databaseText = new Text(addrGroup, SWT.BORDER);
         databaseText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        editionCombo.addSelectionListener(new SelectionAdapter() {
-            @Override public void widgetSelected(SelectionEvent e) { editionUpdated(); site.updateButtons(); }
-        });
+        editionCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> { editionUpdated(); site.updateButtons(); }));
         hostText.addModifyListener(e -> { hostUpdated(); site.updateButtons(); });
         portText.addModifyListener(e -> site.updateButtons());
         instanceText.addModifyListener(e -> { instanceUpdated(); site.updateButtons(); });
@@ -196,7 +195,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         connectionInfo.setProviderProperty(PROV_PROP_EDITION, edition.name());
         if (created) {
@@ -220,6 +219,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };

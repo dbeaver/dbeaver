@@ -4,6 +4,7 @@
 osgi-cache/
 bin/
 tmp/
+dbeaver-workspace
 *.tmp
 *.bak
 *.swp
@@ -63,3 +64,4 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+test/**/workspace/

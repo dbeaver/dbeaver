@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
@@ -144,14 +143,11 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             item.setData(table);
         }
         objectsTable.addSelectionListener(SQL_CHANGE_LISTENER);
-        objectsTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        objectsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 boolean hasChecked = !getCheckedObjects().isEmpty();
                 getButton(IDialogConstants.OK_ID).setEnabled(hasChecked);
                 getButton(IDialogConstants.DETAILS_ID).setEnabled(hasChecked);
-            }
-        });
+            }));
     }
 
     @Override

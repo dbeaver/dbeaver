@@ -85,7 +85,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     public ExasolTable createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object exasolSchema,
+        @NotNull Object exasolSchema,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -123,6 +123,12 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
         DBEPersistAction commentAction = buildCommentAction(command.getObject());
         if (commentAction != null) {
             actions.add(commentAction);
+        }
+        for (ExasolTableColumn column : CommonUtils.safeCollection(command.getObject().getAttributes(monitor))) {
+            DBEPersistAction columnCommentAction = ExasolTableColumnManager.buildCommentAction(column);
+            if (columnCommentAction != null) {
+                actions.add(columnCommentAction);
+            }
         }
     }
 

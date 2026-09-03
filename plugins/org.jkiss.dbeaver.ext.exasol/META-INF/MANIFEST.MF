@@ -3,13 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Exasol Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.exasol;singleton:=true
-Bundle-Version: 1.0.236.qualifier
-Bundle-Release-Date: 20260504
+Bundle-Version: 1.0.245.qualifier
+Bundle-Release-Date: 20260921
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.data.gis
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol
 Export-Package: org.jkiss.dbeaver.ext.exasol,

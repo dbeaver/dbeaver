@@ -2,25 +2,18 @@
 <?eclipse version="3.2"?>
 
 <plugin>
-
-    <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.ui.dataSourceConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.dataSourceConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.dataSourceConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceConfigurator" name="%extension-point.org.jkiss.dbeaver.dataSourceConfigurator.name" schema="schema/org.jkiss.dbeaver.dataSourceConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.connectionPageConfigurator" name="%extension-point.org.jkiss.dbeaver.connectionPageConfigurator.name" schema="schema/org.jkiss.dbeaver.connectionPageConfigurator.exsd"/>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
-        <dataSourceConfigurator>
-<!--
-            <dataSourcePage class="org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral"/>
-            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData"/>
-            <dataSourcePage class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle"/>
--->
-        </dataSourceConfigurator>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseShellCommand" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.ShellCommandAuthModelConfigurator"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.core.new.connection" name="%command.org.jkiss.dbeaver.core.new.connection.name" description="%command.org.jkiss.dbeaver.core.new.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.new.connection.from.url" name="%command.org.jkiss.dbeaver.core.new.connection.from.url.name" description="%command.org.jkiss.dbeaver.core.new.connection.from.url.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.migrate.connection" name="%command.org.jkiss.dbeaver.core.migrate.connection.name" description="%command.org.jkiss.dbeaver.core.migrate.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.driver.manager" name="%command.org.jkiss.dbeaver.core.driver.manager.name" description="%command.org.jkiss.dbeaver.core.driver.manager.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.connection.changeCurrentPassword" name="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.name" description="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
     </extension>
@@ -30,10 +23,36 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.new.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_connect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.new.connection.from.url" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.svg"/>
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/driver_manager.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection.from.url" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateFromUrlHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceMigrateHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.driver.DriverManagerDialogHandler">
             <enabledWhen>
                 <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="driver-manager"/>
@@ -55,6 +74,15 @@
 
     <extension point="org.eclipse.ui.menus">
 
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.newConnection">
+            <separator name="additions" visible="false"/>
+            <dynamic id="org.jkiss.dbeaver.core.menu.newConnection.select" class="org.jkiss.dbeaver.ui.actions.datasource.NewConnectionDriverSelectorContributor"/>
+            <separator name="footer" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection.from.url" label="%command.org.jkiss.dbeaver.core.new.connection.from.url.name_short"/>
+            <separator name="custom" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+        </menuContribution>
+
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <menu label="%command.org.jkiss.dbeaver.connection.security.name">
                 <command commandId="org.jkiss.dbeaver.connection.changeCurrentPassword">
@@ -63,6 +91,56 @@
             </menu>
         </menuContribution>
 
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.core.new.connection" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+N"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.main.errorHandle" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle" name="%page.org.jkiss.dbeaver.preferences.main.errorHandle.name">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient" name="%page.org.jkiss.dbeaver.preferences.main.connections.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.main.transactions" class="org.jkiss.dbeaver.ui.preferences.PrefPageTransactions" name="%page.org.jkiss.dbeaver.preferences.main.transactions.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="%page.org.jkiss.dbeaver.preferences.main.meta.name">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+        </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                </or>
+            </enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
+             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database.svg"
+             id="org.jkiss.dbeaver.core.wizard.new.connection"
+             name="%wizard.org.jkiss.dbeaver.core.wizard.new.connection.name">
+           <description>
+               %wizard.org.jkiss.dbeaver.core.wizard.new.connection.description
+           </description>
+        </wizard>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -82,9 +160,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles"
-              id="org.jkiss.dbeaver.project.settings.networkProfiles"
-              name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name" >
+        <page id="org.jkiss.dbeaver.project.settings.networkProfiles" class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles" name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name">
             <enabledWhen>
                 <adapt type="org.eclipse.core.resources.IProject">
                     <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>

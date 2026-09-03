@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -30,7 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.AICompletionSettings;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AITextUtils;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -49,8 +47,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ScopeSelectorControl extends Composite {
@@ -71,7 +69,7 @@ public class ScopeSelectorControl extends Composite {
         @NotNull Composite parent,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull AICompletionSettings settings
+        @NotNull AIContextSettingsDataSource settings
     ) {
         super(parent, SWT.NONE);
 
@@ -94,13 +92,8 @@ public class ScopeSelectorControl extends Composite {
                 scopeCombo.select(scopeCombo.getItemCount() - 1);
             }
         }
-        scopeCombo.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeScope(CommonUtils.fromOrdinal(AIDatabaseScope.class, scopeCombo.getSelectionIndex()));
-            }
-        });
+        scopeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            changeScope(CommonUtils.fromOrdinal(AIDatabaseScope.class, scopeCombo.getSelectionIndex()))));
 
         scopeText = new Text(this, SWT.READ_ONLY | SWT.BORDER);
         scopeText.setEditable(false);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -61,9 +60,7 @@ public class StatisticsPresentation extends AbstractPresentation {
         table.setHeaderVisible(true);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        table.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        table.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 curAttribute = null;
                 TableItem[] selection = table.getSelection();
                 Object[] elements = new Object[selection.length];
@@ -74,8 +71,7 @@ public class StatisticsPresentation extends AbstractPresentation {
                     }
                 }
                 fireSelectionChanged(new StructuredSelection(elements));
-            }
-        });
+            }));
 
         UIUtils.createTableColumn(table, SWT.LEFT, "Name");
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
@@ -83,6 +79,7 @@ public class StatisticsPresentation extends AbstractPresentation {
         UIWidgets.setControlContextMenu(table, manager -> UIWidgets.fillDefaultTableContextMenu(manager, table));
     }
 
+    @Nullable
     @Override
     public Control getControl() {
         return table;
@@ -145,7 +142,7 @@ public class StatisticsPresentation extends AbstractPresentation {
 
     @NotNull
     @Override
-    public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+    public Map<Transfer, Object> copySelection(@NotNull ResultSetCopySettings settings) {
         return Collections.emptyMap();
     }
 }

@@ -989,7 +989,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
         // Check schemas in search path
         PostgreExecutionContext metaContext = getMetaContext();
-        List<String> searchPath = metaContext == null ? Collections.singletonList(PostgreConstants.CATALOG_SCHEMA_NAME) : metaContext.getSearchPath();
+        List<String> searchPath = metaContext == null ? List.of(PostgreConstants.CATALOG_SCHEMA_NAME) : metaContext.computeSearchPath();
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
             if (schema != null) {
@@ -1336,7 +1336,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 "SELECT n.oid,n.*,d.description FROM pg_catalog.pg_namespace n\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid AND d.objsubid=0 AND d.classoid='pg_namespace'::regclass\n");
             boolean extraConditionAdded = addExtraCondition(session, catalogQuery);
-            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
+            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, database, false);
             if ((catalogFilters != null && !catalogFilters.isNotApplicable()) || object != null || objectName != null) {
                 if (object != null || objectName != null) {
                     catalogFilters = new DBSObjectFilter();

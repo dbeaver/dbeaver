@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -191,9 +192,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
             "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop or double-click from the <a>catalog</a> or another dashboard.\n" +
                 "You can also create new charts in the <a>Configuration</a> dialog.\n" +
                 "For further information, please refer to the <a>documentation</a>.",
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener.widgetSelectedAdapter(e -> {
                     if (CommonUtils.equalObjects(addCommandName, e.text)) {
                         ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
                     } else if (CommonUtils.equalObjects("catalog", e.text)) {
@@ -203,8 +202,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                     }else {
                         new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
                     }
-                }
-            });
+                }));
     }
 
     public int getListRowCount() {
@@ -320,6 +318,10 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     @Override
     public void removeItem(@NotNull DashboardItemContainer container) {
         DashboardViewItem item = (DashboardViewItem) container;
+        deleteItem(item);
+    }
+
+    private void deleteItem(DashboardViewItem item) {
         item.dispose();
         computeGridSize();
 
@@ -331,6 +333,36 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
         layout(true, true);
         viewContainer.getViewConfiguration().removeItem(item.getItemDescriptor().getId());
         viewContainer.saveChanges();
+    }
+
+
+    @Override
+    public void removeItem(@NotNull DashboardItemConfiguration descriptor) {
+        DashboardViewItem itemToDelete = null;
+        for (DashboardViewItem dashContainerItem : getItems()) {
+            if (dashContainerItem.getItemDescriptor().equals(descriptor)) {
+                itemToDelete = dashContainerItem;
+            }
+        }
+        if (itemToDelete != null) {
+            deleteItem(itemToDelete);
+        }
+    }
+
+    @Override
+    public void updateItem(@NotNull DashboardItemConfiguration oldItem, @NotNull DashboardItemConfiguration newItem) {
+        if (viewContainer.getViewConfiguration().getItemConfig(oldItem.getId()) == null) {
+            // Item not found - nothing to update
+            return;
+        }
+        DashboardItemViewSettings itemConfig = viewContainer.getViewConfiguration().getItemConfig(oldItem.getId());
+        int index = itemConfig.getIndex();
+        viewContainer.getViewConfiguration()
+            .updateDashBoardItemConfiguration(newItem, index);
+        DashboardViewItem dashboardViewItem = items.get(index);
+        dashboardViewItem.updateDashboardItemConfiguration(newItem);
+        computeGridSize();
+        layout(true, true);
     }
 
     @Override
@@ -382,7 +414,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     }
 
 
-    private void loadItem(DashboardItemConfiguration dashboard) {
+    public void loadItem(@NotNull DashboardItemConfiguration dashboard) {
         if (this.items.isEmpty()) {
             UIUtils.disposeChildControls(this);
         }

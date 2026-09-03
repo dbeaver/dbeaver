@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -41,6 +40,7 @@ import java.util.Map;
  */
 public class PostgreEventTriggerConfigurator implements DBEObjectConfigurator<PostgreEventTrigger> {
 
+    @NotNull
     @Override
     public PostgreEventTrigger configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreEventTrigger trigger, @NotNull Map<String, Object> options) {
         return new UITask<PostgreEventTrigger>() {
@@ -76,12 +76,8 @@ public class PostgreEventTriggerConfigurator implements DBEObjectConfigurator<Po
             PostgreEventTrigger.TriggerEventTypes defaultEvent = PostgreEventTrigger.TriggerEventTypes.values()[0];
             eventCombo.setText(defaultEvent.name());
             eventType = defaultEvent;
-            eventCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    eventType = CommonUtils.valueOf(PostgreEventTrigger.TriggerEventTypes.class, eventCombo.getText());
-                }
-            });
+            eventCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                eventType = CommonUtils.valueOf(PostgreEventTrigger.TriggerEventTypes.class, eventCombo.getText())));
         }
 
         @Override

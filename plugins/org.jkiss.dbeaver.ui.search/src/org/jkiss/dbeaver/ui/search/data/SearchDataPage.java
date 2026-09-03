@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.search.data;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -182,14 +181,11 @@ public class SearchDataPage extends AbstractSearchPage {
             final Button showConnectedCheck = new Button(databasesGroup, SWT.CHECK);
             showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
             showConnectedCheck.setSelection(showConnected);
-            showConnectedCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            showConnectedCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     showConnected = showConnectedCheck.getSelection();
                     treeViewer.refresh();
                     DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SHOW_CONNECTED, showConnected);
-                }
-            });
+                }));
         }
 
         {
@@ -220,24 +216,16 @@ public class SearchDataPage extends AbstractSearchPage {
                 UISearchMessages.dialog_search_objects_case_sensitive,
                 UISearchMessages.dialog_data_search_checkbox_case_sensitive_tip, params.caseSensitive,
                 2);
-            caseCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    params.caseSensitive = caseCheckbox.getSelection();
-                }
-            });
+            caseCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                params.caseSensitive = caseCheckbox.getSelection()));
 
             final Button fastSearchCheckbox = UIUtils.createCheckbox(
                 optionsGroup2,
                 UISearchMessages.dialog_data_search_checkbox_fast_search,
                 UISearchMessages.dialog_data_search_checkbox_fast_search_tip, params.fastSearch,
                 2);
-            fastSearchCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    params.fastSearch = fastSearchCheckbox.getSelection();
-                }
-            });
+            fastSearchCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                params.fastSearch = fastSearchCheckbox.getSelection()));
 
 
             final Button searchNumbersCheckbox = UIUtils.createCheckbox(
@@ -245,24 +233,16 @@ public class SearchDataPage extends AbstractSearchPage {
                 UISearchMessages.dialog_data_search_checkbox_search_in_numbers,
                 UISearchMessages.dialog_data_search_checkbox_search_in_numbers_tip, params.searchNumbers,
                 2);
-            searchNumbersCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    params.searchNumbers = searchNumbersCheckbox.getSelection();
-                }
-            });
+            searchNumbersCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                params.searchNumbers = searchNumbersCheckbox.getSelection()));
 
             final Button searchLOBCheckbox = UIUtils.createCheckbox(
                 optionsGroup2,
                 UISearchMessages.dialog_data_search_checkbox_search_in_lob,
                 UISearchMessages.dialog_data_search_checkbox_search_in_lob_tip, params.searchLOBs,
                 2);
-            searchLOBCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    params.searchLOBs = searchNumbersCheckbox.getSelection();
-                }
-            });
+            searchLOBCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                params.searchLOBs = searchLOBCheckbox.getSelection()));
 
             final Button searchForeignCheckbox = UIUtils.createCheckbox(
                 optionsGroup2,
@@ -270,12 +250,8 @@ public class SearchDataPage extends AbstractSearchPage {
                 UISearchMessages.dialog_data_search_checkbox_search_in_foreign_objects_tip,
                 params.searchForeignObjects,
                 2);
-            searchForeignCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    params.searchForeignObjects = searchForeignCheckbox.getSelection();
-                }
-            });
+            searchForeignCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                params.searchForeignObjects = searchForeignCheckbox.getSelection()));
 
             Control infoLabel = UIUtils.createInfoLabel(
                 optionsGroup2,

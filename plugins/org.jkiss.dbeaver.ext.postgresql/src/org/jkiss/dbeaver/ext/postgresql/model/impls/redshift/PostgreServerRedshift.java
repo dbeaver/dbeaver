@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
@@ -381,6 +382,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return true;
     }
 
+    @Override
+    public boolean supportsStandardSearchPath() {
+        return false;
+    }
+
     @NotNull
     @Override
     public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
@@ -405,6 +411,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
         private final Map<String, String> esSchemaMap = new HashMap<>();
+        private final String minimalPrivilegeRequired = SQLUtils.quoteString(dataSource, PostgrePrivilegeType.USAGE.getName());
 
         @NotNull
         @Override
@@ -426,6 +433,25 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
             // 2. Rad standard schemas
             return super.prepareLookupStatement(session, database, object, objectName);
+        }
+
+        @Override
+        protected boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
+            return session.getExecutionContext() instanceof PostgreExecutionContext postgreExecutionContext
+                && addUserHasUsagePrivilege(postgreExecutionContext.getActiveUser(), query);
+        }
+
+        private boolean addUserHasUsagePrivilege(@Nullable String currentUserName, @NotNull StringBuilder query) {
+            query.append("WHERE has_schema_privilege(");
+            if (CommonUtils.isNotEmpty(currentUserName)) {
+                query.append(SQLUtils.quoteString(dataSource, currentUserName))
+                    .append(", ");
+            }
+            query
+                .append("nspname, ")
+                .append(minimalPrivilegeRequired)
+                .append(")\n");
+            return true;
         }
 
         @Override

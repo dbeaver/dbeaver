@@ -51,6 +51,7 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
         return false;
     }
 
+    @NotNull
     @Override
     protected ColumnModifier[] getSupportedModifiers(VerticaProjectionColumn column, Map<String, Object> options) {
         // According to SQL92 DEFAULT comes before constraints
@@ -61,7 +62,7 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
     protected VerticaProjectionColumn createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

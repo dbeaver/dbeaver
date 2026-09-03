@@ -23,7 +23,6 @@ public class AIConstants {
 
     // Misc
 
-    public static final String AI_COMPLETION_EXECUTE_IMMEDIATELY = "ai.completion.executeImmediately";
     public static final String AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT = "ai.completion.includeSourceTextInQuery";
 
     public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";
@@ -58,5 +57,17 @@ public class AIConstants {
     public static final String INTERNAL_TOOLBOX_ID = "db";
 
 
+    public static final String AI_TOOLBOX_INTERNAL = "db";
+    public static final String AI_TOOL_GET_TABLE_DETAILS = AIFunctionDescriptor.getFullFunctionId(AI_TOOLBOX_INTERNAL, "getTableDetails");
+    public static final String AI_PROMPT_FEATURE_FULL_DDL = "fullDDL";
+    public static final String AI_USE_STREAM_MODE = "ai.streamMode";
+    // AI Chat
+    public static final String AI_CHAT_EXECUTE_IN_NEW_CONSOLE = "ai.chat.executeInNewConsole";
+    public static final String AI_CHAT_SHOW_MESSAGE_TIME = "ai.chat.show.message.time";
+    public static final String AI_CHAT_SHOW_TIME_SPENT = "ai.chat.show.time.spent";
+    public static final String AI_CHAT_SHOW_TOKENS_SPENT = "ai.chat.show.tokens.spent";
+    public static final String AI_CHAT_SHOW_TOTAL_TOKENS_SPENT = "ai.chat.show.total.tokens.spent";
+    public static final String USER_QUOTA_PROPERTY = "ai.userQuota";
+    public static final String LOG_STATS_PROPERTY = "ai.logStats";
 }
 

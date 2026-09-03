@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,27 +33,17 @@ public final class OracleUIMessages extends NLS {
     public static String dialog_connection_general_tab_tooltip;
     public static String dialog_connection_host;
     public static String dialog_connection_ora_home;
-    public static String dialog_connection_os_authentication;
     public static String dialog_connection_password;
     public static String dialog_connection_port;
     public static String dialog_connection_role;
-    public static String dialog_connection_security_group;
-    public static String dialog_connection_select_ora_home_msg;
-    public static String dialog_connection_sid_service;
     public static String dialog_connection_sid;
     public static String dialog_connection_service;
     public static String dialog_connection_database;
-    public static String dialog_connection_test_connection;
     public static String dialog_connection_tns_tab;
     public static String dialog_connection_user_name;
-    public static String dialog_connection_ver;
     public static String edit_oracle_constraint_manager_dialog_title;
-    public static String edit_oracle_data_type_manager_dialog_title;
     public static String edit_oracle_foreign_key_manager_dialog_title;
     public static String edit_oracle_index_manager_dialog_title;
-    public static String edit_oracle_package_manager_dialog_title;
-    public static String edit_oracle_schema_manager_dialog_title;
-    public static String edit_oracle_trigger_manager_dialog_title;
     public static String editors_oracle_session_editor_action__session;
     public static String editors_oracle_session_editor_action_disconnect;
     public static String editors_oracle_session_editor_action_kill;
@@ -61,11 +51,7 @@ public final class OracleUIMessages extends NLS {
     public static String editors_oracle_session_editor_confirm_title;
     public static String editors_oracle_session_editor_title_disconnect_session;
     public static String editors_oracle_session_editor_title_kill_session;
-    public static String editors_oracle_source_abstract_editor_action_name;
-    public static String editors_oracle_source_abstract_editor_state;
-    public static String tools_script_execute_wizard_error_sqlplus_not_found;
     public static String tools_script_execute_wizard_page_name;
-    public static String tools_script_execute_wizard_page_settings_button_browse;
     public static String tools_script_execute_wizard_page_settings_group_input;
     public static String tools_script_execute_wizard_page_settings_label_input_file;
     public static String tools_script_execute_wizard_page_settings_page_description;
@@ -78,12 +64,6 @@ public final class OracleUIMessages extends NLS {
     public static String views_oracle_compiler_dialog_message_compilation_success;
     public static String views_oracle_compiler_dialog_message_compile_unit;
     public static String views_oracle_compiler_dialog_title;
-    public static String views_oracle_compiler_log_viewer_action_clear_log;
-    public static String views_oracle_compiler_log_viewer_action_copy;
-    public static String views_oracle_compiler_log_viewer_action_select_all;
-    public static String views_oracle_compiler_log_viewer_column_line;
-    public static String views_oracle_compiler_log_viewer_column_message;
-    public static String views_oracle_compiler_log_viewer_column_pos;
 
     public static String dialog_connection_oracle_properties;
     public static String dialog_connection_oracle_properties_description;
@@ -111,6 +91,8 @@ public final class OracleUIMessages extends NLS {
     public static String edit_create_checkbox_content_group_use_simple_constraints_description;
     public static String edit_create_checkbox_content_group_use_another_table_query;
     public static String edit_create_checkbox_content_group_use_another_table_query_description;
+    public static String edit_create_checkbox_content_group_read_column_comments;
+    public static String edit_create_checkbox_content_group_read_column_comments_description;
     public static String edit_create_checkbox_content_group_search_metadata_in_synonyms;
     public static String edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip;
     public static String edit_create_checkbox_content_group_search_metadata_in_sequences;

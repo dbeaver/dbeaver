@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,11 +135,10 @@ public class DBDPseudoAttribute implements DBPNamedObject {
     }
 
     private class FakeEntityAttribute implements DBSEntityAttribute, DBPQualifiedObject {
-        private DBSEntity owner;
-        private DBCAttributeMetaData attribute;
+        private final DBSEntity owner;
+        private final DBCAttributeMetaData attribute;
 
-        public FakeEntityAttribute(DBSEntity owner, DBCAttributeMetaData attribute)
-        {
+        public FakeEntityAttribute(@NotNull DBSEntity owner, @NotNull DBCAttributeMetaData attribute) {
             this.owner = owner;
             this.attribute = attribute;
         }

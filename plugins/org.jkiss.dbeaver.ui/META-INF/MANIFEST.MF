@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ui;singleton:=true
-Bundle-Version: 5.1.193.qualifier
-Bundle-Release-Date: 20260504
+Bundle-Version: 5.1.202.qualifier
+Bundle-Release-Date: 20260921
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
@@ -21,6 +21,7 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.controls.finder,
  org.jkiss.dbeaver.ui.controls.finder.viewer,
  org.jkiss.dbeaver.ui.controls.folders,
+ org.jkiss.dbeaver.ui.controls.findandreplace,
  org.jkiss.dbeaver.ui.css,
  org.jkiss.dbeaver.ui.dialogs,
  org.jkiss.dbeaver.ui.dialogs.exec,
@@ -35,27 +36,23 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.validator,
  org.jkiss.dbeaver.ui.workbench
 Require-Bundle: org.eclipse.emf.common,
- org.eclipse.e4.ui.css.core,
- org.eclipse.e4.ui.css.swt,
- org.eclipse.e4.ui.css.swt.theme,
+ org.eclipse.e4.ui.css.core;visibility:=reexport,
+ org.eclipse.e4.ui.css.swt;visibility:=reexport,
+ org.eclipse.e4.ui.css.swt.theme;visibility:=reexport,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench,
  org.eclipse.e4.ui.model.workbench,
- org.eclipse.swt;visibility:=reexport,
  org.eclipse.core.expressions;visibility:=reexport,
- org.eclipse.core.resources,
+ org.eclipse.core.resources;visibility:=reexport,
  org.eclipse.core.filesystem,
- org.eclipse.jface;visibility:=reexport,
- org.eclipse.jface.notifications,
+ org.eclipse.jface.notifications;visibility:=reexport,
  org.eclipse.jface.text;visibility:=reexport,
  org.eclipse.ui;visibility:=reexport,
  org.eclipse.ui.ide,
  org.eclipse.ui.editors;visibility:=reexport,
  org.eclipse.ui.forms;visibility:=reexport,
  org.eclipse.ui.views;visibility:=reexport,
- org.eclipse.ui.workbench;visibility:=reexport,
- org.eclipse.ui.workbench.texteditor,
- org.jkiss.dbeaver.model;visibility:=reexport,
+ org.eclipse.ui.workbench.texteditor;visibility:=reexport,
  org.jkiss.dbeaver.model.rcp;visibility:=reexport
 Automatic-Module-Name: org.jkiss.dbeaver.ui

@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.ui.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,6 +27,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUIConstants;
 import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
@@ -102,17 +103,14 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
             backupHostText.addModifyListener(textListener);
 
             useBackupHostList = UIUtils.createCheckbox(bhPlaceholder, ExasolMessages.label_use_backup_host_list, null, showBackupHosts, 1);
-            useBackupHostList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            useBackupHostList.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     backupHostLabel.setEnabled(useBackupHostList.getSelection());
                     backupHostText.setEnabled(useBackupHostList.getSelection());
 
                     //reset text if disabled
                     if (!useBackupHostList.getSelection())
                         backupHostText.setText(""); //$NON-NLS-1$
-                }
-            });
+                }));
 
             portText = UIUtils.createLabelText(addrGroup, ExasolMessages.dialog_connection_port, null, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
@@ -191,7 +189,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -214,6 +212,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
         site.updateButtons();
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{

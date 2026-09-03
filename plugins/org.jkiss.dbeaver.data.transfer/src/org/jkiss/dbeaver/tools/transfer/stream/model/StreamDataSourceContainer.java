@@ -344,7 +344,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public boolean persistConfiguration() {
+    public boolean persistConfiguration(boolean forcePersistSecrets) {
         return true;
     }
 
@@ -433,6 +433,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
         return true;
     }
 
+    @NotNull
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
         return DBWorkbench.getPlatform().getDataFormatterRegistry().getGlobalProfile();

@@ -90,7 +90,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     public DB2Table createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object db2Schema,
+        @NotNull Object db2Schema,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -156,6 +156,11 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
         DBEPersistAction commentAction = buildCommentAction(command.getObject());
         if (commentAction != null) {
             actions.add(commentAction);
+        }
+        for (DB2TableColumn column : CommonUtils.safeCollection(command.getObject().getAttributes(monitor))) {
+            if (CommonUtils.isNotEmpty(column.getDescription())) {
+                actions.add(DB2TableColumnManager.buildCommentAction(column));
+            }
         }
     }
 

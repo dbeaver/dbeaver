@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.util.SQLEditorTestUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -62,7 +62,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     @Mock
     private JDBCDatabaseMetaData databaseMetaData;
 
-    @Before
+    @BeforeEach
     public void init() {
         DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
@@ -98,51 +98,51 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         SQLParserContext context = createParserContext(setDialect("snowflake"), modifiedQuery);
         for (int pos : positions) {
             element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), pos, false, false);
-            Assert.assertEquals("begin transaction", element.getText());
+            Assertions.assertEquals("begin transaction", element.getText());
         }
     }
 
     @Test
     public void parseQueryBeforeBlockDeclaration() throws DBException {
         SQLDialect hanaDialect = setDialect("sap_hana");
-        Assert.assertTrue(hanaDialect.isStripCommentsBeforeBlocks());
+        Assertions.assertTrue(hanaDialect.isStripCommentsBeforeBlocks());
         {
             String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
             SQLParserContext context = createParserContext(hanaDialect, query);
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
-            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+            Assertions.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
         }
         {
             String query = "/* Issue */" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
             SQLParserContext context = createParserContext(hanaDialect, query);
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
-            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+            Assertions.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
         }
         {
             String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
             SQLParserContext context = createParserContext(setDialect("snowflake"), query);
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
-            Assert.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+            Assertions.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
         }
         {
             String query = "/* Issue */\n\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
             SQLParserContext context = createParserContext(hanaDialect, query);
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
-            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+            Assertions.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
         }
         {
             String query = "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
             SQLParserContext context = createParserContext(hanaDialect, query);
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
-            Assert.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
+            Assertions.assertEquals("DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END", element.getText());
         }
         {
             String query = "/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;";
             SQLDialect oracle = setDialect("oracle");
-            Assert.assertFalse(oracle.isStripCommentsBeforeBlocks());
+            Assertions.assertFalse(oracle.isStripCommentsBeforeBlocks());
             SQLParserContext context = createParserContext(oracle, query);
             SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
-            Assert.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;", element.getText());
+            Assertions.assertEquals("/* Issue */\n" + "DO BEGIN\n" + "SELECT * FROM dummy;\n" + "END;", element.getText());
         }
     }
 
@@ -168,6 +168,67 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
                 + "$$"
         };
         assertParse("snowflake", query);
+    }
+
+    @Test
+    public void parseBigQueryDdlStatementsContainingIf() throws DBException {
+        List<String> statements = List.of(
+            "CREATE SCHEMA IF NOT EXISTS project_id.dataset_name",
+            "CREATE CONNECTION IF NOT EXISTS `project_id.us.connection_name`",
+            "CREATE MODEL IF NOT EXISTS dataset_name.model_name OPTIONS(model_type='linear_reg') AS SELECT 1 AS label",
+            "CREATE PROPERTY GRAPH IF NOT EXISTS dataset_name.graph_name NODE TABLES (dataset_name.nodes)",
+            "CREATE FUNCTION IF NOT EXISTS dataset_name.increment(x INT64) AS (x + 1)",
+            "CREATE PROCEDURE IF NOT EXISTS dataset_name.proc_name() BEGIN SELECT 1; END",
+            "CREATE TABLE IF NOT EXISTS dataset_name.table_name (id INT64)",
+            "CREATE VIEW IF NOT EXISTS dataset_name.view_name AS SELECT 1",
+            "CREATE SEARCH INDEX IF NOT EXISTS index_name ON dataset_name.table_name(ALL COLUMNS)",
+            "CREATE ROW ACCESS POLICY IF NOT EXISTS policy_name ON dataset_name.table_name " +
+                "GRANT TO ('allAuthenticatedUsers') FILTER USING (TRUE)",
+            "CREATE DATA_POLICY IF NOT EXISTS `project_id.region-us.data_policy_name` " +
+                "OPTIONS(data_policy_type='DATA_MASKING_POLICY', masking_expression='DEFAULT_MASKING_VALUE')",
+            "ALTER TABLE dataset_name.table_name ADD COLUMN IF NOT EXISTS value STRING",
+            "ALTER TABLE dataset_name.table_name ADD CONSTRAINT IF NOT EXISTS fk FOREIGN KEY(id) " +
+                "REFERENCES dataset_name.parent_table(id) NOT ENFORCED",
+            "ALTER TABLE dataset_name.table_name DROP PRIMARY KEY IF EXISTS",
+            "DROP SCHEMA IF EXISTS project_id.dataset_name",
+            "DROP CONNECTION IF EXISTS `project_id.us.connection_name`",
+            "DROP MODEL IF EXISTS dataset_name.model_name",
+            "DROP PROPERTY GRAPH IF EXISTS dataset_name.graph_name",
+            "DROP FUNCTION IF EXISTS dataset_name.increment",
+            "DROP PROCEDURE IF EXISTS dataset_name.proc_name",
+            "DROP TABLE IF EXISTS dataset_name.table_name",
+            "DROP VIEW IF EXISTS dataset_name.view_name",
+            "DROP SEARCH INDEX IF EXISTS index_name ON dataset_name.table_name",
+            "DROP ROW ACCESS POLICY IF EXISTS policy_name ON dataset_name.table_name",
+            "DROP DATA_POLICY IF EXISTS `project_id.region-us.data_policy_name`",
+            "DROP CAPACITY IF EXISTS project_id.us.capacity_commitment_id",
+            "DROP RESERVATION IF EXISTS project_id.us.reservation_name",
+            "DROP ASSIGNMENT IF EXISTS project_id.us.reservation_name.assignment_id",
+            "UNDROP SCHEMA IF NOT EXISTS project_id.dataset_name"
+        );
+
+        for (String statement : statements) {
+            assertBigQueryStatementSeparation(statement);
+        }
+    }
+
+    @Test
+    public void parseBigQueryNonDdlStatementsContainingIf() throws DBException {
+        List<String> statements = List.of(
+            "IF TRUE THEN SELECT 1; END IF",
+            "IF NOT EXISTS (SELECT 1) THEN SELECT 1; END IF",
+            "IF TRUE THEN SELECT 1; ELSEIF FALSE THEN SELECT 2; ELSE SELECT 3; END IF",
+            "IF TRUE THEN IF FALSE THEN SELECT 1; END IF; END IF",
+            "BEGIN IF TRUE THEN SELECT 1; END IF; END",
+            "IF TRUE THEN SELECT 1; END /* comment */ IF",
+            "-- leading comment\nCREATE SCHEMA IF NOT EXISTS project_id.dataset_name",
+            "CREATE SCHEMA /* object */ IF /* condition */ NOT /* existence */ EXISTS project_id.dataset_name",
+            "BEGIN CREATE TABLE IF NOT EXISTS dataset_name.table_name (id INT64); SELECT 1; END"
+        );
+
+        for (String statement : statements) {
+            assertBigQueryStatementSeparation(statement);
+        }
     }
 
     public void checkSmartBlankLineIsAStatementDelimiterMode() throws DBException {
@@ -302,7 +363,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("1", "\"SYs_B_1\"", "\"MyVar8\"", "AbC", "\"#d2\""), actualParamNames);
+        Assertions.assertEquals(List.of("1", "\"SYs_B_1\"", "\"MyVar8\"", "AbC", "\"#d2\""), actualParamNames);
     }
 
     @Test
@@ -317,7 +378,22 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("aBc", "PrE#%&@T", "a@c="), actualParamNames);
+        Assertions.assertEquals(List.of("aBc", "PrE#%&@T", "a@c="), actualParamNames);
+    }
+
+    @Test
+    public void parseDoubleCurlyVariables() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrE#%&@T", "a@c=");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add("{{" + p + "}}"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assertions.assertEquals(List.of("aBc", "PrE#%&@T", "a@c="), actualParamNames);
     }
 
     @Test
@@ -332,7 +408,22 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+        Assertions.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+    }
+
+    @Test
+    public void parseDoubleCurlyVariablesInStrings() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrET", "ac");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add("'{{" + p + "}}'"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assertions.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
     }
 
     @Test
@@ -347,7 +438,22 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+        Assertions.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+    }
+
+    @Test
+    public void parseDoubleCurlyVariablesInComment() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrET", "ac");
+        StringJoiner joiner = new StringJoiner(", ", "-- ", " ");
+        inputParamNames.stream().forEach(p -> joiner.add("{{" + p + "}}"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assertions.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
     }
 
     @Test
@@ -370,13 +476,13 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
                 actualCommandsText.add(cmd.getText());
             }
         }
-        Assert.assertEquals(expectedCommandsText, actualCommandsText);
+        Assertions.assertEquals(expectedCommandsText, actualCommandsText);
         String text;
         int end;
         for (int i = 0; i < varNames.size(); i++) {
             text = commands.get(i).getParameter();
             end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), text, 0);
-            Assert.assertEquals(varNames.get(i), text.substring(0, end).trim());
+            Assertions.assertEquals(varNames.get(i), text.substring(0, end).trim());
         }
     }
 
@@ -390,13 +496,13 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         SQLParserContext context = createParserContext(setDialect("snowflake"), commandText);
         assert context.getDataSource() != null;
         List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), commandText);
-        Assert.assertEquals(1, elements.size());
+        Assertions.assertEquals(1, elements.size());
         SQLScriptElement sqlScriptElement = elements.get(0);
-        Assert.assertTrue(sqlScriptElement instanceof SQLControlCommand);
+        Assertions.assertTrue(sqlScriptElement instanceof SQLControlCommand);
         SQLControlCommand cmd = (SQLControlCommand) sqlScriptElement;
-        Assert.assertEquals(commandText, cmd.getText());
+        Assertions.assertEquals(commandText, cmd.getText());
         int end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), cmd.getParameter(), 0);
-        Assert.assertEquals("myVar", cmd.getParameter().substring(0, end).trim());
+        Assertions.assertEquals("myVar", cmd.getParameter().substring(0, end).trim());
     }
 
 
@@ -419,9 +525,26 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         int docLen = context.getDocument().getLength();
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(context, 0, docLen, false, false, false);
         for (int index = 0; index < expected.length; index++) {
-            Assert.assertEquals(expected[index], elements.get(index).getText());
+            Assertions.assertEquals(expected[index], elements.get(index).getText());
         }
-        Assert.assertEquals(expected.length, elements.size());
+        Assertions.assertEquals(expected.length, elements.size());
+    }
+
+    private void assertBigQueryStatementSeparation(String statement) throws DBException {
+        String sentinel = "SELECT 'sentinel'";
+        String script = statement + ";\n" + sentinel + ";";
+        SQLParserContext context = createParserContext(setDialect("google_bigquery"), script);
+        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+            context,
+            0,
+            context.getDocument().getLength(),
+            false,
+            false,
+            false
+        );
+        Assertions.assertEquals(2, elements.size(), statement);
+        Assertions.assertEquals(statement, elements.get(0).getText().replaceFirst(";$", ""), statement);
+        Assertions.assertEquals(sentinel, elements.get(1).getText(), statement);
     }
 
     private SQLParserContext createParserContext(SQLDialect dialect, String query) {

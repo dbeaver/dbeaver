@@ -47,7 +47,7 @@ import java.util.Map;
 public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableConstraintBase<?>, PostgreTableBase> implements DBEObjectRenamer<PostgreTableConstraintBase<?>> {
 
     @Override
-    public boolean canRenameObject(PostgreTableConstraintBase<?> object) {
+    public boolean canRenameObject(@NotNull PostgreTableConstraintBase<?> object) {
         return object.getDataSource().getServerType().supportsKeyAndIndexRename();
     }
 
@@ -61,7 +61,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     protected PostgreTableConstraintBase<?> createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options)
     {
@@ -92,7 +92,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     }
 
     @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<PostgreTableConstraintBase<?>> command) {
+    protected void appendConstraintDefinition(@NotNull StringBuilder decl, @NotNull DBECommandAbstract<PostgreTableConstraintBase<?>> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
             decl.append(" (").append(((PostgreTableConstraint) command.getObject()).getSource()).append(")");
         } else {

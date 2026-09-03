@@ -28,8 +28,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -346,9 +345,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         final ToolItem stopButton = new ToolItem(progressTools, SWT.PUSH);
         stopButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_STOP));
         stopButton.setToolTipText(UIMessages.controls_progress_page_progress_bar_cancel_tooltip);
-        stopButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        stopButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 // Cancel current job
                 if (cancelProgress()) {
                     if (!stopButton.isDisposed()) {
@@ -356,8 +353,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                         stopButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_STOP_DISABLED));
                     }
                 }
-            }
-        });
+            }));
         searchControlsComposite.getParent().layout();
     }
 
@@ -495,7 +491,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
     }
 
     @Override
-    public boolean performSearch(SearchType searchType) {
+    public boolean performSearch(@NotNull SearchType searchType) {
         return performSearch(searchType, true);
     }
 
@@ -511,7 +507,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         if (searchType == SearchType.NONE && isSetFocusToSearchText) {
             getProgressControl().searchText.setFocus();
         }
-        if (!CommonUtils.isEmpty(getProgressControl().curSearchText)) {
+        if (!CommonUtils.isEmpty(getProgressControl().curSearchText) && getSearchRunner() != null) {
             int options = 0;
             if (searchType == SearchType.PREVIOUS) {
                 options |= ISearchExecutor.SEARCH_PREVIOUS;
@@ -566,7 +562,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         final int totalWork;
         int progress;
 
-        private TaskInfo(String name, int totalWork) {
+        private TaskInfo(@NotNull String name, int totalWork) {
             this.name = name;
             this.totalWork = totalWork;
         }
@@ -622,6 +618,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
             };
         }
 
+        @Nullable
         private TaskInfo getCurTaskInfo() {
             for (int i = tasksRunning.size() - 1; i >= 0; i--) {
                 if (tasksRunning.get(i).totalWork > 1) {
@@ -653,7 +650,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                         }
                     }
                 }
-                if (curStatus != null) {
+                if (curStatus != null && !curStatus.isEmpty()) {
                     setInfo(curStatus);
                 }
                 loadCount++;
@@ -678,7 +675,5 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 getProgressControl().hideControls(true);
             }
         }
-
     }
-
 }

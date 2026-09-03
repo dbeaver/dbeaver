@@ -580,7 +580,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Command listener
         commandListener = new DBECommandAdapter() {
             @Override
-            public void onCommandChange(DBECommand<?> command)
+            public void onCommandChange(@NotNull DBECommand<?> command)
             {
                 UIUtils.syncExec(() -> firePropertyChange(IEditorPart.PROP_DIRTY));
             }
@@ -1088,16 +1088,24 @@ public class EntityEditor extends MultiPageDatabaseEditor
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         DBPPreferenceListener listener = event -> {
             if (event.getProperty().equals(DatabaseEditorPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS)) {
-                composite.setVisible(BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_EDITORS);
+                this.applyBreadcrumbsVisibility(store, composite);
                 updateTopRightControl();
             }
         };
 
         store.addPropertyChangeListener(listener);
         composite.addDisposeListener(e -> store.removePropertyChangeListener(listener));
-        composite.setVisible(BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_EDITORS);
+        this.applyBreadcrumbsVisibility(store, composite);
 
         return composite;
+    }
+
+    private void applyBreadcrumbsVisibility(@NotNull DBPPreferenceStore store, @NotNull Composite composite) {
+        if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
+            composite.setVisible(BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_EDITORS);
+        } else {
+            composite.setVisible(BreadcrumbLocation.get(store) != BreadcrumbLocation.HIDDEN);
+        }
     }
 
     @Override

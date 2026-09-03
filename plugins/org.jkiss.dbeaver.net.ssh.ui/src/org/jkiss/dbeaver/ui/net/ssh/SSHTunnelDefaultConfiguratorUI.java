@@ -24,8 +24,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -188,6 +186,12 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             hostsViewer.getTable().setHeaderVisible(true);
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
             hostsViewer.setInput(configurations);
+            hostsViewer.addDoubleClickListener(e -> {
+                final ConfigurationWrapper selected = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+                if (selected != null) {
+                    credentialsPanel.focusHostField();
+                }
+            });
             hostsViewer.addSelectionChangedListener(e -> {
                 if (switchingConfiguration) {
                     return;
@@ -251,6 +255,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             }, null);
             controller.createColumns(true);
 
+            UIUtils.createInfoLabel(client, SSHUIMessages.model_ssh_configurator_label_jump_server_edit_hint);
         }
 
         {
@@ -273,7 +278,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 client,
                 SSHUIMessages.model_ssh_configurator_group_general_text,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             tunnelImplCombo = UIUtils.createLabelCombo(
@@ -282,12 +287,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SWT.DROP_DOWN | SWT.READ_ONLY
             );
             tunnelImplCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            tunnelImplCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            tunnelImplCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     // updateJumpServerSettingsVisibility();
-                }
-            });
+                }));
             for (SSHSessionControllerDescriptor it : SSHSessionControllerRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
@@ -315,7 +317,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 client,
                 SSHUIMessages.model_ssh_configurator_group_timeouts_text,
                 2,
-                GridData.VERTICAL_ALIGN_FILL
+                GridData.VERTICAL_ALIGN_BEGINNING
             );
             keepAliveText = UIUtils.createLabelText(
                 timeoutsGroup,
@@ -344,10 +346,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SSHUIMessages.model_ssh_configurator_label_local_host,
                 null,
                 SWT.BORDER,
-                new GridData(GridData.FILL_HORIZONTAL)
+                GridDataFactory.create(GridData.FILL_HORIZONTAL).hint(200, SWT.DEFAULT).create()
             );
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
-            localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             localPortSpinner = UIUtils.createLabelText(
                 portForwardingGroup,
                 SSHUIMessages.model_ssh_configurator_label_local_port,
@@ -361,10 +362,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SSHUIMessages.model_ssh_configurator_label_remote_host,
                 null,
                 SWT.BORDER,
-                new GridData(GridData.FILL_HORIZONTAL)
+                GridDataFactory.create(GridData.FILL_HORIZONTAL).hint(200, SWT.DEFAULT).create()
             );
             remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
-            remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             remotePortSpinner = UIUtils.createLabelText(
                 portForwardingGroup,
@@ -379,23 +379,15 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             Composite controlGroup = UIUtils.createComposite(parent, 3);
             controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    testTunnelConnection();
-                }
-            });
+            UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, SelectionListener.widgetSelectedAdapter(e ->
+                testTunnelConnection()));
             String hint = SSHUIMessages.model_ssh_configurator_variables_hint_label;
             variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
                 false
             );
 
-            UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"));
-                }
-            });
+            UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"))));
         }
 
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
@@ -408,6 +400,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             if (wrapper != null && wrapper == credentialsPanel.lastConfiguration) {
                 wrapper.configuration = credentialsPanel.saveSettings();
                 hostsViewer.refresh(wrapper);
+                hostsViewer.getTable().redraw();
             }
         }
     }
@@ -474,6 +467,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         } else {
             configuration.resolveDynamicVariables(SystemVariablesResolver.INSTANCE);
         }
+        configuration.setDataSource(null); // we don't need to operate with database specifics to test the tunnel
 
         final String[] tunnelVersions = new String[2];
 
@@ -739,13 +733,10 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_password);
             authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_pub_key);
             authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_agent);
-            authMethodCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            authMethodCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     updateAuthMethodVisibility();
                     propertyChangeListener.run();
-                }
-            });
+                }));
 
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -763,13 +754,8 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
                 savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
-                savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        passwordText.setEnabled(savePasswordCheckbox.getSelection());
-
-                    }
-                });
+                savePasswordCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    passwordText.setEnabled(savePasswordCheckbox.getSelection())));
                 savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 savePasswordCheckbox.setEnabled(canEditCredentialsPerPolicy);
             }
@@ -835,6 +821,13 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
             updateAuthMethodVisibility();
             lastConfiguration = wrapper;
+        }
+
+        public void focusHostField() {
+            if (hostNameText != null && !hostNameText.isDisposed()) {
+                hostNameText.setFocus();
+                hostNameText.selectAll();
+            }
         }
 
         @NotNull

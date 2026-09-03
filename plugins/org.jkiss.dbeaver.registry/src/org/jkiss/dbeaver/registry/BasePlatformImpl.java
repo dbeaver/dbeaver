@@ -31,9 +31,11 @@ import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
+import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -67,11 +69,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
-
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
+    private static final String SETTINGS_FOLDER = "settings";
 
     public static final String CONFIG_FOLDER = ".config";
     public static final String FILES_FOLDER = ".files";
@@ -89,10 +90,15 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private final Map<Bundle, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
 
     private SQLDialectMetadataRegistry sqlDialectRegistry;
+    private final DBWNetworkProfileManager networkProfileManager;
 
     private DBPPlatformLanguage platformLanguage;
 
     protected Path tempFolder;
+
+    public BasePlatformImpl() {
+        this.networkProfileManager = new GlobalNetworkProfileManager(this);
+    }
 
     protected void initialize() throws DBException {
         log.debug("Initialize base platform...");
@@ -226,6 +232,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
+    public DBWNetworkProfileManager getNetworkProfiles() {
+        return networkProfileManager;
+    }
+
+    @NotNull
+    @Override
     public DBConfigurationController getConfigurationController() {
         return getPluginConfigurationController(null);
     }
@@ -314,12 +326,19 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
-    public Path getLocalConfigurationFile(String fileName) {
+    public Path getLocalConfigurationFile(@NotNull String fileName) {
         Path productPluginPath = RuntimeUtils.getPluginStateLocation(getProductPlugin()).resolve(fileName);
         if (Files.exists(productPluginPath)) {
             return productPluginPath;
         }
         return getLocalWorkspaceConfigFolder().resolve(fileName);
+    }
+
+    @NotNull
+    @Override
+    public Path getGlobalConfigurationFile(@NotNull String fileName) {
+        var root = RuntimeUtils.getWorkingDirectory(BaseApplicationImpl.DBEAVER_DATA_DIR);
+        return Path.of(root, SETTINGS_FOLDER, fileName);
     }
 
     @NotNull
@@ -383,6 +402,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
+    public String getDeploymentId() {
+        return DeploymentId.get();
+    }
+
+    @NotNull
+    @Override
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
     }
@@ -394,7 +419,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     @Override
-    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) {
         if (CommonUtils.equalObjects(language, this.platformLanguage)) {
             return;
         }
@@ -422,7 +447,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 } else {
                     tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 }
-                monitor.subTask("Create temp folder '" + tempFolderPath + "'");
+                //monitor.subTask("Create temp folder '" + tempFolderPath + "'");
                 Path tmpFolder = Paths.get(tempFolderPath);
                 if (!Files.exists(tmpFolder)) {
                     log.debug("Create global temp folder '" + tmpFolder + "'");
@@ -453,7 +478,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 }
             }
         }
-        Path localTemp = name == null ? tempFolder : tempFolder.resolve(name);
+        Path localTemp = tempFolder.resolve(name);
         if (!Files.exists(localTemp)) {
             try {
                 Files.createDirectories(localTemp);

@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -29,6 +28,7 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -57,11 +58,12 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
-public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
+public class PrefPageConnectionsGeneral extends AbstractPrefPage
+    implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
-    private static final String VALUE_TRUST_STORE_TYPE_WINDOWS_MY = "WINDOWS-MY"; //$NON-NLS-1$
+    //private static final String VALUE_TRUST_STORE_TYPE_WINDOWS_MY = "WINDOWS-MY"; //$NON-NLS-1$
     private static final String HELP_CONNECTIONS_LINK = "Create-Connection";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
@@ -75,12 +77,13 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     private ConnectionNameResolver fakeConnectionNameResolver;
     private Button useWinTrustStoreCheck;
     private Button closeConnectionOnOsSleepCheck;
+    private Button enableShellAuthModelCheck;
 
     public PrefPageConnectionsGeneral() {
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
         connectionNamePattern = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_ADVANCED.getSettings();
+        defaultNavigatorSettings = DataSourceNavigatorSettings.DEFAULT_PRODUCT_NAVIGATOR_SETTINGS;
     }
 
     @NotNull
@@ -96,28 +99,39 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 GridData.VERTICAL_ALIGN_BEGINNING);
             Composite groupComposite = UIUtils.createComposite(groupDefaults, 2);
             connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupComposite);
-            connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    defaultConnectionType = connectionTypeCombo.getSelectedItem();
-                }
-            });
-            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(groupComposite, this, null);
-            connectionDefaultNamePatternText = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern, CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip);
+            connectionTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                defaultConnectionType = connectionTypeCombo.getSelectedItem()));
+            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(
+                groupComposite, this, null);
+            connectionDefaultNamePatternText = UIUtils.createLabelText(
+                groupComposite,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip
+            );
             ContentAssistUtils.installContentProposal(
                 connectionDefaultNamePatternText,
                 new SmartTextContentAdapter(),
-                new StringContentProposalProvider(Arrays.stream(ConnectionNameResolver.getConnectionVariables()).map(GeneralUtils::variablePattern).toArray(String[]::new))
+                new StringContentProposalProvider(
+                    Arrays.stream(ConnectionNameResolver.getConnectionVariables())
+                        .map(GeneralUtils::variablePattern).toArray(String[]::new))
             );
             connectionDefaultNamePatternText.setText(connectionNamePattern);
             UIUtils.setContentProposalToolTip(connectionDefaultNamePatternText, "Connection name patterns",
                 ConnectionNameResolver.getConnectionVariables());
 
             fakeConnectionNameResolver = generateSampleDatasourceResolver();
-            sampleConnectionName = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip);
+            sampleConnectionName = UIUtils.createLabelText(
+                groupComposite,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip
+            );
             sampleConnectionName.setEditable(false);
-            sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
-            connectionDefaultNamePatternText.addModifyListener(e -> sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver)));
+            sampleConnectionName.setText(GeneralUtils.replaceVariables(
+                connectionDefaultNamePatternText.getText(),
+                fakeConnectionNameResolver
+            ));
+            connectionDefaultNamePatternText.addModifyListener(e -> sampleConnectionName.setText(
+                GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver)));
 
             new VariablesHintLabel(
                     groupDefaults,
@@ -129,9 +143,11 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         }
 
         {
+            DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+
             Composite groupBehavior = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_connection_label_general,
+                UIConnectionMessages.pref_page_connection_label_general,
                 1,
                 GridData.VERTICAL_ALIGN_BEGINNING
             );
@@ -139,7 +155,13 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 groupBehavior,
                 CoreMessages.pref_page_connection_label_close_connection_on_sleep,
                 CoreMessages.pref_page_connection_label_close_connection_on_sleep_tip,
-                true,
+                preferences.getBoolean(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP),
+                1);
+            enableShellAuthModelCheck = UIUtils.createCheckbox(
+                groupBehavior,
+                CoreMessages.pref_page_connection_label_enable_shell_auth_model,
+                CoreMessages.pref_page_connection_label_enable_shell_auth_model_tip,
+                preferences.getBoolean(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED),
                 1);
         }
 
@@ -165,12 +187,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         Link urlHelpLabel = UIUtils.createLink(
             composite,
             "<a>" + CoreMessages.pref_page_connections_wiki_link + "</a>",
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK));
-                }
-            });
+            SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK))));
         GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
         urlHelpLabel.setLayoutData(gridData);
 
@@ -216,7 +234,10 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     }
 
     private ConnectionNameResolver generateSampleDatasourceResolver() {
-        final DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        assert activeProject != null;
+
+        final DataSourceRegistry<?> dataSourceRegistry = new DataSourceRegistry<>(activeProject);
         DBPDriver driver = DriverUtils.getRecentDrivers(DriverUtils.getAllDrivers(), 1).getFirst();
         DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
         conConfig.setHostName("hostname");
@@ -225,7 +246,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         conConfig.setHostPort("42");
         conConfig.setServerName("server1");
         conConfig.setUrl("sample//url");
-        DataSourceDescriptor fakeDataSource = (DataSourceDescriptor) dataSourceRegistry.createDataSource(
+        DataSourceDescriptor fakeDataSource = dataSourceRegistry.createDataSource(
             DataSourceDescriptor.generateNewId(driver),
             driver,
             conConfig
@@ -274,6 +295,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         connectionNamePattern = preferences.getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
 
         closeConnectionOnOsSleepCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP));
+        enableShellAuthModelCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED));
 
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             useWinTrustStoreCheck.setSelection(
@@ -306,6 +328,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
         store.setValue(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP, closeConnectionOnOsSleepCheck.getSelection());
+        store.setValue(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED, enableShellAuthModelCheck.getSelection());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }

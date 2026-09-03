@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.ui.navigator.dialogs;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -93,14 +93,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         blockControlGd.heightHint = 350;
         blockControl.setLayoutData(blockControlGd);
 
-        includeTable = StringEditorTableUtils.createEditableList(
-            blockControl, UINavigatorMessages.dialog_filter_list_include,
-            filter.getInclude(), null, null
-        );
-        excludeTable = StringEditorTableUtils.createEditableList(
-            blockControl, UINavigatorMessages.dialog_filter_list_exclude,
-            filter.getExclude(), null, null
-        );
+        includeTable = createIncludeTable(blockControl);
+        excludeTable = createExcludeTable(blockControl);
 
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_hint_text);
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
@@ -110,6 +104,23 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         return composite;
     }
+
+    @NotNull
+    protected Table createIncludeTable(@NotNull Composite parent) {
+        return StringEditorTableUtils.createEditableList(
+            parent, UINavigatorMessages.dialog_filter_list_include,
+            filter.getInclude(), null, null
+        );
+    }
+
+    @NotNull
+    protected Table createExcludeTable(@NotNull Composite parent) {
+        return StringEditorTableUtils.createEditableList(
+            parent, UINavigatorMessages.dialog_filter_list_exclude,
+            filter.getExclude(), null, null
+        );
+    }
+
 
     @NotNull
     protected Composite setTopPanel(@NotNull Composite composite) {
@@ -130,26 +141,20 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     protected void setEnableCheckbox(@NotNull Composite topPanel) {
         enableButton = UIUtils.createCheckbox(topPanel, UIMessages.button_enable, false);
-        enableButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        enableButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 filter.setEnabled(enableButton.getSelection());
                 enableFiltersContent();
-            }
-        });
+            }));
         GridData cbGd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
         enableButton.setLayoutData(cbGd);
     }
 
     protected void setGlobalFilterLink(@NotNull Composite topPanel) {
         Link globalLink = UIUtils.createLink(
-            topPanel, UINavigatorMessages.dialog_filter_global_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            topPanel, UINavigatorMessages.dialog_filter_global_link, SelectionListener.widgetSelectedAdapter(e -> {
                     setReturnCode(SHOW_GLOBAL_FILTERS_ID);
                     close();
-                }
-            }
+                })
         );
         GridData linkGD = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
         globalLink.setLayoutData(linkGD);
@@ -175,37 +180,26 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         for (String sfName : sfNames) {
             namesCombo.add(sfName);
         }
-        namesCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeSavedFilter();
-            }
-        });
+        namesCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> changeSavedFilter()));
         setSaveButton();
         setRemoveButton();
     }
 
     protected void setSaveButton() {
-        saveButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_save_button, null);
-        saveButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        saveButton = UIUtils.createPushButton(sfGroup, WorkbenchMessages.Save, null);
+        saveButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 namesCombo.add(namesCombo.getText());
                 saveConfigurations();
-            }
-        });
+            }));
     }
 
     protected void setRemoveButton() {
         removeButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_remove_button, null);
-        removeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        removeButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 dsRegistry.removeSavedFilter(namesCombo.getText());
                 namesCombo.remove(namesCombo.getText());
                 namesCombo.setText(NULL_FILTER_NAME);
-            }
-        });
+            }));
     }
 
     protected void redrawFilterRelatedContent() {
@@ -258,7 +252,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     private void saveConfigurations() {
         saveChangedFilterState();
-        if (shouldSaveFilterInRegistry()) {
+        if (isSaveFilterInRegistry()) {
             dsRegistry.updateSavedFilter(filter);
         }
     }
@@ -270,7 +264,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         filter.setName(namesCombo.getText());
     }
 
-    protected boolean shouldSaveFilterInRegistry() {
+    protected boolean isSaveFilterInRegistry() {
         return !CommonUtils.isEmpty(filter.getName());
     }
 

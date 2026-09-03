@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,9 @@ public class MySQLNumberValueHandler extends JDBCNumberValueHandler {
     }
 
     @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-                                 int paramIndex, Object value) throws SQLException, DBCException {
+    protected void bindParameter(
+        @NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType,
+        int paramIndex, Object value) throws SQLException, DBCException {
         if (value instanceof String) {
             String strValue = (String) value;
             if (paramType.getTypeID() == Types.BIT) {
