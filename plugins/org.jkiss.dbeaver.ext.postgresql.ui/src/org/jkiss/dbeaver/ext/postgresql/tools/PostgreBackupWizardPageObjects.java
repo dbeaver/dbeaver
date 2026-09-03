@@ -111,13 +111,9 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             schemasTable.setLayoutData(gd);
 
             Composite buttonsPanel = UIUtils.createComposite(catPanel, 3);
-            
-                        
+
             fullSchemaBackupCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_complete_backup, false);
-            fullSchemaBackupCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                    wizard.getSettings().setFullSchemaBackup(fullSchemaBackupCheck.getSelection());
-                    tablesTable.setVisible(!fullSchemaBackupCheck.getSelection());
-                }));
+            fullSchemaBackupCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateState()));
             fullSchemaBackupCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             createCheckButtons(buttonsPanel, schemasTable);
@@ -141,7 +137,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             Composite buttonsPanel = UIUtils.createComposite(tablesPanel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_show_view, false);
-            exportViewsCheck.setSelection(wizard.getSettings().isFullSchemaBackup());
+            exportViewsCheck.setSelection(wizard.getSettings().isShowViews());
             exportViewsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     wizard.getSettings().setShowViews(exportViewsCheck.getSelection());
                     loadTables(null);
@@ -189,6 +185,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         checkedObjects.clear();
         schemasTable.removeAll();
         tablesTable.removeAll();
+        fullSchemaBackupCheck.setSelection(wizard.getSettings().isFullSchemaBackup());
 
         dataBase = null;
         boolean hasViews = false;
@@ -276,12 +273,12 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         return false;
     }
 
-    private List<PostgreTableBase> loadTables(final PostgreSchema catalog) {
+    private void loadTables(final PostgreSchema catalog) {
         if (catalog != null) {
             curSchema = catalog;
         }
         if (curSchema == null) {
-            return null;
+            return;
         }
         final boolean isCatalogChecked = isChecked(curSchema);
         final Set<PostgreTableBase> checkedObjects = this.checkedObjects.get(curSchema);
@@ -323,7 +320,6 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                 return Status.OK_STATUS;
             }
         }.schedule();
-        return objects;
     }
 
     public void saveState() {
@@ -356,23 +352,34 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     }
 
     private boolean isAllSchemaSelected() {
-        for (TableItem item : schemasTable.getItems()) {
+        TableItem[] items = schemasTable.getItems();
+        if (items.length == 0) {
+            return false;
+        }
+        for (TableItem item : items) {
             if (!item.getChecked()) {
                 return false;
             }
         }
         return true;
     }
-    
-    private void updatefullSchemaBackupState() {
-    	boolean allSchemasSelected =isAllSchemaSelected();
+
+    private void updateFullSchemaBackupState() {
+        boolean allSchemasSelected = isAllSchemaSelected();
         fullSchemaBackupCheck.setEnabled(allSchemasSelected);
-        wizard.getSettings().setFullSchemaBackup(allSchemasSelected);
+        if (!allSchemasSelected) {
+            // Complete backup dumps the entire database, it makes sense only when all schemas are checked
+            fullSchemaBackupCheck.setSelection(false);
+        }
+        boolean fullSchemaBackup = fullSchemaBackupCheck.getSelection();
+        wizard.getSettings().setFullSchemaBackup(fullSchemaBackup);
+        tablesTable.setVisible(!fullSchemaBackup);
     }
+
     @Override
     protected void updateState()
     {
-    	updatefullSchemaBackupState();
+        updateFullSchemaBackupState();
         updatePageCompletion();
         getContainer().updateButtons();
     }
@@ -387,24 +394,15 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                     tableItem.setChecked(check);
                 }
             } else {
-                // This is the case when the user selects a backup by pressing the database, and not the scheme. Then tablesTable is empty.
-                TableItem[] schemasItems = schemasTable.getItems();
-                if (schemasItems.length != 0) {
-                    for (TableItem schemaItem : schemasItems) {
-                        Object data = schemaItem.getData();
-                        if (data instanceof PostgreSchema) {
-                            PostgreSchema postgreSchema = (PostgreSchema) data;
-                            if (schemaItem.getChecked() && check && !checkedObjects.containsKey(postgreSchema)) {
-                                List<PostgreTableBase> tableBaseList = loadTables(postgreSchema);
-                                if (!CommonUtils.isEmpty(tableBaseList)) {
-                                    checkedObjects.put(postgreSchema, new HashSet<>(tableBaseList));
-                                }
-                            } else if (!schemaItem.getChecked() && !check) {
-                                checkedObjects.remove(postgreSchema);
-                            }
-                        }
+                // This is the case when the user selects a backup by pressing the database, and not the scheme.
+                // Then tablesTable is empty and there is nothing to reconcile: a checked schema without an entry
+                // in checkedObjects is backed up entirely (see saveState), so dropping the entry is enough.
+                for (TableItem schemaItem : schemasTable.getItems()) {
+                    if (schemaItem.getData() instanceof PostgreSchema postgreSchema) {
+                        checkedObjects.remove(postgreSchema);
                     }
                 }
+                return;
             }
         }
         updateCheckedTables();
