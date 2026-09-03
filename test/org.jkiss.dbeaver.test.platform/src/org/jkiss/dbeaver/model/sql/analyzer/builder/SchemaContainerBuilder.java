@@ -22,11 +22,13 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 public class SchemaContainerBuilder extends Builder<DBSObjectContainer, DBSObjectContainer> {
     private final DBSObjectContainer container;
@@ -38,13 +40,14 @@ public class SchemaContainerBuilder extends Builder<DBSObjectContainer, DBSObjec
         @NotNull Class<? extends DBSObjectContainer> tableContainerType
     ) throws DBException {
         super(dataSource, parent);
-        this.container = mock(tableContainerType);
+        this.container = mock(tableContainerType, withSettings().extraInterfaces(DBSProcedureContainer.class));
         when(container.getDataSource()).thenReturn(dataSource);
         when(container.getParentObject()).thenReturn(parent);
         when(container.getName()).thenReturn(name);
         when(container.getPrimaryChildType(any())).thenReturn(null);
         when(container.getChildren(any())).then(x -> children);
         when(container.getChild(any(), any())).then(x -> DBUtils.findObject(children, x.getArgument(1, String.class)));
+        when(((DBSProcedureContainer) container).getProcedures(any())).then(x -> procedures);
     }
 
     public SchemaContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull DBSObject parent, @NotNull String name) throws DBException {
@@ -60,6 +63,12 @@ public class SchemaContainerBuilder extends Builder<DBSObjectContainer, DBSObjec
         final TableContainerBuilder builder = new TableContainerBuilder(dataSource, container, name);
         applier.apply(builder);
         children.add(builder.build());
+        return this;
+    }
+
+    @NotNull
+    public SchemaContainerBuilder procedure(@NotNull String name) {
+        createProcedure(name);
         return this;
     }
 
