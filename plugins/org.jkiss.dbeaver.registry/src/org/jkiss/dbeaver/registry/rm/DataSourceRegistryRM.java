@@ -160,6 +160,10 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
         super.moveFolder(oldPath, newPath);
     }
 
+    public void updateDataSources(@NotNull List<? extends DBPDataSourceContainer> dataSources) throws DBException {
+        persistDataSourceUpdates(dataSources);
+    }
+
     @Override
     protected void saveDataSources(@NotNull DBRProgressMonitor monitor) {
         if (getProject().isInMemory()) {
