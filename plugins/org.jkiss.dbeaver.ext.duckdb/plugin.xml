@@ -33,6 +33,7 @@
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" os="win32" arch="aarch64" exclude="true" bundle="!drivers.duckdb"/>
                     <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
                     <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <provider-properties>
                     <propertyGroup label="SQL">

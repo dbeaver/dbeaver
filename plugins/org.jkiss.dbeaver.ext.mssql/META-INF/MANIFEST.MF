@@ -10,9 +10,7 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.model.lsm,
- org.jkiss.dbeaver.registry,
- org.antlr.antlr4-runtime,
- com.github.jsqlparser
+ org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.ext.mssql,
  org.jkiss.dbeaver.ext.mssql.auth,
  org.jkiss.dbeaver.ext.mssql.edit.generic,

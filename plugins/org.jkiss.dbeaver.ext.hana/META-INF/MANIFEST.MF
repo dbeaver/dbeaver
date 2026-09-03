@@ -7,8 +7,7 @@ Bundle-Release-Date: 20260921
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql;visibility:=reexport,
  org.jkiss.dbeaver.ext.generic,
- org.jkiss.dbeaver.data.gis;visibility:=reexport,
- org.jkiss.bundle.gis;visibility:=reexport
+ org.jkiss.dbeaver.data.gis;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp

@@ -24,8 +24,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -193,9 +192,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
             buttonPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             buttonPanel.setLayout(new RowLayout());
 
-            UIUtils.createPushButton(buttonPanel, "Grant All", null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createPushButton(buttonPanel, "Grant All", null, SelectionListener.widgetSelectedAdapter(e -> {
 /*
                     boolean hadNonChecked = false;
                     for (TableItem item : permissionTable.getItems()) {
@@ -204,11 +201,8 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     }
                     if (hadNonChecked) updateCurrentPrivileges(true, null);
 */
-                }
-            });
-            UIUtils.createPushButton(buttonPanel, "Revoke All", null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            UIUtils.createPushButton(buttonPanel, "Revoke All", null, SelectionListener.widgetSelectedAdapter(e -> {
 /*
                     boolean hadChecked = false;
                     for (TableItem item : permissionTable.getItems()) {
@@ -219,8 +213,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                         updateCurrentPrivileges(false, null);
                     }
 */
-                }
-            });
+                }));
 
             objectDescriptionText = new Text(permEditPanel, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             objectDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
