@@ -336,6 +336,8 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_show_permissions;
     public static String sql_generator_dialog_button_show_full_DDL;
     public static String sql_generator_dialog_button_separate_fk_constraints_definition;
+    public static String sql_generator_dialog_button_separate_constraint_indexes;
+    public static String sql_generator_dialog_button_separate_constraint_indexes_tip;
     public static String sql_generator_dialog_button_show_partitions_DDL;
 
     public static String sql_generator_dialog_button_show_cast_params;
@@ -361,6 +363,8 @@ public class SQLEditorMessages extends NLS {
     public static String source_viewer_show_permissions_tip;
     public static String source_viewer_separate_fk_text;
     public static String source_viewer_separate_fk_tip;
+    public static String source_viewer_separate_constraint_indexes_text;
+    public static String source_viewer_separate_constraint_indexes_tip;
     public static String source_viewer_show_comments_text;
     public static String source_viewer_show_comments_tip;
     public static String source_viewer_show_partitions_ddl_text;
