@@ -14,22 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.h2.internal;
+package org.jkiss.dbeaver.ext.clickhouse.model.auth;
 
-import java.util.List;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 
-public final class H2Constants {
-    public static final String PREF_ALLOWED_CLASSES = "h2.allowedClasses";
-
-    public static final List<String> DEFAULT_ALLOWED_CLASSES = List.of(
-        // Math, nothing to worry about there
-        "java.lang.Math",
-
-        // Required for H2GIS
-        "org.h2gis.functions.factory.H2GISFunctions",
-        "org.locationtech.jts.geom.Geometry"
-    );
-
-    private H2Constants() {
+/**
+ * Thrown when the identity provider token is rejected (expired or revoked) and the user has to sign in again.
+ */
+public class ClickhouseTokenRejectedException extends DBException {
+    public ClickhouseTokenRejectedException(@NotNull String message) {
+        super(message);
     }
 }
