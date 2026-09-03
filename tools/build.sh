@@ -45,6 +45,7 @@ fi
 # Define paths relative to the script location
 WORKSPACE_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 DBEAVER_COMMON_DIR="${WORKSPACE_DIR}/dbeaver-common"
+DATADAM_API_DIR="${WORKSPACE_DIR}/datadam-api"
 PRODUCT_DIR="${SCRIPT_DIR}/../product"
 AGGREGATE_DIR="${PRODUCT_DIR}/aggregate"
 
@@ -64,6 +65,14 @@ if [ ! -d "$DBEAVER_COMMON_DIR" ]; then
     git clone https://github.com/dbeaver/dbeaver-common.git "$DBEAVER_COMMON_DIR"
 else
     log "DBeaver common directory already exists at $DBEAVER_COMMON_DIR"
+fi
+
+# Clone or verify datadam-api repository
+if [ ! -d "$DATADAM_API_DIR" ]; then
+    log "Cloning datadam-api repository..."
+    git clone https://github.com/dbeaver/datadam-api.git "$DATADAM_API_DIR"
+else
+    log "DataDam API directory already exists at $DATADAM_API_DIR"
 fi
 
 ###############################################################################
