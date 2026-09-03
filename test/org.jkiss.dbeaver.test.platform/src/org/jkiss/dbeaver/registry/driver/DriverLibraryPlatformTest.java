@@ -33,10 +33,20 @@ class DriverLibraryPlatformTest {
         Mockito.when(config.getAttribute(RegistryConstants.ATTR_ARCH)).thenReturn("aarch64");
         Mockito.when(config.getAttribute(RegistryConstants.ATTR_EXCLUDE)).thenReturn("true");
 
-        DriverLibraryLocal library = new DriverLibraryLocal(null, config);
+        TestDriverLibrary library = new TestDriverLibrary(config);
 
-        Assertions.assertFalse(library.system.matches(new OSDescriptor("win32", "aarch64")));
-        Assertions.assertTrue(library.system.matches(new OSDescriptor("win32", "x86_64")));
-        Assertions.assertTrue(library.system.matches(new OSDescriptor("linux", "aarch64")));
+        Assertions.assertFalse(library.matches(new OSDescriptor("win32", "aarch64")));
+        Assertions.assertTrue(library.matches(new OSDescriptor("win32", "x86_64")));
+        Assertions.assertTrue(library.matches(new OSDescriptor("linux", "aarch64")));
+    }
+
+    private static class TestDriverLibrary extends DriverLibraryLocal {
+        private TestDriverLibrary(IConfigurationElement config) {
+            super(null, config);
+        }
+
+        private boolean matches(OSDescriptor os) {
+            return system.matches(os);
+        }
     }
 }
