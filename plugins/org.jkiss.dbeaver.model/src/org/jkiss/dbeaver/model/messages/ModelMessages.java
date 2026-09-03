@@ -22,17 +22,10 @@ public class ModelMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.messages.ModelResources"; //$NON-NLS-1$
 
     public static String error_not_connected_to_database;
-
-    public static String error_can_create_temp_dir;
-    public static String error_can_create_temp_file;
     public static String dialog_web_download_text_known;
     public static String dialog_web_download_text_unknown;
 
     public static String common_error_sql;
-
-    public static String model_constraint_type_foreign_key;
-    public static String model_constraint_type_primary_key;
-    public static String model_constraint_type_unique_key;
 
     public static String model_navigator__connections;
     public static String model_navigator_Connection;
@@ -46,7 +39,6 @@ public class ModelMessages extends NLS {
     public static String model_jdbc_read_database_meta_data;
 
     public static String model_jdbc__rows_fetched;
-    public static String model_jdbc_array_result_set;
     public static String model_jdbc_create_new_constraint;
     public static String model_jdbc_create_new_foreign_key;
     public static String model_jdbc_create_new_index;
@@ -63,45 +55,13 @@ public class ModelMessages extends NLS {
     public static String model_jdbc_drop_table_column;
     public static String model_jdbc_exception_bad_savepoint_object;
     public static String model_jdbc_exception_could_not_bind_statement_parameter;
-    public static String model_jdbc_exception_could_not_close_connection;
-    public static String model_jdbc_exception_could_not_get_result_set_value;
     public static String model_jdbc_exception_internal_jdbc_driver_error;
     public static String model_jdbc_exception_invalid_transaction_isolation_parameter;
-    public static String model_jdbc_exception_unsupported_array_type_;
-    public static String model_jdbc_exception_unsupported_value_type_;
     public static String model_jdbc_fetch_table_data;
     public static String model_jdbc_fetch_table_row_count;
-    public static String model_jdbc_find_best_row_identifier;
     public static String model_jdbc_find_objects_by_name;
-    public static String model_jdbc_find_version_columns;
-    public static String model_jdbc_jdbc_error;
-    public static String model_jdbc_load_catalogs;
-    public static String model_jdbc_load_client_info;
-    public static String model_jdbc_load_column_privileges;
-    public static String model_jdbc_load_columns;
-    public static String model_jdbc_load_cross_reference;
-    public static String model_jdbc_load_exported_keys;
     public static String model_jdbc_load_from_file_;
-    public static String model_jdbc_load_function_columns;
-    public static String model_jdbc_load_functions;
-    public static String model_jdbc_load_imported_keys;
-    public static String model_jdbc_load_indexes;
-    public static String model_jdbc_load_primary_keys;
-    public static String model_jdbc_load_procedure_columns;
-    public static String model_jdbc_load_procedures;
-    public static String model_jdbc_load_schemas;
-    public static String model_jdbc_load_super_tables;
-    public static String model_jdbc_load_super_types;
-    public static String model_jdbc_load_table_privileges;
-    public static String model_jdbc_load_table_types;
-    public static String model_jdbc_load_tables;
-    public static String model_jdbc_load_type_info;
-    public static String model_jdbc_load_udt_attributes;
-    public static String model_jdbc_load_udts;
-    public static String model_jdbc_lob_and_binary_data_cant_be_edited_inline;
-    public static String model_jdbc_max_length;
     public static String model_jdbc_None;
-    public static String model_jdbc_precision;
     public static String model_jdbc_Procedure;
     public static String model_jdbc_read_committed;
     public static String model_jdbc_read_uncommitted;
@@ -109,18 +69,14 @@ public class ModelMessages extends NLS {
     public static String model_jdbc_reorder_object;
     public static String model_jdbc_repeatable_read;
     public static String model_jdbc_save_to_file_;
-    public static String model_jdbc_scale;
     public static String model_jdbc_Schema;
     public static String model_jdbc_Serializable;
-    public static String model_jdbc_type_name;
-    public static String model_jdbc_unknown;
     public static String model_jdbc_unsupported_column_type_;
     public static String model_jdbc_unsupported_content_value_type_;
     public static String model_jdbc_unsupported_value_type_;
 
     public static String model_navigator_Description;
     public static String model_navigator_load_;
-    public static String model_navigator_load_items_;
     public static String model_navigator_Model_root;
     public static String model_navigator_Name;
     public static String model_navigator_Project;
@@ -165,8 +121,6 @@ public class ModelMessages extends NLS {
     public static String dbp_connection_type_table_test;
 
     public static String dbp_connection_type_table_test_database;
-
-    public static String dialog_connection_wizard_start_connection_monitor_close;
     public static String dialog_connection_wizard_start_connection_monitor_start;
     public static String dialog_connection_wizard_start_connection_monitor_subtask_test;
     public static String dialog_connection_wizard_start_connection_monitor_success;
@@ -186,13 +140,9 @@ public class ModelMessages extends NLS {
     public static String task_rows_fetched_message_part;
     public static String task_rows_modified_message_part;
     public static String task_statements_executed_message_part;
-
-    public static String controls_querylog__ms;
     public static String controls_querylog_action_clear_log;
-    public static String controls_querylog_action_copy;
     public static String controls_querylog_action_copy_all_fields;
     public static String controls_querylog_action_delete;
-    public static String controls_querylog_action_select_all;
     public static String controls_querylog_column_duration_name;
     public static String controls_querylog_column_duration_tooltip;
     public static String controls_querylog_column_result_name;
@@ -217,7 +167,6 @@ public class ModelMessages extends NLS {
     public static String controls_querylog_connected_to;
     public static String controls_querylog_disconnected_from;
     public static String controls_querylog_error;
-    public static String controls_querylog_format_minutes;
     public static String controls_querylog_job_refresh;
     public static String controls_querylog_label_result;
     public static String controls_querylog_label_text;
@@ -233,7 +182,6 @@ public class ModelMessages extends NLS {
     public static String tasks_restore_confirmation_title;
     public static String tasks_restore_confirmation_cancelled_message;
     public static String tasks_restore_confirmation_message;
-    public static String tasks_restore_readonly_title;
     public static String tasks_restore_readonly_message;
 
     public static String project_shared_display_name;
@@ -243,7 +191,6 @@ public class ModelMessages extends NLS {
     public static String jdbc_content_view_error_message_hint;
 
     public static String no_corresponding_table_column_text;
-    public static String cannot_determine_unique_row_identifier_text;
 
     public static String dialog_user_password_change_label;
     public static String dialog_user_password_change_question_label;
@@ -265,13 +212,6 @@ public class ModelMessages extends NLS {
     public static String duration_formatter_minutes;
     public static String duration_formatter_seconds;
     public static String duration_formatter_milliseconds;
-
-
-    public static String shell_cmd_manager_add_command_confirmation_label;
-    public static String shell_cmd_manager_add_command_confirmation_text;
-    public static String shell_cmd_manager_add_command_confirmation_button;
-    public static String shell_cmd_manager_add_command_error_message;
-    public static String shell_cmd_manager_add_command_error_message_te_specific;
 
     static {
         // initialize resource bundle

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ public class OceanbaseMessages extends NLS {
     public static String oceanbase_connection_page_label_port;
     public static String oceanbase_connection_page_label_host;
     public static String oceanbase_connection_page_label_database;
-    public static String oceanbase_connection_page_label_url;
     public static String oceanbase_connection_page_label_connection;
     public static String oceanbase_connection_page_label_tenant;
     

@@ -39,9 +39,6 @@ public class RegistryMessages extends NLS {
     public static String navigator_settings_preset_custom_view_name;
     public static String navigator_settings_preset_custom_view_description;
     public static String navigator_settings_customize_view;
-    public static String navigator_settings_switch_to_advanced_mode;
-    public static String navigator_settings_switch_to_advanced_mode_description;
-    public static String navigator_settings_switch_to_simple_mode;
     public static String project_description_comment;
 
     public static String project_open_cannot_read_credentials_title;
@@ -50,7 +47,9 @@ public class RegistryMessages extends NLS {
     public static String project_open_cannot_read_configuration_title;
     public static String project_open_cannot_read_configuration_message;
 
-    public static String connection_add_shell_cmd_context_description;
+    public static String connection_add_shell_cmd_context_project;
+    public static String connection_add_shell_cmd_context_data_source;
+    public static String connection_add_shell_cmd_context_event_type;
 
     static {
         // initialize resource bundle
