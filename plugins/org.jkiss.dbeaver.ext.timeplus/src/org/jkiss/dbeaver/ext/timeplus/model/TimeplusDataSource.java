@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
-import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
