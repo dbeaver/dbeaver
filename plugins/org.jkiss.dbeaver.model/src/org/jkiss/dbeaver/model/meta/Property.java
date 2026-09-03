@@ -161,6 +161,16 @@ public @interface Property
     boolean required() default false;
 
     /**
+     * Minimum allowed value for numeric properties.
+     */
+    float min() default Float.NaN;
+
+    /**
+     * Maximum allowed value for numeric properties.
+     */
+    float max() default Float.NaN;
+
+    /**
      * Property applies only for desktop products.
      */
     boolean desktop() default false;

@@ -29,7 +29,6 @@ public class DTUIMessages extends NLS {
     public static String data_transfer_wizard_final_column_target_container;
     public static String data_transfer_wizard_final_column_target_format;
     public static String data_transfer_wizard_final_description;
-    public static String data_transfer_wizard_final_group_tables;
     public static String data_transfer_wizard_final_group_objects;
     public static String data_transfer_wizard_final_group_settings_source;
     public static String data_transfer_wizard_final_group_settings_target;
@@ -66,7 +65,6 @@ public class DTUIMessages extends NLS {
     public static String database_consumer_wizard_use_bulk_load_description;
     public static String database_consumer_wizard_on_duplicate_key_insert_method_text;
     public static String database_consumer_wizard_link_label_replace_method_wiki;
-    public static String database_consumer_wizard_label_replace_method_not_supported;
     public static String database_consumer_wizard_log_insert_queries_check;
     public static String database_consumer_wizard_log_insert_queries_check_tip;
 
@@ -75,11 +73,14 @@ public class DTUIMessages extends NLS {
     public static String columns_mapping_dialog_composite_label_text_source_entity;
     public static String columns_mapping_dialog_composite_label_text_target_container;
     public static String columns_mapping_dialog_composite_label_text_target_entity;
+    public static String columns_mapping_dialog_composite_label_text_target_collation;
     public static String columns_mapping_dialog_composite_button_reconnect;
     public static String columns_mapping_dialog_column_source_text;
     public static String columns_mapping_dialog_column_source_type_text;
     public static String columns_mapping_dialog_column_target_text;
     public static String columns_mapping_dialog_column_target_type_text;
+    public static String columns_mapping_dialog_column_collation_text;
+    public static String columns_mapping_dialog_column_collation_tip;
     public static String columns_mapping_dialog_cell_text_existing;
     public static String columns_mapping_dialog_cell_text_new;
     public static String columns_mapping_dialog_cell_text_skip;
@@ -87,15 +88,15 @@ public class DTUIMessages extends NLS {
 
     public static String database_consumer_page_mapping_name_and_title;
     public static String database_consumer_page_mapping_description;
+    public static String database_consumer_page_mapping_button_recreate;
+    public static String database_consumer_page_mapping_button_transform_tip;
+    public static String database_consumer_page_mapping_target_unspecified;
     public static String database_consumer_page_mapping_column_source_text;
     public static String database_consumer_page_mapping_column_target_text;
-    public static String database_consumer_page_mapping_column_mapping_text;
     public static String database_consumer_page_mapping_column_transformer_text;
     public static String database_consumer_page_mapping_column_transformer_tip;
     public static String database_consumer_page_mapping_node_title;
-    public static String database_consumer_page_mapping_table_name;
     public static String database_consumer_page_mapping_label_hint;
-    public static String database_consumer_page_mapping_monitor_task;
     public static String database_consumer_page_mapping_sqlviewer_title;
     public static String database_consumer_page_mapping_sqlviewer_nonsql_tables_message;
     public static String database_consumer_page_mapping_recreate_confirm_title;
@@ -128,10 +129,7 @@ public class DTUIMessages extends NLS {
     public static String stream_consumer_page_settings_item_text_none;
     public static String stream_consumer_page_warning_not_enough_sources_chosen;
     public static String stream_consumer_page_mapping_title;
-    public static String stream_consumer_page_mapping_label_configure;
-    public static String stream_consumer_page_mapping_button_configure;
     public static String stream_consumer_page_mapping_name_column_name;
-    public static String stream_consumer_page_mapping_mapping_column_name;
     public static String stream_consumer_page_mapping_label_error_no_columns_selected_text;
 
     public static String data_transfer_task_configurator_group_label_export_tables;
@@ -166,10 +164,8 @@ public class DTUIMessages extends NLS {
     public static String database_consumer_page_mapping_title_error_mapping_table;
     public static String database_consumer_page_mapping_message_error_mapping_target_table;
     public static String database_consumer_page_mapping_title_mapping_error;
-    public static String database_consumer_page_mapping_message_error_setting_target_table;
     public static String database_consumer_page_mapping_message_error_auto_mapping_source_table;
     public static String database_consumer_page_mapping_message_error_mapping_existing_table;
-    public static String database_consumer_page_mapping_message_error_mapping_new_table;
     public static String database_consumer_page_mapping_title_target_DDL;
     public static String database_consumer_page_mapping_message_error_generating_target_DDL;
     public static String database_consumer_page_mapping_title_target_table;
@@ -183,23 +179,15 @@ public class DTUIMessages extends NLS {
     public static String stream_producer_page_input_files_hint;
     public static String stream_producer_page_preview_title_load_entity_meta;
     public static String stream_producer_page_preview_message_entity_attributes;
-    public static String stream_producer_page_preview_title_preview_data;
-    public static String stream_producer_page_preview_message_preview_data;
     public static String data_transfer_page_final_title_error_initializing_transfer_pipe;
     public static String data_transfer_page_final_message_error_initializing_data_transfer_pipe;
     public static String data_transfer_task_configurator_title_error_opening_data_source;
     public static String data_transfer_task_configurator_message_error_while_opening_data_source;
-    public static String data_transfer_wizard_message_init_data_transfer;
     public static String data_transfer_error_source_not_specified;
     public static String data_transfer_error_target_not_specified;
     public static String data_transfer_error_no_objects_selected;
-
-    public static String stream_producer_page_preview_error_message_no_entities_specified;
-    public static String stream_producer_page_preview_error_message_wrong_input_object;
-    public static String stream_producer_page_preview_error_message_set_mappings_for_all_columns;
     public static String database_consumer_page_mapping_error_message_set_target_container;
     public static String database_consumer_page_mapping_error_message_set_all_tables_mappings;
-    public static String database_consumer_page_mapping_error_no_schema_changes_title;
     public static String database_consumer_page_mapping_error_no_schema_changes_info;
     public static String database_consumer_page_mapping_error_schema_save_title;
     public static String database_consumer_page_mapping_error_schema_save_info;
@@ -212,7 +200,8 @@ public class DTUIMessages extends NLS {
     public static String page_configure_metadata_title;
     public static String page_configure_table_properties_tab_title;
     public static String page_configure_table_DDL_button_execute;
-    public static String page_configure_table_DDL_button_copy;
+    public static String page_configure_table_DDL_full_tab_title;
+    public static String page_configure_table_DDL_foreign_keys_comment;
     public static String page_configure_table_properties_text;
     public static String page_configure_table_properties_no_properties;
     public static String page_configure_table_properties_info_text;

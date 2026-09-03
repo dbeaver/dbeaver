@@ -91,17 +91,19 @@ public class DBExecUtils {
         boolean recoveryFailed;
     }
 
+    @Nullable
     public static DBPDataSourceContainer getCurrentThreadContext() {
         return ACTIVE_CONTEXT.get();
     }
 
+    @NotNull
     public static List<DBPDataSourceContainer> getActiveContexts() {
         synchronized (ACTIVE_CONTEXTS) {
             return new ArrayList<>(ACTIVE_CONTEXTS);
         }
     }
 
-    public static void startContextInitiation(DBPDataSourceContainer context) {
+    public static void startContextInitiation(@NotNull DBPDataSourceContainer context) {
         ACTIVE_CONTEXT.set(context);
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.add(context);
@@ -121,14 +123,15 @@ public class DBExecUtils {
         }
     }
 
-    public static void finishContextInitiation(DBPDataSourceContainer context) {
+    public static void finishContextInitiation(@NotNull DBPDataSourceContainer context) {
         ACTIVE_CONTEXT.remove();
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.remove(context);
         }
     }
 
-    public static DBPDataSourceContainer findConnectionContext(String host, int port, String path) {
+    @Nullable
+    public static DBPDataSourceContainer findConnectionContext(@NotNull String host, int port, @Nullable String path) {
         DBPDataSourceContainer curContext = getCurrentThreadContext();
         if (curContext != null) {
             return contextMatches(host, port, curContext) ? curContext : null;
@@ -143,7 +146,7 @@ public class DBExecUtils {
         return null;
     }
 
-    private static boolean contextMatches(String host, int port, DBPDataSourceContainer ctx) {
+    private static boolean contextMatches(@NotNull String host, int port, @NotNull DBPDataSourceContainer ctx) {
         DBPConnectionConfiguration cfg = ctx.getConnectionConfiguration();
         if (CommonUtils.equalObjects(cfg.getHostName(), host) && String.valueOf(port).equals(cfg.getHostPort())) {
             return true;
@@ -188,7 +191,11 @@ public class DBExecUtils {
      * @param param DBRProgressProgress monitor or DBCSession
      *
      */
-    public static <T> boolean tryExecuteRecover(@NotNull T param, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableParametrized<T> runnable) throws DBException {
+    public static <T> boolean tryExecuteRecover(
+        @NotNull T param,
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBRRunnableParametrized<T> runnable
+    ) throws DBException {
         RecoveryState recoveryState = DBExecUtils.recoveryStack.get();
         if (recoveryState == null) {
             recoveryState = new RecoveryState();
@@ -283,7 +290,7 @@ public class DBExecUtils {
         }
     }
 
-    public static void setStatementFetchSize(DBCStatement dbStat, long firstRow, long maxRows, int fetchSize) {
+    public static void setStatementFetchSize(@NotNull DBCStatement dbStat, long firstRow, long maxRows, int fetchSize) {
         boolean useFetchSize = fetchSize > 0 || dbStat.getSession().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
         if (useFetchSize) {
             if (fetchSize <= 0) {
@@ -299,17 +306,17 @@ public class DBExecUtils {
     }
 
     public static void executeScript(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        String jobName,
-        List<DBEPersistAction> persistActions
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String jobName,
+        @NotNull List<DBEPersistAction> persistActions
     ) throws DBException {
         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
             executeScript(session, persistActions.toArray(new DBEPersistAction[0]));
         }
     }
 
-    public static void executeScript(DBCSession session, DBEPersistAction[] persistActions) {
+    public static void executeScript(@NotNull DBCSession session, @NotNull DBEPersistAction[] persistActions) {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         boolean ignoreErrors = false;
         monitor.beginTask(session.getTaskTitle(), persistActions.length);
@@ -355,7 +362,10 @@ public class DBExecUtils {
         }
     }
 
-    public static void executePersistActions(DBCSession session, DBEPersistAction[] persistActions) throws DBException {
+    public static void executePersistActions(
+        @NotNull DBCSession session,
+        @NotNull DBEPersistAction[] persistActions
+    ) throws DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask(session.getTaskTitle(), persistActions.length);
         try {
@@ -373,11 +383,15 @@ public class DBExecUtils {
         }
     }
 
-    public static void executePersistAction(DBCSession session, DBEPersistAction action) throws DBException {
+    public static void executePersistAction(@NotNull DBCSession session, @NotNull DBEPersistAction action) throws DBException {
         if (action instanceof SQLDatabasePersistActionComment) {
             return;
         }
         String script = action.getScript();
+        if (CommonUtils.isEmpty(script)) {
+            action.afterExecute(session, null);
+            return;
+        }
         boolean statementProcessed = false;
         try (DBCStatement dbStat = DBUtils.createStatement(session, script, false)) {
             action.beforeExecute(session);
@@ -400,7 +414,7 @@ public class DBExecUtils {
         }
     }
 
-    public static boolean checkSmartAutoCommit(DBCSession session, String queryText) {
+    public static boolean checkSmartAutoCommit(@NotNull DBCSession session, @NotNull String queryText) {
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
         if (txnManager != null) {
             try {
@@ -425,9 +439,9 @@ public class DBExecUtils {
     }
 
     public static void setExecutionContextDefaults(
-        DBRProgressMonitor monitor,
-        DBPDataSource dataSource,
-        DBCExecutionContext executionContext,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @Nullable DBCExecutionContext executionContext,
         @Nullable String newInstanceName,
         @Nullable String curInstanceName,
         @Nullable String newObjectName
@@ -489,7 +503,7 @@ public class DBExecUtils {
         }
     }
 
-    public static void recoverSmartCommit(DBCExecutionContext executionContext) {
+    public static void recoverSmartCommit(@NotNull DBCExecutionContext executionContext) {
         DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
         DBPPreferenceStore preferenceStore = container.getPreferenceStore();
         DBPConnectionType connectionType = container.getConnectionConfiguration().getConnectionType();
@@ -528,6 +542,26 @@ public class DBExecUtils {
                     }
                 }.schedule();
             }
+        }
+    }
+
+    /**
+     * Commit a transaction within the active context. If the context is in auto-commit mode, this method does nothing.
+     *
+     * @param monitor progress monitor
+     * @param context execution context to commit the transaction for
+     * @throws DBCException on any DB error during commit
+     */
+    public static void commitContextTransaction(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext context
+    ) throws DBCException {
+        var manager = DBUtils.getTransactionManager(context);
+        if (manager == null || manager.isAutoCommit()) {
+            return;
+        }
+        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction")) {
+            manager.commit(session);
         }
     }
 
@@ -712,8 +746,8 @@ public class DBExecUtils {
         @Nullable DBSEntity sourceEntity,
         @Nullable DBCResultSet resultSet,
         @NotNull DBDAttributeBinding[] bindings,
-        @Nullable List<Object[]> rows) throws DBException
-    {
+        @Nullable List<Object[]> rows
+    ) throws DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         DBPDataSource dataSource = session.getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();
@@ -1001,10 +1035,12 @@ public class DBExecUtils {
         return !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE);
     }
 
+    @Nullable
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
         return getAttributeReadOnlyStatus(attribute, true);
     }
 
+    @Nullable
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute, boolean checkValidKey) {
         if (attribute.getMetaAttribute() == null) {
             return "Null meta attribute";
@@ -1063,6 +1099,7 @@ public class DBExecUtils {
         return null;
     }
 
+    @NotNull
     public static List<DBEPersistAction> getActionsListFromCommandContext(@NotNull DBRProgressMonitor monitor, DBECommandContext commandContext, DBCExecutionContext executionContext, Map<String, Object> options, @Nullable List<DBEPersistAction> actions) throws DBException {
         if (actions == null) {
             actions = new ArrayList<>();
@@ -1115,6 +1152,7 @@ public class DBExecUtils {
         return false;
     }
 
+    @NotNull
     public static <CONTEXT extends AbstractExecutionContext<?,?>> CONTEXT tryOpenContext(
         @NotNull CONTEXT executionContext,
         @NotNull DBRRunnableWithParam<CONTEXT> runnable

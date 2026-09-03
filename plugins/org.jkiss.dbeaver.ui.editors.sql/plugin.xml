@@ -1462,6 +1462,20 @@
             value="232,242,254">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.aiSuggestion.background.description</description>
         </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.warning.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.ui.general.color.warning.foreground"
+                value="COLOR_DARK_YELLOW">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.general.color.warning.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.error.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.ui.general.color.error.foreground"
+                value="COLOR_DARK_RED">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.general.color.error.foreground.description</description>
+        </colorDefinition>
         <!-- Colors for Query Plan -->
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.sql.plan.view.label" id="org.jkiss.dbeaver.sql.plan.view.colors">
             <description>%themeElementCategory.org.jkiss.dbeaver.sql.plan.view.description</description>
@@ -1554,39 +1568,37 @@
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqleditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqleditor.label"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
-        <dataSourceConfigurator>
-            <dataSourcePage
+    <extension point="org.jkiss.dbeaver.connectionPageConfigurator">
+            <page
                 id="sql-editor.main"
-                after="data-editor-main"
+                after="data-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqleditor.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.codeeditor"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCodeEditing"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.completion"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.completion.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.completion.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.format"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.format.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.format.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.execute"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.description"/>
-        </dataSourceConfigurator>
     </extension>
 
     <!--
@@ -1650,3 +1662,5 @@
     </extension>
 
 </plugin>
+
+

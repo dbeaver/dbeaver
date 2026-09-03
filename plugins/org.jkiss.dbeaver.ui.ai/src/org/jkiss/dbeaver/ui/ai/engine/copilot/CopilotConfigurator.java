@@ -20,11 +20,8 @@ package org.jkiss.dbeaver.ui.ai.engine.copilot;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
@@ -43,7 +40,7 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
-import org.jkiss.dbeaver.ui.ai.preferences.AIIObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.ai.preferences.AbstractAIEngineConfigurator;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
@@ -53,27 +50,25 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends CopilotProperties>
-    implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+    extends AbstractAIEngineConfigurator<ENGINE, PROPERTIES> {
 
     private static final Log log = Log.getLog(CopilotConfigurator.class);
 
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
     private ModelSelectorField modelSelectorField;
-    private Button logQueryCheck;
-    private Text accessTokenText;
+    protected Text accessTokenText;
 
     protected volatile String accessToken;
     protected String token = "";
     private String temperature = "0.0";
-    private boolean logQuery = false;
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchCopilotModels);
 
     @NotNull
     private List<AIModel> fetchCopilotModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (accessToken == null || accessToken.isEmpty()) {
-            throw new DBException("Access token is not set");
+        if (CommonUtils.isEmpty(accessToken)) {
+            throw new DBException(CopilotMessages.copilot_access_token_required);
         }
 
         try (CopilotCompletionEngine engine = createEngine()) {
@@ -101,10 +96,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         modelSelectorField.setSelectedModel(configuration.getModel());
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         accessToken = token;
         accessTokenText.setText(accessToken);
         applySettings();
+        loadAdvancedSettings(configuration);
 
         modelSelectorField.refreshModelListSilently(true);
     }
@@ -112,10 +107,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     @Override
     public void saveSettings(@NotNull PROPERTIES properties) {
         properties.setToken(accessToken);
-        properties.setModel(modelSelectorField.getSelectedModel());
+        properties.setModel(modelSelectorField.getSelectedModelName());
         properties.setContextWindowSize(contextWindowSizeField.getValue());
         properties.setTemperature(CommonUtils.toDouble(temperature));
-        properties.setLoggingEnabled(logQuery);
+        saveAdvancedSettings(properties);
     }
 
     @Override
@@ -129,16 +124,17 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
-        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
+        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) ->
+            modelsCache.get(monitor, forceRefresh).stream()
             .filter(it -> it.features().contains(AIModelFeature.CHAT))
-            .map(AIModel::name)
             .toList();
 
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
+            .withRequiredSetting(accessTokenText, CopilotMessages.copilot_access_token_required)
             .withModifyListener(() -> {
-                CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
+                CopilotModels.getModelByName(modelSelectorField.getSelectedModelName())
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
@@ -148,6 +144,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                             temperatureText.setText("0.0");
                         }
                     );
+                AIModel selectedModel = modelSelectorField.getSelectedModel();
+                if (selectedModel != null) {
+                    contextWindowSizeField.setValue(selectedModel.contextWindowSize());
+                }
             })
             .withModelListSupplier(modelListProvider)
             .build();
@@ -167,24 +167,11 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     }
 
     private void createAdditionalSettings(@NotNull Composite parent) {
-        logQueryCheck = UIUtils.createCheckbox(
-            parent,
-            AIUIMessages.openai_configurator_log_query_label,
-            AIUIMessages.openai_configurator_log_query_tip,
-            false,
-            2
-        );
-        logQueryCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                logQuery = logQueryCheck.getSelection();
-            }
-        });
+        createAdvancedSettings(parent);
     }
 
     private void applySettings() {
         temperatureText.setText(temperature);
-        logQueryCheck.setSelection(logQuery);
     }
 
     protected void createConnectionParameters(@NotNull Composite parent) {

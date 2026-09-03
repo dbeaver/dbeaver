@@ -17,54 +17,128 @@
 package org.jkiss.dbeaver.ui.app.config;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.jface.util.Geometry;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Monitor;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
-import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.ui.forms.UIObservable;
-import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
-import org.jkiss.dbeaver.ui.forms.util.UIReloadableNLS;
 
-import java.util.Locale;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
-    private final UIObservable<DBPPlatformLanguage> language =
-        UIObservable.of(DBPPlatformDesktop.getInstance().getPlatformLanguage(), DBPPlatformLanguage.class);
-    private Control languagePicker;
+    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, @NotNull ProductConfigWizard.Origin origin) {
+        super(
+            window,
+            new ProductConfigWizard(origin),
+            null,
+            origin == ProductConfigWizard.Origin.AUTOMATIC ? null : window.getShell()
+        );
+        setFinishButtonLabel("Apply");
+        setMinimumPageSize(0, 0);
+    }
 
-    public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window) {
-        super(window, new ProductConfigWizard());
+    public boolean isRestartRequired() {
+        return getWizard().isRestartRequired();
+    }
 
-        // We're reusing the help system for language selection
-        setHelpAvailable(true);
+    @NotNull
+    public ProductConfigWizard.Origin getOrigin() {
+        return getWizard().getOrigin();
+    }
 
-        language.addChangeListener((ignored, language) -> {
-            setLanguage(language);
-            UIReloadableNLS.reloadMessages();
-            getShell().layout(true, true);
-        });
+    @Override
+    public int open() {
+        beforeOpen();
+        int result = super.open();
+        afterClose(result);
+        return result;
+    }
 
-        addPageChangedListener(event -> {
-            boolean firstPageSelected = event.getSelectedPage() == getWizard().getStartingPage();
-            UIUtils.setControlVisible(languagePicker, firstPageSelected);
-        });
+    private void beforeOpen() {
+        ProductConfigFeatures.WIZARD_SHOWN.use(Map.of(
+            "origin", getOrigin()
+        ));
+    }
+
+    private void afterClose(int result) {
+        var registry = ProductConfigRegistry.getInstance();
+        var features = registry.getFeatures().stream()
+            .collect(Collectors.toMap(
+                ProductConfigFeatureDescriptor::getId,
+                registry::getFeatureEnablement
+            ));
+
+        ProductConfigFeatures.WIZARD_CLOSED.use(Map.of(
+            "origin", getOrigin(),
+            "status", result == IDialogConstants.OK_ID ? "finished" : "canceled",
+            "features", features
+        ));
+    }
+
+    @NotNull
+    @Override
+    protected ProductConfigWizard getWizard() {
+        return (ProductConfigWizard) super.getWizard();
+    }
+
+    @Override
+    protected void configureShell(@NotNull Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setImages(Window.getDefaultImages());
+    }
+
+    @Override
+    public int getShellStyle() {
+        return SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE;
+    }
+
+    @Override
+    protected int getDialogBoundsStrategy() {
+        return 0;
+    }
+
+    @NotNull
+    @Override
+    protected Point getInitialLocation(@NotNull Point initialSize) {
+        // NOTE: This method is almost identical to its base implementation,
+        // but it also checks whether [parent] is visible. This dialog
+        // might appear before the main window is even visible, and centering
+        // it around the main window would make it appear in the wrong place.
+
+        Shell shell = getShell();
+        Composite parent = shell.getParent();
+
+        Monitor monitor = shell.getDisplay().getPrimaryMonitor();
+        if (parent != null && parent.isVisible()) {
+            monitor = parent.getMonitor();
+        }
+
+        Rectangle monitorBounds = monitor.getClientArea();
+        Point centerPoint;
+        if (parent != null && parent.isVisible()) {
+            centerPoint = Geometry.centerPoint(parent.getBounds());
+        } else {
+            centerPoint = Geometry.centerPoint(monitorBounds);
+        }
+
+        return new Point(
+            centerPoint.x - (initialSize.x / 2),
+            Math.clamp(
+                centerPoint.y - (initialSize.y * 2L / 3),
+                monitorBounds.y, monitorBounds.y + monitorBounds.height - initialSize.y
+            )
+        );
     }
 
     @NotNull
@@ -74,30 +148,8 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     }
 
     @Override
-    public int getShellStyle() {
-        return SWT.TITLE | SWT.BORDER | SWT.RESIZE;
-    }
-
-    @Override
     public void updateSize() {
         // don't update size - pages are adapted to the dialog size
-    }
-
-    @Override
-    public void showPage(@Nullable IWizardPage page) {
-        super.showPage(page);
-        if (page instanceof WizardPage page1) {
-            page1.setPageComplete(true);
-        }
-    }
-
-    @NotNull
-    @Override
-    protected Control createHelpControl(@NotNull Composite parent) {
-        ((GridLayout) parent.getLayout()).numColumns++;
-        languagePicker = UIPanelBuilder.build(parent, buildLanguagePanel(language));
-        languagePicker.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        return languagePicker;
     }
 
     @Override
@@ -105,38 +157,19 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         super.createButtonsForButtonBar(parent);
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        if (cancelButton != null) {
+        if (cancelButton != null && getOrigin() == ProductConfigWizard.Origin.AUTOMATIC) {
             UIUtils.setControlVisible(cancelButton, false);
-        }
-
-        bindButtonText(IDialogConstants.BACK_ID, ProductConfigMessages.wizard_buttons_back);
-        bindButtonText(IDialogConstants.NEXT_ID, ProductConfigMessages.wizard_buttons_next);
-        bindButtonText(IDialogConstants.FINISH_ID, ProductConfigMessages.wizard_buttons_finish);
-    }
-
-    private void bindButtonText(int id, @NotNull UIObservable<String> text) {
-        var button = getButton(id);
-        if (button != null) {
-            BiConsumer<String, String> listener = (s, s2) -> button.setText(s2);
-            button.setText(text.get());
-            button.addDisposeListener(e -> text.removeChangeListener(listener));
-            text.addChangeListener(listener);
+            parent.layout(true, true);
         }
     }
 
-    @NotNull
-    private static Consumer<UIPanelBuilder> buildLanguagePanel(@NotNull UIObservable<DBPPlatformLanguage> language) {
-        return pb -> pb.row(rb -> rb.comboBox(
-            PlatformLanguageRegistry.getInstance().getLanguages(),
-            language,
-            DBPPlatformLanguage::getLabel
-        ));
-    }
+    @Override
+    public void updateButtons() {
+        super.updateButtons();
 
-    private static void setLanguage(@NotNull DBPPlatformLanguage language) {
-        if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager languageManager) {
-            languageManager.setPlatformLanguage(language);
+        Button finishButton = getButton(IDialogConstants.FINISH_ID);
+        if (finishButton != null && !finishButton.isDisposed() && finishButton.isEnabled()) {
+            getShell().setDefaultButton(finishButton);
         }
-        Locale.setDefault(Locale.of(language.getCode()));
     }
 }

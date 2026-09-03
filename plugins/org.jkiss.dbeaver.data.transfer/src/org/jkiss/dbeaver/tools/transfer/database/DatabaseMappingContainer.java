@@ -92,6 +92,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return consumerSettings;
     }
 
+    @Nullable
     @Override
     public DBSDataManipulator getTarget() {
         return target;
@@ -102,6 +103,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = null;
     }
 
+    @NotNull
     @Override
     public DatabaseMappingType getMappingType() {
         return mappingType;
@@ -150,11 +152,13 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBPImage getIcon() {
         return DBIcon.TREE_TABLE;
     }
 
+    @Nullable
     @Override
     public DBSDataContainer getSource() {
         return source;
@@ -172,6 +176,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return rawChangedPropertiesMap;
     }
 
+    @NotNull
     @Override
     public String getTargetName() {
         String targetTableName = targetName;

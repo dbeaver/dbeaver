@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -54,6 +55,21 @@ public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
     public static final double DEFAULT_TEMPERATURE = 0.0;
 
+    @NotNull
+    public static String getSettingsAccessMessage(
+        @NotNull String plain,
+        @NotNull String linked,
+        @NotNull String contactAdmin
+    ) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return plain;
+        }
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            return linked;
+        }
+        return contactAdmin;
+    }
+
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         aiSettings.resolveSecrets();
@@ -65,13 +81,18 @@ public final class AIUtils {
      * Retrieves a secret value from the global secret controller.
      * If the secret value is empty, it returns the provided default value.
      */
+    @Nullable
     public static String getSecretValueOrDefault(
         @NotNull AIConfigurationProfile profile,
         @NotNull String secretId,
         @Nullable String defaultValue
     ) throws DBException {
+        DBSSecretController globalSecretController = DBSSecretController.getGlobalSecretControllerOrNull();
+        if (globalSecretController == null) {
+            return defaultValue;
+        }
         String suffix = getSecretSuffix(profile);
-        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(
+        String secretValue = globalSecretController.getPrivateSecretValue(
             secretId + suffix);
         if (CommonUtils.isEmpty(secretValue)) {
             return defaultValue;
@@ -85,17 +106,22 @@ public final class AIUtils {
         @NotNull String secret,
         @Nullable String value
     ) throws DBException {
-        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
-            secret + getSecretSuffix(profile), value);
+        DBSSecretController globalSecretController = DBSSecretController.getGlobalSecretControllerOrNull();
+        if (globalSecretController == null) {
+            return;
+        }
+        globalSecretController.setPrivateSecretValue(secret + getSecretSuffix(profile), value);
     }
 
     public static void deleteSecretValue(
         @NotNull AIConfigurationProfile profile,
         @NotNull String secret
     ) throws DBException {
-        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
-            secret + getSecretSuffix(profile),
-            null);
+        DBSSecretController globalSecretController = DBSSecretController.getGlobalSecretControllerOrNull();
+        if (globalSecretController == null) {
+            return;
+        }
+        globalSecretController.setPrivateSecretValue(secret + getSecretSuffix(profile), null);
     }
 
     @NotNull
@@ -603,7 +629,8 @@ public final class AIUtils {
         SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
         DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
         boolean supportsSchemas = contextDefaults != null &&
-            (contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange());
+            ((contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange()) ||
+                DBSSchema.class.isAssignableFrom(rootContainer.getPrimaryChildType(monitor)));
         String objectName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 1]);
         String schemaName = null;
         String catalogName = null;

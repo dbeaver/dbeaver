@@ -21,19 +21,25 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
-import org.jkiss.dbeaver.model.config.ProductConfigFeatureRegistry;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 
 public final class ProductConfigPropertyTester extends PropertyTester {
     private static final Log log = Log.getLog(ProductConfigPropertyTester.class);
 
     private static final String PROP_IS_FEATURE_ENABLED = "isFeatureEnabled";
+    private static final String PROP_IS_AVAILABLE = "isAvailable";
 
     @Override
     public boolean test(@Nullable Object receiver, @NotNull String property, @NotNull Object[] args, @Nullable Object expectedValue) {
-        if (!PROP_IS_FEATURE_ENABLED.equals(property)) {
-            return false;
-        }
-        if (!ProductConfigUtils.isShowOnStartup()) {
+        return switch (property) {
+            case PROP_IS_FEATURE_ENABLED -> isFeatureEnabled(expectedValue);
+            case PROP_IS_AVAILABLE -> ProductConfigUtils.isAvailable();
+            default -> false;
+        };
+    }
+
+    private static boolean isFeatureEnabled(@Nullable Object expectedValue) {
+        if (!ProductConfigUtils.isAvailable()) {
             // Some features might be disabled by default by plugin declaration.
             // But since Product Config is an unreleased feature, there's no way to configure what's enabled or not.
             // So assume all features are enabled when the flag is absent.
@@ -42,7 +48,7 @@ public final class ProductConfigPropertyTester extends PropertyTester {
         if (!(expectedValue instanceof String value)) {
             return false;
         }
-        var registry = ProductConfigFeatureRegistry.getInstance();
+        var registry = ProductConfigRegistry.getInstance();
         for (ProductConfigFeatureDescriptor feature : registry.getFeatures()) {
             if (feature.getId().equals(value)) {
                 return registry.isFeatureEnabled(feature);

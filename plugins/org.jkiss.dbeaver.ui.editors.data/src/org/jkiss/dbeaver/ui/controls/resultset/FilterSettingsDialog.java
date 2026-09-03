@@ -23,8 +23,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -53,8 +52,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 class FilterSettingsDialog extends HelpEnabledDialog {
     private static final String DIALOG_ID = "DBeaver.FilterSettingsDialog";//$NON-NLS-1$
@@ -133,7 +132,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     final DBDAttributeBinding binding = (DBDAttributeBinding) cell.getElement();
                     final DBDAttributeConstraint constraint = getBindingConstraint(binding);
                     cell.setText(constraint.getAttribute().getName());
-                    cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(binding.getMetaAttribute())));
+                    cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(binding.getAttribute())));
                 }
             });
 
@@ -316,7 +315,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     refreshData();
                 });
                 showNoneButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_REMOVEALL));
-                createToolItem(toolbar, ResultSetMessages.dialog_toolbar_reset, UIIcon.REFRESH, () -> {
+                createToolItem(toolbar, ResultSetMessages.dialog_toolbar_reset, UIIcon.ARROW_RESET, () -> {
                     dataFilter.reset();
                     constraints = dataFilter.getConstraints();
                     refreshData();
@@ -636,12 +635,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             //item.setText(text);
             item.setToolTipText(text);
         }
-        item.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                action.run();
-            }
-        });
+        item.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> action.run()));
         return item;
     }
 

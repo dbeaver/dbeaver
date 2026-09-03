@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -1132,6 +1133,7 @@ public class DataSourceDescriptor
                     monitor.done();
                 }
             }
+            resolvePropertiesFromProfile();
 
             // 2. Get credentials from global provider
             if (!authProvidedFromOrigin) {
@@ -1152,7 +1154,6 @@ public class DataSourceDescriptor
                 }
             }
 
-            resolvePropertiesFromProfile();
             patchConnectionProperties(monitor, resolvedConnectionInfo);
 
             // Handle tunnelHandler
@@ -1203,10 +1204,19 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
-                try {
-                    log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
-                } catch (Throwable e) {
-                    log.debug("Connected (" + getId() + ", driver unknown)");
+                if (dataSource != null) {
+                    DBPDataSourceInfo info = dataSource.getInfo();
+                    log.debug(
+                        "Connected to a datasource: id='%s', databaseProductName='%s', databaseProductVersion='%s', driverName='%s', driverVersion='%s'."
+                        .formatted(
+                            id,
+                            info.getDatabaseProductName(),
+                            info.getDatabaseProductVersion(),
+                            info.getDriverName(),
+                            info.getDriverVersion())
+                    );
+                } else {
+                    log.debug("Connected to datasource with id=" + id);
                 }
 
                 this.connectFailed = false;
@@ -1337,8 +1347,8 @@ public class DataSourceDescriptor
             if (profile != null) {
                 if (secretController != null) {
                     profile.resolveSecrets(secretController);
-                } else if (profile.isGlobal() && !DBWorkbench.isDistributed()) {
-                    // Global profile secrets are stored in global secret controller
+                } else if (profile.isGlobal() && !DBWorkbench.isMultiuserOrDistributed()) {
+                    // Global profile secrets are stored in global secret controller for desktop apps
                     profile.resolveSecrets(DBSSecretController.getGlobalSecretController());
                 }
                 for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
@@ -1427,6 +1437,10 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
+            UIServiceShellCommands shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
+            if (shellCommandsService != null) {
+                shellCommandsService.validateByUser(command, createApprovalContext(eventType));
+            }
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
             monitor.subTask("Execute process " + processDescriptor.getName());
@@ -1467,6 +1481,15 @@ public class DataSourceDescriptor
                 case AFTER_DISCONNECT -> handlerDesc.getInstance().beforeDisconnect(monitor, this);
             }
         }
+    }
+
+    @NotNull
+    private Map<String, String> createApprovalContext(@NotNull DBPConnectionEventType eventType) {
+        Map<String, String> context = new LinkedHashMap<>();
+        context.put(RegistryMessages.connection_add_shell_cmd_context_project, getProject().getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_data_source, getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_event_type, eventType.getTitle());
+        return context;
     }
 
     @Override
@@ -2254,9 +2277,11 @@ public class DataSourceDescriptor
         if (secretValue == null) {
             if (DBWorkbench.isDistributed()) {
                 // In distributed mode we reset saved password in case of null secret
-                connectionInfo.getHandlers().forEach(handler ->
-                    handler.setSavePassword(false)
-                );
+                connectionInfo.getHandlers().forEach(handler -> {
+                    if (connectionInfo.getConfigProfileName() == null) {
+                        handler.setSavePassword(false);
+                    }
+                });
                 savePassword = false;
             }
             return;
@@ -2326,7 +2351,8 @@ public class DataSourceDescriptor
         if (!isSharedCredentials()) {
             connectionInfo.getHandlers().forEach(
                 handler -> {
-                    if (!handlersFromSecret.contains(handler.getId())) {
+                    // password can be stored in config profile, so we don't reset it if config profile is set
+                    if (connectionInfo.getConfigProfileName() == null && !handlersFromSecret.contains(handler.getId())) {
                         handler.setSavePassword(false);
                     }
                 }

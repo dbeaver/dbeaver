@@ -142,8 +142,8 @@ public class AIChatSession {
         if (dataSource == null) {
             return null;
         }
-        AIDataSourceSettings dataSourceSettings = new AIDataSourceSettings(dataSource);
-        AIChatConversationSettings customSettings = conversation.getCustomSettings();
+        AIContextSettingsDataSource dataSourceSettings = new AIContextSettingsDataSource(dataSource);
+        AIContextSettingsChatConversation customSettings = conversation.getCustomSettings();
         if (customSettings != null && !dataSourceSettings.equalsSettings(customSettings)) {
             return customSettings;
         }
@@ -171,7 +171,7 @@ public class AIChatSession {
                         );
                         String contextJson = history.getContext().getContextJson();
                         if (contextJson != null) {
-                            AIChatConversationSettings convSettings = new AIChatConversationSettings(this, conversation);
+                            AIContextSettingsChatConversation convSettings = new AIContextSettingsChatConversation(this, conversation);
                             convSettings.loadSettingsFromString(contextJson);
                             convSettings.loadDataSourceDefaults();
                             conversation.setCustomSettings(convSettings);
@@ -451,6 +451,9 @@ public class AIChatSession {
             messages,
             confirmation
         );
+        if (conversation.getState() == AIChatConversation.State.CANCELED) {
+            return CompletableFuture.completedFuture(conversation);
+        }
         try {
             return getAssistant().generateTextStream(
                 monitor,
@@ -554,7 +557,7 @@ public class AIChatSession {
         try {
             chatListener.error(error);
         } finally {
-            chatListener.complete(List.of(), true);
+            chatListener.complete(List.of(), true, false);
         }
         return CompletableFuture.completedFuture(conversation);
     }

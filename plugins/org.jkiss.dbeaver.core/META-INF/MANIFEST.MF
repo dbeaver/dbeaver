@@ -3,21 +3,19 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Desktop Application Core
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 26.1.3.qualifier
-Bundle-Release-Date: 20260720
+Bundle-Version: 26.2.1.qualifier
+Bundle-Release-Date: 20260921
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.core.ui.services,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tools.project,
  org.jkiss.dbeaver.tools.scripts,
  org.jkiss.dbeaver.ui.actions,
  org.jkiss.dbeaver.ui.actions.common,
  org.jkiss.dbeaver.ui.actions.datasource,
- org.jkiss.dbeaver.ui.dialogs.connection,
  org.jkiss.dbeaver.ui.e4,
  org.jkiss.dbeaver.ui.eula,
  org.jkiss.dbeaver.ui.perspective,
@@ -26,17 +24,16 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.resources.bookmarks,
  org.jkiss.dbeaver.ui.resources.projects,
  org.jkiss.dbeaver.ui.resources.shortcuts,
+ org.jkiss.dbeaver.ui.services,
  org.jkiss.dbeaver.ui.views,
  org.jkiss.dbeaver.ui.views.process,
  org.jkiss.dbeaver.ui.views.qm
 Bundle-ClassPath: .,
  lib/awt.injector-1.0.0.jar
 Require-Bundle: org.osgi.service.event,
- org.eclipse.core.filesystem,
  org.eclipse.core.net,
  org.eclipse.equinox.security,
  org.eclipse.ui.browser,
- org.eclipse.ui.ide,
  org.eclipse.e4.core.contexts,
  org.eclipse.e4.core.services,
  org.eclipse.e4.ui.css.swt,
@@ -46,11 +43,8 @@ Require-Bundle: org.osgi.service.event,
  org.eclipse.e4.ui.workbench,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
- org.jkiss.dbeaver.registry;visibility:=reexport,
- org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
- org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport,
- org.jkiss.dbeaver.ui.navigator;visibility:=reexport
+ org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport
 Import-Package: jakarta.annotation
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.core

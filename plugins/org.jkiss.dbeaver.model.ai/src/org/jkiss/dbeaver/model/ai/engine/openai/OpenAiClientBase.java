@@ -34,11 +34,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpRequest;
-import java.time.Duration;
 import java.util.List;
 
 public abstract class OpenAiClientBase extends AbstractHttpAIClient {
-    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
     protected static final Gson GSON = JSONUtils.GSON;
     private static final Log log = Log.getLog(OpenAiClientBase.class);
     protected final String baseUrl;
@@ -81,11 +79,12 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(baseUrl, "models"))
             .GET()
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
 
         HttpRequest modifiedRequest = applyFilters(request);
-        return GSON.fromJson(client.send(monitor, modifiedRequest), OAIModelList.class).data();
+        String response = client.send(monitor, modifiedRequest);
+        return GSON.fromJson(response, OAIModelList.class).data();
     }
 
     @NotNull
@@ -104,8 +103,8 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
     @NotNull
     @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
-        log.debug("OpenAI request failed: " + statusCode + ", " + body);
-        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+        log.debug("AI request failed: " + statusCode + ", " + body);
+        return new DBException("AI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(statusCode, body));
     }
 
     @NotNull
@@ -114,7 +113,7 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
             .uri(AIHttpUtils.resolve(baseUrl, OpenAIConstants.ENDPOINT_RESPONSES))
             .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
     }
 
