@@ -23,119 +23,124 @@ import org.junit.jupiter.api.Test;
 public class PostgreDependencyTest extends DBeaverUnitTest {
 
     @Test
-    public void getObjectType_whenTypeCodeIsKnown_shouldReturnReadableName() {
+    public void getObjectTypeWhenKnownCodeShouldReturnReadableName() {
         PostgreDependency dependency = new PostgreDependency(
             null, 0, "a", "some_object", null, "r0", null, null);
         Assertions.assertEquals("Table", dependency.getObjectType());
     }
 
     @Test
-    public void getObjectType_whenSequence_shouldReturnSequence() {
+    public void getObjectTypeWhenSequenceShouldReturnSequence() {
         Assertions.assertEquals("Sequence", testType("S0"));
     }
 
     @Test
-    public void getObjectType_whenToastTable_shouldReturnToastTable() {
+    public void getObjectTypeWhenToastTableShouldReturnToastTable() {
         Assertions.assertEquals("TOAST Table", testType("t0"));
     }
 
     @Test
-    public void getObjectType_whenDataType_shouldReturnType() {
+    public void getObjectTypeWhenDataTypeShouldReturnType() {
         Assertions.assertEquals("Type", testType("y"));
     }
 
     @Test
-    public void getObjectType_whenProcedure_shouldReturnProcedure() {
+    public void getObjectTypeWhenProcedureShouldReturnProcedure() {
         Assertions.assertEquals("Procedure", testType("p"));
     }
 
     @Test
-    public void getObjectType_whenPartitionedTable_shouldReturnPartitionedTable() {
+    public void getObjectTypeWhenPartitionedTableShouldReturnPartitionedTable() {
         Assertions.assertEquals("Partitioned Table", testType("p0"));
     }
 
     @Test
-    public void getObjectType_whenSchema_shouldReturnSchema() {
+    public void getObjectTypeWhenSchemaShouldReturnSchema() {
         Assertions.assertEquals("Schema", testType("n"));
     }
 
     @Test
-    public void getObjectType_whenLanguage_shouldReturnLanguage() {
+    public void getObjectTypeWhenLanguageShouldReturnLanguage() {
         Assertions.assertEquals("Language", testType("l"));
     }
 
     @Test
-    public void getObjectType_whenRule_shouldReturnRule() {
+    public void getObjectTypeWhenRuleShouldReturnRule() {
         Assertions.assertEquals("Rule", testType("R"));
     }
 
     @Test
-    public void getObjectType_whenTrigger_shouldReturnTrigger() {
+    public void getObjectTypeWhenTriggerShouldReturnTrigger() {
         Assertions.assertEquals("Trigger", testType("T"));
     }
 
     @Test
-    public void getObjectType_whenAttribute_shouldReturnAttribute() {
+    public void getObjectTypeWhenAttributeShouldReturnAttribute() {
         Assertions.assertEquals("Attribute", testType("A"));
     }
 
     @Test
-    public void getObjectType_whenIndex_shouldReturnIndex() {
+    public void getObjectTypeWhenIndexShouldReturnIndex() {
         Assertions.assertEquals("Index", testType("i0"));
     }
 
     @Test
-    public void getObjectType_whenView_shouldReturnView() {
+    public void getObjectTypeWhenViewShouldReturnView() {
         Assertions.assertEquals("View", testType("v0"));
     }
 
     @Test
-    public void getObjectType_whenMaterializedView_shouldReturnMaterializedView() {
+    public void getObjectTypeWhenMaterializedViewShouldReturnMaterializedView() {
         Assertions.assertEquals("Materialized View", testType("m0"));
     }
 
     @Test
-    public void getObjectType_whenCompositeType_shouldReturnCompositeType() {
+    public void getObjectTypeWhenCompositeTypeShouldReturnCompositeType() {
         Assertions.assertEquals("Composite Type", testType("c0"));
     }
 
     @Test
-    public void getObjectType_whenForeignTable_shouldReturnForeignTable() {
+    public void getObjectTypeWhenForeignTableShouldReturnForeignTable() {
         Assertions.assertEquals("Foreign Table", testType("f0"));
     }
 
     @Test
-    public void getObjectType_whenPrimaryKeyConstraint_shouldReturnPrimaryKey() {
+    public void getObjectTypeWhenPartitionedIndexShouldReturnPartitionedIndex() {
+        Assertions.assertEquals("Partitioned Index", testType("I0"));
+    }
+
+    @Test
+    public void getObjectTypeWhenPrimaryKeyConstraintShouldReturnPrimaryKey() {
         Assertions.assertEquals("Primary Key", testType("Cp"));
     }
 
     @Test
-    public void getObjectType_whenForeignKeyConstraint_shouldReturnForeignKey() {
+    public void getObjectTypeWhenForeignKeyConstraintShouldReturnForeignKey() {
         Assertions.assertEquals("Foreign Key", testType("Cf"));
     }
 
     @Test
-    public void getObjectType_whenUniqueConstraint_shouldReturnUniqueConstraint() {
+    public void getObjectTypeWhenUniqueConstraintShouldReturnUniqueConstraint() {
         Assertions.assertEquals("Unique Constraint", testType("Cu"));
     }
 
     @Test
-    public void getObjectType_whenCheckConstraint_shouldReturnCheckConstraint() {
+    public void getObjectTypeWhenCheckConstraintShouldReturnCheckConstraint() {
         Assertions.assertEquals("Check Constraint", testType("Cc"));
     }
 
     @Test
-    public void getObjectType_whenExclusionConstraint_shouldReturnExclusionConstraint() {
+    public void getObjectTypeWhenExclusionConstraintShouldReturnExclusionConstraint() {
         Assertions.assertEquals("Exclusion Constraint", testType("Cx"));
     }
 
     @Test
-    public void getObjectType_whenUnknownCode_shouldReturnCodeAsIs() {
+    public void getObjectTypeWhenUnknownCodeShouldReturnCodeAsIs() {
         Assertions.assertEquals("zz", testType("zz"));
     }
 
     @Test
-    public void getObjectType_whenCodeIsMissing_shouldReturnEmptyString() {
+    public void getObjectTypeWhenCodeIsMissingShouldReturnEmptyString() {
         Assertions.assertEquals("", testType(""));
     }
 
