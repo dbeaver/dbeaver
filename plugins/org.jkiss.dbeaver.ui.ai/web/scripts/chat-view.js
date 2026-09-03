@@ -15,6 +15,7 @@ function ensureBusyIndicator() {
 function appendChatNode(node, scrollToBottom = true) {
     chat.appendChild(node);
     ensureBusyIndicator();
+    updateAiNoticeVisibility();
     if (scrollToBottom) {
         chat.scrollTop = chat.scrollHeight;
     }
@@ -25,6 +26,11 @@ function clearChat() {
     streamingMessages.clear();
     currentStreamingMessageId = null;
     ensureBusyIndicator();
+    updateAiNoticeVisibility();
+}
+
+function updateAiNoticeVisibility() {
+    aiNotice.hidden = chat.querySelector('.message') === null;
 }
 
 function getClassName(role) {
@@ -44,9 +50,13 @@ function getClassName(role) {
 function setBusy(args) {
     hideCenterText();
 
+    const wasBusy = isBusy;
     isBusy = Boolean(args.busy);
     ensureBusyIndicator();
     if (isBusy) {
+        if (!wasBusy) {
+            announceWaiting();
+        }
         chat.scrollTop = chat.scrollHeight;
     }
 }

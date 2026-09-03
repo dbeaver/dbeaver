@@ -21,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -113,16 +114,11 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
 		createTNSConnectionControls(connectionTypeFolder);
         createCustomConnectionControls(connectionTypeFolder);
         connectionTypeFolder.setSelection(connectionType.ordinal());
-        connectionTypeFolder.addSelectionListener(new SelectionAdapter()
-        {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        connectionTypeFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection().getData();
                 site.getActiveDataSource().getConnectionConfiguration().setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
                 updateUI();
-            }
-        });
+            }));
 
         createAuthPanel(addrGroup, 1);
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
@@ -287,8 +283,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private void createClientHomeGroup(@NotNull Composite bottomControls) {
         oraHomeSelector = new ClientHomesSelector(bottomControls, OracleUIMessages.dialog_connection_ora_home) {
             @Override
-            protected void handleHomeChange()
-            {
+            protected void handleHomeChange() {
                 populateTnsNameCombo();
             }
         };
@@ -318,8 +313,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    protected boolean isCustomURL()
-    {
+    protected boolean isCustomURL() {
         return this.connectionType == OracleConstants.ConnectionType.CUSTOM;
     }
 
@@ -438,10 +432,12 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         public void modifyText(@NotNull ModifyEvent e) {
             updateUI();
         }
+
         @Override
         public void widgetSelected(@NotNull SelectionEvent e) {
             updateUI();
         }
+
         @Override
         public void widgetDefaultSelected(@NotNull SelectionEvent e) {
             updateUI();

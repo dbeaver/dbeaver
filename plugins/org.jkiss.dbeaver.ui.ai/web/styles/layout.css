@@ -63,6 +63,15 @@ html, body {
     min-width: 0;
 }
 
+#ai-notice {
+    flex: 0 0 auto;
+    padding: 0 8px 4px;
+    color: var(--text-color);
+    font-size: 0.85em;
+    text-align: center;
+    opacity: 0.6;
+}
+
 /* ========================================
    STATUS BAR & LOADER
    ======================================== */

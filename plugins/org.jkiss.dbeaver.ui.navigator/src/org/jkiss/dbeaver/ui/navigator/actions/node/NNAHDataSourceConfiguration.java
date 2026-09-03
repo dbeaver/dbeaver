@@ -17,13 +17,11 @@
 
 package org.jkiss.dbeaver.ui.navigator.actions.node;
 
-import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
 
 /**
@@ -32,29 +30,29 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract
 public class NNAHDataSourceConfiguration extends NavigatorNodeActionHandlerAbstract {
 
     @Override
-    public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public boolean isEnabledFor(@NotNull DBNNode node) {
         return false;
     }
 
     @Override
-    public boolean isSticky(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public boolean isSticky(@NotNull DBNNode node) {
         return false;
     }
 
     @Override
     @Nullable
-    public DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public DBPImage getNodeActionIcon(@NotNull DBNNode node) {
         return DBIcon.OVER_LAMP;
     }
 
     @Override
     @Nullable
-    public String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public String getNodeActionToolTip(@NotNull DBNNode node) {
         return node.getName() + " configuration";
     }
 
     @Override
-    public void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction) {
+    public void handleNodeAction(@NotNull DBNNode node, boolean defaultAction) {
 
     }
 }

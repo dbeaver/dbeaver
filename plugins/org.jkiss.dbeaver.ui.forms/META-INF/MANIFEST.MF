@@ -3,17 +3,14 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver UI Forms Toolkit
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.forms;singleton:=true
-Bundle-Version: 1.0.11.qualifier
-Bundle-Release-Date: 20260720
+Bundle-Version: 1.0.15.qualifier
+Bundle-Release-Date: 20260921
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Import-Package: org.jkiss.code
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.databinding,
- org.eclipse.core.databinding.observable,
+Require-Bundle: org.eclipse.core.databinding,
  org.eclipse.core.databinding.property,
  org.eclipse.jface.databinding,
  org.jkiss.dbeaver.ui
-Export-Package: org.jkiss.dbeaver.ui.forms,
- org.jkiss.dbeaver.ui.forms.util
+Export-Package: org.jkiss.dbeaver.ui.forms
 Automatic-Module-Name: org.jkiss.dbeaver.ui.forms

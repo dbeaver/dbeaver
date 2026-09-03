@@ -5,7 +5,7 @@ function createContent(args) {
     if (args.role === 'attachment') {
         body.innerHTML = createAttachmentCard(args);
     } else {
-        const markdown = marked.parse(args.content);
+        const markdown = sanitizeHtml(marked.parse(args.content));
         body.innerHTML = parseSqlBlocks(markdown, args.id);
     }
 
@@ -33,6 +33,8 @@ function addMessage(args) {
         if (existingMessage.classList.contains('streaming')) {
             if (typeof args.content === 'string') {
                 streamingMessages.set(args.id, args.content);
+            } else {
+                streamingMessages.set(args.id, escapeStreamedMarkdown(streamingMessages.get(args.id) || ''));
             }
             finalizeStreamingMessage(args.id, args.meta);
             return;
@@ -45,7 +47,7 @@ function addMessage(args) {
         if (streamingMessage && streamingMessage.classList.contains('streaming')) {
             const finalContent = typeof args.content === 'string'
                 ? args.content
-                : (streamingMessages.get(currentStreamingMessageId) || '');
+                : escapeStreamedMarkdown(streamingMessages.get(currentStreamingMessageId) || '');
 
             streamingMessage.id = args.id;
             streamingMessages.set(args.id, finalContent);
@@ -100,7 +102,9 @@ function addMessage(args) {
         }, 0);
     }
 
+    makeItemFocusable(div, args.role);
     appendChatNode(div);
+    announceMessage(args.role, div);
 }
 
 function calculateIconsContainerOffset(messageDiv, iconsContainer) {
@@ -142,6 +146,7 @@ function removeMessage(args) {
         currentStreamingMessageId = null;
     }
     ensureBusyIndicator();
+    updateAiNoticeVisibility();
 }
 
 function removeFunctionArtifacts(messageId) {

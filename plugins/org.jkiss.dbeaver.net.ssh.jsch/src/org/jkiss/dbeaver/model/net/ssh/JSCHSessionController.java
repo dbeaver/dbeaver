@@ -28,22 +28,13 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class JSCHSessionController extends AbstractSessionController<JSCHSession> {
     private static final Log log = Log.getLog(JSCHSessionController.class);
@@ -175,86 +166,11 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
         @Nullable DBPDataSourceContainer dataSource,
         @NotNull Path key,
         @Nullable String password
-    ) throws IOException, JSchException {
-        String header;
-
-        try (BufferedReader reader = Files.newBufferedReader(key)) {
-            header = reader.readLine();
-        }
-
-        /*
-         * This code is a workaround for JSCH because it cannot load
-         * newer private keys produced by ssh-keygen, so we need
-         * to convert it to the older format manually. This
-         * algorithm will fail if the 'ssh-keygen' cannot be found (#5845)
-         */
-        if (header.equals("-----BEGIN OPENSSH PRIVATE KEY-----")) {
-            log.debug("Attempting to convert an unsupported key into suitable format");
-
-            String id = dataSource != null ? dataSource.getId() : "profile-" + UUID.randomUUID();
-            Path dir = DBWorkbench.getPlatform().getTempFolder(monitor, "openssh-pkey");
-            Path tmp = dir.resolve(id + ".pem");
-
-            Files.copy(key, tmp, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
-
-            password = CommonUtils.notEmpty(password);
-
-            if (RuntimeUtils.isWindows()) {
-                password = '"' + password + '"';
-            }
-
-            Process process = new ProcessBuilder()
-                .command(
-                    "ssh-keygen",
-                    "-p",
-                    "-P", password,
-                    "-N", password,
-                    "-m", "PEM",
-                    "-f", tmp.toAbsolutePath().toString(),
-                    "-q"
-                )
-                .start();
-
-            try {
-                if (!process.waitFor(5000, TimeUnit.MILLISECONDS)) {
-                    process.destroyForcibly();
-                }
-
-                int status = process.exitValue();
-
-                if (status != 0) {
-                    String message;
-
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                        message = reader.lines().collect(Collectors.joining("\n"));
-                    }
-
-                    log.error("Specified private key cannot be converted: " + message);
-                    // Add original key as is
-                    addIdentityKey0(jsch, key, password);
-                    return;
-                }
-
-                addIdentityKey0(jsch, tmp, password);
-            } catch (InterruptedException e) {
-                throw new IOException(e);
-            } finally {
-                try {
-                    Files.delete(tmp);
-                } catch (IOException e) {
-                    log.debug("Failed to delete private key file", e);
-                }
-            }
-        } else {
-            addIdentityKey0(jsch, key, password);
-        }
-    }
-
-    private void addIdentityKey0(@NotNull JSch jsch, Path key, String password) throws JSchException {
-        if (!CommonUtils.isEmpty(password)) {
-            jsch.addIdentity(key.toAbsolutePath().toString(), password);
-        } else {
+    ) throws JSchException {
+        if (CommonUtils.isEmpty(password)) {
             jsch.addIdentity(key.toAbsolutePath().toString());
+        } else {
+            jsch.addIdentity(key.toAbsolutePath().toString(), password.getBytes(StandardCharsets.UTF_8));
         }
     }
 

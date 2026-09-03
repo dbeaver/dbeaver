@@ -8,10 +8,10 @@
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
 
-* Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI integration, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
+* Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI chat, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
 * Out of the box supports more than <a href="#supported-databases">100 database drivers</a>.
 * Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
-* Supports smart AI completion and code generation with OpenAI or Copilot
+* Integrates AI tools for work with data, SQL and database structure
 
 <a href="https://dbeaver.io/product/dbeaver-sql-editor.png"><img src="https://dbeaver.io/product/dbeaver-sql-editor.png" width="400"/></a>
 <a href="https://dbeaver.io/product/dbeaver-gis-viewer.png"><img src="https://dbeaver.io/product/dbeaver-gis-viewer.png" width="400"/></a>
@@ -27,7 +27,7 @@ You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Earl
 
 Just run an installer and then click on app icon. Or unzip an archive and run `dbeaver` from command line.  
 
-Note: DBeaver needs Java to run. <a href="https://adoptium.net/temurin/releases/?package=jre" target="_blank">OpenJDK 21</a> is included in all DBeaver distributions.
+Note: DBeaver needs Java to run. <a href="https://adoptium.net/temurin/releases/?package=jre" target="_blank">OpenJDK 25</a> is included in all DBeaver distributions.
 You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
 
 ## Documentation
@@ -54,7 +54,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 ### Community version
 
 Out of the box DBeaver supports following database drivers: 
-MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill, Presto, Trino, Phoenix, Exasol, Informix, Teradata, Vertica, Netezza, Firebird, Derby, H2, H2GIS, WMI, Snowflake, Greenplum, Redshift, Athena, SAP HANA, MaxDB, NuoDB, MS Access, SQLite, CSV, DBF, Firebird, TimescaleDB, Yellowbrick, CockroachDB, OrientDB, MonetDB, Google BigQuery, Google Spanner, Apache Hive/Impala/Spark, Apache Ignite, MapD, Azure SQL, CrateDB, Elasticsearch, Ocient, Ingres, OmniSci, Yugabyte, IRIS, Data Virtuality, Denodo, Virtuoso, Machbase, DuckDB, Babelfish, OceanBase, Salesforce, EnterpriseDB, Apache Druid, Apache Kylin, Databricks, OpenSearch, TiDB, TDEngine, Materialize, JDBCX, Dameng, Altibase, StarRocks, CUBRID, GaussDB, DolphinDB, LibSQL, GBase 8s, Databend, Cloudberry, Teiid, Kingbase.
+MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill, Presto, Trino, Phoenix, Exasol, Informix, Teradata, Vertica, Netezza, Firebird, Derby, H2, H2GIS, WMI, Snowflake, Greenplum, Redshift, Athena, SAP HANA, MaxDB, NuoDB, MS Access, SQLite, CSV, DBF, Firebird, TimescaleDB, Yellowbrick, CockroachDB, OrientDB, MonetDB, Google BigQuery, Google Spanner, Apache Hive/Impala/Spark, Apache Ignite, MapD, Azure SQL, CrateDB, Elasticsearch, Ocient, Ingres, OmniSci, Yugabyte, IRIS, Data Virtuality, Denodo, Virtuoso, Machbase, DuckDB, Babelfish, OceanBase, Salesforce, EnterpriseDB, Apache Druid, Apache Kylin, Databricks, OpenSearch, TiDB, TDEngine, Materialize, JDBCX, Dameng, Altibase, StarRocks, CUBRID, GaussDB, DolphinDB, LibSQL, GBase 8s, Databend, Cloudberry, Teiid, Kingbase, GreptimeDB.
 
 ### PRO versions
 
@@ -62,6 +62,17 @@ MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill,
 ODBC, MongoDB, Cassandra, Couchbase, CouchDB, Redis, InfluxDB, Firestore, BigTable, DynamoDB, Kafka KSQL, Neo4j, AWS Neptune, AWS Timestream, Azure CosmosDB, Yugabyte, Salesforce, etc.  
 Also, we support flat files as databases: CSV, XLSX, Json, XML, Parquet.  
 You can find the list of all databases supported in commercial versions <a href="https://dbeaver.com/databases/">here</a>.
+
+## AI integration
+
+- All DBeaver products contain AI Chat view similar to classic LLM chats. 
+- You can generate/analyse/optimize your SQL queries, work with database structure or even work with databases with a very little knowledge of SQL.
+- We use smart chat context which provides LLMs details about database structure, SQL dialect, etc. 
+- LLM integration uses context-dependent dynamic tools and is very efficient from token consumption point of view.
+- AI providers in Community version:
+  - OpenAI (allows to configure most of existing LLMs with custom endpoint)
+  - Copilot
+- Pro versions provide additional AI tools + native support of Anthropic/Grok/Azure/Bedrock/Gemini/Ollama providers.
 
 ## Feedback
 
@@ -87,8 +98,7 @@ Thank you!
 
 ---------
 
-<a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
+## Our other open-source products:
 
-<a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> is a web-based database management tool built on the DBeaver platform. It brings the capabilities of DBeaver to the web interface, enabling database management from any device with an internet connection and eliminating the need for local installation.   
-Supporting any database, CloudBeaver incorporates most of DBeaver's features and includes advanced access management for secure collaboration.    
-Designed with a user-friendly interface, CloudBeaver simplifies complex database operations and is suitable for both individual developers and organizations. Its scalable architecture accommodates various needs, making it a convenient solution for managing databases anytime and anywhere through web-based accessibility.
+- <a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> - web-based database management tool built on the DBeaver platform.<br/>Runs as server (docker) and provides rich web interface (SPA).  
+- <a href="https://github.com/dbeaver/dbvr">dbvr</a> - CLI database management tool. Useful in CI/CD pipelines and all sort of automations. 

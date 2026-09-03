@@ -67,6 +67,10 @@ public interface AIFunctionDescriptor {
 
     boolean isEnabledByDefault();
 
+    default boolean isOmitConfirmation() {
+        return false;
+    }
+
     @NotNull
     AIFunctionAllowMode getDefaultAllowMode();
 

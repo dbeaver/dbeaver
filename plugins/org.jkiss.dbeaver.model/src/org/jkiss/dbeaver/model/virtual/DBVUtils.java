@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -71,38 +71,41 @@ public abstract class DBVUtils {
         return null;
     }
 
+    @Nullable
     public static DBVEntity getVirtualEntity(@NotNull DBDAttributeBinding binding, boolean create) {
         DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
-        DBVEntity vEntity;
         if (entityAttribute != null) {
-            vEntity = getVirtualEntity(entityAttribute.getParentObject(), create);
+            return getVirtualEntity(entityAttribute.getParentObject(), create);
         } else {
-            vEntity = getVirtualEntity(binding.getDataContainer(), create);
-
+            DBSDataContainer dataContainer = binding.getDataContainer();
+            if (dataContainer != null) {
+                return getVirtualEntity(dataContainer, create);
+            } else {
+                return null;
+            }
         }
-        return vEntity;
     }
 
     @Nullable
-    public static DBVEntity getVirtualEntity(@NotNull DBSEntity source, boolean create)
-    {
-        if (source instanceof DBVEntity) {
-            return (DBVEntity) source;
+    public static DBVEntity getVirtualEntity(@NotNull DBSEntity source, boolean create) {
+        if (source instanceof DBVEntity vEntity) {
+            return vEntity;
         }
         DBPDataSource dataSource = source.getDataSource();
         return dataSource == null ? null : dataSource.getContainer().getVirtualModel().findEntity(source, create);
     }
 
+    @Nullable
     public static DBVEntity getVirtualEntity(@NotNull DBSDataContainer dataContainer, boolean create) {
-        if (dataContainer instanceof IAdaptable) {
+        if (dataContainer instanceof IAdaptable adaptable) {
             // Data container can be a wrapper around another data container (e.g. ResultSetDataContainer). Virtual entity is linked to the nested one.
-            DBSDataContainer nestedDC = ((IAdaptable) dataContainer).getAdapter(DBSDataContainer.class);
+            DBSDataContainer nestedDC = adaptable.getAdapter(DBSDataContainer.class);
             if (nestedDC != null) {
                 dataContainer = nestedDC;
             }
         }
-        if (dataContainer instanceof DBSEntity) {
-            return getVirtualEntity((DBSEntity)dataContainer, create);
+        if (dataContainer instanceof DBSEntity entity) {
+            return getVirtualEntity(entity, create);
         }
         // Not an entity. Most likely a custom query. Use local cache for such attributes.
         // There shouldn't be too many such settings as they are defined by user manually
@@ -204,7 +207,11 @@ public abstract class DBVUtils {
             .toList();
     }
 
-    public static String getDictionaryDescriptionColumns(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
+    @Nullable
+    public static String getDictionaryDescriptionColumns(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAttribute attribute
+    ) throws DBException {
         DBVEntity dictionary = DBVUtils.getVirtualEntity(attribute.getParentObject(), false);
         String descColumns = null;
         if (dictionary != null) {
@@ -464,8 +471,8 @@ public abstract class DBVUtils {
     }
 
     @NotNull
-    static Map<String, Object> getExpressionNamespaces() {
-        Map<String, Object> nsList = new HashMap<>();
+    static Map<String, Class<?>> getExpressionNamespaces() {
+        Map<String, Class<?>> nsList = new HashMap<>();
 
         for (ExpressionNamespaceDescriptor ns : ExpressionRegistry.getInstance().getExpressionNamespaces()) {
             Class<?> implClass = ns.getImplClass();
@@ -476,15 +483,20 @@ public abstract class DBVUtils {
         return nsList;
     }
 
-    public static JexlExpression parseExpression(String expression) {
-        Map<String, Object> nsList = getExpressionNamespaces();
+    @NotNull
+    public static JexlExpression parseExpression(@NotNull String expression) {
+        var namespaces = getExpressionNamespaces();
+        var classes = namespaces.values().toArray(Class<?>[]::new);
+        var permissions = new JexlPermissions.ClassPermissions(JexlPermissions.SECURE, classes);
 
-        JexlBuilder jexlBuilder = new JexlBuilder();
-        jexlBuilder.cache(100);
-        jexlBuilder.namespaces(nsList);
+        @SuppressWarnings("unchecked")
+        var engine = new JexlBuilder()
+            .permissions(permissions)
+            .namespaces((Map<String, Object>) (Object) namespaces)
+            .cache(100)
+            .create();
 
-        JexlEngine jexlEngine = jexlBuilder.create();
-        return jexlEngine.createExpression(expression);
+        return engine.createExpression(expression);
     }
 
     public static boolean isIdentifyingAttributes(@NotNull DBRProgressMonitor monitor, @NotNull List<DBSEntityAttribute> attributes) throws DBException {

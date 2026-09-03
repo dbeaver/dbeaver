@@ -20,20 +20,18 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
-public class CopilotProperties implements AIEngineProperties {
+public class CopilotProperties extends BaseAIEngineProperties {
     private static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
     private static final String GPT_MODEL = "gpt.model";
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
-    private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    private static final String GPT_LOG_QUERY = "gpt.log.query";
 
     @Nullable
     @SecureProperty
@@ -47,12 +45,6 @@ public class CopilotProperties implements AIEngineProperties {
     @Nullable
     @SerializedName(GPT_CONTEXT_WINDOW_SIZE)
     private Integer contextWindowSize;
-
-    @SerializedName(GPT_MODEL_TEMPERATURE)
-    private double temperature;
-
-    @SerializedName(GPT_LOG_QUERY)
-    private boolean loggingEnabled;
 
     @Nullable
     @Property(order = 1, password = true, required = true)
@@ -90,13 +82,9 @@ public class CopilotProperties implements AIEngineProperties {
             .orElse(AIUtils.DEFAULT_TEMPERATURE);
     }
 
-    public void setTemperature(double temperature) {
-        this.temperature = AIUtils.normalizeTemperature(temperature);
-    }
-
     @Override
     @Nullable
-    @Property(order = 4)
+    @Property(order = 4, min = 1)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -111,31 +99,25 @@ public class CopilotProperties implements AIEngineProperties {
         this.contextWindowSize = contextWindowSize;
     }
 
-    @Property(order = 5)
-    public boolean isLoggingEnabled() {
-        return loggingEnabled;
-    }
-
-    public void setLoggingEnabled(boolean loggingEnabled) {
-        this.loggingEnabled = loggingEnabled;
-    }
-
     /**
      * Resolve secrets from the secret controller.
      */
-    public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault(CopilotConstants.COPILOT_ACCESS_TOKEN, token);
+    public void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        if (token == null) {
+            token = AIUtils.getSecretValueOrDefault(profile, CopilotConstants.COPILOT_ACCESS_TOKEN, token);
+        }
     }
 
     /**
      * Save secrets to the secret controller.
      */
-    public void saveSecrets() throws DBException {
-        if (token != null) {
-            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
-                CopilotConstants.COPILOT_ACCESS_TOKEN, token
-            );
-        }
+    public void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.setSecretValue(profile, CopilotConstants.COPILOT_ACCESS_TOKEN, token);
+    }
+
+    @Override
+    public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.deleteSecretValue(profile, CopilotConstants.COPILOT_ACCESS_TOKEN);
     }
 
     @Override

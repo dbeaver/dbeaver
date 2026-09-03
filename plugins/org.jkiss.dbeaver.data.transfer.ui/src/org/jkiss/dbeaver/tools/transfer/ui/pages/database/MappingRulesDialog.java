@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -138,12 +137,8 @@ public class MappingRulesDialog extends BaseDialog {
         GridData gd2 = new GridData();
         gd2.horizontalSpan = 2;
         saveSettings.setLayoutData(gd2);
-        UIUtils.createLink(mappingGroup, DTMessages.data_transfer_wizard_output_label_global_settings, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                UIUtils.showPreferencesFor(getShell(), null, PrefPageDataTransfer.PAGE_ID);
-            }
-        });
+        UIUtils.createLink(mappingGroup, DTMessages.data_transfer_wizard_output_label_global_settings, SelectionListener.widgetSelectedAdapter(e ->
+            UIUtils.showPreferencesFor(getShell(), null, PrefPageDataTransfer.PAGE_ID)));
 
         return composite;
     }

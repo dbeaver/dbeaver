@@ -316,6 +316,8 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                                     activeProject = projectMetadata;
                                     fireActiveProjectChange(null, activeProject);
                                 }
+                                // ensures properties are reloaded if project is being imported
+                                projectMetadata.refreshProject();
                             }
                         } else {
                             if (delta.getKind() == IResourceDelta.REMOVED) {

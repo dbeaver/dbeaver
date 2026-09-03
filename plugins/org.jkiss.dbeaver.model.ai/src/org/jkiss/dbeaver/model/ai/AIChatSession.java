@@ -142,8 +142,8 @@ public class AIChatSession {
         if (dataSource == null) {
             return null;
         }
-        AICompletionSettings dataSourceSettings = new AICompletionSettings(dataSource);
-        AIChatConversationSettings customSettings = conversation.getCustomSettings();
+        AIContextSettingsDataSource dataSourceSettings = new AIContextSettingsDataSource(dataSource);
+        AIContextSettingsChatConversation customSettings = conversation.getCustomSettings();
         if (customSettings != null && !dataSourceSettings.equalsSettings(customSettings)) {
             return customSettings;
         }
@@ -171,7 +171,7 @@ public class AIChatSession {
                         );
                         String contextJson = history.getContext().getContextJson();
                         if (contextJson != null) {
-                            AIChatConversationSettings convSettings = new AIChatConversationSettings(this, conversation);
+                            AIContextSettingsChatConversation convSettings = new AIContextSettingsChatConversation(this, conversation);
                             convSettings.loadSettingsFromString(contextJson);
                             convSettings.loadDataSourceDefaults();
                             conversation.setCustomSettings(convSettings);
@@ -308,6 +308,13 @@ public class AIChatSession {
         );
     }
 
+    public void notifyConversationProfileChanged(@NotNull AIChatConversation conversation) {
+        this.notifyListeners(
+            (aiChatListener, message) ->
+                aiChatListener.conversationProfileChanged(conversation), conversation
+        );
+    }
+
     public void notifyMessagesRemove(@NotNull AIChatConversation conversation, @NotNull AIChatMessage afterInclusive) {
         final int index = conversation.getMessages().indexOf(afterInclusive);
         if (index >= 0) {
@@ -396,7 +403,11 @@ public class AIChatSession {
         @Nullable AIConfirmation confirmation
     ) throws DBException {
         String sessionId = sessionIdProvider.getSessionId(monitor);
-        String engineId = AISettingsManager.getInstance().getSettings().activeEngine();
+        AIConfigurationProfile configurationProfile = conversation.getProfile();
+        if (configurationProfile == null) {
+            configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
+        }
+        String engineId = configurationProfile.getEngineId();
         QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
             sessionId,
             engineId
@@ -440,6 +451,9 @@ public class AIChatSession {
             messages,
             confirmation
         );
+        if (conversation.getState() == AIChatConversation.State.CANCELED) {
+            return CompletableFuture.completedFuture(conversation);
+        }
         try {
             return getAssistant().generateTextStream(
                 monitor,
@@ -543,7 +557,7 @@ public class AIChatSession {
         try {
             chatListener.error(error);
         } finally {
-            chatListener.complete(List.of(), true);
+            chatListener.complete(List.of(), true, false);
         }
         return CompletableFuture.completedFuture(conversation);
     }
@@ -714,6 +728,23 @@ public class AIChatSession {
 
             try {
                 storage.renameConversation(conversation.getId().toString(), newName);
+            } catch (DBException e) {
+                log.error("Error renaming conversation", e);
+            }
+        }
+
+        @Override
+        public void conversationProfileChanged(@NotNull AIChatConversation conversation) {
+            if (conversation.isTemporary()) {
+                return;
+            }
+
+            try {
+                storage.changeConversationProfile(
+                    conversation.getId().toString(),
+                    conversation.getProfile() == null ? null : conversation.getProfile().getProfileId(),
+                    conversation.getProfile() == null ? null : conversation.getProfile().getEngineId()
+                );
             } catch (DBException e) {
                 log.error("Error renaming conversation", e);
             }

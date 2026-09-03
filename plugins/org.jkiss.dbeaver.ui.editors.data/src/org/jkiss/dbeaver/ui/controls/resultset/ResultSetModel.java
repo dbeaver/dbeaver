@@ -375,7 +375,7 @@ public class ResultSetModel implements DBDResultSetModel {
         return getVirtualEntity(entity, create);
     }
 
-    @NotNullWhen("create")
+    @Nullable
     public DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
         if (entity != null) {
             return DBVUtils.getVirtualEntity(entity, true);
@@ -1039,12 +1039,11 @@ public class ResultSetModel implements DBDResultSetModel {
             }
             filterConstraint.setOptions(constraint.getOptions());
             DBSAttributeBase cAttr = filterConstraint.getAttribute();
-            if (cAttr instanceof DBDAttributeBinding) {
+            if (cAttr instanceof DBDAttributeBinding attribute) {
                 if (!constraint.isVisible()) {
                     visibleAttributes.remove(cAttr);
                 } else {
                     if (!visibleAttributes.contains(cAttr)) {
-                        DBDAttributeBinding attribute = (DBDAttributeBinding) cAttr;
                         if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
                             // Add only root attributes
                             visibleAttributes.add(attribute);

@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
+    <!-- https://github.com/dbeaver/pro/issues/9933
+    The chat makes no network requests; forbid them so injected script (XSS) on this file:// origin can't read local files or reach the IPC server. -->
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'none'; frame-src 'none'; object-src 'none'"/>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -10,12 +13,16 @@
         <div id="chat-meta-text">N/A</div>
         <button class="close" onclick="hideChatMeta()">✕</button>
     </div>
-    <div id="chat">
+    <div id="chat" role="listbox">
         <!-- ... -->
     </div>
+    <div id="ai-notice" hidden></div>
+    <div id="a11y-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 </div>
 <script src="marked.umd.js"></script>
+<script src="purify.min.js"></script>
 <script src="script.js"></script>
+<script src="scripts/a11y.js"></script>
 <script src="scripts/chat-view.js"></script>
 <script src="scripts/tooltips.js"></script>
 <script src="scripts/sql-blocks.js"></script>
@@ -23,5 +30,6 @@
 <script src="scripts/messages.js"></script>
 <script src="scripts/streaming.js"></script>
 <script src="scripts/function-confirmations.js"></script>
+<!--{{EXTRA_HEAD}}-->
 </body>
 </html>

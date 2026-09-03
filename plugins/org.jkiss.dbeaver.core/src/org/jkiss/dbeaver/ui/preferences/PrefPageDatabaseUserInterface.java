@@ -28,8 +28,6 @@ import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -38,7 +36,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.internal.themes.*;
+import org.eclipse.ui.internal.themes.ColorsAndFontsPreferencePage;
+import org.eclipse.ui.internal.themes.FontDefinition;
+import org.eclipse.ui.internal.themes.ThemeElementCategory;
+import org.eclipse.ui.internal.themes.WorkbenchThemeManager;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -49,7 +50,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
-import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
@@ -68,6 +68,9 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -107,6 +110,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private Button statusBarShowBreadcrumbsCheck;
     private Button statusBarShowStatusCheck;
     private Combo statusBarBreadcrumbPositionCombo;
+    private Button zoomRestartPromptCheck;
 
     @Nullable
     private FontsController fontsController = null;
@@ -131,7 +135,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (isStandalone && !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             Composite groupObjects = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_ui_general_group_general,
+                UIConnectionMessages.pref_page_ui_general_group_general,
                 2,
                 GridData.VERTICAL_ALIGN_BEGINNING
             );
@@ -238,17 +242,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 1
             ));
             if (browserCombo != null) {
-                browserCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                browserCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
                             useEmbeddedBrowserAuth.setEnabled(false);
                             useEmbeddedBrowserAuth.setSelection(false);
                         } else {
                             useEmbeddedBrowserAuth.setEnabled(true);
                         }
-                    }
-                });
+                    }));
             }
 
             this.fontsController = this.prepareFontsController(composite, QUICK_FONT_IDS);
@@ -267,13 +268,20 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             true,
             1
         );
-        statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
-            statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection())));
+        if (isStandalone) {
+            statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection())));
+        }
 
         statusBarBreadcrumbPositionCombo = new Combo(breadcrumbs, SWT.READ_ONLY | SWT.DROP_DOWN);
         statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_status_bar_label);
         statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_editors_label);
-        statusBarBreadcrumbPositionCombo.select(0);
+        if (isStandalone) {
+            statusBarBreadcrumbPositionCombo.select(0);
+        } else {
+            statusBarBreadcrumbPositionCombo.select(1);
+            statusBarBreadcrumbPositionCombo.setEnabled(false);
+        }
 
         statusBarShowStatusCheck = UIUtils.createCheckbox(
             breadcrumbs,
@@ -282,6 +290,22 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             true,
             2
         );
+
+        if (RuntimeUtils.isLinux()) {
+            Composite displayGroup = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_ui_general_group_display,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
+            zoomRestartPromptCheck = UIUtils.createCheckbox(
+                displayGroup,
+                CoreMessages.pref_page_ui_general_check_zoom_restart_prompt_label,
+                CoreMessages.pref_page_ui_general_check_zoom_restart_prompt_tip,
+                true,
+                2
+            );
+        }
 
         setSettings();
         return composite;
@@ -311,7 +335,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                     catContainer = UIUtils.createTitledComposite(parent, catName, SWT.NONE);
                     catContainer.getParent().setToolTipText(catDescription);
                     catContainer.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-                    GridLayoutFactory.swtDefaults().margins(0, 3).numColumns(3).applyTo(catContainer);
+                    GridLayoutFactory.swtDefaults().margins(0, 3).numColumns(4).applyTo(catContainer);
                     groups.put(fontDef.getCategoryId(), catContainer);
                 }
 
@@ -325,10 +349,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (this.getContainer() instanceof IWorkbenchPreferenceContainer wpc && catContainer != null) {
             Composite info = new Composite(catContainer, SWT.NONE);
-            GridDataFactory.fillDefaults().span(3, 1).applyTo(info);
+            GridDataFactory.fillDefaults().span(4, 1).applyTo(info);
             GridLayoutFactory.fillDefaults().margins(0, 0).spacing(2, 2).numColumns(2).applyTo(info);
 
-            UIUtils.createInfoLabel(info, "");
+            UIUtils.createInfoLabel(info, ""); // info icon near the link
             UIUtils.createPreferenceLink(
                 info,
                 CoreMessages.pref_page_ui_general_link_more_color_and_font_settings,
@@ -366,9 +390,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         BreadcrumbLocation breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.get(store);
         statusBarShowBreadcrumbsCheck.setSelection(breadcrumbLocation != DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN);
-        statusBarBreadcrumbPositionCombo.select(breadcrumbLocation == DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS ? 1 : 0);
-        statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
+        if (isStandalone) {
+            statusBarBreadcrumbPositionCombo.select(breadcrumbLocation == DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS ? 1 : 0);
+            statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
+        }
         statusBarShowStatusCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
+        if (RuntimeUtils.isLinux()) {
+            zoomRestartPromptCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
+        }
     }
 
     @Override
@@ -390,8 +419,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         BreadcrumbLocation location = BreadcrumbLocation.getDefault(store);
         statusBarShowBreadcrumbsCheck.setSelection(location != BreadcrumbLocation.HIDDEN);
-        statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
+        if (isStandalone) {
+            statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
+        }
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
+        if (RuntimeUtils.isLinux()) {
+            zoomRestartPromptCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
+        }
 
         if (this.fontsController != null) {
             this.fontsController.resetToDefaults();
@@ -435,18 +469,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 }
             }
 
-            BreadcrumbLocation breadcrumbLocation;
-            if (!statusBarShowBreadcrumbsCheck.getSelection()) {
-                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN;
-            } else if (statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0) {
-                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_STATUS_BAR;
-            } else {
-                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
-            }
-
-            store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
-            store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
-
             if (workspaceLanguage.getSelectionIndex() >= 0) {
                 PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
                     .get(workspaceLanguage.getSelectionIndex());
@@ -466,6 +488,27 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                     }
                 }
             }
+        }
+
+        BreadcrumbLocation breadcrumbLocation;
+        if (!statusBarShowBreadcrumbsCheck.getSelection()) {
+            breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN;
+        } else {
+            if (isStandalone) {
+                if (statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0) {
+                    breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_STATUS_BAR;
+                } else {
+                    breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
+                }
+            } else {
+                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
+            }
+        }
+
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
+        if (RuntimeUtils.isLinux()) {
+            store.setValue(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, zoomRestartPromptCheck.getSelection());
         }
 
         if (this.fontsController != null) {
@@ -493,7 +536,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             @NotNull
             private final FontDefinition definition;
             @NotNull
-            private final Label example;
+            private final Text example;
 
             @Nullable
             private Font currentFont = null;
@@ -506,8 +549,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 Label title  = UIUtils.createLabel(container, fontDef.getName() + ": ");
                 title.setToolTipText(fontDef.getDescription());
 
-                this.example = UIUtils.createLabel(container, "<font example placeholder>");
+                this.example = new Text(container, SWT.BORDER | SWT.READ_ONLY);
                 this.example.setToolTipText(fontDef.getDescription());
+                this.example.setEditable(false);
+                GridDataFactory.fillDefaults().applyTo(this.example);
 
                 UIUtils.createPushButton(
                     container, null, CoreMessages.pref_page_user_interface_fonts_modify_tooltip, UIIcon.EDIT,
@@ -519,6 +564,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                         if (data != null) {
                             this.setFont(fontDialog.getFontList());
                         }
+                    })
+                );
+
+                UIUtils.createPushButton(
+                    container, null, UIMessages.button_reset_to_defaults, UIIcon.REVERT,
+                    SelectionListener.widgetSelectedAdapter(e -> {
+                        this.resetToDefault();
                     })
                 );
             }

@@ -35,8 +35,8 @@ import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
 import java.security.Security;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -582,7 +582,7 @@ public class DBeaverLauncher {
             if (urls != null && urls.length > 0) {
                 //the last one is most interesting
                 for (int i = urls.length - 1; i >= 0 && libPath == null; i--) {
-                    File entryFile = new File(urls[i].getFile());
+                    File entryFile = LauncherUtils.toFile(urls[i]);
                     String dir = entryFile.getParent();
                     if (inDevelopmentMode) {
                         String devDir = dir + "/" + PLUGIN_ID + "/fragments"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -597,7 +597,7 @@ public class DBeaverLauncher {
         }
         if (libPath == null) {
             URL install = getInstallLocation();
-            String location = install.getFile();
+            String location = LauncherUtils.toFile(install).getPath();
             location += "/plugins/"; //$NON-NLS-1$
             fragment = searchFor(fragmentName, location);
             if (fragment != null)
@@ -1174,7 +1174,7 @@ public class DBeaverLauncher {
             // user wants readonly config area
             return true;
         }
-        File configDir = new File(locationUrl.getFile()).getAbsoluteFile();
+        File configDir = LauncherUtils.toFile(locationUrl).getAbsoluteFile();
         if (!configDir.exists()) {
             configDir.mkdirs();
             if (!configDir.exists()) {
@@ -1272,7 +1272,7 @@ public class DBeaverLauncher {
 
     private void readFrameworkExtensions(URL base, ArrayList<URL> result) throws IOException {
         String[] extensions = getArrayFromList(System.getProperty(PROP_EXTENSIONS));
-        String parent = new File(base.getFile()).getParent();
+        String parent = LauncherUtils.toFile(base).getParent();
         ArrayList<String> extensionResults = new ArrayList<>(extensions.length);
         for (String extension : extensions) {
             //Search the extension relatively to the osgi plugin
@@ -1287,7 +1287,7 @@ public class DBeaverLauncher {
             URL extensionURL;
             if (installLocation.getProtocol().equals("file")) { //$NON-NLS-1$
                 extensionResults.add(path);
-                extensionURL = new File(path).toURL();
+                extensionURL = LauncherUtils.toURL(new File(path));
             } else
                 extensionURL = new URL(installLocation.getProtocol(), installLocation.getHost(), installLocation.getPort(), path);
             //Load a property file of the extension, merge its content, and in case of dev mode add the bin entries
@@ -1339,7 +1339,7 @@ public class DBeaverLauncher {
             baseJarList = System.getProperty(PROP_CLASSPATH);
         }
 
-        File fwkFile = new File(base.getFile());
+        File fwkFile = LauncherUtils.toFile(base);
         boolean fwkIsDirectory = fwkFile.isDirectory();
         //We found where the fwk is, remember it and its shape
         if (fwkIsDirectory) {
@@ -1347,7 +1347,7 @@ public class DBeaverLauncher {
         } else {
             System.setProperty(PROP_FRAMEWORK_SHAPE, "jar");//$NON-NLS-1$
         }
-        String fwkPath = new File(new File(base.getFile()).getParent()).getAbsolutePath();
+        String fwkPath = LauncherUtils.toFile(base).getParentFile().getAbsolutePath();
         if (Character.isUpperCase(fwkPath.charAt(0))) {
             char[] chars = fwkPath.toCharArray();
             chars[0] = Character.toLowerCase(chars[0]);
@@ -1357,7 +1357,7 @@ public class DBeaverLauncher {
 
         String[] baseJars = getArrayFromList(baseJarList);
         if (baseJars.length == 0) {
-            if (!inDevelopmentMode && new File(base.getFile()).isDirectory())
+            if (!inDevelopmentMode && LauncherUtils.toFile(base).isDirectory())
                 throw new IOException("Unable to initialize " + PROP_CLASSPATH); //$NON-NLS-1$
             addEntry(base, result);
             return;
@@ -1373,7 +1373,7 @@ public class DBeaverLauncher {
                 }
                 URL url;
                 if (string.startsWith(FILE_SCHEME))
-                    url = new File(string.substring(5)).toURL();
+                    url = LauncherUtils.toURL(new File(string.substring(5)));
                 else
                     url = new URL(string);
                 addEntry(url, result);
@@ -1384,7 +1384,7 @@ public class DBeaverLauncher {
     }
 
     protected void addEntry(URL url, List<URL> result) {
-        if (new File(url.getFile()).exists())
+        if (LauncherUtils.toFile(url).exists())
             result.add(url);
     }
 
@@ -1399,7 +1399,7 @@ public class DBeaverLauncher {
             File path = new File(location);
             URL url;
             if (path.isAbsolute())
-                url = path.toURL();
+                url = LauncherUtils.toURL(path);
             else {
                 // dev path is relative, combine with base location
                 char lastChar = location.charAt(location.length() - 1);
@@ -1426,12 +1426,12 @@ public class DBeaverLauncher {
         } else {
             // search in the root location
             url = getInstallLocation();
-            String pluginsLocation = new File(url.getFile(), "plugins").toString(); //$NON-NLS-1$
+            String pluginsLocation = new File(LauncherUtils.toFile(url), "plugins").toString(); //$NON-NLS-1$
             String path = searchFor(framework, pluginsLocation);
             if (path == null)
                 throw new FileNotFoundException(String.format("Could not find framework under %s", pluginsLocation)); //$NON-NLS-1$
             if (url.getProtocol().equals("file")) //$NON-NLS-1$
-                url = new File(path).toURL();
+                url = LauncherUtils.toURL(new File(path));
             else
                 url = new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
         }
@@ -1624,8 +1624,8 @@ public class DBeaverLauncher {
                 File toAdjust = LauncherUtils.toFileURL(spec);
                 toAdjust = resolveFile(toAdjust);
                 if (toAdjust.isDirectory())
-                    return LauncherUtils.adjustTrailingSlash(toAdjust.toURL(), trailingSlash);
-                return toAdjust.toURL();
+                    return LauncherUtils.adjustTrailingSlash(LauncherUtils.toURL(toAdjust), trailingSlash);
+                return LauncherUtils.toURL(toAdjust);
             }
             return new URL(spec);
         } catch (MalformedURLException e) {
@@ -1636,8 +1636,8 @@ public class DBeaverLauncher {
             try {
                 File toAdjust = new File(spec);
                 if (toAdjust.isDirectory())
-                    return LauncherUtils.adjustTrailingSlash(toAdjust.toURL(), trailingSlash);
-                return toAdjust.toURL();
+                    return LauncherUtils.adjustTrailingSlash(LauncherUtils.toURL(toAdjust), trailingSlash);
+                return LauncherUtils.toURL(toAdjust);
             } catch (MalformedURLException e1) {
                 return null;
             }
@@ -1654,7 +1654,7 @@ public class DBeaverLauncher {
             String installArea = System.getProperty(PROP_INSTALL_AREA);
             if (installArea != null) {
                 if (installArea.startsWith(FILE_SCHEME))
-                    toAdjust = new File(installArea.substring(5), toAdjust.getPath());
+                    toAdjust = new File(LauncherUtils.toFileURL(installArea), toAdjust.getPath());
                 else if (new File(installArea).exists())
                     toAdjust = new File(installArea, toAdjust.getPath());
             }
@@ -1734,7 +1734,7 @@ public class DBeaverLauncher {
 
         // TODO a little dangerous here.  Basically we have to assume that it is a file URL.
         if (install.getProtocol().equals("file")) { //$NON-NLS-1$
-            File installDir = new File(install.getFile());
+            File installDir = LauncherUtils.toFile(install);
             if (LauncherUtils.canWrite(installDir))
                 return installDir.getAbsolutePath() + File.separator + CONFIG_DIR;
         }
@@ -1758,7 +1758,7 @@ public class DBeaverLauncher {
         URL installURL = getInstallLocation();
         if (installURL == null)
             return null;
-        File installDir = new File(installURL.getFile());
+        File installDir = LauncherUtils.toFile(installURL);
         String installDirHash = getInstallDirHash();
 
         if (protectBase && Constants.OS_MACOSX.equals(os)) {
@@ -1828,7 +1828,7 @@ public class DBeaverLauncher {
         URL installURL = getInstallLocation();
         if (installURL == null)
             return ""; //$NON-NLS-1$
-        File installDir = new File(installURL.getFile());
+        File installDir = LauncherUtils.toFile(installURL);
         int hashCode;
         try {
             hashCode = installDir.getCanonicalPath().hashCode();
@@ -1859,7 +1859,7 @@ public class DBeaverLauncher {
             return properties;
         }
         //java.io used because url may contain spaces and other non escaped chars, and Path.of(URL.toURI()) would fail
-        File eclipseProduct = new File(installURL.getFile(), PRODUCT_SITE_MARKER);
+        File eclipseProduct = new File(LauncherUtils.toFile(installURL), PRODUCT_SITE_MARKER);
         if (debug) {
             System.out.println("Loading product properties from " + eclipseProduct);
         }
@@ -2391,7 +2391,7 @@ public class DBeaverLauncher {
             return null;
         }
 
-        File installDir = new File(installURL.getFile());
+        File installDir = LauncherUtils.toFile(installURL);
         File eclipseProduct = new File(installDir, PRODUCT_SITE_MARKER);
         if (eclipseProduct.exists()) {
             Properties props = new Properties();
@@ -2695,7 +2695,7 @@ public class DBeaverLauncher {
             try {
                 // create a file URL (via File) to normalize the form (e.g., put
                 // the leading / on if necessary)
-                path = new File(path).toURL().getFile();
+                path = LauncherUtils.toURL(new File(path)).getFile();
             } catch (MalformedURLException e1) {
                 // will never happen.  The path is straight from a URL.
             }
@@ -2816,15 +2816,6 @@ public class DBeaverLauncher {
                 }
             });
         }
-        if (showSplash || endSplash != null) {
-            // Register the endSplashHandler to be run at VM shutdown. This hook will be
-            // removed once the splash screen has been taken down.
-            try {
-                Runtime.getRuntime().addShutdownHook(splashHandler);
-            } catch (Throwable ex) {
-                // Best effort to register the handler
-            }
-        }
 
         // if -endsplash is specified, use it and ignore any -showsplash command
         if (endSplash != null) {
@@ -2865,14 +2856,6 @@ public class DBeaverLauncher {
 
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
-
-        if (splashHandler != null) {
-            try {
-                Runtime.getRuntime().removeShutdownHook(splashHandler);
-            } catch (Throwable e) {
-                // OK to ignore this, happens when the VM is already shutting down
-            }
-        }
     }
 
     /*
