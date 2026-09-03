@@ -546,7 +546,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             registry.saveConnectionTypes();
         }
         if (hasExistingTypeChanges) {
-            // Flush projects configs (as they cache connection type information)
+            // Update project data sources (they may cache connection type information and permissions snapshots)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
                 List<DBPDataSourceContainer> affectedDataSources = new ArrayList<>();
@@ -559,6 +559,9 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         }
                         affectedDataSources.add(ds);
                     }
+                }
+                if (affectedDataSources.isEmpty()) {
+                    continue;
                 }
                 try {
                     projectRegistry.updateDataSources(affectedDataSources);
