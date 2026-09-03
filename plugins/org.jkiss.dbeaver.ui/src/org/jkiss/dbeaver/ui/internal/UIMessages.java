@@ -142,6 +142,10 @@ public class UIMessages extends NLS {
     public static String dialog_confirm_action_query;
     public static String dialog_confirm_action_show_query;
 
+    public static String holiday_decorations_disable_label;
+    public static String holiday_decorations_disabled_message;
+    public static String holiday_decorations_disabled_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
