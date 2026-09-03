@@ -30,8 +30,10 @@ import java.io.Reader;
 import java.io.Writer;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 /**
  * XML document
@@ -89,10 +91,16 @@ public class DBDDocumentXML implements DBDDocument {
     @Override
     public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull Reader reader) throws IOException, DBException {
         try {
-            document = XMLUtils.parseDocument(reader);
+            Transformer transformer = XMLUtils.newSecureTransformerFactory().newTransformer();
+            DOMResult output = new DOMResult();
+
+            transformer.transform(
+                new StreamSource(reader),
+                output);
+            document = (Document) output.getNode();
             modified = true;
         } catch (Exception e) {
-            throw new DBException("Error parsing XML document", e);
+            throw new DBException("Error transforming XML document", e);
         }
     }
 
