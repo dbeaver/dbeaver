@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,8 +189,11 @@ public class SQLQueryModelRecognizer {
                 return forced;
             };
 
-            classifySymbolsWithoutModel(connectionContext, tree, tryFallbackForStringLiteral, rootRowsContext);
-            return new SQLQueryModel(tree, null, this.symbolEntries, this.lexicalItems.values().stream().toList());
+            if (this.classifySymbolsWithoutModel(connectionContext, tree, tryFallbackForStringLiteral, rootRowsContext)) {
+                return new SQLQueryModel(tree, null, this.symbolEntries, this.lexicalItems.values().stream().toList());
+            } else {
+                return null;
+            }
         }
     }
 
@@ -202,7 +205,7 @@ public class SQLQueryModelRecognizer {
      *  3. classify suffixes of these complex-names as columns
      *  4. classify tails of these complex-names as complex-type members
      */
-    private void classifySymbolsWithoutModel(
+    private boolean classifySymbolsWithoutModel(
         @NotNull SQLQueryConnectionContext connectionContext,
         @NotNull STMTreeRuleNode tree,
         @NotNull Predicate<SQLQuerySymbolEntry> tryFallbackForStringLiteral,
@@ -248,6 +251,9 @@ public class SQLQueryModelRecognizer {
             true
         );
         for (SQLQueryComplexName valueRef : allValueRefs) {
+            if (this.recognitionContext.getMonitor().isCanceled()) {
+                return false;
+            }
             SQLQueryComplexName prefix = valueRef;
             while (prefix != null && !prefix.parts.isEmpty()) {
                 SQLQueryComplexName table = allTableNames.get(prefix);
@@ -281,10 +287,14 @@ public class SQLQueryModelRecognizer {
             }
         }
         for (SQLQuerySymbolEntry maybeColumn : allMaybeColumns) {
+            if (this.recognitionContext.getMonitor().isCanceled()) {
+                return false;
+            }
             if (maybeColumn.isNotClassified() && !tryFallbackForStringLiteral.test(maybeColumn)) {
                 maybeColumn.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
             }
         }
+        return !this.recognitionContext.getMonitor().isCanceled();
     }
 
     private void traverseForIdentifiers(
