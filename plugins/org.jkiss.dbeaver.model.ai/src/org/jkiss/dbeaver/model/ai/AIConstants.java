@@ -44,6 +44,8 @@ public class AIConstants {
     public static final String AI_CONFIRM_OTHER = "ai.confirmation.other";
     public static final String AI_JOIN_RULE = "ai.joinRule";
     public static final int DEFAULT_CONTEXT_WINDOW_SIZE = 16384;
+    public static final String AI_GLOBAL_PROPERTY = "global";
+    public static final String AI_NON_GLOBAL_CREDENTIALS_HIDE_EXPRESSION = "object." + AI_GLOBAL_PROPERTY + " == false";
 
     // Engine settings
 
@@ -70,4 +72,3 @@ public class AIConstants {
     public static final String USER_QUOTA_PROPERTY = "ai.userQuota";
     public static final String LOG_STATS_PROPERTY = "ai.logStats";
 }
-

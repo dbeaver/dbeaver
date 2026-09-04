@@ -37,6 +37,7 @@ public class AIConfigurationProfile {
     private String profileId;
     private String profileName;
     private String engineId;
+    private boolean global = true;
     private AIEngineProperties configuration;
 
     private transient AIEngineDescriptor engineDescriptor;
@@ -71,6 +72,17 @@ public class AIConfigurationProfile {
         this.engineId = engineId;
     }
 
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        this.global = global;
+        if (configuration != null) {
+            configuration.setGlobal(global);
+        }
+    }
+
     // Legacy configuration
     public boolean isMigrated() {
         return migrated;
@@ -99,6 +111,7 @@ public class AIConfigurationProfile {
                 return configuration;
             }
             configuration = engineDescriptor.createPropertiesInstance();
+            configuration.setGlobal(global);
         }
 
         return configuration;
@@ -106,6 +119,7 @@ public class AIConfigurationProfile {
 
     public void setConfiguration(@NotNull AIEngineProperties configuration) {
         this.configuration = configuration;
+        this.global = configuration.isGlobal();
     }
 
     public void saveSecrets() throws DBException {
