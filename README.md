@@ -8,7 +8,7 @@
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
 
-* Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI integration, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
+* Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI chat, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
 * Out of the box supports more than <a href="#supported-databases">100 database drivers</a>.
 * Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
 * Integrates AI tools for work with data, SQL and database structure

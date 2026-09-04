@@ -21,8 +21,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.commands.ICommandService;
@@ -189,12 +188,7 @@ public class PrefPageResultSetMain extends TargetPrefPage {
                 false
             );
 
-            alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateOptionsEnablement();
-                }
-            });
+            alwaysUseAllColumns.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateOptionsEnablement()));
         }
 
         {

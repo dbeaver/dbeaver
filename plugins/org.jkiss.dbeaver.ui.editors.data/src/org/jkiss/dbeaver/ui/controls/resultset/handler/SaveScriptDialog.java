@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.handler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -123,13 +122,10 @@ class SaveScriptDialog extends BaseDialog {
         Button useFQNamesCheck = UIUtils.createCheckbox(settingsComposite,
             ResultSetMessages.dialog_save_script_button_use_qualified_names,
             ResultSetMessages.dialog_save_script_button_use_qualified_names_tip, settings.isUseFullyQualifiedNames(), 1);
-        useFQNamesCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        useFQNamesCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 settings.setUseFullyQualifiedNames(useFQNamesCheck.getSelection());
                 settingsRefreshHandler.run();
-            }
-        });
+            }));
 
         Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite,
             ResultSetMessages.dialog_save_script_button_delete_cascade,
@@ -142,9 +138,7 @@ class SaveScriptDialog extends BaseDialog {
             deleteCascadeCheck.setEnabled(false);
             deleteDeepCascadeCheck.setEnabled(false);
         } else {
-            deleteCascadeCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            deleteCascadeCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (deleteCascadeCheck.getSelection()) {
                         settings.setDeleteCascade(true);
                     } else {
@@ -153,11 +147,8 @@ class SaveScriptDialog extends BaseDialog {
                         deleteDeepCascadeCheck.setSelection(false);
                     }
                     settingsRefreshHandler.run();
-                }
-            });
-            deleteDeepCascadeCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            deleteDeepCascadeCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (deleteDeepCascadeCheck.getSelection()) {
                         settings.setDeleteCascade(true);
                         settings.setDeepCascade(true);
@@ -166,8 +157,7 @@ class SaveScriptDialog extends BaseDialog {
                         settings.setDeepCascade(false);
                     }
                     settingsRefreshHandler.run();
-                }
-            });
+                }));
             // TODO: implement deep cascade
             deleteDeepCascadeCheck.setEnabled(false);
         }
