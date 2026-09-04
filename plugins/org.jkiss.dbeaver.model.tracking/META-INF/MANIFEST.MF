@@ -7,7 +7,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
- com.dbeaver.rest.client;visibility:=reexport
+ com.dbeaver.rest.client;visibility:=reexport,
+ com.dbeaver.datadam.gateway.api;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.model.tracking,
  org.jkiss.dbeaver.model.tracking.auth,
  org.jkiss.dbeaver.model.tracking.sync.core,

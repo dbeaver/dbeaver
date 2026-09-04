@@ -23,13 +23,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.tracking.auth.DDRecoveryPhrase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.tracking.internal.DDTrackingUIMessages;
 
 public class DDImportKeyDialog extends BaseDialog {
 
@@ -37,23 +37,25 @@ public class DDImportKeyDialog extends BaseDialog {
     private String phrase;
 
     public DDImportKeyDialog(@NotNull Shell parentShell) {
-        super(parentShell, "Enter Recovery Phrase", null);
+        super(parentShell, DDTrackingUIMessages.import_key_dialog_title, null);
     }
 
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite composite = super.createDialogArea(parent);
-        UIUtils.createLabel(composite, "Enter your 12-word recovery phrase");
+        UIUtils.createLabel(composite, DDTrackingUIMessages.import_key_dialog_prompt_label);
         phraseText = new Text(composite, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         gd.heightHint = UIUtils.getFontHeight(phraseText) * 6;
         phraseText.setLayoutData(gd);
-        UIUtils.createPushButton(composite, WorkbenchMessages.Workbench_paste, null, SelectionListener.widgetSelectedAdapter(e -> {
-            phraseText.selectAll();
-            phraseText.paste();
-        }));
+        UIUtils.createPushButton(
+            composite, DDTrackingUIMessages.import_key_dialog_paste_button, null,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                phraseText.selectAll();
+                phraseText.paste();
+            }));
         return composite;
     }
 
@@ -69,7 +71,7 @@ public class DDImportKeyDialog extends BaseDialog {
         try {
             value = DDRecoveryPhrase.normalizeAndValidate(phraseText.getText());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Enter Recovery Phrase", e.getMessage());
+            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.import_key_dialog_title, e.getMessage());
             return;
         }
         phrase = value;

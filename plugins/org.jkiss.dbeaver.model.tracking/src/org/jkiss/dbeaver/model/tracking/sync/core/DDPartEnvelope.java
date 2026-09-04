@@ -18,8 +18,11 @@ package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
 
-public record DDRawEntry(
-    @NotNull String key,
-    @NotNull byte[] value
+import java.util.Map;
+
+record DDPartEnvelope(
+    int schemaVersion,
+    @NotNull String name,
+    @NotNull Map<String, Map<String, String>> units
 ) {
 }

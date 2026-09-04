@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
+import com.dbeaver.datadam.gateway.model.DDCreateConfigurationRequest;
+import com.dbeaver.datadam.gateway.model.DDUpdateConfigurationRequest;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
@@ -24,15 +26,15 @@ import com.dbeaver.rest.client.interceptor.InterceptorChain;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -52,61 +54,58 @@ class DDRestTransport extends AbstractRestClient implements DDSyncTransport {
 
     @NotNull
     @Override
-    public DDContainer createContainer(@NotNull String label) throws DBException {
-        DDContainerData created = execute(
-            request(DDSyncApi.WORKSPACE_ENDPOINT, Map.of(DDSyncApi.PARAM_LABEL, label), "POST", EMPTY_BODY),
-            DDContainerData.class);
-        return toContainer(created);
+    public List<com.dbeaver.datadam.gateway.model.DDConfigurationSummary> listConfigurations()
+        throws DBException {
+        return List.of(execute(
+            request(DDSyncApi.CONFIGURATION_ENDPOINT, Map.of(), "GET", EMPTY_BODY),
+            com.dbeaver.datadam.gateway.model.DDConfigurationSummary[].class));
     }
 
     @NotNull
     @Override
-    public List<DDContainer> listContainers() throws DBException {
-        DDContainerData[] data = execute(
-            request(DDSyncApi.WORKSPACE_ENDPOINT, Map.of(), "GET", EMPTY_BODY), DDContainerData[].class);
-        List<DDContainer> containers = new ArrayList<>(data.length);
-        for (DDContainerData container : data) {
-            containers.add(toContainer(container));
-        }
-        return containers;
-    }
-
-    @NotNull
-    @Override
-    public List<DDRawEntry> load(@NotNull String containerId) throws DBException {
-        DDResourceData[] data = execute(
+    public com.dbeaver.datadam.gateway.model.DDConfiguration getConfiguration(
+        @NotNull String configurationId
+    ) throws DBException {
+        return execute(
             request(
-                DDSyncApi.WORKSPACE_DATA_ENDPOINT.replace(DDSyncApi.VAR_WORKSPACE_ID, containerId),
+                DDSyncApi.CONFIGURATION_ITEM_ENDPOINT.replace(DDSyncApi.VAR_CONFIGURATION_ID, configurationId),
                 Map.of(),
                 "GET",
                 EMPTY_BODY),
-            DDResourceData[].class);
-        List<DDRawEntry> entries = new ArrayList<>(data.length);
-        for (DDResourceData entry : data) {
-            entries.add(new DDRawEntry(entry.dataType(), Base64.getDecoder().decode(entry.dataValue())));
-        }
-        return entries;
-    }
-
-    @Override
-    public void save(
-        @NotNull String containerId,
-        @NotNull String key,
-        @NotNull byte[] value
-    ) throws DBException {
-        String endpoint = DDSyncApi.WORKSPACE_DATA_TYPE_ENDPOINT
-            .replace(DDSyncApi.VAR_WORKSPACE_ID, containerId)
-            .replace(DDSyncApi.VAR_DATA_TYPE, key);
-        byte[] body = Base64.getEncoder().encodeToString(value).getBytes(StandardCharsets.UTF_8);
-        execute(
-            request(endpoint, Map.of(), "PUT", body)
-                .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.TEXT.toString()),
-            Void.class);
+            com.dbeaver.datadam.gateway.model.DDConfiguration.class);
     }
 
     @NotNull
-    private static DDContainer toContainer(@NotNull DDContainerData data) {
-        return new DDContainer(data.workspaceId(), data.label());
+    @Override
+    public com.dbeaver.datadam.gateway.model.DDConfiguration createConfiguration(
+        @NotNull DDCreateConfigurationRequest request
+    ) throws DBException {
+        return execute(
+            jsonRequest(DDSyncApi.CONFIGURATION_ENDPOINT, "POST", request),
+            com.dbeaver.datadam.gateway.model.DDConfiguration.class);
+    }
+
+    @NotNull
+    @Override
+    public com.dbeaver.datadam.gateway.model.DDUpdateConfigurationResult updateConfiguration(
+        @NotNull String configurationId,
+        @NotNull DDUpdateConfigurationRequest request
+    ) throws DBException {
+        String endpoint = DDSyncApi.CONFIGURATION_ITEM_ENDPOINT.replace(DDSyncApi.VAR_CONFIGURATION_ID, configurationId);
+        return execute(
+            jsonRequest(endpoint, "PUT", request),
+            com.dbeaver.datadam.gateway.model.DDUpdateConfigurationResult.class);
+    }
+
+    @NotNull
+    private HttpRequest.Builder jsonRequest(
+        @NotNull String endpoint,
+        @NotNull String method,
+        @NotNull Object payload
+    ) throws DBException {
+        byte[] body = JSONUtils.GSON.toJson(payload).getBytes(StandardCharsets.UTF_8);
+        return request(endpoint, Map.of(), method, body)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString());
     }
 
     @NotNull
@@ -163,9 +162,23 @@ class DDRestTransport extends AbstractRestClient implements DDSyncTransport {
     @Override
     protected DBException mapErrorResponse(int code, @NotNull String message, @NotNull URI uri) {
         if (code == 404) {
-            return new DDWorkspaceNotFoundException(message);
+            return new DDConfigurationNotFoundException(message);
+        }
+        if (code >= 500) {
+            return new DDTransportException(message);
         }
         return super.mapErrorResponse(code, message, uri);
+    }
+
+    @Override
+    protected void handleRequestException(@NotNull String message, @NotNull Throwable e) throws DBException {
+        if (e instanceof DBException exception) {
+            throw exception;
+        }
+        if (e instanceof IOException) {
+            throw new DDTransportException(message, e);
+        }
+        super.handleRequestException(message, e);
     }
 
     @Nullable

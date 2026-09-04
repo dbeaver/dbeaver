@@ -87,6 +87,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             log.debug("DataDam tracking disabled (no server URL)");
             return;
         }
+        DDAutoSyncCoordinator.start();
         DDSyncCredentials credentials = new DDBundleCredentials(bundle);
         DDTrackingClient client = new DDTrackingClient(url);
         Session session = new Session(client, credentials);
@@ -133,6 +134,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
      * Stops the active tracking session, if any. Safe to call after a logout or on shutdown.
      */
     public static void stop() {
+        DDAutoSyncCoordinator.stop();
         Session session = ACTIVE_SESSION.getAndSet(null);
         if (session == null) {
             return;

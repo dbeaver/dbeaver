@@ -58,18 +58,36 @@ public record DBPSyncFiles(
     }
 
     public void write(@NotNull Map<String, byte[]> resources) throws DBException {
-        for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
-            Path path = resolve(resource.getKey());
-            if (path == null) {
-                log.debug("Skip invalid resource name '" + resource.getKey() + "' for " + root);
-                continue;
+        try {
+            if (resources.size() == 1 && resources.containsKey("")) {
+                Files.createDirectories(root.getParent());
+                Files.write(root, resources.get(""));
+                return;
             }
-            try {
+            if (resources.isEmpty() && Files.isRegularFile(root)) {
+                Files.delete(root);
+                return;
+            }
+            for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
+                Path path = resolve(resource.getKey());
+                if (path == null) {
+                    log.debug("Skip invalid resource name '" + resource.getKey() + "' for " + root);
+                    continue;
+                }
                 Files.createDirectories(path.getParent());
                 Files.write(path, resource.getValue());
-            } catch (IOException e) {
-                throw new DBException("Error writing " + path, e);
             }
+            if (Files.isDirectory(root)) {
+                try (Stream<Path> list = Files.list(root)) {
+                    for (Path file : list.filter(Files::isRegularFile).toList()) {
+                        if (!resources.containsKey(file.getFileName().toString())) {
+                            Files.delete(file);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new DBException("Error writing " + root, e);
         }
     }
 

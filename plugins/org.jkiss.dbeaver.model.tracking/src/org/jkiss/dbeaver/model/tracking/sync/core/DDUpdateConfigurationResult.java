@@ -17,13 +17,11 @@
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-/**
- * Remote container holding synchronized resources.
- */
-public record DDContainer(
-    @NotNull String id,
-    @Nullable String label
+import java.util.List;
+
+public record DDUpdateConfigurationResult(
+    @NotNull DDConfiguration configuration,
+    @NotNull List<String> conflictingKeys
 ) {
 }

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.sync.DBPSyncScope;
 import org.jkiss.dbeaver.model.sync.DBPSyncTarget;
 import org.jkiss.dbeaver.model.sync.DBPSyncUnit;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -51,6 +52,12 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
     @Override
     public String getId() {
         return "connections";
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return RegistryMessages.data_source_sync_unit_name;
     }
 
     @NotNull
@@ -82,6 +89,7 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
 
     @Override
     public void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException {
+        Path folder = target.root().resolve(DBPProject.METADATA_FOLDER);
         for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
             String name = resource.getKey();
             if (!isSyncedFile(name)) {
@@ -100,6 +108,24 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
                 throw new DBException("Error writing " + file, e);
             }
         }
+        if (Files.isDirectory(folder)) {
+            try (Stream<Path> list = Files.list(folder)) {
+                for (Path file : list.filter(Files::isRegularFile).toList()) {
+                    String name = file.getFileName().toString();
+                    if (isManagedFile(name) && !resources.containsKey(name)) {
+                        Files.delete(file);
+                    }
+                }
+            } catch (IOException e) {
+                throw new DBException("Error cleaning up " + folder, e);
+            }
+        }
+        DBPProject project = target.project();
+        if (project != null) {
+            // the writes above bypass the registry, so it must reload from disk or it will
+            // keep serving its stale in-memory list and can clobber this write on its next save
+            project.getDataSourceRegistry().refreshConfig();
+        }
     }
 
     private static void applySettings(@NotNull DBPSyncTarget target, @NotNull byte[] content) {
@@ -111,6 +137,10 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
         if (settings != null) {
             project.setProjectProperties(settings);
         }
+    }
+
+    private static boolean isManagedFile(@NotNull String name) {
+        return isSyncedFile(name) && !BaseProjectImpl.SETTINGS_STORAGE_FILE.equals(name);
     }
 
     private static boolean isSyncedFile(@NotNull String name) {

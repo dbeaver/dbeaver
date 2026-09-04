@@ -16,19 +16,18 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
+import com.dbeaver.datadam.gateway.model.DDConfigurationPartKind;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.util.Map;
 
-/**
- * Single stored value: a set of named resources addressed by one key.
- * Version is reserved for optimistic locking and is not used yet.
- */
-public record DDSyncEntry(
+public record DDConfigurationPart(
     @NotNull String key,
-    @Nullable String label,
-    @Nullable String version,
-    @NotNull Map<String, byte[]> resources
+    @NotNull DDConfigurationPartKind kind,
+    @Nullable String projectId,
+    long version,
+    @NotNull String name,
+    @NotNull Map<String, Map<String, byte[]>> units
 ) {
 }

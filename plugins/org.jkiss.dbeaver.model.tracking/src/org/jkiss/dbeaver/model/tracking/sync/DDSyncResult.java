@@ -17,18 +17,11 @@
 package org.jkiss.dbeaver.model.tracking.sync;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-import java.util.Map;
+import java.util.List;
 
-/**
- * Link between the local workspace and a remote configuration.
- */
-public record DDSyncBinding(
-    @NotNull String configurationId,
-    @Nullable String name,
-    @NotNull String accountId,
-    long configurationVersion,
-    @NotNull Map<String, DDSyncPartState> parts
+public record DDSyncResult(
+    @NotNull String configurationName,
+    @NotNull List<String> changedParts
 ) {
 }

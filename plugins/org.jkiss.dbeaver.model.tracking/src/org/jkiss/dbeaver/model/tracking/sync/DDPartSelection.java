@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync.core;
+package org.jkiss.dbeaver.model.tracking.sync;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sync.DBPSyncScope;
 
-record DDContainerData(
-    @NotNull String workspaceId,
-    @NotNull String label,
-    long version,
-    @Nullable String createdAt,
-    @Nullable String lastSyncAt
-) { }
+public record DDPartSelection(
+    @NotNull String key,
+    @NotNull String displayName,
+    @NotNull DBPSyncScope scope
+) {
+}

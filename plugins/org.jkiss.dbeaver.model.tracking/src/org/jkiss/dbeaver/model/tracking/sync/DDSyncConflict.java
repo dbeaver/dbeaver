@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking.sync.core;
+package org.jkiss.dbeaver.model.tracking.sync;
 
 import org.jkiss.code.NotNull;
 
-record DDResourceData(
-    @NotNull String dataType,
-    @NotNull String dataValue
+public record DDSyncConflict(
+    @NotNull String key,
+    @NotNull String name
 ) {
 }

@@ -17,11 +17,15 @@
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
-import java.util.Map;
+public class DDTransportException extends DBException {
 
-record DDSyncEnvelope(
-    @Nullable String label,
-    @NotNull Map<String, String> resources
-) { }
+    public DDTransportException(@NotNull String message) {
+        super(message);
+    }
+
+    public DDTransportException(@NotNull String message, @NotNull Throwable cause) {
+        super(message, cause);
+    }
+}

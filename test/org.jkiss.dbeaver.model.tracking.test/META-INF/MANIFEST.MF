@@ -7,6 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Require-Bundle: org.jkiss.dbeaver.model.tracking,
  org.jkiss.dbeaver.model,
+ com.dbeaver.datadam.gateway.api,
  junit-jupiter-api,
  org.mockito.mockito-core
 Bundle-ActivationPolicy: lazy

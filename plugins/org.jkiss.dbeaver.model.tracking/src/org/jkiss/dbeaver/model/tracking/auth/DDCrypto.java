@@ -34,6 +34,7 @@ public final class DDCrypto {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int IV_LENGTH = 12;
     private static final int TAG_LENGTH_BITS = 128;
+    private static final byte[] EMPTY_AAD = new byte[0];
 
     private static final String KDF_MAC_ALGORITHM = "HmacSHA256";
     private static final String KEK_ALGORITHM = "AES";
@@ -50,11 +51,25 @@ public final class DDCrypto {
 
     @NotNull
     public static byte[] encrypt(@NotNull SecretKey key, @NotNull byte[] data) throws DBException {
+        return encrypt(key, data, EMPTY_AAD);
+    }
+
+    /**
+     * @param aad additional authenticated data - bound to the ciphertext by the GCM tag but not
+     *            itself encrypted. Use this for routing/identity metadata that travels alongside
+     *            the ciphertext outside the encrypted payload, so a valid ciphertext can't be
+     *            replayed under different metadata.
+     */
+    @NotNull
+    public static byte[] encrypt(@NotNull SecretKey key, @NotNull byte[] data, @NotNull byte[] aad) throws DBException {
         try {
             byte[] iv = new byte[IV_LENGTH];
             RANDOM.nextBytes(iv);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(TAG_LENGTH_BITS, iv));
+            if (aad.length > 0) {
+                cipher.updateAAD(aad);
+            }
             byte[] encrypted = cipher.doFinal(data);
             byte[] result = new byte[iv.length + encrypted.length];
             System.arraycopy(iv, 0, result, 0, iv.length);
@@ -67,6 +82,15 @@ public final class DDCrypto {
 
     @NotNull
     public static byte[] decrypt(@NotNull SecretKey key, @NotNull byte[] input) throws DBException {
+        return decrypt(key, input, EMPTY_AAD);
+    }
+
+    /**
+     * @param aad must match the {@code aad} passed to {@link #encrypt(SecretKey, byte[], byte[])}
+     *            or the GCM tag check fails and this throws.
+     */
+    @NotNull
+    public static byte[] decrypt(@NotNull SecretKey key, @NotNull byte[] input, @NotNull byte[] aad) throws DBException {
         if (input.length <= IV_LENGTH) {
             throw new DBException("Encrypted data is too short");
         }
@@ -74,6 +98,9 @@ public final class DDCrypto {
             byte[] iv = Arrays.copyOfRange(input, 0, IV_LENGTH);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(TAG_LENGTH_BITS, iv));
+            if (aad.length > 0) {
+                cipher.updateAAD(aad);
+            }
             return cipher.doFinal(input, IV_LENGTH, input.length - IV_LENGTH);
         } catch (GeneralSecurityException e) {
             throw new DBException("Error decrypting data", e);
