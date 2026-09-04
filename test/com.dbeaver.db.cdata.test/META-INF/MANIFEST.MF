@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver CDATA Tests
+Bundle-SymbolicName: com.dbeaver.db.cdata.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20260914
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Vendor: DBeaver Corp
+Fragment-Host: com.dbeaver.db.cdata
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.jkiss.dbeaver.headless,
+ org.jkiss.dbeaver.test.platform

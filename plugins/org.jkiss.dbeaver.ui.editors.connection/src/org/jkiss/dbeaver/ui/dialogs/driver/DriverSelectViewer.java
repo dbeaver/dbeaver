@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -109,6 +110,7 @@ public class DriverSelectViewer extends Viewer {
     private final List<DBPDataSourceContainer> dataSources;
     private OrderBy orderBy;
     private Comparator<DBPDriver> driverComparator;
+    private boolean showCommercialDrivers;
 
     @NotNull
     private static SelectorViewType getCurrentSelectorViewType() {
@@ -129,7 +131,7 @@ public class DriverSelectViewer extends Viewer {
         @NotNull List<DBPDataSourceProviderDescriptor> providers,
         boolean expandRecent
     ) {
-        this(parent, site, providers, expandRecent, null);
+        this(parent, site, providers, expandRecent, null, true);
     }
 
     public DriverSelectViewer(
@@ -139,10 +141,22 @@ public class DriverSelectViewer extends Viewer {
         boolean expandRecent,
         @Nullable SelectorViewType forceViewType
     ) {
+        this(parent, site, providers, expandRecent, forceViewType, true);
+    }
+
+    public DriverSelectViewer(
+        @NotNull Composite parent,
+        @NotNull Object site,
+        @NotNull List<DBPDataSourceProviderDescriptor> providers,
+        boolean expandRecent,
+        @Nullable SelectorViewType forceViewType,
+        boolean showCommercialDrivers
+    ) {
         this.site = site;
         this.providers = providers;
         this.expandRecent = expandRecent;
         this.forceViewType = forceViewType;
+        this.showCommercialDrivers = showCommercialDrivers;
         this.dataSources = DataSourceRegistry.getAllDataSources();
 
         OrderBy defOrderBy = getDefaultOrderBy();
@@ -317,7 +331,13 @@ public class DriverSelectViewer extends Viewer {
                     switchItem.setSelection(false);
                 }
 
-                selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE, dataSources, driverComparator);
+                selectorViewer = new DriverTabbedViewer(
+                    selectorComposite,
+                    SWT.NONE,
+                    dataSources,
+                    driverComparator,
+                    showCommercialDrivers
+                );
                 selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             }
 
@@ -364,6 +384,38 @@ public class DriverSelectViewer extends Viewer {
         }
     }
 
+    public void setShowCommercialDrivers(boolean showCommercialDrivers) {
+        if (this.showCommercialDrivers == showCommercialDrivers) {
+            return;
+        }
+        this.showCommercialDrivers = showCommercialDrivers;
+
+        ISelection selection = selectorViewer.getSelection();
+        String folderId = selectorViewer instanceof DriverTabbedViewer tabbedViewer ? tabbedViewer.getActiveFolderId() : null;
+        boolean restoreSelection = showCommercialDrivers ||
+            !(selection instanceof IStructuredSelection structuredSelection) ||
+            !(structuredSelection.getFirstElement() instanceof DBPDriverWithLicense);
+
+        selectorComposite.setRedraw(false);
+        try {
+            selectorViewer.getControl().dispose();
+            createSelectorControl();
+            if (folderId != null && selectorViewer instanceof DriverTabbedViewer tabbedViewer) {
+                tabbedViewer.getFolderComposite().switchFolder(folderId, false);
+            }
+            selectorComposite.layout(true, true);
+        } finally {
+            selectorComposite.setRedraw(true);
+        }
+
+        if (restoreSelection && !selection.isEmpty()) {
+            UIUtils.asyncExec(() -> selectorViewer.setSelection(selection, true));
+        } else if (site instanceof ISelectionChangedListener listener) {
+            listener.selectionChanged(new SelectionChangedEvent(selectorViewer, StructuredSelection.EMPTY));
+        }
+        textChanged();
+    }
+
     @NotNull
     private WorkbenchJob createRefreshJob() {
         return new WorkbenchJob("Refresh driver filter") {//$NON-NLS-1$
@@ -384,6 +436,9 @@ public class DriverSelectViewer extends Viewer {
                     }
                     if (DBWorkbench.isDistributed()) {
                         filters.add(new DriverInstalledFilter());
+                    }
+                    if (!showCommercialDrivers) {
+                        filters.add(new CommercialDriverFilter());
                     }
                     selectorViewer.setFilters(filters.toArray(new ViewerFilter[0]));
                     if (selectorViewer instanceof AbstractTreeViewer atv) {
@@ -475,6 +530,13 @@ public class DriverSelectViewer extends Viewer {
                 return driver.getDefaultDriverLoader().isDriverInstalled();
             }
             return true;
+        }
+    }
+
+    private static class CommercialDriverFilter extends ViewerFilter {
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            return !(element instanceof DBPDriverWithLicense);
         }
     }
 

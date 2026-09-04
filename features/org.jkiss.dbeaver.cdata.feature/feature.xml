@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+    id="org.jkiss.dbeaver.cdata.feature"
+    label="DBeaver CDATA Support"
+    version="1.0.0.qualifier"
+    provider-name="DBeaver Corp">
+
+    <copyright>DBeaver Corp and others</copyright>
+
+    <plugin id="com.dbeaver.db.cdata" version="0.0.0"/>
+    <plugin id="com.dbeaver.db.cdata.ui" version="0.0.0"/>
+
+</feature>
