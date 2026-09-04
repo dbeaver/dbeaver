@@ -43,9 +43,16 @@
                     <parameter name="supports-charsets" value="false"/>
                     <parameter name="supports-collations" value="false"/>
                     <parameter name="supportsClients" value="false"/>
+                    <parameter name="meta-model" value="doris"/>
                 </driver>
             </drivers>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="doris"
+              class="org.jkiss.dbeaver.ext.doris.model.DorisMetaModel"
+              dialect="doris"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
