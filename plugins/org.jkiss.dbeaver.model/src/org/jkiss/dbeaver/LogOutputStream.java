@@ -173,7 +173,7 @@ public class LogOutputStream extends OutputStream {
             this.rotateCurrentLogFile(true);
         } else {
             this.currentLogSize = 0;
-            if (operations.makeDirectories(this.logFileLocation)) {
+            if (!operations.makeDirectories(this.logFileLocation)) {
                 throw new IOException("Failed to initialize debug log output location: " + debugLogFile.getAbsolutePath());
             }
         }
@@ -365,9 +365,9 @@ public class LogOutputStream extends OutputStream {
             this.operations.debugPrint("Multiple exceptions occurred during IO operation retry, propagating the first one.");
         }
         if (initialException != null) {
-            throw new IOException("Failed to retry on IO operation due to the underlying exception", initialException);
+            throw new IOException("Failed to retry IO operation due to the underlying exception", initialException);
         } else {
-            throw new IOException("Failed to retry on IO operation due having unsuccessful result.");
+            throw new IOException("Failed to retry IO operation due to an unsuccessful result.");
         }
     }
 
