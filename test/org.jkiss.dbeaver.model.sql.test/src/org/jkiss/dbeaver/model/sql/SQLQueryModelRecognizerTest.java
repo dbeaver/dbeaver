@@ -138,7 +138,7 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
         while (cancellationPoint < completedMonitor.getCheckCount()) {
             Assertions.assertNull(
                 SQLQueryModelRecognizer.recognizeQuery(createContext(new CountingProgressMonitor(cancellationPoint)), sql),
-                sql + " returned a model when canceled at checkpoint " + cancellationPoint + " but should have been cancelled"
+                sql + " returned a model when cancelled at checkpoint " + cancellationPoint + " but should have been cancelled"
             );
             cancellationPoint++;
         }
@@ -149,7 +149,7 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
         );
         Assertions.assertTrue(
             model != null && model.getQueryModel() != null,
-            sql + " didn't return a model when canceled at checkpoint " + cancellationPoint + " but should have"
+            sql + " didn't return a model when cancelled at checkpoint " + cancellationPoint + " but should have"
         );
     }
 
@@ -162,7 +162,7 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
         while (cancellationPoint < completedMonitor.getCheckCount()) {
             Assertions.assertNull(
                 SQLQueryModelRecognizer.recognizeQuery(createContext(new CountingProgressMonitor(cancellationPoint)), sql),
-                sql + " returned a model when canceled at checkpoint " + cancellationPoint + " but should have been cancelled"
+                sql + " returned a model when cancelled at checkpoint " + cancellationPoint + " but should have been cancelled"
             );
             cancellationPoint++;
         }
