@@ -73,11 +73,14 @@ public class DTUIMessages extends NLS {
     public static String columns_mapping_dialog_composite_label_text_source_entity;
     public static String columns_mapping_dialog_composite_label_text_target_container;
     public static String columns_mapping_dialog_composite_label_text_target_entity;
+    public static String columns_mapping_dialog_composite_label_text_target_collation;
     public static String columns_mapping_dialog_composite_button_reconnect;
     public static String columns_mapping_dialog_column_source_text;
     public static String columns_mapping_dialog_column_source_type_text;
     public static String columns_mapping_dialog_column_target_text;
     public static String columns_mapping_dialog_column_target_type_text;
+    public static String columns_mapping_dialog_column_collation_text;
+    public static String columns_mapping_dialog_column_collation_tip;
     public static String columns_mapping_dialog_cell_text_existing;
     public static String columns_mapping_dialog_cell_text_new;
     public static String columns_mapping_dialog_cell_text_skip;
