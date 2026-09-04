@@ -173,7 +173,8 @@ public class LogOutputStream extends OutputStream {
             this.rotateCurrentLogFile(true);
         } else {
             this.currentLogSize = 0;
-            if (!operations.makeDirectories(this.logFileLocation)) {
+            if ((!operations.exists(this.logFileLocation) && !operations.makeDirectories(this.logFileLocation))
+                || !operations.isDirectory(this.logFileLocation)) {
                 throw new IOException("Failed to initialize debug log output location: " + debugLogFile.getAbsolutePath());
             }
         }
