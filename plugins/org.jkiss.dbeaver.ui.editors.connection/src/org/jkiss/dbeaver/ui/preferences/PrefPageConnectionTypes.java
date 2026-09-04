@@ -22,7 +22,8 @@ import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
@@ -31,6 +32,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -40,17 +42,18 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionPermissionsDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageConnectionTypes
@@ -543,9 +546,10 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             registry.saveConnectionTypes();
         }
         if (hasExistingTypeChanges) {
-            // Flush projects configs (as they cache connection type information)
+            // Update project data sources (they may cache connection type information and permissions snapshots)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
+                List<DBPDataSourceContainer> affectedDataSources = new ArrayList<>();
                 for (DBPDataSourceContainer ds : projectRegistry.getDataSources()) {
                     DBPConnectionConfiguration cnnCfg = ds.getConnectionConfiguration();
                     DBPConnectionType cnnType = cnnCfg.getConnectionType();
@@ -553,10 +557,22 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         if (toRemove.contains(cnnType)) {
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         }
-                        projectRegistry.flushConfig();
-                        affectedDataSourceRegs.add(projectRegistry);
-                        break;
+                        affectedDataSources.add(ds);
                     }
+                }
+                if (affectedDataSources.isEmpty()) {
+                    continue;
+                }
+                try {
+                    projectRegistry.updateDataSources(affectedDataSources);
+                    affectedDataSourceRegs.add(projectRegistry);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        UIConnectionMessages.pref_page_connection_types_label_delete_connection_type,
+                        e.getMessage(),
+                        e
+                    );
+                    return false;
                 }
             }
         }
