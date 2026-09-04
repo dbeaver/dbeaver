@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -100,9 +99,7 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                 mergeEntitiesEnabled = false;
             }
 
-            mergeEntities.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            mergeEntities.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (hideFolders != null) {
                         if (mergeEntities.getSelection()) {
                             hideFolders.setEnabled(false);
@@ -110,8 +107,7 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                             hideFolders.setEnabled(true);
                         }
                     }
-                }
-            });
+                }));
 
             hideFolders = UIUtils.createCheckbox(
                 miscGroup,
@@ -120,16 +116,13 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
                 navigatorSettings.isHideFolders(),
                 1);
 
-            hideFolders.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            hideFolders.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (hideFolders.getSelection()) {
                         mergeEntities.setEnabled(false);
                     } else if (mergeEntitiesEnabled) {
                         mergeEntities.setEnabled(true);
                     }
-                }
-            });
+                }));
             if (mergeEntities.getEnabled()) {
                 hideFolders.setEnabled(false);
             }

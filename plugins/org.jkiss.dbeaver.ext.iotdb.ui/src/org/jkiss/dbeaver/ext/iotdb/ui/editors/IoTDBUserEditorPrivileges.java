@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.iotdb.ui.editors;
 
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
@@ -84,9 +83,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
             databasesTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
             databasesTable.setLayoutData(gd);
-            databasesTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            databasesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     int selIndex = databasesTable.getSelectionIndex();
                     if (selIndex < 0) {
                         selectedDatabase = null;
@@ -94,8 +91,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                         selectedDatabase = (IoTDBRelationalUser.IoTDBDatabase) databasesTable.getItem(selIndex).getData();
                     }
                     showDatabaseTables();
-                }
-            });
+                }));
             UIUtils.createTableColumn(databasesTable, SWT.LEFT, "Database");
             TableItem item = new TableItem(databasesTable, SWT.NONE);
             item.setText("(ALL)");
@@ -117,9 +113,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
             tablesTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
             tablesTable.setLayoutData(gd);
-            tablesTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            tablesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     int selIndex = tablesTable.getSelectionIndex();
                     if (selIndex < 0) {
                         selectedTable = null;
@@ -127,8 +121,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                         selectedTable = tablesTable.getItem(selIndex).getText();
                     }
                     showGrants();
-                }
-            });
+                }));
             UIUtils.createTableColumn(tablesTable, SWT.LEFT, "Table");
             UIUtils.packColumns(tablesTable);
         }

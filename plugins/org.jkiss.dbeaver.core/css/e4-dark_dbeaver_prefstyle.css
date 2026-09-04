@@ -97,3 +97,9 @@ ExpandableCompositeEx {
 	tb-toggle-hover-color: #F4F7F7;
 	tb-toggle-color: #F4F7F7;
 }
+
+
+ProgressBar {
+    background-color: #3C3F41;
+    color: #2b79d7;
+}

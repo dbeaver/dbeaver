@@ -75,4 +75,11 @@
         </datasource>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.timeplus.edit.TimeplusTableManager"
+                 objectType="org.jkiss.dbeaver.ext.timeplus.model.TimeplusTable"/>
+        <manager class="org.jkiss.dbeaver.ext.timeplus.edit.TimeplusTableColumnManager"
+                 objectType="org.jkiss.dbeaver.ext.timeplus.model.TimeplusTableColumn"/>
+    </extension>
+
 </plugin>
