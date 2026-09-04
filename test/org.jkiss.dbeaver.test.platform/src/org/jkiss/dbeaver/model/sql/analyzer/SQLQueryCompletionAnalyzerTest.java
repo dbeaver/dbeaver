@@ -544,4 +544,107 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
             .requestNewStrings("SELECT * FROM table1 a, table2 b WHERE c.|");
         Assertions.assertTrue(proposals.isEmpty());
     }
+
+    @Test
+    public void testColumnsCompletionInsideAggregateFunctions() throws DBException {
+        final RequestResult request = RequestBuilder
+            .tables(t -> {
+                t.table("district", f -> f.attribute("district_name"));
+                t.table("street", f -> {
+                    f.attribute("street_id");
+                    f.attribute("district_name");
+                    f.attribute("street_name");
+                });
+                t.table("shift", f -> {
+                    f.attribute("shift_id");
+                    f.attribute("street_id");
+                    f.attribute("shift_end");
+                });
+                t.table("table1", f -> {
+                    f.attribute("user_id");
+                    f.attribute("weekday");
+                    f.attribute("level_id");
+                });
+                t.table("table2", f -> {
+                    f.attribute("id");
+                    f.attribute("first_name");
+                    f.attribute("second_name");
+                });
+            })
+            .prepare();
+
+        final String fromClause = " FROM district d"
+            + " LEFT JOIN street s ON d.district_name = s.district_name"
+            + " LEFT JOIN shift sh ON s.street_id = sh.street_id AND sh.shift_end IS NULL"
+            + " GROUP BY d.district_name";
+
+        {
+            final Set<String> proposals = request.requestNewStrings(
+                "SELECT string_agg(DISTINCT CASE WHEN sh.| IS NOT NULL THEN s.street_name END, ',') AS street_list" + fromClause
+            );
+            Assertions.assertTrue(proposals.contains("shift_id"));
+            Assertions.assertTrue(proposals.contains("shift_end"));
+            Assertions.assertTrue(proposals.contains("street_id"));
+        }
+
+        {
+            final Set<String> proposals = request.requestNewStrings(
+                "SELECT string_agg(DISTINCT CASE WHEN sh.shift_id IS NOT NULL THEN s.| END, ',') AS street_list" + fromClause
+            );
+            Assertions.assertTrue(proposals.contains("street_name"));
+            Assertions.assertTrue(proposals.contains("street_id"));
+            Assertions.assertTrue(proposals.contains("district_name"));
+        }
+
+        {
+            final Set<String> proposals = request.requestNewStrings(
+                "SELECT string_agg(DISTINCT s.street_name, ',' ORDER BY s.|) AS street_list" + fromClause
+            );
+            Assertions.assertTrue(proposals.contains("street_name"));
+            Assertions.assertTrue(proposals.contains("street_id"));
+            Assertions.assertTrue(proposals.contains("district_name"));
+        }
+
+        {
+            final Set<String> proposals = request.requestNewStrings(
+                "SELECT COUNT(DISTINCT sh.|) AS active_taxi_count FROM shift sh"
+            );
+            Assertions.assertTrue(proposals.contains("shift_id"));
+            Assertions.assertTrue(proposals.contains("street_id"));
+            Assertions.assertTrue(proposals.contains("shift_end"));
+        }
+
+        {
+            final String joinClause = " FROM table1 JOIN table2 AS level2 ON level2.id = table1.user_id GROUP BY table1.user_id, table1.weekday";
+            final Set<String> proposals = request.requestNewStrings(
+                "SELECT GROUP_CONCAT(DISTINCT CONCAT(level2.|first_name, ' ', level2.second_name)"
+                    + " ORDER BY level2.second_name SEPARATOR ', ') AS fullname" + joinClause
+            );
+            Assertions.assertTrue(proposals.contains("first_name"));
+            Assertions.assertTrue(proposals.contains("second_name"));
+            Assertions.assertTrue(proposals.contains("id"));
+        }
+
+        {
+            final String joinClause = " FROM table1 JOIN table2 AS level2 ON level2.id = table1.user_id GROUP BY table1.user_id, table1.weekday";
+            final Set<String> proposals = request.requestNewStrings(
+                "SELECT GROUP_CONCAT(DISTINCT CONCAT(level2.first_name, ' ', level2.second_name)"
+                    + " ORDER BY level2.| SEPARATOR ', ') AS fullname" + joinClause
+            );
+            Assertions.assertTrue(proposals.contains("first_name"));
+            Assertions.assertTrue(proposals.contains("second_name"));
+            Assertions.assertTrue(proposals.contains("id"));
+        }
+
+        {
+            final Set<String> proposals = request.requestNewStrings(
+                "SELECT d.district_name, COUNT(DISTINCT sh.shift_id) AS active_taxi_count,"
+                    + " string_agg(DISTINCT CASE WHEN sh.shift_id IS NOT NULL THEN s.street_name END, ',') AS street_list"
+                    + fromClause + " HAVING |"
+            );
+            Assertions.assertTrue(proposals.contains("sh.shift_id"));
+            Assertions.assertTrue(proposals.contains("s.street_name"));
+            Assertions.assertTrue(proposals.contains("d.district_name"));
+        }
+    }
 }

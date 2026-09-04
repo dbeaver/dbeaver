@@ -490,6 +490,46 @@ public class LSMInspections {
         return new NameInspectionResult(nameNodes, hasPeriod, currentTerm != null ? currentTerm.term : null, positionToInspect);
     }
 
+    private static boolean stackContainsRule(@NotNull ListNode<Integer> stateStack, int ruleIndex) {
+        for (Integer ruleId : stateStack) {
+            if (ruleId != null && ruleId == ruleIndex) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Aggregate function parameters are excluded from ATN reachability traversal to avoid keyword noise,
+     * so column references inside aggregate arguments need explicit detection.
+     * <p>
+     * Covers nested expressions inside aggregates, for example:
+     * <ul>
+     *   <li>{@code string_agg(DISTINCT CASE WHEN ...)}</li>
+     *   <li>{@code string_agg(x, ',' ORDER BY x)}</li>
+     *   <li>{@code GROUP_CONCAT(DISTINCT CONCAT(...) ORDER BY col SEPARATOR ', ')}</li>
+     *   <li>{@code COUNT(DISTINCT col)}</li>
+     * </ul>
+     */
+    private static void performAggregateCompletionAdjustments(
+        @NotNull Map<Integer, Boolean> presenceTests,
+        @NotNull ListNode<Integer> stateStack
+    ) {
+        if (stackContainsRule(stateStack, SQLStandardParser.RULE_aggregateExpression)) {
+            presenceTests.put(SQLStandardParser.RULE_columnReference, true);
+            return;
+        }
+        // Some dialect-specific aggregates may be parsed as generic function calls
+        if (stackContainsRule(stateStack, SQLStandardParser.RULE_functionCallExpression)
+            && (stackContainsRule(stateStack, SQLStandardParser.RULE_rowValueConstructor)
+            || stackContainsRule(stateStack, SQLStandardParser.RULE_searchCondition)
+            || stackContainsRule(stateStack, SQLStandardParser.RULE_orderByClause)
+            || stackContainsRule(stateStack, SQLStandardParser.RULE_valueExpression))
+        ) {
+            presenceTests.put(SQLStandardParser.RULE_columnReference, true);
+        }
+    }
+
     private static Map<Integer, Boolean> performPresenceTests(ListNode<Integer> stateStack) {
         Map<Integer, Boolean> presenceTests = new HashMap<>(presenceTestRules.size());
         presenceTestRules.forEach(n -> presenceTests.put(n, false));
@@ -499,6 +539,7 @@ public class LSMInspections {
         }
 
         performSubtreeTests(presenceTests, stateStack);
+        performAggregateCompletionAdjustments(presenceTests, stateStack);
 
         return presenceTests;
     }

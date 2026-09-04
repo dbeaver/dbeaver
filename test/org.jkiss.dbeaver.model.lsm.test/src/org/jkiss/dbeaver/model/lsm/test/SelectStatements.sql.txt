@@ -120,3 +120,14 @@ FROM dept d JOIN emp e ON d.id = e.dept_id
 GROUP BY d.name
 ORDER BY d.name;
 
+SELECT string_agg(DISTINCT CASE WHEN sh.shift_id IS NOT NULL THEN s.street_name END, ',') AS street_list
+FROM district d
+LEFT JOIN street s ON d.district_name = s.district_name
+LEFT JOIN shift sh ON s.street_id = sh.street_id AND sh.shift_end IS NULL
+GROUP BY d.district_name;
+
+SELECT GROUP_CONCAT(DISTINCT CONCAT(e.first_name, ' ', e.second_name) ORDER BY e.second_name SEPARATOR ', ') AS fullname
+FROM dept d
+JOIN emp e ON e.id = d.id
+GROUP BY d.name;
+
