@@ -779,13 +779,12 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 agentSockBrowseButton = new Button(agentSockComp, SWT.PUSH);
                 agentSockBrowseButton.setText("..."); //$NON-NLS-1$
                 agentSockBrowseButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                        FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
-                        dialog.setText(SSHUIMessages.model_ssh_configurator_dialog_choose_agent_sock);
-                        dialog.setFilterExtensions("*.sock", "*"); //$NON-NLS-1$
-                        String selected = dialog.open();
-                        if (selected != null) {
-                            agentSockText.setText(selected);
-                        }
+                    FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
+                    dialog.setText(SSHUIMessages.model_ssh_configurator_dialog_choose_agent_sock);
+                    dialog.setFilterExtensions("*.sock", "*"); //$NON-NLS-1$
+                    String selected = dialog.open();
+                    if (selected != null) {
+                        agentSockText.setText(selected);
                     }
                 }));
             }
