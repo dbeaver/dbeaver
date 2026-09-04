@@ -46,7 +46,10 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
-import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.secret.*;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
@@ -61,6 +64,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -1433,7 +1437,10 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
-            ConfirmedShellCommandsManager.getInstance().validateCommandByUser(command, approveByUserAdditionalContext(eventType));
+            UIServiceShellCommands shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
+            if (shellCommandsService != null) {
+                shellCommandsService.validateByUser(command, createApprovalContext(eventType));
+            }
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
             monitor.subTask("Execute process " + processDescriptor.getName());
@@ -1477,13 +1484,12 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    private String approveByUserAdditionalContext(@NotNull DBPConnectionEventType eventType) {
-        return NLS.bind(
-            RegistryMessages.connection_add_shell_cmd_context_description,
-            getProject().getName(),
-            getName(),
-            eventType.getTitle()
-        );
+    private Map<String, String> createApprovalContext(@NotNull DBPConnectionEventType eventType) {
+        Map<String, String> context = new LinkedHashMap<>();
+        context.put(RegistryMessages.connection_add_shell_cmd_context_project, getProject().getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_data_source, getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_event_type, eventType.getTitle());
+        return context;
     }
 
     @Override
@@ -1949,7 +1955,8 @@ public class DataSourceDescriptor
         if (!(obj instanceof DataSourceDescriptor source)) {
             return false;
         }
-        return isLooselyEqualTo(source) && equalConfiguration(source) && equalInternalConfiguration(source);
+        return isLooselyEqualTo(source) && equalConfiguration(source) && equalNavigation(source) &&
+            equalInternalConfiguration(source);
     }
 
     public boolean isLooselyEqualTo(DataSourceDescriptor source) {
@@ -1976,9 +1983,12 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
-                CommonUtils.equalObjects(this.folder, source.folder) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
+    }
+
+    public boolean equalNavigation(DataSourceDescriptor source) {
+        return CommonUtils.equalObjects(this.folder, source.folder);
     }
 
     @NotNull

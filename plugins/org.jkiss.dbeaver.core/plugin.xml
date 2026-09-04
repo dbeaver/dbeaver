@@ -68,9 +68,6 @@
         <category id="org.jkiss.dbeaver.core.util" name="%category.utility.name" description="%category.utility.description"/>
         <command id="org.jkiss.dbeaver.core.eula.showPopup" name="%command.org.jkiss.dbeaver.ui.eula.showPopup.name" description="%command.org.jkiss.dbeaver.ui.eula.showPopup.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
-        <command id="org.jkiss.dbeaver.core.new.connection" name="%command.org.jkiss.dbeaver.core.new.connection.name" description="%command.org.jkiss.dbeaver.core.new.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.new.connection.from.url" name="%command.org.jkiss.dbeaver.core.new.connection.from.url.name" description="%command.org.jkiss.dbeaver.core.new.connection.from.url.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.migrate.connection" name="%command.org.jkiss.dbeaver.core.migrate.connection.name" description="%command.org.jkiss.dbeaver.core.migrate.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.bookmark.add" name="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.name" description="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.bookmark.navigate" name="%command.org.jkiss.dbeaver.core.navigator.bookmark.navigate.name" description="%command.org.jkiss.dbeaver.core.navigator.bookmark.navigate.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
@@ -100,8 +97,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.core.new.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_connect.svg"/>
-        <image commandId="org.jkiss.dbeaver.core.new.connection.from.url" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.svg"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark.svg"/>
 
         <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.svg"/>
@@ -182,30 +177,6 @@
 
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.core.eula.showPopup" class="org.jkiss.dbeaver.ui.eula.EULAHandler"/>
-        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateHandler">
-            <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.new.connection.from.url" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateFromUrlHandler">
-            <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceMigrateHandler">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    </iterate>
-                </with>
-            </enabledWhen>
-        </handler>
         <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.common.AddBookmarkHandler">
             <enabledWhen>
                 <with variable="selection">
@@ -779,16 +750,6 @@
             <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
         </menuContribution>
 
-        <!-- New connection menu -->
-        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.newConnection">
-            <separator name="additions" visible="false"/>
-            <dynamic id="org.jkiss.dbeaver.core.menu.newConnection.select" class="org.jkiss.dbeaver.ui.actions.datasource.NewConnectionDriverSelectorContributor"/>
-            <separator name="footer" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.new.connection.from.url" label="%command.org.jkiss.dbeaver.core.new.connection.from.url.name_short"/>
-            <separator name="custom" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
-        </menuContribution>
-
         <!-- QM menu & toolbar -->
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.queryManager">
@@ -906,7 +867,6 @@
         <key commandId="org.jkiss.dbeaver.core.edit.paste.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+V"/>
         <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+D"/>
 
-        <key commandId="org.jkiss.dbeaver.core.new.connection" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+N"/>
         <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+4"/>
         <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+4"/>
         <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+ALT+SHIFT+K"/>
@@ -920,29 +880,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
-        <page id="org.jkiss.dbeaver.preferences.main.errorHandle" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle" name="%page.org.jkiss.dbeaver.preferences.main.errorHandle.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
-        </page>
-        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient" name="%page.org.jkiss.dbeaver.preferences.main.connections.name">
-            <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-                </or>
-            </enabledWhen>
-        </page>
-        <page id="org.jkiss.dbeaver.preferences.main.transactions" class="org.jkiss.dbeaver.ui.preferences.PrefPageTransactions" name="%page.org.jkiss.dbeaver.preferences.main.transactions.name">
-            <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-                </or>
-            </enabledWhen>
-        </page>
-        <page id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="%page.org.jkiss.dbeaver.preferences.main.meta.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
-        </page>
-
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors" id="org.jkiss.dbeaver.preferences.editors" name="%page.org.jkiss.dbeaver.preferences.editors.name">
             <enabledWhen>
                 <or>
@@ -959,15 +896,6 @@
               <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
            </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
-            <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
-                </or>
-            </enabledWhen>
-        </page>
-
         <page id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
               class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
               name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name">
@@ -1097,19 +1025,6 @@
 
     </extension>
 
-    <extension point="org.eclipse.ui.newWizards">
-        <wizard
-             category="org.jkiss.dbeaver.core.new.general"
-             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
-             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database.svg"
-             id="org.jkiss.dbeaver.core.wizard.new.connection"
-             name="%wizard.org.jkiss.dbeaver.core.wizard.new.connection.name">
-           <description>
-               %wizard.org.jkiss.dbeaver.core.wizard.new.connection.description
-           </description>
-        </wizard>
-    </extension>
-
     <extension point="org.eclipse.help.toc">
        <toc file="docs/help/toc.xml" primary="true">
        </toc>
@@ -1175,6 +1090,7 @@
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceConnections" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceConnectionsImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceDrivers" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceDriversImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceSystemAgentImpl"/>
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands" class="org.jkiss.dbeaver.ui.services.UIServiceShellCommandsImpl"/>
         <service name="org.jkiss.dbeaver.runtime.DBServiceConnections" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceConnectionsImpl"/>
     </extension>
 
