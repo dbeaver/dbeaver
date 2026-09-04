@@ -139,7 +139,10 @@ class IoTDBExecutionContext extends GenericExecutionContext {
         }
 
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Determine active database")) {
-            activeDatabaseName = session.getSchema();
+            String schemaName = session.getSchema();
+            if (CommonUtils.isNotEmpty(schemaName)) {
+                activeDatabaseName = schemaName;
+            }
         } catch (SQLException e) {
             log.debug("Unable to determine the active IoTDB database", e);
         }
