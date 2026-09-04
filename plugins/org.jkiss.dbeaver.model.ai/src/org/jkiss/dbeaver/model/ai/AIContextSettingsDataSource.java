@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -63,9 +64,16 @@ public class AIContextSettingsDataSource extends AIContextSettings {
         Object dsConfig = dataSourceContainer.getExtension(AI_DS_EXTENSION);
         if (dsConfig == null) {
             loadLegacySettings();
-        } else if (dsConfig instanceof Map map){
+        } else if (dsConfig instanceof Map map) {
             // Load settings from map
             loadSettingsFromMap(map);
+        } else if (dsConfig instanceof String string) {
+            // Older datasource serializers flattened extension maps to strings.
+            try {
+                loadSettingsFromString(string);
+            } catch (JsonParseException e) {
+                log.error("Error loading AI settings: " + dsConfig, e);
+            }
         } else {
             log.error("Unknown AI settings format: " + dsConfig);
         }
