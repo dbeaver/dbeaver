@@ -86,6 +86,7 @@ import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.ui.*;
@@ -530,21 +531,94 @@ public class SQLEditor extends SQLEditorBase implements
         return setDataSourceContainer(inputDataSource);
     }
 
+    private enum DataSourceBindingOperation {
+        USE_AND_REMEMBER(true, true),
+        USE_NOW(true, false),
+        CANCEL_AND_REMEMBER(false, true),
+        CANCEL_NOW(false, false);
+
+        public final boolean use;
+        public final boolean saveChoice;
+
+        DataSourceBindingOperation(boolean use, boolean saveChoice) {
+            this.use = use;
+            this.saveChoice = saveChoice;
+        }
+    }
+
+    @NotNull
+    private DataSourceBindingOperation decideOnDataSourceBindingOperation(@NotNull DataSourceBindingInfo bindingInfo) {
+        DataSourceBindingOperation result;
+        if (SQLEditorBase.isConfirmReadEmbeddedBinding()) {
+            DBPPlatformUI.UserChoiceResponse confirmReadResponse = DBWorkbench.getPlatformUI().showUserChoice(
+                SQLEditorMessages.sql_editor_confirm_binding_read_confirmation_title,
+                SQLEditorMessages.sql_editor_confirm_binding_read_confirmation_question + "\n\n" + bindingInfo.specText(),
+                List.of(
+                    SQLEditorMessages.sql_editor_confirm_binding_read_confirmation_yes,
+                    SQLEditorMessages.sql_editor_confirm_binding_read_confirmation_no
+                ),
+                List.of(SQLEditorMessages.sql_editor_confirm_binding_read_confirmation_remember), 1, 1
+            );
+            boolean useBindingInfo = confirmReadResponse.choiceIndex == 0;
+            boolean dontAskAnymore = confirmReadResponse.forAllChoiceIndex != null && confirmReadResponse.forAllChoiceIndex.equals(0);
+            if (useBindingInfo) {
+                if (dontAskAnymore) {
+                    DBPPlatformUI.UserChoiceResponse ensureResponse = DBWorkbench.getPlatformUI().showUserChoice(
+                        SQLEditorMessages.sql_editor_confirm_binding_read_ensure_title,
+                        SQLEditorMessages.sql_editor_confirm_binding_read_ensure_question,
+                        List.of(
+                            SQLEditorMessages.sql_editor_confirm_binding_read_ensure_yes,
+                            SQLEditorMessages.sql_editor_confirm_binding_read_ensure_just_now,
+                            SQLEditorMessages.sql_editor_confirm_binding_read_ensure_cancel
+                        ),
+                        Collections.emptyList(), 2, 2
+                    );
+                    result = switch (ensureResponse.choiceIndex) {
+                        case 0 -> DataSourceBindingOperation.USE_AND_REMEMBER;
+                        case 1 -> DataSourceBindingOperation.USE_NOW;
+                        case 2 -> DataSourceBindingOperation.CANCEL_NOW;
+                        default -> throw new UnsupportedOperationException("Unexpected operation index " + ensureResponse.choiceIndex);
+                    };
+                } else {
+                    result = DataSourceBindingOperation.USE_NOW;
+                }
+            } else {
+                result = dontAskAnymore ? DataSourceBindingOperation.CANCEL_AND_REMEMBER : DataSourceBindingOperation.CANCEL_NOW;
+            }
+        } else {
+            result = DataSourceBindingOperation.USE_NOW;
+        }
+        return result;
+    }
+
     @Nullable
     private DBPDataSourceContainer defineContainer() {
-        DBPDataSourceContainer inputDataSource = null;
-        if (SQLEditorBase.isReadEmbeddedBinding()) {
-            // Try to get datasource from contents (always, no matter what )
-            inputDataSource = getDataSourceFromContent();
-        }
-        if (inputDataSource == null) {
-            inputDataSource = EditorUtils.getInputDataSource(getEditorInput());
-        }
+        // obtain what is already associated
+        DBPDataSourceContainer inputDataSource = EditorUtils.getInputDataSource(getEditorInput());
         if (inputDataSource == null) {
             // No datasource. Try to get one from active part
             IWorkbenchPart activePart = getSite().getWorkbenchWindow().getActivePage().getActivePart();
             if (activePart != this && activePart instanceof DBPDataSourceContainerProvider dsp) {
                 inputDataSource = dsp.getDataSourceContainer();
+            }
+        }
+        if (SQLEditorBase.isReadEmbeddedBinding()) {
+            // Try to get datasource from contents (always, no matter what )
+            DataSourceBindingInfo bindingInfo = getDataSourceFromContent();
+            // if embedded one should be created or is different from the already associated, we are going to change it
+            if (bindingInfo != null && (
+                !bindingInfo.dataSourceSupplier().foundExisting() || bindingInfo.dataSourceSupplier().supplier().get() != inputDataSource
+            )) {
+                // Ask for confirmation due to security reasons like potential RCE (dbeaver/pro#9973)
+                DataSourceBindingOperation op = this.decideOnDataSourceBindingOperation(bindingInfo);
+                if (op.use) {
+                    inputDataSource = bindingInfo.dataSourceSupplier().supplier().get();
+                }
+                if (op.saveChoice) {
+                    DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+                    prefStore.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ, op.use);
+                    prefStore.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ_CONFIRM, false);
+                }
             }
         }
         return inputDataSource;
@@ -613,7 +687,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private DBPDataSourceContainer getDataSourceFromContent() {
+    private record DataSourceBindingInfo(
+        @NotNull String specText,
+        @NotNull DataSourceUtils.BySpecInfo dataSourceSupplier
+    ) {
+    }
+
+    @Nullable
+    private DataSourceBindingInfo getDataSourceFromContent() {
 
         DBPProject project = getProject();
         IDocument document = getDocument();
@@ -628,15 +709,15 @@ public class SQLEditor extends SQLEditorBase implements
             if (matcher.matches()) {
                 String connSpec = matcher.group(1).trim();
                 if (!CommonUtils.isEmpty(connSpec)) {
-                    final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
+                    final DataSourceUtils.BySpecInfo dataSourceSupplier = DataSourceUtils.getDataSourceSupplierBySpec(
                         project,
                         connSpec,
                         null,
                         true,
                         false
                     );
-                    if (dataSource != null) {
-                        return dataSource;
+                    if (dataSourceSupplier != null) {
+                        return new DataSourceBindingInfo(connSpec, dataSourceSupplier);
                     }
                 }
             }
@@ -649,7 +730,10 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void embedDataSourceAssociation() {
-        if (getDataSourceFromContent() == dataSourceContainer) {
+        DataSourceBindingInfo existingInfo = this.getDataSourceFromContent();
+        if (existingInfo != null &&
+            existingInfo.dataSourceSupplier().foundExisting() &&
+            existingInfo.dataSourceSupplier().supplier().get() == dataSourceContainer) {
             return;
         }
         IDocument document = getDocument();
