@@ -20,7 +20,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.*;
@@ -60,13 +60,7 @@ public class GoToDialog extends Dialog {
     private long limit = -1L;
     private long tempResult = -1L;
 
-    private final SelectionAdapter defaultSelectionAdapter = new SelectionAdapter() {
-        @Override
-        public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-        {
-            text.setFocus();
-        }
-    };
+    private final SelectionListener defaultSelectionAdapter = SelectionListener.widgetSelectedAdapter(e -> text.setFocus());
 
     public GoToDialog(Shell aShell)
     {
@@ -88,14 +82,10 @@ public class GoToDialog extends Dialog {
         Composite composite = new Composite(textComposite, SWT.NONE);
         composite.setLayout(rowLayout1);
 
-        SelectionAdapter hexTextSelectionAdapter = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
+        SelectionListener hexTextSelectionAdapter = SelectionListener.widgetSelectedAdapter(e -> {
                 text.setText(text.getText());  // generate event
                 lastHexButtonSelected = e.widget == hexRadioButton;
-            }
-        };
+            });
 
         // Besides the crashes: the user always knows which number is entering, don't need any automatic
         // conversion. What does sometimes happen is one enters the right number and the wrong binary or dec was
@@ -147,36 +137,22 @@ public class GoToDialog extends Dialog {
         showButton = new Button(composite2, SWT.NONE);
         showButton.setText(BinaryEditorMessages.dialog_go_to_button_show_location);
         showButton.addSelectionListener(defaultSelectionAdapter);
-        showButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
+        showButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 buttonPressed = 1;
                 saveResultAndClose();
-            }
-        });
+            }));
 
         gotoButton = new Button(composite2, SWT.NONE);
         gotoButton.setText(BinaryEditorMessages.dialog_go_to_button_go_to_location);
         gotoButton.addSelectionListener(defaultSelectionAdapter);
-        gotoButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
+        gotoButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 buttonPressed = 2;
                 saveResultAndClose();
-            }
-        });
+            }));
 
         Button closeButton = new Button(composite2, SWT.NONE);
         closeButton.setText(WorkbenchMessages.WorkbenchWindow_close);
-        closeButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
-                dialogShell.close();
-            }
-        });
+        closeButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> dialogShell.close()));
 
         dialogShell.setDefaultButton(showButton);
     }

@@ -22,8 +22,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -156,10 +155,7 @@ class GenericFilterValueEdit {
         if (isCheckedTable) {
             buttonsPanel = UIUtils.createComposite(composite, 2);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            toggleButton = UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Workbench_selectAll, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            toggleButton = UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Workbench_selectAll, SelectionListener.widgetSelectedAdapter(e -> {
                     TableItem[] items = tableViewer.getTable().getItems();
                     if (Boolean.FALSE.equals(toggleButton.getData())) {
                         // Clear all checked
@@ -176,17 +172,14 @@ class GenericFilterValueEdit {
                         toggleButton.setData(true);
                     }
                     updateToggleButton(toggleButton);
-                }
-            });
+                }));
             updateToggleButton(toggleButton);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.widthHint = 120;
             toggleButton.setLayoutData(gd);
             UIUtils.createEmptyLabel(buttonsPanel, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            tableViewer.getTable().addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            tableViewer.getTable().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (e.detail == SWT.CHECK) {
                         DBDLabelValuePair value = (DBDLabelValuePair) e.item.getData();
                         if (((TableItem)e.item).getChecked()) {
@@ -196,8 +189,7 @@ class GenericFilterValueEdit {
                         }
                         updateToggleButton(toggleButton);
                     }
-                }
-            });
+                }));
         }
     }
 
@@ -636,7 +628,7 @@ class GenericFilterValueEdit {
         return buttonsPanel;
     }
 
-    Button createFilterButton(String label, SelectionAdapter selectionAdapter) {
+    Button createFilterButton(String label, SelectionListener selectionAdapter) {
         if (isCheckedTable) {
             Button button = UIUtils.createDialogButton(buttonsPanel, label, selectionAdapter);
             ((GridLayout) buttonsPanel.getLayout()).numColumns++;

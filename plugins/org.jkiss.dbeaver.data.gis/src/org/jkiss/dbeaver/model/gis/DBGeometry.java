@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.gis;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
@@ -114,6 +115,16 @@ public class DBGeometry implements DBDValue {
         if (rawValue instanceof Geometry) {
             ((Geometry) rawValue).setSRID(srid);
         }
+    }
+
+    @NotNull
+    public DBGeometry linearize() {
+        if (!WKGUtils.isCurve(rawValue)) {
+            return new DBGeometry(rawValue, srid, properties);
+        }
+        var wkgGeometry = WKGUtils.linearize((org.cugos.wkg.Geometry) rawValue);
+        var jtsGeometry = GisTransformUtils.getJtsGeometry(wkgGeometry);
+        return new DBGeometry(jtsGeometry, srid, properties);
     }
 
     public DBGeometry flipCoordinates() throws DBException {

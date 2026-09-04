@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -106,22 +105,12 @@ public class EditIndexPage extends AttributesSelectorPage<DBSEntity, DBSEntityAt
         }
         typeCombo.select(0);
         typeCombo.setEnabled(indexTypes.size() > 1);
-        typeCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                selectedIndexType = indexTypes.get(typeCombo.getSelectionIndex());
-            }
-        });
+        typeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            selectedIndexType = indexTypes.get(typeCombo.getSelectionIndex())));
 
         if (supportUniqueIndexes) {
             final Button uniqueButton = UIUtils.createLabelCheckbox(panel, ObjectEditorMessages.dialog_struct_unique, false);
-            uniqueButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    unique = uniqueButton.getSelection();
-                }
-            });
+            uniqueButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> unique = uniqueButton.getSelection()));
         }
     }
 

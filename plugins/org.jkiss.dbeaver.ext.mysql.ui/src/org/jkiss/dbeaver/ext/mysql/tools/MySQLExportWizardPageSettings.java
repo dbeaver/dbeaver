@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -57,12 +55,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        SelectionListener changeListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateState();
-            }
-        };
+        SelectionListener changeListener = SelectionListener.widgetSelectedAdapter(e -> updateState());
 
         Composite methodGroup = UIUtils.createTitledComposite(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_exe_method, 1, GridData.FILL_HORIZONTAL);
         methodCombo = new Combo(methodGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
