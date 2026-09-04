@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -216,14 +215,10 @@ public class CustomLocalDateTimeCellEditor extends DialogCellEditor {
                 log.error("Error setting initial value", e);
             }
 
-            customTimeEditor.addSelectionAdapter(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    value = Optional.ofNullable(customTimeEditor.getValueAsDate())
+            customTimeEditor.addSelectionAdapter(SelectionListener.widgetSelectedAdapter(e ->
+                value = Optional.ofNullable(customTimeEditor.getValueAsDate())
                         .map(v -> v.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
-                        .orElse(null);
-                }
-            });
+                        .orElse(null)));
 
             return customTimeEditor.getControl();
         }

@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -66,6 +65,9 @@ public class ModelSelectorField {
     private volatile AIModel selectedModel;
     private boolean disableModifyListener = false;
     private List<AIModel> loadedModels;
+    private boolean refreshEnabled = true;
+    @Nullable
+    private String refreshDisabledMessage;
 
     private ModelSelectorField(@NotNull Builder builder) {
         this.modelListProvider = builder.modelListSupplier;
@@ -134,11 +136,7 @@ public class ModelSelectorField {
     }
 
     public void refreshModelListSilently(boolean refresh) {
-        if (findMissingSetting() != null) {
-            return;
-        }
-        if (!CommonUtils.isEmpty(combo.getText())) {
-            // Model already set
+        if (!refreshEnabled || findMissingSetting() != null) {
             return;
         }
         new AbstractJob("Refreshing model list silently") {
@@ -154,6 +152,12 @@ public class ModelSelectorField {
                 }
             }
         }.schedule();
+    }
+
+    public void setRefreshEnabled(boolean enabled, @Nullable String disabledMessage) {
+        refreshEnabled = enabled;
+        refreshDisabledMessage = disabledMessage;
+        updateRefreshButtonState();
     }
 
     public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
@@ -255,6 +259,11 @@ public class ModelSelectorField {
 
     private void updateRefreshButtonState() {
         if (refreshButton.isDisposed()) {
+            return;
+        }
+        if (!refreshEnabled) {
+            refreshButton.setEnabled(false);
+            refreshButton.setToolTipText(refreshDisabledMessage);
             return;
         }
         String missingSetting = findMissingSetting();

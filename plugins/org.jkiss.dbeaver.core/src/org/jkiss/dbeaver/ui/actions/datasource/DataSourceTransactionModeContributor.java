@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -170,12 +171,12 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
 
         @Override
         public String getText() {
-            return CoreMessages.action_menu_transaction_smart_auto_commit;
+            return UIConnectionMessages.action_menu_transaction_smart_auto_commit;
         }
 
         @Override
         public String getToolTipText() {
-            return CoreMessages.action_menu_transaction_smart_auto_commit_tip;
+            return UIConnectionMessages.action_menu_transaction_smart_auto_commit_tip;
         }
 
         @Override

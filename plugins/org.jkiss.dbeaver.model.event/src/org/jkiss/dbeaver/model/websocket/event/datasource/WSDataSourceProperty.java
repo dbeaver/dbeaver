@@ -16,8 +16,24 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.datasource;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+
 public enum WSDataSourceProperty {
     CONFIGURATION, // configuration like host, port, etc
     NAME, // visual changes like name, description that doesn't affect connection configuration
-    INTERNAL // internal changes like extensions
+    NAVIGATION, // navigator location changes
+    INTERNAL; // internal changes like extensions
+
+    public boolean hasEffectiveChanges(
+        @NotNull DataSourceDescriptor before,
+        @NotNull DataSourceDescriptor after
+    ) {
+        return switch (this) {
+            case CONFIGURATION -> !before.equalConfiguration(after);
+            case NAME -> !before.isLooselyEqualTo(after);
+            case NAVIGATION -> !before.equalNavigation(after);
+            case INTERNAL -> !before.equalInternalConfiguration(after);
+        };
+    }
 }

@@ -29,32 +29,40 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
-import org.jkiss.dbeaver.model.tracking.DDAccessKey;
-import org.jkiss.dbeaver.model.tracking.DDSyncBinding;
-import org.jkiss.dbeaver.model.tracking.DDSyncService;
-import org.jkiss.dbeaver.model.tracking.DDWorkspace;
+import org.jkiss.dbeaver.model.tracking.auth.DDBrowserLogin;
+import org.jkiss.dbeaver.model.tracking.auth.DDBundleCredentials;
+import org.jkiss.dbeaver.model.tracking.auth.DDCryptoState;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyStore;
+import org.jkiss.dbeaver.model.tracking.sync.DDSyncBinding;
+import org.jkiss.dbeaver.model.tracking.sync.DDSyncService;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDContainer;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDWorkspaceNotFoundException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
 
     private static final Log log = Log.getLog(DDSyncPreferencePage.class);
 
-    public static final String SECRET_ACCESS_KEY = "datadam.access-key";
 
     private static final String SYNC_TITLE = "Synchronization";
     private static final String ENV_URL = "DATADAM_URL";
     private static final String PREF_SERVER_URL = "datadam.server-url";
+    private static final int GATEWAY_PORT = 9000;
+    private static final int ACCOUNT_PORT = 9001;
 
     private Text accountText;
     private Text urlText;
     private Text workspaceText;
+    private Button loginButton;
     private Button deleteButton;
     private Button uploadButton;
     private Button downloadButton;
@@ -101,17 +109,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 2;
         buttons.setLayoutData(gd);
-        UIUtils.createPushButton(buttons, "Import Key...", null, SelectionListener.widgetSelectedAdapter(e -> {
-            DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
-            if (dialog.open() == Window.OK) {
-                saveKey(dialog.getKey());
-                refresh();
-            }
-        }));
-        deleteButton = UIUtils.createPushButton(buttons, "Delete", null, SelectionListener.widgetSelectedAdapter(e -> {
-            if (UIUtils.confirmAction(getShell(), "Delete access key", "Delete the stored access key?")) {
-                saveKey(null);
-                refresh();
+        loginButton = UIUtils.createPushButton(buttons, "Log In...", null, SelectionListener.widgetSelectedAdapter(e -> logIn()));
+        deleteButton = UIUtils.createPushButton(buttons, "Log Out", null, SelectionListener.widgetSelectedAdapter(e -> {
+            if (UIUtils.confirmAction(getShell(), "Log out", "Forget the keys stored on this computer?")) {
+                logOut();
             }
         }));
 
@@ -142,18 +143,20 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return;
         }
         try {
-            DDSyncBinding binding = service.getBinding();
-            String workspaceId;
-            if (binding == null) {
-                String label = askWorkspaceLabel();
-                if (label == null) {
+            String containerId = resolveUploadContainer(service);
+            if (containerId == null) {
+                return;
+            }
+            List<String> uploaded;
+            try {
+                uploaded = service.upload(containerId);
+            } catch (DDWorkspaceNotFoundException e) {
+                containerId = createNewContainer(service);
+                if (containerId == null) {
                     return;
                 }
-                workspaceId = service.createWorkspace(label);
-            } else {
-                workspaceId = binding.workspaceId();
+                uploaded = service.upload(containerId);
             }
-            List<String> uploaded = service.upload(workspaceId);
             refresh();
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
@@ -164,29 +167,50 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
     }
 
+    @Nullable
+    private String resolveUploadContainer(@NotNull DDSyncService service) throws DBException {
+        DDSyncBinding binding = service.getBinding();
+        if (binding != null) {
+            return binding.containerId();
+        }
+        return createNewContainer(service);
+    }
+
+    @Nullable
+    private String createNewContainer(@NotNull DDSyncService service) throws DBException {
+        String label = askContainerLabel();
+        if (label == null) {
+            return null;
+        }
+        return service.createContainer(label);
+    }
+
     private void download() {
         DDSyncService service = createSyncService();
         if (service == null) {
             return;
         }
         try {
-            DDSyncBinding binding = service.getBinding();
-            if (binding == null) {
-                DDWorkspace selected = askWorkspace(service.listWorkspaces());
-                if (selected == null) {
+            String containerId = resolveDownloadContainer(service);
+            if (containerId == null) {
+                return;
+            }
+            List<String> restored;
+            try {
+                restored = service.download(containerId);
+            } catch (DDWorkspaceNotFoundException e) {
+                containerId = pickExistingContainer(service);
+                if (containerId == null) {
                     return;
                 }
-                service.bindWorkspace(selected.workspaceId(), selected.label());
-                binding = service.getBinding();
+                restored = service.download(containerId);
             }
-            String workspaceId = binding.workspaceId();
-            List<String> restored = service.download(workspaceId);
             refresh();
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
                 restored.isEmpty()
                     ? "Nothing to download"
-                    : "Downloaded: " + String.join(", ", restored) + ".\nRestart DBeaver to apply.",
+                    : "Downloaded: " + String.join(", ", restored),
                 false);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Download failed", e);
@@ -194,22 +218,41 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     @Nullable
-    private DDSyncService createSyncService() {
-        String key = readKey();
-        DDAccessKey accessKey = DDAccessKey.parseOrNull(key);
-        if (accessKey == null) {
-            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "Import an access key first", true);
+    private String resolveDownloadContainer(@NotNull DDSyncService service) throws DBException {
+        DDSyncBinding binding = service.getBinding();
+        if (binding != null) {
+            return binding.containerId();
+        }
+        return pickExistingContainer(service);
+    }
+
+    @Nullable
+    private String pickExistingContainer(@NotNull DDSyncService service) throws DBException {
+        DDContainer selected = askContainer(service.listContainers());
+        if (selected == null) {
             return null;
         }
-        String url = getServerUrl();
+        service.bind(selected.id(), selected.label());
+        return selected.id();
+    }
+
+    @Nullable
+    private DDSyncService createSyncService() {
+        DDKeyBundle bundle = DDKeyStore.load();
+        if (bundle == null) {
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "Log in first", true);
+            return null;
+        }
+        String url = getGatewayUrl();
         if (CommonUtils.isEmpty(url)) {
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "DataDam URL is not configured", true);
             return null;
         }
         return new DDSyncService(
             url,
-            accessKey,
-            DBWorkbench.getPlatform().getWorkspace());
+            new DDBundleCredentials(bundle),
+            DBWorkbench.getPlatform().getWorkspace(),
+            bundle.accountId());
     }
 
     @NotNull
@@ -220,37 +263,75 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     @Nullable
-    private String askWorkspaceLabel() {
+    private String askContainerLabel() {
         String label = EnterNameDialog.chooseName(getShell(), "Workspace name", "");
         return CommonUtils.isEmpty(label) ? null : label;
     }
 
     @Nullable
-    private DDWorkspace askWorkspace(@NotNull List<DDWorkspace> workspaces) {
-        if (workspaces.isEmpty()) {
+    private DDContainer askContainer(@NotNull List<DDContainer> containers) {
+        if (containers.isEmpty()) {
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "No synchronized workspaces found", true);
             return null;
         }
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), new LabelProvider() {
-            @NotNull
+            @Nullable
             @Override
             public String getText(@NotNull Object element) {
-                return ((DDWorkspace) element).label();
+                return ((DDContainer) element).label();
             }
         });
         dialog.setTitle(SYNC_TITLE);
         dialog.setMessage("Select workspace");
-        dialog.setElements(workspaces.toArray());
+        dialog.setElements(containers.toArray());
         if (dialog.open() != Window.OK) {
             return null;
         }
-        return (DDWorkspace) dialog.getFirstResult();
+        return (DDContainer) dialog.getFirstResult();
     }
 
     @NotNull
     public static String getServerUrl() {
         String url = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SERVER_URL);
         return CommonUtils.isEmpty(url) ? CommonUtils.notEmpty(System.getenv(ENV_URL)) : url;
+    }
+
+    @NotNull
+    public static String getGatewayUrl() {
+        return withPort(getServerUrl(), GATEWAY_PORT);
+    }
+
+    @NotNull
+    public static String getAccountUrl() {
+        return withPort(getServerUrl(), ACCOUNT_PORT);
+    }
+
+    @NotNull
+    private static String withPort(@NotNull String url, int port) {
+        if (CommonUtils.isEmpty(url)) {
+            return url;
+        }
+        String normalized = CommonUtils.removeTrailingSlash(url);
+        try {
+            java.net.URI uri = java.net.URI.create(normalized);
+            if (uri.getHost() != null) {
+                if (uri.getPort() != -1) {
+                    return normalized;
+                }
+                return new java.net.URI(
+                    uri.getScheme(),
+                    uri.getUserInfo(),
+                    uri.getHost(),
+                    port,
+                    uri.getPath(),
+                    uri.getQuery(),
+                    uri.getFragment()
+                ).toString();
+            }
+        } catch (IllegalArgumentException | URISyntaxException e) {
+            // ignore and fall back
+        }
+        return normalized + ":" + port;
     }
 
     private void updateApplyState() {
@@ -274,28 +355,80 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return super.performOk();
     }
 
-    private void saveKey(@Nullable String key) {
+    private void logIn() {
+        String siteUrl = getAccountUrl();
+        if (CommonUtils.isEmpty(siteUrl)) {
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, "DataDam URL is not configured", true);
+            return;
+        }
+        DDCryptoState[] result = new DDCryptoState[1];
         try {
-            DBSSecretController controller = DBSSecretController.getGlobalSecretController();
-            controller.setPrivateSecretValue(SECRET_ACCESS_KEY, key);
-            controller.flushChanges();
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    result[0] = new DDBrowserLogin(siteUrl).login();
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Login failed", e.getTargetException());
+            return;
+        }
+
+        DDCryptoState state = result[0];
+        if (!state.cryptoConfigured()) {
+            DBWorkbench.getPlatformUI().showMessageBox(
+                SYNC_TITLE,
+                "Encryption is not configured for this account. Set it up in the web browser first.",
+                true);
+            return;
+        }
+        DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
+        if (dialog.open() != Window.OK) {
+            return;
+        }
+        DDKeyBundle[] keyBundle = new DDKeyBundle[1];
+        try {
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    keyBundle[0] = DDKeyStore.unpack(state, dialog.getPhrase());
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+            DDKeyStore.save(keyBundle[0]);
+            DDTrackingInitializer.start();
+            refresh();
         } catch (DBException e) {
-            log.error("Error saving access key", e);
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Login failed", e);
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Login failed", e.getTargetException());
+        }
+    }
+
+    private void logOut() {
+        try {
+            DDTrackingInitializer.stop();
+            DDKeyStore.clear();
+            refresh();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, "Cannot forget the keys", e);
         }
     }
 
     private void refresh() {
-        String key = readKey();
-        boolean present = !CommonUtils.isEmpty(key);
-        DDAccessKey accessKey = present ? DDAccessKey.parseOrNull(key) : null;
-        accountText.setText(accessKey == null ? "" : accessKey.accountId().toString());
+        DDKeyBundle bundle = DDKeyStore.load();
+        boolean present = bundle != null;
+        accountText.setText(present ? bundle.accountId() : "");
+        loginButton.setEnabled(!present);
         deleteButton.setEnabled(present);
 
         DDSyncBinding binding = DDSyncService.readBinding(
             DBWorkbench.getPlatform().getWorkspace().getAbsolutePath());
-        workspaceText.setText(binding == null
+        boolean boundToCurrentAccount = binding != null && present && bundle.accountId().equals(binding.accountId());
+        workspaceText.setText(!boundToCurrentAccount
             ? ""
-            : CommonUtils.isEmpty(binding.label()) ? binding.workspaceId() : binding.label());
+            : CommonUtils.isEmpty(binding.label()) ? binding.containerId() : binding.label());
         uploadButton.setEnabled(present);
         downloadButton.setEnabled(present);
 
@@ -308,13 +441,4 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             : savedUrl);
     }
 
-    @Nullable
-    private String readKey() {
-        try {
-            return DBSSecretController.getGlobalSecretController().getPrivateSecretValue(SECRET_ACCESS_KEY);
-        } catch (DBException e) {
-            log.error("Error reading access key", e);
-            return null;
-        }
-    }
 }

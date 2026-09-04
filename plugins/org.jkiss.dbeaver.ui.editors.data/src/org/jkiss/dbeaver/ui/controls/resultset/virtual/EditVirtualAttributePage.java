@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -65,8 +66,9 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
         this.vAttr = vAttr;
     }
 
+    @NotNull
     @Override
-    protected Control createPageContents(Composite parent) {
+    protected Control createPageContents(@NotNull Composite parent) {
         final Composite dialogArea = UIUtils.createComposite(parent, 1);
         dialogArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 

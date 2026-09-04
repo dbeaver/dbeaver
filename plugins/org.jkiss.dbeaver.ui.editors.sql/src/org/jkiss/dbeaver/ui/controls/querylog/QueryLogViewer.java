@@ -30,8 +30,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -39,6 +38,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -386,13 +386,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         createContextMenu();
         addDragAndDropSupport();
-        logTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                //TableItem item = (TableItem)e.item;
-                showEventDetails((QMEvent) e.item.getData());
-            }
-        });
+        //TableItem item = (TableItem)e.item;
+        logTable.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(e -> showEventDetails((QMEvent) e.item.getData())));
 
         this.filter = filter;
 
@@ -755,7 +750,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     openSelectionInEditor();
                 }
             };
-            IAction copyAction = new Action(ModelMessages.controls_querylog_action_copy) {
+            IAction copyAction = new Action(WorkbenchMessages.Workbench_copy) {
                 @Override
                 public void run() {
                     copySelectionToClipboard(false);
@@ -782,7 +777,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             copyAllAction.setEnabled(logTable.getSelectionCount() > 0);
             copyAllAction.setActionDefinitionId(IActionConstants.CMD_COPY_SPECIAL);
 
-            IAction selectAllAction = new Action(ModelMessages.controls_querylog_action_select_all) {
+            IAction selectAllAction = new Action(WorkbenchMessages.Workbench_selectAll) {
                 @Override
                 public void run() {
                     selectAll();
