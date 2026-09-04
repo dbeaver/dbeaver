@@ -24,8 +24,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -63,8 +61,10 @@ import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -289,12 +289,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SWT.DROP_DOWN | SWT.READ_ONLY
             );
             tunnelImplCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            tunnelImplCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            tunnelImplCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     // updateJumpServerSettingsVisibility();
-                }
-            });
+                }));
             for (SSHSessionControllerDescriptor it : SSHSessionControllerRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
@@ -384,23 +381,15 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             Composite controlGroup = UIUtils.createComposite(parent, 3);
             controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    testTunnelConnection();
-                }
-            });
+            UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, SelectionListener.widgetSelectedAdapter(e ->
+                testTunnelConnection()));
             String hint = SSHUIMessages.model_ssh_configurator_variables_hint_label;
             variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
                 false
             );
 
-            UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"));
-                }
-            });
+            UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"))));
         }
 
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
@@ -710,6 +699,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         private final Label passwordLabel;
         private final Text passwordText;
         private final Button savePasswordCheckbox;
+        private final Label agentSockLabel;
+        private final Text agentSockText;
+        private final Button agentSockBrowseButton;
 
         public CredentialsPanel(
             @NotNull Composite parent,
@@ -746,13 +738,10 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_password);
             authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_pub_key);
             authMethodCombo.add(SSHUIMessages.model_ssh_configurator_combo_agent);
-            authMethodCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            authMethodCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     updateAuthMethodVisibility();
                     propertyChangeListener.run();
-                }
-            });
+                }));
 
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -770,15 +759,39 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
                 savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
-                savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        passwordText.setEnabled(savePasswordCheckbox.getSelection());
-
-                    }
-                });
+                savePasswordCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    passwordText.setEnabled(savePasswordCheckbox.getSelection())));
                 savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 savePasswordCheckbox.setEnabled(canEditCredentialsPerPolicy);
+            }
+
+            agentSockLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_agent_sock_path);
+            agentSockLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            {
+                Composite agentSockComp = UIUtils.createComposite(this, 2);
+                agentSockComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+                agentSockText = new Text(agentSockComp, SWT.BORDER);
+                agentSockText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                agentSockText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_agent_sock_path_description);
+                agentSockText.addModifyListener(listener);
+
+                agentSockBrowseButton = UIUtils.createPushButton(
+                    agentSockComp,
+                    null,
+                    UIMessages.text_with_open_dialog_browse,
+                    UIIcon.OPEN,
+                    SelectionListener.widgetSelectedAdapter(e -> {
+                        FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
+                        dialog.setText(SSHUIMessages.model_ssh_configurator_dialog_choose_agent_sock);
+                        dialog.setFilterExtensions("*.sock", "*"); //$NON-NLS-1$
+                        String selected = dialog.open();
+                        if (selected != null) {
+                            agentSockText.setText(selected);
+                        }
+                    })
+                );
             }
 
             if (editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
@@ -836,8 +849,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             } else if (configuration.auth() instanceof SSHAuthConfiguration.KeyFile key) {
                 privateKeyText.setText(key.path());
                 authMethodCombo.select(SSHConstants.AuthType.PUBLIC_KEY.ordinal());
-            } else if (configuration.auth() instanceof SSHAuthConfiguration.Agent) {
+            } else if (configuration.auth() instanceof SSHAuthConfiguration.Agent(String authSockPath)) {
                 authMethodCombo.select(SSHConstants.AuthType.AGENT.ordinal());
+                agentSockText.setText(CommonUtils.notEmpty(authSockPath));
             }
 
             updateAuthMethodVisibility();
@@ -866,7 +880,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                         yield new SSHAuthConfiguration.KeyFile(privateKey, password, savePassword);
                     }
                 }
-                case AGENT -> new SSHAuthConfiguration.Agent();
+                case AGENT -> new SSHAuthConfiguration.Agent(
+                    CommonUtils.nullIfEmpty(agentSockText.getText().trim())
+                );
             };
 
             final String username = userNameText.getText().trim();
@@ -886,14 +902,18 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 case PASSWORD -> {
                     showPrivateKeyField(false);
                     showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_password);
+                    showAgentSockField(false);
                 }
                 case PUBLIC_KEY -> {
                     showPrivateKeyField(true);
                     showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_passphrase);
+                    showAgentSockField(false);
                 }
                 case AGENT -> {
                     showPrivateKeyField(false);
                     showPasswordField(false, null);
+                    // Auth socket is not supported on Windows
+                    showAgentSockField(!RuntimeUtils.isWindows());
                 }
             }
             authMethodCombo.getShell().layout(true, true);
@@ -911,6 +931,11 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         private void showPrivateKeyField(boolean show) {
             UIUtils.setControlVisible(privateKeyLabel, show);
             UIUtils.setControlVisible(privateKeyText.getPanel(), show);
+        }
+
+        private void showAgentSockField(boolean show) {
+            UIUtils.setControlVisible(agentSockLabel, show);
+            UIUtils.setControlVisible(agentSockText.getParent(), show);
         }
     }
 

@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +50,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     public static final String TARGET_NAME_SKIP = "[skip]";
 
+    // collation names are bare identifiers, anything else would break the generated DDL
+    private static final Pattern COLLATION_NAME_PATTERN = Pattern.compile("\\w+");
+
     private final DatabaseMappingContainer parent;
     @Nullable
     private final DBSAttributeBase source;
@@ -57,6 +61,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     private String targetName;
     private String targetType;
     private String targetTypeWithModifiers;
+    private String targetCollation;
     private DatabaseMappingType mappingType;
     private DataTransferAttributeTransformerDescriptor transformer;
     private final Map<String, Object> transformerProperties = new LinkedHashMap<>();
@@ -80,6 +85,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.targetName = attribute.targetName;
         this.targetType = attribute.targetType;
         this.targetTypeWithModifiers = attribute.targetTypeWithModifiers;
+        this.targetCollation = attribute.targetCollation;
         this.mappingType = attribute.mappingType;
     }
 
@@ -363,6 +369,57 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.targetTypeWithModifiers = targetTypeWithModifiers;
     }
 
+    @Nullable
+    public DBSCollationProvider getTargetCollationProvider() {
+        DBSObjectContainer container = parent == null ? null : parent.getSettings().getContainer();
+        if (container instanceof DBSCollationProvider provider) {
+            return provider;
+        }
+        return DBUtils.getParentOfType(DBSCollationProvider.class, container);
+    }
+
+    /** False for numeric, binary and other types which can't carry a collation */
+    public boolean isCollationApplicable() {
+        DBSCollationProvider provider = getTargetCollationProvider();
+        if (provider == null) {
+            return false;
+        }
+        String typeName = getTargetType(parent.getSettings().getTargetDataSource(this), false);
+        return !CommonUtils.isEmpty(typeName) && provider.isCollatableType(typeName);
+    }
+
+    /**
+     * Collation to set on the created attribute, null when it must inherit the target default.
+     * An explicit choice wins over the source collation, but both are validated the same way:
+     * the target type must be collatable and the server must know the collation.
+     */
+    @Nullable
+    public String getTargetCollation(@NotNull DBRProgressMonitor monitor) {
+        if (!isCollationApplicable()) {
+            return null;
+        }
+        // empty explicit value means the user asked for the target default
+        String collation = targetCollation != null ? targetCollation : getSourceCollation();
+        if (CommonUtils.isEmpty(collation) || !COLLATION_NAME_PATTERN.matcher(collation).matches()) {
+            return null;
+        }
+        DBSCollationProvider provider = getTargetCollationProvider();
+        return provider != null && provider.isCollationSupported(monitor, collation) ? collation : null;
+    }
+
+    public void setTargetCollation(@Nullable String targetCollation) {
+        this.targetCollation = targetCollation;
+    }
+
+    @Nullable
+    private String getSourceCollation() {
+        DBSAttributeBase sourceAttr = source;
+        if (sourceAttr instanceof DBDAttributeBinding binding) {
+            sourceAttr = binding.getEntityAttribute();
+        }
+        return sourceAttr instanceof DBSAttributeCollation collationAttr ? collationAttr.getCollationName() : null;
+    }
+
     public DataTransferAttributeTransformerDescriptor getTransformer() {
         return transformer;
     }
@@ -394,6 +451,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (targetTypeWithModifiers != null) {
             settings.put("targetTypeWithModifiers", targetTypeWithModifiers);
         }
+        if (targetCollation != null) {
+            settings.put("targetCollation", targetCollation);
+        }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
 
@@ -409,6 +469,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         targetName = CommonUtils.toString(settings.get("targetName"));
         targetType = CommonUtils.toString(settings.get("targetType"));
         targetTypeWithModifiers = CommonUtils.toString(settings.get("targetTypeWithModifiers"));
+        targetCollation = settings.containsKey("targetCollation")
+            ? CommonUtils.toString(settings.get("targetCollation"))
+            : null;
         if (settings.get("mappingType") != null) {
             try {
                 DatabaseMappingType newMappingType = DatabaseMappingType.valueOf((String) settings.get("mappingType"));

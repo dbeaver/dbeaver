@@ -42,6 +42,11 @@
                     categories="sql">
                     <property name="OPT_GOAL" value="0" />
                     <property name="SQLMODE" value="oracle" />
+                    <!--
+                      driver property that can fix issue #41669,
+                      when empty, it will point to default temp folder
+                     -->
+                    <property name="JDBCTEMP" type="string" required="false" defaultValue="" />
 
                     <property name="@dbeaver-default-database.meta.client.name.disable" value="true" />
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH.mm.ss.ffffff" />
