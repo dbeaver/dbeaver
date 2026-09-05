@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,9 @@ public class ProgressStreamReader extends InputStream {
     public int read() throws IOException
     {
         int res = original.read();
-        showProgress(res);
+        if (res >= 0) {
+            showProgress(1);
+        }
         return res;
     }
 
@@ -52,7 +54,9 @@ public class ProgressStreamReader extends InputStream {
     public int read(byte[] b) throws IOException
     {
         int res = original.read(b);
-        showProgress(res);
+        if (res > 0) {
+            showProgress(res);
+        }
         return res;
     }
 
@@ -60,7 +64,9 @@ public class ProgressStreamReader extends InputStream {
     public int read(byte[] b, int off, int len) throws IOException
     {
         int res = original.read(b, off, len);
-        showProgress(res);
+        if (res > 0) {
+            showProgress(res);
+        }
         return res;
     }
 
@@ -68,7 +74,9 @@ public class ProgressStreamReader extends InputStream {
     public long skip(long n) throws IOException
     {
         long res = original.skip(n);
-        showProgress(res);
+        if (res > 0) {
+            showProgress(res);
+        }
         return res;
     }
 
