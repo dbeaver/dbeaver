@@ -278,15 +278,23 @@ public class DBWHandlerConfiguration {
         if (!(obj instanceof DBWHandlerConfiguration source)) {
             return false;
         }
-        return
+        return CommonUtils.equalObjects(this.dataSource, source.dataSource) && equalConfiguration(source);
+    }
+
+    public boolean equalConfiguration(@Nullable DBWHandlerConfiguration source) {
+        return source != null &&
+            equalSettings(source) &&
+            CommonUtils.equalObjects(this.userName, source.userName) &&
+            CommonUtils.equalObjects(this.password, source.password) &&
+            this.savePassword == source.savePassword &&
+            CommonUtils.equalObjects(this.secureProperties, source.secureProperties);
+    }
+
+    public boolean equalSettings(@Nullable DBWHandlerConfiguration source) {
+        return source != null &&
             CommonUtils.equalObjects(this.id, source.id) &&
-                CommonUtils.equalObjects(this.dataSource, source.dataSource) &&
-                this.enabled == source.enabled &&
-                CommonUtils.equalObjects(this.userName, source.userName) &&
-                CommonUtils.equalObjects(this.password, source.password) &&
-                this.savePassword == source.savePassword &&
-                CommonUtils.equalObjects(this.properties, source.properties) &&
-                CommonUtils.equalObjects(this.secureProperties, source.secureProperties);
+            this.enabled == source.enabled &&
+            CommonUtils.equalObjects(this.properties, source.properties);
     }
 
     public void resolveDynamicVariables(@NotNull IVariableResolver variableResolver) {

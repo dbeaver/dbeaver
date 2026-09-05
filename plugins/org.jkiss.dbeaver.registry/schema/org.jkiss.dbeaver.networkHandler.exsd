@@ -107,7 +107,7 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="uiClass" type="string">
+          <attribute name="uiClass" type="string">
             <annotation>
                <documentation>
                   
@@ -116,8 +116,15 @@
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IObjectPropertyConfigurator"/>
                </appInfo>
             </annotation>
-         </attribute>
-      </complexType>
+          </attribute>
+          <attribute name="requiredPermissions" type="string">
+             <annotation>
+                <documentation>
+                   Comma-separated permission IDs required to configure this network handler. All permissions are required.
+                </documentation>
+             </annotation>
+          </attribute>
+       </complexType>
    </element>
 
    <annotation>
