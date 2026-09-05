@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
@@ -129,7 +130,8 @@ public class DataTransferJob extends AbstractJob {
         super.canceling();
     }
 
-    private void transferData(
+    @ForTest
+    void transferData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DataTransferPipe transferPipe
     ) throws DBException, IOException {
@@ -153,8 +155,17 @@ public class DataTransferJob extends AbstractJob {
         try {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
-            IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
-            producer.transferData(monitor, consumer, processor, nodeSettings, task, -1);
+            IDataTransferProcessor processor;
+            try {
+                processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
+                producer.transferData(monitor, consumer, processor, nodeSettings, task, -1);
+            } finally {
+                try {
+                    producer.close();
+                } catch (Exception e) {
+                    log.error("Error closing data producer " + inputName, e);
+                }
+            }
 
             if (isTransferCanceled(monitor)) {
                 throw new DBInterruptedException("Data transfer was canceled");
