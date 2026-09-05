@@ -9,4 +9,6 @@ Bundle-Vendor: DBeaver Corp
 Fragment-Host: org.jkiss.dbeaver.model
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.test.platform,
- org.jkiss.dbeaver.model
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
+ org.eclipse.text

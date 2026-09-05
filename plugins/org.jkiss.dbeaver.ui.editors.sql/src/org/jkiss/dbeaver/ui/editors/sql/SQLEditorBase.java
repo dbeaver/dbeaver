@@ -361,6 +361,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         return viewer != null ? viewer.getProjectionAnnotationModel() : null;
     }
 
+    public void refreshProjectionFoldingPresentation() {
+        ProjectionAnnotationModel projectionModel = getProjectionAnnotationModel();
+        if (projectionModel != null) {
+            projectionModel.modifyAnnotations(null, null, null);
+        }
+        // Gutter desync is fixed by vertical ruler refresh; full-document invalidateTextPresentation
+        // does not repaint projection icons and is costly on large scripts.
+        IVerticalRuler verticalRuler = getVerticalRuler();
+        if (verticalRuler != null) {
+            verticalRuler.update();
+            if (verticalRuler.getControl() != null && !verticalRuler.getControl().isDisposed()) {
+                verticalRuler.getControl().redraw();
+            }
+        }
+    }
+
     public SQLEditorSourceViewerConfiguration getViewerConfiguration() {
         return (SQLEditorSourceViewerConfiguration) super.getSourceViewerConfiguration();
     }

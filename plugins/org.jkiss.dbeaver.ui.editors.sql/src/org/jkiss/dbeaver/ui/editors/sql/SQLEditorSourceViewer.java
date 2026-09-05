@@ -20,11 +20,16 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLProjectionAnnotationModel;
+
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
@@ -110,6 +115,31 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         
         //textWidget.setAlwaysShowScrollBars(false);
         return textWidget;
+    }
+
+    @Override
+    protected IAnnotationModel createVisualAnnotationModel(IAnnotationModel annotationModel) {
+        IAnnotationModel visualModel = super.createVisualAnnotationModel(annotationModel);
+        installSqlProjectionAnnotationModel();
+        return visualModel;
+    }
+
+    /**
+     * ProjectionViewer creates a plain {@link ProjectionAnnotationModel} in a private field during
+     * {@link #createVisualAnnotationModel(IAnnotationModel)}. Eclipse does not expose a hook to substitute
+     * a subclass, so the field is replaced here before projection mode is enabled.
+     */
+    private void installSqlProjectionAnnotationModel() {
+        try {
+            VarHandle projectionModelHandle = MethodHandles.privateLookupIn(ProjectionViewer.class, MethodHandles.lookup())
+                .findVarHandle(ProjectionViewer.class, "fProjectionAnnotationModel", ProjectionAnnotationModel.class);
+            if (projectionModelHandle.get(this) instanceof SQLProjectionAnnotationModel) {
+                return;
+            }
+            projectionModelHandle.set(this, new SQLProjectionAnnotationModel());
+        } catch (ReflectiveOperationException e) {
+            log.warn("Failed to install SQL projection annotation model", e);
+        }
     }
     
     private boolean expandAnnotationsContaining(@NotNull ProjectionAnnotationModel projectionAnnotationModel, int offset) {
