@@ -333,6 +333,29 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @Override
+    public int getCommandCount() {
+        synchronized (commands) {
+            return commands.size();
+        }
+    }
+
+    @Override
+    public void linkLastCommands(int count) {
+        if (count < 2) {
+            return;
+        }
+        synchronized (commands) {
+            int size = commands.size();
+            if (size < count) {
+                return;
+            }
+            for (int i = size - 1; i > size - count; i--) {
+                commands.get(i).linkedCommand = commands.get(i - 1);
+            }
+        }
+    }
+
     @NotNull
     @Override
     public Collection<? extends DBECommand<?>> getUndoCommands()
