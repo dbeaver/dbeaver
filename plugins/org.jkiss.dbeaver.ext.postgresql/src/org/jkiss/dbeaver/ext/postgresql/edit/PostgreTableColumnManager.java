@@ -242,12 +242,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         String prefix = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
             " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         final String fullTypeName = column.getFullTypeName();
-        String typeClause = fullTypeName;
-        if (column.getDataSource().getServerType().supportsAlterTableColumnWithUSING()) {
-            typeClause += " USING ";
-            typeClause += column.getDataSource().getSQLDialect().getTypeCastClause(column, DBUtils.getQuotedIdentifier(column), true);
-            typeClause += "::" + fullTypeName;
-        }
+        final String typeClause = column.getDataSource().getServerType().supportsAlterTableColumnWithUSING()
+            ? fullTypeName + " USING " + DBUtils.getQuotedIdentifier(column) + "::" + fullTypeName
+            : fullTypeName;
         if (command.hasProperty("fullTypeName") || command.hasProperty("maxLength") || command.hasProperty("precision") || command.hasProperty("scale")) {
             actionList.add(new SQLDatabasePersistActionAtomic("Set column type", prefix + "TYPE " + typeClause, isAtomic));
         }
