@@ -62,8 +62,6 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_SEARCH_IN_COMMENTS = "search.metadata.search-in-comments"; //$NON-NLS-1$
     private static final String PROP_SEARCH_IN_DEFINITIONS = "search.metadata.search-in-definitions"; //$NON-NLS-1$
 
-    private static final boolean CONNECT_ON_CLICK = true;
-
     private Table typesTable;
     private Combo searchText;
     private DatabaseNavigatorTree dataSourceTree;
@@ -167,31 +165,49 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 event -> {
                     fillObjectTypes();
                     updateEnablement();
-                    IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
-                    Object object = structSel.isEmpty() ? null : structSel.getFirstElement();
-                    if (object instanceof DBNNode) {
-                        for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
-                            if (node instanceof DBNDataSource dsNode && CONNECT_ON_CLICK) {
-                                try {
-                                    dsNode.initializeNode(null, status -> {
-                                        if (status.isOK()) {
-                                            UIUtils.asyncExec(() -> {
-                                                if (!dataSourceTree.isDisposed()) {
-                                                    fillObjectTypes();
-                                                }
-                                            });
-                                        }
-                                    });
-                                } catch (DBException e) {
-                                    // shouldn't be here
-                                    log.error(e);
-                                }
-                                break;
+                }
+            );
+
+            // Defer driver download / data source connect until the user explicitly
+            // expands a connection node in the tree. Wiring this to selection (via
+            // arrow-key navigation or a stray click) prompts the driver download
+            // dialog for connections the user never intended to open — see #19247.
+            treeViewer.addTreeListener(new ITreeViewerListener() {
+                @Override
+                public void treeExpanded(TreeExpansionEvent event) {
+                    Object element = event.getElement();
+                    if (!(element instanceof DBNNode)) {
+                        return;
+                    }
+                    for (DBNNode node = (DBNNode) element; node != null; node = node.getParentNode()) {
+                        if (node instanceof DBNDataSource dsNode) {
+                            if (dsNode.getDataSource() != null) {
+                                // Already connected — selection listener has populated types.
+                                return;
                             }
+                            try {
+                                dsNode.initializeNode(null, status -> {
+                                    if (status.isOK()) {
+                                        UIUtils.asyncExec(() -> {
+                                            if (!dataSourceTree.isDisposed()) {
+                                                fillObjectTypes();
+                                            }
+                                        });
+                                    }
+                                });
+                            } catch (DBException e) {
+                                log.error(e);
+                            }
+                            return;
                         }
                     }
                 }
-            );
+
+                @Override
+                public void treeCollapsed(TreeExpansionEvent event) {
+                    // No action on collapse.
+                }
+            });
 
             treeViewer.addDoubleClickListener(event -> {
                 IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
