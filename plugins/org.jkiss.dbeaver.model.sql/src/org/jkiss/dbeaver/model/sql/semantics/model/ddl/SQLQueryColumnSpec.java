@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,18 +101,23 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void resolveRelations(
+    public boolean tryResolveRelations(
         @NotNull SQLQueryRowsSourceContext rowsContext,
         @Nullable SQLQueryRowsDataContext tableDataContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         if (this.defaultValueExpression != null && tableDataContext != null) {
             this.defaultValueExpression.resolveRowSources(tableDataContext.getRowsSources(), statistics);
-            this.defaultValueExpression.resolveValueRelations(tableDataContext, statistics);
+            if (!this.defaultValueExpression.tryResolveValueRelations(tableDataContext, statistics)) {
+                return false;
+            }
         }
         for (SQLQueryColumnConstraintSpec constraintSpec : this.constraints) {
-            constraintSpec.resolveRelations(rowsContext, tableDataContext, statistics);
+            if (!constraintSpec.tryResolveRelations(rowsContext, tableDataContext, statistics)) {
+                return false;
+            }
         }
+        return true;
     }
 
     public static SQLQueryColumnSpec recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
