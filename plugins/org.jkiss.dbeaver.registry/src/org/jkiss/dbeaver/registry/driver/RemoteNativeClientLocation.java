@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.NativeClientDescriptor;
-import org.jkiss.dbeaver.registry.NativeClientDistributionDescriptor;
+import org.jkiss.dbeaver.registry.nativeclient.NativeClientDescriptor;
+import org.jkiss.dbeaver.registry.nativeclient.NativeClientDistributionDescriptor;
 
 import java.io.File;
 
@@ -50,7 +50,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
         NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution(driver);
         if (distribution != null) {
             File driversHome = DriverDescriptor.getCustomDriversHome().toFile();
-            return new File(driversHome, distribution.getTargetPath());
+            return new File(driversHome, distribution.getExecutionPath());
         }
         return new File(getName());
     }

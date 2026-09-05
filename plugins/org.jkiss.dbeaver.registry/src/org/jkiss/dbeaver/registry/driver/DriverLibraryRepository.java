@@ -25,8 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * DriverLibraryDescriptor
  */
-public class DriverLibraryRepository extends DriverLibraryLocal
-{
+public class DriverLibraryRepository extends DriverLibraryLocal {
     public static final String PATH_PREFIX = "repo:/";
 
     public DriverLibraryRepository(@NotNull DriverDescriptor driver, @NotNull FileType type, @NotNull String path) {
@@ -68,7 +67,4 @@ public class DriverLibraryRepository extends DriverLibraryLocal
         }
         return primarySource + localPath;
     }
-
-
-
 }

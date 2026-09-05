@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.nativeclient;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -40,14 +41,16 @@ public class NativeClientDescriptor extends AbstractDescriptor {
     private final List<NativeClientDistributionDescriptor> distributions = new ArrayList<>();
     private String id;
     private String label;
+    private String initialCommand;
 
-    NativeClientDescriptor(IConfigurationElement config) {
+    public NativeClientDescriptor(IConfigurationElement config) {
         super(config.getContributor().getName());
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         for (IConfigurationElement clientElement : config.getChildren("dist")) {
             this.distributions.add(new NativeClientDistributionDescriptor(clientElement));
         }
+        this.initialCommand = config.getAttribute("initialCommand");
     }
 
     public String getId() {
@@ -92,7 +95,6 @@ public class NativeClientDescriptor extends AbstractDescriptor {
             }
         }
         return null;
-
     }
 
     @Override
