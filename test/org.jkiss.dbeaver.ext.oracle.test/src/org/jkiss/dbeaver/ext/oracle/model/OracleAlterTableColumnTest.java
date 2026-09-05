@@ -281,4 +281,56 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(script, expectedDDL);
     }
+
+    @Test
+    public void generateAlterTableModifyColumnWithCharSemantics() throws Exception {
+        testColumnVarchar.setCharSemantics(OracleCharacterSemantics.CHAR);
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "maxLength", 255);
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
+            monitor, commandContext, executionContext, Collections.emptyMap(), null);
+        String script = SQLUtils.generateScript(
+            testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL =
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(255 CHAR);" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableModifyColumnWithByteSemantics() throws Exception {
+        testColumnVarchar.setCharSemantics(OracleCharacterSemantics.BYTE);
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
+        pse.collectProperties();
+        pse.setPropertyValue(monitor, "maxLength", 100);
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
+            monitor, commandContext, executionContext, Collections.emptyMap(), null);
+        String script = SQLUtils.generateScript(
+            testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL =
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100 BYTE);" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void fullTypeNameIncludesCharSemantics() {
+        testColumnVarchar.setCharSemantics(OracleCharacterSemantics.CHAR);
+        testColumnVarchar.setMaxLength(255);
+        Assert.assertEquals("VARCHAR(255 CHAR)", testColumnVarchar.getFullTypeName());
+    }
+
+    @Test
+    public void fullTypeNameWithoutCharSemantics() {
+        testColumnVarchar.setCharSemantics(null);
+        testColumnVarchar.setMaxLength(100);
+        Assert.assertEquals("VARCHAR(100)", testColumnVarchar.getFullTypeName());
+    }
 }

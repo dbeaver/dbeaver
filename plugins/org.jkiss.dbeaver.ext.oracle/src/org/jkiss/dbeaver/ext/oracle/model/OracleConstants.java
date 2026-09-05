@@ -133,7 +133,11 @@ public class OracleConstants {
     public static final String TYPE_CONTENT_POINTER = "CONTENT POINTER";
     public static final String TYPE_NAME_DATE = "DATE";
     public static final String TYPE_NAME_ROWID = "ROWID";
+    public static final String TYPE_NAME_CHAR = "CHAR";
+    public static final String TYPE_NAME_VARCHAR = "VARCHAR";
     public static final String TYPE_NAME_VARCHAR2 = "VARCHAR2";
+    public static final String TYPE_NAME_NCHAR = "NCHAR";
+    public static final String TYPE_NAME_NVARCHAR2 = "NVARCHAR2";
     public static final String TYPE_CLOB = "CLOB";
     public static final String TYPE_NCLOB = "NCLOB";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
