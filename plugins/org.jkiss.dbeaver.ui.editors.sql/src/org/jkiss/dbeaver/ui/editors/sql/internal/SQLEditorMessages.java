@@ -429,6 +429,23 @@ public class SQLEditorMessages extends NLS {
     public static String update_conflict_message;
     public static String update_conflict_message_revert;
     public static String update_conflict_message_overwrite;
+    public static String sql_variables_panel_label_value;
+    public static String sql_variables_panel_column_variable;
+    public static String sql_variables_panel_column_variable_tip;
+    public static String sql_variables_panel_column_value;
+    public static String sql_variables_panel_column_value_tip;
+    public static String sql_variables_panel_column_type;
+    public static String sql_variables_panel_column_type_tip;
+    public static String sql_variables_panel_action_find_variable;
+    public static String sql_variables_panel_action_add_variable;
+    public static String sql_variables_panel_action_delete_variable;
+    public static String sql_variables_panel_action_show_parameters;
+    public static String sql_variables_panel_action_show_parameters_tip;
+
+    public static String script_selector_panel_dialog_title;
+    public static String script_selector_panel_dialog_title_datasource;
+    public static String script_selector_panel_hint_text;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);
