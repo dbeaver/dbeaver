@@ -492,7 +492,7 @@ public class LSMInspections {
 
     private static boolean stackContainsRule(@NotNull ListNode<Integer> stateStack, int ruleIndex) {
         for (Integer ruleId : stateStack) {
-            if (ruleId != null && ruleId == ruleIndex) {
+            if (ruleId != null && ruleId.intValue() == ruleIndex) {
                 return true;
             }
         }
