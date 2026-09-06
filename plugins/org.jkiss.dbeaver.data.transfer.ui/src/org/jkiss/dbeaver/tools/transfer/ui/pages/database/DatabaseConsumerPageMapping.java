@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.*;
-import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -1516,7 +1515,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     @Override
     public void activatePage() {
         final DBPDataSourceContainer container = DatabaseConsumerSettings.getDataSourceContainer(getWizard().getSettings());
-        final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
+        final DBPPreferenceStore preferences = DTConstants.getPreferences();
 
         if (getDatabaseConsumerSettings().getContainer() != null ||
             container != null && container.isConnected() ||

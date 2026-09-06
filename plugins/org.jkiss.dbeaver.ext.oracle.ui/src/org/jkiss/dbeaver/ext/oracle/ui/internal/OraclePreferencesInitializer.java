@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.ui.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.ui.OracleUIConstants;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -27,7 +28,7 @@ public class OraclePreferencesInitializer extends AbstractPreferenceInitializer 
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = new BundlePreferenceStore(OracleUIActivator.getDefault().getBundle());
+        DBPPreferenceStore store = new BundlePreferenceStore(OracleUIConstants.PLUGIN_ID);
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PREF_EXPLAIN_TABLE_NAME, "");

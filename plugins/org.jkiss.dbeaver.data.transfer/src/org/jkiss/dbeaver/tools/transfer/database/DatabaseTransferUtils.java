@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
-import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -314,7 +314,7 @@ public class DatabaseTransferUtils {
     public static String getTransformedName(@NotNull DBPDataSource dataSource, @NotNull String targetName, boolean skipCaseChanging) {
         String finalName = targetName;
         DBPPreferenceStore dbpPreferenceStore = dataSource.getContainer().getPreferenceStore();
-        DBPPreferenceStore store = DTActivator.getDefault().getPreferences();
+        DBPPreferenceStore store = DTConstants.getPreferences();
         MappingNameCase nameCase = MappingNameCase.getCaseFromPreferences(dbpPreferenceStore, store);
         MappingReplaceMechanism mechanism = MappingReplaceMechanism.getCaseFromPreferences(dbpPreferenceStore, store);
         if (nameCase != MappingNameCase.DEFAULT) {

@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.wmi.Activator;
+import org.jkiss.dbeaver.ext.wmi.WMIPluginConstants;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -48,7 +48,7 @@ public class WMIClass extends WMIContainer
 {
     private static final Log log = Log.getLog(WMIClass.class);
 
-    static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + Activator.PLUGIN_ID + "/icons/";
+    static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + WMIPluginConstants.PLUGIN_ID + "/icons/";
 
     private static final DBPImage IMG_CLASS;
     private static final DBPImage IMG_CLASS_ABSTRACT;

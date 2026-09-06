@@ -21,7 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
-import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
+import org.jkiss.dbeaver.ext.oracle.ui.OracleUIConstants;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
@@ -49,7 +50,7 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
         super("Toad");
         setTitle("Toad");
         setDescription("Import Oracle Toad connections");
-        setImageDescriptor(OracleUIActivator.getImageDescriptor("icons/toad_icon_big.png"));
+        setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(OracleUIConstants.PLUGIN_ID, "icons/toad_icon_big.png"));
 
         oraDriver = new ImportDriverInfo(
             null,

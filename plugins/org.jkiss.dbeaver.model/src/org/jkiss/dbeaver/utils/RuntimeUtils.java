@@ -831,7 +831,11 @@ public final class RuntimeUtils {
 
     // Returns plugin state folder and do not create it (as default Eclipse function does)
     public static Path getPluginStateLocation(Plugin plugin) {
-        return InternalPlatform.getDefault().getStateLocation(plugin.getBundle(), false).toPath();
+        return getPluginStateLocation(plugin.getBundle());
+    }
+
+    public static Path getPluginStateLocation(Bundle bundle) {
+        return InternalPlatform.getDefault().getStateLocation(bundle, false).toPath();
     }
 
     /**

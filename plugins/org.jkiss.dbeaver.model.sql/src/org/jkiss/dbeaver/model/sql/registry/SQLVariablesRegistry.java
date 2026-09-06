@@ -31,10 +31,10 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.internal.SQLModelActivator;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.FrameworkUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -170,7 +170,7 @@ public class SQLVariablesRegistry {
     }
 
     private Path getConfigLocation() {
-        return RuntimeUtils.getPluginStateLocation(SQLModelActivator.getInstance()).resolve(VARIABLES_STORE_DIR);
+        return RuntimeUtils.getPluginStateLocation(FrameworkUtil.getBundle(SQLVariablesRegistry.class)).resolve(VARIABLES_STORE_DIR);
     }
 
     @NotNull

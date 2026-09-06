@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
@@ -29,7 +30,7 @@ public class DataTransferPreferencesInitializer extends AbstractPreferenceInitia
 
     @Override
     public void initializeDefaultPreferences() {
-        final DBPPreferenceStore store = new BundlePreferenceStore(DTActivator.getDefault().getBundle());
+        final DBPPreferenceStore store = new BundlePreferenceStore(DTConstants.PLUGIN_ID);
         PrefUtils.setDefaultPreferenceValue(store, DTConstants.PREF_NAME_CASE_MAPPING, 0);
         PrefUtils.setDefaultPreferenceValue(store, DTConstants.PREF_REPLACE_MAPPING, 0);
         PrefUtils.setDefaultPreferenceValue(store, DTConstants.PREF_MAX_TYPE_LENGTH, DTConstants.DEFAULT_MAX_TYPE_LENGTH);

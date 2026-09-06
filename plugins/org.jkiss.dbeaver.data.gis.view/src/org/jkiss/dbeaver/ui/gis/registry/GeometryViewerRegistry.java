@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
-import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -98,7 +97,7 @@ public class GeometryViewerRegistry {
                 predefinedTiles.add(descriptor);
             }
 
-            String defTilesId = GISViewerActivator.getDefault().getPreferences().getString(GeometryViewerConstants.PREF_DEFAULT_LEAFLET_TILES);
+            String defTilesId = GeometryViewerConstants.getPreferences().getString(GeometryViewerConstants.PREF_DEFAULT_LEAFLET_TILES);
             if (!CommonUtils.isEmpty(defTilesId)) {
                 defaultLeafletTiles = Stream.concat(predefinedTiles.stream(), userDefinedTiles.stream())
                     .filter(tile -> tile.getId().equals(defTilesId))
@@ -243,8 +242,8 @@ public class GeometryViewerRegistry {
         try {
             this.defaultLeafletTiles = defaultLeafletTiles;
             String preference = defaultLeafletTiles == null ? "" : defaultLeafletTiles.getId();
-            GISViewerActivator.getDefault().getPreferences().setValue(GeometryViewerConstants.PREF_DEFAULT_LEAFLET_TILES, preference);
-            GISViewerActivator.getDefault().getPreferences().save();
+            GeometryViewerConstants.getPreferences().setValue(GeometryViewerConstants.PREF_DEFAULT_LEAFLET_TILES, preference);
+            GeometryViewerConstants.getPreferences().save();
         } catch (IOException e) {
             log.error(e);
         }

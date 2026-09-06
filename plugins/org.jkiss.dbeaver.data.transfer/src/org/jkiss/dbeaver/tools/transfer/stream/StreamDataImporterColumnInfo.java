@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
-import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 
 public class StreamDataImporterColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
 
@@ -51,7 +51,7 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
      */
     public void updateMaxLength(@Nullable DBPDataSource dataSource, long maxLengthFromData) {
         long maxLength = getMaxLength();
-        DBPPreferenceStore globalPreferenceStore = DTActivator.getDefault().getPreferences();
+        DBPPreferenceStore globalPreferenceStore = DTConstants.getPreferences();
         if (dataSource != null) {
             // First check data source settings for max data type length
             DBPPreferenceStore dataSourcePreferenceStore = dataSource.getContainer().getPreferenceStore();

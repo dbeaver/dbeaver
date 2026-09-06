@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.database.*;
-import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -70,7 +70,7 @@ public class MappingRulesDialog extends BaseDialog {
         this.dataSource = dataSource;
         this.elementList = elementList;
         dbpPreferenceStore = dataSource.getContainer().getPreferenceStore();
-        store = DTActivator.getDefault().getPreferences();
+        store = DTConstants.getPreferences();
         // First check datasource settings, then - global
         originalNameCaseSelection = dbpPreferenceStore.contains(DTConstants.PREF_NAME_CASE_MAPPING) ?
             dbpPreferenceStore.getInt(DTConstants.PREF_NAME_CASE_MAPPING) : store.getInt(DTConstants.PREF_NAME_CASE_MAPPING);

@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
+import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 
 import java.util.Objects;
 
@@ -37,7 +37,7 @@ public final class LeafletTilesDescriptor extends AbstractDescriptor implements 
     private final boolean isVisible;
 
     private LeafletTilesDescriptor(@NotNull String id, @NotNull String label, @NotNull String layersDefinition, boolean isPredefined, boolean isVisible) {
-        super(GISViewerActivator.PLUGIN_ID);
+        super(GeometryViewerConstants.PLUGIN_ID);
         this.id = id.trim();
         this.label = label.trim();
         this.layersDefinition = layersDefinition.trim();

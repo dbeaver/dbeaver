@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
-import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.ui.gis.panel.actions.ToggleLabelsAction;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
@@ -122,7 +121,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         this.bindings = bindings;
         this.presentation = presentation;
 
-        try (InputStream is = GISViewerActivator.getDefault().getResourceStream(VIEW_TEMPLATE_PATH)) {
+        try (InputStream is = GISLeafletViewer.class.getClassLoader().getResourceAsStream(VIEW_TEMPLATE_PATH)) {
             if (is == null) {
                 throw new DBException("View template file not found (" + VIEW_TEMPLATE_PATH + ")");
             }
@@ -164,7 +163,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
             browser.addDisposeListener(e -> {
                 server.close();
-                GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
+                GeometryViewerConstants.getPreferences().removePropertyChangeListener(this);
             });
             browser.getDisplay().asyncExec(() -> {
                 if (!browser.isDisposed()) {
@@ -183,7 +182,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             toolBarManager = new ToolBarManager(bottomToolbar);
         }
 
-        final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
+        final DBPPreferenceStore preferences = GeometryViewerConstants.getPreferences();
 
         {
             String recentSRIDString = preferences.getString(PREF_RECENT_SRID_LIST);
@@ -282,7 +281,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 if (sridListStr.length() > 0) sridListStr.append(",");
                 sridListStr.append(sridInt);
             }
-            GISViewerActivator.getDefault().getPreferences().setValue(PREF_RECENT_SRID_LIST, sridListStr.toString());
+            GeometryViewerConstants.getPreferences().setValue(PREF_RECENT_SRID_LIST, sridListStr.toString());
         }
         saveAttributeSettings();
     }
@@ -313,7 +312,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         if (!force && CommonUtils.equalObjects(lastValue, values)) {
             return;
         }
-        int maxObjects = GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER);
+        int maxObjects = GeometryViewerConstants.getPreferences().getInt(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER);
         if (maxObjects <= 0) {
             maxObjects = GeometryViewerConstants.DEFAULT_MAX_OBJECTS_RENDER;
         }
@@ -440,7 +439,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             case "geomCRS" -> geomCRS;
             case "geomBounds" -> CommonUtils.toString(bounds, "undefined");
             case "minZoomLevel" -> {
-                DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
+                DBPPreferenceStore preferences = GeometryViewerConstants.getPreferences();
                 yield String.valueOf(preferences.getInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
             }
             case "defaultTiles" -> {
@@ -669,7 +668,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         }
 
         showLabels = value;
-        GISViewerActivator.getDefault().getPreferences().setValue(GeometryViewerConstants.PREF_SHOW_LABELS, value);
+        GeometryViewerConstants.getPreferences().setValue(GeometryViewerConstants.PREF_SHOW_LABELS, value);
     }
 
     private static class Bounds {
