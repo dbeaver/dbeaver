@@ -20,8 +20,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -333,12 +332,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         tokenInfoLink = UIUtils.createLink(
             parent,
             NLS.bind(AIUIMessages.gpt_preference_page_token_info, getApiKeyURL()),
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    UIUtils.openWebBrowser(getApiKeyURL());
-                }
-            }
+            SelectionListener.widgetSelectedAdapter(e -> UIUtils.openWebBrowser(getApiKeyURL()))
         );
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;

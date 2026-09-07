@@ -7,8 +7,7 @@ Bundle-Version: 1.0.175.qualifier
 Bundle-Release-Date: 20260921
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.registry;visibility:=reexport,
+Require-Bundle: org.jkiss.dbeaver.registry;visibility:=reexport,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
  org.eclipse.team.ui,

@@ -6,7 +6,6 @@ Bundle-Version: 1.0.191.qualifier
 Bundle-Release-Date: 20260921
 Require-Bundle: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ui.editors.connection,
- org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ext.generic.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21

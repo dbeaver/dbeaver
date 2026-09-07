@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -140,13 +139,8 @@ class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> impleme
             if (ob == defaultOrderBy) {
                 obScoreButton.setSelection(true);
             }
-            obScoreButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    driverSelectViewer.setOrderBy(
-                        (DriverSelectViewer.OrderBy) obScoreButton.getData());
-                }
-            });
+            obScoreButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> driverSelectViewer.setOrderBy(
+                        (DriverSelectViewer.OrderBy) obScoreButton.getData())));
         }
     }
 

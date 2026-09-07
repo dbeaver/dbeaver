@@ -21,8 +21,6 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -357,9 +355,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
                 if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
                     queriesConfigButton.setFont(BaseThemeSettings.instance.baseFontBold);
                 }
-                queriesConfigButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                queriesConfigButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         EditBootstrapQueriesDialog dialog = new EditBootstrapQueriesDialog(
                             getShell(),
                             dataSourceDescriptor,
@@ -369,8 +365,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
                             bootstrapQueries = dialog.getQueries();
                             ignoreBootstrapErrors = dialog.isIgnoreErrors();
                         }
-                    }
-                });
+                    }));
             }
         }
 
@@ -380,12 +375,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         Link urlHelpLabel = UIUtils.createLink(
             group,
             UIConnectionMessages.dialog_connection_wizard_connection_init_docs_hint,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(PAGE_DOCS_LINK));
-                }
-            }
+            SelectionListener.widgetSelectedAdapter(e -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(PAGE_DOCS_LINK)))
         );
         urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
 

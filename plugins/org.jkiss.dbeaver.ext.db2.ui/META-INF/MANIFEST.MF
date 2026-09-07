@@ -7,15 +7,11 @@ Bundle-Release-Date: 20260921
 Bundle-Activator: org.jkiss.dbeaver.ext.db2.ui.DB2Activator
 Require-Bundle: org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ui.editors.acl,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.tasks.ui,
  org.jkiss.dbeaver.ext.db2,
- org.jkiss.dbeaver.ui.editors.session,
- org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.editors.entity,
- org.jkiss.dbeaver.ui.navigator
+ org.jkiss.dbeaver.ui.editors.session
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp

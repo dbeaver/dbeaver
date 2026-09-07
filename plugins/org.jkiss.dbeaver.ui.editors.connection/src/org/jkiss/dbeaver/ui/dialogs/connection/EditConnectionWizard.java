@@ -37,17 +37,16 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
+import org.jkiss.dbeaver.registry.ConnectionPageDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourcePageDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle;
 import org.jkiss.dbeaver.ui.preferences.PrefPageMetaData;
 import org.jkiss.dbeaver.ui.preferences.PrefPageTransactions;
@@ -169,11 +168,10 @@ public class EditConnectionWizard extends ConnectionWizard {
             return;
         }
 
-        DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(
-            dataSource.getDriver().getProviderDescriptor(),
-            IActionConstants.EDIT_CONNECTION_POINT);
-        if (view != null) {
-            pageSettings = new ConnectionPageSettings(this, view, getDriverSubstitution());
+        DataSourceConfiguratorDescriptor configurator = DataSourceConfiguratorRegistry.getInstance()
+            .findConnectionConfigurator(dataSource.getDriver());
+        if (configurator != null) {
+            pageSettings = new ConnectionPageSettings(this, configurator, getDriverSubstitution());
             addPage(pageSettings);
         }
 
@@ -200,12 +198,12 @@ public class EditConnectionWizard extends ConnectionWizard {
         addPreferencePage(new PrefPageMetaData(), UIConnectionMessages.dialog_connection_edit_wizard_metadata,  UIConnectionMessages.dialog_connection_edit_wizard_metadata_description);
         addPreferencePage(new PrefPageErrorHandle(), UIConnectionMessages.pref_page_error_handle_name,  UIConnectionMessages.pref_page_error_handle_description);
 
-        for (DataSourcePageDescriptor page : DataSourceViewRegistry.getInstance().getRootDataSourcePages(dataSource)) {
+        for (ConnectionPageDescriptor page : DataSourceConfiguratorRegistry.getInstance().getRootDataSourcePages(dataSource)) {
             addDataSourcePage(null, page);
         }
     }
 
-    private void addDataSourcePage(WizardPrefPage parent, DataSourcePageDescriptor page) {
+    private void addDataSourcePage(WizardPrefPage parent, ConnectionPageDescriptor page) {
         IPreferencePage pageInstance;
         try {
             pageInstance = page.createPage();
@@ -228,7 +226,7 @@ public class EditConnectionWizard extends ConnectionWizard {
             }
         }
         if (thisWizardPage != null) {
-            for (DataSourcePageDescriptor childPage : DataSourceViewRegistry.getInstance().getChildDataSourcePages(dataSource, page.getId())) {
+            for (ConnectionPageDescriptor childPage : DataSourceConfiguratorRegistry.getInstance().getChildDataSourcePages(dataSource, page.getId())) {
                 addDataSourcePage(thisWizardPage, childPage);
             }
         }

@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.data.gis
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol
 Export-Package: org.jkiss.dbeaver.ext.exasol,

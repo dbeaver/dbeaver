@@ -13,7 +13,5 @@ SWT-OS: macosx
 Eclipse-PlatformFilter: (& (osgi.ws=cocoa) (osgi.os=macosx) )
 Export-Package: org.eclipse.swt.browser,
  org.jkiss.dbeaver.ui.swt.macos
-Require-Bundle: org.eclipse.swt,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ui
+Require-Bundle: org.jkiss.dbeaver.ui
 Automatic-Module-Name: org.jkiss.dbeaver.ui.macos

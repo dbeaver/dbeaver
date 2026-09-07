@@ -52,7 +52,7 @@ import java.util.List;
 public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> implements
     DBSTableColumn, DBSTypedObjectEx, DBPNamedObject2, DBPOrderedObject, DBPHiddenObject,
     SQLServerObject, JDBCColumnKeyType, DBSTypedObjectExt4<SQLServerDataType>, DBPRefreshableObject,
-    SQLServerExtendedPropertyOwner, DBSDescriptionEditable {
+    SQLServerExtendedPropertyOwner, DBSDescriptionEditable, DBSAttributeCollation {
     private static final Log log = Log.getLog(SQLServerTableColumn.class);
 
     private long objectId;
@@ -262,12 +262,15 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return dataType == null ? DBPDataKind.UNKNOWN : dataType.getDataKind();
     }
 
+    @Nullable
+    @Override
     @Property(viewable = true, editable = true, updatable = true, order = 75)
     public String getCollationName() {
         return collationName;
     }
 
-    public void setCollationName(String collationName) {
+    @Override
+    public void setCollationName(@Nullable String collationName) {
         this.collationName = collationName;
     }
 

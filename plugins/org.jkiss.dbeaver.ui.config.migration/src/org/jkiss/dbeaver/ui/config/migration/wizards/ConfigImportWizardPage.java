@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.config.migration.wizards;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -76,29 +75,21 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
 
         {
             Composite buttonsPanel = UIUtils.createComposite(placeholder, 5);
-            UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Workbench_selectAll, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Workbench_selectAll, SelectionListener.widgetSelectedAdapter(e -> {
                     for (TableItem item : getConnectionTable().getItems()) {
                         ((ImportConnectionInfo) item.getData()).setChecked(true);
                         item.setChecked(true);
                     }
                     getContainer().updateButtons();
-                }
-            });
-            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_deselect_all, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_deselect_all, SelectionListener.widgetSelectedAdapter(e -> {
                     for (TableItem item : getConnectionTable().getItems()) {
                         item.setChecked(false);
                         ((ImportConnectionInfo) item.getData()).setChecked(false);
                     }
                     getContainer().updateButtons();
-                }
-            });
-            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_set_driver, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_set_driver, SelectionListener.widgetSelectedAdapter(e -> {
                     TableItem[] selection = getConnectionTable().getSelection();
                     if (selection != null && selection.length > 0) {
                         for (TableItem item : selection) {
@@ -108,8 +99,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
                         }
                         isPageComplete();
                     }
-                }
-            });
+                }));
 
             folderSelector = new ConnectionFolderSelector(buttonsPanel);
             folderSelector.loadConnectionFolders(NavigatorUtils.getSelectedProject());
@@ -117,9 +107,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
 
         UIUtils.packColumns(getConnectionTable());
 
-        getConnectionTable().addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        getConnectionTable().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 TableItem item = (TableItem) e.item;
                 if (item == null) {
                     return;
@@ -128,8 +116,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
                     connectionInfo.setChecked(item.getChecked());
                 }
                 getContainer().updateButtons();
-            }
-        });
+            }));
 
         setControl(placeholder);
     }

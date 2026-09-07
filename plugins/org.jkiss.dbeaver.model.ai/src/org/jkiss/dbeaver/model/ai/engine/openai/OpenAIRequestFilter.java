@@ -32,9 +32,11 @@ public class OpenAIRequestFilter implements OpenAiClientBase.HttpRequestFilter {
     @Override
     public HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(request.uri())
-            .uri(request.uri())
             .method(request.method(), request.bodyPublisher().orElse(HttpRequest.BodyPublishers.noBody()))
             .headers(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token);
+        // Keep the settings configured on the original request
+        request.timeout().ifPresent(builder::timeout);
+        request.version().ifPresent(builder::version);
         for (var headerEntry : request.headers().map().entrySet()) {
             for (String value : headerEntry.getValue()) {
                 builder.header(headerEntry.getKey(), value);

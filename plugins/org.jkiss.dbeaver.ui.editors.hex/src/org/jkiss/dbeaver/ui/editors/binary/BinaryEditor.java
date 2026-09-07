@@ -22,8 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -171,10 +170,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.addPropertyChangeListener(preferencesChangeListener);
       
-        manager.addLongSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        manager.addLongSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (selectionListeners == null) return;
 
                 long[] longSelection = HexEditControl.getLongSelection(e);
@@ -185,8 +181,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 for (ISelectionChangedListener selectionListener : selectionListeners) {
                     selectionListener.selectionChanged(event);
                 }
-            }
-        });
+            }));
     }
 
     private void createEditorAction(IActionBars bars, String id)

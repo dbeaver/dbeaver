@@ -28,6 +28,7 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -345,13 +346,10 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 Composite ktPanel = UIUtils.createFormPlaceholder(tableGroup, allowedKeyTypes.length, 1);
                 //keyTypeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 for (FKType type : allowedKeyTypes) {
-                    Button keyTypeButton = UIUtils.createRadioButton(ktPanel, type.getName(), type, new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    Button keyTypeButton = UIUtils.createRadioButton(ktPanel, type.getName(), type, SelectionListener.widgetSelectedAdapter(e -> {
                             selectedKeyType = (FKType) e.widget.getData();
                             updateControlsVisibility();
-                        }
-                    });
+                        }));
                     if (type == preferredKeyType) {
                         keyTypeButton.setSelection(true);
                     }
@@ -450,23 +448,15 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             pkGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, ObjectEditorMessages.dialog_struct_edit_fk_combo_unik, SWT.DROP_DOWN | SWT.READ_ONLY);
             //uniqueKeyCombo.setEnabled(false);
-            uniqueKeyCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            uniqueKeyCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     handleUniqueKeySelect();
                     updatePageState();
-                }
-            });
+                }));
             if (enableCustomKeys) {
                 customUKButton = UIUtils.createDialogButton(
                     pkGroup,
                     ObjectEditorMessages.dialog_struct_edit_fk_custom_uk_button_create,
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            defineRefTableConstraint();
-                        }
-                    });
+                    SelectionListener.widgetSelectedAdapter(e -> defineRefTableConstraint()));
                 customUKButton.setEnabled(false);
             }
 
@@ -497,17 +487,14 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             tableEditor.minimumWidth = 50;
 
             columnsTable.addMouseListener(new ColumnsMouseListener(tableEditor, columnsTable));
-            columnsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            columnsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     boolean hasCustomColumn = false;
                     FKColumnInfo fki = getSelectedColumnInfo();
                     if (fki != null && fki.ownColumn == null && fki.customName != null) {
                         hasCustomColumn = true;
                     }
                     columnOptionsButton.setEnabled(hasCustomColumn);
-                }
-            });
+                }));
         }
 
         boolean supportModifyRules = !ArrayUtils.isEmpty(supportedModifyRules);
@@ -530,32 +517,21 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 onDeleteCombo.select(0);
                 onUpdateCombo.select(0);
                 onDeleteRule = onUpdateRule = supportedModifyRules[0];
-                onDeleteCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        onDeleteRule = supportedModifyRules[onDeleteCombo.getSelectionIndex()];
-                    }
-                });
-                onUpdateCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        onUpdateRule = supportedModifyRules[onUpdateCombo.getSelectionIndex()];
-                    }
-                });
+                onDeleteCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    onDeleteRule = supportedModifyRules[onDeleteCombo.getSelectionIndex()]));
+                onUpdateCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    onUpdateRule = supportedModifyRules[onUpdateCombo.getSelectionIndex()]));
             }
             addPhysicalKeyComponent(cascadeGroup);
         }
         {
             final Composite columnGroup = UIUtils.createComposite(settingsPanel, 1);
-            columnOptionsButton = UIUtils.createDialogButton(columnGroup, "Column options ...", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            columnOptionsButton = UIUtils.createDialogButton(columnGroup, "Column options ...", SelectionListener.widgetSelectedAdapter(e -> {
                     FKColumnInfo fki = getSelectedColumnInfo();
                     if (fki != null) {
                         editColumnOptions(fki);
                     }
-                }
-            });
+                }));
             columnOptionsButton.setEnabled(false);
         }
 
@@ -678,9 +654,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 schemaCombo.select(selectedNode);
             }
 
-            schemaCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            schemaCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     // Here is another trick
                     // We need to find table container node
                     // This node is a child of schema node and has the same meta as our original table parent node
@@ -691,8 +665,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                             loadTableList(newContainerNode);
                         }
                     }
-                }
-            });
+                }));
         }
     }
 
@@ -1192,14 +1165,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
             // Selected by mouse
             columnsCombo.setFocus();
-            columnsCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            columnsCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
                     if (columnsCombo.getSelectionIndex() >= 0) {
                         assignForeignKeyRefConstraint(fkInfo, columnsCombo, item);
                     }
-                }
-            });
+                }));
             columnsCombo.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent e) {
@@ -1336,12 +1306,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             Text columnNameText = UIUtils.createLabelText(group, "Column name", fkColumnInfo.getCustomName(), SWT.BORDER);
             columnNameText.addModifyListener(e -> columnName = columnNameText.getText());
             Button notNullCheck = UIUtils.createCheckbox(group, "Not Null", "Make new column required", false, 2);
-            notNullCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    columnRequired = notNullCheck.getSelection();
-                }
-            });
+            notNullCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> columnRequired = notNullCheck.getSelection()));
 
             return composite;
         }

@@ -31,11 +31,9 @@ Export-Package: org.jkiss.dbeaver,
 Bundle-ClassPath: .,
  lib/awt.injector-1.0.0.jar
 Require-Bundle: org.osgi.service.event,
- org.eclipse.core.filesystem,
  org.eclipse.core.net,
  org.eclipse.equinox.security,
  org.eclipse.ui.browser,
- org.eclipse.ui.ide,
  org.eclipse.e4.core.contexts,
  org.eclipse.e4.core.services,
  org.eclipse.e4.ui.css.swt,
@@ -45,11 +43,8 @@ Require-Bundle: org.osgi.service.event,
  org.eclipse.e4.ui.workbench,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
- org.jkiss.dbeaver.registry;visibility:=reexport,
- org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
- org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport,
- org.jkiss.dbeaver.ui.navigator;visibility:=reexport
+ org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport
 Import-Package: jakarta.annotation
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.core
