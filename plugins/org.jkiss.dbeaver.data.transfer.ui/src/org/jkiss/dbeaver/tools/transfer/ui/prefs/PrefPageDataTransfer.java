@@ -25,7 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
-import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -72,7 +72,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createComposite(parent, 1);
-        final DBPPreferenceStore preferences = DTConstants.getPreferences();
+        final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
         if (!isDataSourcePreferencePage()) {
             final Composite group = UIUtils.createTitledComposite(
@@ -149,7 +149,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
 
     @Override
     protected void loadPreferences(@NotNull DBPPreferenceStore store) {
-        DBPPreferenceStore preferences = DTConstants.getPreferences();
+        DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
         if (reconnectToLastDatabaseButton != null) {
             reconnectToLastDatabaseButton.setSelection(preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE));
         }
@@ -168,7 +168,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
 
     @Override
     protected void savePreferences(@NotNull DBPPreferenceStore store) {
-        DBPPreferenceStore preferences = DTConstants.getPreferences();
+        DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
         if (reconnectToLastDatabaseButton != null) {
             preferences.setValue(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE, reconnectToLastDatabaseButton.getSelection());
@@ -198,7 +198,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
 
     @Override
     protected void performDefaults() {
-        final DBPPreferenceStore preferences = DTConstants.getPreferences();
+        final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
         if (reconnectToLastDatabaseButton != null) {
             reconnectToLastDatabaseButton.setSelection(preferences.getDefaultBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE));
         }

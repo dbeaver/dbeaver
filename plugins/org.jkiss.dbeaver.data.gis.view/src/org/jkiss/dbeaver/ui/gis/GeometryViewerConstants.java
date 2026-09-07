@@ -16,14 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.gis;
 
-import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-
 /**
  * Geometry GeometryViewerConstants
  */
 public class GeometryViewerConstants {
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.data.gis.view";
 
     public static final String PREF_MAX_OBJECTS_RENDER = "gis.view.maxObjectsRender";
     public static final String PREF_MIN_ZOOM_LEVEL = "gis.view.minZoomLevel";
@@ -36,12 +32,4 @@ public class GeometryViewerConstants {
     // https://leafletjs.com/reference.html#tilelayer-minzoom
     public static final int DEFAULT_MIN_ZOOM_LEVEL = 0;
     public static final int DEFAULT_MAX_ZOOM_LEVEL = 18;
-
-    public static DBPPreferenceStore getPreferences() {
-        return PreferencesHolder.STORE;
-    }
-
-    private static final class PreferencesHolder {
-        private static final DBPPreferenceStore STORE = new BundlePreferenceStore(PLUGIN_ID);
-    }
 }

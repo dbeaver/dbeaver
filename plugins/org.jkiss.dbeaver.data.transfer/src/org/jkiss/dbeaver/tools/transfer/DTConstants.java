@@ -16,15 +16,12 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
-import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.StandardConstants;
 
 /**
  * DataTransfer constants
  */
 public class DTConstants {
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.data.transfer";
 
     public static final String TASK_IMPORT = "dataImport";
     public static final String TASK_EXPORT = "dataExport";
@@ -57,13 +54,5 @@ public class DTConstants {
     public static final String PROP_OPEN_NEW_CONNECTION = "openNewConnection";
 
     public static final int DEFAULT_MAX_TYPE_LENGTH = 32767; // Max Oracle VARCHAR data type length
-
-    public static DBPPreferenceStore getPreferences() {
-        return PreferencesHolder.STORE;
-    }
-
-    private static final class PreferencesHolder {
-        private static final DBPPreferenceStore STORE = new BundlePreferenceStore(PLUGIN_ID);
-    }
 
 }

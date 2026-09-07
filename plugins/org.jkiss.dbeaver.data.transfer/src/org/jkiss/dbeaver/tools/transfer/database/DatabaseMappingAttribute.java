@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
-import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
@@ -344,7 +344,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     private void changeDataTypeLength(@NotNull DBPDataSource targetDataSource) {
         if (source instanceof DBSTypedObjectExt2 sourceExt) {
             DBPPreferenceStore preferenceStore = targetDataSource.getContainer().getPreferenceStore();
-            DBPPreferenceStore store = DTConstants.getPreferences();
+            DBPPreferenceStore store = DTActivator.getDefault().getPreferences();
             if (preferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) || store.contains(DTConstants.PREF_MAX_TYPE_LENGTH)) {
                 int maxDataTypeLength = preferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
                     preferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : store.getInt(DTConstants.PREF_MAX_TYPE_LENGTH);

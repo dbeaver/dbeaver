@@ -20,6 +20,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -128,7 +129,7 @@ final class GISLeafletHttpServer {
                  "/inc/leaflet.js",
                  "/inc/layers.png",
                  "/inc/wkx.min.js",
-                 "/inc/leaflet-lasso.min.js" -> GISLeafletHttpServer.class.getClassLoader().getResourceAsStream("web" + path);
+                 "/inc/leaflet-lasso.min.js" -> GISViewerActivator.getDefault().getResourceStream("web" + path);
             default -> {
                 UUID uuid;
                 try {

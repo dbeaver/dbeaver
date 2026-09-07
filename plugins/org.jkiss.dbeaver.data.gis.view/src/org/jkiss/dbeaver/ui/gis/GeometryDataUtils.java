@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -212,7 +213,7 @@ public class GeometryDataUtils {
     }
 
     public static int getDefaultSRID() {
-        int srid = GeometryViewerConstants.getPreferences().getInt(GeometryViewerConstants.PREF_DEFAULT_SRID);
+        int srid = GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_DEFAULT_SRID);
         if (srid == 0) {
             return GisConstants.SRID_4326;
         }

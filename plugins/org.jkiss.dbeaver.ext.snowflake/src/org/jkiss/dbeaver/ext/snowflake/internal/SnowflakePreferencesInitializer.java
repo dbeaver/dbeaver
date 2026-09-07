@@ -27,7 +27,7 @@ public class SnowflakePreferencesInitializer extends AbstractPreferenceInitializ
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = new BundlePreferenceStore(SnowflakeConstants.PLUGIN_ID);
+        DBPPreferenceStore store = new BundlePreferenceStore(SnowflakeActivator.getDefault().getBundle());
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, SnowflakeConstants.PROP_DD_STRING, false);

@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
-import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -1000,7 +1000,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @NotNull
     private static String getFallbackOutputFolder() {
-        final DBPPreferenceStore prefs = DTConstants.getPreferences();
+        final DBPPreferenceStore prefs = DTActivator.getDefault().getPreferences();
         final String value = prefs.getString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY);
 
         if (CommonUtils.isEmpty(value)) {

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
+import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
@@ -50,7 +51,7 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createComposite(parent, 1);
-        final DBPPreferenceStore preferences = GeometryViewerConstants.getPreferences();
+        final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
 
         {
             Composite group = UIUtils.createTitledComposite(composite, GISMessages.pref_page_gis_viewer_group, 2);
@@ -69,7 +70,7 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
 
     @Override
     protected void performDefaults() {
-        final DBPPreferenceStore preferences = GeometryViewerConstants.getPreferences();
+        final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
         defaultSridText.setText(preferences.getDefaultString(GeometryViewerConstants.PREF_DEFAULT_SRID));
         maxObjectsText.setText(preferences.getDefaultString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER));
         minZoomLevelSpinner.setSelection(preferences.getDefaultInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
@@ -77,7 +78,7 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
 
     @Override
     public boolean performOk() {
-        final DBPPreferenceStore preferences = GeometryViewerConstants.getPreferences();
+        final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
         preferences.setValue(GeometryViewerConstants.PREF_DEFAULT_SRID, CommonUtils.toInt(defaultSridText.getText()));
         preferences.setValue(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER, CommonUtils.toInt(maxObjectsText.getText()));
         preferences.setValue(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL, CommonUtils.toInt(minZoomLevelSpinner.getText()));
