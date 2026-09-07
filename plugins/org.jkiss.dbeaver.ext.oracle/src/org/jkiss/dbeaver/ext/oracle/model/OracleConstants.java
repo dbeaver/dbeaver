@@ -174,6 +174,7 @@ public class OracleConstants {
 
     static final String COLUMN_CREATED = "CREATED";
     static final String COLUMN_LAST_DDL_TIME = "LAST_DDL_TIME";
+    static final String COLUMN_BODY_LAST_DDL_TIME = "BODY_LAST_DDL_TIME";
     static final String COLUMN_OBJECT_NAME = "OBJECT_NAME";
     static final String COLUMN_OBJECT_TYPE = "OBJECT_TYPE";
     public static final String COLUMN_STATUS = "STATUS";

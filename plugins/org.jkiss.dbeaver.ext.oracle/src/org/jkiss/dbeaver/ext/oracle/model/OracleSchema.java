@@ -1408,10 +1408,13 @@ public class OracleSchema extends OracleGlobalObject implements
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
-                    " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
-                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
-                " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
-                " ORDER BY OBJECT_NAME");
+                    " P.OBJECT_NAME, P.STATUS, P.CREATED, P.LAST_DDL_TIME, P.TEMPORARY, B.LAST_DDL_TIME AS BODY_LAST_DDL_TIME FROM " +
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") + " P " +
+                "LEFT JOIN " +
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") + " B " +
+                "ON B.OWNER = P.OWNER AND B.OBJECT_NAME = P.OBJECT_NAME AND B.OBJECT_TYPE = 'PACKAGE BODY' " +
+                "WHERE P.OBJECT_TYPE='PACKAGE' AND P.OWNER=? " +
+                "ORDER BY P.OBJECT_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }

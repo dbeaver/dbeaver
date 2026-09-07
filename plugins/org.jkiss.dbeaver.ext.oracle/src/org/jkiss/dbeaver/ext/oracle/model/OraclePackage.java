@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class OraclePackage extends OracleSchemaObject
     private boolean valid;
     private Date created;
     private Date lastDDLTime;
+    private Date bodyLastDDLTime;
     private boolean temporary;
     private String sourceDeclaration;
     private String sourceDefinition;
@@ -70,6 +71,7 @@ public class OraclePackage extends OracleSchemaObject
         this.valid = OracleConstants.RESULT_STATUS_VALID.equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
         this.created = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_CREATED);
         this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_LAST_DDL_TIME);
+        this.bodyLastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_BODY_LAST_DDL_TIME);
         this.temporary = JDBCUtils.safeGetBoolean(dbResult, OracleConstants.COLUMN_TEMPORARY, OracleConstants.RESULT_YES_VALUE);
     }
 
@@ -88,12 +90,18 @@ public class OraclePackage extends OracleSchemaObject
         return lastDDLTime;
     }
 
+    @Nullable
     @Property(viewable = true, order = 5)
+    public Date getBodyLastDDLTime() {
+        return bodyLastDDLTime;
+    }
+
+    @Property(viewable = true, order = 6)
     public boolean isTemporary() {
         return temporary;
     }
 
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, order = 7)
     public boolean isValid()
     {
         return valid;
