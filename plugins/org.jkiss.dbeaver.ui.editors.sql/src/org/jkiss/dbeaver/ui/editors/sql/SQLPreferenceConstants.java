@@ -217,6 +217,7 @@ public class SQLPreferenceConstants {
     public static final String OUTPUT_PANEL_AUTO_SHOW                   = "SQLEditor.outputPanel.autoShow";
 
     public static final String SCRIPT_BIND_EMBEDDED_READ                = "SQLEditor.script.bind.embedded.read"; //$NON-NLS-1$
+    public static final String SCRIPT_BIND_EMBEDDED_READ_CONFIRM        = "SQLEditor.script.bind.embedded.readConfirm"; //$NON-NLS-1$
     public static final String SCRIPT_BIND_EMBEDDED_WRITE               = "SQLEditor.script.bind.embedded.write"; //$NON-NLS-1$
     public static final String SCRIPT_BIND_COMMENT_TYPE                 = "SQLEditor.script.bind.commentType"; //$NON-NLS-1$
     public static final String SCRIPT_BIG_FILE_LENGTH_BOUNDARY          = "SQLEditor.script.bigFileLengthBoundary"; //$NON-NLS-1$
