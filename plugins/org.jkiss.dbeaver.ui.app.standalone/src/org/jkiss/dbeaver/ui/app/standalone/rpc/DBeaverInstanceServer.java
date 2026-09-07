@@ -89,10 +89,11 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
     public static IInstanceController createClient(@Nullable Path workspacePath) {
         final Path path = getConfigPath(workspacePath);
 
+        final SSLContext sslContext = initCustomSslContext();
         for (InstanceServerProperties serverProperties : deserializeProperties(path)) {
             final IInstanceController instance = RestClient
                 .builder(URI.create("http://localhost:" + serverProperties.port()), IInstanceController.class)
-                .setSslContext(initCustomSslContext())
+                .setSslContext(sslContext)
                 .setHeaders(Map.of(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + serverProperties.password()))
                 .create();
 
@@ -105,7 +106,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
                 }
                 return instance;
             } catch (Throwable e) {
-                log.debug("Error accessing instance server: " + e.getMessage());
+                log.debug("Error accessing instance server at port " + serverProperties.port() + ": " + e.getMessage(), e);
             }
         }
 
@@ -129,15 +130,17 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
 
         Map<Long, InstanceServerProperties> registry = InstanceServerProperties.readAllFrom(properties);
         List<InstanceServerProperties> instances = new ArrayList<>(registry.size());
-        // current pid must always be first one to ping, then from newest pid
+        // current pid must always be first one to ping, then prefer the newest instance
         InstanceServerProperties currentInstance = registry.remove(ProcessHandle.current().pid());
         if (currentInstance != null) {
             instances.add(currentInstance);
         }
-        Comparator<Map.Entry<Long, InstanceServerProperties>> descendingPidComparator =
-            Map.Entry.<Long, InstanceServerProperties> comparingByKey().reversed();
+        Comparator<Map.Entry<Long, InstanceServerProperties>> newestInstanceComparator =
+            Comparator.<Map.Entry<Long, InstanceServerProperties>>comparingLong(e -> e.getValue().startedAt())
+                .reversed()
+                .thenComparing(Map.Entry::getKey, Comparator.reverseOrder());
         registry.entrySet().stream()
-            .sorted(descendingPidComparator)
+            .sorted(newestInstanceComparator)
             .map(Map.Entry::getValue)
             .forEach(instances::add);
         return instances;
