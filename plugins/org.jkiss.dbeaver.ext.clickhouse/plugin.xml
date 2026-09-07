@@ -164,6 +164,10 @@
             <type name="IPV6"/>
             <type name="TUPLE*"/>
             <type name="MAP*"/>
+            <!--
+                Restrict matching to JSON, JSON(...), Nullable(JSON), and Nullable(JSON(...)).
+                Avoid matching alternative type names that may not be compatible with the current JSON formatter.
+            -->
             <type name="JSON"/>
             <type name="JSON(*"/>
             <type name="NULLABLE(JSON)"/>

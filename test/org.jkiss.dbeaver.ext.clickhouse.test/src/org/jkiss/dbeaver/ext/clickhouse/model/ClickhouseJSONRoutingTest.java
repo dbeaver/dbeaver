@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseContentJSON;
 import org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseJSONValueHandler;
 import org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseStructValueHandler;
 import org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.datatype.ValueHandlerDescriptor;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -159,8 +159,20 @@ public class ClickhouseJSONRoutingTest extends DBeaverUnitTest {
 
     @NotNull
     private ClickhouseDataSource dataSourceWithTypeCache(boolean populated) throws Exception {
-        var dataSource = mock(ClickhouseDataSource.class, CALLS_REAL_METHODS);
-        var cache = new ClickhouseDataTypeCache(dataSource);
+        when(monitor.isForceCacheUsage()).thenReturn(true);
+        var dataSource = new ClickhouseDataSource(monitor, configureTestContainer("com_clickhouse"), new ClickhouseMetaModel()) {
+            @Override
+            protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) {
+                // Keep normal type-cache initialization without opening a database connection.
+            }
+
+            @NotNull
+            @Override
+            protected ClickhouseDataTypeCache getDataTypeCache() {
+                return (ClickhouseDataTypeCache) super.getDataTypeCache();
+            }
+        };
+        var cache = dataSource.getDataTypeCache();
         cache.setCache(populated ? List.of(
             new GenericDataType(dataSource, Types.CLOB, "JSON", null, false, false, 0, 0, 0),
             new GenericDataType(dataSource, Types.NULL, "Nullable", null, false, false, 0, 0, 0),
@@ -170,10 +182,6 @@ public class ClickhouseJSONRoutingTest extends DBeaverUnitTest {
             new GenericDataType(dataSource, Types.STRUCT, "Tuple", null, false, false, 0, 0, 0),
             new GenericDataType(dataSource, Types.NULL, "LowCardinality", null, false, false, 0, 0, 0)
         ) : List.of());
-        // Avoid opening a connection in the constructor while exercising the real cache lookup, not a stub.
-        var cacheField = GenericDataSource.class.getDeclaredField("dataTypeCache");
-        cacheField.setAccessible(true);
-        cacheField.set(dataSource, cache);
         return dataSource;
     }
 
