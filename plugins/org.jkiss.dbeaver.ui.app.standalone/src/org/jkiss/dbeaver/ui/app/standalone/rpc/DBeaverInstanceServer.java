@@ -127,33 +127,19 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             return List.of();
         }
 
-        String prefix = InstanceServerProperties.PROPERTY_INSTANCE + ".";
-        String suffix = "." + InstanceServerProperties.PROPERTY_PORT;
-        Set<Long> pids = new TreeSet<>(Comparator.reverseOrder());
-        for (String key : properties.stringPropertyNames()) {
-            if (!key.startsWith(prefix) || !key.endsWith(suffix)) {
-                continue;
-            }
-            try {
-                pids.add(Long.parseLong(key.substring(prefix.length(), key.length() - suffix.length())));
-            } catch (NumberFormatException e) {
-                log.debug("Invalid instance controller process ID: " + key);
-            }
-        }
-
-        long currentPid = ProcessHandle.current().pid();
-        List<InstanceServerProperties> instances = new ArrayList<>(pids.size());
-        InstanceServerProperties currentInstance = InstanceServerProperties.readFrom(properties, currentPid);
+        Map<Long, InstanceServerProperties> registry = InstanceServerProperties.readAllFrom(properties);
+        List<InstanceServerProperties> instances = new ArrayList<>(registry.size());
+        // current pid must always be first one to ping, then from newest pid
+        InstanceServerProperties currentInstance = registry.remove(ProcessHandle.current().pid());
         if (currentInstance != null) {
             instances.add(currentInstance);
-            pids.remove(currentPid);
         }
-        for (long pid : pids) {
-            InstanceServerProperties instance = InstanceServerProperties.readFrom(properties, pid);
-            if (instance != null) {
-                instances.add(instance);
-            }
-        }
+        Comparator<Map.Entry<Long, InstanceServerProperties>> descendingPidComparator =
+            Map.Entry.<Long, InstanceServerProperties> comparingByKey().reversed();
+        registry.entrySet().stream()
+            .sorted(descendingPidComparator)
+            .map(Map.Entry::getValue)
+            .forEach(instances::add);
         return instances;
     }
 
