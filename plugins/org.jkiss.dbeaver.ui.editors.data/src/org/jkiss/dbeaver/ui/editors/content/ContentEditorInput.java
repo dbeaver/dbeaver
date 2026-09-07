@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.nio.file.Files;
 
 /**
  * ContentEditorInput
@@ -68,8 +69,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     private static final Log log = Log.getLog(ContentEditorInput.class);
 
     private IValueController valueController;
-    private IEditorPart[] editorParts;
-    private IEditorPart defaultPart;
+    private final IEditorPart[] editorParts;
+    private final IEditorPart defaultPart;
 
     private boolean contentDetached = false;
     private File contentFile;
@@ -281,9 +282,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         return valueController.isReadOnly();
     }
 
-    void saveToExternalFile(File file, IProgressMonitor monitor)
-        throws CoreException
-    {
+    void saveToExternalFile(java.nio.file.Path file, IProgressMonitor monitor) throws CoreException {
         try (InputStream is = openContents()) {
             ContentUtils.saveContentToFile(
                 is,
@@ -299,18 +298,16 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         return stringStorage == null ? new FileInputStream(contentFile) : stringStorage.getContents();
     }
 
-    void loadFromExternalFile(File extFile, IProgressMonitor monitor)
-        throws CoreException
-    {
+    void loadFromExternalFile(@NotNull java.nio.file.Path extFile, @NotNull IProgressMonitor monitor) throws CoreException {
         try {
             release();
-            contentFile = extFile;
+            contentFile = extFile.toFile();
             contentDetached = true;
             Object value = getValue();
-            if (value instanceof DBDContent) {
-                ((DBDContent)value).updateContents(
+            if (value instanceof DBDContent content) {
+                content.updateContents(
                     new DefaultProgressMonitor(monitor),
-                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile.toPath()));
+                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile));
             } else {
                 updateStringValueFromFile(extFile);
             }
@@ -321,8 +318,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         }
     }
 
-    private void updateStringValueFromFile(File extFile) throws DBException {
-        try (FileReader is = new FileReader(extFile)) {
+    private void updateStringValueFromFile(@NotNull java.nio.file.Path extFile) throws DBException {
+        try (Reader is = Files.newBufferedReader(extFile)) {
             String str = IOUtils.readToString(is);
             stringStorage.setString(str);
             valueController.updateValue(str, false);
@@ -335,8 +332,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     void refreshContentParts(Object source) {
         // Refresh editor parts
         for (IEditorPart cePart : editorParts) {
-            if (cePart instanceof IRefreshablePart) {
-                ((IRefreshablePart) cePart).refreshPart(source, false);
+            if (cePart instanceof IRefreshablePart refreshablePart) {
+                refreshablePart.refreshPart(source, false);
             }
         }
     }
@@ -372,8 +369,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
             throw new DBCException("Can't update read-only value");
         }
 
-        if (value instanceof DBDContent) {
-            DBDContent content = (DBDContent) value;
+        if (value instanceof DBDContent content) {
             DBDContentStorage storage = content.getContents(monitor);
             if (storage instanceof DBDContentStorageLocal) {
                 // Nothing to update - we use content's storage

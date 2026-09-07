@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class DBVDataContext extends DBVAbstractContext {
     public static final String VAR_TABLE = "table";
     public static final String VAR_ROW = "row";
 
-    private final Map<String, Object> nsList;
+    private final Map<String, Class<?>> nsList;
     private final DBSObject dataContainer;
     private final DBDAttributeBinding[] attributes;
     private final Object[] row;

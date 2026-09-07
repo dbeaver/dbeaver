@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Karl Griesser (fullref@gmail.com)
+ * Copyright (C) 2026 Karl Griesser (fullref@gmail.com)
  * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.ui.config;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -107,16 +106,10 @@ public class ExasolConnectionDialog extends BaseDialog {
         urlText.addModifyListener(mod);
         passwordText.addModifyListener(mod);
         commentText.addModifyListener(mod);
-        saveCred.addSelectionListener(new SelectionAdapter() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        saveCred.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 userText.setEnabled(saveCred.getSelection());
                 passwordText.setEnabled(saveCred.getSelection());
-            }
-            
-        });
+            }));
         
         return composite;
     }

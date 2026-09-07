@@ -8,7 +8,6 @@ Bundle-Activator: org.jkiss.dbeaver.ext.oracle.internal.OracleActivator
 Require-Bundle: org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.native;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.oracle,

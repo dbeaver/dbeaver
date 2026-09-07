@@ -28,10 +28,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
+import org.jkiss.utils.HttpUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.*;
+import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -385,7 +389,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         @NotNull String expectedState,
         @NotNull CompletableFuture<String> authorizationCode
     ) throws IOException {
-        Map<String, String> parameters = parseQuery(exchange.getRequestURI().getRawQuery());
+        Map<String, String> parameters = HttpUtils.parseQuery(exchange.getRequestURI().getRawQuery());
         String error = parameters.get("error");
         if (!expectedState.equals(parameters.get("state"))) {
             writeCallbackResponse(exchange, HttpConstants.CODE_BAD_REQUEST, "OpenAI authorization failed: invalid state.");
@@ -431,24 +435,6 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
                 + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
             .reduce((left, right) -> left + "&" + right)
             .orElse("");
-    }
-
-    @NotNull
-    private static Map<String, String> parseQuery(@Nullable String query) {
-        Map<String, String> parameters = new LinkedHashMap<>();
-        if (query == null || query.isEmpty()) {
-            return parameters;
-        }
-        for (String pair : query.split("&")) {
-            int separator = pair.indexOf('=');
-            if (separator > 0) {
-                parameters.put(
-                    URLDecoder.decode(pair.substring(0, separator), StandardCharsets.UTF_8),
-                    URLDecoder.decode(pair.substring(separator + 1), StandardCharsets.UTF_8)
-                );
-            }
-        }
-        return parameters;
     }
 
     @NotNull

@@ -30,8 +30,8 @@ public interface DDTrackingService {
     String TRACK_STOP_ENDPOINT = "/track/{trackingId}/stop";
 
     @Nullable
-    DDTracking start(@Nullable String apiKey, @NotNull DDClientInfo client);
+    DDTracking start(@Nullable String authorization, @NotNull DDClientInfo client);
 
     @Nullable
-    DDTracking stop(@Nullable String apiKey, @NotNull String trackingId);
+    DDTracking stop(@Nullable String authorization, @NotNull String trackingId);
 }

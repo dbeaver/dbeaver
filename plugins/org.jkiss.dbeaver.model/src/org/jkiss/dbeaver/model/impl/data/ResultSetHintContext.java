@@ -211,17 +211,18 @@ public class ResultSetHintContext implements DBDValueHintContext {
         @NotNull Collection<? extends DBDValueRow> rows,
         boolean cleanupCache
     ) throws DBException {
-        List<Map.Entry<DBDCellHintProvider, List<DBDAttributeBinding>>> providers = new ArrayList<>();
         synchronized (this.hintProvidersLock) {
             for (HintProviderInfo pi : this.hintProviders.values()) {
                 if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp) {
-                    Collection<DBDAttributeBinding> providerAttributes = !CommonUtils.isEmpty(attributes) ? attributes : pi.attributes;
-                    providers.add(Map.entry(chp, List.copyOf(providerAttributes)));
+                    chp.cacheRequiredData(
+                        monitor,
+                        this,
+                        !CommonUtils.isEmpty(attributes) ? attributes : pi.attributes,
+                        rows,
+                        cleanupCache
+                    );
                 }
             }
-        }
-        for (Map.Entry<DBDCellHintProvider, List<DBDAttributeBinding>> entry : providers) {
-            entry.getKey().cacheRequiredData(monitor, this, entry.getValue(), rows, cleanupCache);
         }
     }
 
