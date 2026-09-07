@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class PostgreServerTimescaleTest extends DBeaverUnitTest {
@@ -58,6 +59,7 @@ public class PostgreServerTimescaleTest extends DBeaverUnitTest {
         when(mockDataSource.isServerVersionAtLeast(12, 0)).thenReturn(true);
 
         Assertions.assertTrue(server.supportsGeneratedColumns());
+        verify(mockDataSource).isServerVersionAtLeast(12, 0);
     }
 
     @Test
@@ -65,6 +67,7 @@ public class PostgreServerTimescaleTest extends DBeaverUnitTest {
         when(mockDataSource.isServerVersionAtLeast(12, 0)).thenReturn(false);
 
         Assertions.assertFalse(server.supportsGeneratedColumns());
+        verify(mockDataSource).isServerVersionAtLeast(12, 0);
     }
 
     @Test
