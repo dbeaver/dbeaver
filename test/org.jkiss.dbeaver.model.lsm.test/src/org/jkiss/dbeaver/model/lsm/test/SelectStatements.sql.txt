@@ -128,6 +128,6 @@ GROUP BY d.district_name;
 
 SELECT GROUP_CONCAT(DISTINCT CONCAT(e.first_name, ' ', e.second_name) ORDER BY e.second_name SEPARATOR ', ') AS fullname
 FROM dept d
-JOIN emp e ON e.id = d.id
+JOIN emp e ON d.id = e.dept_id
 GROUP BY d.name;
 
