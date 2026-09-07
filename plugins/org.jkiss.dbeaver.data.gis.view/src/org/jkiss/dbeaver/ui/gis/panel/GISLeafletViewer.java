@@ -342,7 +342,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                     browser.setUrl("about:blank");
                 } else {
                     final Bounds bounds = recenter ? null : Bounds.tryExtractFromBrowser(browser);
-                    server.addResource("index.html", generateViewScript(values, bounds));
+                    String index = generateViewScript(values, bounds);
+                    server.addResource("index.html", () -> index);
                     browser.setUrl(server.getUrl("index.html"));
                 }
             } catch (IOException e) {

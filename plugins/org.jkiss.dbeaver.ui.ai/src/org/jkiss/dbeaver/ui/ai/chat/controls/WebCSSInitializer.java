@@ -55,8 +55,10 @@ public class WebCSSInitializer implements AutoCloseable {
 
     private final LocalResourceHttpServer.Handle server;
     private final Map<String, String> resourceUrls = new HashMap<>();
+    private final Map<String, String> cssValues;
 
     public WebCSSInitializer() throws IOException {
+        cssValues = fillValues();
         server = LocalResourceHttpServer.acquire();
         try {
             for (Bundle bundle : getResourceBundles()) {
@@ -73,7 +75,7 @@ public class WebCSSInitializer implements AutoCloseable {
                     registerWebResource(resourcePath, resource);
                 }
             }
-        } catch (IOException | RuntimeException e) {
+        } catch (RuntimeException e) {
             server.close();
             throw e;
         }
@@ -100,16 +102,20 @@ public class WebCSSInitializer implements AutoCloseable {
         return path.substring(webPathIndex);
     }
 
-    private void registerWebResource(@NotNull String resource, @NotNull URL url) throws IOException {
+    private void registerWebResource(@NotNull String resource, @NotNull URL url) {
         if (resource.equals(WEB_CSS_PATH)) {
-            try (InputStream is = url.openStream()) {
-                server.addResource(resource, updateCss(new String(is.readAllBytes(), StandardCharsets.UTF_8)));
-            }
+            server.addResource(resource, () -> {
+                try (InputStream is = url.openStream()) {
+                    return updateCss(new String(is.readAllBytes(), StandardCharsets.UTF_8));
+                }
+            });
         } else if (resource.equals(WEB_HTML_PATH)) {
-            try (InputStream is = url.openStream()) {
-                String htmlContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-                server.addResource(resource, htmlContent.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent()));
-            }
+            server.addResource(resource, () -> {
+                try (InputStream is = url.openStream()) {
+                    String htmlContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                    return htmlContent.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent());
+                }
+            });
         } else {
             server.addResource(resource, url::openStream);
         }
@@ -145,8 +151,7 @@ public class WebCSSInitializer implements AutoCloseable {
 
     @NotNull
     private String updateCss(@NotNull String cssContent) {
-        Map<String, String> values = fillValues();
-        for (var entry : values.entrySet()) {
+        for (var entry : cssValues.entrySet()) {
             cssContent = cssContent.replace(entry.getKey(), entry.getValue());
         }
         return cssContent;

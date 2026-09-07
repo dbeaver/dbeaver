@@ -45,6 +45,15 @@ public final class LocalResourceHttpServer {
         InputStream openStream() throws IOException;
     }
 
+    @FunctionalInterface
+    public interface TextResource {
+        /**
+         * Produces the resource content for each request.
+         */
+        @Nullable
+        String getContent() throws IOException;
+    }
+
     public static final class Handle implements AutoCloseable {
         private final UUID id;
         private final LocalResourceHttpServer server;
@@ -59,8 +68,14 @@ public final class LocalResourceHttpServer {
             server.addResource(id, path, resource);
         }
 
-        public void addResource(@NotNull String path, @NotNull String content) {
-            addResource(path, () -> new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+        /**
+         * Registers UTF-8 text that is produced for each request.
+         */
+        public void addResource(@NotNull String path, @NotNull TextResource resource) {
+            addResource(path, (Resource) () -> {
+                String content = resource.getContent();
+                return content == null ? null : new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+            });
         }
 
         @NotNull
