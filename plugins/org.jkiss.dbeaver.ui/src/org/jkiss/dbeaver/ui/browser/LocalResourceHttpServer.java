@@ -34,6 +34,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.UnaryOperator;
 
 /**
  * A reference-counted loopback server for resources used by embedded browsers.
@@ -41,8 +42,25 @@ import java.util.concurrent.Executors;
 public final class LocalResourceHttpServer {
     @FunctionalInterface
     public interface Resource {
+        @NotNull
+        static Resource of(@NotNull Resource resource) {
+            return resource;
+        }
+
         @Nullable
         InputStream openStream() throws IOException;
+
+        @NotNull
+        default TextResource map(@NotNull UnaryOperator<String> mapper) {
+            return () -> {
+                try (InputStream stream = openStream()) {
+                    if (stream == null) {
+                        return null;
+                    }
+                    return mapper.apply(new String(stream.readAllBytes(), StandardCharsets.UTF_8));
+                }
+            };
+        }
     }
 
     @FunctionalInterface
@@ -52,6 +70,22 @@ public final class LocalResourceHttpServer {
          */
         @Nullable
         String getContent() throws IOException;
+
+        @NotNull
+        default TextResource map(@NotNull UnaryOperator<String> mapper) {
+            return () -> {
+                String content = getContent();
+                return content == null ? null : mapper.apply(content);
+            };
+        }
+
+        @NotNull
+        default Resource toResource() {
+            return () -> {
+                String content = getContent();
+                return content == null ? null : new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+            };
+        }
     }
 
     public static final class Handle implements AutoCloseable {
@@ -71,11 +105,8 @@ public final class LocalResourceHttpServer {
         /**
          * Registers UTF-8 text that is produced for each request.
          */
-        public void addResource(@NotNull String path, @NotNull TextResource resource) {
-            addResource(path, (Resource) () -> {
-                String content = resource.getContent();
-                return content == null ? null : new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
-            });
+        public void addTextResource(@NotNull String path, @NotNull TextResource resource) {
+            addResource(path, resource.toResource());
         }
 
         @NotNull

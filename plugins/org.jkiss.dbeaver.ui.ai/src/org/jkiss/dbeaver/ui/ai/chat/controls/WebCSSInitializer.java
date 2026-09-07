@@ -37,9 +37,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -103,21 +101,18 @@ public class WebCSSInitializer implements AutoCloseable {
     }
 
     private void registerWebResource(@NotNull String resource, @NotNull URL url) {
-        if (resource.equals(WEB_CSS_PATH)) {
-            server.addResource(resource, () -> {
-                try (InputStream is = url.openStream()) {
-                    return updateCss(new String(is.readAllBytes(), StandardCharsets.UTF_8));
-                }
-            });
-        } else if (resource.equals(WEB_HTML_PATH)) {
-            server.addResource(resource, () -> {
-                try (InputStream is = url.openStream()) {
-                    String htmlContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-                    return htmlContent.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent());
-                }
-            });
-        } else {
-            server.addResource(resource, url::openStream);
+        switch (resource) {
+            case WEB_CSS_PATH -> server.addTextResource(
+                resource,
+                LocalResourceHttpServer.Resource.of(url::openStream)
+                    .map(this::updateCss)
+            );
+            case WEB_HTML_PATH -> server.addTextResource(
+                resource,
+                LocalResourceHttpServer.Resource.of(url::openStream)
+                    .map(content -> content.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent()))
+            );
+            default -> server.addResource(resource, url::openStream);
         }
     }
 
