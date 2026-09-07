@@ -57,10 +57,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -92,37 +89,34 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
     public static IInstanceController createClient(@Nullable Path workspacePath) {
         final Path path = getConfigPath(workspacePath);
 
-        InstanceServerProperties serverProperties = deserializeProperties(path);
-        if (serverProperties == null) {
-            return null;
-        }
+        for (InstanceServerProperties serverProperties : deserializeProperties(path)) {
+            final IInstanceController instance = RestClient
+                .builder(URI.create("http://localhost:" + serverProperties.port()), IInstanceController.class)
+                .setSslContext(initCustomSslContext())
+                .setHeaders(Map.of(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + serverProperties.password()))
+                .create();
 
-        final IInstanceController instance = RestClient
-            .builder(URI.create("http://localhost:" + serverProperties.port()), IInstanceController.class)
-            .setSslContext(initCustomSslContext())
-            .setHeaders(Map.of(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + serverProperties.password()))
-            .create();
+            try {
+                final long payload = System.currentTimeMillis();
+                final long response = instance.ping(payload);
 
-        try {
-            final long payload = System.currentTimeMillis();
-            final long response = instance.ping(payload);
-
-            if (response != payload) {
-                throw new IllegalStateException("Invalid ping response: " + response + ", was expecting " + payload);
+                if (response != payload) {
+                    throw new IllegalStateException("Invalid ping response: " + response + ", was expecting " + payload);
+                }
+                return instance;
+            } catch (Throwable e) {
+                log.debug("Error accessing instance server: " + e.getMessage());
             }
-        } catch (Throwable e) {
-            log.debug("Error accessing instance server: " + e.getMessage());
-            return null;
         }
 
-        return instance;
+        return null;
     }
 
-    @Nullable
-    private static InstanceServerProperties deserializeProperties(@NotNull Path path) {
+    @NotNull
+    private static List<InstanceServerProperties> deserializeProperties(@NotNull Path path) {
         if (Files.notExists(path)) {
             log.trace("No instance controller is available");
-            return null;
+            return List.of();
         }
 
         Properties properties = new Properties();
@@ -130,29 +124,37 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             properties.load(reader);
         } catch (IOException e) {
             log.error("Error reading instance controller configuration: " + e.getMessage());
-            return null;
+            return List.of();
         }
 
-        long pid = ProcessHandle.current().pid();
-        String port = properties.getProperty(InstanceServerProperties.portKey(pid));
-        String password = properties.getProperty(InstanceServerProperties.passwordKey(pid));
-        String startedAt = properties.getProperty(InstanceServerProperties.startedAtKey(pid), "0");
+        String prefix = InstanceServerProperties.PROPERTY_INSTANCE + ".";
+        String suffix = "." + InstanceServerProperties.PROPERTY_PORT;
+        Set<Long> pids = new TreeSet<>(Comparator.reverseOrder());
+        for (String key : properties.stringPropertyNames()) {
+            if (!key.startsWith(prefix) || !key.endsWith(suffix)) {
+                continue;
+            }
+            try {
+                pids.add(Long.parseLong(key.substring(prefix.length(), key.length() - suffix.length())));
+            } catch (NumberFormatException e) {
+                log.debug("Invalid instance controller process ID: " + key);
+            }
+        }
 
-        if (CommonUtils.isEmptyTrimmed(port)) {
-            log.error("No port specified for the instance controller to connect to");
-            return null;
+        long currentPid = ProcessHandle.current().pid();
+        List<InstanceServerProperties> instances = new ArrayList<>(pids.size());
+        InstanceServerProperties currentInstance = InstanceServerProperties.readFrom(properties, currentPid);
+        if (currentInstance != null) {
+            instances.add(currentInstance);
+            pids.remove(currentPid);
         }
-        if (CommonUtils.isEmptyTrimmed(password)) {
-            log.error("No password specified for the instance controller to connect to");
-            return null;
+        for (long pid : pids) {
+            InstanceServerProperties instance = InstanceServerProperties.readFrom(properties, pid);
+            if (instance != null) {
+                instances.add(instance);
+            }
         }
-
-        try {
-            return new InstanceServerProperties(Integer.parseInt(port), password, Long.parseLong(startedAt));
-        } catch (NumberFormatException e) {
-            log.error("Invalid instance controller configuration: " + e.getMessage());
-            return null;
-        }
+        return instances;
     }
 
     /**
