@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.tools.toad;
 
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.ui.OracleUIConstants;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
