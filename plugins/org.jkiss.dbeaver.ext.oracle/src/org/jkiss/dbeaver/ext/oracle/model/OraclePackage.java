@@ -204,10 +204,7 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        this.proceduresCache.clearCache();
-        this.sourceDeclaration = null;
-        this.sourceDefinition = null;
-        return this;
+        return getSchema().packageCache.refreshObject(monitor, getSchema(), this);
     }
 
     @Override

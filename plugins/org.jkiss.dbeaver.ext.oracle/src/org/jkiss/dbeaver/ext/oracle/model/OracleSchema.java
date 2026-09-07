@@ -1399,13 +1399,16 @@ public class OracleSchema extends OracleGlobalObject implements
 
     }
 
-    static class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
+    static class PackageCache extends JDBCObjectLookupCache<OracleSchema, OraclePackage> {
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
-            throws SQLException
-        {
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @Nullable OraclePackage object,
+            @Nullable String objectName
+        ) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
                     " P.OBJECT_NAME, P.STATUS, P.CREATED, P.LAST_DDL_TIME, P.TEMPORARY, B.LAST_DDL_TIME AS BODY_LAST_DDL_TIME FROM " +
@@ -1414,8 +1417,12 @@ public class OracleSchema extends OracleGlobalObject implements
                 OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") + " B " +
                 "ON B.OWNER = P.OWNER AND B.OBJECT_NAME = P.OBJECT_NAME AND B.OBJECT_TYPE = 'PACKAGE BODY' " +
                 "WHERE P.OBJECT_TYPE='PACKAGE' AND P.OWNER=? " +
+                (object == null && objectName == null ? "" : "AND P.OBJECT_NAME=? ") +
                 "ORDER BY P.OBJECT_NAME");
             dbStat.setString(1, owner.getName());
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
+            }
             return dbStat;
         }
 
