@@ -257,14 +257,6 @@
                     singleton="false">
                 <task id="pgToolTriggerEnable"/>
             </tool>
-            <tool
-                    description="%tools.refesh.mview.description"
-                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolRefreshMView"
-                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
-                    label="%tools.refesh.mview.name"
-                    singleton="false">
-                <task id="pgToolRefreshMView"/>
-            </tool>
 
             <toolGroup
                 id="org.jkiss.dbeaver.ext.postgresql.tools.config"
@@ -286,10 +278,37 @@
 
     <extension point="org.eclipse.ui.commands">
     	<command id="org.jkiss.dbeaver.ext.postgresql.ui.fdw" name="Foreign data wrappers configurator"/>
+        <command
+                id="org.jkiss.dbeaver.ext.postgresql.tools.refreshMView"
+                name="%tools.refesh.mview.name"
+                description="%tools.refesh.mview.description"/>
     </extension>
     
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.ext.postgresql.ui.fdw" class="org.jkiss.dbeaver.ext.postgresql.tools.fdw.PostgreFDWConfigToolCommandHandler"/>
+        <handler
+                commandId="org.jkiss.dbeaver.ext.postgresql.tools.refreshMView"
+                class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolRefreshMViewHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <!-- Double check - adapt + instanceof to avoid forced plugin activation (E4.6+) -->
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator.filter">
+            <command commandId="org.jkiss.dbeaver.ext.postgresql.tools.refreshMView">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
     </extension>
     
     <extension point="org.jkiss.dbeaver.task.ui">
