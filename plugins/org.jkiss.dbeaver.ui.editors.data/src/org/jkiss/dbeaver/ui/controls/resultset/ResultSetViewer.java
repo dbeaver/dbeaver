@@ -36,7 +36,6 @@ import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -126,10 +125,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
 /**
  * ResultSetViewer
  */
@@ -228,6 +228,8 @@ public class ResultSetViewer extends Viewer
     private HistoryStateItem curState = null;
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
+    private final List<CellEditHistoryItem> cellEditHistory = new ArrayList<>();
+    private int cellEditHistoryPosition;
 
     private final AutoRefreshControl autoRefreshControl;
     private boolean actionsDisabled;
@@ -1820,7 +1822,30 @@ public class ResultSetViewer extends Viewer
         @Nullable int[] rowIndexes,
         @Nullable Object value,
         boolean refreshHints) throws DBException {
-        boolean updated = model.updateCellValue(attr, row, rowIndexes, value, true);
+        CellEditHistoryItem historyItem = makeCellEditHistoryItem(attr, row, rowIndexes, true, false);
+        boolean updated;
+        try {
+            updated = model.updateCellValue(attr, row, rowIndexes, value, true);
+        } catch (DBException e) {
+            if (historyItem != null) {
+                historyItem.release();
+            }
+            throw e;
+        }
+        if (updated && historyItem != null) {
+            ValueSnapshot newValue = snapshotValue(model.getCellValue(historyItem.valueLocation));
+            if (newValue != null) {
+                historyItem.setNewValue(newValue);
+                addCellEditHistoryItem(historyItem);
+            } else {
+                historyItem.release();
+                discardCellEditRedo();
+            }
+        } else if (updated) {
+            discardCellEditRedo();
+        } else if (historyItem != null) {
+            historyItem.release();
+        }
         if (updated && refreshHints) {
             refreshHintCache(
                 Collections.singletonList(attr),
@@ -1836,11 +1861,191 @@ public class ResultSetViewer extends Viewer
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes
     ) {
+        if (row.getState() == ResultSetRow.STATE_REMOVED) {
+            model.resetCellValue(attr, row, rowIndexes);
+            return;
+        }
+        if (!row.isChanged(attr)) {
+            return;
+        }
+        CellEditHistoryItem historyItem = makeCellEditHistoryItem(attr, row, rowIndexes, false, true);
         model.resetCellValue(attr, row, rowIndexes);
+        if (historyItem != null) {
+            addCellEditHistoryItem(historyItem);
+        } else {
+            discardCellEditRedo();
+        }
         refreshHintCache(
             Collections.singletonList(attr),
             Collections.singletonList(row),
             rowIndexes);
+    }
+
+    public boolean canUndoCellEdit() {
+        return cellEditHistoryPosition > 0;
+    }
+
+    public boolean canRedoCellEdit() {
+        return cellEditHistoryPosition < cellEditHistory.size();
+    }
+
+    public void undoCellEdit() {
+        if (!canUndoCellEdit()) {
+            return;
+        }
+        CellEditHistoryItem item = cellEditHistory.get(cellEditHistoryPosition - 1);
+        if (applyCellEditHistoryItem(item, false)) {
+            cellEditHistoryPosition--;
+            updateCellEditHistoryActions();
+        }
+    }
+
+    public void redoCellEdit() {
+        if (!canRedoCellEdit()) {
+            return;
+        }
+        CellEditHistoryItem item = cellEditHistory.get(cellEditHistoryPosition);
+        if (applyCellEditHistoryItem(item, true)) {
+            cellEditHistoryPosition++;
+            updateCellEditHistoryActions();
+        }
+    }
+
+    private boolean applyCellEditHistoryItem(@NotNull CellEditHistoryItem item, boolean redo) {
+        ValueSnapshot snapshot = redo ? item.newValue : item.oldValue;
+        boolean dirty = redo ? item.newDirty : item.oldDirty;
+        ResultSetCellLocation valueCell = item.valueLocation;
+        try {
+            if (dirty || valueCell.getRow().getState() != ResultSetRow.STATE_NORMAL) {
+                model.updateCellValue(
+                    valueCell.getAttribute(),
+                    valueCell.getRow(),
+                    valueCell.getRowIndexes(),
+                    copyHistoryValue(snapshot.value),
+                    dirty
+                );
+            } else {
+                model.resetCellValue(valueCell.getAttribute(), valueCell.getRow(), valueCell.getRowIndexes());
+            }
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Cell edit", "Error restoring cell value", e);
+            return false;
+        }
+
+        ResultSetCellLocation cell = item.cellLocation;
+        activePresentation.setCurrentCellLocation(cell);
+        refreshHintCache(
+            Collections.singletonList(cell.getAttribute()),
+            Collections.singletonList(cell.getRow()),
+            cell.getRowIndexes()
+        );
+        redrawData(false, false);
+        updatePanelsContent(false);
+        updateEditControls();
+        return true;
+    }
+
+    @Nullable
+    private CellEditHistoryItem makeCellEditHistoryItem(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        boolean newDirty,
+        boolean useRootValue
+    ) {
+        ResultSetCellLocation currentCell = activePresentation.getCurrentCellLocation();
+        ResultSetValuePath valuePath = currentCell != null
+            && currentCell.getRow() == row
+            && currentCell.getAttribute() == attr
+            && Arrays.equals(currentCell.getRowIndexes(), rowIndexes)
+            ? currentCell.getValuePath()
+            : null;
+        ResultSetCellLocation cell = new ResultSetCellLocation(
+            attr,
+            row,
+            rowIndexes == null ? null : rowIndexes.clone(),
+            valuePath);
+        ResultSetCellLocation valueLocation = useRootValue
+            ? new ResultSetCellLocation(attr.getLevel() == 0 ? attr : attr.getTopParent(), row)
+            : cell;
+        ValueSnapshot oldValue = snapshotValue(model.getCellValue(valueLocation));
+        if (oldValue == null) {
+            return null;
+        }
+        return new CellEditHistoryItem(
+            cell,
+            valueLocation,
+            oldValue,
+            new ValueSnapshot(null, false),
+            row.isChanged(attr),
+            newDirty && row.getState() == ResultSetRow.STATE_NORMAL);
+    }
+
+    private void addCellEditHistoryItem(@NotNull CellEditHistoryItem item) {
+        truncateCellEditRedo();
+        cellEditHistory.add(item);
+        cellEditHistoryPosition++;
+        updateCellEditHistoryActions();
+    }
+
+    private void discardCellEditRedo() {
+        if (truncateCellEditRedo()) {
+            updateCellEditHistoryActions();
+        }
+    }
+
+    private boolean truncateCellEditRedo() {
+        boolean changed = false;
+        while (cellEditHistoryPosition < cellEditHistory.size()) {
+            cellEditHistory.removeLast().release();
+            changed = true;
+        }
+        return changed;
+    }
+
+    private void clearCellEditHistory() {
+        if (cellEditHistory.isEmpty()) {
+            return;
+        }
+        for (CellEditHistoryItem item : cellEditHistory) {
+            item.release();
+        }
+        cellEditHistory.clear();
+        cellEditHistoryPosition = 0;
+        updateCellEditHistoryActions();
+    }
+
+    private void updateCellEditHistoryActions() {
+        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_UNDO);
+        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_REDO);
+    }
+
+    @Nullable
+    private ValueSnapshot snapshotValue(@Nullable Object value) {
+        if (value instanceof DBDValueCloneable cloneable) {
+            try {
+                return new ValueSnapshot(cloneable.cloneValue(new VoidProgressMonitor()), true);
+            } catch (DBCException e) {
+                log.debug("Error copying cell value for edit history", e);
+                return null;
+            }
+        }
+        if (value instanceof DBDValue) {
+            return null;
+        }
+        return new ValueSnapshot(value, false);
+    }
+
+    @Nullable
+    private Object copyHistoryValue(@Nullable Object value) throws DBException {
+        if (value instanceof DBDValueCloneable cloneable) {
+            try {
+                return cloneable.cloneValue(new VoidProgressMonitor());
+            } catch (DBCException e) {
+                throw new DBException("Error copying cell value from edit history", e);
+            }
+        }
+        return value;
     }
 
     @Override
@@ -4604,6 +4809,7 @@ public class ResultSetViewer extends Viewer
 
     public void clearData(boolean clearMetaData)
     {
+        clearCellEditHistory();
         this.model.releaseAllData();
         this.model.clearData();
         this.curRow = null;
@@ -4672,6 +4878,9 @@ public class ResultSetViewer extends Viewer
                         log.error("Error refreshing rows after update", e);
                     }
                 }
+                if (success) {
+                    UIUtils.syncExec(this::clearCellEditHistory);
+                }
                 UIUtils.syncExec(() -> autoRefreshControl.scheduleAutoRefresh(!success));
             };
 
@@ -4694,12 +4903,56 @@ public class ResultSetViewer extends Viewer
         fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
         try {
             createDataPersister(true).rejectChanges();
+            clearCellEditHistory();
             if (model.getAllRows().isEmpty()) {
                 curRow = null;
                 selectedRecords = new int[0];
             }
         } catch (DBException e) {
             log.debug(e);
+        }
+    }
+
+    private static class CellEditHistoryItem {
+        private final ResultSetCellLocation cellLocation;
+        private final ResultSetCellLocation valueLocation;
+        private final ValueSnapshot oldValue;
+        private ValueSnapshot newValue;
+        private final boolean oldDirty;
+        private final boolean newDirty;
+
+        private CellEditHistoryItem(
+            @NotNull ResultSetCellLocation cellLocation,
+            @NotNull ResultSetCellLocation valueLocation,
+            @NotNull ValueSnapshot oldValue,
+            @NotNull ValueSnapshot newValue,
+            boolean oldDirty,
+            boolean newDirty
+        ) {
+            this.cellLocation = cellLocation;
+            this.valueLocation = valueLocation;
+            this.oldValue = oldValue;
+            this.newValue = newValue;
+            this.oldDirty = oldDirty;
+            this.newDirty = newDirty;
+        }
+
+        private void setNewValue(@NotNull ValueSnapshot newValue) {
+            this.newValue.release();
+            this.newValue = newValue;
+        }
+
+        private void release() {
+            oldValue.release();
+            newValue.release();
+        }
+    }
+
+    private record ValueSnapshot(@Nullable Object value, boolean owned) {
+        private void release() {
+            if (owned) {
+                DBUtils.releaseValue(value);
+            }
         }
     }
 
@@ -5030,6 +5283,8 @@ public class ResultSetViewer extends Viewer
         if (rowsToDelete.isEmpty()) {
             return;
         }
+
+        clearCellEditHistory();
 
         int rowsRemoved = 0;
         int lastRowNum = -1;

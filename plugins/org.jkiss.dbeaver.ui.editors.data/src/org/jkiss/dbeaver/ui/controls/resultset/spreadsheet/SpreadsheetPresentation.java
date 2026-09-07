@@ -30,7 +30,9 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
@@ -3039,6 +3041,32 @@ public class SpreadsheetPresentation extends AbstractPresentation
         ResultSetRow currentRow = getController().getCurrentRow();
         IGridRow focusRow = spreadsheet.getFocusRow();
         return currentAttribute == null || currentRow == null ? null : makeResultSetCellLocation(currentAttribute, currentRow, focusRow);
+    }
+
+    @Override
+    public void setCurrentCellLocation(@NotNull ResultSetCellLocation cellLocation) {
+        boolean recordMode = getController().isRecordMode();
+        IGridColumn column = spreadsheet.getColumnByElement(recordMode ? cellLocation.getRow() : cellLocation.getAttribute());
+        if (column == null) {
+            super.setCurrentCellLocation(cellLocation);
+            return;
+        }
+        for (int rowIndex = 0; rowIndex < spreadsheet.getItemCount(); rowIndex++) {
+            IGridRow row = spreadsheet.getRow(rowIndex);
+            if (row != null) {
+                GridCell cell = new GridCell(column, row);
+                ResultSetCellLocation candidate = getCellLocation(cell);
+                if (candidate.getRow() == cellLocation.getRow()
+                    && candidate.getAttribute() == cellLocation.getAttribute()
+                    && Arrays.equals(candidate.getRowIndexes(), cellLocation.getRowIndexes())
+                    && Objects.equals(candidate.getValuePath(), cellLocation.getValuePath())
+                ) {
+                    spreadsheet.setCursor(cell, false, true, true);
+                    return;
+                }
+            }
+        }
+        super.setCurrentCellLocation(cellLocation);
     }
 
     @NotNull
