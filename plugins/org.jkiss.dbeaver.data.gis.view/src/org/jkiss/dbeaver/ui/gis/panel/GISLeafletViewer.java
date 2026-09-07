@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
@@ -97,7 +98,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
     private final DBDAttributeBinding[] bindings;
     private final IResultSetPresentation presentation;
-    private final GISLeafletHttpServer.Handle server;
+    private final LocalResourceHttpServer.Handle server;
     private final String template;
 
     private Browser browser;
@@ -131,12 +132,6 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             throw new DBException("Error reading view template", e);
         }
 
-        try {
-            server = GISLeafletHttpServer.acquire();
-        } catch (Exception e) {
-            throw new DBException("Error initializing internal HTTP server for GIS viewer", e);
-        }
-
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
 
         composite = UIUtils.createPlaceholder(parent, 1);
@@ -158,6 +153,24 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             }
         } finally {
             browserCreating = false;
+        }
+
+        try {
+            server = LocalResourceHttpServer.acquire();
+            for (String resource : List.of(
+                "inc/leaflet.css",
+                "inc/leaflet.js",
+                "inc/layers.png",
+                "inc/wkx.min.js",
+                "inc/leaflet-lasso.min.js"
+            )) {
+                server.addResource(resource, () -> GISViewerActivator.getDefault().getResourceStream("web/" + resource));
+            }
+        } catch (Exception e) {
+            if (browser != null) {
+                browser.dispose();
+            }
+            throw new DBException("Error initializing internal HTTP server for GIS viewer", e);
         }
 
         if (browser != null) {
@@ -329,8 +342,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                     browser.setUrl("about:blank");
                 } else {
                     final Bounds bounds = recenter ? null : Bounds.tryExtractFromBrowser(browser);
-                    server.setIndex(generateViewScript(values, bounds));
-                    browser.setUrl(server.getUrl());
+                    server.addResource("index.html", generateViewScript(values, bounds));
+                    browser.setUrl(server.getUrl("index.html"));
                 }
             } catch (IOException e) {
                 throw new DBException("Error generating viewer script", e);
@@ -486,7 +499,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
             public void run() {
-                ShellUtils.launchProgram(server.getUrl());
+                ShellUtils.launchProgram(server.getUrl("index.html"));
             }
         });
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_copy_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {

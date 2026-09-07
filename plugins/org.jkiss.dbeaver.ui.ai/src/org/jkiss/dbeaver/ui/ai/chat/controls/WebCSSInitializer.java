@@ -26,13 +26,13 @@ import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatThemeSettings;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
@@ -42,12 +42,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class WebCSSInitializer {
+public class WebCSSInitializer implements AutoCloseable {
 
     private static final Log log = Log.getLog(WebCSSInitializer.class);
 
@@ -56,25 +53,29 @@ public class WebCSSInitializer {
     private static final String WEB_HTML_PATH = WEB_ROOT + "/index.html";
     private static final String EXTRA_HEAD_PLACEHOLDER = "<!--{{EXTRA_HEAD}}-->";
 
-    private final Path directory;
+    private final LocalResourceHttpServer.Handle server;
+    private final Map<String, String> resourceUrls = new HashMap<>();
 
     public WebCSSInitializer() throws IOException {
-        directory = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-ai-chat");
-        for (Bundle bundle : getResourceBundles()) {
-            Enumeration<URL> resources = bundle.findEntries(WEB_ROOT, "*", true);
-            if (resources == null) {
-                continue;
-            }
-            while (resources.hasMoreElements()) {
-                URL resource = resources.nextElement();
-                String resourcePath = getWebResourcePath(resource);
-                if (resourcePath == null || resourcePath.endsWith("/")) {
+        server = LocalResourceHttpServer.acquire();
+        try {
+            for (Bundle bundle : getResourceBundles()) {
+                Enumeration<URL> resources = bundle.findEntries(WEB_ROOT, "*", true);
+                if (resources == null) {
                     continue;
                 }
-                try (InputStream is = resource.openStream()) {
-                    copyWebResource(resourcePath, is);
+                while (resources.hasMoreElements()) {
+                    URL resource = resources.nextElement();
+                    String resourcePath = getWebResourcePath(resource);
+                    if (resourcePath == null || resourcePath.endsWith("/")) {
+                        continue;
+                    }
+                    registerWebResource(resourcePath, resource);
                 }
             }
+        } catch (IOException | RuntimeException e) {
+            server.close();
+            throw e;
         }
     }
 
@@ -99,25 +100,47 @@ public class WebCSSInitializer {
         return path.substring(webPathIndex);
     }
 
-    private void copyWebResource(@NotNull String resource, @NotNull InputStream is) throws IOException {
-        var path = directory.resolve(resource);
-        Files.createDirectories(path.getParent());
+    private void registerWebResource(@NotNull String resource, @NotNull URL url) throws IOException {
         if (resource.equals(WEB_CSS_PATH)) {
-            String cssContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            cssContent = updateCss(cssContent);
-            Files.writeString(path, cssContent);
+            try (InputStream is = url.openStream()) {
+                server.addResource(resource, updateCss(new String(is.readAllBytes(), StandardCharsets.UTF_8)));
+            }
         } else if (resource.equals(WEB_HTML_PATH)) {
-            String htmlContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            htmlContent = htmlContent.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent());
-            Files.writeString(path, htmlContent);
+            try (InputStream is = url.openStream()) {
+                String htmlContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                server.addResource(resource, htmlContent.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent()));
+            }
         } else {
-            Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
+            server.addResource(resource, url::openStream);
         }
     }
 
     @NotNull
     public String getWebHtmlPath() {
-        return directory.resolve(WEB_HTML_PATH).toUri().toString();
+        return server.getUrl(WEB_HTML_PATH);
+    }
+
+    @NotNull
+    String getResourceUrl(@NotNull DBPImage image) throws IOException {
+        String location = image.getLocation();
+        String resourceUrl = resourceUrls.get(location);
+        if (resourceUrl != null) {
+            return resourceUrl;
+        }
+        Path file = RuntimeUtils.getPlatformFile(location);
+        String fileName = file.getFileName().toString();
+        int extensionIndex = fileName.lastIndexOf('.');
+        String extension = extensionIndex >= 0 ? fileName.substring(extensionIndex) : "";
+        String resourcePath = "external/" + UUID.randomUUID() + extension;
+        server.addResource(resourcePath, () -> Files.newInputStream(file));
+        resourceUrl = server.getUrl(resourcePath);
+        resourceUrls.put(location, resourceUrl);
+        return resourceUrl;
+    }
+
+    @Override
+    public void close() {
+        server.close();
     }
 
     @NotNull

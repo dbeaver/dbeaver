@@ -1,0 +1,228 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.browser;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * A reference-counted loopback server for resources used by embedded browsers.
+ */
+public final class LocalResourceHttpServer {
+    @FunctionalInterface
+    public interface Resource {
+        @Nullable
+        InputStream openStream() throws IOException;
+    }
+
+    public static final class Handle implements AutoCloseable {
+        private final UUID id;
+        private final LocalResourceHttpServer server;
+        private boolean closed;
+
+        private Handle(@NotNull UUID id, @NotNull LocalResourceHttpServer server) {
+            this.id = id;
+            this.server = server;
+        }
+
+        public void addResource(@NotNull String path, @NotNull Resource resource) {
+            server.addResource(id, path, resource);
+        }
+
+        public void addResource(@NotNull String path, @NotNull String content) {
+            addResource(path, () -> new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+        }
+
+        @NotNull
+        public String getUrl(@NotNull String path) {
+            return server.getUrl(id, normalizePath(path));
+        }
+
+        @Override
+        public void close() {
+            synchronized (this) {
+                if (closed) {
+                    return;
+                }
+                closed = true;
+            }
+            release(id);
+        }
+    }
+
+    private static final Log log = Log.getLog(LocalResourceHttpServer.class);
+    private static final Object lock = new Object();
+    private static LocalResourceHttpServer instance;
+    private static int references;
+
+    private final HttpServer server;
+    private final ExecutorService executor;
+    private final Map<UUID, Map<String, Resource>> resources = new ConcurrentHashMap<>();
+
+    private LocalResourceHttpServer() throws IOException {
+        server = HttpServer.create();
+        executor = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "DBeaver local resource HTTP server");
+            thread.setDaemon(true);
+            return thread;
+        });
+        server.setExecutor(executor);
+        server.createContext("/", this::handle);
+        server.bind(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0), 0);
+        server.start();
+    }
+
+    @NotNull
+    public static Handle acquire() throws IOException {
+        synchronized (lock) {
+            if (instance == null) {
+                instance = new LocalResourceHttpServer();
+            }
+            UUID id = UUID.randomUUID();
+            instance.resources.put(id, new ConcurrentHashMap<>());
+            references++;
+            return new Handle(id, instance);
+        }
+    }
+
+    private static void release(@NotNull UUID id) {
+        synchronized (lock) {
+            if (instance == null || instance.resources.remove(id) == null) {
+                return;
+            }
+            if (--references == 0) {
+                instance.stop();
+                instance = null;
+            }
+        }
+    }
+
+    private void addResource(@NotNull UUID id, @NotNull String path, @NotNull Resource resource) {
+        Map<String, Resource> handleResources = resources.get(id);
+        if (handleResources == null) {
+            throw new IllegalStateException("The local resource server handle is closed");
+        }
+        handleResources.put(normalizePath(path), resource);
+    }
+
+    @NotNull
+    private String getUrl(@NotNull UUID id, @NotNull String path) {
+        return "http://127.0.0.1:" + server.getAddress().getPort() + '/' + id + '/' + path;
+    }
+
+    private void stop() {
+        server.stop(0);
+        executor.shutdownNow();
+    }
+
+    private void handle(@NotNull HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        Resource resource = getResource(path);
+        try (exchange) {
+            if (!exchange.getRequestMethod().equals("GET")) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+            if (resource == null) {
+                log.trace("No local browser resource found for path: " + path);
+                exchange.sendResponseHeaders(404, -1);
+                return;
+            }
+            try (InputStream content = resource.openStream()) {
+                if (content == null) {
+                    log.trace("No local browser resource content found for path: " + path);
+                    exchange.sendResponseHeaders(404, -1);
+                    return;
+                }
+                log.trace("Serving local browser resource for path: " + path);
+                exchange.getResponseHeaders().set("Content-Type", getContentType(path));
+                exchange.getResponseHeaders().set("Cache-Control", "no-store");
+                exchange.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
+                exchange.sendResponseHeaders(200, 0);
+                content.transferTo(exchange.getResponseBody());
+            }
+        }
+    }
+
+    @Nullable
+    private Resource getResource(@NotNull String path) {
+        String[] segments = path.split("/", 3);
+        if (segments.length != 3 || segments[1].isEmpty() || segments[2].isEmpty()) {
+            return null;
+        }
+        UUID id;
+        try {
+            id = UUID.fromString(segments[1]);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        Map<String, Resource> handleResources = resources.get(id);
+        return handleResources == null ? null : handleResources.get(segments[2]);
+    }
+
+    @NotNull
+    private static String normalizePath(@NotNull String path) {
+        String normalized = path.startsWith("/") ? path.substring(1) : path;
+        if (normalized.isEmpty() || normalized.startsWith("../") || normalized.endsWith("/..") || normalized.contains("/../")) {
+            throw new IllegalArgumentException("Invalid resource path: " + path);
+        }
+        return normalized;
+    }
+
+    @NotNull
+    private static String getContentType(@NotNull String path) {
+        String lowerCasePath = path.toLowerCase(Locale.ENGLISH);
+        if (lowerCasePath.endsWith(".html") || lowerCasePath.endsWith(".htm")) {
+            return "text/html; charset=UTF-8";
+        } else if (lowerCasePath.endsWith(".css")) {
+            return "text/css; charset=UTF-8";
+        } else if (lowerCasePath.endsWith(".js") || lowerCasePath.endsWith(".mjs")) {
+            return "text/javascript; charset=UTF-8";
+        } else if (lowerCasePath.endsWith(".json")) {
+            return "application/json; charset=UTF-8";
+        } else if (lowerCasePath.endsWith(".png")) {
+            return "image/png";
+        } else if (lowerCasePath.endsWith(".svg")) {
+            return "image/svg+xml";
+        } else if (lowerCasePath.endsWith(".jpg") || lowerCasePath.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else if (lowerCasePath.endsWith(".gif")) {
+            return "image/gif";
+        } else if (lowerCasePath.endsWith(".woff")) {
+            return "font/woff";
+        } else if (lowerCasePath.endsWith(".woff2")) {
+            return "font/woff2";
+        }
+        return "application/octet-stream";
+    }
+}
