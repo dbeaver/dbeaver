@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.auth.SMObjectType;
 import org.jkiss.dbeaver.model.connection.*;
@@ -88,6 +89,16 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
     protected DataSourceSerializerModern(@NotNull DataSourceRegistry<T> registry) {
         this.registry = registry;
+    }
+
+    @NotNull
+    protected DBPApplication getApplication() {
+        return DBWorkbench.getPlatform().getApplication();
+    }
+
+    @NotNull
+    protected DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
+        return DBWorkbench.getPlatform().getDataSourceProviderRegistry();
     }
 
     @Override
@@ -437,43 +448,46 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 }
             }
 
-            // Connection types
-            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(configurationMap, "connection-types")) {
-                String id = ctMap.getKey();
-                Map<String, Object> ctConfig = ctMap.getValue();
-                String name = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_NAME);
-                String description = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_DESCRIPTION);
-                String color = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_COLOR);
-                String alternativeColor = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_COLOR_DARK);
-                Boolean autoCommit = JSONUtils.getObjectProperty(ctConfig, "auto-commit");
-                Boolean confirmExecute = JSONUtils.getObjectProperty(ctConfig, "confirm-execute");
-                Boolean confirmDataChange = JSONUtils.getObjectProperty(ctConfig, "confirm-data-change");
-                Boolean smartCommit = JSONUtils.getObjectProperty(ctConfig, "smart-commit");
-                Boolean smartCommitRecover = JSONUtils.getObjectProperty(ctConfig, "smart-commit-recover");
-                Boolean autoCloseTransactions = JSONUtils.getObjectProperty(ctConfig, "auto-close-transactions");
-                Object closeTransactionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-transactions-period");
-                Boolean autoCloseConnections = JSONUtils.getObjectProperty(ctConfig, "auto-close-connections");
-                Object closeConnectionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-connections-period");
-                DBPConnectionType ct = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(id, null);
-                if (ct == null) {
-                    ct = new DBPConnectionType(
-                        id,
-                        name,
-                        color,
-                        alternativeColor,
-                        description,
-                        CommonUtils.toBoolean(autoCommit),
-                        CommonUtils.toBoolean(confirmExecute),
-                        CommonUtils.toBoolean(confirmDataChange),
-                        CommonUtils.toBoolean(smartCommit),
-                        CommonUtils.toBoolean(smartCommitRecover),
-                        CommonUtils.toBoolean(autoCloseTransactions),
-                        CommonUtils.toInt(closeTransactionsPeriod),
-                        CommonUtils.toBoolean(autoCloseConnections),
-                        CommonUtils.toInt(closeConnectionsPeriod));
-                    DBWorkbench.getPlatform().getDataSourceProviderRegistry().addConnectionType(ct);
+            // Connection types are managed globally in multi-user environments.
+            if (!getApplication().isMultiuser() && !getApplication().isDistributed()) {
+                DBPDataSourceProviderRegistry providerRegistry = getDataSourceProviderRegistry();
+                for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(configurationMap, "connection-types")) {
+                    String id = ctMap.getKey();
+                    Map<String, Object> ctConfig = ctMap.getValue();
+                    String name = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_NAME);
+                    String description = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_DESCRIPTION);
+                    String color = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_COLOR);
+                    String alternativeColor = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_COLOR_DARK);
+                    Boolean autoCommit = JSONUtils.getObjectProperty(ctConfig, "auto-commit");
+                    Boolean confirmExecute = JSONUtils.getObjectProperty(ctConfig, "confirm-execute");
+                    Boolean confirmDataChange = JSONUtils.getObjectProperty(ctConfig, "confirm-data-change");
+                    Boolean smartCommit = JSONUtils.getObjectProperty(ctConfig, "smart-commit");
+                    Boolean smartCommitRecover = JSONUtils.getObjectProperty(ctConfig, "smart-commit-recover");
+                    Boolean autoCloseTransactions = JSONUtils.getObjectProperty(ctConfig, "auto-close-transactions");
+                    Object closeTransactionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-transactions-period");
+                    Boolean autoCloseConnections = JSONUtils.getObjectProperty(ctConfig, "auto-close-connections");
+                    Object closeConnectionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-connections-period");
+                    DBPConnectionType ct = providerRegistry.getConnectionType(id, null);
+                    if (ct == null) {
+                        ct = new DBPConnectionType(
+                            id,
+                            name,
+                            color,
+                            alternativeColor,
+                            description,
+                            CommonUtils.toBoolean(autoCommit),
+                            CommonUtils.toBoolean(confirmExecute),
+                            CommonUtils.toBoolean(confirmDataChange),
+                            CommonUtils.toBoolean(smartCommit),
+                            CommonUtils.toBoolean(smartCommitRecover),
+                            CommonUtils.toBoolean(autoCloseTransactions),
+                            CommonUtils.toInt(closeTransactionsPeriod),
+                            CommonUtils.toBoolean(autoCloseConnections),
+                            CommonUtils.toInt(closeConnectionsPeriod));
+                        providerRegistry.addConnectionType(ct);
+                    }
+                    deserializeModifyPermissions(ctConfig, ct);
                 }
-                deserializeModifyPermissions(ctConfig, ct);
             }
 
             // Drivers
