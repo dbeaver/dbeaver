@@ -57,7 +57,8 @@ public final class PrefPageH2 extends AbstractPrefPage implements IWorkbenchPref
         UIUtils.createControlLabel(group, H2Messages.pref_security_allowed_classes_label);
         allowedClassesText = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
 
-        allowedClassesText.setText(String.join("\n", H2Utils.getUserAllowedClasses()));
+        currentAllowedClasses = H2Utils.getUserAllowedClasses();
+        allowedClassesText.setText(String.join("\n", currentAllowedClasses));
         allowedClassesText.addModifyListener(e -> {
             currentAllowedClasses = parseClasses(allowedClassesText.getText());
             UIUtils.setControlVisible(restartHint, !currentAllowedClasses.equals(actualAllowedClasses));
@@ -77,8 +78,7 @@ public final class PrefPageH2 extends AbstractPrefPage implements IWorkbenchPref
 
     @Override
     protected void performDefaults() {
-        H2Utils.resetUserAllowedClasses();
-        allowedClassesText.setText(String.join("\n", H2Utils.getUserAllowedClasses()));
+        allowedClassesText.setText(String.join("\n", H2Utils.getDefaultUserAllowedClasses()));
         allowedClassesText.notifyListeners(SWT.Modify, new Event());
 
         super.performDefaults();

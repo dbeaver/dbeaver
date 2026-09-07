@@ -22,8 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.Connection;
@@ -34,6 +36,7 @@ import java.sql.Connection;
 public class H2DataSource extends GenericDataSource {
 
     public static final String H2_URL_PREFIX_TCP = "jdbc:h2:tcp:";
+    public static final String H2_URL_PREFIX_SSL = "jdbc:h2:ssl:";
     public static final String H2_URL_PREFIX = "jdbc:h2:";
     public static final String H2_DB_FILE_EXTENSION = ".mv.db";
 
@@ -70,5 +73,24 @@ public class H2DataSource extends GenericDataSource {
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
         return super.openConnection(monitor, context, purpose);
+    }
+
+    @NotNull
+    @Override
+    protected JDBCConnectionImpl createConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @NotNull DBCExecutionPurpose purpose,
+        @NotNull String taskTitle
+    ) {
+        String url = getContainer().getActualConnectionConfiguration().getUrl();
+        if (url != null &&
+            url.startsWith(H2_URL_PREFIX) &&
+            !url.startsWith(H2_URL_PREFIX_TCP) &&
+            !url.startsWith(H2_URL_PREFIX_SSL)
+        ) {
+            return new H2ConnectionImpl(context, monitor, purpose, taskTitle);
+        }
+        return super.createConnection(monitor, context, purpose, taskTitle);
     }
 }
