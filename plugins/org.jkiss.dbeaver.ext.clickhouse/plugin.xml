@@ -165,6 +165,9 @@
             <type name="TUPLE*"/>
             <type name="MAP*"/>
             <type name="JSON"/>
+            <type name="JSON(*"/>
+            <type name="NULLABLE(JSON)"/>
+            <type name="NULLABLE(JSON(*"/>
 
             <!-- https://clickhouse.com/docs/sql-reference/data-types/geo -->
             <type name="POINT"/>

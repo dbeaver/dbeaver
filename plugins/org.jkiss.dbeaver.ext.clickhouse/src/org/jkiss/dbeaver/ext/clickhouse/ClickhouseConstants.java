@@ -35,6 +35,7 @@ public class ClickhouseConstants {
     public static final String DATA_TYPE_TUPLE = "Tuple";
     public static final String DATA_TYPE_MAP = "Map";
     public static final String DATA_TYPE_JSON = "JSON";
+    public static final String DATA_TYPE_NULLABLE_JSON = "Nullable(JSON)";
     public static final String CLICKHOUSE_SETTING_SESSION_ID = "clickhouse_setting_session_id";
     public static final String CLICKHOUSE_SETTING_SESSION_TIMEOUT = "clickhouse_setting_session_timeout";
     // Server setting that makes the driver serialize JSON columns as canonical JSON strings (so getString()
