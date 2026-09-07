@@ -87,19 +87,19 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
 
     @Nullable
     public static IInstanceController createClient(@Nullable Path workspacePath) {
-        final Path path = getConfigPath(workspacePath);
+        Path path = getConfigPath(workspacePath);
 
-        final SSLContext sslContext = initCustomSslContext();
+        SSLContext sslContext = initCustomSslContext();
         for (InstanceServerProperties serverProperties : deserializeProperties(path)) {
-            final IInstanceController instance = RestClient
+            IInstanceController instance = RestClient
                 .builder(URI.create("http://localhost:" + serverProperties.port()), IInstanceController.class)
                 .setSslContext(sslContext)
                 .setHeaders(Map.of(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + serverProperties.password()))
                 .create();
 
             try {
-                final long payload = System.currentTimeMillis();
-                final long response = instance.ping(payload);
+                long payload = System.currentTimeMillis();
+                long response = instance.ping(payload);
 
                 if (response != payload) {
                     throw new IllegalStateException("Invalid ping response: " + response + ", was expecting " + payload);
