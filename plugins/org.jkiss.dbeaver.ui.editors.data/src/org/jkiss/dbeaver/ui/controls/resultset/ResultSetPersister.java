@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.data.resultset.DBDDataStatementInfo;
 import org.jkiss.dbeaver.model.data.resultset.DBDDataUpdateListener;
 import org.jkiss.dbeaver.model.data.resultset.DBDResultSetDataUpdater;
 import org.jkiss.dbeaver.model.data.resultset.DataUpdaterJob;
-import org.jkiss.dbeaver.model.data.resultset.ISmartTransactionManager;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
@@ -591,8 +591,8 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
 
     @Nullable
     @Override
-    public ISmartTransactionManager getSmartTransactionManager() {
-        return viewer.getContainer() instanceof ISmartTransactionManager transactionManager ? transactionManager : null;
+    public DBCSmartTransactionManager getSmartTransactionManager() {
+        return viewer.getContainer() instanceof DBCSmartTransactionManager transactionManager ? transactionManager : null;
     }
 
     /**

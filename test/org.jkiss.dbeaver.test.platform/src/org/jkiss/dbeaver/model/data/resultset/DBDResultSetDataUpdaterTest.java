@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.messages.DataMessages;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
@@ -160,6 +161,18 @@ public class DBDResultSetDataUpdaterTest {
 
         Assertions.assertNull(updater.executeStatements(monitor, Map.of(), null, false));
         Assertions.assertFalse(updater.getInsertStatements().getFirst().isExecuted());
+    }
+
+    @Test
+    public void executeStatementsWithoutExecutionContextReturnsError() {
+        DBDResultSetModel model = Mockito.mock(DBDResultSetModel.class);
+        DBDValueRow row = Mockito.mock(DBDValueRow.class);
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+
+        Throwable error = new TestDataUpdater(model, row).executeStatements(monitor, Map.of(), null, false);
+
+        Assertions.assertInstanceOf(DBCException.class, error);
+        Assertions.assertEquals("No execution context", error.getMessage());
     }
 
     private static class TestDataUpdater extends DBDResultSetDataUpdater<DBDDataStatementInfo, DBDValueRow, DBDResultSetModel> {

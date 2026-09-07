@@ -26,7 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.data.resultset.ISmartTransactionManager;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -127,7 +127,7 @@ public class DataSourcePropertyTester extends PropertyTester {
                     if (context != null && context.isConnected()) {
                         if (receiver instanceof IPageChangeProvider pcp) {
                             Object selectedPage = pcp.getSelectedPage();
-                            if (!(selectedPage instanceof ISmartTransactionManager)) {
+                            if (!(selectedPage instanceof DBCSmartTransactionManager)) {
                                 return Boolean.FALSE.equals(expectedValue);
                             }
                         }

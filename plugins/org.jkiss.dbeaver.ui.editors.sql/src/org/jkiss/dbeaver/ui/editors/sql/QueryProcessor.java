@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.resultset.ISmartTransactionManager;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -51,7 +51,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionManager, SQLEditor.QueryProcessingComponent {
+abstract class QueryProcessor implements SQLResultsConsumer, DBCSmartTransactionManager, SQLEditor.QueryProcessingComponent {
     static final int QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION = 100;
 
 

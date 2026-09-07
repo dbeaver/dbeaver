@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.data.resultset;
 /**
  * Smart transaction manager
  */
-public interface ISmartTransactionManager {
+public interface DBCSmartTransactionManager {
 
     boolean isSmartAutoCommit();
 

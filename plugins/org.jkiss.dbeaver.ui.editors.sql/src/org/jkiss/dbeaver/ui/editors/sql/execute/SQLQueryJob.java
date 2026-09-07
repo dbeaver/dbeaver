@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.resultset.ISmartTransactionManager;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
@@ -593,7 +593,7 @@ public class SQLQueryJob extends DataSourceJob {
                     //statistics.setRowsUpdated(0);
 
                     // Toggle smart commit mode
-                    if (resultsConsumer instanceof ISmartTransactionManager && ((ISmartTransactionManager) resultsConsumer).isSmartAutoCommit()) {
+                    if (resultsConsumer instanceof DBCSmartTransactionManager && ((DBCSmartTransactionManager) resultsConsumer).isSmartAutoCommit()) {
                         changedToManualCommit = DBExecUtils.checkSmartAutoCommit(session, execStatement.getText());
                     }
                     long execStartTime = System.currentTimeMillis();

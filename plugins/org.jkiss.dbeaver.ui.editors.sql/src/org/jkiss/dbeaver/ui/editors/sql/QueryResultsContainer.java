@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.resultset.ISmartTransactionManager;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
@@ -59,7 +59,7 @@ abstract class QueryResultsContainer implements
     IResultSetListener,
     IResultSetContainerExt,
     SQLQueryContainer,
-    ISmartTransactionManager,
+    DBCSmartTransactionManager,
     IQueryExecuteController,
     SQLEditor.QueryProcessingComponent {
 

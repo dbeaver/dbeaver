@@ -308,7 +308,7 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
     }
 
     @Nullable
-    protected ISmartTransactionManager getSmartTransactionManager() {
+    protected DBCSmartTransactionManager getSmartTransactionManager() {
         return null;
     }
 
@@ -316,9 +316,13 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
     public Throwable executeStatements(
         @NotNull DBRProgressMonitor monitor,
         @NotNull Map<String, Object> options,
-        @Nullable ISmartTransactionManager stm,
+        @Nullable DBCSmartTransactionManager stm,
         boolean generateScript
     ) {
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            return new DBCException("No execution context");
+        }
         monitor.beginTask(
             DataMessages.controls_resultset_viewer_monitor_aply_changes,
             deleteStatements.size()
@@ -327,7 +331,7 @@ public abstract class DBDResultSetDataUpdater<T extends DBDDataStatementInfo, R 
         );
 
         try (
-            DBCSession session = getExecutionContext().openSession(
+            DBCSession session = executionContext.openSession(
                 monitor,
                 DBCExecutionPurpose.USER,
                 DataMessages.controls_resultset_viewer_job_update

@@ -59,7 +59,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
-import org.jkiss.dbeaver.model.data.resultset.ISmartTransactionManager;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
@@ -149,7 +149,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPDataSourceTask,
     DBPDataSourceAcquirer,
     IResultSetProvider,
-    ISmartTransactionManager,
+    DBCSmartTransactionManager,
     IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
