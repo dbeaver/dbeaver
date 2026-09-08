@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,14 @@ import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
 public interface UIServiceAuth {
+
+    /**
+     * Opens an authorization URL and shows a modal dialog until the request completes.
+     * The supplied future is canceled if the user closes the dialog.
+     */
+    default void showBrowserPopup(@NotNull URI browserUrl, @NotNull CompletableFuture<Void> future) {
+        throw new UnsupportedOperationException("Browser authorization popup is not supported");
+    }
 
     /**
      * Shows a modal dialog displaying an authorization code. Doesn't prompt anything.
