@@ -1257,7 +1257,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         });
         textWidget.addVerifyKeyListener(e -> {
-            if (e.keyCode == SWT.ESC) {
+            if (e.keyCode == SWT.ESC && suggestionTextPainter.hasContentToShow()) {
                 e.doit = false;
                 suggestionTextPainter.removeHint();
             }
