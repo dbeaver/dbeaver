@@ -25,9 +25,20 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Auth model that obtains the database password by running a shell command at connect time.
@@ -109,12 +120,30 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
         command.setWaitProcessFinish(true);
         command.setWorkingDirectory(credentials.getWorkingDirectory());
         DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, container.getVariablesResolver(true));
+        CompletableFuture<String> outputFuture = null;
+        CompletableFuture<String> errorsFuture = null;
+        ExecutorService streamExecutor = null;
         try {
             processDescriptor.execute();
+            Process process = processDescriptor.getProcess();
+            if (process == null) {
+                throw new DBException("Password command did not start");
+            }
+            // Drain both process pipes while waiting. A child can block once the OS pipe buffer is full.
+            streamExecutor = Executors.newFixedThreadPool(2, runnable -> {
+                Thread thread = new Thread(runnable, "DBeaver password command stream reader");
+                thread.setDaemon(true);
+                return thread;
+            });
+            outputFuture = readProcessStream(process.getInputStream(), streamExecutor);
+            errorsFuture = readProcessStream(process.getErrorStream(), streamExecutor);
             int exitCode = processDescriptor.waitFor(credentials.getCommandTimeoutMs());
-            String output = CommonUtils.notEmpty(processDescriptor.dumpOutput());
+            if (process.isAlive()) {
+                throw new DBException("Password command timed out");
+            }
+            String output = CommonUtils.notEmpty(outputFuture.join());
             if (exitCode != 0) {
-                String errors = CommonUtils.notEmpty(processDescriptor.dumpErrors()).trim();
+                String errors = CommonUtils.notEmpty(errorsFuture.join()).trim();
                 throw new DBException("Password command exited with code " + exitCode +
                     (errors.isEmpty() ? "" : ": " + errors));
             }
@@ -132,6 +161,25 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
             if (processDescriptor.isRunning()) {
                 processDescriptor.terminate();
             }
+            if (streamExecutor != null) {
+                streamExecutor.shutdownNow();
+            }
         }
+    }
+
+    @NotNull
+    private static CompletableFuture<String> readProcessStream(
+        @NotNull InputStream inputStream,
+        @NotNull ExecutorService executor
+    ) {
+        return CompletableFuture.supplyAsync(() -> {
+            StringWriter buffer = new StringWriter();
+            try (Reader input = new InputStreamReader(inputStream, GeneralUtils.getDefaultConsoleEncoding())) {
+                IOUtils.copyText(input, buffer);
+            } catch (IOException e) {
+                e.printStackTrace(new PrintWriter(buffer, true));
+            }
+            return buffer.toString();
+        }, executor);
     }
 }
