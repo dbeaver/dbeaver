@@ -3051,22 +3051,38 @@ public class SpreadsheetPresentation extends AbstractPresentation
             super.setCurrentCellLocation(cellLocation);
             return;
         }
+
+        // Fast-path: locate the row directly by element (common case: no nested row/value path)
+        int fromIndex = recordMode ? 0 : cellLocation.getRow().getVisualNumber();
+        Object rowElement = recordMode ? cellLocation.getAttribute() : cellLocation.getRow();
+        IGridRow row = spreadsheet.getRowByElement(fromIndex, rowElement);
+        if (row != null && trySetCursor(cellLocation, column, row)) {
+            return;
+        }
+
+        // Locate the row by iterating through all rows (needed for nested rows/value paths)
         for (int rowIndex = 0; rowIndex < spreadsheet.getItemCount(); rowIndex++) {
-            IGridRow row = spreadsheet.getRow(rowIndex);
-            if (row != null) {
-                GridCell cell = new GridCell(column, row);
-                ResultSetCellLocation candidate = getCellLocation(cell);
-                if (candidate.getRow() == cellLocation.getRow()
-                    && candidate.getAttribute() == cellLocation.getAttribute()
-                    && Arrays.equals(candidate.getRowIndexes(), cellLocation.getRowIndexes())
-                    && Objects.equals(candidate.getValuePath(), cellLocation.getValuePath())
-                ) {
-                    spreadsheet.setCursor(cell, false, true, true);
-                    return;
-                }
+            IGridRow row1 = spreadsheet.getRow(rowIndex);
+            if (row1 != null && trySetCursor(cellLocation, column, row1)) {
+                return;
             }
         }
+
         super.setCurrentCellLocation(cellLocation);
+    }
+
+    private boolean trySetCursor(@NotNull ResultSetCellLocation location, @NotNull IGridColumn column, @NotNull IGridRow row) {
+        var cell = new GridCell(column, row);
+        var candidate = getCellLocation(cell);
+        if (candidate.getRow() == location.getRow()
+            && candidate.getAttribute() == location.getAttribute()
+            && Arrays.equals(candidate.getRowIndexes(), location.getRowIndexes())
+            && Objects.equals(candidate.getValuePath(), location.getValuePath())
+        ) {
+            spreadsheet.setCursor(cell, false, true, true);
+            return true;
+        }
+        return false;
     }
 
     @NotNull
