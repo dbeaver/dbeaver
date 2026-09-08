@@ -17,12 +17,10 @@
 package org.jkiss.dbeaver.ext.cdata.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -39,6 +37,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 final class CDataDriverIconLoader {
     private static final Log log = Log.getLog(CDataDriverIconLoader.class);
@@ -208,6 +209,6 @@ final class CDataDriverIconLoader {
 
     @FunctionalInterface
     interface IconConsumer {
-        void accept(DBIcon icon, DBIcon iconBig);
+        void accept(@Nullable DBIcon icon, @Nullable DBIcon iconBig);
     }
 }

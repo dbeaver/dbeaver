@@ -16,6 +16,7 @@
 package org.jkiss.dbeaver.ext.cdata.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -134,7 +135,8 @@ final class CDataLicenseValidator {
         return new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parsed.getLicenseId(), null);
     }
 
-    private static String decode(String output, String prefix) {
+    @Nullable
+    private static String decode(@NotNull String output, @NotNull String prefix) {
         for (String line : output.lines().toList()) {
             if (line.startsWith(prefix)) {
                 return new String(Base64.getDecoder().decode(line.substring(prefix.length())), StandardCharsets.UTF_8);
@@ -143,6 +145,7 @@ final class CDataLicenseValidator {
         return null;
     }
 
+    @NotNull
     private static CDataDriverLicense unavailable() {
         return new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, "", null);
     }

@@ -75,10 +75,6 @@ final class CDataLicenseParser {
     }
 
     /**
-     * Recognizes why CData refused to issue a license. A successful activation is detected by the
-     * license file CData writes, never by the wording of its output.
-     */
-    /**
      * Short reason CData gave for refusing the activation, without the prompts we fed it,
      * the diagnostic codes and the support blurb. The full output goes to the log.
      */
@@ -88,13 +84,18 @@ final class CDataLicenseParser {
         return matcher.find() ? matcher.group(1) : null;
     }
 
+    /**
+     * Recognizes why CData refused to issue a license. A successful activation is detected by the
+     * license file CData writes, never by the wording of its output.
+     */
     @NotNull
     static CDataLicenseStatus parseActivationFailure(@NotNull String output) {
         CDataLicenseStatus errorStatus = parseErrorStatus(output.toLowerCase(Locale.ENGLISH));
         return errorStatus == null ? CDataLicenseStatus.VALIDATION_UNAVAILABLE : errorStatus;
     }
 
-    private static CDataLicenseStatus parseErrorStatus(String normalized) {
+    @Nullable
+    private static CDataLicenseStatus parseErrorStatus(@NotNull String normalized) {
         if (normalized.contains("machine mismatch") || normalized.contains("different machine") ||
             normalized.contains("node mismatch")) {
             return CDataLicenseStatus.MACHINE_MISMATCH;
@@ -115,7 +116,7 @@ final class CDataLicenseParser {
     }
 
     @Nullable
-    private static Integer getRemainingDays(String normalized) {
+    private static Integer getRemainingDays(@NotNull String normalized) {
         Matcher matcher = DAYS_REMAINING.matcher(normalized);
         if (matcher.find()) {
             String days = matcher.group(1) == null ? matcher.group(2) : matcher.group(1);
@@ -128,7 +129,7 @@ final class CDataLicenseParser {
         return null;
     }
 
-    private static boolean isPurchased(String normalized, boolean expiring) {
+    private static boolean isPurchased(@NotNull String normalized, boolean expiring) {
         return normalized.contains("single developer license") ||
             normalized.contains("multi-developer license") ||
             normalized.contains("site license") ||
@@ -139,7 +140,7 @@ final class CDataLicenseParser {
             expiring && normalized.contains("license");
     }
 
-    private static boolean isTrial(String normalized) {
+    private static boolean isTrial(@NotNull String normalized) {
         if (!normalized.contains("trial license") && !normalized.contains("limited trial version")) {
             return false;
         }
@@ -150,7 +151,7 @@ final class CDataLicenseParser {
             VALID_WORD.matcher(normalized).find() || DAYS_REMAINING.matcher(normalized).find();
     }
 
-    private static boolean hasUnavailableStatus(String normalized) {
+    private static boolean hasUnavailableStatus(@NotNull String normalized) {
         return normalized.contains("not installed") || normalized.contains("unavailable") ||
             normalized.contains("unknown") || normalized.contains("inactive") ||
             normalized.contains("not active") || normalized.contains("not valid") ||

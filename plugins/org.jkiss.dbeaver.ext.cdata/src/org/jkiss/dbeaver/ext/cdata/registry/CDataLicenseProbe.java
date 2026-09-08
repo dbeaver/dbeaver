@@ -15,6 +15,9 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
@@ -27,7 +30,7 @@ public final class CDataLicenseProbe {
     private CDataLicenseProbe() {
     }
 
-    public static void main(String[] args) {
+    public static void main(@NotNull String[] args) {
         if (args.length != 1) {
             System.exit(2);
             return;
@@ -53,7 +56,8 @@ public final class CDataLicenseProbe {
         }
     }
 
-    private static String encode(Object value) {
+    @NotNull
+    private static String encode(@Nullable Object value) {
         String text = value == null ? "" : String.valueOf(value);
         return Base64.getEncoder().encodeToString(text.getBytes(StandardCharsets.UTF_8));
     }

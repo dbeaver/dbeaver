@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverDescriptor;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataLicenseType;
@@ -37,7 +38,7 @@ public class CDataConnectionPage extends GenericConnectionPage {
     private Button activateButton;
 
     @Override
-    public void createAdvancedSettingsGroup(Composite composite) {
+    public void createAdvancedSettingsGroup(@NotNull Composite composite) {
         Composite licenseGroup = UIUtils.createTitledComposite(
             composite,
             CDataUIMessages.license_group_title,
@@ -88,6 +89,7 @@ public class CDataConnectionPage extends GenericConnectionPage {
         statusLabel.getParent().layout(true, true);
     }
 
+    @NotNull
     private CDataDriverDescriptor getDriver() {
         return (CDataDriverDescriptor) site.getDriver();
     }

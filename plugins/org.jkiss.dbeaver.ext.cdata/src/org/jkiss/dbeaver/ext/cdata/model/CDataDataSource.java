@@ -36,8 +36,9 @@ public class CDataDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new CDataSQLDialect());
     }
 
+    @NotNull
     @Override
-    protected Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, DBPDriver driver) throws DBCConnectException {
+    protected Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, @NotNull DBPDriver driver) throws DBCConnectException {
         try {
             return driver.getDriverLoader(getContainer()).getDriverInstance(monitor);
         } catch (DBException e) {

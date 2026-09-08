@@ -15,6 +15,9 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,10 +26,10 @@ public final class CDataPromptProcess {
     private CDataPromptProcess() {
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(@NotNull String[] args) throws IOException, InterruptedException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String name = prompt(reader, "Name:");
-        String email = prompt(reader, "Email Address:");
+        final String name = prompt(reader, "Name:");
+        final String email = prompt(reader, "Email Address:");
         System.out.println("Please enter your Product Key:");
         System.out.println("  (you may use \"TRIAL\" as product key)");
         System.out.flush();
@@ -44,7 +47,8 @@ public final class CDataPromptProcess {
         prompt(reader, "Press any key to exit");
     }
 
-    private static String prompt(BufferedReader reader, String prompt) throws IOException {
+    @Nullable
+    private static String prompt(@NotNull BufferedReader reader, @NotNull String prompt) throws IOException {
         System.out.print(prompt);
         System.out.flush();
         return reader.readLine();

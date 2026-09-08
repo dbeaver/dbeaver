@@ -22,10 +22,9 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Properties;
-
-import static org.mockito.Mockito.mock;
 
 public class CDataAuthModelTest extends DBeaverUnitTest {
     @Test
@@ -45,7 +44,7 @@ public class CDataAuthModelTest extends DBeaverUnitTest {
         Properties properties = new Properties();
 
         authModel.collectConnectionProperties(
-            mock(DBPDataSourceContainer.class),
+            Mockito.mock(DBPDataSourceContainer.class),
             credentials,
             new DBPConnectionConfiguration(),
             properties,

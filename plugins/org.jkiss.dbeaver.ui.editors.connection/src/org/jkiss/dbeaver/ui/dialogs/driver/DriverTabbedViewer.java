@@ -366,8 +366,9 @@ public class DriverTabbedViewer extends StructuredViewer {
         }
 
         private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {
+            @NotNull
             @Override
-            public Image getImage(Object element) {
+            public Image getImage(@NotNull Object element) {
                 DBPDriver driver = (DBPDriver) element;
                 DriverIconLoader.load(driver, viewer);
                 return DBeaverIcons.getImage(driver.getIconBig());

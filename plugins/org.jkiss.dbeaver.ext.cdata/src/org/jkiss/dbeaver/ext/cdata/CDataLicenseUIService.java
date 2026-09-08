@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverLicense;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataLicenseType;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataResolvedDriver;
 
+/**
+ * Provides UI operations for CData license activation.
+ */
 public interface CDataLicenseUIService {
     @Nullable
     default CDataDriverLicense activateLicense(@NotNull CDataDriverDescriptor driver) {

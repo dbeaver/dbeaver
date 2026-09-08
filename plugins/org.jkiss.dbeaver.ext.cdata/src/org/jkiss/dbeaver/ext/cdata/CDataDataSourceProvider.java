@@ -38,7 +38,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class CDataDataSourceProvider extends GenericDataSourceProvider<CDataDataSource> implements DriverProvider {
-    /** CData names its products "<name> JDBC Driver", a couple of them just "<name> Driver". */
+    /** CData names its products {@code <name> JDBC Driver}, a couple of them just {@code <name> Driver}. */
     private static final Pattern DRIVER_NAME_SUFFIX = Pattern.compile("\\s*(JDBC\\s+)?Driver$");
 
     @DynamicCall

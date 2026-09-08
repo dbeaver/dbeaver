@@ -21,6 +21,8 @@ import org.jkiss.code.NotNull;
 import java.nio.file.Path;
 
 /**
+ * Describes a resolved CData driver installation.
+ *
  * @param licensePath license file next to the driver JAR - CData only finds it there when the JAR
  *                    itself is named {@code cdata.jdbc.<source>.jar}
  */

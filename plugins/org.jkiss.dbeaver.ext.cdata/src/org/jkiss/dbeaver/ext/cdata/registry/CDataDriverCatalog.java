@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.cdata.registry;
 
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public final class CDataDriverCatalog {
     }
 
     @NotNull
-    private static List<CDataDriverInfo> validate(CatalogFile catalog) {
+    private static List<CDataDriverInfo> validate(@Nullable CatalogFile catalog) {
         if (catalog == null) {
             throw new IllegalStateException("CData driver catalog is empty");
         }
@@ -105,13 +106,13 @@ public final class CDataDriverCatalog {
         return List.copyOf(catalog.drivers);
     }
 
-    private static void requireText(String value, String field) {
+    private static void requireText(@Nullable String value, @NotNull String field) {
         if (value == null || value.isBlank()) {
             throw new IllegalStateException("CData driver catalog field is missing: " + field);
         }
     }
 
-    private static void requireUnique(Set<String> values, String value, String field) {
+    private static void requireUnique(@NotNull Set<String> values, @NotNull String value, @NotNull String field) {
         if (!values.add(value)) {
             throw new IllegalStateException("Duplicate CData " + field + ": " + value);
         }

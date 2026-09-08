@@ -51,7 +51,7 @@ public class CDataAuthModelConfigurator
     @Override
     public void createControl(
         @NotNull Composite parent,
-        DBAAuthModel<?> object,
+        @NotNull DBAAuthModel<?> object,
         @NotNull Runnable propertyChangeListener
     ) {
         Label description = UIUtils.createLabel(parent, CDataUIMessages.auth_native_url_builder_description);
@@ -93,6 +93,7 @@ public class CDataAuthModelConfigurator
         builderRunning = true;
         setRunButtonEnabled(false);
         new AbstractJob(CDataUIMessages.auth_native_url_builder_job) {
+            @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {

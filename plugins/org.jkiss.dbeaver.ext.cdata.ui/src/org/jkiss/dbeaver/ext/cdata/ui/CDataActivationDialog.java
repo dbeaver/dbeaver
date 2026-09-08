@@ -65,8 +65,9 @@ final class CDataActivationDialog extends TitleAreaDialog {
         this.selectedType = fixedType == null ? CDataLicenseType.PURCHASED : fixedType;
     }
 
+    @NotNull
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Control createDialogArea(@NotNull Composite parent) {
         setTitle(CDataUIMessages.activation_dialog_title);
         setMessage(NLS.bind(CDataUIMessages.activation_dialog_message, driver.getName()));
 
@@ -145,13 +146,13 @@ final class CDataActivationDialog extends TitleAreaDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         super.createButtonsForButtonBar(parent);
         updateState();
     }
 
     @Override
-    protected void configureShell(Shell newShell) {
+    protected void configureShell(@NotNull Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(CDataUIMessages.activation_dialog_title);
     }

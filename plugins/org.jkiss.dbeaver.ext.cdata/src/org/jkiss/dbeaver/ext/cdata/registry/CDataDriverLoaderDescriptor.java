@@ -111,6 +111,8 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
     }
 
     /**
+     * Attempts to load the driver.
+     *
      * @return true when the driver is loaded and may be used
      */
     private synchronized boolean tryLoadDriver(

@@ -76,7 +76,7 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
     }
 
     @Override
-    public void init(IWorkbench workbench) {
+    public void init(@NotNull IWorkbench workbench) {
     }
 
     @NotNull
@@ -167,13 +167,15 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
         column.getColumn().setText(title);
         column.getColumn().setWidth(width);
         column.setLabelProvider(new ColumnLabelProvider() {
+            @NotNull
             @Override
-            public String getText(Object element) {
+            public String getText(@NotNull Object element) {
                 return textProvider.getText((LicenseEntry) element);
             }
 
+            @Nullable
             @Override
-            public Image getImage(Object element) {
+            public Image getImage(@NotNull Object element) {
                 if (licenseViewer.getTable().indexOf(column.getColumn()) == 0) {
                     return DBeaverIcons.getImage(((LicenseEntry) element).driver().getIcon());
                 }
@@ -186,6 +188,7 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
         int generation = ++refreshGeneration;
         setLoading(true);
         refreshJob = new AbstractJob(CDataUIMessages.preference_load_job) {
+            @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 List<LicenseEntry> licenses = new ArrayList<>();

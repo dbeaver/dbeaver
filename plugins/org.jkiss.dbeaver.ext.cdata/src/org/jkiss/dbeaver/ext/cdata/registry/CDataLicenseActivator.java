@@ -342,7 +342,7 @@ public final class CDataLicenseActivator {
         }
     }
 
-    private static void deleteActivationDirectory(Path directory) {
+    private static void deleteActivationDirectory(@Nullable Path directory) {
         if (directory == null) {
             return;
         }
@@ -360,7 +360,7 @@ public final class CDataLicenseActivator {
         }
     }
 
-    private static void closeActivationLock(FileLock lock, FileChannel channel) {
+    private static void closeActivationLock(@Nullable FileLock lock, @Nullable FileChannel channel) {
         try {
             if (lock != null) {
                 lock.release();
@@ -416,7 +416,7 @@ public final class CDataLicenseActivator {
     }
 
     @NotNull
-    private static String redact(@NotNull String text, String value) {
+    private static String redact(@NotNull String text, @Nullable String value) {
         return value == null || value.isEmpty() ? text : text.replace(value, "<redacted>");
     }
 }

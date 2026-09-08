@@ -112,12 +112,14 @@ final class CDataProcessExecutor {
                 try {
                     process.getInputStream().close();
                 } catch (IOException ignored) {
+                    // Ignore close failure during cleanup
                 }
             }
             if (inputWriter != null) {
                 try {
                     inputWriter.close();
                 } catch (IOException ignored) {
+                    // Ignore close failure during cleanup
                 }
             }
             outputExecutor.shutdownNow();

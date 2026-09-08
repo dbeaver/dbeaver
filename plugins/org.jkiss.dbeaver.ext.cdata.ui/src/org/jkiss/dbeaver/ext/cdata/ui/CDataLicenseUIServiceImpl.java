@@ -53,6 +53,7 @@ public class CDataLicenseUIServiceImpl implements CDataLicenseUIService {
         }
         try {
             return new UITask<CDataDriverLicense>() {
+                @Nullable
                 @Override
                 protected CDataDriverLicense runTask() {
                     ActivationIdentity identity = trialIdentities.getOrDefault(driver, ActivationIdentity.EMPTY);

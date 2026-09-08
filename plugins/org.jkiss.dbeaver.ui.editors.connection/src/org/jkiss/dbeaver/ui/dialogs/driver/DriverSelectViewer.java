@@ -491,7 +491,7 @@ public class DriverSelectViewer extends Viewer {
 
     private static class CommercialDriverFilter extends ViewerFilter {
         @Override
-        public boolean select(Viewer viewer, Object parentElement, Object element) {
+        public boolean select(@NotNull Viewer viewer, @NotNull Object parentElement, @NotNull Object element) {
             return !(element instanceof DBPDriverWithLicense);
         }
     }

@@ -20,33 +20,33 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
 
 public class DBNDataSourceTest {
     @Test
     public void loadDriverIconAndRefreshNode() {
-        DBNModel model = mock(DBNModel.class);
-        DBNNode parent = mock(DBNNode.class);
-        when(parent.getModel()).thenReturn(null, model);
+        DBNModel model = Mockito.mock(DBNModel.class);
+        DBNNode parent = Mockito.mock(DBNNode.class);
+        Mockito.when(parent.getModel()).thenReturn(null, model);
 
-        DBPDriver driver = mock(DBPDriver.class, withSettings().extraInterfaces(DBPDriverWithLazyIcon.class));
-        when(driver.getNavigatorRoot()).thenReturn(mock(DBXTreeNode.class));
-        DBPDataSourceContainer dataSource = mock(DBPDataSourceContainer.class);
-        when(dataSource.getDriver()).thenReturn(driver);
+        DBPDriver driver = Mockito.mock(
+            DBPDriver.class, Mockito.withSettings().extraInterfaces(DBPDriverWithLazyIcon.class));
+        Mockito.when(driver.getNavigatorRoot()).thenReturn(Mockito.mock(DBXTreeNode.class));
+        DBPDataSourceContainer dataSource = Mockito.mock(DBPDataSourceContainer.class);
+        Mockito.when(dataSource.getDriver()).thenReturn(driver);
 
         DBNDataSource node = new DBNDataSource(parent, dataSource);
         node.getNodeIcon();
         node.getNodeIcon();
 
         ArgumentCaptor<Runnable> callbackCaptor = ArgumentCaptor.forClass(Runnable.class);
-        verify((DBPDriverWithLazyIcon) driver, times(2)).loadIcon(callbackCaptor.capture());
-        assertSame(callbackCaptor.getAllValues().get(0), callbackCaptor.getAllValues().get(1));
+        Mockito.verify((DBPDriverWithLazyIcon) driver, Mockito.times(2)).loadIcon(callbackCaptor.capture());
+        Assertions.assertSame(callbackCaptor.getAllValues().get(0), callbackCaptor.getAllValues().get(1));
 
         callbackCaptor.getValue().run();
-        verify(model).fireNodeUpdate(node, node, DBNEvent.NodeChange.STRUCT_REFRESH);
+        Mockito.verify(model).fireNodeUpdate(node, node, DBNEvent.NodeChange.STRUCT_REFRESH);
     }
 }

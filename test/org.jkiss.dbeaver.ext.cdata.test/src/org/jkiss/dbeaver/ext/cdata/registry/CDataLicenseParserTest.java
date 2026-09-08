@@ -15,6 +15,7 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -55,7 +56,10 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         );
         Assertions.assertEquals(CDataLicenseStatus.PURCHASED_ACTIVE, parseInformation("Single Developer License").getStatus());
         Assertions.assertEquals(CDataLicenseStatus.PURCHASED_EXPIRING, parseInformation("License expires in 2 days").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.PURCHASED_EXPIRING, parseInformation("Single Developer License, 2 days left").getStatus());
+        Assertions.assertEquals(
+            CDataLicenseStatus.PURCHASED_EXPIRING,
+            parseInformation("Single Developer License, 2 days left").getStatus()
+        );
         Assertions.assertEquals(CDataLicenseStatus.MACHINE_MISMATCH, parseInformation("License machine mismatch").getStatus());
         Assertions.assertEquals(CDataLicenseStatus.WRONG_MAJOR_VERSION, parseInformation("License version mismatch").getStatus());
         Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Unknown License").getStatus());
@@ -65,9 +69,18 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         Assertions.assertEquals(CDataLicenseStatus.INVALID_KEY, parseInformation("Invalid trial license").getStatus());
         Assertions.assertEquals(CDataLicenseStatus.INVALID_KEY, parseInformation("Trial license is invalid").getStatus());
         Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Trial license validation failed").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Purchased license validation failed").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Single Developer License inactive").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Single Developer License revoked").getStatus());
+        Assertions.assertEquals(
+            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
+            parseInformation("Purchased license validation failed").getStatus()
+        );
+        Assertions.assertEquals(
+            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
+            parseInformation("Single Developer License inactive").getStatus()
+        );
+        Assertions.assertEquals(
+            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
+            parseInformation("Single Developer License revoked").getStatus()
+        );
         Assertions.assertEquals(
             CDataLicenseStatus.VALIDATION_UNAVAILABLE,
             CDataLicenseParser.parseInformation(Map.of("NodeId", "test-node")).getStatus()
@@ -416,12 +429,17 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         Assertions.assertEquals(CDataLicenseStatus.TRIAL_ACTIVE, keep(CDataLicenseStatus.TRIAL_ACTIVE, resolved));
     }
 
-    private static CDataLicenseStatus keep(CDataLicenseStatus status, CDataResolvedDriver resolved) {
+    @NotNull
+    private static CDataLicenseStatus keep(
+        @NotNull CDataLicenseStatus status,
+        @NotNull CDataResolvedDriver resolved
+    ) {
         return CDataLicenseValidator.keepInstalledLicense(
             new CDataDriverLicense(status, "", null), resolved).getStatus();
     }
 
-    private static CDataResolvedDriver resolvedAt(Path majorFolder) {
+    @NotNull
+    private static CDataResolvedDriver resolvedAt(@NotNull Path majorFolder) {
         Path jar = majorFolder.resolve("cdata.jdbc.postgresql.jar");
         return new CDataResolvedDriver(
             jar,
@@ -430,7 +448,8 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         );
     }
 
-    private static CDataDriverLicense parseInformation(String license) {
+    @NotNull
+    private static CDataDriverLicense parseInformation(@NotNull String license) {
         return CDataLicenseParser.parseInformation(Map.of("License", license, "NodeId", "test-node"));
     }
 }
