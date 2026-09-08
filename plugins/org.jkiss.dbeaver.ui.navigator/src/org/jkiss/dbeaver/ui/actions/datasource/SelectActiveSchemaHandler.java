@@ -254,7 +254,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                     try {
                         commitTransactionIfNeeded(monitor, executionContext);
                     } catch (DBException e) {
-                        log.error("Error committing transaction before changing active database", e);
+                        log.error("Error committing transaction after changing active database", e);
                     }
                     return Status.OK_STATUS;
                 }
@@ -263,7 +263,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     }
 
     /**
-     * Check if transaction commit is needed before after active database.
+     * Checks whether a transaction commit is needed after changing the active database.
      *
      * @param monitor          progress monitor
      * @param executionContext execution context to check transaction state
@@ -289,7 +289,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                     .setTitle(UINavigatorMessages.confirm_commit_after_defaults_change_title)
                     .setMessage(UINavigatorMessages.confirm_commit_after_defaults_change_message)
                     .setReplies(Reply.YES, Reply.NO)
-                    .setDefaultReply(Reply.CANCEL)
+                    .setDefaultReply(Reply.NO)
                     .setPrimaryImage(DBIcon.STATUS_QUESTION)
                     .showMessageBox();
             }
