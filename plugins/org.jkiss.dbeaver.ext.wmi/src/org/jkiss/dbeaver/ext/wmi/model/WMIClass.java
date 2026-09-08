@@ -44,8 +44,7 @@ import java.util.List;
  * WMI class
  */
 public class WMIClass extends WMIContainer
-    implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBPSystemObject, DBSDataContainer, DBPImageProvider
-{
+    implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBPSystemObject, DBSDataContainer, DBPImageProvider {
     private static final Log log = Log.getLog(WMIClass.class);
 
     static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + WMIPluginConstants.PLUGIN_ID + "/icons/";

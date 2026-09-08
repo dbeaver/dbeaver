@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.wmi.views;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -26,9 +25,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.wmi.WMIPluginConstants;
 import org.jkiss.dbeaver.ext.wmi.WMIMessages;
+import org.jkiss.dbeaver.ext.wmi.WMIPluginConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,8 +51,7 @@ public class WMIConnectionPage extends ConnectionPageWithAuth
     private static ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
         WMIPluginConstants.PLUGIN_ID, "icons/wmi_icon_big.png"); //$NON-NLS-1$
 
-    public WMIConnectionPage()
-    {
+    public WMIConnectionPage() {
     }
 
     @Override

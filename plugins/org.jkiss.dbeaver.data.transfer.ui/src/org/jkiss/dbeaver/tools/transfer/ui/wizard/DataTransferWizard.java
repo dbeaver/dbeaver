@@ -135,7 +135,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 for (Throwable error : loadErrors) {
                     childStatuses.add(GeneralUtils.makeExceptionStatus(error));
                 }
-                MultiStatus status = new MultiStatus(DTConstants.PLUGIN_ID, 0, childStatuses.toArray(new IStatus[0]), "Multiple configuration errors", null);
+                MultiStatus status = new MultiStatus(
+                    DTConstants.PLUGIN_ID, 0, childStatuses.toArray(new IStatus[0]), "Multiple configuration errors", null);
                 DBWorkbench.getPlatformUI().showError(
                     "Error loading configuration",
                     status.getMessage(), status);
