@@ -26,6 +26,8 @@ public interface UIServiceAuth {
     /**
      * Opens an authorization URL and shows a modal dialog until the request completes.
      * The supplied future is canceled if the user closes the dialog.
+     *
+     * @throws UnsupportedOperationException if browser authorization popups are not supported
      */
     default void showBrowserPopup(@NotNull URI browserUrl, @NotNull CompletableFuture<Void> future) {
         throw new UnsupportedOperationException("Browser authorization popup is not supported");

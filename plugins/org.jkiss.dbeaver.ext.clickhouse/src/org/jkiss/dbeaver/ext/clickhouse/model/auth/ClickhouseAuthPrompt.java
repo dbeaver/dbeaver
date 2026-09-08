@@ -48,7 +48,11 @@ public interface ClickhouseAuthPrompt {
             @NotNull URI authorizationUri,
             @NotNull CompletableFuture<Void> completion
         ) throws DBException {
-            getAuthService().showBrowserPopup(authorizationUri, completion);
+            try {
+                getAuthService().showBrowserPopup(authorizationUri, completion);
+            } catch (UnsupportedOperationException e) {
+                throw new DBException("Browser authentication is not supported by the current UI service", e);
+            }
         }
 
         @NotNull

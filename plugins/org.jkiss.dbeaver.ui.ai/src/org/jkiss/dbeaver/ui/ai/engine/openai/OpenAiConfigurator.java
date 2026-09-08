@@ -600,17 +600,22 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         @NotNull AIAccountAuthenticator authenticator,
         @NotNull CompletableFuture<Void> popupCompletion
     ) throws DBException {
+        UIServiceAuth service = DBWorkbench.getService(UIServiceAuth.class);
+        if (service == null) {
+            throw new DBException("No authentication UI service is available");
+        }
         AIAccountAuthenticator.BrowserAuthorization authorization = authenticator.startBrowserAuthorization();
         popupCompletion.whenComplete((result, error) -> {
             if (popupCompletion.isCancelled()) {
                 authenticator.cancelBrowserAuthorization();
             }
         });
-        UIServiceAuth service = DBWorkbench.getService(UIServiceAuth.class);
-        if (service == null) {
-            throw new DBException("No authentication UI service is available");
+        try {
+            service.showBrowserPopup(authorization.authorizationUri(), popupCompletion);
+        } catch (UnsupportedOperationException e) {
+            authenticator.cancelBrowserAuthorization();
+            throw new DBException("Browser authentication is not supported by the current UI service", e);
         }
-        service.showBrowserPopup(authorization.authorizationUri(), popupCompletion);
         return authenticator.completeBrowserAuthorization();
     }
 
