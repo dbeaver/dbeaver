@@ -48,6 +48,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
     private boolean ignoreDependencies;
     private boolean loadOptionalDependencies;
     private final String originalPreferredVersion;
+    private final boolean originalIgnoreDependencies;
+    private final boolean originalLoadOptionalDependencies;
     private boolean forcedVersion;
 
     public DriverLibraryMavenArtifact(
@@ -59,6 +61,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         super(driver, type, path);
         initArtifactReference(preferredVersion);
         this.originalPreferredVersion = this.preferredVersion;
+        this.originalIgnoreDependencies = this.ignoreDependencies;
+        this.originalLoadOptionalDependencies = this.loadOptionalDependencies;
     }
 
     public DriverLibraryMavenArtifact(@NotNull DriverDescriptor driver, @NotNull IConfigurationElement config) {
@@ -67,6 +71,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         loadOptionalDependencies = CommonUtils.toBoolean(config.getAttribute("load-optional-dependencies"));
         initArtifactReference(null);
         this.originalPreferredVersion = this.preferredVersion;
+        this.originalIgnoreDependencies = this.ignoreDependencies;
+        this.originalLoadOptionalDependencies = this.loadOptionalDependencies;
     }
 
     private DriverLibraryMavenArtifact(@NotNull DriverDescriptor driver, @NotNull DriverLibraryMavenArtifact copyFrom) {
@@ -78,6 +84,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         this.loadOptionalDependencies = copyFrom.loadOptionalDependencies;
 
         this.originalPreferredVersion = copyFrom.originalPreferredVersion;
+        this.originalIgnoreDependencies = copyFrom.originalIgnoreDependencies;
+        this.originalLoadOptionalDependencies = copyFrom.originalLoadOptionalDependencies;
     }
 
     @Nullable
@@ -182,6 +190,14 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         this.localVersion = null;
         this.preferredVersion = originalPreferredVersion;
         MavenRegistry.getInstance().resetArtifactInfo(reference);
+    }
+
+    public void resetToDefaults() {
+        this.ignoreDependencies = originalIgnoreDependencies;
+        this.loadOptionalDependencies = originalLoadOptionalDependencies;
+        this.forcedVersion = false;
+        this.reference.setResolveOptionalDependencies(originalLoadOptionalDependencies);
+        resetVersion();
     }
 
     @Override

@@ -1017,6 +1017,43 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.libraries.addAll(libs);
     }
 
+    public void resetToDefaults() {
+        this.name = this.origName;
+        this.description = this.origDescription;
+        this.driverClassName = this.origClassName;
+        this.driverDefaultHost = this.origDefaultHost;
+        this.driverDefaultPort = this.origDefaultPort;
+        this.driverDefaultDatabase = this.origDefaultDatabase;
+        this.driverDefaultServer = this.origDefaultServer;
+        this.driverDefaultUser = this.origDefaultUser;
+        this.sampleURL = this.origSampleURL;
+        this.dialectId = this.origDialectId;
+        this.embedded = this.origEmbedded;
+        this.propagateDriverProperties = this.origPropagateDriverProperties;
+        this.threadSafe = this.origThreadSafe;
+        this.anonymousAccess = this.origAnonymousAccess;
+        this.allowsEmptyPassword = this.origAllowsEmptyPassword;
+        this.instantiable = this.origInstantiable;
+
+        this.customParameters.clear();
+        this.customParameters.putAll(this.defaultParameters);
+        this.customConnectionProperties.clear();
+        this.customConnectionProperties.putAll(this.originalConnectionProperties);
+        this.nativeClientHomes.clear();
+
+        for (DBPDriverLibrary library : this.origLibraries) {
+            library.setDisabled(false);
+            if (library instanceof DriverLibraryMavenArtifact mavenArtifact) {
+                mavenArtifact.resetToDefaults();
+            }
+        }
+        this.libraries.clear();
+        this.libraries.addAll(this.origLibraries);
+
+        resetDriverInstance();
+        setModified(true);
+    }
+
     @NotNull
     public List<DBPDriverLibrary> getEnabledDriverLibraries() {
         List<DBPDriverLibrary> filtered = new ArrayList<>();
