@@ -49,6 +49,15 @@ final class ResultSetUndoRedoManager {
         @Nullable int[] rowIndexes,
         @Nullable Object value
     ) throws DBException {
+        int historyLimit = Math.clamp(
+            viewer.getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_UNDO_LEVEL),
+            0,
+            ResultSetPreferences.MAX_EDIT_UNDO_LEVEL
+        );
+        if (historyLimit == 0) {
+            clear();
+            return viewer.getModel().updateCellValue(attribute, row, rowIndexes, value, true);
+        }
         CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes, true, false);
         boolean updated;
         try {
@@ -87,6 +96,16 @@ final class ResultSetUndoRedoManager {
         }
         if (!row.isChanged(attribute)) {
             return false;
+        }
+        int historyLimit = Math.clamp(
+            viewer.getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_UNDO_LEVEL),
+            0,
+            ResultSetPreferences.MAX_EDIT_UNDO_LEVEL
+        );
+        if (historyLimit == 0) {
+            clear();
+            viewer.getModel().resetCellValue(attribute, row, rowIndexes);
+            return true;
         }
         CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes, false, true);
         viewer.getModel().resetCellValue(attribute, row, rowIndexes);
