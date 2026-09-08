@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
-import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
+import org.jkiss.dbeaver.ext.oracle.ui.OracleUIConstants;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
@@ -68,7 +69,8 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         super("SQLDeveloper");
         setTitle("SQL Developer");
         setDescription("Import Oracle SQL Developer connections");
-        setImageDescriptor(OracleUIActivator.getImageDescriptor("icons/sqldeveloper_big.png"));
+        setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(
+            OracleUIConstants.PLUGIN_ID, "icons/sqldeveloper_big.png"));
 
         oraDriver = new ImportDriverInfo(null, "Oracle", "jdbc:oracle:thin:@{host}[:{port}]/{database}", "oracle.jdbc.OracleDriver");
     }

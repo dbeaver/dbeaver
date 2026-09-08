@@ -37,7 +37,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -163,32 +162,14 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         if (browser != null) {
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
-            new BrowserFunction(browser, "setClipboardContents") {
-                @Override
-                public Object function(Object[] arguments) {
-                    UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
-                    return null;
-                }
-            };
-
-            if (presentation instanceof SpreadsheetPresentation) {
-                new BrowserFunction(browser, "setPresentationSelection") {
-                    @Override
-                    public Object function(Object[] arguments) {
-                        final List<GridPos> selection = new ArrayList<>();
-                        for (Object pos : ((Object[]) arguments[0])) {
-                            final String[] split = ((String) pos).split(":");
-                            selection.add(new GridPos(CommonUtils.toInt(split[0]), CommonUtils.toInt(split[1])));
-                        }
-                        ((AbstractPresentation) presentation).setSelection(new StructuredSelection(selection), false);
-                        return null;
-                    }
-                };
-            }
-
             browser.addDisposeListener(e -> {
                 server.close();
                 GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
+            });
+            browser.getDisplay().asyncExec(() -> {
+                if (!browser.isDisposed()) {
+                    registerBrowserFunctions(browser);
+                }
             });
         }
 
@@ -240,6 +221,31 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         showLabels = preferences.getBoolean(GeometryViewerConstants.PREF_SHOW_LABELS);
 
         preferences.addPropertyChangeListener(this);
+    }
+
+    private void registerBrowserFunctions(@NotNull Browser browser) {
+        new BrowserFunction(browser, "setClipboardContents") {
+            @Override
+            public Object function(Object[] arguments) {
+                UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
+                return null;
+            }
+        };
+
+        if (presentation instanceof SpreadsheetPresentation) {
+            new BrowserFunction(browser, "setPresentationSelection") {
+                @Override
+                public Object function(Object[] arguments) {
+                    final List<GridPos> selection = new ArrayList<>();
+                    for (Object pos : ((Object[]) arguments[0])) {
+                        final String[] split = ((String) pos).split(":");
+                        selection.add(new GridPos(CommonUtils.toInt(split[0]), CommonUtils.toInt(split[1])));
+                    }
+                    ((AbstractPresentation) presentation).setSelection(new StructuredSelection(selection), false);
+                    return null;
+                }
+            };
+        }
     }
 
     @Override
@@ -353,11 +359,13 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             if (DBUtils.isNullValue(value)) {
                 continue;
             }
+            // Linearize curved geometry first - curved geometry isn't supported by Leaflet
+            value = value.linearize();
             if (flipCoordinates) {
                 try {
                     value = value.flipCoordinates();
                 } catch (DBException e) {
-                    log.error(e);
+                    log.error("Error flipping geometry coordinates", e);
                 }
             }
             try {
@@ -366,9 +374,6 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 log.error("Error forcing geometry to 2D", e);
             }
             Object targetValue = value.getRawValue();
-            if (WKGUtils.isCurve(targetValue)) {
-                targetValue = WKGUtils.linearize((org.cugos.wkg.Geometry) targetValue);
-            }
             int srid = sourceSRID;
             if (srid == UNDEFINED_SRID && value.getSRID() != 0) {
                 srid = value.getSRID();

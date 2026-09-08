@@ -29,6 +29,25 @@ public class ClickhouseMessages extends NLS {
     public static String dialog_connection_page_text_ssl_mode_tip;
     public static String dialog_connection_page_text_ssl_group;
 
+    public static String dialog_connection_auth_cloud_sso_info;
+    public static String dialog_connection_auth_cloud_sso_sign_out;
+    public static String dialog_connection_auth_cloud_sso_sign_out_tip;
+
+    public static String dialog_connection_auth_oidc_email;
+    public static String dialog_connection_auth_oidc_email_tip;
+    public static String dialog_connection_auth_oidc_issuer;
+    public static String dialog_connection_auth_oidc_issuer_tip;
+    public static String dialog_connection_auth_oidc_client_id;
+    public static String dialog_connection_auth_oidc_client_secret;
+    public static String dialog_connection_auth_oidc_client_secret_tip;
+    public static String dialog_connection_auth_oidc_audience;
+    public static String dialog_connection_auth_oidc_audience_tip;
+    public static String dialog_connection_auth_oidc_scopes;
+    public static String dialog_connection_auth_oidc_callback_port;
+    public static String dialog_connection_auth_oidc_callback_port_tip;
+    public static String dialog_connection_auth_oidc_use_device_code;
+    public static String dialog_connection_auth_oidc_use_device_code_tip;
+
     static {
         NLS.initializeMessages(BUNDLE_NAME, ClickhouseMessages.class);
     }
