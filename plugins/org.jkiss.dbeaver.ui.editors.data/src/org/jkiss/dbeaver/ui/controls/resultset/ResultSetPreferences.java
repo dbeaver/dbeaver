@@ -24,6 +24,8 @@ public final class ResultSetPreferences {
 
     public static final int MIN_SEGMENT_SIZE = 1;
     public static final int MAX_DEF_COLUMN_WIDTH = 30;
+    public static final int DEFAULT_EDIT_UNDO_LEVEL = 200;
+    public static final int MAX_EDIT_UNDO_LEVEL = 10_000;
 
     // ResultSet
     public static final String RS_EDIT_MAX_TEXT_SIZE = "resultset.edit.maxtextsize"; //$NON-NLS-1$
@@ -35,6 +37,7 @@ public final class ResultSetPreferences {
     public static final String RS_COMMIT_ON_CONTENT_APPLY = "resultset.commit.oncontentapply"; //$NON-NLS-1$
     public static final String RS_EDIT_NEW_ROWS_AFTER = "resultset.edit.new.row.after";
     public static final String RS_EDIT_REFRESH_AFTER_UPDATE = "resultset.edit.refreshAfterUpdate"; //$NON-NLS-1$
+    public static final String RS_EDIT_UNDO_LEVEL = "resultset.edit.undoLevel"; //$NON-NLS-1$
     public static final String RS_GROUPING_DEFAULT_SORTING = "resultset.grouping.defaultSorting"; //$NON-NLS-1$
     public static final String RS_GROUPING_SHOW_DUPLICATES_ONLY = "resultset.grouping.showDuplicatesOnly"; //$NON-NLS-1$
 

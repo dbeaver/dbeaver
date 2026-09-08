@@ -538,6 +538,8 @@ public class ResultSetViewer extends Viewer
             scheduleThemeUpdate();
         } else if (ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL.equals(property)) {
             updateFilterPanelVisibility();
+        } else if (ResultSetPreferences.RS_EDIT_UNDO_LEVEL.equals(property)) {
+            undoRedoManager.updateLimit();
         }
     }
 

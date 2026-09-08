@@ -140,6 +140,12 @@ final class ResultSetUndoRedoManager {
         updateActions();
     }
 
+    void updateLimit() {
+        if (trimToLimit()) {
+            updateActions();
+        }
+    }
+
     private boolean applyHistoryItem(@NotNull CellEditHistoryItem item, boolean redo) {
         ValueSnapshot snapshot = redo ? item.newValue : item.oldValue;
         boolean dirty = redo ? item.newDirty : item.oldDirty;
@@ -215,7 +221,30 @@ final class ResultSetUndoRedoManager {
         truncateRedo();
         history.add(item);
         historyPosition++;
+        trimToLimit();
         updateActions();
+    }
+
+    private boolean trimToLimit() {
+        int historyLimit = Math.clamp(
+            viewer.getPreferenceStore().getInt(ResultSetPreferences.RS_EDIT_UNDO_LEVEL),
+            0,
+            ResultSetPreferences.MAX_EDIT_UNDO_LEVEL
+        );
+        int undoToKeep = Math.min(historyPosition, (historyLimit + 1) / 2);
+        int redoToKeep = Math.min(history.size() - historyPosition, historyLimit - undoToKeep);
+        undoToKeep = Math.min(historyPosition, historyLimit - redoToKeep);
+        boolean changed = false;
+        while (historyPosition > undoToKeep) {
+            history.removeFirst().release();
+            historyPosition--;
+            changed = true;
+        }
+        while (history.size() - historyPosition > redoToKeep) {
+            history.removeLast().release();
+            changed = true;
+        }
+        return changed;
     }
 
     private void discardRedo() {
