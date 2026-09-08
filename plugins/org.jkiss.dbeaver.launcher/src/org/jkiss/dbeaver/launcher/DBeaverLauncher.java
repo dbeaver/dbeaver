@@ -2950,16 +2950,31 @@ public class DBeaverLauncher {
         if (configURL == null)
             return null;
         // cache the splash in the equinox launcher sub-dir in the config area
-        File splash = new File(configURL.getPath(), PLUGIN_ID);
+        Path cacheRoot = new File(configURL.getPath(), PLUGIN_ID).toPath().toAbsolutePath().normalize();
         //include the name of the jar in the cache location
         File jarFile = new File(jarPath);
         String cache = jarFile.getName();
         if (cache.endsWith(".jar")) //$NON-NLS-1$
             cache = cache.substring(0, cache.length() - 4);
-        splash = new File(splash, cache);
-        splash = new File(splash, jarEntry);
+        Path cacheDir = cacheRoot.resolve(cache).normalize();
+        Path outputFile = cacheDir.resolve(jarEntry).normalize();
+        if (!cacheDir.startsWith(cacheRoot) || !outputFile.startsWith(cacheDir)) {
+            log("Refusing to extract JAR entry outside of the cache directory: " + jarEntry); //$NON-NLS-1$
+            return null;
+        }
+        File splash = outputFile.toFile();
         // if we have already extracted this file before, then return
         if (splash.exists()) {
+            try {
+                if (!outputFile.getParent().toRealPath().startsWith(cacheRoot.toRealPath()) || Files.isSymbolicLink(outputFile)) {
+                    log("Refusing to use JAR entry outside of the cache directory: " + jarEntry); //$NON-NLS-1$
+                    return null;
+                }
+            } catch (IOException e) {
+                log("Exception validating cached JAR entry: " + jarEntry); //$NON-NLS-1$
+                log(e);
+                return null;
+            }
             // if we are running with -clean then delete the cached splash file
             boolean clean = false;
             for (String command : commands) {
@@ -2978,8 +2993,12 @@ public class DBeaverLauncher {
             if (entry == null)
                 return null;
 
-            Path outputFile = splash.toPath();
+            Files.createDirectories(cacheRoot);
             Files.createDirectories(outputFile.getParent());
+            if (!outputFile.getParent().toRealPath().startsWith(cacheRoot.toRealPath()) || Files.isSymbolicLink(outputFile)) {
+                log("Refusing to extract JAR entry outside of the cache directory: " + jarEntry); //$NON-NLS-1$
+                return null;
+            }
 
             try (InputStream input = file.getInputStream(entry)) {
                 Files.copy(input, outputFile);

@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -141,7 +142,13 @@ public class DriverUtils {
         if (sourceName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
             sourceName = sourceName.substring(0, sourceName.length() - 4);
         }
-        Path localCacheDir = DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR).resolve(sourceName);
+        Path cacheRoot = DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR).toAbsolutePath().normalize();
+        Files.createDirectories(cacheRoot);
+        Path cacheRootRealPath = cacheRoot.toRealPath();
+        Path localCacheDir = cacheRoot.resolve(sourceName).normalize();
+        if (!localCacheDir.startsWith(cacheRoot)) {
+            throw new IOException("Zip cache directory is outside of the target directory");
+        }
         if (!Files.exists(localCacheDir)) {
             try {
                 Files.createDirectories(localCacheDir);
@@ -149,14 +156,12 @@ public class DriverUtils {
                 throw new IOException("Can't create local cache folder '" + localCacheDir.toAbsolutePath() + "'", e);
             }
         }
-        Path localFile = localCacheDir.resolve(zipEntry.getName());
-        if (!localFile.normalize().startsWith(localCacheDir.normalize())) {
-            throw new IOException("Zip entry is outside of the target directory");
+        if (!localCacheDir.toRealPath().startsWith(cacheRootRealPath)) {
+            throw new IOException("Zip cache directory is outside of the target directory");
         }
-        jarFiles.add(localFile);
-        if (Files.exists(localFile)) {
-            // Already extracted
-            return;
+        Path localFile = localCacheDir.resolve(zipEntry.getName()).normalize();
+        if (!localFile.startsWith(localCacheDir)) {
+            throw new IOException("Zip entry is outside of the target directory");
         }
         Path localDir = localFile.getParent();
         if (!Files.exists(localDir)) { // in case of localFile located in subdirectory inside zip archive
@@ -166,9 +171,21 @@ public class DriverUtils {
                 throw new IOException("Can't create local file directory in the cache '" + localDir.toAbsolutePath() + "'", e);
             }
         }
-        try (OutputStream os = Files.newOutputStream(localFile)) {
+        if (!localDir.toRealPath().startsWith(localCacheDir.toRealPath())) {
+            throw new IOException("Zip entry is outside of the target directory");
+        }
+        if (Files.isSymbolicLink(localFile)) {
+            throw new IOException("Zip entry points to a symbolic link");
+        }
+        if (Files.exists(localFile)) {
+            // Already extracted
+            jarFiles.add(localFile);
+            return;
+        }
+        try (OutputStream os = Files.newOutputStream(localFile, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
             copyZipStream(zipStream, os);
         }
+        jarFiles.add(localFile);
     }
 
     @NotNull
