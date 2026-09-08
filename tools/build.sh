@@ -68,9 +68,10 @@ else
 fi
 
 # Clone or verify datadam-api repository
-if [ ! -d "$DATADAM_API_DIR" ]; then
-    log "Cloning datadam-api repository..."
-    git clone https://github.com/dbeaver/datadam-api.git "$DATADAM_API_DIR"
+DATADAM_API_REF="${DATADAM_API_REF:-main}"
+if [ ! -d "$DATADAM_API_DIR/.git" ]; then
+    log "Cloning datadam-api repository ($DATADAM_API_REF)..."
+    git clone --depth 1 --branch "$DATADAM_API_REF" https://github.com/dbeaver/datadam-api.git "$DATADAM_API_DIR"
 else
     log "DataDam API directory already exists at $DATADAM_API_DIR"
 fi
