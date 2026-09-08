@@ -22,9 +22,54 @@ package org.jkiss.dbeaver.model.tracking.sync.core;
 interface DDSyncApi {
 
     String DATA_KEY_ENDPOINT = "/data/key";
-    String CONFIGURATION_ENDPOINT = "/configurations";
-    String CONFIGURATION_ITEM_ENDPOINT = "/configurations/{configurationId}";
+    String GRAPHQL_ENDPOINT = "/graphql";
 
-    String VAR_CONFIGURATION_ID = "{configurationId}";
+    String CONFIGURATION_FIELDS = """
+        configurationId
+        name
+        version
+        createdAt
+        lastSyncAt""";
+
+    String CONFIGURATION_WITH_PARTS_FIELDS = CONFIGURATION_FIELDS + """
+
+        parts {
+            key
+            kind
+            projectId
+            version
+            encryptedValue
+        }""";
+
+    String QUERY_LIST_CONFIGURATIONS = """
+        query {
+            configurations {
+        %s
+            }
+        }""".formatted(CONFIGURATION_FIELDS.indent(4));
+
+    String QUERY_GET_CONFIGURATION = """
+        query($configurationId: ID!) {
+            configuration(configurationId: $configurationId) {
+        %s
+            }
+        }""".formatted(CONFIGURATION_WITH_PARTS_FIELDS.indent(4));
+
+    String MUTATION_CREATE_CONFIGURATION = """
+        mutation($input: CreateConfigurationInput!) {
+            createConfiguration(input: $input) {
+        %s
+            }
+        }""".formatted(CONFIGURATION_WITH_PARTS_FIELDS.indent(4));
+
+    String MUTATION_UPDATE_CONFIGURATION = """
+        mutation($configurationId: ID!, $input: UpdateConfigurationInput!) {
+            updateConfiguration(configurationId: $configurationId, input: $input) {
+                configuration {
+        %s
+                }
+                conflictingKeys
+            }
+        }""".formatted(CONFIGURATION_WITH_PARTS_FIELDS.indent(8));
 
 }
