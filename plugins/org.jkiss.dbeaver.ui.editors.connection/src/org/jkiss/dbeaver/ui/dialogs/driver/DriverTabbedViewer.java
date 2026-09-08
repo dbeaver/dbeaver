@@ -68,24 +68,15 @@ public class DriverTabbedViewer extends StructuredViewer {
         @NotNull List<DBPDataSourceContainer> dataSources,
         @NotNull Comparator<DBPDriver> driverComparator
     ) {
-        this(parent, style, dataSources, driverComparator, true);
-    }
-
-    public DriverTabbedViewer(
-        @NotNull Composite parent,
-        int style,
-        @NotNull List<DBPDataSourceContainer> dataSources,
-        @NotNull Comparator<DBPDriver> driverComparator,
-        boolean showCommercialDrivers
-    ) {
         this.dataSources = dataSources;
         this.listComparator = driverComparator;
 
-        List<DBPDriver> allDrivers = DriverUtils.getAllDrivers().stream()
-            .filter(driver -> showCommercialDrivers || !(driver instanceof DBPDriverWithLicense))
+        List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
+        List<DBPDriver> standardDrivers = allDrivers.stream()
+            .filter(driver -> !(driver instanceof DBPDriverWithLicense))
             .toList();
-        List<DBPDriver> ratedDrivers = new ArrayList<>(allDrivers);
-        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
+        List<DBPDriver> ratedDrivers = new ArrayList<>(standardDrivers);
+        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(standardDrivers, 12);
 
         folderComposite = new TabbedFolderComposite(parent, style) {
             @Override

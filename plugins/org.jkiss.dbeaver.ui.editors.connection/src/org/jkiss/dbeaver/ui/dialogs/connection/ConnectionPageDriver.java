@@ -76,8 +76,7 @@ class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> impleme
                 this,
                 getWizard().getAvailableProvides(),
                 true,
-                DriverSelectViewer.SelectorViewType.browser,
-                false
+                DriverSelectViewer.SelectorViewType.browser
             ) {
                 @Override
                 protected void createExtraFilterControlsBefore(@NotNull Composite filterGroup) {
@@ -109,14 +108,9 @@ class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> impleme
 
         {
             Composite bottomPanel = new Composite(placeholder, SWT.NONE);
-            bottomPanel.setLayout(new GridLayout(2, false));
+            bottomPanel.setLayout(new GridLayout(1, false));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             bottomPanel.setLayoutData(gd);
-            Button showCommercialDrivers = new Button(bottomPanel, SWT.CHECK);
-            showCommercialDrivers.setText(UIConnectionMessages.driver_connection_show_commercial_drivers);
-            showCommercialDrivers.setSelection(false);
-            showCommercialDrivers.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            showCommercialDrivers.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> driverSelectViewer.setShowCommercialDrivers(showCommercialDrivers.getSelection())));
             projectSelector = new ProjectSelectorPanel(bottomPanel, NavigatorUtils.getSelectedProject(), SWT.NONE, true);
             if (projectSelector.getSelectedProject() == null) {
                 setErrorMessage("You need to create a project first");
