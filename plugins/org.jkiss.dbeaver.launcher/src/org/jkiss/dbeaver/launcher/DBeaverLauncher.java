@@ -27,10 +27,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
@@ -2951,6 +2948,7 @@ public class DBeaverLauncher {
             return null;
         // cache the splash in the equinox launcher sub-dir in the config area
         Path cacheRoot = new File(configURL.getPath(), PLUGIN_ID).toPath().toAbsolutePath().normalize();
+        Path cacheParent = cacheRoot.getParent();
         //include the name of the jar in the cache location
         File jarFile = new File(jarPath);
         String cache = jarFile.getName();
@@ -2966,6 +2964,7 @@ public class DBeaverLauncher {
         // if we have already extracted this file before, then return
         if (splash.exists()) {
             try {
+                createDirectoriesWithoutSymlinks(cacheParent, outputFile.getParent());
                 if (!outputFile.getParent().toRealPath().startsWith(cacheRoot.toRealPath()) || Files.isSymbolicLink(outputFile)) {
                     log("Refusing to use JAR entry outside of the cache directory: " + jarEntry); //$NON-NLS-1$
                     return null;
@@ -2993,8 +2992,8 @@ public class DBeaverLauncher {
             if (entry == null)
                 return null;
 
-            Files.createDirectories(cacheRoot);
-            Files.createDirectories(outputFile.getParent());
+            Files.createDirectories(cacheParent);
+            createDirectoriesWithoutSymlinks(cacheParent, outputFile.getParent());
             if (!outputFile.getParent().toRealPath().startsWith(cacheRoot.toRealPath()) || Files.isSymbolicLink(outputFile)) {
                 log("Refusing to extract JAR entry outside of the cache directory: " + jarEntry); //$NON-NLS-1$
                 return null;
@@ -3013,6 +3012,27 @@ public class DBeaverLauncher {
             log("Exception looking for " + jarEntry + " in JAR file: " + jarPath); //$NON-NLS-1$ //$NON-NLS-2$
             log(e);
             return null;
+        }
+    }
+
+    private static void createDirectoriesWithoutSymlinks(Path root, Path directory) throws IOException {
+        Path rootRealPath = root.toRealPath();
+        Path current = root;
+        for (Path segment : root.relativize(directory)) {
+            current = current.resolve(segment);
+            if (!Files.exists(current, LinkOption.NOFOLLOW_LINKS)) {
+                try {
+                    Files.createDirectory(current);
+                } catch (FileAlreadyExistsException e) {
+                    // Validate the entry created concurrently below.
+                }
+            }
+            if (Files.isSymbolicLink(current) || !Files.isDirectory(current, LinkOption.NOFOLLOW_LINKS)) {
+                throw new IOException("Cache directory contains an invalid path component: " + current);
+            }
+            if (!current.toRealPath().startsWith(rootRealPath)) {
+                throw new IOException("Cache directory is outside of the target directory: " + current);
+            }
         }
     }
 
