@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
-import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeUIActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -65,7 +65,8 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
     private Combo warehouseText;
     private Combo schemaText;
 
-    private static final ImageDescriptor logoImage = SnowflakeUIActivator.getImageDescriptor("icons/snowflake_logo.png"); //$NON-NLS-1$
+    private static final ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
+        SnowflakeUIConstants.PLUGIN_ID, "icons/snowflake_logo.png"); //$NON-NLS-1$
 
     @Override
     public void dispose()

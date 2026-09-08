@@ -30,20 +30,10 @@ import java.sql.SQLException;
 /**
  * PostgreServerTimescale
  */
-public class PostgreServerTimescale extends PostgreServerExtensionBase {
+public class PostgreServerTimescale extends PostgreServerPostgreSQL {
 
     public PostgreServerTimescale(PostgreDataSource dataSource) {
         super(dataSource);
-    }
-
-    @Override
-    public boolean supportsEntityMetadataInResults() {
-        return true;
-    }
-
-    @Override
-    public boolean supportsCopyFromStdIn() {
-        return true;
     }
 
     @NotNull
