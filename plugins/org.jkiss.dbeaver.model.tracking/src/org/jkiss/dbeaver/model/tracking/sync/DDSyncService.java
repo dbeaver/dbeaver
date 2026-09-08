@@ -430,6 +430,9 @@ public class DDSyncService {
     @Nullable
     private DDConfigurationPart readCurrentPart(@NotNull DDConfigurationPart remote) throws DBException {
         if (remote.kind() == DDConfigurationPartKind.ACCOUNT) {
+            if (!remote.key().startsWith(KEY_ACCOUNT_PREFIX)) {
+                throw new DBException("Invalid synchronization part key: " + remote.key());
+            }
             String unitId = remote.key().substring(KEY_ACCOUNT_PREFIX.length());
             DBPSyncUnit unit = requireUnit(unitId, DDConfigurationPartKind.ACCOUNT);
             Map<String, byte[]> resources = unit.read(new DBPSyncTarget(workspace, null));
@@ -461,6 +464,9 @@ public class DDSyncService {
             Map<String, byte[]> resources = unit.read(new DBPSyncTarget(workspace, null));
             return new DDConfigurationPart(
                 key, DDConfigurationPartKind.ACCOUNT, null, 0, unit.getName(), Map.of(unitId, resources));
+        }
+        if (!key.startsWith(KEY_PROJECT_PREFIX)) {
+            throw new DBException("Invalid synchronization part key: " + key);
         }
         String projectId = key.substring(KEY_PROJECT_PREFIX.length());
         DBPProject project = findProjectById(projectId);
