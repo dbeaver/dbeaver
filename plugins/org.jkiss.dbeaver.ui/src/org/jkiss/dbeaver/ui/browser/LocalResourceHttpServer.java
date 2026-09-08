@@ -21,6 +21,8 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.HttpConstants;
+import org.jkiss.utils.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -211,9 +213,8 @@ public final class LocalResourceHttpServer {
                     return;
                 }
                 log.trace("Serving local browser resource for path: " + path);
-                exchange.getResponseHeaders().set("Content-Type", getContentType(path));
-                exchange.getResponseHeaders().set("Cache-Control", "no-store");
-                exchange.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
+                exchange.getResponseHeaders().set(HttpConstants.HEADER_CONTENT_TYPE, getContentType(path));
+                exchange.getResponseHeaders().set("X-UA-Compatible", "IE=edge");
                 exchange.sendResponseHeaders(200, 0);
                 content.transferTo(exchange.getResponseBody());
             }
@@ -239,7 +240,11 @@ public final class LocalResourceHttpServer {
     @NotNull
     private static String normalizePath(@NotNull String path) {
         String normalized = path.startsWith("/") ? path.substring(1) : path;
-        if (normalized.isEmpty() || normalized.startsWith("../") || normalized.endsWith("/..") || normalized.contains("/../")) {
+        if (normalized.isEmpty()
+            || normalized.startsWith("../")
+            || normalized.endsWith("/..")
+            || normalized.contains("/../")
+        ) {
             throw new IllegalArgumentException("Invalid resource path: " + path);
         }
         return normalized;
@@ -247,28 +252,19 @@ public final class LocalResourceHttpServer {
 
     @NotNull
     private static String getContentType(@NotNull String path) {
-        String lowerCasePath = path.toLowerCase(Locale.ENGLISH);
-        if (lowerCasePath.endsWith(".html") || lowerCasePath.endsWith(".htm")) {
-            return "text/html; charset=UTF-8";
-        } else if (lowerCasePath.endsWith(".css")) {
-            return "text/css; charset=UTF-8";
-        } else if (lowerCasePath.endsWith(".js") || lowerCasePath.endsWith(".mjs")) {
-            return "text/javascript; charset=UTF-8";
-        } else if (lowerCasePath.endsWith(".json")) {
-            return "application/json; charset=UTF-8";
-        } else if (lowerCasePath.endsWith(".png")) {
-            return "image/png";
-        } else if (lowerCasePath.endsWith(".svg")) {
-            return "image/svg+xml";
-        } else if (lowerCasePath.endsWith(".jpg") || lowerCasePath.endsWith(".jpeg")) {
-            return "image/jpeg";
-        } else if (lowerCasePath.endsWith(".gif")) {
-            return "image/gif";
-        } else if (lowerCasePath.endsWith(".woff")) {
-            return "font/woff";
-        } else if (lowerCasePath.endsWith(".woff2")) {
-            return "font/woff2";
-        }
-        return "application/octet-stream";
+        String extension = IOUtils.getFileExtension(path.toLowerCase(Locale.ROOT));
+        return switch (extension) {
+            case "html", "htm" -> "text/html; charset=UTF-8";
+            case "css" -> "text/css; charset=UTF-8";
+            case "js", "mjs" -> "text/javascript; charset=UTF-8";
+            case "json" -> HttpConstants.CONTENT_TYPE_JSON + "; charset=UTF-8";
+            case "png" -> "image/png";
+            case "svg" -> "image/svg+xml";
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "gif" -> "image/gif";
+            case "woff" -> "font/woff";
+            case "woff2" -> "font/woff2";
+            case null, default -> HttpConstants.CONTENT_TYPE_OCTET_STREAM;
+        };
     }
 }

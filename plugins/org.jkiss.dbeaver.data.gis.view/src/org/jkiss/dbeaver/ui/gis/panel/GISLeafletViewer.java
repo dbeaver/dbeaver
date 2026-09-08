@@ -82,6 +82,14 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
     private static final String VIEW_TEMPLATE_PATH = "web/view_template.html";
+    private static final List<String> WEB_FILES = List.of(
+        "inc/leaflet.css",
+        "inc/leaflet.js",
+        "inc/layers.png",
+        "inc/wkx.min.js",
+        "inc/leaflet-lasso.min.js"
+    );
+
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
 
     private static final String[] SUPPORTED_FORMATS = new String[] { "png", "gif", "bmp" };
@@ -157,13 +165,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         try {
             server = LocalResourceHttpServer.acquire();
-            for (String resource : List.of(
-                "inc/leaflet.css",
-                "inc/leaflet.js",
-                "inc/layers.png",
-                "inc/wkx.min.js",
-                "inc/leaflet-lasso.min.js"
-            )) {
+            for (String resource : WEB_FILES) {
                 server.addResource(resource, () -> GISViewerActivator.getDefault().getResourceStream("web/" + resource));
             }
         } catch (Exception e) {
