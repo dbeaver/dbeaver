@@ -33,14 +33,14 @@ import java.util.List;
  */
 public class FireBirdPlanNode extends AbstractExecutionPlanNode {
 
-	private String plan;
-	FireBirdPlanNode parent;
-	private List<FireBirdPlanNode> nested;
-	
-	public FireBirdPlanNode(String plan) {
-		this.plan = plan;
-		this.nested = new ArrayList<>();
-	}
+	private final FireBirdPlanNode parent;
+    private final String plan;
+	private final List<FireBirdPlanNode> nested = new ArrayList<>();
+
+    public FireBirdPlanNode(@Nullable FireBirdPlanNode parent, @NotNull String plan) {
+        this.parent = parent;
+        this.plan = plan;
+    }
 
     @Nullable
 	@Property(order = 1, viewable = true)
