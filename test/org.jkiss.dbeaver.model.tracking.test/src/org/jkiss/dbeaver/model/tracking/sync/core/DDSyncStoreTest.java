@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
-import com.dbeaver.datadam.gateway.model.DDConfigurationPartKind;
+import com.dbeaver.datadam.share.api.model.DDConfigurationPartKind;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.tracking.auth.DDCrypto;
 import org.junit.jupiter.api.Assertions;
@@ -51,7 +51,7 @@ class DDSyncStoreTest {
 
     @Test
     void getConfigurationDecodesPartWithKnownKind() throws Exception {
-        com.dbeaver.datadam.gateway.model.DDConfiguration wire = wireConfiguration(DDConfigurationPartKind.ACCOUNT);
+        com.dbeaver.datadam.share.api.model.DDConfiguration wire = wireConfiguration(DDConfigurationPartKind.ACCOUNT);
         Mockito.when(transport.getConfiguration(CONFIGURATION_ID)).thenReturn(wire);
 
         DDConfiguration configuration = store.getConfiguration(CONFIGURATION_ID);
@@ -68,10 +68,10 @@ class DDSyncStoreTest {
             DDSyncStore.partAad("k1", DDConfigurationPartKind.ACCOUNT, null));
         String encryptedValue = Base64.getEncoder().encodeToString(encrypted);
 
-        com.dbeaver.datadam.gateway.model.DDConfigurationPart relabeledPart =
-            new com.dbeaver.datadam.gateway.model.DDConfigurationPart(
+        com.dbeaver.datadam.share.api.model.DDConfigurationPart relabeledPart =
+            new com.dbeaver.datadam.share.api.model.DDConfigurationPart(
                 "k2", DDConfigurationPartKind.PROJECT, "other-project", 1, encryptedValue);
-        com.dbeaver.datadam.gateway.model.DDConfiguration wire = new com.dbeaver.datadam.gateway.model.DDConfiguration(
+        com.dbeaver.datadam.share.api.model.DDConfiguration wire = new com.dbeaver.datadam.share.api.model.DDConfiguration(
             CONFIGURATION_ID, "test", 0, "2026-01-01T00:00:00Z", null, List.of(relabeledPart));
         Mockito.when(transport.getConfiguration(CONFIGURATION_ID)).thenReturn(wire);
 
@@ -82,7 +82,7 @@ class DDSyncStoreTest {
 
     @Test
     void getConfigurationRejectsPartWithUnknownKind() throws Exception {
-        com.dbeaver.datadam.gateway.model.DDConfiguration wire = wireConfiguration(null);
+        com.dbeaver.datadam.share.api.model.DDConfiguration wire = wireConfiguration(null);
         Mockito.when(transport.getConfiguration(CONFIGURATION_ID)).thenReturn(wire);
 
         DBException exception = Assertions.assertThrows(
@@ -90,7 +90,7 @@ class DDSyncStoreTest {
         Assertions.assertTrue(exception.getMessage().contains("Invalid synchronization part"));
     }
 
-    private com.dbeaver.datadam.gateway.model.DDConfiguration wireConfiguration(
+    private com.dbeaver.datadam.share.api.model.DDConfiguration wireConfiguration(
         DDConfigurationPartKind kind
     ) throws Exception {
         String envelopeJson = "{\"schemaVersion\":1,\"name\":\"test\",\"units\":{}}";
@@ -100,9 +100,9 @@ class DDSyncStoreTest {
             : DDCrypto.encrypt(dataKey, plaintext, DDSyncStore.partAad("k1", kind, null));
         String encryptedValue = Base64.getEncoder().encodeToString(encrypted);
 
-        com.dbeaver.datadam.gateway.model.DDConfigurationPart part =
-            new com.dbeaver.datadam.gateway.model.DDConfigurationPart("k1", kind, null, 1, encryptedValue);
-        return new com.dbeaver.datadam.gateway.model.DDConfiguration(
+        com.dbeaver.datadam.share.api.model.DDConfigurationPart part =
+            new com.dbeaver.datadam.share.api.model.DDConfigurationPart("k1", kind, null, 1, encryptedValue);
+        return new com.dbeaver.datadam.share.api.model.DDConfiguration(
             CONFIGURATION_ID, "test", 0, "2026-01-01T00:00:00Z", null, List.of(part));
     }
 }

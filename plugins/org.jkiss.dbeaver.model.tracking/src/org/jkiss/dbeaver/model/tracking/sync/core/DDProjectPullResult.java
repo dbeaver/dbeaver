@@ -16,18 +16,16 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
-import com.dbeaver.datadam.share.api.model.DDConfigurationPartKind;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 import java.util.Map;
 
-public record DDConfigurationPart(
-    @NotNull String key,
-    @NotNull DDConfigurationPartKind kind,
-    @Nullable String projectId,
-    long version,
-    @NotNull String name,
-    @NotNull Map<String, Map<String, byte[]>> units
+/**
+ * Decrypted pull result: the project-wide configuration fingerprint (opaque, to be echoed back
+ * as lastKnownConfigurationFingerprint on the next push) plus each file's decrypted content.
+ */
+public record DDProjectPullResult(
+    @NotNull String configurationFingerprint,
+    @NotNull Map<String, byte[]> files
 ) {
 }

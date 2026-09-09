@@ -16,18 +16,18 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
-import com.dbeaver.datadam.share.api.model.DDConfigurationPartKind;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.Map;
-
-public record DDConfigurationPart(
-    @NotNull String key,
-    @NotNull DDConfigurationPartKind kind,
-    @Nullable String projectId,
-    long version,
+/**
+ * Decrypted view of a shared project - name/description are plaintext here, encrypted on the wire.
+ */
+public record DDProjectInfo(
+    @NotNull String projectId,
     @NotNull String name,
-    @NotNull Map<String, Map<String, byte[]>> units
+    @Nullable String description,
+    @NotNull String ownerAccountId,
+    @NotNull String createTime,
+    @NotNull String updateTime
 ) {
 }

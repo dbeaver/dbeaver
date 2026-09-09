@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
-import com.dbeaver.datadam.gateway.model.DDConfigurationPartKind;
-import com.dbeaver.datadam.gateway.model.DDCreateConfigurationPartRequest;
-import com.dbeaver.datadam.gateway.model.DDCreateConfigurationRequest;
-import com.dbeaver.datadam.gateway.model.DDUpdateConfigurationPartRequest;
-import com.dbeaver.datadam.gateway.model.DDUpdateConfigurationRequest;
+import com.dbeaver.datadam.share.api.model.DDConfigurationPartKind;
+import com.dbeaver.datadam.share.api.model.DDCreateConfigurationPartRequest;
+import com.dbeaver.datadam.share.api.model.DDCreateConfigurationRequest;
+import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationPartRequest;
+import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationRequest;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -66,7 +66,7 @@ public class DDSyncStore {
     @NotNull
     public List<DDConfigurationSummary> listConfigurations() throws DBException {
         List<DDConfigurationSummary> configurations = new ArrayList<>();
-        for (com.dbeaver.datadam.gateway.model.DDConfigurationSummary data : transport.listConfigurations()) {
+        for (com.dbeaver.datadam.share.api.model.DDConfigurationSummary data : transport.listConfigurations()) {
             configurations.add(new DDConfigurationSummary(data.configurationId(), data.name(), data.version()));
         }
         return configurations;
@@ -100,7 +100,7 @@ public class DDSyncStore {
         for (DDConfigurationPart part : parts) {
             requests.add(new DDUpdateConfigurationPartRequest(part.key(), part.version(), encrypt(part)));
         }
-        com.dbeaver.datadam.gateway.model.DDUpdateConfigurationResult result = transport.updateConfiguration(
+        com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult result = transport.updateConfiguration(
             configurationId, new DDUpdateConfigurationRequest(expectedConfigurationVersion, requests));
         return new DDUpdateConfigurationResult(decode(result.configuration()), result.conflictingKeys());
     }
@@ -117,10 +117,10 @@ public class DDSyncStore {
 
     @NotNull
     private DDConfiguration decode(
-        @NotNull com.dbeaver.datadam.gateway.model.DDConfiguration data
+        @NotNull com.dbeaver.datadam.share.api.model.DDConfiguration data
     ) throws DBException {
         List<DDConfigurationPart> parts = new ArrayList<>(data.parts().size());
-        for (com.dbeaver.datadam.gateway.model.DDConfigurationPart part : data.parts()) {
+        for (com.dbeaver.datadam.share.api.model.DDConfigurationPart part : data.parts()) {
             parts.add(decode(part));
         }
         return new DDConfiguration(data.configurationId(), data.name(), data.version(), parts);
@@ -128,7 +128,7 @@ public class DDSyncStore {
 
     @NotNull
     private DDConfigurationPart decode(
-        @NotNull com.dbeaver.datadam.gateway.model.DDConfigurationPart part
+        @NotNull com.dbeaver.datadam.share.api.model.DDConfigurationPart part
     ) throws DBException {
         try {
             DDConfigurationPartKind kind = Objects.requireNonNull(part.kind());
