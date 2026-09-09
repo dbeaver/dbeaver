@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.impl.auth;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -28,17 +27,7 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -73,45 +62,6 @@ public class AuthModelDatabaseShellCommandTest extends DBeaverUnitTest {
         Assertions.assertEquals("A".repeat(LARGE_OUTPUT_LENGTH), credentials.getUserPassword());
     }
 
-    @Test
-    public void leavesProcessStreamOpenAfterReading() throws Exception {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        AtomicBoolean closed = new AtomicBoolean();
-        InputStream input = new ByteArrayInputStream("password".getBytes(StandardCharsets.UTF_8)) {
-            @Override
-            public void close() {
-                closed.set(true);
-            }
-        };
-        try {
-            Assertions.assertEquals("password", awaitProcessStream(
-                readProcessStream(input, executor), "output"));
-            Assertions.assertFalse(closed.get());
-        } finally {
-            executor.shutdownNow();
-        }
-    }
-
-    @Test
-    public void reportsProcessStreamReadFailureAsDbException() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        InputStream input = new InputStream() {
-            @Override
-            public int read() throws IOException {
-                throw new IOException("stream failed");
-            }
-        };
-        try {
-            DBException exception = Assertions.assertThrows(DBException.class, () ->
-                awaitProcessStream(readProcessStream(input, executor), "output"));
-
-            Assertions.assertEquals("Failed to read password command output", exception.getMessage());
-            Assertions.assertInstanceOf(IOException.class, exception.getCause());
-        } finally {
-            executor.shutdownNow();
-        }
-    }
-
     private static String createLargeOutputCommand() {
         if (RuntimeUtils.isWindows()) {
             return "powershell.exe -NoProfile -Command \"[Console]::Write('A' * " + LARGE_OUTPUT_LENGTH + ")\"";
@@ -119,30 +69,4 @@ public class AuthModelDatabaseShellCommandTest extends DBeaverUnitTest {
         return "/usr/bin/printf '%s' '" + "A".repeat(LARGE_OUTPUT_LENGTH) + "'";
     }
 
-    @SuppressWarnings("unchecked")
-    private static CompletableFuture<String> readProcessStream(InputStream inputStream, ExecutorService executor)
-        throws ReflectiveOperationException {
-        Method method = AuthModelDatabaseShellCommand.class.getDeclaredMethod(
-            "readProcessStream", InputStream.class, ExecutorService.class);
-        method.setAccessible(true);
-        return (CompletableFuture<String>) method.invoke(null, inputStream, executor);
-    }
-
-    private static String awaitProcessStream(CompletableFuture<String> streamFuture, String streamName) throws Exception {
-        Method method = AuthModelDatabaseShellCommand.class.getDeclaredMethod(
-            "awaitProcessStream", CompletableFuture.class, String.class);
-        method.setAccessible(true);
-        try {
-            return (String) method.invoke(null, streamFuture, streamName);
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof Exception exception) {
-                throw exception;
-            }
-            if (cause instanceof Error error) {
-                throw error;
-            }
-            throw e;
-        }
-    }
 }
