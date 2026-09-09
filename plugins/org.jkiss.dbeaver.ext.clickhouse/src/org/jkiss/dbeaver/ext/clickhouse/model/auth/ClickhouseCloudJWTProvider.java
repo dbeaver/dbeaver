@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.HttpConstants;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -135,17 +136,18 @@ public class ClickhouseCloudJWTProvider extends ClickhouseJWTProvider {
 
         HttpRequest request = HttpRequest.newBuilder(URI.create(apiHost + TOKEN_EXCHANGE_PATH))
             .timeout(REQUEST_TIMEOUT)
-            .header("Content-Type", "application/json; charset=utf-8")
-            .header("Authorization", "Bearer " + getIdPAccessToken())
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON + "; charset=utf-8")
+            .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + getIdPAccessToken())
             .POST(HttpRequest.BodyPublishers.ofString(JSONUtils.GSON.toJson(payload)))
             .build();
 
         HttpResponse<String> response = sendRequest(request);
-        if (response.statusCode() == 401 || response.statusCode() == 403) {
+        if (response.statusCode() == HttpConstants.CODE_UNAUTHORIZED
+            || response.statusCode() == HttpConstants.CODE_FORBIDDEN) {
             throw new ClickhouseTokenRejectedException(
                 "ClickHouse Cloud rejected the sign-in token: HTTP " + response.statusCode());
         }
-        if (response.statusCode() != 200) {
+        if (response.statusCode() != HttpConstants.CODE_OK) {
             throw new DBException(
                 "Error exchanging token for a ClickHouse JWT: HTTP " + response.statusCode() + "\n" + response.body());
         }
