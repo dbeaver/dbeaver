@@ -68,14 +68,20 @@ public record DBPSyncFiles(
                 Files.delete(root);
                 return;
             }
+            boolean hasInvalidNames = false;
             for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
                 Path path = resolve(resource.getKey());
                 if (path == null) {
-                    log.debug("Skip invalid resource name '" + resource.getKey() + "' for " + root);
+                    log.warn("Skip invalid resource name '" + resource.getKey() + "' for " + root);
+                    hasInvalidNames = true;
                     continue;
                 }
                 Files.createDirectories(path.getParent());
                 Files.write(path, resource.getValue());
+            }
+            if (hasInvalidNames) {
+                log.warn("Skip cleanup for " + root + " because some resource names were rejected");
+                return;
             }
             if (Files.isDirectory(root)) {
                 try (Stream<Path> list = Files.list(root)) {

@@ -90,10 +90,12 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
     @Override
     public void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException {
         Path folder = target.root().resolve(DBPProject.METADATA_FOLDER);
+        boolean hasUnexpectedResources = false;
         for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
             String name = resource.getKey();
             if (!isSyncedFile(name)) {
-                log.debug("Skip unexpected connections resource " + name);
+                log.warn("Skip unexpected connections resource " + name);
+                hasUnexpectedResources = true;
                 continue;
             }
             if (BaseProjectImpl.SETTINGS_STORAGE_FILE.equals(name)) {
@@ -108,7 +110,9 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
                 throw new DBException("Error writing " + file, e);
             }
         }
-        if (Files.isDirectory(folder)) {
+        if (hasUnexpectedResources) {
+            log.warn("Skip cleanup for " + folder + " because some resources were rejected");
+        } else if (Files.isDirectory(folder)) {
             try (Stream<Path> list = Files.list(folder)) {
                 for (Path file : list.filter(Files::isRegularFile).toList()) {
                     String name = file.getFileName().toString();
