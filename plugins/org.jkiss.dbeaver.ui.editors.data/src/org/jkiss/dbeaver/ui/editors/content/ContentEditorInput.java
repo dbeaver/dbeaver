@@ -123,7 +123,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         this.prepareContent(monitor);
     }
 
-    public boolean isInMemory() {
+    public boolean isInMemory()
+    {
         return stringStorage != null;
     }
 

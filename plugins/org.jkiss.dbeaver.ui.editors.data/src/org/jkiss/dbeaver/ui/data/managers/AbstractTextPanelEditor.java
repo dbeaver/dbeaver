@@ -422,7 +422,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         }
         try (final InputStream stream = contents.getContentStream()) {
             byte[] displayingContentBytes = stream.readNBytes(lengthInBytes);
-            final String content = new String(displayingContentBytes);
+            final String content = new String(displayingContentBytes, StandardCharsets.UTF_8);
             if (editor != null) {
                 resetEditorInput();
                 editorControl.setWordWrap(false);
