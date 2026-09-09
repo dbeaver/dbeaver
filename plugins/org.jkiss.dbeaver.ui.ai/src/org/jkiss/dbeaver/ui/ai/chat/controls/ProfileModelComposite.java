@@ -176,12 +176,12 @@ class ProfileModelComposite extends Composite {
             }
         }
         profileItem.setToolTipText(profileTip);
-        modelItem.setToolTipText(AIChatMessagesUI.ai_chat_model_label + ": " + modelText);
         profileItem.setEnabled(!chat.isBusy());
         modelItem.setEnabled(modelSelectionSupported && !chat.isBusy() && modelLoadJob == null && canConfigure());
         if (modelLoadJob != null) {
             modelText = AIChatMessagesUI.ai_chat_model_loading;
         }
+        modelItem.setToolTipText(AIChatMessagesUI.ai_chat_model_label + ": " + modelText);
         boolean visible = settings.getProperty(AIConstants.AI_CHAT_SHOW_PROFILE_AND_MODEL, true);
         GridData data = (GridData) getLayoutData();
         boolean visibilityChanged = data.exclude == visible;

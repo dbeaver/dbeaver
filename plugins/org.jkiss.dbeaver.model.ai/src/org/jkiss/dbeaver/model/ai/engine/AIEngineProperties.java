@@ -25,6 +25,7 @@ public interface AIEngineProperties {
 
     int DEFAULT_TIMEOUT = 30;
 
+    @Nullable
     String getModel();
 
     @Nullable
@@ -44,6 +45,7 @@ public interface AIEngineProperties {
         setModel(model.name());
     }
 
+    @Nullable
     Integer getContextWindowSize();
 
     double getTemperature();
