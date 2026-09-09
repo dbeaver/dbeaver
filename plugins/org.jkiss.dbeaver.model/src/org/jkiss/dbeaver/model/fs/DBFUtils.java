@@ -183,10 +183,10 @@ public class DBFUtils {
      */
     @Nullable
     public static DBPDataSourceContainer createTemporaryDataSourceContainer(
-        String connectionName,
-        DBPProject project,
-        DBPDriver driver,
-        DBPConnectionConfiguration configuration
+        @NotNull String connectionName,
+        @NotNull DBPProject project,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration configuration
     ) {
         DBPDataSourceRegistry registry = project.getDataSourceRegistry();
         String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(configuration.getDatabaseName()),

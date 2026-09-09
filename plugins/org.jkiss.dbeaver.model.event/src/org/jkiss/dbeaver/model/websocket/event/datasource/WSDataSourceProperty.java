@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 public enum WSDataSourceProperty {
     CONFIGURATION, // configuration like host, port, etc
     NAME, // visual changes like name, description that doesn't affect connection configuration
+    NAVIGATION, // navigator location changes
     INTERNAL; // internal changes like extensions
 
     public boolean hasEffectiveChanges(
@@ -31,6 +32,7 @@ public enum WSDataSourceProperty {
         return switch (this) {
             case CONFIGURATION -> !before.equalConfiguration(after);
             case NAME -> !before.isLooselyEqualTo(after);
+            case NAVIGATION -> !before.equalNavigation(after);
             case INTERNAL -> !before.equalInternalConfiguration(after);
         };
     }

@@ -3,22 +3,8 @@
 
 <plugin>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.exasol.dataSourceWizardView"
-                dataSource="exasol"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.exasol.ui.views.ExasolConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.exasol/icons/Exasol_icon.png">
-        </view>
-        <view
-                id="org.jkiss.dbeaver.ext.exasol.dataSourceEditorView"
-                dataSource="exasol"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.exasol.ui.views.ExasolConnectionPage">
-        </view>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="exasol" class="org.jkiss.dbeaver.ext.exasol.ui.views.ExasolConnectionPage"/>
     </extension>
     
     <extension point="org.eclipse.ui.editors">

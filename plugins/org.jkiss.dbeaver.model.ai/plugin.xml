@@ -73,7 +73,8 @@
             label="AI integration"
             description="Use AI to create and edit queries, answer questions, troubleshoot errors, or explore database objects."
             enabledByDefault="true"
-            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
+            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"
+            availabilityTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
     </extension>
 
     <extension point="com.dbeaver.ai.function">

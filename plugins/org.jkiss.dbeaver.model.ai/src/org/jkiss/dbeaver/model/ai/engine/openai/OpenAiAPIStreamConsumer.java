@@ -40,6 +40,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     public static final String DATA_EVENT = "data: ";
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
     public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
+    private static final String DONE_EVENT = "[DONE]";
     private static final String EVENT_EVENT = "event: ";
     private static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     private final AIEngineResponseConsumer listener;
@@ -56,6 +57,9 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
         }
         if (event.startsWith(DATA_EVENT)) {
             String data = event.substring(DATA_EVENT.length()).trim();
+            if (DONE_EVENT.equals(data)) {
+                return;
+            }
             try {
                 OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                 if (chunk.error != null) {

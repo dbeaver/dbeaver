@@ -31,16 +31,15 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.registry.DataSourceConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
-import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.*;
 
@@ -55,7 +54,7 @@ public class NewConnectionWizard extends ConnectionWizard
     private IStructuredSelection selection;
     private final List<DBPDataSourceProviderDescriptor> availableProvides = new ArrayList<>();
     private ConnectionPageDriver pageDrivers;
-    private final Map<DBPDataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
+    private final Map<DBPDriver, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
     private DataSourceDescriptor dataSourceNew;
 
@@ -102,7 +101,7 @@ public class NewConnectionWizard extends ConnectionWizard
 
     ConnectionPageSettings getPageSettings(DBPDriver driver)
     {
-        return this.settingsPages.get(driver.getProviderDescriptor());
+        return this.settingsPages.get(driver);
     }
 
     @Override
@@ -129,7 +128,7 @@ public class NewConnectionWizard extends ConnectionWizard
         if (selectedDriver == null) {
             return null;
         }
-        return this.settingsPages.get(selectedDriver.getProviderDescriptor());
+        return this.settingsPages.get(selectedDriver);
     }
 
     /**
@@ -147,13 +146,21 @@ public class NewConnectionWizard extends ConnectionWizard
             addPage(pageDrivers);
         }
 
+        Map<DataSourceConfiguratorDescriptor, ConnectionPageSettings> configuratorPages = new HashMap<>();
         for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
-            DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(provider, IActionConstants.NEW_CONNECTION_POINT);
-            if (view != null) {
-                ConnectionPageSettings pageSettings = new ConnectionPageSettings(this, view, getDriverSubstitution());
-                settingsPages.put(provider, pageSettings);
-                addPage(pageSettings);
+            for (DBPDriver driver : provider.getEnabledDrivers()) {
+                DataSourceConfiguratorDescriptor configurator = DataSourceConfiguratorRegistry.getInstance()
+                    .findConnectionConfigurator(driver);
+                if (configurator != null) {
+                    ConnectionPageSettings pageSettings = configuratorPages.get(configurator);
+                    if (pageSettings == null) {
+                        pageSettings = new ConnectionPageSettings(this, configurator, getDriverSubstitution());
+                        configuratorPages.put(configurator, pageSettings);
+                        addPage(pageSettings);
+                    }
+                    settingsPages.put(driver, pageSettings);
+                }
             }
         }
 
