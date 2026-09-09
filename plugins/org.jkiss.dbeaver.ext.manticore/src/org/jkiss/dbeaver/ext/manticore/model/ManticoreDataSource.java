@@ -14,32 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.doris.internal;
+package org.jkiss.dbeaver.ext.manticore.model;
 
-import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
-import org.osgi.framework.BundleContext;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Objects;
+public class ManticoreDataSource extends GenericDataSource {
 
-public class DorisActivator extends Plugin {
-
-    private static DorisActivator plugin;
-
-    @Override
-    public void start(BundleContext context) throws Exception {
-        super.start(context);
-        plugin = this;
-    }
-
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        plugin = null;
-        super.stop(context);
-    }
-
-    @NotNull
-    public static DorisActivator getDefault() {
-        return Objects.requireNonNull(plugin, "Doris plugin has not been started"); //$NON-NLS-1$
+    public ManticoreDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull GenericMetaModel metaModel
+    ) throws DBException {
+        super(monitor, container, metaModel, new ManticoreSQLDialect());
     }
 }

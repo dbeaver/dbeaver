@@ -40,6 +40,15 @@ public class ClickhouseAuthModelCloudSSO extends ClickhouseAuthModelJWTBase {
 
     private static final String PROP_SSL = "ssl";
 
+    public boolean isSignedIn(@NotNull DBPDataSourceContainer dataSource) throws DBException {
+        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
+        ClickhouseJWTProvider provider = getProvider(dataSource, configuration);
+        ClickhouseJWTCredentials credentials = createCredentials();
+        loadCredentials(dataSource, configuration, credentials);
+        restoreTokens(provider, credentials);
+        return provider.isSignedIn();
+    }
+
     @Override
     public Object initAuthentication(
         @NotNull DBRProgressMonitor monitor,
