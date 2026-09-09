@@ -432,27 +432,35 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Nullable
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (isPersisted() && subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
+        if (isPersisted() && subTables == null && getDataSource().getServerType().supportsInheritance()) {
             List<PostgreTableInheritance> tables = new ArrayList<>();
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
-                String sql = "SELECT i.*,c.relnamespace " +
+                String sql = "SELECT i.*,c.relnamespace,c.relname " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
                     "WHERE i.inhparent=? AND c.oid=i.inhrelid";
-//                if (getDataSource().isServerVersionAtLeast(10, 0)) {
-//                    sql += " AND c.relispartition=false";
-//                }
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             final long subSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace"); //$NON-NLS-1$
                             final long subTableId = JDBCUtils.safeGetLong(dbResult, "inhrelid"); //$NON-NLS-1$
+                            final String subTableName = JDBCUtils.safeGetString(dbResult, "relname"); //$NON-NLS-1$
                             PostgreSchema schema = getDatabase().getSchema(monitor, subSchemaId);
                             if (schema == null) {
                                 log.warn("Can't find sub-table's schema '" + subSchemaId + "'");
                                 continue;
                             }
                             PostgreTableBase subTable = schema.getTable(monitor, subTableId);
+                            if (subTable == null && subTableName != null) {
+                                // The sub-table (e.g. a partition) can be created after the schema table cache was
+                                // loaded, so it may not be present there. Load such table separately and add it to the cache.
+                                schema.getTableCache().setFullCache(false);
+                                try {
+                                    subTable = schema.getTableCache().getObject(monitor, schema, subTableName);
+                                } finally {
+                                    schema.getTableCache().setFullCache(true);
+                                }
+                            }
                             if (subTable == null) {
                                 log.warn("Can't find sub-table '" + subTableId + "' in '" + schema.getName() + "'");
                                 continue;
@@ -470,6 +478,9 @@ public abstract class PostgreTable extends PostgreTableReal
                 }
             }
             DBUtils.orderObjects(tables);
+            if (!tables.isEmpty()) {
+                this.hasSubClasses = true;
+            }
             this.subTables = tables;
         }
         return subTables == null || subTables.isEmpty() ? null : subTables;
