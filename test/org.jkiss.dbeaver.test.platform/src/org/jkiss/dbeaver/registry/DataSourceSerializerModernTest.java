@@ -17,81 +17,26 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class DataSourceSerializerModernTest {
     @Test
-    public void testFoldersWithSameNameAreReadWithoutChangingFormat() throws IOException {
-        List<Pair<String, Map<String, Object>>> folders = readFolders("""
-            {
-              "connections": {},
-              "folders": {
-                "Parent": {},
-                "New folder": { "parent": "Parent" },
-                "New folder": {}
-              }
-            }
-            """);
-
-        Assertions.assertEquals(3, folders.size());
-        Assertions.assertEquals("Parent", folders.get(0).getFirst());
-        Assertions.assertEquals("New folder", folders.get(1).getFirst());
-        Assertions.assertEquals("Parent", folders.get(1).getSecond().get(RegistryConstants.ATTR_PARENT));
-        Assertions.assertEquals("New folder", folders.get(2).getFirst());
-        Assertions.assertTrue(folders.get(2).getSecond().isEmpty());
+    public void testFullFolderPath() {
+        Assertions.assertEquals(
+            "Parent/Child",
+            TestSerializer.resolveFolderPath("Parent/Child", Map.of())
+        );
     }
 
     @Test
-    public void testFoldersWithSameNameUnderDifferentParentsArePreserved() throws IOException {
-        List<Pair<String, Map<String, Object>>> folders = readFolders("""
-            {
-              "folders": {
-                "Parent 1": {},
-                "Parent 2": {},
-                "Child": { "parent": "Parent 1" },
-                "Child": { "parent": "Parent 2" }
-              }
-            }
-            """);
-
-        Assertions.assertEquals(4, folders.size());
-        Assertions.assertEquals("Child", folders.get(2).getFirst());
-        Assertions.assertEquals("Parent 1", folders.get(2).getSecond().get(RegistryConstants.ATTR_PARENT));
-        Assertions.assertEquals("Child", folders.get(3).getFirst());
-        Assertions.assertEquals("Parent 2", folders.get(3).getSecond().get(RegistryConstants.ATTR_PARENT));
-    }
-
-    @Test
-    public void testUniqueFolderConfigurationIsReadNormally() throws IOException {
-        List<Pair<String, Map<String, Object>>> folders = readFolders("""
-            {
-              "folders": {
-                "Parent": { "description": "Parent folder" },
-                "Child": { "parent": "Parent", "description": "Child folder" }
-              }
-            }
-            """);
-
-        Assertions.assertEquals(2, folders.size());
-        Assertions.assertEquals("Parent folder", folders.get(0).getSecond().get(RegistryConstants.ATTR_DESCRIPTION));
-        Assertions.assertEquals("Parent", folders.get(1).getSecond().get(RegistryConstants.ATTR_PARENT));
-        Assertions.assertEquals("Child folder", folders.get(1).getSecond().get(RegistryConstants.ATTR_DESCRIPTION));
-    }
-
-    @Test
-    public void testMissingOrNullFoldersAreReadAsEmpty() throws IOException {
-        Assertions.assertTrue(readFolders("{ \"connections\": {} }").isEmpty());
-        Assertions.assertTrue(readFolders("{ \"folders\": null }").isEmpty());
-    }
-
-    private static List<Pair<String, Map<String, Object>>> readFolders(@NotNull String data) throws IOException {
-        return TestSerializer.readFolders(data);
+    public void testLegacyFolderPath() {
+        Assertions.assertEquals(
+            "Parent/Child",
+            TestSerializer.resolveFolderPath("Child", Map.of(RegistryConstants.ATTR_PARENT, "Parent"))
+        );
     }
 
     private static final class TestSerializer extends DataSourceSerializerModern<DataSourceDescriptor> {
@@ -100,10 +45,8 @@ public class DataSourceSerializerModernTest {
         }
 
         @NotNull
-        @SuppressWarnings("unchecked")
-        private static List<Pair<String, Map<String, Object>>> readFolders(@NotNull String data) throws IOException {
-            Object folders = readConfigurationMap(data).get("folders");
-            return folders == null ? List.of() : (List<Pair<String, Map<String, Object>>>) folders;
+        private static String resolveFolderPath(@NotNull String name, @NotNull Map<String, Object> configuration) {
+            return getFolderPath(name, configuration);
         }
     }
 }
