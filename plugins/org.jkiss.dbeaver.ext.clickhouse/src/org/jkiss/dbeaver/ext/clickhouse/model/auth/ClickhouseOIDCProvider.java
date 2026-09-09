@@ -17,35 +17,22 @@
 package org.jkiss.dbeaver.ext.clickhouse.model.auth;
 
 import com.google.gson.JsonObject;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.oauth.OAuthConstants;
+import org.jkiss.utils.oauth.OAuthUtils;
+import org.jkiss.utils.oauth.code.OAuthCodeResponseHandler;
+import org.jkiss.utils.oauth.code.OAuthRequestURLBuilder;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.BindException;
-import java.net.InetSocketAddress;
 import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * Generic OpenID Connect provider: signs the user in with an external identity provider
@@ -143,66 +130,69 @@ public class ClickhouseOIDCProvider extends ClickhouseJWTProvider {
     private void authorizationCodeLogin(@NotNull DBRProgressMonitor monitor) throws DBException {
         discoverEndpoints();
 
-        String verifier = randomUrlSafe(64);
-        String state = randomUrlSafe(32);
+        String verifier = OAuthUtils.generateCodeVerifier();
+        String state = OAuthUtils.generateRandomUrlSafeValue(32);
         String redirectUri = "http://localhost:" + callbackPort + CALLBACK_PATH;
 
-        CompletableFuture<String> authorizationCode = new CompletableFuture<>();
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        HttpServer callbackServer;
+        OAuthCodeResponseHandler responseHandler = new OAuthCodeResponseHandler(
+            callbackPort,
+            CALLBACK_PATH,
+            state,
+            DBAuthUtils.getExternalBrowserSuccessResponse("ClickHouse")
+        );
         try {
-            callbackServer = HttpServer.create(new InetSocketAddress("localhost", callbackPort), 0);
-            callbackServer.createContext(CALLBACK_PATH, exchange -> handleCallback(exchange, state, authorizationCode));
-            callbackServer.setExecutor(executor);
-            callbackServer.start();
-        } catch (BindException e) {
-            executor.shutdownNow();
-            throw new DBException(
-                "Port " + callbackPort + " is already in use. Change the redirect port in the connection settings.", e);
+            responseHandler.initServer();
         } catch (IOException e) {
-            executor.shutdownNow();
+            responseHandler.close();
+            if (e instanceof BindException || e.getCause() instanceof BindException) {
+                throw new DBException(
+                    "Port " + callbackPort + " is already in use. Change the redirect port in the connection settings.", e);
+            }
             throw new DBException("Cannot start the local authentication callback server", e);
         }
 
         try {
-            Map<String, String> parameters = new LinkedHashMap<>();
-            parameters.put("response_type", "code");
-            parameters.put("client_id", clientId);
-            parameters.put("redirect_uri", redirectUri);
-            parameters.put("scope", getScopes());
-            parameters.put("code_challenge", codeChallenge(verifier));
-            parameters.put("code_challenge_method", "S256");
-            parameters.put("state", state);
+            OAuthRequestURLBuilder urlBuilder = new OAuthRequestURLBuilder(authorizationEndpoint)
+                .withClientId(clientId)
+                .withRedirectURI(redirectUri)
+                .withScope(getScopes())
+                .withCodeChallenge(OAuthUtils.generateCodeChallenge(verifier))
+                .withState(state);
             String audience = getAudience();
             if (!CommonUtils.isEmpty(audience)) {
-                parameters.put("audience", audience);
+                urlBuilder.withParam("audience", audience);
             }
             if (!CommonUtils.isEmpty(loginHint)) {
                 // Pre-fills the account on the provider's sign-in page
-                parameters.put("login_hint", loginHint);
+                urlBuilder.withParam("login_hint", loginHint);
             }
-            URI authorizationUri = URI.create(authorizationEndpoint
-                + (authorizationEndpoint.indexOf('?') < 0 ? "?" : "&") + toForm(parameters));
+            URI authorizationUri = URI.create(urlBuilder.build());
 
-            monitor.subTask("Waiting for browser authentication");
-            getPrompt().openBrowser(authorizationUri);
-
-            String code = awaitCode(monitor, authorizationCode);
-            exchangeAuthorizationCode(code, verifier, redirectUri);
+            CompletableFuture<Void> browserCompletion = new CompletableFuture<>();
+            try {
+                monitor.subTask("Waiting for browser authentication");
+                getPrompt().openBrowser(authorizationUri, browserCompletion);
+                String code = awaitCode(monitor, responseHandler.requestCode(), browserCompletion);
+                exchangeAuthorizationCode(code, verifier, redirectUri);
+            } finally {
+                browserCompletion.complete(null);
+            }
+        } catch (IOException e) {
+            throw new DBException("Cannot create the authorization request", e);
         } finally {
-            callbackServer.stop(0);
-            executor.shutdownNow();
+            responseHandler.close();
         }
     }
 
     @NotNull
     private String awaitCode(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull CompletableFuture<String> authorizationCode
+        @NotNull Future<String> authorizationCode,
+        @NotNull CompletableFuture<Void> cancellation
     ) throws DBException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(LOGIN_TIMEOUT_SECONDS);
         while (true) {
-            if (monitor.isCanceled()) {
+            if (monitor.isCanceled() || cancellation.isCancelled()) {
                 throw new DBException("Authentication was cancelled");
             }
             if (System.nanoTime() > deadline) {
@@ -229,81 +219,12 @@ public class ClickhouseOIDCProvider extends ClickhouseJWTProvider {
         @NotNull String redirectUri
     ) throws DBException {
         Map<String, String> parameters = new LinkedHashMap<>();
-        parameters.put("grant_type", "authorization_code");
-        parameters.put("code", code);
-        parameters.put("client_id", clientId);
-        parameters.put("redirect_uri", redirectUri);
-        parameters.put("code_verifier", verifier);
+        parameters.put(OAuthConstants.PARAM_GRANT_TYPE, OAuthConstants.GRANT_TYPE_AUTH_CODE);
+        parameters.put(OAuthConstants.PARAM_CODE, code);
+        parameters.put(OAuthConstants.AUTH_PROP_CLIENT_ID, clientId);
+        parameters.put(OAuthConstants.PARAM_REDIRECT_URI, redirectUri);
+        parameters.put(OAuthConstants.PARAM_CODE_VERIFIER, verifier);
         addClientAuthentication(parameters);
         acceptTokenResponse(sendForm(getTokenEndpoint(), parameters, null));
-    }
-
-    private static void handleCallback(
-        @NotNull HttpExchange exchange,
-        @NotNull String expectedState,
-        @NotNull CompletableFuture<String> authorizationCode
-    ) throws IOException {
-        Map<String, String> query = parseQuery(exchange.getRequestURI().getRawQuery());
-        String response;
-        try {
-            String error = query.get("error");
-            if (error != null) {
-                throw new DBException("Identity provider returned an error: "
-                    + CommonUtils.notEmpty(query.getOrDefault("error_description", error)));
-            }
-            if (!expectedState.equals(query.get("state"))) {
-                throw new DBException("Authentication state mismatch, the request may have been tampered with");
-            }
-            String code = query.get("code");
-            if (CommonUtils.isEmpty(code)) {
-                throw new DBException("Identity provider did not return an authorization code");
-            }
-            authorizationCode.complete(code);
-            response = DBAuthUtils.getExternalBrowserSuccessResponse("ClickHouse");
-        } catch (DBException e) {
-            authorizationCode.completeExceptionally(e);
-            response = "<html><body><h3>Authentication failed</h3><p>"
-                + CommonUtils.escapeHtml(e.getMessage()) + "</p></body></html>";
-        }
-        byte[] body = response.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
-        exchange.sendResponseHeaders(200, body.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(body);
-        }
-    }
-
-    @NotNull
-    private static Map<String, String> parseQuery(@Nullable String rawQuery) {
-        Map<String, String> parameters = new HashMap<>();
-        if (CommonUtils.isEmpty(rawQuery)) {
-            return parameters;
-        }
-        for (String pair : rawQuery.split("&")) {
-            int eq = pair.indexOf('=');
-            if (eq > 0) {
-                parameters.put(
-                    URLDecoder.decode(pair.substring(0, eq), StandardCharsets.UTF_8),
-                    URLDecoder.decode(pair.substring(eq + 1), StandardCharsets.UTF_8));
-            }
-        }
-        return parameters;
-    }
-
-    @NotNull
-    private static String randomUrlSafe(int length) {
-        byte[] bytes = new byte[length];
-        new SecureRandom().nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    @NotNull
-    private static String codeChallenge(@NotNull String verifier) throws DBException {
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(verifier.getBytes(StandardCharsets.US_ASCII));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
-        } catch (NoSuchAlgorithmException e) {
-            throw new DBException("SHA-256 is not available", e);
-        }
     }
 }
