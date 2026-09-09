@@ -20,6 +20,9 @@ import org.jkiss.code.Nullable;
 
 public interface AIFunctionParameterValueProvider {
 
+    /**
+     * @return valid values, or {@code null} to fall back to the parameter's static valid values
+     */
     @Nullable
     String[] getValidValues();
 

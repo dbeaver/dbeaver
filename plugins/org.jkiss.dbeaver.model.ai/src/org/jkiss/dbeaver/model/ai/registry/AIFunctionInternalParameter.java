@@ -77,7 +77,13 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
         if (validValuesProvider != null) {
             String suffix = validValuesProvider.getValidValuesDescription();
             if (!CommonUtils.isEmpty(suffix)) {
-                return CommonUtils.isEmpty(description) ? suffix : description + ". " + suffix;
+                if (CommonUtils.isEmpty(description) || description.isBlank()) {
+                    return suffix;
+                }
+                description = description.stripTrailing();
+                char lastChar = description.charAt(description.length() - 1);
+                String separator = lastChar == '.' || lastChar == '!' || lastChar == '?' ? " " : ". ";
+                return description + separator + suffix;
             }
         }
         return description;
@@ -98,7 +104,10 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     @Nullable
     public String[] getValidValues() {
         if (validValuesProvider != null) {
-            return validValuesProvider.getValidValues();
+            String[] providedValues = validValuesProvider.getValidValues();
+            if (providedValues != null) {
+                return providedValues;
+            }
         }
         String validValues = config.getAttribute("validValues");
         return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
