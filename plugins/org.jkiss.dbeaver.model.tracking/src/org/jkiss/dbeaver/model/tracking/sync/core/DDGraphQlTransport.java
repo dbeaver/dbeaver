@@ -82,6 +82,7 @@ class DDGraphQlTransport extends AbstractRestClient implements DDSyncTransport, 
     private static final class LocalDateTimeIsoAdapter
         implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
 
+        @NotNull
         @Override
         public LocalDateTime deserialize(
             @NotNull JsonElement json, @NotNull Type typeOfT, @NotNull JsonDeserializationContext context
@@ -89,6 +90,7 @@ class DDGraphQlTransport extends AbstractRestClient implements DDSyncTransport, 
             return OffsetDateTime.parse(json.getAsString()).toLocalDateTime();
         }
 
+        @NotNull
         @Override
         public JsonElement serialize(
             @NotNull LocalDateTime src, @NotNull Type typeOfSrc, @NotNull JsonSerializationContext context

@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
 import com.dbeaver.datadam.share.api.model.DDConfigurationPartKind;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.tracking.auth.DDCrypto;
 import org.junit.jupiter.api.Assertions;
@@ -90,8 +92,9 @@ class DDSyncStoreTest {
         Assertions.assertTrue(exception.getMessage().contains("Invalid synchronization part"));
     }
 
+    @NotNull
     private com.dbeaver.datadam.share.api.model.DDConfiguration wireConfiguration(
-        DDConfigurationPartKind kind
+        @Nullable DDConfigurationPartKind kind
     ) throws Exception {
         String envelopeJson = "{\"schemaVersion\":1,\"name\":\"test\",\"units\":{}}";
         byte[] plaintext = envelopeJson.getBytes(StandardCharsets.UTF_8);
