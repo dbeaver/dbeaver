@@ -159,6 +159,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         final long timestamp,
         final @NotNull DBPDataSource dataSource
     ) {
+        if (isMetadataQuery(object) && isSkipMetadataQueries()) {
+            return;
+        }
         try {
             String sessionId = QMUtils.getQmSessionId(dataSource);
             synchronized (eventPool) {
@@ -168,6 +171,20 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
+    }
+
+    private static boolean isSkipMetadataQueries() {
+        return DBWorkbench.getPlatform().getPreferenceStore()
+            .getBoolean(QMConstants.PROP_SKIP_METADATA_QUERIES);
+    }
+
+    private static boolean isMetadataQuery(@NotNull QMMObject object) {
+        DBCExecutionPurpose purpose = switch (object) {
+            case QMMStatementExecuteInfo execute -> execute.getStatement().getPurpose();
+            case QMMStatementInfo statement -> statement.getPurpose();
+            default -> null;
+        };
+        return purpose == DBCExecutionPurpose.META;
     }
 
     @NotNull

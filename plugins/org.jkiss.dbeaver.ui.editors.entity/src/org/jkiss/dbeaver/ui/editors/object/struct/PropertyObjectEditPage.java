@@ -76,8 +76,9 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
         return null;
     }
 
+    @NotNull
     @Override
-    protected Control createPageContents(Composite parent) {
+    protected Control createPageContents(@NotNull Composite parent) {
         final Composite composite;
         String groupTitle = getPropertiesGroupTitle();
         if (CommonUtils.isEmpty(groupTitle)) {
@@ -120,6 +121,7 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
         }
     }
 
+    @Nullable
     protected String getEditError() {
         if (CommonUtils.isEmpty(object.getName())) {
             return "Object name cannot be empty";

@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -117,12 +116,8 @@ public class DashboardViewConfigDialog extends BaseDialog {
             );
             ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
             ((GridData) managerButton.getLayoutData()).grabExcessHorizontalSpace = true;
-            managerButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
-                }
-            });
+            managerButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open()));
         }
         super.createButtonsForButtonBar(parent);
     }

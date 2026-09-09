@@ -1164,7 +1164,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
                     categories="sql,federated">
-                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.42.0]" bundle="!drivers.apache_calcite"/>
+                    <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.28.0]" bundle="!drivers.apache_calcite"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/apache_calcite" bundle="drivers.apache_calcite"/>
 

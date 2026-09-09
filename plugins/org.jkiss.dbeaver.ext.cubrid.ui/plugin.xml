@@ -23,23 +23,8 @@
         </configurator>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-            id="org.jkiss.dbeaver.ext.cubrid.dataSourceWizardView"
-            class="org.jkiss.dbeaver.ext.cubrid.ui.views.CubridConnectionPage"
-            icon="platform:/plugin/org.jkiss.dbeaver.ext.cubrid/icons/cubrid_icon.png"
-            dataSource="cubrid"
-            label="%dialog.connection.header"
-            targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard">
-        </view>
-        <view
-            id="org.jkiss.dbeaver.ext.cubrid.dataSourceEditorView"
-            class="org.jkiss.dbeaver.ext.cubrid.ui.views.CubridConnectionPage"
-            icon="platform:/plugin/org.jkiss.dbeaver.ext.cubrid/icons/cubrid_icon.png"
-            dataSource="cubrid"
-            label="%dialog.connection.header"
-            targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="cubrid" class="org.jkiss.dbeaver.ext.cubrid.ui.views.CubridConnectionPage"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

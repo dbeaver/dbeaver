@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
-import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
+import org.jkiss.dbeaver.ext.oracle.ui.OracleUIConstants;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
@@ -41,6 +43,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,33 +68,29 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         super("SQLDeveloper");
         setTitle("SQL Developer");
         setDescription("Import Oracle SQL Developer connections");
-        setImageDescriptor(OracleUIActivator.getImageDescriptor("icons/sqldeveloper_big.png"));
+        setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(
+            OracleUIConstants.PLUGIN_ID, "icons/sqldeveloper_big.png"));
 
         oraDriver = new ImportDriverInfo(null, "Oracle", "jdbc:oracle:thin:@{host}[:{port}]/{database}", "oracle.jdbc.OracleDriver");
     }
 
     @Override
-    protected void loadConnections(ImportData importData) throws DBException {
+    protected void loadConnections(@NotNull ImportData importData) throws DBException {
 
         importData.addDriver(oraDriver);
 
-        File homeFolder = RuntimeUtils.getUserHomeDir();
-        File sqlDevHome = new File(homeFolder, "AppData/Roaming/" + SQLD_HOME_FOLDER);
-        if (!sqlDevHome.exists()) {
-            sqlDevHome = new File(homeFolder, "Application Data/" + SQLD_HOME_FOLDER);
-            if (!sqlDevHome.exists()) {
-                sqlDevHome = new File(homeFolder, ".sqldeveloper"); // On Linux
-                if (!sqlDevHome.exists()) {
+        Path homeFolder = RuntimeUtils.getUserHomePath();
+        Path sqlDevHome = homeFolder.resolve("AppData/Roaming/" + SQLD_HOME_FOLDER);
+        if (!Files.exists(sqlDevHome)) {
+            sqlDevHome = homeFolder.resolve("Application Data/" + SQLD_HOME_FOLDER);
+            if (!Files.exists(sqlDevHome)) {
+                sqlDevHome = homeFolder.resolve(".sqldeveloper"); // On Linux
+                if (!Files.exists(sqlDevHome)) {
                     throw new DBException(OracleUIMessages.config_import_wizard_page_sql_developer_label_installation_not_found);
                 }
             }
         }
-        final File[] sysConfFolders = sqlDevHome.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.contains(SQLD_SYSCONFIG_FOLDER);
-            }
-        });
+        final File[] sysConfFolders = sqlDevHome.toFile().listFiles((dir, name) -> name.contains(SQLD_SYSCONFIG_FOLDER));
         if (sysConfFolders == null || sysConfFolders.length == 0) {
             throw new DBException("SQL Developer config not found");
         }
@@ -108,7 +108,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
             final File connectionsJsonFile = new File(connectionFolder, SQLD_CONFIG_JSON_FILE);
             final File connectionsFile = new File(connectionFolder, SQLD_CONFIG_FILE);
             if (connectionsFile.exists()) {
-                parseConnections(connectionsFile, importData);
+                parseConnections(connectionsFile.toPath(), importData);
             } else if (connectionsJsonFile.exists()) {
                 parseJsonConnections(connectionsJsonFile, importData);
             }
@@ -314,7 +314,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         }
     }
 
-    private void parseConnections(File connectionsFile, ImportData importData) throws DBException {
+    private void parseConnections(Path connectionsFile, ImportData importData) throws DBException {
         try {
             Document configDocument = XMLUtils.parseDocument(connectionsFile);
 

@@ -72,6 +72,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
     private static final Map<String, String> valueToManagerMap = new HashMap<>();
 
+    private final boolean readOnly;
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
     private volatile StreamValueManagerDescriptor curStreamManager;
     private IStreamValueEditor<Control> streamEditor;
@@ -81,6 +82,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
     public ContentPanelEditor(IValueController controller) {
         super(controller);
+        readOnly = controller.isReadOnly();
 
         // Load manager setting for current attribute
         if (controller.getExecutionContext() != null) {
@@ -90,6 +92,25 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 valueToManagerMap.put(makeValueId(true), managerId);
             }
         }
+    }
+
+    /**
+     * Checks whether the existing stream editor control is compatible with the controller's current value.
+     */
+    public boolean canReuseControl() {
+        if (readOnly != valueController.isReadOnly() || !isStringValue() || curStreamManager == null) {
+            return false;
+        }
+        StreamValueManagerDescriptor previousStreamManager = curStreamManager;
+        curStreamManager = null;
+        try {
+            loadStringStreamManagers();
+        } catch (DBException e) {
+            curStreamManager = previousStreamManager;
+            log.debug("Can't detect stream manager", e);
+            return false;
+        }
+        return curStreamManager == previousStreamManager;
     }
 
     @Override
@@ -573,7 +594,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 monitor.subTask("Prime LOB value");
                 UIUtils.syncExec(() -> {
                     try {
-                        if (streamEditor != null && !control.isDisposed()) {
+                        if (streamEditor != null && !control.isDisposed() && valueController.getValue() == content) {
                             streamEditor.primeEditorValue(monitor, control, content);
                         }
                     } catch (Exception e) {

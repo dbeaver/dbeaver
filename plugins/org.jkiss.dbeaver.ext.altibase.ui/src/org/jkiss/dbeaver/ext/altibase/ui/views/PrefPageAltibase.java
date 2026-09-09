@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ext.altibase.ui.views;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -79,19 +77,14 @@ public class PrefPageAltibase extends TargetPrefPage {
         int i = 0;
         int size = AltibaseConstants.ExplainPlan.values().length;
         planTypeBtns = new Button[size];
-        
-        SelectionListener selectionListener = new SelectionAdapter() {
-            
-            @Override
-            public void widgetSelected(final SelectionEvent e) {
-                super.widgetSelected(e);
-                for (int i = 0; i < size; i++) {
-                    if (planTypeBtns[i] != null && planTypeBtns[i].getSelection()) {
-                        planTypeIdx = i;
-                    }
+
+        SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
+            for (int buttonIndex = 0; buttonIndex < size; buttonIndex++) {
+                if (planTypeBtns[buttonIndex] != null && planTypeBtns[buttonIndex].getSelection()) {
+                    planTypeIdx = buttonIndex;
                 }
             }
-        };
+        });
 
         /*
          * Explain plains (Execution plan)
