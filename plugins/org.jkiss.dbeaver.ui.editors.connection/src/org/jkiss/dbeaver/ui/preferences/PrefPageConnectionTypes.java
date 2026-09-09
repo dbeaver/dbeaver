@@ -568,7 +568,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     affectedDataSourceRegs.add(projectRegistry);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(
-                        UIConnectionMessages.pref_page_connection_types_label_delete_connection_type,
+                        UIConnectionMessages.pref_page_connection_types_error_title,
                         e.getMessage(),
                         e
                     );
