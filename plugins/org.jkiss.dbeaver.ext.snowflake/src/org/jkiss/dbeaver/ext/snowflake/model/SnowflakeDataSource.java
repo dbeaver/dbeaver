@@ -64,7 +64,20 @@ public class SnowflakeDataSource extends GenericDataSource {
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) {
+        return getInternalConnectionProperties(connectionInfo);
+    }
+
+    @NotNull
+    static Map<String, String> getInternalConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo) {
         Map<String, String> props = new HashMap<>();
+
+        String warehouse = connectionInfo.getServerName();
+        if (CommonUtils.isEmpty(warehouse)) {
+            warehouse = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_WAREHOUSE);
+        }
+        if (!CommonUtils.isEmpty(warehouse)) {
+            props.put(SnowflakeConstants.PROP_WAREHOUSE, warehouse);
+        }
 
         // Backward compatibility - use legacy provider property
         // Newer versions use auth model
