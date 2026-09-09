@@ -116,6 +116,17 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         this.prepareContent(monitor);
     }
 
+    public void refreshContent(DBRProgressMonitor monitor, IValueController valueController, @Nullable String charset) throws DBException
+    {
+        this.valueController = valueController;
+        this.fileCharset = CommonUtils.isEmpty(charset) ? getDefaultEncoding() : charset;
+        this.prepareContent(monitor);
+    }
+
+    public boolean isInMemory() {
+        return stringStorage != null;
+    }
+
     IEditorPart[] getEditors()
     {
         return editorParts;
@@ -210,9 +221,13 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
 
         if (contentDetached) {
             release();
+            contentFile = null;
             contentDetached = false;
         }
         if (storage instanceof DBDContentStorageLocal) {
+            if (contentFile != null && !contentDetached) {
+                release();
+            }
             // User content's storage directly
             contentFile = ((DBDContentStorageLocal)storage).getDataFile().toFile();
             contentDetached = true;
@@ -229,6 +244,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                     }
 
                     contentFile = ContentUtils.createTempContentFile(monitor, DBWorkbench.getPlatform(), valueId).toFile();
+                } else if (!contentFile.canWrite()) {
+                    markReadOnly(false);
                 }
 
                 // Write value to file
