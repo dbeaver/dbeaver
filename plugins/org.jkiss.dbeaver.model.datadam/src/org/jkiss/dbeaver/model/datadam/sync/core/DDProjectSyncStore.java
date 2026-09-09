@@ -191,7 +191,7 @@ public class DDProjectSyncStore {
      */
     @NotNull
     @ForTest
-    static byte[] aad(@NotNull String projectId, @NotNull String field) {
+    public static byte[] aad(@NotNull String projectId, @NotNull String field) {
         return (projectId + '\u0000' + field).getBytes(StandardCharsets.UTF_8);
     }
 
