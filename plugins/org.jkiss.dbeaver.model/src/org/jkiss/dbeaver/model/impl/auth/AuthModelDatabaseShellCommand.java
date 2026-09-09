@@ -32,11 +32,13 @@ import org.jkiss.utils.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Properties;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -141,9 +143,9 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
             if (process.isAlive()) {
                 throw new DBException("Password command timed out");
             }
-            String output = CommonUtils.notEmpty(outputFuture.join());
+            String output = awaitProcessStream(outputFuture, "output");
             if (exitCode != 0) {
-                String errors = CommonUtils.notEmpty(errorsFuture.join()).trim();
+                String errors = awaitProcessStream(errorsFuture, "error").trim();
                 throw new DBException("Password command exited with code " + exitCode +
                     (errors.isEmpty() ? "" : ": " + errors));
             }
@@ -168,18 +170,41 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
     }
 
     @NotNull
-    private static CompletableFuture<String> readProcessStream(
+    public static CompletableFuture<String> readProcessStream(
         @NotNull InputStream inputStream,
         @NotNull ExecutorService executor
     ) {
         return CompletableFuture.supplyAsync(() -> {
             StringWriter buffer = new StringWriter();
-            try (Reader input = new InputStreamReader(inputStream, GeneralUtils.getDefaultConsoleEncoding())) {
+            try {
+                // Do not close the reader: closing it closes the process pipe owned by DBRProcessDescriptor.
+                Reader input = new InputStreamReader(inputStream, GeneralUtils.getDefaultConsoleEncoding());
                 IOUtils.copyText(input, buffer);
             } catch (IOException e) {
-                e.printStackTrace(new PrintWriter(buffer, true));
+                throw new CompletionException(e);
             }
             return buffer.toString();
         }, executor);
+    }
+
+    @NotNull
+    public static String awaitProcessStream(
+        @NotNull CompletableFuture<String> streamFuture,
+        @NotNull String streamName
+    ) throws DBException {
+        try {
+            return CommonUtils.notEmpty(streamFuture.get());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new DBException("Interrupted while reading password command " + streamName, e);
+        } catch (CancellationException e) {
+            throw new DBException("Failed to read password command " + streamName, e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof CompletionException completionException && completionException.getCause() != null) {
+                cause = completionException.getCause();
+            }
+            throw new DBException("Failed to read password command " + streamName, cause == null ? e : cause);
+        }
     }
 }

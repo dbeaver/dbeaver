@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.impl.auth;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -27,7 +28,14 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -60,6 +68,46 @@ public class AuthModelDatabaseShellCommandTest extends DBeaverUnitTest {
             new Properties());
 
         Assertions.assertEquals("A".repeat(LARGE_OUTPUT_LENGTH), credentials.getUserPassword());
+    }
+
+    @Test
+    public void leavesProcessStreamOpenAfterReading() throws Exception {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        AtomicBoolean closed = new AtomicBoolean();
+        InputStream input = new ByteArrayInputStream("password".getBytes(StandardCharsets.UTF_8)) {
+            @Override
+            public void close() {
+                closed.set(true);
+            }
+        };
+        try {
+            Assertions.assertEquals("password", AuthModelDatabaseShellCommand.awaitProcessStream(
+                AuthModelDatabaseShellCommand.readProcessStream(input, executor), "output"));
+            Assertions.assertFalse(closed.get());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void reportsProcessStreamReadFailureAsDbException() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        InputStream input = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new IOException("stream failed");
+            }
+        };
+        try {
+            DBException exception = Assertions.assertThrows(DBException.class, () ->
+                AuthModelDatabaseShellCommand.awaitProcessStream(
+                    AuthModelDatabaseShellCommand.readProcessStream(input, executor), "output"));
+
+            Assertions.assertEquals("Failed to read password command output", exception.getMessage());
+            Assertions.assertInstanceOf(IOException.class, exception.getCause());
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     private static String createLargeOutputCommand() {
