@@ -122,6 +122,11 @@ public class WebCSSInitializer implements AutoCloseable {
     }
 
     @NotNull
+    public String getWebPath() {
+        return server.getUrl(WEB_ROOT);
+    }
+
+    @NotNull
     String getResourceUrl(@NotNull DBPImage image) throws IOException {
         String location = image.getLocation();
         String resourceUrl = resourceUrls.get(location);

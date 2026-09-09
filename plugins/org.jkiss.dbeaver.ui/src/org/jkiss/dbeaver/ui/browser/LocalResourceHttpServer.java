@@ -217,6 +217,9 @@ public final class LocalResourceHttpServer {
                 exchange.getResponseHeaders().set("X-UA-Compatible", "IE=edge");
                 exchange.sendResponseHeaders(200, 0);
                 content.transferTo(exchange.getResponseBody());
+            } catch (IOException e) {
+                log.debug("Error serving local browser resource for path: " + path, e);
+                exchange.sendResponseHeaders(500, -1);
             }
         }
     }

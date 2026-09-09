@@ -240,7 +240,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
 
             private boolean shouldOpenExternally(@NotNull String url) {
-                return !url.equals(cssInitializer.getWebHtmlPath())
+                return !url.startsWith(cssInitializer.getWebPath())
                     && (url.startsWith("http://") || url.startsWith("https://"));
             }
         });
