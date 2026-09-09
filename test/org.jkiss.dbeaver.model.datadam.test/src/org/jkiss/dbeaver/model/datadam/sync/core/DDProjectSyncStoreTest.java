@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 import com.dbeaver.datadam.share.api.model.DDPushProjectConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectConfiguration;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectFile;
+import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.junit.jupiter.api.Assertions;
