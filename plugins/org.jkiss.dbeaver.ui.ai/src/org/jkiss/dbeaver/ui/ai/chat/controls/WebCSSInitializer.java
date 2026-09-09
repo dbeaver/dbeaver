@@ -25,56 +25,45 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatThemeSettings;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-public class WebCSSInitializer {
-
-    private static final Log log = Log.getLog(WebCSSInitializer.class);
-
+public class WebCSSInitializer implements AutoCloseable {
     private static final String WEB_ROOT = "web";
-    private static final String WEB_CSS_PATH = WEB_ROOT + "/styles.css";
-    private static final String WEB_HTML_PATH = WEB_ROOT + "/index.html";
+    private static final String WEB_CSS_PATH = "styles.css";
+    private static final String WEB_HTML_PATH = "index.html";
     private static final String EXTRA_HEAD_PLACEHOLDER = "<!--{{EXTRA_HEAD}}-->";
 
-    private final Path directory;
+    private final LocalResourceHttpServer.Handle server;
+    private final Map<String, String> resourceUrls = new HashMap<>();
+    private final Map<String, String> cssValues;
 
     public WebCSSInitializer() throws IOException {
-        directory = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-ai-chat");
-        for (Bundle bundle : getResourceBundles()) {
-            Enumeration<URL> resources = bundle.findEntries(WEB_ROOT, "*", true);
-            if (resources == null) {
-                continue;
+        cssValues = fillValues();
+        server = LocalResourceHttpServer.acquire();
+        try {
+            for (Bundle bundle : getResourceBundles()) {
+                server.addBundleResources(bundle, WEB_ROOT, this::registerWebResource);
             }
-            while (resources.hasMoreElements()) {
-                URL resource = resources.nextElement();
-                String resourcePath = getWebResourcePath(resource);
-                if (resourcePath == null || resourcePath.endsWith("/")) {
-                    continue;
-                }
-                try (InputStream is = resource.openStream()) {
-                    copyWebResource(resourcePath, is);
-                }
-            }
+        } catch (RuntimeException e) {
+            server.close();
+            throw e;
         }
     }
 
@@ -88,42 +77,58 @@ public class WebCSSInitializer {
         return "";
     }
 
-    @Nullable
-    private static String getWebResourcePath(@NotNull URL resource) {
-        String path = resource.getPath();
-        int webPathIndex = path.indexOf(WEB_ROOT + '/');
-        if (webPathIndex < 0) {
-            log.error("Unexpected web resource path: " + path);
-            return null;
-        }
-        return path.substring(webPathIndex);
-    }
-
-    private void copyWebResource(@NotNull String resource, @NotNull InputStream is) throws IOException {
-        var path = directory.resolve(resource);
-        Files.createDirectories(path.getParent());
-        if (resource.equals(WEB_CSS_PATH)) {
-            String cssContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            cssContent = updateCss(cssContent);
-            Files.writeString(path, cssContent);
-        } else if (resource.equals(WEB_HTML_PATH)) {
-            String htmlContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            htmlContent = htmlContent.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent());
-            Files.writeString(path, htmlContent);
-        } else {
-            Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
+    private void registerWebResource(@NotNull String resource, @NotNull URL url) {
+        switch (resource) {
+            case WEB_CSS_PATH -> server.addTextResource(
+                resource,
+                LocalResourceHttpServer.Resource.of(url::openStream)
+                    .map(this::updateCss)
+            );
+            case WEB_HTML_PATH -> server.addTextResource(
+                resource,
+                LocalResourceHttpServer.Resource.of(url::openStream)
+                    .map(content -> content.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent()))
+            );
+            default -> server.addResource(resource, url::openStream);
         }
     }
 
     @NotNull
     public String getWebHtmlPath() {
-        return directory.resolve(WEB_HTML_PATH).toUri().toString();
+        return server.getUrl(WEB_HTML_PATH);
+    }
+
+    @NotNull
+    public String getWebPath() {
+        return server.getBaseUrl();
+    }
+
+    @NotNull
+    String getResourceUrl(@NotNull DBPImage image) throws IOException {
+        String location = image.getLocation();
+        String resourceUrl = resourceUrls.get(location);
+        if (resourceUrl != null) {
+            return resourceUrl;
+        }
+        Path file = RuntimeUtils.getPlatformFile(location);
+        String fileName = file.getFileName().toString();
+        int extensionIndex = fileName.lastIndexOf('.');
+        String extension = extensionIndex >= 0 ? fileName.substring(extensionIndex) : "";
+        String resourcePath = "external/" + UUID.randomUUID() + extension;
+        server.addResource(resourcePath, () -> Files.newInputStream(file));
+        resourceUrl = server.getUrl(resourcePath);
+        resourceUrls.put(location, resourceUrl);
+        return resourceUrl;
+    }
+
+    @Override
+    public void close() {
+        server.close();
     }
 
     @NotNull
     private String updateCss(@NotNull String cssContent) {
-        Map<String, String> values = fillValues();
-        for (var entry : values.entrySet()) {
+        for (var entry : cssValues.entrySet()) {
             cssContent = cssContent.replace(entry.getKey(), entry.getValue());
         }
         return cssContent;
