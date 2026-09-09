@@ -31,7 +31,7 @@
         <module>org.jkiss.dbeaver.ext.timeplus.test</module>
         <module>org.jkiss.dbeaver.model.lsm.test</module>
         <module>org.jkiss.dbeaver.model.navigator.test</module>
-        <module>org.jkiss.dbeaver.model.tracking.test</module>
+        <module>org.jkiss.dbeaver.model.datadam.test</module>
         <module>org.jkiss.dbeaver.model.ai.test</module>
         <module>org.jkiss.dbeaver.model.sql.test</module>
         <module>org.jkiss.dbeaver.data.transfer.test</module>
