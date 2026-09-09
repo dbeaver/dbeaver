@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.manticore;
 
-package org.jkiss.dbeaver.team.git.ui;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.dbeaver.ext.manticore.model.ManticoreDataSource;
 
-import org.eclipse.core.runtime.Plugin;
-import org.osgi.framework.BundleContext;
+public class ManticoreDataSourceProvider extends GenericDataSourceProvider<ManticoreDataSource> {
 
-public class Activator extends Plugin {
-    
-    @Override
-    public void start(BundleContext context) throws Exception {
-        super.start(context);
+    public ManticoreDataSourceProvider() {
+        super(ManticoreDataSource.class);
     }
-
 }
