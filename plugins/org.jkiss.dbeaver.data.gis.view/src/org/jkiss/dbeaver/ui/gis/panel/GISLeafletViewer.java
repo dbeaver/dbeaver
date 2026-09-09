@@ -74,6 +74,7 @@ import org.jkiss.utils.IOUtils;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -81,14 +82,8 @@ import java.util.Locale;
 public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceListener {
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
-    private static final String VIEW_TEMPLATE_PATH = "web/view_template.html";
-    private static final List<String> WEB_FILES = List.of(
-        "inc/leaflet.css",
-        "inc/leaflet.js",
-        "inc/layers.png",
-        "inc/wkx.min.js",
-        "inc/leaflet-lasso.min.js"
-    );
+    private static final String WEB_ROOT = "web";
+    private static final String WEB_HTML_TEMPLATE_PATH = WEB_ROOT + "/view_template.html";
 
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
 
@@ -131,9 +126,9 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         this.bindings = bindings;
         this.presentation = presentation;
 
-        try (InputStream is = GISViewerActivator.getDefault().getResourceStream(VIEW_TEMPLATE_PATH)) {
+        try (InputStream is = GISViewerActivator.getDefault().getResourceStream(WEB_HTML_TEMPLATE_PATH)) {
             if (is == null) {
-                throw new DBException("View template file not found (" + VIEW_TEMPLATE_PATH + ")");
+                throw new DBException("View template file not found (" + WEB_HTML_TEMPLATE_PATH + ")");
             }
             template = IOUtils.readToString(new InputStreamReader(is));
         } catch (IOException e) {
@@ -165,9 +160,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         try {
             server = LocalResourceHttpServer.acquire();
-            for (String resource : WEB_FILES) {
-                server.addResource(resource, () -> GISViewerActivator.getDefault().getResourceStream("web/" + resource));
-            }
+            server.addBundleResources(GISViewerActivator.getDefault().getBundle(), WEB_ROOT, this::registerWebResource);
         } catch (Exception e) {
             if (browser != null) {
                 browser.dispose();
@@ -236,6 +229,10 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         showLabels = preferences.getBoolean(GeometryViewerConstants.PREF_SHOW_LABELS);
 
         preferences.addPropertyChangeListener(this);
+    }
+
+    private void registerWebResource(@NotNull String resource, @NotNull URL url) {
+        server.addResource(resource, url::openStream);
     }
 
     private void registerBrowserFunctions(@NotNull Browser browser) {

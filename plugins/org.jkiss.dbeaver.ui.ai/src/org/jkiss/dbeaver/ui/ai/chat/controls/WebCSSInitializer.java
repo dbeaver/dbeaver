@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -40,15 +39,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class WebCSSInitializer implements AutoCloseable {
-
-    private static final Log log = Log.getLog(WebCSSInitializer.class);
-
     private static final String WEB_ROOT = "web";
-    private static final String WEB_CSS_PATH = WEB_ROOT + "/styles.css";
-    private static final String WEB_HTML_PATH = WEB_ROOT + "/index.html";
+    private static final String WEB_CSS_PATH = "styles.css";
+    private static final String WEB_HTML_PATH = "index.html";
     private static final String EXTRA_HEAD_PLACEHOLDER = "<!--{{EXTRA_HEAD}}-->";
 
     private final LocalResourceHttpServer.Handle server;
@@ -60,18 +59,7 @@ public class WebCSSInitializer implements AutoCloseable {
         server = LocalResourceHttpServer.acquire();
         try {
             for (Bundle bundle : getResourceBundles()) {
-                Enumeration<URL> resources = bundle.findEntries(WEB_ROOT, "*", true);
-                if (resources == null) {
-                    continue;
-                }
-                while (resources.hasMoreElements()) {
-                    URL resource = resources.nextElement();
-                    String resourcePath = getWebResourcePath(resource);
-                    if (resourcePath == null || resourcePath.endsWith("/")) {
-                        continue;
-                    }
-                    registerWebResource(resourcePath, resource);
-                }
+                server.addBundleResources(bundle, WEB_ROOT, this::registerWebResource);
             }
         } catch (RuntimeException e) {
             server.close();
@@ -87,17 +75,6 @@ public class WebCSSInitializer implements AutoCloseable {
     @NotNull
     protected String getExtraHeadContent() {
         return "";
-    }
-
-    @Nullable
-    private static String getWebResourcePath(@NotNull URL resource) {
-        String path = resource.getPath();
-        int webPathIndex = path.indexOf(WEB_ROOT + '/');
-        if (webPathIndex < 0) {
-            log.error("Unexpected web resource path: " + path);
-            return null;
-        }
-        return path.substring(webPathIndex);
     }
 
     private void registerWebResource(@NotNull String resource, @NotNull URL url) {
@@ -123,7 +100,7 @@ public class WebCSSInitializer implements AutoCloseable {
 
     @NotNull
     public String getWebPath() {
-        return server.getUrl(WEB_ROOT);
+        return server.getBaseUrl();
     }
 
     @NotNull

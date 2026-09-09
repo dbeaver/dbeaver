@@ -23,12 +23,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.IOUtils;
+import org.osgi.framework.Bundle;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
@@ -36,6 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 
 /**
@@ -109,6 +112,35 @@ public final class LocalResourceHttpServer {
          */
         public void addTextResource(@NotNull String path, @NotNull TextResource resource) {
             addResource(path, resource.toResource());
+        }
+
+        /**
+         * Registers files found below the bundle root using paths relative to that root.
+         */
+        public void addBundleResources(
+            @NotNull Bundle bundle,
+            @NotNull String root,
+            @NotNull BiConsumer<String, URL> registrar
+        ) {
+            var normalizedRoot = normalizePath(root);
+            var resources = bundle.findEntries(normalizedRoot, "*", true);
+            while (resources != null && resources.hasMoreElements()) {
+                var resource = resources.nextElement();
+                var path = resource.getPath();
+                int rootPathIndex = path.indexOf(normalizedRoot + '/');
+                if (rootPathIndex < 0) {
+                    log.error("Unexpected bundle resource path: " + path);
+                    continue;
+                }
+                if (!path.endsWith("/")) {
+                    registrar.accept(path.substring(rootPathIndex + normalizedRoot.length() + 1), resource);
+                }
+            }
+        }
+
+        @NotNull
+        public String getBaseUrl() {
+            return server.getUrl(id, "");
         }
 
         @NotNull
