@@ -46,13 +46,13 @@ import org.jkiss.dbeaver.model.impl.struct.ContextDefaultObjectsReader;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
@@ -252,7 +252,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         return GeneralUtils.makeExceptionStatus(e);
                     }
                     try {
-                        commitTransactionIfNeeded(monitor, executionContext);
+                        commitTransactionIfNeeded(executionContext);
                     } catch (DBException e) {
                         log.error("Error committing transaction after changing active database", e);
                     }
@@ -265,14 +265,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     /**
      * Checks whether a transaction commit is needed after changing the active database.
      *
-     * @param monitor          progress monitor
      * @param executionContext execution context to check transaction state
      * @throws DBCException on error committing transaction
      */
-    private static void commitTransactionIfNeeded(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext
-    ) throws DBCException {
+    private static void commitTransactionIfNeeded(@Nullable DBCExecutionContext executionContext) throws DBCException {
         var transactionManager = DBUtils.getTransactionManager(executionContext);
         if (transactionManager == null || transactionManager.isAutoCommit()) {
             return;
@@ -281,22 +277,37 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         if (contextDefaults == null || !contextDefaults.isDefaultsChangeTransactional()) {
             return;
         }
-        var reply = UIUtils.syncExec(new RunnableWithResult<Reply>() {
-            @Nullable
-            @Override
-            public Reply runWithResult() {
-                return MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
-                    .setTitle(UINavigatorMessages.confirm_commit_after_defaults_change_title)
-                    .setMessage(UINavigatorMessages.confirm_commit_after_defaults_change_message)
-                    .setReplies(Reply.YES, Reply.NO)
-                    .setDefaultReply(Reply.NO)
-                    .setPrimaryImage(DBIcon.STATUS_QUESTION)
-                    .showMessageBox();
+        // The execution queue guarantees that we don't interfere with toolbar refresh. Eclipse
+        // uses the current shell as the source of truth when refreshing command handlers,
+        // and this ensures that the dialog is shown BEFORE the schema toolbar is refreshed.
+        UIExecutionQueue.queueExec(() -> {
+            var reply = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                .setTitle(UINavigatorMessages.confirm_commit_after_defaults_change_title)
+                .setMessage(UINavigatorMessages.confirm_commit_after_defaults_change_message)
+                .setReplies(Reply.YES, Reply.NO)
+                .setDefaultReply(Reply.NO)
+                .setPrimaryImage(DBIcon.STATUS_QUESTION)
+                .showMessageBox();
+            if (reply != Reply.YES) {
+                return;
             }
+            new AbstractJob("Commit transaction") {
+                @NotNull
+                @Override
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                    try {
+                        DBExecUtils.commitContextTransaction(monitor, executionContext);
+                    } catch (DBCException e) {
+                        DBWorkbench.getPlatformUI().showError(
+                            "Commit transaction",
+                            "Error committing transaction after changing active database",
+                            e
+                        );
+                    }
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
         });
-        if (reply == Reply.YES) {
-            DBExecUtils.commitContextTransaction(monitor, executionContext);
-        }
     }
 
     public static class MenuContributor extends DataSourceMenuContributor {
