@@ -106,19 +106,26 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     @Override
-    public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
-        UIExecutionQueue.queueExec(() -> {
-            DBNNode rootNode;
-            try {
-                rootNode = getRootNode();
-            } catch (Exception e) {
-                log.error(e);
-                rootNode = new DBNEmptyNode();
-            }
-            getNavigatorTree().setInput(rootNode);
-            getSite().getSelectionProvider().setSelection(new StructuredSelection());
-        });
-
+    public void handleProjectAdd(@NotNull DBPProject project) {
+        if (project.equals(DBPPlatformDesktop.getInstance().getWorkspace().getActiveProject())) {
+            UIExecutionQueue.queueExec(this::updateNavigatorRoot);
+        }
     }
 
+    @Override
+    public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
+        UIExecutionQueue.queueExec(this::updateNavigatorRoot);
+    }
+
+    private void updateNavigatorRoot() {
+        DBNNode rootNode;
+        try {
+            rootNode = getRootNode();
+        } catch (Exception e) {
+            log.error(e);
+            rootNode = new DBNEmptyNode();
+        }
+        getNavigatorTree().setInput(rootNode);
+        getSite().getSelectionProvider().setSelection(new StructuredSelection());
+    }
 }
