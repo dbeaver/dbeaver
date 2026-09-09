@@ -32,6 +32,12 @@ public interface AIChatController extends DBPContextProvider {
     String CMD_ATTACH = "com.dbeaver.ai.chat.attach";
     String CMD_SEND_PROMPT = "com.dbeaver.ai.chat.sendPrompt";
     String CMD_RECORD_AUDIO = "com.dbeaver.ai.chat.recordAudio";
+    String CMD_FOCUS_PROMPT = "com.dbeaver.ai.chat.focusPrompt";
+    String CMD_FOCUS_CHAT = "com.dbeaver.ai.chat.focusChat";
+    String CMD_NEW_CONVERSATION = "com.dbeaver.ai.chat.newConversation";
+    String CMD_DELETE_CONVERSATION = "com.dbeaver.ai.chat.deleteConversation";
+    String CMD_OPEN_SETTINGS = "com.dbeaver.ai.chat.openSettings";
+    String CMD_OPEN_FILTERS = "com.dbeaver.ai.chat.openFilters";
 
     int FEATURE_CONTEXT_VIEW            = 1 << 1;
     int FEATURE_PROMPT_VIEW             = 1 << 2;

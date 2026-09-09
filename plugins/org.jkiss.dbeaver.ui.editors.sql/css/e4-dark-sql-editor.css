@@ -23,4 +23,7 @@
             'org.jkiss.dbeaver.sql.editor.color.command.foreground=211,186,211'
             'org.jkiss.dbeaver.sql.editor.color.aiSuggestion.foreground=168,168,168'
             'org.jkiss.dbeaver.sql.editor.color.aiSuggestion.background=55,55,55'
+            'org.jkiss.dbeaver.ui.general.color.warning.foreground=230,200,80'
+            'org.jkiss.dbeaver.ui.general.color.error.foreground=255,120,120'
 }
+

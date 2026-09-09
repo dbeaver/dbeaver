@@ -20,12 +20,18 @@
    </extension>
 
    <extension point="org.eclipse.ui.handlers">
-      <handler commandId="org.jkiss.dbeaver.ui.app.config.showWizard" class="org.jkiss.dbeaver.ui.app.config.ProductConfigWizardHandler"/>
+      <handler commandId="org.jkiss.dbeaver.ui.app.config.showWizard" class="org.jkiss.dbeaver.ui.app.config.ProductConfigWizardHandler">
+         <enabledWhen>
+            <test property="org.jkiss.dbeaver.app.config.isAvailable"/>
+         </enabledWhen>
+      </handler>
    </extension>
 
    <extension point="org.eclipse.ui.menus">
       <menuContribution allPopups="false" locationURI="menu:help?after=additions">
-         <command commandId="org.jkiss.dbeaver.ui.app.config.showWizard"/>
+         <command commandId="org.jkiss.dbeaver.ui.app.config.showWizard">
+            <visibleWhen checkEnabled="true"/>
+         </command>
       </menuContribution>
    </extension>
 

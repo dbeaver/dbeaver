@@ -46,7 +46,7 @@ public abstract class GenericDataSourceProvider<DATASOURCE extends GenericDataSo
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
     }
 

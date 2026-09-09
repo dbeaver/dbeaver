@@ -21,7 +21,9 @@ package org.jkiss.dbeaver.model.websocket;
  */
 public interface WSConstants {
     String WS_AUTH_HEADER = "SM-Auth-Token";
-    String WS_SESSION_HEADER = "X-LP-Session";
+    String WS_SESSION_HEADER = "CB-LP-Session";
+    @Deprecated(forRemoval = true)
+    String WS_SESSION_HEADER_LEGACY = "X-LP-Session";
 
     String TOPIC_SERVER_CONFIG = "cb_config";
     String TOPIC_SERVER_STATE = "cb_server_state";

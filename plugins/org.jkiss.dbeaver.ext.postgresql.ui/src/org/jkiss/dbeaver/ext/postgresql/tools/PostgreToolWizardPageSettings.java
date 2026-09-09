@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -57,10 +56,7 @@ public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractNativ
         infoLabel.setLayoutData(gd);
         Button authButton = new Button(securityGroup, SWT.PUSH);
         authButton.setText(PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication);
-        authButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        authButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication, false, true);
                 authDialog.setUserName(wizard.getSettings().getToolUserName());
                 authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
@@ -71,20 +67,15 @@ public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractNativ
                     wizard.getSettings().setToolUserName(authDialog.getUserName());
                     wizard.getSettings().setToolUserPassword(authDialog.getUserPassword());
                 }
-            }
-        });
+            }));
 
         Button resetButton = new Button(securityGroup, SWT.PUSH);
         resetButton.setText(PostgreMessages.wizard_backup_page_setting_group_security_btn_reset_default);
-        resetButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        resetButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 connectionInfo.getProviderProperties().remove(authProperty);
                 wizard.getSettings().setToolUserName(null);
                 wizard.getSettings().setToolUserPassword(null);
-            }
-        });
+            }));
     }
 
 }

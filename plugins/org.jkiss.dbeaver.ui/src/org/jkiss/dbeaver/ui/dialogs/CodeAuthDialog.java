@@ -43,6 +43,7 @@ import java.util.concurrent.Future;
  * A simple dialog showing the browser url of the authorization page and the code the user is supposed to enter there.
  */
 public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
+    private static final int COPY_LINK_ID = IDialogConstants.CLIENT_ID + 1;
     private final URI browserUrl;
     private final String userCode;
     private final Future<Void> future;
@@ -100,6 +101,7 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OPEN_ID, UIMessages.dialog_auth_code_copy_and_open_label, true);
+        createButton(parent, COPY_LINK_ID, UIMessages.dialog_auth_code_copy_link_label, false);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
@@ -108,6 +110,8 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
         if (buttonId == IDialogConstants.OPEN_ID) {
             UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), userCode);
             ShellUtils.launchProgram(browserUrl.toString());
+        } else if (buttonId == COPY_LINK_ID) {
+            UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), browserUrl.toString());
         } else {
             super.buttonPressed(buttonId);
         }
@@ -117,5 +121,11 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
     protected void cancelPressed() {
         future.cancel(false);
         super.cancelPressed();
+    }
+
+    @Override
+    protected void handleShellCloseEvent() {
+        future.cancel(false);
+        super.handleShellCloseEvent();
     }
 }

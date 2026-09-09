@@ -37,10 +37,10 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
     protected static final Gson GSON = JSONUtils.GSON;
     private static final Log log = Log.getLog(OpenAiAPIStreamConsumer.class);
-    private static final String DATA_EVENT = "data: ";
+    public static final String DATA_EVENT = "data: ";
+    public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
+    public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
     private static final String EVENT_EVENT = "event: ";
-    private static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
-    private static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
     private static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     private final AIEngineResponseConsumer listener;
     private boolean functionCall;
@@ -112,7 +112,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
         List<String> choices = new ArrayList<>();
         if (EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
             choices.add(chunk.delta);
-        } else if (chunk.response != null) {
+        } else if (chunk.response != null && chunk.response.output != null) {
             for (OAIMessage msg : chunk.response.output) {
                 for (OAIMessageContent content : msg.content) {
                     if (!CommonUtils.isEmpty(content.text)) {

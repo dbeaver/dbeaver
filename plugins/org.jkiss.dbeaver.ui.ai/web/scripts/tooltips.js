@@ -1,25 +1,31 @@
 function createCleanIcon(messageId) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'message-clean-btn';
+    button.setAttribute('aria-label', cleanTooltip);
+
     const clean = document.createElement('img');
     clean.className = 'message-clean-icon';
     clean.src = cleanIcon;
-    clean.setAttribute('aria-label', cleanTooltip);
+    clean.alt = '';
+    button.appendChild(clean);
 
-    clean.addEventListener('mouseenter', (event) => {
+    button.addEventListener('mouseenter', (event) => {
         showCustomTooltip(event, cleanTooltip);
     });
 
-    clean.addEventListener('mouseleave', () => {
+    button.addEventListener('mouseleave', () => {
         hideCustomTooltip();
     });
 
-    clean.addEventListener('click', (event) => {
+    button.addEventListener('click', (event) => {
         event.stopPropagation();
         clearToHere(messageId);
         hideCustomTooltip();
     });
 
 
-    return clean;
+    return button;
 }
 
 function showCustomTooltip(event, text) {

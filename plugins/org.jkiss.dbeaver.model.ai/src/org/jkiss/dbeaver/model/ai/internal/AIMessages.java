@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,9 @@ public class AIMessages extends NLS {
     public static String ai_execute_command_confirm_ddl_message;
     public static String ai_execute_command_confirm_other_message;
     public static String ai_empty_engine_response;
+    public static String ai_warning_chat_history_truncated;
+    public static String ai_warning_chat_history_truncated_linked;
+    public static String ai_warning_chat_history_truncated_admin;
     public static String ai_command_not_connected;
     public static String ai_command_empty_prompt;
     public static String ai_command_confirm_usage_title;
@@ -46,6 +49,12 @@ public class AIMessages extends NLS {
     public static String ai_command_generate_sql;
     public static String ai_command_process_generated_sql;
     public static String ai_command_empty_response;
+
+    public static String ai_error_request_timed_out;
+    public static String ai_error_request_timed_out_linked;
+    public static String ai_error_request_timed_out_admin;
+
+    public static String ai_settings_save_error_title;
 
     static {
         // initialize resource bundle

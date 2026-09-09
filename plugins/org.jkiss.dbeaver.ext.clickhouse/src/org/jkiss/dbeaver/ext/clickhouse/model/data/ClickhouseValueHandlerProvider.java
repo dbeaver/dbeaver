@@ -38,7 +38,11 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
     ) {
         String lowerTypeName = type.getTypeName().toLowerCase(Locale.ENGLISH);
         DBPDataKind dataKind = type.getDataKind();
-        if ("enum8".equals(lowerTypeName) || "enum16".equals(lowerTypeName)) {
+        if ("json".equals(lowerTypeName)) {
+            // Keyed on the type name (not data kind): result-set meta columns report JSON as UNKNOWN
+            // via the static type cache, while editable table columns resolve it to CONTENT.
+            return ClickhouseJSONValueHandler.INSTANCE;
+        } else if ("enum8".equals(lowerTypeName) || "enum16".equals(lowerTypeName)) {
             return ClickhouseEnumValueHandler.INSTANCE;
         } else if (ClickhouseGeometryValueHandler.isGeometryType(lowerTypeName)) {
             return ClickhouseGeometryValueHandler.INSTANCE;

@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -83,7 +85,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     public void createControl(Composite composite) {
         final ModifyListener textListener = e -> {
             if (activated) {
-                updateUrl();
+                this.updateUrl(urlText);
                 site.updateButtons();
             }
         };
@@ -99,14 +101,10 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             4,
             GridData.FILL_HORIZONTAL);
 
-        SelectionAdapter typeSwitcher = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
-                updateUrl();
-            }
-        };
-        createConnectionModeSwitcher(addrGroup, typeSwitcher);
+        createConnectionModeSwitcher(addrGroup, SelectionListener.widgetSelectedAdapter(e -> {
+            super.setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
+            this.updateUrl(urlText);
+        }));
 
         UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
         urlText = new Text(addrGroup, SWT.BORDER);
@@ -116,6 +114,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd.widthHint = 355;
         urlText.setLayoutData(gd);
         urlText.addModifyListener(e -> site.updateButtons());
+        urlText.setData(URL_TEXT_DATA_ERROR_DECORATOR_KEY, new ControlDecoration(urlText, SWT.BOTTOM | SWT.LEFT));
 
         final DBPDriver driver = site.getDriver();
         PostgreServerType serverType = getServerType(driver);
@@ -243,8 +242,8 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             urlText.setText(connectionInfo.getUrl());
         }
         setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
-        updateUrl();
-        
+        this.updateUrl(urlText);
+
         activated = true;
     }
 
@@ -288,16 +287,11 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     protected void authModelPropertiesChanged() {
         super.authModelPropertiesChanged();
         // Auth models MAY change the URL. Let's reflect it
-        updateUrl();
+        this.updateUrl(urlText);
     }
 
-    private void updateUrl() {
-        var container = site.getActiveDataSource().createCopy(site.getDataSourceRegistry());
-        saveSettings(container);
-        if (typeURLRadio != null && typeURLRadio.getSelection()) {
-            urlText.setText(container.getConnectionConfiguration().getUrl());
-        } else {
-            urlText.setText(container.getDriver().getConnectionURL(container.getConnectionConfiguration()));
-        }
+    @Override
+    protected void updateUrl(@NotNull Text urlText) {
+        this.updateUrl(urlText, site.getActiveDataSource().createCopy(site.getDataSourceRegistry()));
     }
 }

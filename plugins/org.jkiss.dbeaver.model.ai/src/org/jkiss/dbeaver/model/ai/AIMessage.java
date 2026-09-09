@@ -18,10 +18,15 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.SocketTimeoutException;
+import java.net.http.HttpTimeoutException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Represents a single AI message
@@ -135,11 +140,24 @@ public class AIMessage {
     public AIMessage(@NotNull Throwable error) {
         this(
             AIMessageType.ERROR,
-            CommonUtils.getAllExceptionMessages(error),
-            CommonUtils.getAllExceptionMessages(error),
+            getErrorMessage(error),
+            getErrorMessage(error),
             LocalDateTime.now(),
             null,
             error);
+    }
+
+    @NotNull
+    private static String getErrorMessage(@NotNull Throwable error) {
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof HttpTimeoutException || t instanceof SocketTimeoutException || t instanceof TimeoutException) {
+                return AIUtils.getSettingsAccessMessage(
+                    AIMessages.ai_error_request_timed_out,
+                    AIMessages.ai_error_request_timed_out_linked,
+                    AIMessages.ai_error_request_timed_out_admin);
+            }
+    }
+        return CommonUtils.getAllExceptionMessages(error);
     }
 
     public AIMessage(

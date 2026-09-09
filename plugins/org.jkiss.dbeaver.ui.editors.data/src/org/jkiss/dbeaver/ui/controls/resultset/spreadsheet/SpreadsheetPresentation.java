@@ -31,10 +31,14 @@ import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -63,10 +67,10 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
-import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
@@ -91,7 +95,6 @@ import org.jkiss.utils.xml.XMLUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -196,15 +199,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
             this);
         this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        this.spreadsheet.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        this.spreadsheet.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN && e.data != null) {
                     updateGridCursor((GridCell) e.data);
                 }
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
-            }
-        });
+            }));
         this.spreadsheet.addMouseWheelListener(e -> {
 
         });
@@ -1896,7 +1896,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             for (DBDAttributeBinding cur = binding; cur != null; cur = cur.getParentObject()) {
                 final DBPDataKind kind = cur.getDataKind();
                 if (kind == DBPDataKind.ARRAY) {
-                    return true;
+                    return this.isComplexValuesExpansionEnabled();
                 }
             }
         }
@@ -3188,11 +3188,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             if (item.getElement() instanceof DBDAttributeBinding attr) {
-                DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
-                return DBeaverIcons.getImage(image);
+                boolean includeModifiers = controller.isRecordMode();
+                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr.getAttribute(), true, includeModifiers));
             } else if (item.getElement() instanceof DBSAttributeBase attrBase) {
-                return DBeaverIcons.getImage(
-                    DBValueFormatting.getObjectImage(attrBase));
+                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attrBase));
             }
 
             return null;

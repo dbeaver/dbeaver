@@ -18,10 +18,12 @@
 package org.jkiss.dbeaver.ext.gaussdb.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -76,7 +78,7 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
     public void createControl(Composite composite) {
         final ModifyListener textListener = e -> {
             if (activated) {
-                updateUrl();
+                super.updateUrl(urlText);
                 site.updateButtons();
             }
         };
@@ -93,14 +95,10 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
             GridData.FILL_HORIZONTAL
         );
 
-        SelectionAdapter typeSwitcher = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
-                updateUrl();
-            }
-        };
-        createConnectionModeSwitcher(addrGroup, typeSwitcher);
+        createConnectionModeSwitcher(addrGroup, SelectionListener.widgetSelectedAdapter(e -> {
+            super.setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
+            super.updateUrl(urlText);
+        }));
 
         UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
         urlText = new Text(addrGroup, SWT.BORDER);
@@ -110,6 +108,7 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
         gd.widthHint = 355;
         urlText.setLayoutData(gd);
         urlText.addModifyListener(e -> site.updateButtons());
+        urlText.setData(URL_TEXT_DATA_ERROR_DECORATOR_KEY, new ControlDecoration(urlText, SWT.BOTTOM | SWT.LEFT));
 
         final DBPDriver driver = site.getDriver();
         PostgreServerType serverType = getServerType(driver);
@@ -220,9 +219,9 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
             urlText.setText(connectionInfo.getUrl());
         }
         setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
-        updateUrl();
+        super.updateUrl(urlText);
 
-        activated = false;
+        activated = true;
     }
 
     @Override
@@ -247,11 +246,5 @@ public class GaussDBConnectionPage extends ConnectionPageWithAuth implements IDi
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]
         { new PostgreConnectionPageAdvanced(null), new DriverPropertiesDialogPage(this) };
-    }
-
-    private void updateUrl() {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        saveSettings(dataSourceContainer);
-        urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
     }
 }

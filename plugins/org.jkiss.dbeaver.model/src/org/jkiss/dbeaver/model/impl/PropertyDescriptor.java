@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPConditionalProperty;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
@@ -36,7 +37,7 @@ import java.util.List;
 /**
  * PropertyDescriptor
  */
-public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>, DBPNamedObject2 {
+public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>, DBPNamedObject2, DBPConditionalProperty {
 
     public static final String CURRENT_DATE_STRING_VAR_PREFIX = "${now as ";
 
@@ -80,6 +81,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private static final String ATTR_LENGTH = "length";
     private static final String ATTR_DESKTOP = "desktop";
     private static final String ATTR_HIDDEN = "hidden";
+    private static final String ATTR_HIDE_EXPR = "hideExpr";
+    private static final String ATTR_READ_ONLY_EXPR = "readOnlyExpr";
 
     private static final String VALUE_SPLITTER = ","; //NON-NLS-1
 
@@ -101,6 +104,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     @NotNull
     private final PropertyLength length;
     private String[] features;
+    private String hideExpr;
+    private String readOnlyExpr;
 
     public static DBPPropertyDescriptor[] extractPropertyGroups(IConfigurationElement config) {
         List<DBPPropertyDescriptor> props = new ArrayList<>();
@@ -169,6 +174,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.required = CommonUtils.getBoolean(config.getAttribute(ATTR_REQUIRED));
         this.desktop = CommonUtils.getBoolean(config.getAttribute(ATTR_DESKTOP), false);
         this.hidden = CommonUtils.getBoolean(config.getAttribute(ATTR_HIDDEN), false);
+        this.hideExpr = CommonUtils.nullIfEmpty(config.getAttribute(ATTR_HIDE_EXPR));
+        this.readOnlyExpr = CommonUtils.nullIfEmpty(config.getAttribute(ATTR_READ_ONLY_EXPR));
         String typeString = config.getAttribute(ATTR_TYPE);
         if (typeString == null) {
             propertyType = PropertyType.t_string;
@@ -346,6 +353,18 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     @Override
     public boolean hasFeature(@NotNull String feature) {
         return features != null && ArrayUtils.contains(features, feature);
+    }
+
+    @Nullable
+    @Override
+    public String getHideExpression() {
+        return hideExpr;
+    }
+
+    @Nullable
+    @Override
+    public String getReadOnlyExpression() {
+        return readOnlyExpr;
     }
 
     @Override

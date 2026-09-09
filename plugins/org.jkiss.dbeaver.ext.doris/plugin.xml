@@ -24,7 +24,7 @@
                         webURL="https://doris.apache.org/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
                         description="Apache Doris driver (MySQL Connector/J)"
-                        categories="sql">
+                        categories="sql,federated">
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
@@ -55,5 +55,10 @@
             <functions value="ARRAY_AGG,ARRAY_CONTAINS,ARRAY_SIZE,BITMAP_COUNT,BITMAP_UNION,HLL_UNION_AGG,NDV,PERCENTILE_APPROX,RETENTION,WINDOW_FUNNEL,APPROX_COUNT_DISTINCT,CURRENT_CATALOG"/>
             <types value="ARRAY,BITMAP,HLL,JSON,MAP,STRUCT,LARGEINT,QUANTILE_STATE"/>
         </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.doris.edit.DorisTableManager"
+            objectType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
     </extension>
 </plugin>

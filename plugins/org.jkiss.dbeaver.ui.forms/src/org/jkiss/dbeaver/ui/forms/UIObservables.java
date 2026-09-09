@@ -66,9 +66,6 @@ public final class UIObservables {
 
             @Override
             protected void doSetValue(@NotNull Boolean newValue) {
-                if (Objects.equals(observable.get(), newValue)) {
-                    return;
-                }
                 if (newValue) {
                     observable.set(value);
                     fireValueChange(Diffs.createValueDiff(false, true));

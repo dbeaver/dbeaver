@@ -21,9 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class DDAIEngineProperties extends OpenAIProperties {
 
@@ -47,7 +47,7 @@ public class DDAIEngineProperties extends OpenAIProperties {
     @Override
     public String getModel() {
         String model = super.getModel();
-        if (OpenAIModels.DEFAULT_MODEL.equals(model)) {
+        if (CommonUtils.isEmpty(model)) {
             return DEFAULT_MODEL;
         }
         return model;

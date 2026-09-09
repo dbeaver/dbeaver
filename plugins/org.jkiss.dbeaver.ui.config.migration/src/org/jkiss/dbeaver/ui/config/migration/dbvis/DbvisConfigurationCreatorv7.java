@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.config.migration.dbvis;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportData;
@@ -26,7 +27,7 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class DbvisConfigurationCreatorv7 extends DbvisAbstractConfigurationCreator {
     public static final String VERSION = "version.7.x.x"; //$NON-NLS-1$
@@ -34,8 +35,9 @@ public class DbvisConfigurationCreatorv7 extends DbvisAbstractConfigurationCreat
     public static final String CONFIG_FILE = "dbvis.xml"; //$NON-NLS-1$
 
     @Override
-    public ImportData create(ImportData importData,
-        File configFile) throws DBException {
+    public ImportData create(
+        @NotNull ImportData importData,
+        @NotNull Path configFile) throws DBException {
         try {
             Document configDocument = XMLUtils.parseDocument(configFile);
             Element driversElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Drivers");

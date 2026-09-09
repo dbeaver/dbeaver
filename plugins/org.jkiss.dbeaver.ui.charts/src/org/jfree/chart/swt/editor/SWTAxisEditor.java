@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@
 package org.jfree.chart.swt.editor;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -131,8 +130,7 @@ class SWTAxisEditor extends Composite {
         Button selectFontButton = new Button(general, SWT.PUSH);
         selectFontButton.setText(localizationResources.getString("Select..."));
         selectFontButton.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         // Create the color-change dialog
                         FontDialog dlg = new FontDialog(getShell());
                         dlg.setText(localizationResources.getString(
@@ -155,8 +153,7 @@ class SWTAxisEditor extends Composite {
                             SWTAxisEditor.this.labelFont
                                     = SWTAxisEditor.this.font.getFontData()[0];
                         }
-                    }
-                }
+                    })
         );
         // row 3
         new Label(general, SWT.NONE).setText(localizationResources.getString(
@@ -171,8 +168,7 @@ class SWTAxisEditor extends Composite {
         Button selectColorButton = new Button(general, SWT.PUSH);
         selectColorButton.setText(localizationResources.getString("Select..."));
         selectColorButton.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         // Create the color-change dialog
                         ColorDialog dlg = new ColorDialog(getShell());
                         dlg.setText(localizationResources.getString(
@@ -187,8 +183,7 @@ class SWTAxisEditor extends Composite {
                             colorCanvas.setColor(
                                     SWTAxisEditor.this.labelPaintColor);
                         }
-                    }
-                }
+                    })
         );
         Group other = new Group(this, SWT.NONE);
         FillLayout tabLayout = new FillLayout();
@@ -219,8 +214,7 @@ class SWTAxisEditor extends Composite {
         selectTickLabelFontButton.setText(localizationResources.getString(
                 "Select..."));
         selectTickLabelFontButton.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         // Create the font-change dialog
                         FontDialog dlg = new FontDialog(getShell());
                         dlg.setText(localizationResources.getString(
@@ -243,8 +237,7 @@ class SWTAxisEditor extends Composite {
                             SWTAxisEditor.this.tickLabelFont
                                     = SWTAxisEditor.this.font.getFontData()[0];
                         }
-                    }
-                }
+                    })
         );
         this.showTickMarksCheckBox = new Button(ticks, SWT.CHECK);
         this.showTickMarksCheckBox.setText(localizationResources.getString(

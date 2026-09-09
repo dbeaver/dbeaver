@@ -21,8 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -115,13 +114,10 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             
                         
             fullSchemaBackupCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_complete_backup, false);
-            fullSchemaBackupCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            fullSchemaBackupCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     wizard.getSettings().setFullSchemaBackup(fullSchemaBackupCheck.getSelection());
                     tablesTable.setVisible(!fullSchemaBackupCheck.getSelection());
-                }
-            });
+                }));
             fullSchemaBackupCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             createCheckButtons(buttonsPanel, schemasTable);
@@ -146,13 +142,10 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_show_view, false);
             exportViewsCheck.setSelection(wizard.getSettings().isFullSchemaBackup());
-            exportViewsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            exportViewsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     wizard.getSettings().setShowViews(exportViewsCheck.getSelection());
                     loadTables(null);
-                }
-            });
+                }));
             exportViewsCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, tablesTable);
         }

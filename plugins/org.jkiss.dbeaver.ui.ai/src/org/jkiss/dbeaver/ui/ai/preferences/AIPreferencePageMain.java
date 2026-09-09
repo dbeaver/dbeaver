@@ -90,8 +90,8 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
 
         // Link to secure storage config
         addLinkToSettings(links, AIPreferencePageEngines.PAGE_ID);
-        addLinkToSettings(links, AIPreferencePageConfiguration.PAGE_ID);
         addLinkToSettings(links, AIPreferencePagePrompts.PAGE_ID);
+        addLinkToSettings(links, AIPreferencePageConfiguration.PAGE_ID);
 
         return composite;
     }

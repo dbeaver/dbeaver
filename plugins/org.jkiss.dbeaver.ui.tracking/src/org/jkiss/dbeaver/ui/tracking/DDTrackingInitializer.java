@@ -28,9 +28,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.tracking.DDClientInfo;
-import org.jkiss.dbeaver.model.tracking.DDTrackStop;
 import org.jkiss.dbeaver.model.tracking.DDTracking;
 import org.jkiss.dbeaver.model.tracking.DDTrackingClient;
+import org.jkiss.dbeaver.model.tracking.auth.DDBundleCredentials;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.tracking.auth.DDKeyStore;
+import org.jkiss.dbeaver.model.tracking.sync.core.DDSyncCredentials;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -47,33 +50,59 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
 
     private static final Log log = Log.getLog(DDTrackingInitializer.class);
 
-    private static final String ENV_KEY = "DATADAM_KEY";
-    private static final String ENV_URL = "DATADAM_URL";
-
-    private static final AtomicBoolean STARTED = new AtomicBoolean(false);
+    private static final AtomicBoolean LISTENER_REGISTERED = new AtomicBoolean(false);
+    private static final AtomicReference<Session> ACTIVE_SESSION = new AtomicReference<>();
 
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
-        if (!STARTED.compareAndSet(false, true)) {
+        if (LISTENER_REGISTERED.compareAndSet(false, true)) {
+            PlatformUI.getWorkbench().addWorkbenchListener(new IWorkbenchListener() {
+                @Override
+                public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
+                    stop();
+                    return true;
+                }
+
+                @Override
+                public void postShutdown(@NotNull IWorkbench workbench) {
+                    //empty
+                }
+            });
+        }
+        start();
+    }
+
+    /**
+     * Starts tracking if a key bundle is available and tracking is not already running.
+     * Safe to call again after a login, it is a no-op while a session is already active.
+     */
+    public static void start() {
+        DDKeyBundle bundle = DDKeyStore.load();
+        if (bundle == null) {
+            log.debug("DataDam tracking disabled (not logged in)");
             return;
         }
-        String key = System.getenv(ENV_KEY);
-        if (CommonUtils.isEmpty(key)) {
-            log.debug("DataDam tracking disabled (no " + ENV_KEY + ")");
-            return;
-        }
-        String url = System.getenv(ENV_URL);
+        String url = DDSyncPreferencePage.getGatewayUrl();
         if (CommonUtils.isEmpty(url)) {
-            log.debug("DataDam tracking disabled (no " + ENV_URL + ")");
+            log.debug("DataDam tracking disabled (no server URL)");
             return;
         }
+        DDSyncCredentials credentials = new DDBundleCredentials(bundle);
         DDTrackingClient client = new DDTrackingClient(url);
-        AtomicReference<String> trackingId = new AtomicReference<>();
+        Session session = new Session(client, credentials);
+        if (!ACTIVE_SESSION.compareAndSet(null, session)) {
+            // already tracking
+            return;
+        }
 
         AbstractJob startJob = new AbstractJob("DataDam tracking start") {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                if (ACTIVE_SESSION.get() != session) {
+                    // stopped before the request went out
+                    return Status.OK_STATUS;
+                }
                 DDClientInfo info = new DDClientInfo(
                     DBWorkbench.getPlatform().getDeploymentId(),
                     DBWorkbench.getPlatform().getWorkspace().getWorkspaceId(),
@@ -84,31 +113,48 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                     localMacAddress(),
                     localIpAddress()
                 );
-                DDTracking tracking = client.start(key, info);
+                DDTracking tracking = client.start(credentials, info);
                 if (tracking != null) {
-                    trackingId.set(tracking.trackingId());
+                    if (ACTIVE_SESSION.get() == session) {
+                        session.trackingId.set(tracking.trackingId());
+                    } else {
+                        // stop() already ran and saw no trackingId yet - clean up the session we just started
+                        client.stop(credentials, tracking.trackingId());
+                    }
                 }
                 return Status.OK_STATUS;
             }
         };
         startJob.setSystem(true);
         startJob.schedule();
+    }
 
-        PlatformUI.getWorkbench().addWorkbenchListener(new IWorkbenchListener() {
-            @Override
-            public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
-                String id = trackingId.get();
-                if (id != null) {
-                    client.stop(key, new DDTrackStop(id));
-                }
-                return true;
-            }
+    /**
+     * Stops the active tracking session, if any. Safe to call after a logout or on shutdown.
+     */
+    public static void stop() {
+        Session session = ACTIVE_SESSION.getAndSet(null);
+        if (session == null) {
+            return;
+        }
+        String id = session.trackingId.get();
+        if (id != null) {
+            session.client.stop(session.credentials, id);
+        }
+    }
 
-            @Override
-            public void postShutdown(@NotNull IWorkbench workbench) {
-                //empty
-            }
-        });
+    private static final class Session {
+        @NotNull
+        private final DDTrackingClient client;
+        @NotNull
+        private final DDSyncCredentials credentials;
+        @NotNull
+        private final AtomicReference<String> trackingId = new AtomicReference<>();
+
+        private Session(@NotNull DDTrackingClient client, @NotNull DDSyncCredentials credentials) {
+            this.client = client;
+            this.credentials = credentials;
+        }
     }
 
     @NotNull
@@ -128,4 +174,5 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             return null;
         }
     }
+
 }

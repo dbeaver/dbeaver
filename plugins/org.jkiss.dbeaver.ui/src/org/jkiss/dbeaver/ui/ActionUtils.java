@@ -64,6 +64,9 @@ import java.util.function.Consumer;
  * Action utils
  */
 public class ActionUtils {
+
+    private static final String HOSTING_OBJECT_PROP_NAME = "org.jkiss.dbeaver.ui.hostingObject";
+
     private static final Log log = Log.getLog(ActionUtils.class);
 
     private static final Set<IPropertyChangeListener> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
@@ -503,6 +506,9 @@ public class ActionUtils {
     }
 
     public static void evaluatePropertyState(String propertyName) {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return;
+        }
         IEvaluationService service = PlatformUI.getWorkbench().getService(IEvaluationService.class);
         if (service != null) {
             try {
@@ -576,5 +582,14 @@ public class ActionUtils {
         } else {
             return label;
         }
+    }
+
+    public static void setHostingObject(@NotNull Menu menu, @NotNull Object obj) {
+        menu.setData(HOSTING_OBJECT_PROP_NAME, obj);
+    }
+
+    @Nullable
+    public static Object getHostingObject(@NotNull Menu menu) {
+        return menu.getData(HOSTING_OBJECT_PROP_NAME);
     }
 }

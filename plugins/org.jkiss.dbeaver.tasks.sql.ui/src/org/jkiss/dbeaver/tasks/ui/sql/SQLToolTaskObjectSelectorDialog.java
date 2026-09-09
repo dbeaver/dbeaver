@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.tasks.ui.sql;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -120,13 +119,10 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
         final Button showConnectedCheck = new Button(dialogArea, SWT.CHECK);
         showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
         showConnectedCheck.setSelection(showConnected);
-        showConnectedCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        showConnectedCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 showConnected = showConnectedCheck.getSelection();
                 dataSourceTree.getViewer().refresh();
-            }
-        });
+            }));
 
         return dialogArea;
     }

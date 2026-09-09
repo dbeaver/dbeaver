@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.eclipse.osgi.util.NLS;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
@@ -210,10 +211,39 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     }
 
     private boolean changeLicense(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
+        String hardwareKey="???????????", systemID="???", databaseName=null;
+        try (Connection connection = super.openConnection(monitor, context, purpose)) {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("SELECT HARDWARE_KEY, SYSTEM_ID FROM SYS.M_LICENSE");
+                ResultSet resultSet = statement.getResultSet();
+                if (resultSet.next()) {
+                    hardwareKey = resultSet.getString(1);
+                    systemID = resultSet.getString(2);
+                } else {
+                    throw new DBException("Cannot determine hardware key and system ID");
+                }
+                statement.execute("SELECT DATABASE_NAME FROM SYS.M_DATABASE");
+                resultSet = statement.getResultSet();
+                if (resultSet.next()) {
+                    databaseName = resultSet.getString(1);
+                } else {
+                    throw new DBException("Cannot determine database name");
+                }
+            }
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(HANAMessages.dialog_invalid_license_error_title, HANAMessages.dialog_invalid_license_error_message, e);
+            return false;
+        }
+        StringBuilder label = new StringBuilder(NLS.bind(HANAMessages.dialog_invalid_license_input_label, systemID, hardwareKey));
+        if ("SYSTEMDB".equals(databaseName)) {
+            label.append(NLS.bind(HANAMessages.dialog_invalid_license_input_label_systemdb));
+        } else {
+            label.append(NLS.bind(HANAMessages.dialog_invalid_license_input_label_tenantdb));
+        }
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
         String newLicense = DBWorkbench.getPlatformUI().promptText(
                 NLS.bind(HANAMessages.dialog_invalid_license_input_title, getContainer().getName()),
-                NLS.bind(HANAMessages.dialog_invalid_license_input_label, connectionInfo.getUserName(), connectionInfo.getHostPort()),
+                label.toString(),
                 "----- Begin SAP License -----\n...");
         if (newLicense == null) {
             return false;
@@ -225,8 +255,8 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
             try (Connection connection = super.openConnection(monitor, context, purpose)) {
                 try (Statement statement = connection.createStatement()) {
                     // force remove old licenses which can interfere with new
-                    statement.execute("UNSET SYSTEM LICENSE ALL;");
-                    statement.execute("SET SYSTEM LICENSE '" + newLicense + "';");
+                    statement.execute("UNSET SYSTEM LICENSE ALL");
+                    statement.execute("SET SYSTEM LICENSE '" + newLicense + "'");
                 }
             }
         } catch (Exception e) {

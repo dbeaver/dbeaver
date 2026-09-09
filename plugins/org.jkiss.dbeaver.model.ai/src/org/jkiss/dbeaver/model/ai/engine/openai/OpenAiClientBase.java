@@ -83,7 +83,8 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
             .build();
 
         HttpRequest modifiedRequest = applyFilters(request);
-        return GSON.fromJson(client.send(monitor, modifiedRequest), OAIModelList.class).data();
+        String response = client.send(monitor, modifiedRequest);
+        return GSON.fromJson(response, OAIModelList.class).data();
     }
 
     @NotNull
@@ -102,8 +103,8 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
     @NotNull
     @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
-        log.debug("OpenAI request failed: " + statusCode + ", " + body);
-        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+        log.debug("AI request failed: " + statusCode + ", " + body);
+        return new DBException("AI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(statusCode, body));
     }
 
     @NotNull

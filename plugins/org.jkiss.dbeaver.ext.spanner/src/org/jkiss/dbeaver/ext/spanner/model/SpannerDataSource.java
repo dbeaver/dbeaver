@@ -46,7 +46,7 @@ public class SpannerDataSource extends GenericDataSource {
     }
 
     @Override
-	protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
+	protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
 		String url = super.getConnectionURL(connectionInfo);
 		if (url != null && url.startsWith("jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s")) {
 			// Official driver.

@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemContainer;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
@@ -154,11 +153,11 @@ public interface DBPProject extends DBFFileSystemContainer, SMAuthSpace, DBAPerm
 
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 
-    void refreshProject(DBRProgressMonitor monitor);
+    void refreshProject();
 
     void updateProject(@Nullable String newName, @Nullable String description) throws DBException;
 
-    @Nullable
+    @NotNull
     DBNModel getNavigatorModel();
 
     /**

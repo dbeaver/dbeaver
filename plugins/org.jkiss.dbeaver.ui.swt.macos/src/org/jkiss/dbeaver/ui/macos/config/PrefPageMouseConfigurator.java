@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.macos.config;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -51,12 +50,8 @@ public class PrefPageMouseConfigurator implements
             tooltipDelayCheck = UIUtils.createCheckbox(group, "Set tooltip delay (ms)", false);
             tooltipDelayCheck.setLayoutData(new GridData());
             tooltipDelayCheck.setSelection(store.getInt(CocoaUIService.PREF_TOOLTIP_DELAY) > 0);
-            tooltipDelayCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    tooltipDelayText.setEnabled(tooltipDelayCheck.getSelection());
-                }
-            });
+            tooltipDelayCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                tooltipDelayText.setEnabled(tooltipDelayCheck.getSelection())));
 
             tooltipDelayText = new Text(group, SWT.BORDER);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);

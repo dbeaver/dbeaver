@@ -16,19 +16,47 @@
  */
 package org.jkiss.dbeaver.ui.app.config.pages;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
+import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
-import org.jkiss.dbeaver.ui.forms.UIAlignX;
-import org.jkiss.dbeaver.ui.forms.UIGrowX;
-import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
+import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.function.Consumer;
 
 public class ProductConfigWelcomePage extends ProductConfigWizardPage {
+    private final UIObservable<DBPPlatformLanguage> language;
+    private boolean seenLanguageChangeWarning = false;
+
     public ProductConfigWelcomePage() {
         super(ProductConfigMessages.welcome_title, ProductConfigMessages.welcome_description);
-        setPageComplete(true);
+
+        language = UIObservable.of(
+            DBPPlatformDesktop.getInstance().getPlatformLanguage(),
+            DBPPlatformLanguage.class
+        );
+        language.addChangeListener((o, newLanguage) -> {
+            if (!seenLanguageChangeWarning) {
+                seenLanguageChangeWarning = true;
+                UIUtils.showMessageBox(
+                    getShell(),
+                    "Language change",
+                    "Language change will be applied after restart.",
+                    SWT.ICON_INFORMATION
+                );
+            }
+
+            if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager manager) {
+                manager.setPlatformLanguage(language.get());
+            }
+        });
     }
 
     @Override
@@ -37,14 +65,45 @@ public class ProductConfigWelcomePage extends ProductConfigWizardPage {
     }
 
     @NotNull
-    private static Consumer<UIPanelBuilder> buildPanel() {
-        return pb -> pb
-            .margins(10, 10)
+    private Consumer<UIPanelBuilder> buildPanel() {
+        return pb -> pb.margins(10, 10)
+            .row(rb -> rb.panel(createLanguageChooser()))
             .row(rb -> rb
                 .label(lb -> lb
                     .text(ProductConfigMessages.welcome_body_text)
                     .wrap()
+                    .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                     .align(UIAlignX.FILL)
-                    .grow(UIGrowX.ALWAYS)));
+                    .grow(UIGrowX.ALWAYS)))
+            .row(UIRowBuilder::verticalSpacer)
+            .row(rb -> rb
+                .panel(pb1 -> pb1
+                    .align(UIAlignX.FILL)
+                    .grow(UIGrowX.ALWAYS)
+                    .row(rb1 -> rb1
+                        // TODO introduce a dedicated icon+label control
+                        .label(lb -> lb
+                            .image(DBIcon.SMALL_INFO)
+                            .align(UIAlignY.TOP))
+                        .label(lb -> lb
+                            .text(ProductConfigMessages.welcome_body_hint)
+                            .wrap()
+                            .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
+                            .align(UIAlignX.FILL)
+                            .grow(UIGrowX.ALWAYS)))));
+    }
+
+    @NotNull
+    private Consumer<UIPanelBuilder> createLanguageChooser() {
+        if (!(DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager)) {
+            return UIRowBuilder.identityConsumer();
+        }
+        return pb -> pb.row(rb -> rb
+            .label("Language:")
+            .comboBox(
+                PlatformLanguageRegistry.getInstance().getLanguages(),
+                language,
+                DBPPlatformLanguage::getLabel))
+            .row(rb -> rb.label(""));
     }
 }

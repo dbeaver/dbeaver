@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.NotNullWhen;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -117,48 +118,36 @@ public final class DBValueFormatting {
     }
 
     @NotNull
-    public static DBPImage getObjectImage(DBPObject object)
-    {
+    public static DBPImage getObjectImage(@Nullable DBPObject object) {
         return getObjectImage(object, true);
     }
 
-    @Nullable
-    public static DBPImage getObjectImage(DBPObject object, boolean useDefault)
-    {
+    @NotNullWhen("useDefault")
+    public static DBPImage getObjectImage(@Nullable DBPObject object, boolean useDefault) {
+        return getObjectImage(object, useDefault, true);
+    }
+
+    @NotNullWhen("useDefault")
+    public static DBPImage getObjectImage(@Nullable DBPObject object, boolean useDefault, boolean includeModifiers) {
         DBPImage image = null;
-        if (object instanceof DBPImageProvider) {
-            image = ((DBPImageProvider)object).getObjectImage();
+        if (object instanceof DBPImageProvider provider) {
+            image = provider.getObjectImage(includeModifiers);
         }
         if (image == null) {
-            if (object instanceof DBSTypedObject) {
-                image = getTypeImage((DBSTypedObject) object);
+            if (object instanceof DBSTypedObject typedObject) {
+                image = getTypeImage(typedObject);
             }
             if (image == null && useDefault) {
-                if (object instanceof DBSEntity) {
-                    if (DBUtils.isView((DBSEntity) object)) {
-                        image = DBIcon.TREE_VIEW;
-                    } else {
-                        image = DBIcon.TREE_TABLE;
-                    }
-                } else if (object instanceof DBSEntityAssociation) {
-                    image = DBIcon.TREE_ASSOCIATION;
-                } else if (object instanceof DBSProcedure) {
-                    image = DBIcon.TREE_PROCEDURE;
-                } else if (object instanceof DBSPackage) {
-                    image = DBIcon.TREE_PACKAGE;
-                } else if (object instanceof DBSTrigger) {
-                    image = DBIcon.TREE_TRIGGER;
-                } else if (object instanceof DBSSchema s) {
-                    if (s instanceof DBPSystemObject so && so.isSystem()) {
-                        image = DBIcon.TREE_SCHEMA_SYSTEM;
-                    } else {
-                        image = DBIcon.TREE_SCHEMA;
-                    }
-                } else if (object instanceof DBSCatalog) {
-                    image = DBIcon.TREE_DATABASE;
-                } else {
-                    image = DBIcon.TYPE_OBJECT;
-                }
+                image = switch (object) {
+                    case DBSEntity entity -> DBUtils.isView(entity) ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE;
+                    case DBSEntityAssociation ignored -> DBIcon.TREE_ASSOCIATION;
+                    case DBSProcedure ignored -> DBIcon.TREE_PROCEDURE;
+                    case DBSPackage ignored -> DBIcon.TREE_PACKAGE;
+                    case DBSTrigger ignored -> DBIcon.TREE_TRIGGER;
+                    case DBSSchema s -> s instanceof DBPSystemObject so && so.isSystem() ? DBIcon.TREE_SCHEMA_SYSTEM : DBIcon.TREE_SCHEMA;
+                    case DBSCatalog ignored -> DBIcon.TREE_DATABASE;
+                    case null, default -> DBIcon.TYPE_OBJECT;
+                };
             }
         }
         return image;

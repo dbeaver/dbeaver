@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
@@ -1278,7 +1279,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Nullable
     @Override
-    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
             return connectionInfo.getUrl();
         } else if (isSampleURLForced()) {
@@ -1493,7 +1494,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     homeFolder = homeFolder.getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
                 } else {
                     log.warn("Can't find folder path for drivers. Use home folder");
-                    return RuntimeUtils.getUserHomeDir().toPath().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+                    return RuntimeUtils.getUserHomePath().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
                 }
             } else {
                 homeFolder = platform.getApplication().getGlobalDataPath().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);

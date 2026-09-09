@@ -59,6 +59,7 @@ public class ProductConfigFinalStepsPage extends ProductConfigWizardPage {
             .row(rb -> rb.label(lb -> lb
                 .text(ProductConfigMessages.final_steps_header)
                 .wrap()
+                .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                 .align(UIAlignX.FILL)
                 .grow(UIGrowX.ALWAYS)));
     }
@@ -94,6 +95,7 @@ public class ProductConfigFinalStepsPage extends ProductConfigWizardPage {
             .row(rb -> rb.label(lb -> lb
                 .text(description)
                 .wrap()
+                .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                 .align(UIAlignX.FILL)
                 .grow(UIGrowX.ALWAYS)))
             .indent(pb1 -> pb1

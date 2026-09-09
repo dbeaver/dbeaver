@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -51,19 +52,21 @@ import java.util.regex.Pattern;
 
 public class CubridDataSource extends GenericDataSource
 {
+    private static final Log log = Log.getLog(CubridDataSource.class);
+
     private final CubridMetaModel metaModel;
     private final CubridPrivilageCache privilageCache;
     private final CubridServerCache serverCache;
     private boolean supportMultiSchema;
     private boolean supportDbmsOutputPlCsql = false;
     private boolean isEOLVersion;
-    private ArrayList<CubridCharset> charsets;
-    private Map<String, CubridCollation> collations;
+    private ArrayList<CubridCharset> charsets = new ArrayList<>();
+    private Map<String, CubridCollation> collations = new LinkedHashMap<>();
     private boolean isShard = false;
     private String shardType = "SHARD ID";
     private String shardVal = "0";
     private CubridOutputReader outputReader = null;
-    private List<String> privilegeGroups;
+    private List<String> privilegeGroups = new ArrayList<>();
 
     public CubridDataSource(
             @NotNull DBRProgressMonitor monitor,
@@ -174,7 +177,15 @@ public class CubridDataSource extends GenericDataSource
 
     @NotNull
     public CubridCollation getCollation(String name) {
-        return collations.get(name);
+        CubridCollation collation = collations.get(name);
+        if (collation == null) {
+            String charsetName = name.split("_")[0];
+            CubridCharset charset = getCharset(charsetName);
+            collation = new CubridCollation(charset, name);
+            collations.put(name, collation);
+            charset.addCollation(collation);
+        }
+        return collation;
     }
 
     @NotNull
@@ -194,7 +205,9 @@ public class CubridDataSource extends GenericDataSource
                 return charset;
             }
         }
-        return null;
+        CubridCharset fallback = new CubridCharset(this, name);
+        charsets.add(fallback);
+        return fallback;
     }
 
     @NotNull
@@ -247,9 +260,13 @@ public class CubridDataSource extends GenericDataSource
                     while (dbResult.next()) {
                         String charsetName = JDBCUtils.safeGetString(dbResult, "charset");
                         CubridCharset charset = getCharset(charsetName);
-                        CubridCollation collation = new CubridCollation(charset, dbResult);
-                        collations.put(collation.getName(), collation);
-                        charset.addCollation(collation);
+                        if (charset != null) {
+                            CubridCollation collation = new CubridCollation(charset, dbResult);
+                            collations.put(collation.getName(), collation);
+                            charset.addCollation(collation);
+                        } else {
+                            log.warn("Charset '" + charsetName + "' not found for collation");
+                        }
                     }
                 }
             }
@@ -262,16 +279,32 @@ public class CubridDataSource extends GenericDataSource
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
         if (!isEOLVersion()) {
-            loadCharsets(monitor);
-            loadCollations(monitor);
-            loadPrivilege(monitor);
+            try {
+                loadCharsets(monitor);
+            } catch (Exception e) {
+                log.warn("Can't load charsets", e);
+            }
+            try {
+                loadCollations(monitor);
+            } catch (Exception e) {
+                log.warn("Can't load collations", e);
+            }
+            try {
+                loadPrivilege(monitor);
+            } catch (Exception e) {
+                log.warn("Can't load privilege groups", e);
+            }
         } else {
             DBWorkbench.getPlatformUI().showMessageBox(
                 "Connected CUBRID Info",
                 "The connected CUBRID is an EOL version. Limited features are available.",
                 false);
         }
-        setTracking(monitor);
+        try {
+            setTracking(monitor);
+        } catch (Exception e) {
+            log.warn("Can't set tracking", e);
+        }
     }
 
     @NotNull
