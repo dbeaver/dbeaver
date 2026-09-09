@@ -82,7 +82,7 @@ public class DDProjectSyncStore {
         @Nullable String description
     ) throws DBException {
         DDSharedProject created = transport.createProject(new DDCreateProjectRequest(
-            projectId,
+            UUID.fromString(projectId),
             encryptText(projectId, FIELD_NAME, name),
             description == null ? null : encryptText(projectId, FIELD_DESCRIPTION, description)));
         return decode(created);
