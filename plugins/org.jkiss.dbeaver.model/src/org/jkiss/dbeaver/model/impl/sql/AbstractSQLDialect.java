@@ -892,6 +892,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return false;
     }
 
+    // Determines whether the stored procedure call should be generated with parentheses
+    // For example, omit the parentheses when the parameter list is empty or contains no input parameters
+    protected boolean useStoredProcedureCallParentheses(DBSProcedure procedure, Collection<? extends DBSProcedureParameter> parameters) {
+        return true;
+    }
+
     // first line of the call stored procedure SQL (to be overridden)
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
         String[] executeKeywords = getExecuteKeywords();
@@ -929,45 +935,48 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         String namedParameterPrefix = prefStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);        
         boolean useBrackets = useBracketsForExec(proc);
         if (useBrackets) sql.append("{ ");
-        sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
+        sql.append(getStoredProcedureCallInitialClause(proc));
+
+        boolean useCallParentheses = useStoredProcedureCallParentheses(proc, parameters);
+
+        if (useCallParentheses) {
+            sql.append("(");
+        }
         if (!inParameters.isEmpty()) {
-            boolean first = true;
+            StringJoiner parametersJoiner = new StringJoiner(", ");
             for (DBSProcedureParameter parameter : inParameters) {
                 String typeName = parameter.getParameterType().getFullTypeName();
                 switch (parameter.getParameterKind()) {
                     case IN:
-                        if (!first) {
-                            sql.append(", ");
-                        }
                         if (castParams) {
-                            sql.append("cast(").append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()))
-                                .append(" as ").append(typeName).append(")");
+                            parametersJoiner.add("cast(" + namedParameterPrefix + CommonUtils.escapeIdentifier(parameter.getName())
+                                + " as " + typeName + ")");
                         } else {
-                            sql.append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()));
+                            parametersJoiner.add(namedParameterPrefix + CommonUtils.escapeIdentifier(parameter.getName()));
                         }
                         break;
                     case RETURN:
                         continue;
                     default:
                         if (isStoredProcedureCallIncludesOutParameters()) {
-                            if (!first) {
-                                sql.append(", ");
-                            }
                             if (castParams) {
-                                sql.append("cast(?")
-                                    .append(" as ").append(typeName).append(")");
+                                parametersJoiner.add("cast(?" + " as " + typeName + ")");
                             } else {
-                                sql.append("?");
+                                parametersJoiner.add("?");
                             }
                         }
                         break;
                 }                
 //                sql.append("\t-- put the ").append(parameter.getName())
 //                    .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")");
-                first = false;
             }
+            sql.append(parametersJoiner);
         }
-        sql.append(")");
+
+        if (useCallParentheses) {
+            sql.append(")");
+        }
+
         String callEndClause = getProcedureCallEndClause(proc);
         if (!CommonUtils.isEmpty(callEndClause)) {
             sql.append(" ").append(callEndClause);
