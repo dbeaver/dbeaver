@@ -85,9 +85,10 @@ public class DDSyncService {
 
     @NotNull
     public List<DDPartSelection> getAvailableParts() {
-        // Account-level sync units (AI, cloud config) are disabled - see pro#9577. Projects
-        // get their own separate sync, not this configuration-parts list.
         List<DDPartSelection> parts = new ArrayList<>();
+        for (DBPSyncUnit unit : enabledUnits(DBPSyncScope.WORKSPACE)) {
+            parts.add(new DDPartSelection(KEY_ACCOUNT_PREFIX + unit.getId(), unit.getName(), DBPSyncScope.WORKSPACE));
+        }
         if (!enabledUnits(DBPSyncScope.PROJECT).isEmpty()) {
             for (DBPProject project : workspace.getProjects()) {
                 if (DBPSyncSettings.isEnabled(project)) {
@@ -576,7 +577,7 @@ public class DDSyncService {
     }
 
     @NotNull
-    public static String getProjectId(@NotNull DBPProject project) {
+    private static String getProjectId(@NotNull DBPProject project) {
         String projectId = CommonUtils.toString(project.getProjectProperty(PROP_PROJECT_ID), null);
         if (CommonUtils.isEmpty(projectId)) {
             projectId = UUID.randomUUID().toString();
