@@ -14,32 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.doris.internal;
+package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
-import org.osgi.framework.BundleContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.Objects;
-
-public class DorisActivator extends Plugin {
-
-    private static DorisActivator plugin;
-
-    @Override
-    public void start(BundleContext context) throws Exception {
-        super.start(context);
-        plugin = this;
-    }
-
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        plugin = null;
-        super.stop(context);
-    }
+/**
+ * Runtime type of the current application.
+ */
+public enum DBPApplicationType {
+    DESKTOP,
+    DISTRIBUTED_DESKTOP,
+    WEB,
+    DISTRIBUTED_WEB,
+    CLI;
 
     @NotNull
-    public static DorisActivator getDefault() {
-        return Objects.requireNonNull(plugin, "Doris plugin has not been started"); //$NON-NLS-1$
+    public static DBPApplicationType getCurrentApplicationType() {
+        DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        if (application.isMultiuser()) {
+            return application.isDistributed() ? DISTRIBUTED_WEB : WEB;
+        }
+        if (application.isHeadlessMode()) {
+            return CLI;
+        }
+        return application.isDistributed() ? DISTRIBUTED_DESKTOP : DESKTOP;
     }
 }
