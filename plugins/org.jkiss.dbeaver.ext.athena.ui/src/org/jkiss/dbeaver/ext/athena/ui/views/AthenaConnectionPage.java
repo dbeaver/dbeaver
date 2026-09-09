@@ -30,11 +30,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
-import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
+import org.jkiss.dbeaver.ext.athena.ui.AthenaUIConstants;
 import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -69,7 +70,8 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
     private Combo awsRegionCombo;
     private Text s3LocationText;
 
-    private static final ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
+    private static final ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
+        AthenaUIConstants.PLUGIN_ID, "icons/aws_athena_logo.png"); //$NON-NLS-1$
     private final DriverPropertiesDialogPage driverPropsPage;
     private Button showCatalogsCheck;
 
