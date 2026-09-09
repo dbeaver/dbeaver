@@ -63,7 +63,6 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     private Composite tableButtonsPanel;
     private final PostgreDatabaseBackupSelection selection = new PostgreDatabaseBackupSelection();
     private int tableLoadId;
-    private boolean settingsLoaded;
 
     private PostgreSchema curSchema;
     private PostgreDatabase dataBase;
@@ -125,9 +124,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                     updateTableCheckedStatus(schemasTable, true);
                     updateSchemaChecks();
                 }
-                setFullSchemaBackup(fullSchemaBackupCheck.getSelection());
-                updatePageCompletion();
-                getContainer().updateButtons();
+                updateState();
             }));
             fullSchemaBackupCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -184,12 +181,8 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     @Override
     public void activatePage() {
         super.activatePage();
-        boolean fullSchemaBackup = wizard.getSettings().isFullSchemaBackup();
         loadSettings();
-        setFullSchemaBackup(selection.isCompleteBackup(getSchemas()) && (!settingsLoaded || fullSchemaBackup));
-        settingsLoaded = true;
-        updatePageCompletion();
-        getContainer().updateButtons();
+        updateState();
     }
 
     @Override
