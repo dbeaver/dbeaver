@@ -19,21 +19,33 @@ package org.jkiss.dbeaver.model.tracking.sync.core;
 import com.dbeaver.datadam.share.api.model.DDConfiguration;
 import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
 import com.dbeaver.datadam.share.api.model.DDCreateConfigurationRequest;
+import com.dbeaver.datadam.share.api.model.DDCreateProjectRequest;
+import com.dbeaver.datadam.share.api.model.DDPushProjectConfigurationRequest;
+import com.dbeaver.datadam.share.api.model.DDSharedProject;
+import com.dbeaver.datadam.share.api.model.DDSharedProjectConfiguration;
+import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
+import com.dbeaver.datadam.share.api.model.DDUpdateProjectRequest;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
 import com.dbeaver.rest.client.interceptor.HttpResponseWrapper;
 import com.dbeaver.rest.client.interceptor.InterceptorChain;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.HttpConstants;
 
 import java.io.IOException;
@@ -41,10 +53,13 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
-class DDGraphQlTransport extends AbstractRestClient implements DDSyncTransport {
+class DDGraphQlTransport extends AbstractRestClient implements DDSyncTransport, DDProjectSyncTransport {
 
     private static final int TIMEOUT_MS = 30000;
     private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
@@ -55,6 +70,33 @@ class DDGraphQlTransport extends AbstractRestClient implements DDSyncTransport {
     DDGraphQlTransport(@NotNull String url, @NotNull DDSyncCredentials credentials) {
         super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of());
         this.credentials = credentials;
+        this.gson = GsonUtils.gsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())
+            .create();
+    }
+
+    /**
+     * The server's DateTime scalar is an OffsetDateTime (UTC); DDSharedProject/DDSharedProjectRevision
+     * carry it as a zone-less LocalDateTime, so it round-trips through the UTC offset.
+     */
+    private static final class LocalDateTimeIsoAdapter
+        implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
+
+        @NotNull
+        @Override
+        public LocalDateTime deserialize(
+            @NotNull JsonElement json, @NotNull Type typeOfT, @NotNull JsonDeserializationContext context
+        ) throws JsonParseException {
+            return OffsetDateTime.parse(json.getAsString()).toLocalDateTime();
+        }
+
+        @NotNull
+        @Override
+        public JsonElement serialize(
+            @NotNull LocalDateTime src, @NotNull Type typeOfSrc, @NotNull JsonSerializationContext context
+        ) {
+            return new JsonPrimitive(src.atOffset(ZoneOffset.UTC).toString());
+        }
     }
 
     @NotNull
@@ -96,6 +138,55 @@ class DDGraphQlTransport extends AbstractRestClient implements DDSyncTransport {
             throw new DDConfigurationNotFoundException("Configuration '" + configurationId + "' not found");
         }
         return gson.fromJson(result, DDUpdateConfigurationResult.class);
+    }
+
+    @NotNull
+    @Override
+    public List<DDSharedProject> listProjects() throws DBException {
+        JsonObject data = call(DDProjectSyncApi.QUERY_LIST_PROJECTS, Map.of());
+        return List.of(gson.fromJson(data.get("projects"), DDSharedProject[].class));
+    }
+
+    @NotNull
+    @Override
+    public DDSharedProject createProject(@NotNull DDCreateProjectRequest request) throws DBException {
+        JsonObject data = call(DDProjectSyncApi.MUTATION_CREATE_PROJECT, Map.of("input", request));
+        return gson.fromJson(data.get("createProject"), DDSharedProject.class);
+    }
+
+    @Nullable
+    @Override
+    public DDSharedProject updateProject(@NotNull String projectId, @NotNull DDUpdateProjectRequest request) throws DBException {
+        JsonObject data = call(
+            DDProjectSyncApi.MUTATION_UPDATE_PROJECT, Map.of("projectId", projectId, "input", request));
+        JsonElement result = data.get("updateProject");
+        return result == null || result.isJsonNull() ? null : gson.fromJson(result, DDSharedProject.class);
+    }
+
+    @Override
+    public boolean deleteProject(@NotNull String projectId) throws DBException {
+        JsonObject data = call(DDProjectSyncApi.MUTATION_DELETE_PROJECT, Map.of("projectId", projectId));
+        return data.get("deleteProject") instanceof JsonPrimitive p && p.getAsBoolean();
+    }
+
+    @Nullable
+    @Override
+    public DDSharedProjectConfiguration pullProjectConfiguration(@NotNull String projectId) throws DBException {
+        JsonObject data = call(DDProjectSyncApi.QUERY_PULL_PROJECT_CONFIGURATION, Map.of("projectId", projectId));
+        JsonElement result = data.get("pullProjectConfiguration");
+        return result == null || result.isJsonNull() ? null : gson.fromJson(result, DDSharedProjectConfiguration.class);
+    }
+
+    @Nullable
+    @Override
+    public DDSharedProjectRevision pushProjectConfiguration(
+        @NotNull String projectId,
+        @NotNull DDPushProjectConfigurationRequest request
+    ) throws DBException {
+        JsonObject data = call(
+            DDProjectSyncApi.MUTATION_PUSH_PROJECT_CONFIGURATION, Map.of("projectId", projectId, "input", request));
+        JsonElement result = data.get("pushProjectConfiguration");
+        return result == null || result.isJsonNull() ? null : gson.fromJson(result, DDSharedProjectRevision.class);
     }
 
     @NotNull
