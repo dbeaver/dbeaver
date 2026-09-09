@@ -339,6 +339,9 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             if (!project.exists()) {
                 project.create(monitor);
             }
+            if (!project.isOpen()) {
+                project.open(monitor);
+            }
             final IProjectDescription pDescription = getEclipseWorkspace().newProjectDescription(project.getName());
             if (!CommonUtils.isEmpty(description)) {
                 pDescription.setComment(description);

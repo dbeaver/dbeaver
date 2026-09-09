@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,28 @@
  */
 package org.jkiss.dbeaver.ui.ai.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.function.ThrowableFunction;
 
 public class CachedValue<T> {
     private volatile T value;
-
     private final ThrowableFunction<DBRProgressMonitor, T, DBException> supplier;
 
-    public CachedValue(ThrowableFunction<DBRProgressMonitor, T, DBException> supplier) {
+    public CachedValue(@NotNull ThrowableFunction<DBRProgressMonitor, T, DBException> supplier) {
         this.supplier = supplier;
     }
 
-    public T get(DBRProgressMonitor monitor, boolean refresh) throws DBException {
+    @NotNull
+    public T get(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
         if (value == null || refresh) {
             synchronized (this) {
                 if (value == null || refresh) {
                     value = supplier.apply(monitor);
+                    if (value == null) {
+                        throw new DBException("Internal error: null value returned by supplier " + supplier);
+                    }
                 }
             }
         }

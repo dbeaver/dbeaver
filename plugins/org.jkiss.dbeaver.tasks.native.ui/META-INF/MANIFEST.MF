@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.ui.console,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
  org.jkiss.dbeaver.tasks.native;visibility:=reexport,

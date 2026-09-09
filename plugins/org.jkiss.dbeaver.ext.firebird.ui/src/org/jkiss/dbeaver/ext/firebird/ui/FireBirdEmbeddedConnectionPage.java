@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ext.firebird.ui;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -55,9 +54,7 @@ public class FireBirdEmbeddedConnectionPage extends ConnectionPageAbstract {
         nativeLibPathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         nativeLibPathText.setToolTipText(FireBirdUIMessages.page_embedded_label_native_library_path_tip);
 
-        UIUtils.createDialogButton(group, FireBirdUIMessages.page_embedded_button_browse, null, FireBirdUIMessages.page_embedded_label_native_library_path_tip, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        UIUtils.createDialogButton(group, FireBirdUIMessages.page_embedded_button_browse, null, FireBirdUIMessages.page_embedded_label_native_library_path_tip, SelectionListener.widgetSelectedAdapter(e -> {
                 DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
                 dialog.setText(FireBirdUIMessages.page_embedded_dialog_title);
                 dialog.setMessage(FireBirdUIMessages.page_embedded_dialog_message);
@@ -69,8 +66,7 @@ public class FireBirdEmbeddedConnectionPage extends ConnectionPageAbstract {
                 if (path != null) {
                     nativeLibPathText.setText(path);
                 }
-            }
-        });
+            }));
 
         setControl(container);
         loadSettings();

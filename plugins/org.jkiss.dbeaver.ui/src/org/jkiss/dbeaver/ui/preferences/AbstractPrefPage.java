@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -64,13 +65,17 @@ public abstract class AbstractPrefPage extends PreferencePage {
 
     protected void restartWorkbenchOnPrefChange() {
         Runnable restarter = () -> PlatformUI.getWorkbench().restart();
-        if (getContainer() instanceof Window window) {
-            window.getShell().addDisposeListener(e ->
-                UIUtils.asyncExec(restarter));
-            window.close();
-        } else {
-            restarter.run();
-        }
+        Window window = getContainer() instanceof Window container ? container : null;
+        Shell shell = window == null ? null : window.getShell();
+        UIUtils.asyncExec(() -> {
+            if (shell != null && !shell.isDisposed()) {
+                shell.addDisposeListener(e ->
+                    UIUtils.asyncExec(restarter));
+                window.close();
+            } else {
+                restarter.run();
+            }
+        });
     }
 
     @Override

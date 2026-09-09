@@ -122,6 +122,15 @@ public final class RuntimeUtils {
     }
 
     @NotNull
+    public static Path getUserHomePath() {
+        String userHome = System.getProperty(StandardConstants.ENV_USER_HOME); //$NON-NLS-1$
+        if (userHome == null) {
+            userHome = ".";
+        }
+        return Path.of(userHome);
+    }
+
+    @NotNull
     public static String getCurrentDate() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_DATE_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
     }

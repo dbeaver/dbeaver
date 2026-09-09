@@ -4,9 +4,7 @@ Bundle-Name: DBeaver Configuration Import Tool
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.config.migration;singleton:=true
 Bundle-Version: 2.1.250.qualifier
 Bundle-Release-Date: 20260921
-Require-Bundle: org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ui.editors.connection,
- org.jkiss.dbeaver.ui.navigator,
+Require-Bundle: org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.net.ssh,
  org.jkiss.dbeaver.net.ssh.jsch
 Bundle-ActivationPolicy: lazy

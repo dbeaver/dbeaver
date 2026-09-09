@@ -23,8 +23,6 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -204,12 +202,8 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             GridData forceCheckboxGridData = new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING);
             forceCheckboxGridData.verticalIndent = verticalIndentFirstRow;
             forceCheckbox.setLayoutData(forceCheckboxGridData);
-            forceCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    wizard.setForceDownload(forceCheckbox.getSelection());
-                }
-            });
+            forceCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                wizard.setForceDownload(forceCheckbox.getSelection())));
         }
 
         {
