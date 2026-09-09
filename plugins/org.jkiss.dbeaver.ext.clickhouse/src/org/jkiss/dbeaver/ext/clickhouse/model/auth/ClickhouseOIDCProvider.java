@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.clickhouse.model.auth;
 import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.oauth.OAuthConstants;
@@ -31,11 +32,7 @@ import java.net.BindException;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * Generic OpenID Connect provider: signs the user in with an external identity provider
@@ -137,7 +134,12 @@ public class ClickhouseOIDCProvider extends ClickhouseJWTProvider {
         String state = OAuthUtils.generateRandomUrlSafeValue(32);
         String redirectUri = "http://localhost:" + callbackPort + CALLBACK_PATH;
 
-        OAuthCodeResponseHandler responseHandler = new OAuthCodeResponseHandler(callbackPort, CALLBACK_PATH, state);
+        OAuthCodeResponseHandler responseHandler = new OAuthCodeResponseHandler(
+            callbackPort,
+            CALLBACK_PATH,
+            state,
+            DBAuthUtils.getExternalBrowserSuccessResponse("ClickHouse")
+        );
         try {
             responseHandler.initServer();
         } catch (IOException e) {

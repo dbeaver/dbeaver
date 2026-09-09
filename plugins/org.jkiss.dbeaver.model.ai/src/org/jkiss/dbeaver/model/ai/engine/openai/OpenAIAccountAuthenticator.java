@@ -23,6 +23,7 @@ import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.oauth.OAuthConstants;
@@ -85,7 +86,12 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
             String verifier = OAuthUtils.generateRandomUrlSafeValue(43);
             String state = OAuthUtils.generateRandomUrlSafeValue(32);
             String redirectUri = "http://localhost:" + CALLBACK_PORT + CALLBACK_PATH;
-            IOAuthCodeResponseHandler responseHandler = new OAuthCodeResponseHandler(CALLBACK_PORT, CALLBACK_PATH, state);
+            IOAuthCodeResponseHandler responseHandler = new OAuthCodeResponseHandler(
+                CALLBACK_PORT,
+                CALLBACK_PATH,
+                state,
+                DBAuthUtils.getExternalBrowserSuccessResponse("OpenAI")
+            );
             try {
                 responseHandler.initServer();
                 pendingAuthorization = new PendingAuthorization(
