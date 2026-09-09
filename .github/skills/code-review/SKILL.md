@@ -1,1 +1,1 @@
-Use skill dbeaver-code-review to track code duplications
+Use skill .agents/skilla/dbeaver-code-review to track code duplications
