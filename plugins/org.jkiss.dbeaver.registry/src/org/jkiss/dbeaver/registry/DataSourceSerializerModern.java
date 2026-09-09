@@ -217,7 +217,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                             JSONUtils.field(jsonWriter, "close-transactions-period", ct.getCloseIdleTransactionPeriod());
                             JSONUtils.field(jsonWriter, "auto-close-connections", ct.isAutoCloseConnections());
                             JSONUtils.field(jsonWriter, "close-connections-period", ct.getCloseIdleConnectionPeriod());
-                            serializeModifyPermissions(jsonWriter, ct);
+                            serializeModifyPermissions(jsonWriter, ct, true);
                             jsonWriter.endObject();
                         }
                         jsonWriter.endObject();
@@ -454,6 +454,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(configurationMap, "connection-types")) {
                     String id = ctMap.getKey();
                     Map<String, Object> ctConfig = ctMap.getValue();
+                    //if type exists we dont override it from datasources
+                    if (providerRegistry
+                        .getConnectionType(id, null) != null
+                    ) {
+                        continue;
+                    }
                     String name = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_NAME);
                     String description = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_DESCRIPTION);
                     String color = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_COLOR);
@@ -467,25 +473,23 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     Object closeTransactionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-transactions-period");
                     Boolean autoCloseConnections = JSONUtils.getObjectProperty(ctConfig, "auto-close-connections");
                     Object closeConnectionsPeriod = JSONUtils.getObjectProperty(ctConfig, "close-connections-period");
-                    DBPConnectionType ct = providerRegistry.getConnectionType(id, null);
-                    if (ct == null) {
-                        ct = new DBPConnectionType(
-                            id,
-                            name,
-                            color,
-                            alternativeColor,
-                            description,
-                            CommonUtils.toBoolean(autoCommit),
-                            CommonUtils.toBoolean(confirmExecute),
-                            CommonUtils.toBoolean(confirmDataChange),
-                            CommonUtils.toBoolean(smartCommit),
-                            CommonUtils.toBoolean(smartCommitRecover),
-                            CommonUtils.toBoolean(autoCloseTransactions),
-                            CommonUtils.toInt(closeTransactionsPeriod),
-                            CommonUtils.toBoolean(autoCloseConnections),
-                            CommonUtils.toInt(closeConnectionsPeriod));
-                        providerRegistry.addConnectionType(ct);
-                    }
+                    DBPConnectionType ct = new DBPConnectionType(
+                        id,
+                        name,
+                        color,
+                        alternativeColor,
+                        description,
+                        CommonUtils.toBoolean(autoCommit),
+                        CommonUtils.toBoolean(confirmExecute),
+                        CommonUtils.toBoolean(confirmDataChange),
+                        CommonUtils.toBoolean(smartCommit),
+                        CommonUtils.toBoolean(smartCommitRecover),
+                        CommonUtils.toBoolean(autoCloseTransactions),
+                        CommonUtils.toInt(closeTransactionsPeriod),
+                        CommonUtils.toBoolean(autoCloseConnections),
+                        CommonUtils.toInt(closeConnectionsPeriod)
+                    );
+                    providerRegistry.addConnectionType(ct);
                     deserializeModifyPermissions(ctConfig, ct);
                 }
             }
@@ -1282,13 +1286,21 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         @NotNull JsonWriter json,
         @NotNull DBPDataSourcePermissionOwner permissionOwner
     ) throws IOException {
+        serializeModifyPermissions(json, permissionOwner, false);
+    }
+
+    private void serializeModifyPermissions(
+        @NotNull JsonWriter json,
+        @NotNull DBPDataSourcePermissionOwner permissionOwner,
+        boolean serializeEmpty
+    ) throws IOException {
         List<DBPDataSourcePermission> permissions = permissionOwner.getModifyPermission();
-        if (!CommonUtils.isEmpty(permissions)) {
+        if (!CommonUtils.isEmpty(permissions) || serializeEmpty) {
             json.name("security");
             json.beginObject();
             List<String> permIds = new ArrayList<>(permissions.size());
             for (DBPDataSourcePermission perm : permissions) permIds.add(perm.getId());
-            JSONUtils.serializeStringList(json, "permission-restrictions", permIds);
+            JSONUtils.serializeStringList(json, "permission-restrictions", permIds, true, serializeEmpty);
             json.endObject();
         }
     }
