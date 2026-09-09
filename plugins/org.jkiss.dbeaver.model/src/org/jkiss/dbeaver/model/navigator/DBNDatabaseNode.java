@@ -48,6 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * DBNDatabaseNode
@@ -414,11 +415,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     }
 
     private void loadChildren(
-        DBRProgressMonitor monitor,
-        final DBXTreeNode meta,
-        final DBNDatabaseNode[] oldList,
-        final List<DBNDatabaseNode> toList,
-        Object source,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBXTreeNode meta,
+        @Nullable DBNDatabaseNode[] oldList,
+        @NotNull List<DBNDatabaseNode> toList,
+        @NotNull Object source,
         boolean reflect
     ) throws DBException {
         if (monitor.isCanceled()) {
@@ -496,38 +497,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                             }
                         }
                     }
-
-                    if (oldList == null) {
-                        // Load new folders only if there are no old ones
-                        toList.add(
-                            new DBNDatabaseFolder(this, (DBXTreeFolder) child));
-                    } else {
-                        for (DBNDatabaseNode oldFolder : oldList) {
-                            if (oldFolder.getMeta() == child) {
-                                oldFolder.reloadChildren(monitor, source, reflect);
-                                toList.add(oldFolder);
-                                break;
-                            }
-                        }
-                    }
+                    addNewOrRefreshOldNode(monitor, oldList, toList, source, reflect, treeFolder, n -> new DBNDatabaseFolder(this, n));
                 }
             } else if (child instanceof DBXTreeObject treeObject) {
                 if (hideFolders) {
                     continue;
                 }
-                if (oldList == null) {
-                    // Load new objects only if there are no old ones
-                    toList.add(
-                        new DBNDatabaseObject(this, treeObject));
-                } else {
-                    for (DBNDatabaseNode oldObject : oldList) {
-                        if (oldObject.getMeta().equals(child)) {
-                            oldObject.reloadChildren(monitor, source, reflect);
-                            toList.add(oldObject);
-                            break;
-                        }
-                    }
-                }
+                addNewOrRefreshOldNode(monitor, oldList, toList, source, reflect, treeObject, n -> new DBNDatabaseObject(this, n));
             } else {
                 log.warn("Unsupported meta node type: " + child); //$NON-NLS-1$
             }
@@ -536,6 +512,30 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (reflect && filtered) {
             getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
         }
+    }
+
+    private <T extends DBXTreeNode> void addNewOrRefreshOldNode(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBNDatabaseNode[] oldList,
+        @NotNull List<DBNDatabaseNode> toList,
+        @NotNull Object source,
+        boolean reflect,
+        @NotNull T child,
+        @NotNull Function<? super T, DBNDatabaseNode> factory
+    ) throws DBException {
+        if (oldList != null) {
+            // Try to find old object with the same meta
+            for (DBNDatabaseNode oldObject : oldList) {
+                if (oldObject.getMeta().equals(child)) {
+                    oldObject.reloadChildren(monitor, source, reflect);
+                    toList.add(oldObject);
+                    return;
+                }
+            }
+        }
+
+        // Load new object
+        toList.add(factory.apply(child));
     }
 
     public boolean isDynamicStructObject() {

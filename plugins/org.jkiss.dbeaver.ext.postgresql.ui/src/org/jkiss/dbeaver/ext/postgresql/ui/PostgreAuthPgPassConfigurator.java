@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -55,12 +54,8 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
         overrideHostname = UIUtils.createCheckbox(authPanel, false);
         overrideHostname.setText(PostgreMessages.dialog_connection_pgpass_hostname_override);
         overrideHostname.setToolTipText(PostgreMessages.dialog_connection_pgpass_hostname_override_tip);
-        overrideHostname.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                overriddenHostnameText.setEnabled(overrideHostname.getSelection());
-            }
-        });
+        overrideHostname.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            overriddenHostnameText.setEnabled(overrideHostname.getSelection())));
         overrideHostname.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         overriddenHostnameText = new Text(authPanel, SWT.BORDER);

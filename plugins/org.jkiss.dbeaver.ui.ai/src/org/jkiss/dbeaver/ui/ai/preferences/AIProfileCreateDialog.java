@@ -68,10 +68,10 @@ public class AIProfileCreateDialog extends BaseDialog {
         profileId = genProfileId(selectedEngine);
         profileName = selectedEngine.getLabel();
 
-        Text idText = UIUtils.createLabelText(enginePanel, "ID", genProfileId(selectedEngine));
-        idText.addModifyListener(e ->  profileId = idText.getText());
         Text nameText = UIUtils.createLabelText(enginePanel, "Name", genProfileName(selectedEngine.getLabel()));
         nameText.addModifyListener(e ->  profileName = nameText.getText());
+        Text idText = UIUtils.createLabelText(enginePanel, "ID", genProfileId(selectedEngine));
+        idText.addModifyListener(e ->  profileId = idText.getText());
 
         engineCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             int selectionIndex = engineCombo.getSelectionIndex();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.editors.content;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorPart;
@@ -70,18 +69,14 @@ class SelectContentPartDialog extends Dialog {
         for (IEditorPart part : dirtyParts) {
             combo.add(part.getTitle());
         }
-        combo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (combo.getSelectionIndex() >= 1) {
                     selectedPart = dirtyParts.get(combo.getSelectionIndex() - 1);
                 } else {
                     selectedPart = null;
                 }
                 getButton(IDialogConstants.OK_ID).setEnabled(selectedPart != null);
-            }
-        });
+            }));
 
         return group;
     }

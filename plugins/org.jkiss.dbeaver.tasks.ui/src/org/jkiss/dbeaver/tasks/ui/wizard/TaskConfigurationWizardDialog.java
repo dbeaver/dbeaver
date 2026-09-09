@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -281,7 +282,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     public void setSelectorMode(boolean selectorMode) {
         this.selectorMode = selectorMode;
         if (selectorMode) {
-            setFinishButtonLabel(TaskUIMessages.task_config_wizard_dialog_button_save);
+            setFinishButtonLabel(WorkbenchMessages.Save);
         }
     }
 

@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 
 import java.util.*;
@@ -100,6 +101,15 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 if (linkData instanceof DBSObject dbsObject) {
                     NavigatorHandlerObjectOpen.openEntityEditor(dbsObject);
                 }
+            }
+
+            @Nullable
+            @Override
+            protected String getPropertyToolTipText(@NotNull DBPPropertyDescriptor property) {
+                if (DBConstants.PROP_ID_NAME.equals(property.getId())) {
+                    return UINavigatorMessages.editors_entity_properties_name_tooltip;
+                }
+                return super.getPropertyToolTipText(property);
             }
         };
     }

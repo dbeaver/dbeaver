@@ -20,10 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.config.ProductConfigFeatureAvailabilityTester;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureTester;
+import org.jkiss.dbeaver.model.impl.GlobalPropertyTester;
 
-public final class AIProductConfigFeatureTester implements ProductConfigFeatureTester {
+public final class AIProductConfigFeatureTester implements ProductConfigFeatureTester, ProductConfigFeatureAvailabilityTester {
     private static final Log log = Log.getLog(AIProductConfigFeatureTester.class);
+    private static final String AI_DISABLED_PROPERTY = "ai.disabled";
+    private static final String AI_DISABLED_ENV_VARIABLE = "DBEAVER_AI_DISABLED";
+    private static final GlobalPropertyTester GLOBAL_PROPERTY_TESTER = new GlobalPropertyTester();
 
     @NotNull
     @Override
@@ -38,5 +43,20 @@ public final class AIProductConfigFeatureTester implements ProductConfigFeatureT
             log.error("Error checking AI feature enablement", e);
         }
         return Enablement.UNDEFINED;
+    }
+
+    @Override
+    public boolean isFeatureAvailable() {
+        return !GLOBAL_PROPERTY_TESTER.test(
+            this,
+            GlobalPropertyTester.PROP_HAS_PREFERENCE,
+            new Object[0],
+            AI_DISABLED_PROPERTY
+        ) && !GLOBAL_PROPERTY_TESTER.test(
+            this,
+            GlobalPropertyTester.PROP_HAS_ENV_VARIABLE,
+            new Object[0],
+            AI_DISABLED_ENV_VARIABLE
+        );
     }
 }

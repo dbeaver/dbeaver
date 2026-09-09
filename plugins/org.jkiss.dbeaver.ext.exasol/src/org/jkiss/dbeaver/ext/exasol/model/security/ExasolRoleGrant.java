@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,12 @@ import java.sql.ResultSet;
 
 public class ExasolRoleGrant implements DBAPrivilege  {
 
-	private Boolean adminOption;
-	private String role;
-	private ExasolDataSource dataSource;
-	private String grantee;
+	private final Boolean adminOption;
+	private final String role;
+	private final ExasolDataSource dataSource;
+	private final String grantee;
 	
-	public ExasolRoleGrant(ExasolDataSource dataSource, ResultSet resultSet)
-	{
+	public ExasolRoleGrant(@NotNull ExasolDataSource dataSource, @NotNull ResultSet resultSet) {
 		this.role = JDBCUtils.safeGetString(resultSet, "ROLE_NAME");
 		this.grantee = JDBCUtils.safeGetString(resultSet, "GRANTEE");
 		this.dataSource = dataSource;
@@ -44,8 +43,7 @@ public class ExasolRoleGrant implements DBAPrivilege  {
 	}
 	
 	@Property(viewable = true, order = 10)
-	public ExasolRole getRole(DBRProgressMonitor monitor) throws DBException
-	{
+	public ExasolRole getRole(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return dataSource.getRole(monitor, role);
 	}
 	
@@ -85,12 +83,9 @@ public class ExasolRoleGrant implements DBAPrivilege  {
 		return grantee;
 	}	
 	
-
 	@Override
-	public boolean isPersisted()
-	{
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isPersisted() {
+		return true;
 	}
 
 }
