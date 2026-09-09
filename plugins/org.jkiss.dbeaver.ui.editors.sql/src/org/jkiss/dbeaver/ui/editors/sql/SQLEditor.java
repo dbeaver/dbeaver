@@ -3488,9 +3488,10 @@ public class SQLEditor extends SQLEditorBase implements
         firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
 
         if (getSite() != null) {
-            IWorkbenchPage page = getSite().getWorkbenchWindow().getActivePage();
+            IWorkbenchWindow window = getSite().getWorkbenchWindow();
+            IWorkbenchPage page = window.getActivePage();
             if (page != null && page.getActiveEditor() == this) {
-                UIExecutionQueue.queueExec(() -> DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow()));
+                UIExecutionQueue.queueExec(() -> DataSourceToolbarUtils.refreshSelectorToolbar(window));
             }
         }
 
