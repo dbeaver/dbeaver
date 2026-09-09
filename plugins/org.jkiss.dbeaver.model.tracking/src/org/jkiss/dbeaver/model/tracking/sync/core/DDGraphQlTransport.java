@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.tracking.sync.core;
 
-import com.dbeaver.datadam.gateway.model.DDConfiguration;
-import com.dbeaver.datadam.gateway.model.DDConfigurationSummary;
-import com.dbeaver.datadam.gateway.model.DDCreateConfigurationRequest;
-import com.dbeaver.datadam.gateway.model.DDUpdateConfigurationRequest;
-import com.dbeaver.datadam.gateway.model.DDUpdateConfigurationResult;
+import com.dbeaver.datadam.share.api.model.DDConfiguration;
+import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
+import com.dbeaver.datadam.share.api.model.DDCreateConfigurationRequest;
+import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationRequest;
+import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
