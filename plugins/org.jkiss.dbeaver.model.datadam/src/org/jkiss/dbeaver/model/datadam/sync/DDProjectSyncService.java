@@ -30,13 +30,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Standalone project sharing: separate identity and lifecycle from Configuration sync
- * (DDSyncService). A project keeps working locally regardless of sync state - these guards
- * only gate pull/push, not general use of the project. Name, description and file contents
- * are encrypted (DDProjectSyncStore) - nothing is ever sent to the server in the clear except
- * the code-controlled file names.
- */
 public class DDProjectSyncService {
 
     public static final String PROP_SHARED_PROJECT_OWNER = "datadam.shared-project-owner-account-id";
@@ -80,7 +73,7 @@ public class DDProjectSyncService {
      */
     public boolean isSyncAllowed(@NotNull DBPProject project) {
         String owner = CommonUtils.toString(project.getProjectProperty(PROP_SHARED_PROJECT_OWNER), null);
-        return owner == null || owner.equals(accountId);
+        return owner != null && owner.equals(accountId);
     }
 
     @Nullable

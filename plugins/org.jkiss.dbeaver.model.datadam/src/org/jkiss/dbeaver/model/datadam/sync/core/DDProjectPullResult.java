@@ -20,10 +20,6 @@ import org.jkiss.code.NotNull;
 
 import java.util.Map;
 
-/**
- * Decrypted pull result: the project-wide configuration fingerprint (opaque, to be echoed back
- * as lastKnownConfigurationFingerprint on the next push) plus each file's decrypted content.
- */
 public record DDProjectPullResult(
     @NotNull String configurationFingerprint,
     @NotNull Map<String, byte[]> files

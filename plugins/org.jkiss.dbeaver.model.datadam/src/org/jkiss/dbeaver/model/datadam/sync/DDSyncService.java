@@ -576,7 +576,7 @@ public class DDSyncService {
     }
 
     @NotNull
-    public static String getProjectId(@NotNull DBPProject project) {
+    static String getProjectId(@NotNull DBPProject project) {
         String projectId = CommonUtils.toString(project.getProjectProperty(PROP_PROJECT_ID), null);
         if (CommonUtils.isEmpty(projectId)) {
             projectId = UUID.randomUUID().toString();

@@ -42,10 +42,6 @@ import java.util.TreeMap;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 
-/**
- * Encrypted view over a transport: resources are packed and encrypted here,
- * the transport below sees opaque bytes only.
- */
 public class DDSyncStore {
 
     private static final int SCHEMA_VERSION = 1;

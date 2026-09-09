@@ -28,9 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.crypto.SecretKey;
 
-/**
- * Keeps the working keys of the account. Written and erased as a whole.
- */
 public class DDKeyStore {
 
     private static final Log log = Log.getLog(DDKeyStore.class);

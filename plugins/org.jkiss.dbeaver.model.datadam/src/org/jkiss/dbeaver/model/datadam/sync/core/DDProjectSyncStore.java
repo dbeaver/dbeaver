@@ -28,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
+import org.jkiss.dbeaver.model.meta.ForTest;
 
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
@@ -39,14 +40,6 @@ import java.util.Map;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 
-/**
- * Encrypted view over DDProjectSyncTransport: name, description and file contents are opaque
- * to the server (AES-GCM, same key material as Configuration sync). File names travel in the
- * clear - they come from a fixed, code-controlled set, never from user input. The project's
- * configuration fingerprint is a single value covering the whole file set (DDFingerprintUtils,
- * computed by every client from plaintext content) - the server only compares it, never computes
- * it, so pushes are an all-or-nothing optimistic lock on the whole project, not per file.
- */
 public class DDProjectSyncStore {
 
     private static final String FIELD_NAME = "name";
@@ -197,7 +190,8 @@ public class DDProjectSyncStore {
      * can't be relabeled as belonging to another project or field.
      */
     @NotNull
-    private static byte[] aad(@NotNull String projectId, @NotNull String field) {
+    @ForTest
+    static byte[] aad(@NotNull String projectId, @NotNull String field) {
         return (projectId + '\u0000' + field).getBytes(StandardCharsets.UTF_8);
     }
 

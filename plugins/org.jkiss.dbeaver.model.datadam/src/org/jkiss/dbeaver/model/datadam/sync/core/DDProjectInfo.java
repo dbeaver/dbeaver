@@ -19,9 +19,6 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-/**
- * Decrypted view of a shared project - name/description are plaintext here, encrypted on the wire.
- */
 public record DDProjectInfo(
     @NotNull String projectId,
     @NotNull String name,
