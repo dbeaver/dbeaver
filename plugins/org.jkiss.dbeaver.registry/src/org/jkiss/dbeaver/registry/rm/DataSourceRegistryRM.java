@@ -161,7 +161,11 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     }
 
     public void updateDataSources(@NotNull List<? extends DBPDataSourceContainer> dataSources) throws DBException {
+        if (getProject().isInMemory() || dataSources.isEmpty()) {
+            return;
+        }
         persistDataSourceUpdates(dataSources);
+        checkForErrors();
     }
 
     @Override
