@@ -61,7 +61,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
     }
 
     public void removeHint() {
-        runInUIThread(this::executeRemove);
+        UIUtils.runInUIThread(this::executeRemove);
     }
 
     /**
@@ -71,7 +71,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
      * @param cursorPosition the position of the cursor in editor
      */
     public void showHint(@NotNull String content, int cursorPosition) {
-        runInUIThread(() -> {
+        UIUtils.runInUIThread(() -> {
             executeRemove(); // removes any currently displayed hint before showing the new one
             executeShow(content, cursorPosition);
         });
@@ -275,14 +275,6 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
             }
         } catch (BadLocationException e) {
             log.debug("Exception trying to insert AI suggestion", e);
-        }
-    }
-
-    private void runInUIThread(@NotNull Runnable runnable) {
-        if (UIUtils.isUIThread()) {
-            runnable.run();
-        } else {
-            UIUtils.asyncExec(runnable);
         }
     }
 
