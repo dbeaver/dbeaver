@@ -16,9 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.cdata;
 
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.runtime.ExperimentalBundles;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
-public class CDataAuthModel extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
-    public static final String ID = "cdata_native_url_builder";
+public class CDataLazyBundleActivator implements BundleActivator {
+    @Override
+    public void start(@NotNull BundleContext context) throws Exception {
+        ExperimentalBundles.initialize(context);
+    }
+
+    @Override
+    public void stop(@NotNull BundleContext context) {
+    }
 }

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverLoaderDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -514,6 +515,16 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
         return status != null && status.allowsDriverUsage();
     }
 
+    synchronized boolean reportExpiredLicense(@NotNull CDataLicenseStatus status) {
+        if (licenseStatus != null && licenseStatus.isExpired()) {
+            return false;
+        }
+        licenseStatus = status;
+        CDataDriverDescriptor driver = (CDataDriverDescriptor) getDriver();
+        driver.setCurrentLicense(new CDataDriverLicense(status, "", null));
+        return true;
+    }
+
     @NotNull
     private CDataDriverLicense inspectLicense(
         @NotNull DBRProgressMonitor monitor,
@@ -533,13 +544,19 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
     }
 
     @NotNull
-    private CDataDriverLicense updateInspectedLicense(
+    @ForTest
+    CDataDriverLicense updateInspectedLicense(
         @NotNull CDataResolvedDriver resolved,
         @NotNull CDataDriverLicense license
     ) throws DBException {
         try {
-            inspectedLicenseFingerprint = Files.isRegularFile(resolved.licensePath()) ?
+            String fingerprint = Files.isRegularFile(resolved.licensePath()) ?
                 getFileFingerprint(resolved.licensePath()) : null;
+            // the probe may not recognize a license rejected by the running driver
+            if (licenseStatus != null && licenseStatus.isExpired() && Objects.equals(fingerprint, inspectedLicenseFingerprint)) {
+                license = new CDataDriverLicense(licenseStatus, license.getLicenseId(), null);
+            }
+            inspectedLicenseFingerprint = fingerprint;
         } catch (IOException e) {
             throw new DBException("Unable to inspect the CData license file", e);
         }

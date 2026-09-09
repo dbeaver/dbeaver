@@ -19,8 +19,13 @@ package org.jkiss.dbeaver.ext.cdata.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.sql.SQLException;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +41,7 @@ final class CDataLicenseParser {
     private static final Pattern ACTIVE_WORD = Pattern.compile("\\bactive\\b");
     private static final Pattern VALID_WORD = Pattern.compile("\\bvalid\\b");
     private static final Pattern INVALID_WORD = Pattern.compile("\\binvalid\\b");
+    private static final Pattern EXPIRED_CODE = Pattern.compile("\\[code:\\s*j(?:\\s|\\])");
 
     private CDataLicenseParser() {
     }
@@ -92,6 +98,34 @@ final class CDataLicenseParser {
     static CDataLicenseStatus parseActivationFailure(@NotNull String output) {
         CDataLicenseStatus errorStatus = parseErrorStatus(output.toLowerCase(Locale.ENGLISH));
         return errorStatus == null ? CDataLicenseStatus.VALIDATION_UNAVAILABLE : errorStatus;
+    }
+
+    @Nullable
+    static CDataLicenseStatus parseExpiredLicenseError(@NotNull Throwable error) {
+        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        var errors = new ArrayDeque<Throwable>();
+        errors.add(error);
+        while (!errors.isEmpty()) {
+            Throwable current = errors.removeFirst();
+            if (!visited.add(current)) {
+                continue;
+            }
+            String message = current.getMessage();
+            if (message != null) {
+                String normalized = message.toLowerCase(Locale.ENGLISH);
+                if ((normalized.contains("license") && normalized.contains("expired")) ||
+                    EXPIRED_CODE.matcher(normalized).find()) {
+                    return normalized.contains("trial") ? CDataLicenseStatus.TRIAL_EXPIRED : CDataLicenseStatus.EXPIRED;
+                }
+            }
+            if (current.getCause() != null) {
+                errors.add(current.getCause());
+            }
+            if (current instanceof SQLException sqlException && sqlException.getNextException() != null) {
+                errors.add(sqlException.getNextException());
+            }
+        }
+        return null;
     }
 
     @Nullable

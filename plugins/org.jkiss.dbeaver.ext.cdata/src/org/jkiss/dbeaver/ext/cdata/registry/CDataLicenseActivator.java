@@ -68,6 +68,9 @@ public final class CDataLicenseActivator {
         @Nullable CDataResolvedDriver activationTarget,
         @NotNull CDataLicenseActivationRequest request
     ) throws DBException {
+        if (request.type() == CDataLicenseType.TRIAL && !driver.supportsTrialLicense()) {
+            throw new DBException("A purchased CData license key is required");
+        }
         if (!driver.beginLicenseActivationProcess()) {
             throw new DBException("CData license activation is already in progress");
         }

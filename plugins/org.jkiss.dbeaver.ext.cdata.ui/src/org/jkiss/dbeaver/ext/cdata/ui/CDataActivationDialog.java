@@ -58,18 +58,22 @@ final class CDataActivationDialog extends TitleAreaDialog {
     ) {
         super(parentShell);
         this.driver = driver;
-        this.fixedType = fixedType;
+        this.fixedType = driver.supportsTrialLicense() ? fixedType : CDataLicenseType.PURCHASED;
         this.activationTarget = activationTarget;
         this.initialName = initialName;
         this.initialEmail = initialEmail;
-        this.selectedType = fixedType == null ? CDataLicenseType.PURCHASED : fixedType;
+        this.selectedType = this.fixedType == null ? CDataLicenseType.PURCHASED : this.fixedType;
     }
 
     @NotNull
     @Override
     protected Control createDialogArea(@NotNull Composite parent) {
         setTitle(CDataUIMessages.activation_dialog_title);
-        setMessage(NLS.bind(CDataUIMessages.activation_dialog_message, driver.getName()));
+        setMessage(NLS.bind(
+            driver.getLicenseStatus().isExpired()
+                ? CDataUIMessages.activation_dialog_expired_message
+                : CDataUIMessages.activation_dialog_message,
+            driver.getName()));
 
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
@@ -96,7 +100,6 @@ final class CDataActivationDialog extends TitleAreaDialog {
             trialButton.setText(CDataUIMessages.activation_trial);
             purchasedButton = new Button(typeComposite, SWT.RADIO);
             purchasedButton.setText(CDataUIMessages.activation_purchased);
-            trialButton.setEnabled(!isPurchasedLicense(driver.getLicenseStatus()));
             purchasedButton.setSelection(true);
         }
 
@@ -257,12 +260,6 @@ final class CDataActivationDialog extends TitleAreaDialog {
             return CDataUIMessages.activation_invalid_email;
         }
         return null;
-    }
-
-    private static boolean isPurchasedLicense(@NotNull CDataLicenseStatus status) {
-        return status == CDataLicenseStatus.PURCHASED_ACTIVE ||
-            status == CDataLicenseStatus.PURCHASED_EXPIRING ||
-            status == CDataLicenseStatus.EXPIRED;
     }
 
     @NotNull

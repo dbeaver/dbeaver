@@ -194,12 +194,20 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
 
     @Override
     public boolean supportsTrialLicense() {
-        return true;
+        return getLicenseStatus().allowsTrialActivation();
+    }
+
+    public boolean reportLicenseError(@NotNull Throwable error) {
+        CDataLicenseStatus status = CDataLicenseParser.parseExpiredLicenseError(error);
+        return status != null && getCDataDriverLoader().reportExpiredLicense(status);
     }
 
     @NotNull
     @Override
     public DBPDriverLicense requestTrialLicense(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!supportsTrialLicense()) {
+            throw new DBException("A purchased CData license key is required");
+        }
         CDataLicenseUIService uiService = DBWorkbench.getService(CDataLicenseUIService.class);
         if (uiService == null) {
             throw new DBException("CData license activation UI is unavailable");

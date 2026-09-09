@@ -22,12 +22,8 @@ public record CDataDriverInfo(
     @NotNull String dataSource,
     @NotNull String artifactId,
     @NotNull String driverName,
-    @NotNull String driverSku,
-    @NotNull String versionChar,
     int versionYear,
-    @NotNull String orderSku,
     @NotNull CDataDriverTier tier,
-    int annualPriceUsd,
     @NotNull String purchaseUrl
 ) {
     static final String ARTIFACT_SUFFIX = "-jdbc";

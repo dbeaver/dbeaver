@@ -28,11 +28,11 @@ import java.util.Properties;
 
 public class CDataAuthModelTest extends DBeaverUnitTest {
     @Test
-    public void userCredentialsAreNotApplicable() {
+    public void userCredentialsAreApplicable() {
         CDataAuthModel authModel = new CDataAuthModel();
 
-        Assertions.assertFalse(authModel.isUserNameApplicable());
-        Assertions.assertFalse(authModel.isUserPasswordApplicable());
+        Assertions.assertTrue(authModel.isUserNameApplicable());
+        Assertions.assertTrue(authModel.isUserPasswordApplicable());
     }
 
     @Test
@@ -53,5 +53,37 @@ public class CDataAuthModelTest extends DBeaverUnitTest {
 
         Assertions.assertEquals("test-user", properties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_USER));
         Assertions.assertEquals("test-password", properties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD));
+    }
+
+    @Test
+    public void storeCredentialsSeparatelyFromUrl() {
+        CDataAuthModel authModel = new CDataAuthModel();
+        var credentials = authModel.createCredentials();
+        credentials.setUserName("test-user");
+        credentials.setUserPassword("test-password");
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        String url = "jdbc:postgresql:Server=localhost;Database=test;";
+        configuration.setUrl(url);
+
+        authModel.saveCredentials(Mockito.mock(DBPDataSourceContainer.class), configuration, credentials);
+
+        Assertions.assertEquals("test-user", configuration.getUserName());
+        Assertions.assertEquals("test-password", configuration.getUserPassword());
+        Assertions.assertEquals(url, configuration.getUrl());
+    }
+
+    @Test
+    public void excludePasswordFromUnsecuredProperties() {
+        CDataAuthModel authModel = new CDataAuthModel();
+        var credentials = authModel.createCredentials();
+        credentials.setUserName("test-user");
+        credentials.setUserPassword("test-password");
+        Properties properties = new Properties();
+
+        authModel.collectConnectionProperties(
+            Mockito.mock(DBPDataSourceContainer.class), credentials, new DBPConnectionConfiguration(), properties, false);
+
+        Assertions.assertEquals("test-user", properties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_USER));
+        Assertions.assertFalse(properties.containsKey(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD));
     }
 }

@@ -16,6 +16,7 @@
 package org.jkiss.dbeaver.ext.cdata.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -24,11 +25,13 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -105,6 +108,83 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
             CDataLicenseStatus.VALIDATION_UNAVAILABLE,
             CDataLicenseParser.parseActivationFailure("Unexpected vendor response")
         );
+    }
+
+    @Test
+    public void recognizeExpiredLicenseAtQueryTime() {
+        SQLException trialError = new SQLException("The trial license has expired [code: J nodeid: TEST].");
+        Assertions.assertEquals(CDataLicenseStatus.TRIAL_EXPIRED, CDataLicenseParser.parseExpiredLicenseError(trialError));
+        Assertions.assertEquals(CDataLicenseStatus.EXPIRED,
+            CDataLicenseParser.parseExpiredLicenseError(new SQLException("The purchased license has expired.")));
+        Assertions.assertEquals(CDataLicenseStatus.EXPIRED,
+            CDataLicenseParser.parseExpiredLicenseError(new SQLException("License error [code: J nodeid: TEST].")));
+
+        SQLException wrapper = new SQLException("Query failed");
+        wrapper.setNextException(trialError);
+        Assertions.assertEquals(CDataLicenseStatus.TRIAL_EXPIRED,
+            CDataLicenseParser.parseExpiredLicenseError(new DBException("Execution failed", wrapper)));
+    }
+
+    @Test
+    public void doNotTreatConnectionOrCredentialErrorsAsLicenseExpiration() {
+        for (String message : List.of("Access token expired", "Password has expired", "License server unavailable", "Invalid key")) {
+            Assertions.assertNull(CDataLicenseParser.parseExpiredLicenseError(new SQLException(message)));
+        }
+        SQLException first = new SQLException("Query failed");
+        SQLException second = new SQLException("Connection lost");
+        first.initCause(second);
+        second.initCause(first);
+        Assertions.assertNull(CDataLicenseParser.parseExpiredLicenseError(first));
+    }
+
+    @Test
+    public void requirePurchasedKeyAfterAnyLicenseExpires() throws DBException {
+        CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
+        Mockito.when(driver.supportsTrialLicense()).thenCallRealMethod();
+        Mockito.when(driver.requestTrialLicense(Mockito.any())).thenCallRealMethod();
+        CDataLicenseActivationRequest request = new CDataLicenseActivationRequest(
+            "Test User", "test@example.org", CDataLicenseType.TRIAL, null);
+
+        for (CDataLicenseStatus status : List.of(CDataLicenseStatus.TRIAL_EXPIRED, CDataLicenseStatus.EXPIRED)) {
+            Mockito.when(driver.getLicenseStatus()).thenReturn(status);
+            Assertions.assertFalse(driver.supportsTrialLicense());
+            Assertions.assertThrows(DBException.class, () -> driver.requestTrialLicense(new VoidProgressMonitor()));
+            Assertions.assertThrows(DBException.class,
+                () -> CDataLicenseActivator.activate(new VoidProgressMonitor(), driver, request));
+        }
+        Mockito.verify(driver, Mockito.never()).beginLicenseActivationProcess();
+    }
+
+    @Test
+    public void reportRuntimeExpirationOnlyOnce() {
+        CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
+        CDataDriverLoaderDescriptor loader = new CDataDriverLoaderDescriptor("default", driver);
+        Mockito.when(driver.getDefaultDriverLoader()).thenReturn(loader);
+        Mockito.when(driver.reportLicenseError(Mockito.any())).thenCallRealMethod();
+        SQLException error = new SQLException("The trial license has expired [code: J nodeid: TEST].");
+
+        Assertions.assertTrue(driver.reportLicenseError(error));
+        Assertions.assertFalse(driver.reportLicenseError(error));
+        Mockito.when(driver.getLicenseStatus()).thenCallRealMethod();
+        Assertions.assertEquals(CDataLicenseStatus.TRIAL_EXPIRED, driver.getLicenseStatus());
+    }
+
+    @Test
+    public void keepReportedExpirationUntilLicenseFileChanges() throws Exception {
+        CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
+        CDataDriverLoaderDescriptor loader = new CDataDriverLoaderDescriptor("default", driver);
+        Path licensePath = tempDirectory.resolve("cdata.jdbc.postgresql.lic");
+        Files.writeString(licensePath, "expired-license");
+        CDataResolvedDriver resolved = new CDataResolvedDriver(
+            tempDirectory.resolve("cdata.jdbc.postgresql.jar"), "cdata.jdbc.postgresql.PostgreSQLDriver", licensePath);
+        CDataDriverLicense unknown = new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, "", null);
+        loader.updateInspectedLicense(resolved, unknown);
+        loader.reportExpiredLicense(CDataLicenseStatus.TRIAL_EXPIRED);
+
+        Assertions.assertEquals(CDataLicenseStatus.TRIAL_EXPIRED, loader.updateInspectedLicense(resolved, unknown).getStatus());
+
+        Files.writeString(licensePath, "renewed-license");
+        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, loader.updateInspectedLicense(resolved, unknown).getStatus());
     }
 
     @Test

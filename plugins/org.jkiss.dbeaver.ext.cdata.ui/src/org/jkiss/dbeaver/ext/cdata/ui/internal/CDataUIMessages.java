@@ -23,6 +23,7 @@ public final class CDataUIMessages extends NLS {
 
     public static String activation_dialog_title;
     public static String activation_dialog_message;
+    public static String activation_dialog_expired_message;
     public static String activation_driver;
     public static String activation_name;
     public static String activation_email;

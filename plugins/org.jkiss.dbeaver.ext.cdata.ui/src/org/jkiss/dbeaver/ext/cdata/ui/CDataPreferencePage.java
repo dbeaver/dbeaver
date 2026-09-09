@@ -275,16 +275,16 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
     private void updateActionState() {
         if (addKeyButton != null && !addKeyButton.isDisposed()) {
             addKeyButton.setEnabled(
-                refreshButton != null && refreshButton.isEnabled() && getSelectedTrial() != null
+                refreshButton != null && refreshButton.isEnabled() && getSelectedLicenseForActivation() != null
             );
         }
     }
 
     @Nullable
-    private LicenseEntry getSelectedTrial() {
+    private LicenseEntry getSelectedLicenseForActivation() {
         Object selected = licenseViewer.getStructuredSelection().getFirstElement();
         if (selected instanceof LicenseEntry entry &&
-            entry.license().isTrialLicense() &&
+            (entry.license().isTrialLicense() || entry.license().getStatus().isExpired()) &&
             entry.activationTarget() != null
         ) {
             return entry;
@@ -293,7 +293,7 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
     }
 
     private void addLicenseKey() {
-        LicenseEntry entry = getSelectedTrial();
+        LicenseEntry entry = getSelectedLicenseForActivation();
         if (entry == null) {
             return;
         }

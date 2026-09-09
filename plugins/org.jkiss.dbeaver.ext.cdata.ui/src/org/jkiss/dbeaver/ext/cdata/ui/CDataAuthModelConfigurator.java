@@ -24,7 +24,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverDescriptor;
@@ -34,18 +33,16 @@ import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class CDataAuthModelConfigurator
-    implements IObjectPropertyConfigurator<DBAAuthModel<?>, DBPDataSourceContainer> {
+public class CDataAuthModelConfigurator extends DatabaseNativeAuthModelConfigurator {
 
     private Button runButton;
-    private DBPDataSourceContainer dataSource;
     private boolean builderRunning;
 
     @Override
@@ -54,8 +51,7 @@ public class CDataAuthModelConfigurator
         @NotNull DBAAuthModel<?> object,
         @NotNull Runnable propertyChangeListener
     ) {
-        Label description = UIUtils.createLabel(parent, CDataUIMessages.auth_native_url_builder_description);
-        description.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        super.createControl(parent, object, propertyChangeListener);
 
         runButton = UIUtils.createDialogButton(
             parent,
@@ -63,27 +59,14 @@ public class CDataAuthModelConfigurator
             SelectionListener.widgetSelectedAdapter(event -> runNativeUrlBuilder())
         );
         runButton.setEnabled(dataSource != null);
+        runButton.setToolTipText(CDataUIMessages.auth_native_url_builder_description);
         runButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 2, 1));
     }
 
     @Override
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
-        this.dataSource = dataSource;
+        super.loadSettings(dataSource);
         setRunButtonEnabled(!builderRunning);
-    }
-
-    @Override
-    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
-    }
-
-    @Override
-    public void resetSettings(@NotNull DBPDataSourceContainer dataSource) {
-        loadSettings(dataSource);
-    }
-
-    @Override
-    public boolean isComplete() {
-        return true;
     }
 
     private void runNativeUrlBuilder() {

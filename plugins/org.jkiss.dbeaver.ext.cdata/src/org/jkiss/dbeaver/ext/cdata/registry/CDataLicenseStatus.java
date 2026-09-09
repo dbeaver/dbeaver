@@ -38,6 +38,14 @@ public enum CDataLicenseStatus {
         return this == TRIAL_ACTIVE || this == TRIAL_EXPIRING || this == TRIAL_EXPIRED;
     }
 
+    public boolean isExpired() {
+        return this == TRIAL_EXPIRED || this == EXPIRED;
+    }
+
+    public boolean allowsTrialActivation() {
+        return !isExpired() && this != PURCHASED_ACTIVE && this != PURCHASED_EXPIRING;
+    }
+
     /**
      * The license state could not be determined: the validation probe did not run or CData
      * returned an answer we do not recognize. This is not a statement about the license itself.
