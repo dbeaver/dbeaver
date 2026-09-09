@@ -26,6 +26,14 @@ public interface AIEngineProperties {
 
     String getModel();
 
+    default void setModel(@NotNull String model) throws DBException {
+        throw new DBException("This AI engine does not support model selection");
+    }
+
+    default void selectModel(@NotNull AIModel model) throws DBException {
+        setModel(model.name());
+    }
+
     Integer getContextWindowSize();
 
     double getTemperature();
