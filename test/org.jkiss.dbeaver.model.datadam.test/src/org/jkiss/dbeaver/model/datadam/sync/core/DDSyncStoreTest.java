@@ -27,14 +27,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 class DDSyncStoreTest {
 
-    private static final String CONFIGURATION_ID = "cfg-1";
+    private static final UUID CONFIGURATION_UUID = UUID.randomUUID();
+    private static final String CONFIGURATION_ID = CONFIGURATION_UUID.toString();
 
     private DDSyncTransport transport;
     private DDSyncStore store;
@@ -72,9 +75,9 @@ class DDSyncStoreTest {
 
         com.dbeaver.datadam.share.api.model.DDConfigurationPart relabeledPart =
             new com.dbeaver.datadam.share.api.model.DDConfigurationPart(
-                "k2", DDConfigurationPartKind.PROJECT, "other-project", 1, encryptedValue);
+                "k2", DDConfigurationPartKind.PROJECT, UUID.randomUUID(), 1, encryptedValue);
         com.dbeaver.datadam.share.api.model.DDConfiguration wire = new com.dbeaver.datadam.share.api.model.DDConfiguration(
-            CONFIGURATION_ID, "test", 0, "2026-01-01T00:00:00Z", null, List.of(relabeledPart));
+            CONFIGURATION_UUID, "test", 0, LocalDateTime.now(), null, List.of(relabeledPart));
         Mockito.when(transport.getConfiguration(CONFIGURATION_ID)).thenReturn(wire);
 
         DBException exception = Assertions.assertThrows(
@@ -106,6 +109,6 @@ class DDSyncStoreTest {
         com.dbeaver.datadam.share.api.model.DDConfigurationPart part =
             new com.dbeaver.datadam.share.api.model.DDConfigurationPart("k1", kind, null, 1, encryptedValue);
         return new com.dbeaver.datadam.share.api.model.DDConfiguration(
-            CONFIGURATION_ID, "test", 0, "2026-01-01T00:00:00Z", null, List.of(part));
+            CONFIGURATION_UUID, "test", 0, LocalDateTime.now(), null, List.of(part));
     }
 }

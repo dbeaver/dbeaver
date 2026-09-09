@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 
 /**
@@ -67,7 +68,7 @@ public class DDSyncStore {
     public List<DDConfigurationSummary> listConfigurations() throws DBException {
         List<DDConfigurationSummary> configurations = new ArrayList<>();
         for (com.dbeaver.datadam.share.api.model.DDConfigurationSummary data : transport.listConfigurations()) {
-            configurations.add(new DDConfigurationSummary(data.configurationId(), data.name(), data.version()));
+            configurations.add(new DDConfigurationSummary(data.configurationId().toString(), data.name(), data.version()));
         }
         return configurations;
     }
@@ -85,7 +86,7 @@ public class DDSyncStore {
         List<DDCreateConfigurationPartRequest> requests = new ArrayList<>(parts.size());
         for (DDConfigurationPart part : parts) {
             requests.add(new DDCreateConfigurationPartRequest(
-                part.key(), part.kind(), part.projectId(), encrypt(part)));
+                part.key(), part.kind(), parseProjectId(part.projectId()), encrypt(part)));
         }
         return decode(transport.createConfiguration(new DDCreateConfigurationRequest(name, requests)));
     }
@@ -123,7 +124,7 @@ public class DDSyncStore {
         for (com.dbeaver.datadam.share.api.model.DDConfigurationPart part : data.parts()) {
             parts.add(decode(part));
         }
-        return new DDConfiguration(data.configurationId(), data.name(), data.version(), parts);
+        return new DDConfiguration(data.configurationId().toString(), data.name(), data.version(), parts);
     }
 
     @NotNull
@@ -132,10 +133,11 @@ public class DDSyncStore {
     ) throws DBException {
         try {
             DDConfigurationPartKind kind = Objects.requireNonNull(part.kind());
+            String projectId = part.projectId() == null ? null : part.projectId().toString();
             byte[] encrypted = Base64.getDecoder().decode(part.encryptedValue());
             DDPartEnvelope envelope = JSONUtils.GSON.fromJson(
                 new String(
-                    DDCrypto.decrypt(getDataKey(), encrypted, partAad(part.key(), kind, part.projectId())),
+                    DDCrypto.decrypt(getDataKey(), encrypted, partAad(part.key(), kind, projectId)),
                     StandardCharsets.UTF_8),
                 DDPartEnvelope.class);
             if (envelope == null || envelope.schemaVersion() != SCHEMA_VERSION) {
@@ -144,7 +146,7 @@ public class DDSyncStore {
             return new DDConfigurationPart(
                 part.key(),
                 kind,
-                part.projectId(),
+                projectId,
                 part.version(),
                 envelope.name(),
                 decodeUnits(envelope.units()));
@@ -157,6 +159,11 @@ public class DDSyncStore {
     private String encrypt(@NotNull DDConfigurationPart part) throws DBException {
         return Base64.getEncoder().encodeToString(DDCrypto.encrypt(
             getDataKey(), serialize(part), partAad(part.key(), part.kind(), part.projectId())));
+    }
+
+    @Nullable
+    private static UUID parseProjectId(@Nullable String projectId) {
+        return projectId == null ? null : UUID.fromString(projectId);
     }
 
     @NotNull
