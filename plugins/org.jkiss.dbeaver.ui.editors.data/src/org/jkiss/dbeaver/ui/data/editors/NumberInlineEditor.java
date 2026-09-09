@@ -40,7 +40,8 @@ import java.util.Locale;
 public class NumberInlineEditor extends BaseValueEditor<Text> {
 
     private static final Log log = Log.getLog(NumberInlineEditor.class);
-    // PG numeric can be ~147k digits. 100 truncated the value on Windows.
+    // PostgreSQL numeric allows up to 131,072 digits before and 16,383 digits after the decimal point.
+    // Default limit accommodates this range plus extra editing buffer (sign, decimal separator, exponent).
     private static final int NUMBER_EXTRA_CHARS = 16;
     private static final int MAX_NUMBER_LENGTH = 131072 + 16383 + NUMBER_EXTRA_CHARS;
 
@@ -84,14 +85,12 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         int limit = MAX_NUMBER_LENGTH;
         Integer precision = valueController.getValueType().getPrecision();
         if (precision != null && precision > 0) {
-            limit = Math.max(limit, precision + NUMBER_EXTRA_CHARS);
+            limit = Math.max(limit, addExtraChars(precision));
         }
         Object value = valueController.getValue();
         if (value != null) {
             int valueLength = String.valueOf(value).length();
-            if (valueLength > limit) {
-                limit = valueLength;
-            }
+            limit = Math.max(limit, addExtraChars(valueLength));
         }
         return limit;
     }
@@ -101,8 +100,9 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
     {
         if (value != null) {
             String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
-            if (strValue.length() > control.getTextLimit()) {
-                control.setTextLimit(strValue.length());
+            int requiredLimit = addExtraChars(strValue.length());
+            if (requiredLimit > control.getTextLimit()) {
+                control.setTextLimit(requiredLimit);
             }
             control.setText(strValue);
         } else {
@@ -111,6 +111,13 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         if (valueController.getEditType() == IValueController.EditType.INLINE) {
             control.selectAll();
         }
+    }
+
+    private static int addExtraChars(int length) {
+        if (length > Integer.MAX_VALUE - NUMBER_EXTRA_CHARS) {
+            return Integer.MAX_VALUE;
+        }
+        return length + NUMBER_EXTRA_CHARS;
     }
 
     @Nullable
