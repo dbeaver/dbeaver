@@ -64,8 +64,7 @@ import java.nio.file.Files;
 /**
  * ContentEditorInput
  */
-public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInput, DBPContextProvider, IEncodingSupport
-{
+public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInput, DBPContextProvider, IEncodingSupport {
     private static final Log log = Log.getLog(ContentEditorInput.class);
 
     private IValueController valueController;
@@ -81,23 +80,24 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         @NotNull IValueController valueController,
         @Nullable IEditorPart[] editorParts,
         @Nullable IEditorPart defaultPart,
-        @NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        @NotNull DBRProgressMonitor monitor
+    )
+    throws DBException {
         this.valueController = valueController;
         this.editorParts = editorParts;
         this.defaultPart = defaultPart;
         this.fileCharset = getDefaultEncoding();
         this.prepareContent(monitor);
     }
+
     public ContentEditorInput(
         @NotNull IValueController valueController,
         @Nullable IEditorPart[] editorParts,
         @Nullable IEditorPart defaultPart,
         @Nullable String charset,
-        @NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        @NotNull DBRProgressMonitor monitor
+    )
+    throws DBException {
         this.valueController = valueController;
         this.editorParts = editorParts;
         this.defaultPart = defaultPart;
@@ -105,31 +105,26 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         this.prepareContent(monitor);
     }
 
-    public IValueController getValueController()
-    {
+    public IValueController getValueController() {
         return valueController;
     }
 
-    public void refreshContent(DBRProgressMonitor monitor, IValueController valueController) throws DBException
-    {
+    public void refreshContent(DBRProgressMonitor monitor, IValueController valueController) throws DBException {
         this.valueController = valueController;
         this.prepareContent(monitor);
     }
 
-    public void refreshContent(DBRProgressMonitor monitor, IValueController valueController, @Nullable String charset) throws DBException
-    {
+    public void refreshContent(DBRProgressMonitor monitor, IValueController valueController, @Nullable String charset) throws DBException {
         this.valueController = valueController;
         this.fileCharset = CommonUtils.isEmpty(charset) ? getDefaultEncoding() : charset;
         this.prepareContent(monitor);
     }
 
-    public boolean isInMemory()
-    {
+    public boolean isInMemory() {
         return stringStorage != null;
     }
 
-    IEditorPart[] getEditors()
-    {
+    IEditorPart[] getEditors() {
         return editorParts;
     }
 
@@ -138,20 +133,17 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     }
 
     @Override
-    public boolean exists()
-    {
+    public boolean exists() {
         return false;
     }
 
     @Override
-    public ImageDescriptor getImageDescriptor()
-    {
+    public ImageDescriptor getImageDescriptor() {
         return DBeaverIcons.getImageDescriptor(DBIcon.TYPE_LOB);
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         String inputName;
         if (valueController instanceof IAttributeController) {
             inputName = ((IAttributeController) valueController).getColumnId();
@@ -166,21 +158,18 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
 
     @Nullable
     @Override
-    public IPersistableElement getPersistable()
-    {
+    public IPersistableElement getPersistable() {
         return null;
     }
 
     @Override
-    public String getToolTipText()
-    {
+    public String getToolTipText() {
         return getName();
     }
 
     @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter)
-    {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == IStorage.class) {
             if (stringStorage != null) {
                 return adapter.cast(stringStorage);
@@ -204,9 +193,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
             return 0;
         }
     }
-    private void prepareContent(DBRProgressMonitor monitor)
-        throws DBException
-    {
+
+    private void prepareContent(DBRProgressMonitor monitor) throws DBException {
         final Object[] value = new Object[1];
         UIUtils.syncExec(() -> value[0] = getValue());
         DBDContent content;
@@ -230,7 +218,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                 release();
             }
             // User content's storage directly
-            contentFile = ((DBDContentStorageLocal)storage).getDataFile().toFile();
+            contentFile = ((DBDContentStorageLocal) storage).getDataFile().toFile();
             contentDetached = true;
         } else {
             // Copy content to local file
@@ -251,8 +239,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
 
                 // Write value to file
                 copyContentToFile(content, monitor);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 // Delete temp file
                 if (contentFile != null && contentFile.exists()) {
                     if (!contentFile.delete()) {
@@ -269,15 +256,13 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         }
     }
 
-    private void markReadOnly(boolean readOnly) throws DBException
-    {
+    private void markReadOnly(boolean readOnly) throws DBException {
         if (!contentFile.setWritable(!readOnly)) {
             throw new DBException("Can't set content read-only");
         }
     }
 
-    public void release()
-    {
+    public void release() {
         if (contentFile != null && !contentDetached) {
             if (!contentFile.delete()) {
                 log.warn("Can't delete temp file '" + contentFile.getAbsolutePath() + "'");
@@ -289,8 +274,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
 
     @Nullable
     @Override
-    public IPath getPath()
-    {
+    public IPath getPath() {
         return contentFile == null ?
             new Path("fake_path") : // To avoid NPE from the Eclipse
             new Path(contentFile.getAbsolutePath());
@@ -300,18 +284,19 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         return valueController.isReadOnly();
     }
 
-    void saveToExternalFile(java.nio.file.Path file, IProgressMonitor monitor) throws CoreException {
+    void saveToExternalFile(@NotNull java.nio.file.Path file, @NotNull IProgressMonitor monitor) throws CoreException {
         try (InputStream is = openContents()) {
             ContentUtils.saveContentToFile(
                 is,
                 file,
-                RuntimeUtils.makeMonitor(monitor));
-        }
-        catch (Exception e) {
+                RuntimeUtils.makeMonitor(monitor)
+            );
+        } catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
 
+    @NotNull
     private InputStream openContents() throws Exception {
         return stringStorage == null ? new FileInputStream(contentFile) : stringStorage.getContents();
     }
@@ -325,13 +310,13 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
             if (value instanceof DBDContent content) {
                 content.updateContents(
                     new DefaultProgressMonitor(monitor),
-                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile));
+                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile)
+                );
             } else {
                 updateStringValueFromFile(extFile);
             }
             refreshContentParts(extFile);
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
@@ -356,9 +341,10 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         }
     }
 
-    private void copyContentToFile(DBDContent contents, DBRProgressMonitor monitor)
-        throws DBException, IOException
-    {
+    private void copyContentToFile(
+        @NotNull DBDContent contents,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException, IOException {
         DBDContentStorage storage = contents.getContents(monitor);
 
         markReadOnly(false);
@@ -380,9 +366,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         markReadOnly(valueController.isReadOnly());
     }
 
-    public void updateContentFromFile(DBRProgressMonitor monitor, Object value)
-        throws DBException
-    {
+    public void updateContentFromFile(@NotNull DBRProgressMonitor monitor, Object value) throws DBException {
         if (valueController.isReadOnly()) {
             throw new DBCException("Can't update read-only value");
         }
@@ -438,7 +422,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         return DBValueFormatting.getDefaultBinaryFileEncoding(valueController.getExecutionContext().getDataSource());
     }
 
-    public void setEncoding(String fileCharset) {
+    public void setEncoding(@NotNull String fileCharset) {
         this.fileCharset = fileCharset;
         for (IEditorPart part : editorParts) {
             try {
