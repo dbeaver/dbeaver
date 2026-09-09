@@ -64,6 +64,12 @@ import java.util.regex.Pattern;
 public class GeneralUtils {
     private static final Log log = Log.getLog(GeneralUtils.class);
 
+    private static final String PRODUCT_MARKER_FILE = ".eclipseproduct";
+    private static final String PRODUCT_ID_PROPERTY = "id";
+    private static final String PRODUCT_VERSION_PROPERTY = "version";
+    private static final String[] PRODUCT_ID_PREFIXES = {"org.jkiss.dbeaver.", "com.dbeaver.", "org.dbvr."};
+    private static final Pattern PUBLIC_VERSION_PATTERN = Pattern.compile("\\d+(?:\\.\\d+){2,3}");
+
     public static final Pattern URI_SCHEMA_PATTERN = Pattern.compile("([a-zA-Z0-9-_]+:).+");
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
@@ -337,8 +343,51 @@ public class GeneralUtils {
 
     @NotNull
     public static String getPlainVersion() {
+        return ProductVersionHolder.PLAIN_VERSION;
+    }
+
+    @NotNull
+    static String readProductVersion(@NotNull Path productMarker, @NotNull String fallback) {
+        try (InputStream input = Files.newInputStream(productMarker)) {
+            Properties properties = new Properties();
+            properties.load(input);
+            String productId = properties.getProperty(PRODUCT_ID_PROPERTY);
+            String version = properties.getProperty(PRODUCT_VERSION_PROPERTY);
+            if (isDBeaverProduct(productId) && version != null && PUBLIC_VERSION_PATTERN.matcher(version.trim()).matches()) {
+                return version.trim();
+            }
+        } catch (IOException | IllegalArgumentException e) {
+            // The marker is only available in installed products.
+        }
+        return fallback;
+    }
+
+    private static String loadProductVersion() {
         Version version = getProductVersion();
-        return version.getMajor() + "." + version.getMinor() + "." + version.getMicro();
+        String fallback = version.getMajor() + "." + version.getMinor() + "." + version.getMicro();
+        try {
+            Path installPath = RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL());
+            return readProductVersion(installPath.resolve(PRODUCT_MARKER_FILE), fallback);
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private static boolean isDBeaverProduct(@Nullable String productId) {
+        if (productId == null) {
+            return false;
+        }
+        String id = productId.trim();
+        for (String prefix : PRODUCT_ID_PREFIXES) {
+            if (id.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static class ProductVersionHolder {
+        private static final String PLAIN_VERSION = loadProductVersion();
     }
 
     @NotNull

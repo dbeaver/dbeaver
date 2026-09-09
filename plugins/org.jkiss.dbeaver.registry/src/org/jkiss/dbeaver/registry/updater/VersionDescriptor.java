@@ -70,6 +70,10 @@ public class VersionDescriptor {
         return programVersion.getMajor() + "." + programVersion.getMinor() + "." + programVersion.getMicro();
     }
 
+    public String getReleaseVersion() {
+        return programVersion.toString();
+    }
+
     public String getUpdateTime() {
         return updateTime;
     }
