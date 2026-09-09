@@ -39,7 +39,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -136,72 +137,37 @@ public class DriverUtils {
         @NotNull ZipEntry zipEntry,
         @NotNull List<Path> jarFiles
     ) throws IOException {
+        if (zipEntry.getName().contains("..")) {
+            throw new IOException("Invalid zip entry: " + zipEntry.getName());
+        }
         String sourceName = sourceFile.getFileName().toString();
         if (sourceName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
             sourceName = sourceName.substring(0, sourceName.length() - 4);
         }
-        Path customDriversHome = DriverDescriptor.getCustomDriversHome().toAbsolutePath().normalize();
-        Path cacheRoot = customDriversHome.resolve(ZIP_EXTRACT_DIR);
-        Files.createDirectories(customDriversHome);
-        createDirectoriesWithoutSymlinks(customDriversHome, cacheRoot);
-        Path cacheRootRealPath = cacheRoot.toRealPath();
-        Path localCacheDir = cacheRoot.resolve(sourceName).normalize();
-        if (!localCacheDir.startsWith(cacheRoot)) {
-            throw new IOException("Zip cache directory is outside of the target directory");
+        Path localCacheDir = DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR).resolve(sourceName);
+        if (!Files.exists(localCacheDir)) {
+            try {
+                Files.createDirectories(localCacheDir);
+            } catch (IOException e) {
+                throw new IOException("Can't create local cache folder '" + localCacheDir.toAbsolutePath() + "'", e);
+            }
         }
-        try {
-            createDirectoriesWithoutSymlinks(cacheRoot, localCacheDir);
-        } catch (IOException e) {
-            throw new IOException("Can't create local cache folder '" + localCacheDir.toAbsolutePath() + "'", e);
-        }
-        if (!localCacheDir.toRealPath().startsWith(cacheRootRealPath)) {
-            throw new IOException("Zip cache directory is outside of the target directory");
-        }
-        Path localFile = localCacheDir.resolve(zipEntry.getName()).normalize();
-        if (!localFile.startsWith(localCacheDir)) {
-            throw new IOException("Zip entry is outside of the target directory");
-        }
-        Path localDir = localFile.getParent();
-        try {
-            createDirectoriesWithoutSymlinks(localCacheDir, localDir);
-        } catch (IOException e) {
-            throw new IOException("Can't create local file directory in the cache '" + localDir.toAbsolutePath() + "'", e);
-        }
-        if (!localDir.toRealPath().startsWith(localCacheDir.toRealPath())) {
-            throw new IOException("Zip entry is outside of the target directory");
-        }
-        if (Files.isSymbolicLink(localFile)) {
-            throw new IOException("Zip entry points to a symbolic link");
-        }
+        Path localFile = localCacheDir.resolve(zipEntry.getName());
+        jarFiles.add(localFile);
         if (Files.exists(localFile)) {
             // Already extracted
-            jarFiles.add(localFile);
             return;
         }
-        try (OutputStream os = Files.newOutputStream(localFile, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
-            copyZipStream(zipStream, os);
+        Path localDir = localFile.getParent();
+        if (!Files.exists(localDir)) { // in case of localFile located in subdirectory inside zip archive
+            try {
+                Files.createDirectories(localDir);
+            } catch (IOException e) {
+                throw new IOException("Can't create local file directory in the cache '" + localDir.toAbsolutePath() + "'", e);
+            }
         }
-        jarFiles.add(localFile);
-    }
-
-    private static void createDirectoriesWithoutSymlinks(@NotNull Path root, @NotNull Path directory) throws IOException {
-        Path rootRealPath = root.toRealPath();
-        Path current = root;
-        for (Path segment : root.relativize(directory)) {
-            current = current.resolve(segment);
-            if (!Files.exists(current, LinkOption.NOFOLLOW_LINKS)) {
-                try {
-                    Files.createDirectory(current);
-                } catch (FileAlreadyExistsException e) {
-                    // Validate the entry created concurrently below.
-                }
-            }
-            if (Files.isSymbolicLink(current) || !Files.isDirectory(current, LinkOption.NOFOLLOW_LINKS)) {
-                throw new IOException("Cache directory contains an invalid path component: " + current);
-            }
-            if (!current.toRealPath().startsWith(rootRealPath)) {
-                throw new IOException("Cache directory is outside of the target directory: " + current);
-            }
+        try (OutputStream os = Files.newOutputStream(localFile)) {
+            copyZipStream(zipStream, os);
         }
     }
 
