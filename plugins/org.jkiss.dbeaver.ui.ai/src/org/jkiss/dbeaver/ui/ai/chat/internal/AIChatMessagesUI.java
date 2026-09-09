@@ -70,6 +70,7 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_model_label;
     public static String ai_chat_profile_not_configured;
     public static String ai_chat_model_not_configured;
+    public static String ai_chat_model_unavailable;
     public static String ai_chat_model_loading;
     public static String ai_chat_model_change_error;
 

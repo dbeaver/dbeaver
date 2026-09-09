@@ -157,14 +157,19 @@ class ProfileModelComposite extends Composite {
         profileText = profile == null ? AIChatMessagesUI.ai_chat_profile_not_configured : profile.getProfileName();
         String profileTip = AIChatMessagesUI.ai_chat_profile_label + ": " + profileText;
         modelText = AIChatMessagesUI.ai_chat_model_not_configured;
+        boolean modelSelectionSupported = false;
         profileItem.setImage(DBeaverIcons.getImage(AIIcons.AI));
         if (profile != null) {
             try {
                 profileItem.setImage(DBeaverIcons.getImage(profile.getEngineDescriptor().getIcon()));
                 profileTip += "\n" + profile.getEngineDescriptor().getLabel();
-                String model = profile.getConfiguration().getModel();
+                AIEngineProperties configuration = profile.getConfiguration();
+                modelSelectionSupported = configuration.isModelSelectionSupported();
+                String model = configuration.getModelDisplayName();
                 if (!CommonUtils.isEmpty(model)) {
                     modelText = model;
+                } else if (!modelSelectionSupported) {
+                    modelText = AIChatMessagesUI.ai_chat_model_unavailable;
                 }
             } catch (DBException e) {
                 log.debug("Error reading AI profile", e);
@@ -173,7 +178,7 @@ class ProfileModelComposite extends Composite {
         profileItem.setToolTipText(profileTip);
         modelItem.setToolTipText(AIChatMessagesUI.ai_chat_model_label + ": " + modelText);
         profileItem.setEnabled(!chat.isBusy());
-        modelItem.setEnabled(profile != null && !chat.isBusy() && modelLoadJob == null && canConfigure());
+        modelItem.setEnabled(modelSelectionSupported && !chat.isBusy() && modelLoadJob == null && canConfigure());
         if (modelLoadJob != null) {
             modelText = AIChatMessagesUI.ai_chat_model_loading;
         }
@@ -234,6 +239,14 @@ class ProfileModelComposite extends Composite {
         if (profile == null || chat.isBusy() || modelLoadJob != null || !canConfigure()) {
             return;
         }
+        try {
+            if (!profile.getConfiguration().isModelSelectionSupported()) {
+                return;
+            }
+        } catch (DBException e) {
+            log.debug("Error reading AI profile", e);
+            return;
+        }
         ProfileKey key = new ProfileKey(profile.getProfileId(), profile.getEngineId());
         List<AIModel> cachedModels = modelsByProfile.get(key);
         if (!forceRefresh && cachedModels != null) {
@@ -291,6 +304,9 @@ class ProfileModelComposite extends Composite {
         Menu modelMenu = createMenu(modelBar);
         try {
             AIEngineProperties properties = profile.getConfiguration();
+            if (!properties.isModelSelectionSupported()) {
+                return;
+            }
             String selected = properties.getModel();
             Map<String, AIModel> availableModels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             models.stream()
@@ -309,7 +325,7 @@ class ProfileModelComposite extends Composite {
                     if (item.getSelection() && !chat.isBusy() && profile == getProfile() && canConfigure()) {
                         try {
                             AIEngineProperties configuration = profile.getConfiguration();
-                            if (!name.equals(configuration.getModel())) {
+                            if (configuration.isModelSelectionSupported() && !name.equals(configuration.getModel())) {
                                 configuration.selectModel(model);
                                 AISettingsManager.getInstance().saveSettings();
                             }

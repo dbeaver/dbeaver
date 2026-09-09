@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 
@@ -25,6 +26,15 @@ public interface AIEngineProperties {
     int DEFAULT_TIMEOUT = 30;
 
     String getModel();
+
+    @Nullable
+    default String getModelDisplayName() {
+        return getModel();
+    }
+
+    default boolean isModelSelectionSupported() {
+        return true;
+    }
 
     default void setModel(@NotNull String model) throws DBException {
         throw new DBException("This AI engine does not support model selection");
