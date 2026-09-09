@@ -438,6 +438,9 @@ public abstract class PostgreTable extends PostgreTableReal
                 String sql = "SELECT i.*,c.relnamespace,c.relname " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
                     "WHERE i.inhparent=? AND c.oid=i.inhrelid";
+//                if (getDataSource().isServerVersionAtLeast(10, 0)) {
+//                    sql += " AND c.relispartition=false";
+//                }
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
