@@ -125,6 +125,13 @@ public class ClickhouseJWTProvider {
     }
 
     /**
+     * Returns whether this provider can authenticate without another interactive sign in.
+     */
+    public synchronized boolean isSignedIn() {
+        return isIdPAccessTokenValid() || hasRefreshToken();
+    }
+
+    /**
      * Returns a valid JWT, performing an interactive login or a silent refresh when needed.
      */
     @NotNull
