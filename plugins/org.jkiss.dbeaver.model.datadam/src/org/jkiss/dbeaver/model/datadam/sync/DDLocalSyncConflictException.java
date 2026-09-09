@@ -14,35 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sync;
+package org.jkiss.dbeaver.model.datadam.sync;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
-import java.util.Map;
+import java.util.List;
 
-/**
- * Configuration component which can be synchronized.
- */
-public interface DBPSyncUnit {
+public class DDLocalSyncConflictException extends DBException {
 
-    @NotNull
-    String getId();
+    private final List<String> conflictingParts;
 
-    @NotNull
-    default String getName() {
-        return getId();
+    public DDLocalSyncConflictException(@NotNull List<String> conflictingParts) {
+        super("Conflicting local changes: " + String.join(", ", conflictingParts));
+        this.conflictingParts = conflictingParts;
     }
 
     @NotNull
-    DBPSyncScope getScope();
-
-    default boolean isEnabledByDefault() {
-        return true;
+    public List<String> conflictingParts() {
+        return conflictingParts;
     }
-
-    @NotNull
-    Map<String, byte[]> read(@NotNull DBPSyncTarget target) throws DBException;
-
-    void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException;
 }
