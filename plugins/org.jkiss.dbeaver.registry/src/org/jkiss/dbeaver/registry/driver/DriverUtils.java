@@ -118,7 +118,7 @@ public class DriverUtils {
                     }
                 });
             } catch (Exception e) {
-                // No a zip
+                // Not a zip or corrupted zip. Just skip it
                 log.debug("Error processing zip archive '" + inputFile.getFileName() + "': " + e.getMessage());
             }
         }
