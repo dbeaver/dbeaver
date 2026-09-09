@@ -170,7 +170,7 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
     }
 
     @NotNull
-    public static CompletableFuture<String> readProcessStream(
+    private static CompletableFuture<String> readProcessStream(
         @NotNull InputStream inputStream,
         @NotNull ExecutorService executor
     ) {
@@ -188,7 +188,7 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
     }
 
     @NotNull
-    public static String awaitProcessStream(
+    private static String awaitProcessStream(
         @NotNull CompletableFuture<String> streamFuture,
         @NotNull String streamName
     ) throws DBException {

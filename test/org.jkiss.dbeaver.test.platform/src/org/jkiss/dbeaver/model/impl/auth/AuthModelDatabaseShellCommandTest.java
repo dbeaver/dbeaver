@@ -31,8 +31,11 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,8 +84,8 @@ public class AuthModelDatabaseShellCommandTest extends DBeaverUnitTest {
             }
         };
         try {
-            Assertions.assertEquals("password", AuthModelDatabaseShellCommand.awaitProcessStream(
-                AuthModelDatabaseShellCommand.readProcessStream(input, executor), "output"));
+            Assertions.assertEquals("password", awaitProcessStream(
+                readProcessStream(input, executor), "output"));
             Assertions.assertFalse(closed.get());
         } finally {
             executor.shutdownNow();
@@ -100,8 +103,7 @@ public class AuthModelDatabaseShellCommandTest extends DBeaverUnitTest {
         };
         try {
             DBException exception = Assertions.assertThrows(DBException.class, () ->
-                AuthModelDatabaseShellCommand.awaitProcessStream(
-                    AuthModelDatabaseShellCommand.readProcessStream(input, executor), "output"));
+                awaitProcessStream(readProcessStream(input, executor), "output"));
 
             Assertions.assertEquals("Failed to read password command output", exception.getMessage());
             Assertions.assertInstanceOf(IOException.class, exception.getCause());
@@ -115,5 +117,32 @@ public class AuthModelDatabaseShellCommandTest extends DBeaverUnitTest {
             return "powershell.exe -NoProfile -Command \"[Console]::Write('A' * " + LARGE_OUTPUT_LENGTH + ")\"";
         }
         return "/usr/bin/printf '%s' '" + "A".repeat(LARGE_OUTPUT_LENGTH) + "'";
+    }
+
+    @SuppressWarnings("unchecked")
+    private static CompletableFuture<String> readProcessStream(InputStream inputStream, ExecutorService executor)
+        throws ReflectiveOperationException {
+        Method method = AuthModelDatabaseShellCommand.class.getDeclaredMethod(
+            "readProcessStream", InputStream.class, ExecutorService.class);
+        method.setAccessible(true);
+        return (CompletableFuture<String>) method.invoke(null, inputStream, executor);
+    }
+
+    private static String awaitProcessStream(CompletableFuture<String> streamFuture, String streamName) throws Exception {
+        Method method = AuthModelDatabaseShellCommand.class.getDeclaredMethod(
+            "awaitProcessStream", CompletableFuture.class, String.class);
+        method.setAccessible(true);
+        try {
+            return (String) method.invoke(null, streamFuture, streamName);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof Exception exception) {
+                throw exception;
+            }
+            if (cause instanceof Error error) {
+                throw error;
+            }
+            throw e;
+        }
     }
 }
