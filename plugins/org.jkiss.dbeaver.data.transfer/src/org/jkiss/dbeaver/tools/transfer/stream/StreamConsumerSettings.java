@@ -113,6 +113,7 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
 
     public static final String PROP_EXTRACT_IMAGES = "extractImages";
     public static final String PROP_FILE_EXTENSION = "extension";
+    public static final String PROP_LOB_ENCODING = "lobEncoding";
 
     private static final String SETTING_VALUE_FORMAT = "valueFormat"; //$NON-NLS-1$
     private static final String DATA_FILE_CONFLICT_BEHAVIOR = "dataFileConflictBehavior"; //$NON-NLS-1$
@@ -314,7 +315,7 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
         @NotNull Map<String, Object> settings
     ) {
         lobExtractType = CommonUtils.valueOf(LobExtractType.class, CommonUtils.toString(settings.get("lobExtractType")), LobExtractType.INLINE);
-        lobEncoding = CommonUtils.valueOf(LobEncoding.class, CommonUtils.toString(settings.get("lobEncoding")), LobEncoding.BINARY);
+        lobEncoding = CommonUtils.valueOf(LobEncoding.class, CommonUtils.toString(settings.get(PROP_LOB_ENCODING)), LobEncoding.BINARY);
 
         outputFolder = CommonUtils.toString(settings.get("outputFolder"), outputFolder);
         outputFilePattern = CommonUtils.toString(settings.get("outputFilePattern"), outputFilePattern);
@@ -408,7 +409,7 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
     @Override
     public void saveSettings(@NotNull Map<String, Object> settings) {
         settings.put("lobExtractType", lobExtractType.name());
-        settings.put("lobEncoding", lobEncoding.name());
+        settings.put(PROP_LOB_ENCODING, lobEncoding.name());
         // settings.put("appendToFile", appendToFileEnd);
         settings.put(DATA_FILE_CONFLICT_BEHAVIOR, dataFileConflictBehavior.name());
         settings.put(BLOB_FILE_CONFLICT_BEHAVIOR, blobFileConflictBehavior.name());

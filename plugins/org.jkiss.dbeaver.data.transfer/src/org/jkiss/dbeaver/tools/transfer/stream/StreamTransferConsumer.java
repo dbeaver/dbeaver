@@ -596,7 +596,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         this.parameters = parameters;
         this.processor = processor;
         this.settings = settings;
-        this.processorProperties = processorProperties;
+        this.processorProperties = processorProperties == null ? new HashMap<>() : new HashMap<>(processorProperties);
+        // Expose the selected binary encoding to exporters without modifying the shared processor properties.
+        this.processorProperties.put(StreamConsumerSettings.PROP_LOB_ENCODING, settings.getLobEncoding().name());
         this.project = project;
         
         if (runtimeParameters == null) {
@@ -1067,18 +1069,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
             } else {
                 exportSite.flush();
-                writeBinaryData(cs, writer);
+                StreamTransferUtils.writeBinaryData(cs, settings.getLobEncoding(), dataContainer.getDataSource(), writer);
             }
-        }
-
-        @Override
-        public void writeBinaryData(@NotNull DBDContentStorage cs, @NotNull Writer writer) throws IOException {
-            StreamTransferUtils.writeBinaryData(
-                cs,
-                settings.getLobEncoding(),
-                dataContainer.getDataSource(),
-                writer
-            );
         }
 
         @NotNull
