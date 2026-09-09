@@ -90,7 +90,9 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     @Override
     public OBJECT getCachedObject(@Nullable String name) {
         synchronized (cacheSync) {
-            return objectList == null || name == null ? null : getObjectMap().get(caseSensitive ? name : name.toUpperCase());
+            return objectList == null || name == null
+                ? null
+                : getObjectMap().get(caseSensitive ? name : name.toUpperCase(Locale.ENGLISH));
         }
     }
 
@@ -304,7 +306,12 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
             return null;
         }
         if (!caseSensitive) {
-            return name.toUpperCase();
+            // Use an explicit locale (matches renameObject above) so the case-folded
+            // map key is stable. With the JVM default locale, a Turkish/Azeri JVM
+            // folds "items" to "İTEMS" while a later getCachedObject("ITEMS") folds
+            // to "ITEMS" - the keys do not match and the cache misses every table,
+            // column or schema whose name contains i/I.
+            return name.toUpperCase(Locale.ENGLISH);
         }
         return name;
     }
