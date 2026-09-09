@@ -96,22 +96,25 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
     }
 
     @Nullable
-    public static DBPDataSourceContainer getActiveDataSourceContainer(IEditorPart activeEditor, IWorkbenchPart activePart, ISelection selection) {
+    public static DBPDataSourceContainer getActiveDataSourceContainer(
+        @Nullable IEditorPart activeEditor,
+        @Nullable IWorkbenchPart activePart,
+        @Nullable ISelection selection
+    ) {
         if (activeEditor != null) {
-            DBPDataSourceContainer container = getDataSourceContainerFromPart(activeEditor);
-            if (container != null) {
-                return container;
-            }
-            return null;
+            return getDataSourceContainerFromPart(activeEditor);
         }
         DBPDataSourceContainer container = getDataSourceContainerFromPart(activePart);
         if (container != null) {
             return container;
         }
 
+        if (selection == null) {
+            return null;
+        }
         DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
-        if (selectedObject instanceof DBPDataSourceContainer) {
-            return (DBPDataSourceContainer) selectedObject;
+        if (selectedObject instanceof DBPDataSourceContainer selectedContainer) {
+            return selectedContainer;
         } else if (selectedObject != null) {
             DBPDataSource dataSource = selectedObject.getDataSource();
             return dataSource == null ? null : dataSource.getContainer();
@@ -120,12 +123,13 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         return null;
     }
 
-    public static DBPDataSourceContainer getDataSourceContainerFromPart(IWorkbenchPart activePart) {
-        if (activePart instanceof DBPDataSourceContainerProvider) {
-            return ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
+    @Nullable
+    public static DBPDataSourceContainer getDataSourceContainerFromPart(@Nullable IWorkbenchPart activePart) {
+        if (activePart instanceof DBPDataSourceContainerProvider sourceContainerProvider) {
+            return sourceContainerProvider.getDataSourceContainer();
         }
-        if (activePart instanceof DBPContextProvider) {
-            DBCExecutionContext context = ((DBPContextProvider) activePart).getExecutionContext();
+        if (activePart instanceof DBPContextProvider activeContextProvider) {
+            DBCExecutionContext context = activeContextProvider.getExecutionContext();
             return context == null ? null : context.getDataSource().getContainer();
         }
         return null;

@@ -52,6 +52,9 @@ public class ArrayAttributeTransformer implements DBDAttributeTransformer {
                 ComplexTypeAttributeTransformer.createNestedTypeBindings(session, attribute, rows, componentType);
                 return;
             }
+            if (componentType != null && !componentType.getDataKind().isComplex()) {
+                return;
+            }
         }
         // No component type found.
         // Array items should be resolved in a lazy mode

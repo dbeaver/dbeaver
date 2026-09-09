@@ -250,4 +250,8 @@
         </perspectiveExtension>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="ai.model.load" name="AI models loaded"/>
+    </extension>
+
 </plugin>

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -26,7 +27,6 @@ import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -128,22 +129,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         this.settings.setDefaultConfiguration(selectedProfile);
-        if (selectedProfile != null) {
-            selectedProfile.setProfileName(profileNameText.getText());
-            try {
-                activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
-            } catch (DBException e) {
-                log.error("Error saving engine settings", e);
-
-                DBWorkbench.getPlatformUI().showError(
-                    AIUIMessages.ai_engines_page_save_error_title,
-                    NLS.bind(AIUIMessages.ai_engines_page_save_error_message, selectedProfile.getEngineId()),
-                    e
-                );
-            }
-        }
+        flushSelectedProfile();
         reloadEngines();
-        AISettingsManager.getInstance().saveSettings();
+        AISettingsManager.getInstance().saveSettings(this.settings);
         try {
             store.save();
         } catch (IOException e) {
@@ -162,6 +150,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         partDivider = UIUtils.createPartDivider(null, composite, SWT.VERTICAL);
         partDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        Button duplicateProfileBtn;
         Button deleteProfileBtn;
         {
             profilesPanel = UIUtils.createComposite(partDivider, 2);
@@ -186,6 +175,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 UIIcon.ADD,
                 SelectionListener.widgetSelectedAdapter(e -> addNewProfile())
             );
+            duplicateProfileBtn = UIUtils.createPushButton(
+                buttonsPanel,
+                null,
+                AIUIMessages.ai_engines_page_duplicate_profile_tip,
+                UIIcon.ROW_COPY,
+                SelectionListener.widgetSelectedAdapter(e -> duplicateProfile())
+            );
+            duplicateProfileBtn.setEnabled(selectedProfile != null);
             deleteProfileBtn = UIUtils.createPushButton(
                 buttonsPanel,
                 null,
@@ -212,17 +209,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             settingsScroll.setExpandVertical(true);
             settingsPanel = UIUtils.createComposite(settingsScroll, 1);
             settingsScroll.setContent(settingsPanel);
-            Composite profileGroup = UIUtils.createTitledComposite(
-                settingsPanel,
-                AIUIMessages.ai_engines_page_group_profile,
-                4,
-                GridData.FILL_HORIZONTAL
-            );
+            Composite profileGroup = new Composite(settingsPanel, SWT.NONE);
+            GridLayoutFactory.fillDefaults().margins(0, 5).numColumns(4).applyTo(profileGroup);
+            profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            profileIdText = UIUtils.createLabelText(
-                profileGroup, AIUIMessages.ai_engines_page_profile_id_label, "", SWT.BORDER | SWT.READ_ONLY);
             profileNameText = UIUtils.createLabelText(
                 profileGroup, AIUIMessages.ai_engines_page_profile_name_label, "", SWT.BORDER);
+            profileIdText = UIUtils.createLabelText(
+                profileGroup, AIUIMessages.ai_engines_page_profile_id_label, "", SWT.BORDER | SWT.READ_ONLY);
 
             engineGroup = UIUtils.createTitledComposite(
                 settingsPanel,
@@ -240,10 +234,13 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             profilesViewer.addSelectionChangedListener(event -> {
                 Object selItem = profilesViewer.getStructuredSelection().getFirstElement();
                 AIConfigurationProfile profile = selItem instanceof AIConfigurationProfile p ? p : null;
+                duplicateProfileBtn.setEnabled(profile != null);
                 deleteProfileBtn.setEnabled(profile != null);
                 if (profile == selectedProfile) {
                     return;
                 }
+                // Editors are re-bound to the new profile, so push their state into the old one first
+                flushSelectedProfile();
                 selectedProfile = profile;
                 showProfileSettings();
                 relayoutPage();
@@ -270,11 +267,41 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         relayoutPage();
         UIUtils.packColumns(profilesViewer.getTable(), true);
 
+        if (RuntimeUtils.isLinux()) {
+            UIUtils.asyncExec(() -> {
+                // SWT on Linux can keep a stale header trim unless the table is realized with header state toggled.
+                Table table = profilesViewer.getTable();
+                table.setHeaderVisible(true);
+                table.setHeaderVisible(false);
+            });
+        }
+
         return composite;
     }
 
     private void reloadEngines() {
         profilesViewer.setInput(settings.getConfigurations());
+    }
+
+    /**
+     * Stores the current state of the profile editors into the selected profile.
+     */
+    private void flushSelectedProfile() {
+        if (selectedProfile == null || activeEngineConfiguratorPage == null) {
+            return;
+        }
+        selectedProfile.setProfileName(profileNameText.getText());
+        try {
+            activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
+        } catch (DBException e) {
+            log.error("Error saving engine settings", e);
+
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.ai_engines_page_save_error_title,
+                NLS.bind(AIUIMessages.ai_engines_page_save_error_message, selectedProfile.getEngineId()),
+                e
+            );
+        }
     }
 
     private void addNewProfile() {
@@ -292,10 +319,35 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             reloadEngines();
             profilesViewer.setSelection(new StructuredSelection(newProfile));
 
-            AISettingsManager.getInstance().saveSettings();
+            AISettingsManager.getInstance().saveSettings(this.settings);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
                 AIUIMessages.ai_engines_page_create_error_title, AIUIMessages.ai_engines_page_create_error_message, e);
+        }
+    }
+
+    private void duplicateProfile() {
+        if (selectedProfile == null || activeEngineConfiguratorPage == null) {
+            return;
+        }
+        try {
+            selectedProfile.setProfileName(profileNameText.getText());
+            activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
+
+            AIConfigurationProfile newProfile = settings.copyConfiguration(
+                selectedProfile,
+                AIProfileCreateDialog.genProfileId(selectedProfile.getEngineDescriptor()),
+                AIProfileCreateDialog.genProfileName(selectedProfile.getProfileName())
+            );
+            reloadEngines();
+            profilesViewer.setSelection(new StructuredSelection(newProfile));
+
+            AISettingsManager.getInstance().saveSettings(this.settings);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.ai_engines_page_duplicate_error_title,
+                AIUIMessages.ai_engines_page_duplicate_error_message,
+                e);
         }
     }
 
@@ -320,7 +372,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             profilesViewer.setSelection(new StructuredSelection(settings.getConfigurations()[selectionIndex]));
         }
 
-        AISettingsManager.getInstance().saveSettings();
+        AISettingsManager.getInstance().saveSettings(this.settings);
     }
 
     private void createProfilesColumns() {
@@ -386,23 +438,15 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         if (partDivider.isDisposed()) {
             return;
         }
-        Shell shell = partDivider.getShell();
-        shell.layout(true, true);
-        int tableHeight = updateSashWeights();
-        int clientHeight = partDivider.getClientArea().height;
-        if (clientHeight <= 0) {
-            UIUtils.asyncExec(this::relayoutPage);
+        partDivider.getShell().layout(true, true);
+        updateSashWeights();
+        if (settingsScroll.getClientArea().height <= 0) {
+            if (settingsStackLayout.topControl == settingsScroll) {
+                UIUtils.asyncExec(this::relayoutPage);
+            }
             return;
         }
-        int settingsHeight = settingsPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-        settingsScroll.setMinHeight(settingsHeight);
-        Point shellSize = shell.getSize();
-        int newHeight = Math.min(
-            shellSize.y + tableHeight + partDivider.getSashWidth() + settingsHeight - clientHeight,
-            shell.getDisplay().getClientArea().height);
-        if (newHeight > shellSize.y) {
-            UIUtils.resizeShell(shell, new Point(shellSize.x, newHeight));
-        }
+        settingsScroll.setMinSize(settingsPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
     private int updateSashWeights() {
@@ -457,10 +501,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 return;
             }
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
-            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor);
+            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor, this::handleConfiguratorChange);
             profileConfiguratorMapping.put(selectedProfile.getEngineId(), activeEngineConfiguratorPage);
         } else {
-            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor);
+            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor, this::handleConfiguratorChange);
         }
 
         try {
@@ -472,11 +516,30 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 e
             );
         }
-        if (Objects.nonNull(connectionTestButton)) {
-            connectionTestButton.setEnabled(activeEngineConfiguratorPage.getCurrentProperties().isPresent());
-        }
+        updateTestConnectionButton();
     }
 
+    private void handleConfiguratorChange() {
+        UIUtils.asyncExec(() -> {
+            if (partDivider.isDisposed()) {
+                return;
+            }
+            updateTestConnectionButton();
+            relayoutPage();
+        });
+    }
+
+    private void updateTestConnectionButton() {
+        if (connectionTestButton == null || connectionTestButton.isDisposed()) {
+            return;
+        }
+        boolean testSupported = activeEngineConfiguratorPage != null
+            && activeEngineConfiguratorPage.supportsConnectionTest();
+        UIUtils.setControlVisible(connectionTestButton, testSupported);
+        connectionTestButton.setEnabled(
+            testSupported && activeEngineConfiguratorPage.getCurrentProperties().isPresent());
+        connectionTestButton.getParent().layout(true, true);
+    }
 
     private void createTestConnectionButton(@NotNull Composite parent) {
         connectionTestButton = UIUtils.createPushButton(
@@ -508,9 +571,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 }
             })
         );
+        connectionTestButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        connectionTestButton.setEnabled(
-            activeEngineConfiguratorPage != null && activeEngineConfiguratorPage.getCurrentProperties().isPresent());
+        updateTestConnectionButton();
     }
 
     private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
@@ -552,11 +615,11 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             this.configurator = configurator;
         }
 
-        private void createControl(Composite parent, AIEngineDescriptor engine) {
+        private void createControl(Composite parent, AIEngineDescriptor engine, @NotNull Runnable changeListener) {
             composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (configurator != null) {
-                configurator.createControl(composite, engine, () -> {});
+                configurator.createControl(composite, engine, changeListener);
             }
         }
 
@@ -580,6 +643,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             return Optional
                 .ofNullable(configurator)
                 .flatMap(AIIObjectPropertyConfigurator::getCurrentProperties);
+        }
+
+        private boolean supportsConnectionTest() {
+            return configurator == null || configurator.supportsConnectionTest();
         }
     }
 

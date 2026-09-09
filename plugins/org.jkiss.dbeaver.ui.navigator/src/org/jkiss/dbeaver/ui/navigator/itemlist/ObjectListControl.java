@@ -1541,7 +1541,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         private int[] originalColumnOrder;
 
-        GroupingViewerColumnController(String id, ColumnViewer viewer) {
+        GroupingViewerColumnController(@NotNull String id, @NotNull ColumnViewer viewer) {
             super(id, viewer);
         }
 

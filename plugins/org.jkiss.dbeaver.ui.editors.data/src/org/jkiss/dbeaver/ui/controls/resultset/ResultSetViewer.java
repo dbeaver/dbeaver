@@ -125,8 +125,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -163,6 +163,10 @@ public class ResultSetViewer extends Viewer
 
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
     private static final String CSS_CLASS_RESULT_SET_VIEWER = "ResultSetViewer";
+
+    // Cached policy value (policy check is expensive)
+    public static final boolean DATA_EDIT_DISABLED = ApplicationPolicyProvider.getInstance().isPolicyEnabled(
+        ApplicationPolicyProvider.POLICY_DATA_EDIT);
 
     private IResultSetFilterManager filterManager;
     @NotNull
@@ -365,15 +369,12 @@ public class ResultSetViewer extends Viewer
                     }
                 });
 
-                this.panelFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                this.panelFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         CTabItem activeTab = panelFolder.getSelection();
                         if (activeTab != null) {
                             setActivePanel((String) activeTab.getData());
                         }
-                    }
-                });
+                    }));
                 this.panelFolder.addListener(SWT.Resize, event -> {
                     if (!viewerSash.isDisposed() && !isUIUpdateRunning) {
                         int[] weights = viewerSash.getWeights();
@@ -947,14 +948,11 @@ public class ResultSetViewer extends Viewer
                     if (pd == activePresentationDescriptor) {
                         presentationSwitchFolder.setSelection(item);
                     }
-                    item.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    item.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                             if (e.widget != null && e.widget.getData() != null) {
                                 e.doit = switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
                             }
-                        }
-                    });
+                        }));
                 }
                 UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
                 recordModeButton = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.CHECK);
@@ -1035,14 +1033,11 @@ public class ResultSetViewer extends Viewer
                 {
                     panelsButton.setText(ResultSetMessages.controls_resultset_config_panels);
                     panelsButton.setImage(DBeaverIcons.getImage(UIIcon.PANEL_CUSTOMIZE));
-                    panelsButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    panelsButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                             showPanels(!isPanelsVisible(), true, true);
                             panelsButton.setChecked(isPanelsVisible());
                             updatePanelsButtons();
-                        }
-                    });
+                        }));
                     String toolTip = ActionUtils.findCommandDescription(IResultSetCommands.CMD_TOGGLE_PANELS, getSite(), false);
                     if (!CommonUtils.isEmpty(toolTip)) {
                         panelsButton.setToolTipText(toolTip);
@@ -1066,9 +1061,7 @@ public class ResultSetViewer extends Viewer
                         panelButton.setToolTipText(panel.getLabel() + " (" + toolTip + ")");
                     }
 
-                    panelButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    panelButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                             boolean isPanelVisible = isPanelsVisible() && isPanelVisible(panel.getId());
                             ResultSetHandlerTogglePanel.showResultsPanel(ResultSetViewer.this, panel.getId(), isPanelVisible);
                             panelButton.setChecked(!isPanelVisible);
@@ -1076,8 +1069,7 @@ public class ResultSetViewer extends Viewer
                             if (panelSwitchFolder != null) {
                                 panelSwitchFolder.redraw();
                             }
-                        }
-                    });
+                        }));
                     panelButton.setChecked(panelsVisible && isPanelVisible(panel.getId()));
                 }
 
@@ -2052,9 +2044,7 @@ public class ResultSetViewer extends Viewer
         }
         final IMenuService menuService = getSite().getService(IMenuService.class);
 
-        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT) &&
-            !ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)
-        ) {
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT) && !DATA_EDIT_DISABLED) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
@@ -2354,7 +2344,7 @@ public class ResultSetViewer extends Viewer
                 return status;
             }
         }
-        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+        if (DATA_EDIT_DISABLED) {
             return UIMessages.dialog_policy_data_edit_msg;
         }
         return null;
@@ -2851,7 +2841,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean isReadOnly() {
-        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+        if (DATA_EDIT_DISABLED) {
             return true;
         }
         if (model.isUpdateInProgress() ||

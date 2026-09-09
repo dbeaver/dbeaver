@@ -1,6 +1,7 @@
 const chat = document.getElementById('chat');
 const chatMeta = document.getElementById('chat-meta');
 const chatMetaText = document.getElementById('chat-meta-text');
+const aiNotice = document.getElementById('ai-notice');
 
 const statusBar = document.createElement('div');
 statusBar.className = 'status-bar';
@@ -80,7 +81,9 @@ function initChat(args) {
     cleanTooltip = args.clean.tooltip;
     closeTooltip = args.close.tooltip;
     settingKeys = args.settings || {};
+    aiNotice.textContent = args.notice;
 
     initA11y(args.a11y || {});
     settingsChanged();
+    updateAiNoticeVisibility();
 }

@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatIcons;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -81,7 +81,7 @@ public class PromptComposite extends Composite {
                     attachButton.setEnabled(!busy);
 
                     if (!busy) {
-                        sendButton.setToolTipText(AIChatMessages.ai_chat_send_button_tip);
+                        sendButton.setToolTipText(AIChatMessagesUI.ai_chat_send_button_tip);
                         sendButton.setImage(DBeaverIcons.getImage(AIChatIcons.SEND));
                         setFocusOnPrompt();
                     } else {
@@ -92,7 +92,7 @@ public class PromptComposite extends Composite {
                                 if (chat.getActiveConversation().isActive()) {
                                     sendButton.setImage(null);
                                     sendButton.setImage(DBeaverIcons.getImage(UIIcon.CLOSE));
-                                    sendButton.setToolTipText(AIChatMessages.ai_chat_cancel_button_tip);
+                                    sendButton.setToolTipText(AIChatMessagesUI.ai_chat_cancel_button_tip);
                                     sendButton.setEnabled(true);
                                 }
                                 return Status.OK_STATUS;
@@ -109,8 +109,8 @@ public class PromptComposite extends Composite {
         attachButton = UIUtils.createPushButton(
             leftControls,
             null,
-            CommonUtils.isEmpty(shortcut1) ? AIChatMessages.ai_chat_attach_button_tip
-                : AIChatMessages.ai_chat_attach_button_tip + " (" + shortcut1 + ")",
+            CommonUtils.isEmpty(shortcut1) ? AIChatMessagesUI.ai_chat_attach_button_tip
+                : AIChatMessagesUI.ai_chat_attach_button_tip + " (" + shortcut1 + ")",
             AIChatIcons.ATTACH,
             SelectionListener.widgetSelectedAdapter(e -> ActionUtils.runCommand(
                 AIChatController.CMD_ATTACH,
@@ -136,7 +136,7 @@ public class PromptComposite extends Composite {
         promptText.getAccessible().addAccessibleListener(new AccessibleAdapter() {
             @Override
             public void getName(AccessibleEvent e) {
-                e.result = AIChatMessages.ai_chat_a11y_prompt_name;
+                e.result = AIChatMessagesUI.ai_chat_a11y_prompt_name;
             }
         });
         updatePromptEditorSize();
@@ -148,7 +148,7 @@ public class PromptComposite extends Composite {
             site,
             true
         ));
-        UIUtils.addEmptyTextHint(promptText, text -> NLS.bind(AIChatMessages.ai_chat_prompt_text_hint, sendShortcut));
+        UIUtils.addEmptyTextHint(promptText, text -> NLS.bind(AIChatMessagesUI.ai_chat_prompt_text_hint, sendShortcut));
 
         new CompositeBorderPainter(promptBorder);
 
@@ -161,8 +161,8 @@ public class PromptComposite extends Composite {
             sendButton = UIUtils.createPushButton(
                 buttonsBar,
                 null,
-                CommonUtils.isEmpty(shortcut) ? AIChatMessages.ai_chat_send_button_tip
-                    : AIChatMessages.ai_chat_send_button_tip + " (" + shortcut + ")",
+                CommonUtils.isEmpty(shortcut) ? AIChatMessagesUI.ai_chat_send_button_tip
+                    : AIChatMessagesUI.ai_chat_send_button_tip + " (" + shortcut + ")",
                 AIChatIcons.SEND,
                 SelectionListener.widgetSelectedAdapter(e -> submitPrompt())
             );

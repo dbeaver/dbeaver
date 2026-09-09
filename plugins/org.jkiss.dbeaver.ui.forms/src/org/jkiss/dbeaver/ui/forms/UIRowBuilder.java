@@ -113,6 +113,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder weblink(@NotNull String text) {
+        return weblink(UIObservable.of(text));
+    }
+
+    @NotNull
     UIRowBuilder button(
         @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
@@ -137,7 +142,10 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
-    UIRowBuilder radioButton(@NotNull UIObservable<String> text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
+    UIRowBuilder radioButton(
+        @NotNull UIObservable<String> text,
+        @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
+    );
 
     @NotNull
     default UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
@@ -147,6 +155,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     default UIRowBuilder radioButton(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
         return radioButton(text, bb -> bb.selected(selected));
+    }
+
+    @NotNull
+    default UIRowBuilder radioButton(@NotNull String text, @NotNull String tooltip, @NotNull UIObservable<Boolean> selected) {
+        return radioButton(text, bb -> bb.tooltip(tooltip).selected(selected));
     }
 
     @NotNull
@@ -165,6 +178,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     default UIRowBuilder checkBox(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
         return checkBox(text, bb -> bb.selected(selected));
+    }
+
+    @NotNull
+    default UIRowBuilder checkBox(@NotNull String text, @NotNull String tooltip, @NotNull UIObservable<Boolean> selected) {
+        return checkBox(text, bb -> bb.tooltip(tooltip).selected(selected));
     }
 
     @NotNull

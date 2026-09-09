@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -67,7 +67,7 @@ public class CustomTimeEditor {
     private final Calendar calendar = Calendar.getInstance();
     private Text textEditor;
     private Listener modifyListener;
-    private SelectionAdapter selectionListener;
+    private SelectionListener selectionListener;
     private boolean editable;
     private CLabel warningLabel;
     private Composite mainComposite;
@@ -238,7 +238,7 @@ public class CustomTimeEditor {
      *
      * @param listener listener to add to all existing editors
      */
-    public void addSelectionAdapter(@NotNull SelectionAdapter listener) {
+    public void addSelectionAdapter(@NotNull SelectionListener listener) {
         selectionListener = listener;
         updateListeners();
     }

@@ -224,7 +224,11 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         settings.setFetchSize(fetchSize.get());
         getWizard().getSettings().setMaxJobCount(threadCount.get());
         settings.setSegmentSize(segmentSize.get());
-        settings.setExtractType(extractInSegments.get() ? ExtractType.SEGMENTS : ExtractType.SINGLE_QUERY);
+        if (strategy.get() == Strategy.USE_FETCHED_ROWS) {
+            settings.setExtractType(ExtractType.SINGLE_QUERY);
+        } else {
+            settings.setExtractType(extractInSegments.get() ? ExtractType.SEGMENTS : ExtractType.SINGLE_QUERY);
+        }
     }
 
     @Override

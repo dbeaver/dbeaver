@@ -52,7 +52,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -239,7 +239,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
     @NotNull
     AIChatConversation createEmptyConversation(@Nullable DBPDataSourceContainer container) {
-        return createEmptyConversation(AIChatMessages.ai_chat_default_conversation_name, container);
+        return createEmptyConversation(AIChatMessagesUI.ai_chat_default_conversation_name, container);
     }
 
     /**
@@ -254,8 +254,6 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     public void cancelPrompt() {
         if (activeConversation != null) {
             activeConversation.cancelConversation();
-            activeConversation.addMessage(AIMessage.warningMessage(AIChatMessages.ai_chat_conversation_cancelled));
-            chatSession.notifyMessageAdd(activeConversation, activeConversation.getMessages().getLast());
             chatSession.notifyListeners(AIChatListener::conversationCanceled, activeConversation);
         }
     }
@@ -287,6 +285,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         AIChatMessage chatMessage = activeConversation.addMessage(promptMessage);
         chatSession.notifyMessageAdd(activeConversation, chatMessage);
 
+        activeConversation.startConversation();
         chatSession.setBusy(true);
 
         new AbstractJob("Execute prompt") {
@@ -315,7 +314,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     public boolean checkConfiguration() {
         try {
             if (!AIUtils.hasValidConfiguration()) {
-                AIUIUtils.showPreferences(getShell(), true);
+                AIUIUtils.showPreferences(getShell());
                 return false;
             }
         } catch (DBException e) {
@@ -367,7 +366,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     @NotNull
     private String createNewConversationName() throws DBException {
         List<AIChatConversation> conversations = listConversations();
-        String baseName = AIChatMessages.ai_chat_default_conversation_name;
+        String baseName = AIChatMessagesUI.ai_chat_default_conversation_name;
         String name = baseName;
         for (int i = 1; ; i++) {
             String candidate = name;
@@ -384,8 +383,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             return;
         }
         if (DBWorkbench.getPlatformUI().confirmAction(
-            AIChatMessages.ai_chat_conversation_delete_confirm_title,
-            NLS.bind(AIChatMessages.ai_chat_conversation_delete_confirm_message, getActiveConversation().getCaption())
+            AIChatMessagesUI.ai_chat_conversation_delete_confirm_title,
+            NLS.bind(AIChatMessagesUI.ai_chat_conversation_delete_confirm_message, getActiveConversation().getCaption())
         )) {
             try {
                 removeActiveConversation();

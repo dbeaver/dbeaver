@@ -20,14 +20,14 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
-import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeUIActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -66,7 +65,8 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
     private Combo warehouseText;
     private Combo schemaText;
 
-    private static final ImageDescriptor logoImage = SnowflakeUIActivator.getImageDescriptor("icons/snowflake_logo.png"); //$NON-NLS-1$
+    private static final ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
+        SnowflakeUIConstants.PLUGIN_ID, "icons/snowflake_logo.png"); //$NON-NLS-1$
 
     @Override
     public void dispose()
@@ -151,12 +151,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.grabExcessHorizontalSpace = true;
             testLink.setLayoutData(gd);
-            testLink.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    site.testConnection();
-                }
-            });
+            testLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> site.testConnection()));
         }
 
         createAuthPanel(control, 1);

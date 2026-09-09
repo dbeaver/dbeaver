@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,10 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.IFormattingStrategy;
-import org.eclipse.jface.text.hyperlink.*;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetectorExtension;
+import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
+import org.eclipse.jface.text.hyperlink.MultipleHyperlinkPresenter;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.InformationPresenter;
@@ -57,6 +60,7 @@ import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
+import org.jkiss.dbeaver.ui.editors.sql.util.DBeaverHyperLinkDetector;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.utils.ArrayUtils;
 
@@ -448,7 +452,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         return new IHyperlinkDetector[]{
             hyperlinkDetector,
-            new URLHyperlinkDetector()};
+            new DBeaverHyperLinkDetector()};
     }
 
     void onDataSourceChange() {

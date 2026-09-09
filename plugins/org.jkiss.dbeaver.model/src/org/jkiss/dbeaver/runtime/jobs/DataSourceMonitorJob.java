@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -132,6 +133,9 @@ public class DataSourceMonitorJob extends AbstractJob {
     }
 
     private void invalidateSleptConnections(DBRProgressMonitor monitor) {
+        if (Platform.inDevelopmentMode()) {
+            return;
+        }
         log.debug("System awake detected. Reinitialize all remote connections.");
 
         Set<DBPDataSource> invalidated = new HashSet<>();

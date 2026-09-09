@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.gis;
 
+import org.eclipse.e4.ui.css.core.css2.CSS2ColorHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
@@ -155,11 +156,23 @@ public class GeometryDataUtils {
         if (value == null) {
             return null;
         }
-        RGB color = hexStringToRgb(value);
+        RGB color = colorNameToRgb(value);
+        if (color == null) {
+            color = hexStringToRgb(value);
+        }
         if (color == null) {
             color = stringToRandomRgb(value);
         }
         return color;
+    }
+
+    @Nullable
+    private static RGB colorNameToRgb(@NotNull String value) {
+        var hexColor = CSS2ColorHelper.getHexaColorFromColorName(value);
+        if (hexColor == null) {
+            return null;
+        }
+        return hexStringToRgb(hexColor);
     }
 
     @Nullable

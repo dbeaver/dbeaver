@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,10 @@ import java.util.Arrays;
 public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
 
     private final JDBCSession connection;
+    @NotNull
     private final DatabaseMetaData original;
 
-    public JDBCDatabaseMetaDataImpl(JDBCSession connection, DatabaseMetaData original) {
+    public JDBCDatabaseMetaDataImpl(@NotNull JDBCSession connection, @NotNull DatabaseMetaData original) {
         this.connection = connection;
         this.original = original;
     }
@@ -45,7 +46,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @NotNull
     public DatabaseMetaData getOriginal() throws SQLException {
         if (original == null) {
-            throw new SQLException("Database metadata not supported by driver");
+            throw new SQLException("No original connection for metadata");
         }
         return original;
     }

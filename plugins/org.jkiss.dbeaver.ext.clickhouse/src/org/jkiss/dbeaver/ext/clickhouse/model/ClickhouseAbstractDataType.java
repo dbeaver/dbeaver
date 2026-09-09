@@ -17,10 +17,14 @@
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.AbstractDataType;
 
 public abstract class ClickhouseAbstractDataType extends AbstractDataType<ClickhouseDataSource> {
     public ClickhouseAbstractDataType(@NotNull ClickhouseDataSource dataSource) {
         super(dataSource);
     }
+
+    @Override
+    public abstract boolean equals(@Nullable Object obj);
 }

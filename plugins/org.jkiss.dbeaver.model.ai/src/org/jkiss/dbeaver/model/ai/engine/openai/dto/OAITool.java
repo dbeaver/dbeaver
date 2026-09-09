@@ -30,8 +30,6 @@ public class OAITool {
     public String type;
     public String name;
     public String description;
-    //public boolean strict;
-    @NotNull
     public OAIToolParameters parameters;
 
     public OAITool() {

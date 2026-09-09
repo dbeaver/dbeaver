@@ -37,7 +37,7 @@
         });
 
         if (${showMap}) {
-            let baseLayersObj = {
+            var baseLayersObj = {
                 'Street': L.tileLayer(${defaultTiles}),
                 'Topography': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
                   {
@@ -56,22 +56,22 @@
             // This way we can tell whether we're running within DBeaver.
             // If not, just don't bother overriding context menu behavior.
             geoMap.on('contextmenu', function (event) {
-                let actions = [
+                var actions = [
                     ['Copy coordinates', 'setClipboardContents(\'' + event.latlng.lat + ', ' + event.latlng.lng + '\')'],
                     ['Copy viewport bounds', 'setClipboardContents(\'' + geoMap.getBounds().toBBoxString() + '\')'],
                 ];
 
                 if (typeof selection !== 'undefined' && selection.length > 0) {
-                    let bounds = selection[0].layer.getBounds();
-                    for (let i = 1; i < selection.length; i++) {
+                    var bounds = selection[0].layer.getBounds();
+                    for (var i = 1; i < selection.length; i++) {
                         bounds.extend(selection[i].layer.getBounds());
                     }
                     actions.push(['Copy selection bounds', 'setClipboardContents(\'' + bounds.toBBoxString() + '\')']);
                 }
 
-                let content = '';
-                for (let i = 0; i < actions.length; i++) {
-                    let action = actions[i];
+                var content = '';
+                for (var i = 0; i < actions.length; i++) {
+                    var action = actions[i];
                     content += '<a href="javascript:' + action[1] + ';geoMap.closePopup();undefined;">';
                     content += action[0];
                     content += '</a>';
@@ -87,11 +87,11 @@
             });
         }
 
-        const geojsonMarkerOptions = {
+        var geojsonMarkerOptions = {
             radius: 4,
             weight: 3,
         };
-        const popupOption = {
+        var popupOption = {
             closeButton: true,
             minWidth: 260,
             maxWidth: 800,
@@ -161,7 +161,7 @@
         var bounds = vectorLayer.getBounds();
 
         if ('${geomCRS}' == 'Simple') {
-            let maxDimension = Math.max(bounds.getNorth() - bounds.getSouth(), bounds.getEast() - bounds.getWest());
+            var maxDimension = Math.max(bounds.getNorth() - bounds.getSouth(), bounds.getEast() - bounds.getWest());
             geoMap.setMinZoom(-5); // Small enough?
             if (maxDimension > 0) {
                 geoMap.fitBounds(bounds);
@@ -169,7 +169,7 @@
                 geoMap.setView(bounds.getCenter(), geoMap.getZoom());
             }
         } else {
-            let geomBounds = ${geomBounds};
+            var geomBounds = ${geomBounds};
             geoMap.fitBounds(geomBounds === undefined ? bounds : geomBounds);
             geoMap.setZoom(Math.min(geoMap.getZoom(), ${minZoomLevel}), {animate: false});
         }
@@ -180,9 +180,9 @@
         }
 
         function showLabels(visible) {
-            let elements = document.getElementsByClassName('leaflet-tooltip');
-            let visibility = visible ? 'visible' : 'hidden';
-            for (let i = 0; i < elements.length; i++) {
+            var elements = document.getElementsByClassName('leaflet-tooltip');
+            var visibility = visible ? 'visible' : 'hidden';
+            for (var i = 0; i < elements.length; i++) {
                 elements[i].style.visibility = visibility;
             }
         }
@@ -191,9 +191,9 @@
             var selection = [];
 
             function addSelection(target, layer, keepSelection) {
-                let index = -1;
+                var index = -1;
 
-                for (let i = 0; i < selection.length; i++) {
+                for (var i = 0; i < selection.length; i++) {
                     if (selection[i].target === target && selection[i].layer === layer) {
                         index = i;
                         break;
@@ -211,7 +211,7 @@
 
             function clearSelection() {
                 while (selection.length > 0) {
-                    let object = selection.pop();
+                    var object = selection.pop();
                     object.target.resetStyle(object.layer);
                 }
             }

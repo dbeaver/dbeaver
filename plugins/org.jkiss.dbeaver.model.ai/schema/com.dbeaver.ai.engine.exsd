@@ -35,6 +35,13 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="promoted" type="boolean">
+             <annotation>
+                <documentation>
+                   Whether the engine should be shown before regular engines in selection controls.
+                </documentation>
+             </annotation>
+         </attribute>
       </complexType>
    </element>
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ public class EditorMessages extends NLS {
     public static String content_viewer_settings;
     public static String create_control_error_title;
     public static String create_control_error_description;
+    public static String html_preview_read_error;
+    public static String html_preview_unavailable;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, EditorMessages.class);

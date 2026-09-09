@@ -20,6 +20,7 @@ import java.util.List;
 
 public class OAIResponsesRequest extends OAIResponsesBase {
 
+    public String instructions;
     public List<OAIMessage> input;
 
     public OAIResponsesRequest() {

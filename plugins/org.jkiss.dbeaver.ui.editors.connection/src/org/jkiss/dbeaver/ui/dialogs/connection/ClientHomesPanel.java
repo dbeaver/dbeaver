@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -87,39 +86,28 @@ public class ClientHomesPanel extends Composite {
         ((GridData) (listGroup.getLayoutData())).minimumWidth = 200;
         homesTable = new Table(listGroup, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         homesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        homesTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        homesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 TableItem[] selection = homesTable.getSelection();
                 if (ArrayUtils.isEmpty(selection)) {
                     selectHome(null);
                 } else {
                     selectHome((HomeInfo) selection[0].getData());
                 }
-            }
-        });
+            }));
         Composite buttonsGroup = UIUtils.createPlaceholder(listGroup, 2, 5);
         buttonsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
         Button addButton = new Button(buttonsGroup, SWT.PUSH);
         addButton.setText(UIConnectionMessages.controls_client_homes_panel_button_add_home);
-        addButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                addClientHome();
-            }
-        });
+        addButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> addClientHome()));
         removeButton = new Button(buttonsGroup, SWT.PUSH);
         removeButton.setText(UIConnectionMessages.controls_client_homes_panel_button_remove_home);
         removeButton.setEnabled(false);
-        removeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        removeButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 TableItem[] selection = homesTable.getSelection();
                 if (!ArrayUtils.isEmpty(selection)) {
                     removeClientHome();
                 }
-            }
-        });
+            }));
 
         Composite infoGroup = UIUtils.createTitledComposite(
             this,
@@ -140,12 +128,8 @@ public class ClientHomesPanel extends Composite {
             UIUtils.createLink(
                 infoPanel,
                 UIConnectionMessages.controls_client_homes_panel_link_message,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(WIKI_CONFIGURE_CLIENT));
-                    }
-                });
+                SelectionListener.widgetSelectedAdapter(e ->
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(WIKI_CONFIGURE_CLIENT))));
             GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
             gridData.horizontalSpan = 2;
             infoPanel.setLayoutData(gridData);
