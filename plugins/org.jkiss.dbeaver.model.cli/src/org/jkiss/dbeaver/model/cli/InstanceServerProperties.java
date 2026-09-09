@@ -21,6 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public record InstanceServerProperties(int port, @NotNull String password, long startedAt) {
@@ -61,6 +63,23 @@ public record InstanceServerProperties(int port, @NotNull String password, long 
         properties.remove(startedAtKey(pid));
     }
 
+    @NotNull
+    public static Map<Long, InstanceServerProperties> readAllFrom(@NotNull Properties properties) {
+        String prefix = PROPERTY_INSTANCE + ".";
+        Map<Long, InstanceServerProperties> instances = new LinkedHashMap<>();
+        for (String key : properties.stringPropertyNames()) {
+            Long pid = extractPid(key, prefix);
+            if (pid == null || instances.containsKey(pid)) {
+                continue;
+            }
+            InstanceServerProperties instance = readFrom(properties, pid);
+            if (instance != null) {
+                instances.put(pid, instance);
+            }
+        }
+        return instances;
+    }
+
     @Nullable
     public static InstanceServerProperties readFrom(@NotNull Properties properties, long pid) {
         String portValue = properties.getProperty(portKey(pid));
@@ -75,6 +94,22 @@ public record InstanceServerProperties(int port, @NotNull String password, long 
             int port = Integer.parseInt(portValue);
             long startedAt = Long.parseLong(startedAtValue);
             return new InstanceServerProperties(port, passwordValue, startedAt);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Long extractPid(@NotNull String key, @NotNull String prefix) {
+        if (!key.startsWith(prefix)) {
+            return null;
+        }
+        int separator = key.indexOf('.', prefix.length());
+        if (separator < 0) {
+            return null;
+        }
+        try {
+            return Long.parseLong(key.substring(prefix.length(), separator));
         } catch (NumberFormatException e) {
             return null;
         }
