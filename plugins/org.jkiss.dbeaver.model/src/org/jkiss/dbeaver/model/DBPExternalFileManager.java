@@ -27,9 +27,6 @@ import java.util.Map;
  * External file manager
  */
 public interface DBPExternalFileManager {
-    @NotNull
-    Map<String, String> getFileProperties(@NotNull File file);
-
     @Nullable
     String getFileProperty(@NotNull File file, @NotNull String property);
 

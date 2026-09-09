@@ -471,14 +471,6 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         refreshWorkspaceContents(monitor);
     }
 
-    @NotNull
-    @Override
-    public Map<String, String> getFileProperties(@NotNull File file) {
-        synchronized (externalFileProperties) {
-            return externalFileProperties.get(file.getAbsolutePath());
-        }
-    }
-
     @Nullable
     @Override
     public String getFileProperty(@NotNull File file, @NotNull String property) {
