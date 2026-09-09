@@ -14,35 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sync;
+package org.jkiss.dbeaver.model.datadam;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.Nullable;
 
-import java.util.Map;
-
-/**
- * Configuration component which can be synchronized.
- */
-public interface DBPSyncUnit {
-
-    @NotNull
-    String getId();
-
-    @NotNull
-    default String getName() {
-        return getId();
-    }
-
-    @NotNull
-    DBPSyncScope getScope();
-
-    default boolean isEnabledByDefault() {
-        return true;
-    }
-
-    @NotNull
-    Map<String, byte[]> read(@NotNull DBPSyncTarget target) throws DBException;
-
-    void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException;
+public record DDClientInfo(
+    @NotNull String clientId,
+    @NotNull String workspaceId,
+    @NotNull String product,
+    @NotNull String version,
+    @Nullable String os,
+    @Nullable String osVersion,
+    @Nullable String macAddress,
+    @Nullable String ipAddress
+) {
 }

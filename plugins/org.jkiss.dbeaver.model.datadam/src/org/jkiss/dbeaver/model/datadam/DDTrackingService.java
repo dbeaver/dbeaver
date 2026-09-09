@@ -14,35 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sync;
+package org.jkiss.dbeaver.model.datadam;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-
-import java.util.Map;
+import org.jkiss.code.Nullable;
 
 /**
- * Configuration component which can be synchronized.
+ * Client tracking endpoints.
  */
-public interface DBPSyncUnit {
+public interface DDTrackingService {
 
-    @NotNull
-    String getId();
+    String METERING_ENDPOINT = "/metering";
+    String TRACKING_ENDPOINT = "/tracking";
+    String TRACK_START_ENDPOINT = "/track/start";
+    String TRACK_STOP_ENDPOINT = "/track/{trackingId}/stop";
 
-    @NotNull
-    default String getName() {
-        return getId();
-    }
+    @Nullable
+    DDTracking start(@Nullable String authorization, @NotNull DDClientInfo client);
 
-    @NotNull
-    DBPSyncScope getScope();
-
-    default boolean isEnabledByDefault() {
-        return true;
-    }
-
-    @NotNull
-    Map<String, byte[]> read(@NotNull DBPSyncTarget target) throws DBException;
-
-    void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException;
+    @Nullable
+    DDTracking stop(@Nullable String authorization, @NotNull String trackingId);
 }
