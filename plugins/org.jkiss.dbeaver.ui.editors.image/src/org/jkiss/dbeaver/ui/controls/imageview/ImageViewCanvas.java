@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -124,20 +125,10 @@ class ImageViewCanvas extends Canvas {
     private void initScrollBars() {
         ScrollBar horizontal = getHorizontalBar();
         horizontal.setEnabled(false);
-        horizontal.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent event) {
-                scrollHorizontally((ScrollBar) event.widget);
-            }
-        });
+        horizontal.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> scrollHorizontally((ScrollBar) event.widget)));
         ScrollBar vertical = getVerticalBar();
         vertical.setEnabled(false);
-        vertical.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent event) {
-                scrollVertically((ScrollBar) event.widget);
-            }
-        });
+        vertical.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> scrollVertically((ScrollBar) event.widget)));
     }
 
     /* Scroll horizontally */

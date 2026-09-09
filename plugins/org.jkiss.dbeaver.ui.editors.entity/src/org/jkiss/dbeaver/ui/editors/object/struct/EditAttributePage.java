@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -128,12 +126,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
             }
             updateConstraintType();
         }));
-        keyTypeCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateConstraintType();
-            }
-        });
+        keyTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateConstraintType()));
 
         UIUtils.createEmptyLabel(keysGroup, 1, 1);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -154,6 +147,7 @@ public class EditAttributePage extends PropertyObjectEditPage<DBSTableColumn> {
         validateProperties();
     }
 
+    @Nullable
     @Override
     protected String getEditError() {
         if (isUnique) {

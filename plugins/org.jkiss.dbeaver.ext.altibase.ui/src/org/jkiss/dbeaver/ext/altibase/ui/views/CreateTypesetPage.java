@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset;
 import org.jkiss.dbeaver.ext.altibase.ui.internal.AltibaseUIMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -45,8 +46,9 @@ public class CreateTypesetPage extends BaseObjectEditPage {
         this.procedure = procedure;
     }
 
+    @NotNull
     @Override
-    protected Control createPageContents(Composite parent) {
+    protected Control createPageContents(@NotNull Composite parent) {
         Composite propsGroup = new Composite(parent, SWT.NONE);
         propsGroup.setLayout(new GridLayout(2, false));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);

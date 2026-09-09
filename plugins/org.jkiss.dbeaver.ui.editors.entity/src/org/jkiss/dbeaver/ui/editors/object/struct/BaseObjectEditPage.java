@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -47,13 +49,14 @@ public abstract class BaseObjectEditPage extends DialogPage {
     public abstract DBSObject getObject();
 
     @Override
-    public void setErrorMessage(String newMessage) {
+    public void setErrorMessage(@Nullable String newMessage) {
         super.setErrorMessage(newMessage);
         if (container != null) {
             container.updateMessage();
         }
     }
 
+    @Nullable
     protected String getEditError() {
         return null;
     }
@@ -97,7 +100,7 @@ public abstract class BaseObjectEditPage extends DialogPage {
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         Control pageContents = createPageContents(parent);
         setControl(pageContents);
         pageContents.addHelpListener(e -> performHelp());
@@ -117,7 +120,7 @@ public abstract class BaseObjectEditPage extends DialogPage {
         }
     }
 
-    public void setContainer(IDialogPageContainer container) {
+    public void setContainer(@NotNull IDialogPageContainer container) {
         this.container = container;
     }
 
@@ -125,7 +128,8 @@ public abstract class BaseObjectEditPage extends DialogPage {
 
     }
 
-    protected abstract Control createPageContents(Composite parent);
+    @NotNull
+    protected abstract Control createPageContents(@NotNull Composite parent);
 
     public boolean edit() {
         return EditObjectDialog.showDialog(this);

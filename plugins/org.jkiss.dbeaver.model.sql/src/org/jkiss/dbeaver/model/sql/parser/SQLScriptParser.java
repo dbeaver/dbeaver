@@ -157,7 +157,7 @@ public class SQLScriptParser {
             boolean isControl = false;
             String delimiterText = null;
             try {
-                if (isPredicateEvaluationEnabled && tokenLength > 0 && !token.isWhitespace()) {
+                if (isPredicateEvaluationEnabled && tokenLength > 0 && !token.isWhitespace() && tokenType != SQLTokenType.T_COMMENT) {
                     String tokenText = document.get(tokenOffset, tokenLength);
                     predicateEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType, false));
                     newTokenCaptured = true;
@@ -295,6 +295,10 @@ public class SQLScriptParser {
                         }
                         curBlock = new ScriptBlockInfo(curBlock, false);
                         hasBlocks = true;
+                    }
+
+                    if (actionKind == SQLParserActionKind.END_BLOCK && curBlock != null) {
+                        curBlock = curBlock.parent;
                     }
 
                     if (curBlock != null && !token.isEOF()) {

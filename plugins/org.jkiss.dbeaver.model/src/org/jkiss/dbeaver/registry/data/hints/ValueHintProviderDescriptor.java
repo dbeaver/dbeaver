@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,18 +83,33 @@ public class ValueHintProviderDescriptor extends AbstractValueBindingDescriptor<
                 dataSource == null ? null : dataSource.getContainer(),
                 contextEntity)
             ) {
+                if (association) {
+                    log.trace("Association hint provider '" + getId() + "' is disabled by configuration");
+                }
                 return false;
             }
         }
         if (association && typedObject != null) {
-            return typedObject instanceof DBDAttributeBinding binding &&
-               !CommonUtils.isEmpty(binding.getReferrers());
+            if (!(typedObject instanceof DBDAttributeBinding binding)) {
+                log.trace("Association hint provider '" + getId() + "' is not applicable to " + typedObject.getClass().getName());
+                return false;
+            }
+            if (CommonUtils.isEmpty(binding.getReferrers())) {
+                log.trace("Association hint provider '" + getId() + "' is not applicable to attribute '" +
+                    binding.getName() + "': no foreign key metadata was found (entity attribute: " +
+                    binding.getEntityAttribute() + ")");
+                return false;
+            }
         }
         return true;
     }
 
     public boolean isVisibleByDefault() {
         return visibleByDefault;
+    }
+
+    public boolean isAssociation() {
+        return association;
     }
 
 }

@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -337,9 +335,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             gd.horizontalSpan = 2;
             gd.verticalIndent = 12;
 
-            UIUtils.createLink(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_explanation_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createLink(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_explanation_link, SelectionListener.widgetSelectedAdapter(e -> {
                     switch (e.text) {
                         case "params":
                             ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameters-binding"));
@@ -350,8 +346,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                         default:
                             break;
                     }
-                }
-            }).setLayoutData(gd);
+                })).setLayoutData(gd);
         }
 
         // Delimiters

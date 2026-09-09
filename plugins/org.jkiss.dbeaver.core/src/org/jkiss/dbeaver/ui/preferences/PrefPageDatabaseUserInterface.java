@@ -28,8 +28,6 @@ import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -52,7 +50,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
-import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
@@ -63,12 +60,17 @@ import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.UIFontPreferenceManager;
+import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -77,8 +79,8 @@ import org.jkiss.utils.StringUtils;
 import org.osgi.service.event.EventHandler;
 
 import java.time.ZoneId;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageDatabaseUserInterface
@@ -133,7 +135,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (isStandalone && !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
             Composite groupObjects = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_ui_general_group_general,
+                UIConnectionMessages.pref_page_ui_general_group_general,
                 2,
                 GridData.VERTICAL_ALIGN_BEGINNING
             );
@@ -240,17 +242,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 1
             ));
             if (browserCombo != null) {
-                browserCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                browserCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
                             useEmbeddedBrowserAuth.setEnabled(false);
                             useEmbeddedBrowserAuth.setSelection(false);
                         } else {
                             useEmbeddedBrowserAuth.setEnabled(true);
                         }
-                    }
-                });
+                    }));
             }
 
             this.fontsController = this.prepareFontsController(composite, QUICK_FONT_IDS);
