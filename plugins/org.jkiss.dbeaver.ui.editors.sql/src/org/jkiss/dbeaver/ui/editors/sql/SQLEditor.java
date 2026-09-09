@@ -33,7 +33,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -3491,7 +3490,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (getSite() != null) {
             IWorkbenchPage page = getSite().getWorkbenchWindow().getActivePage();
             if (page != null && page.getActiveEditor() == this) {
-                DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
+                UIExecutionQueue.queueExec(() -> DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow()));
             }
         }
 

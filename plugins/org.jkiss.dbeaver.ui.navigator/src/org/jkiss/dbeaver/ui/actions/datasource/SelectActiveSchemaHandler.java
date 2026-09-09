@@ -46,13 +46,13 @@ import org.jkiss.dbeaver.model.impl.struct.ContextDefaultObjectsReader;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
@@ -281,22 +281,27 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         if (contextDefaults == null || !contextDefaults.isDefaultsChangeTransactional()) {
             return;
         }
-        var reply = UIUtils.syncExec(new RunnableWithResult<Reply>() {
-            @Nullable
-            @Override
-            public Reply runWithResult() {
-                return MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
-                    .setTitle(UINavigatorMessages.confirm_commit_after_defaults_change_title)
-                    .setMessage(UINavigatorMessages.confirm_commit_after_defaults_change_message)
-                    .setReplies(Reply.YES, Reply.NO)
-                    .setDefaultReply(Reply.NO)
-                    .setPrimaryImage(DBIcon.STATUS_QUESTION)
-                    .showMessageBox();
+        UIExecutionQueue.queueExec(() -> {
+            var reply = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                .setTitle(UINavigatorMessages.confirm_commit_after_defaults_change_title)
+                .setMessage(UINavigatorMessages.confirm_commit_after_defaults_change_message)
+                .setReplies(Reply.YES, Reply.NO)
+                .setDefaultReply(Reply.NO)
+                .setPrimaryImage(DBIcon.STATUS_QUESTION)
+                .showMessageBox();
+            if (reply != Reply.YES) {
+                return;
+            }
+            try {
+                DBExecUtils.commitContextTransaction(monitor, executionContext);
+            } catch (DBCException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    "Commit transaction",
+                    "Error committing transaction after changing active database",
+                    e
+                );
             }
         });
-        if (reply == Reply.YES) {
-            DBExecUtils.commitContextTransaction(monitor, executionContext);
-        }
     }
 
     public static class MenuContributor extends DataSourceMenuContributor {
