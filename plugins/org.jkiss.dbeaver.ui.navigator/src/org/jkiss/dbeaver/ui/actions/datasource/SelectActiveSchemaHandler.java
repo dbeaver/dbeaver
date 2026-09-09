@@ -252,7 +252,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         return GeneralUtils.makeExceptionStatus(e);
                     }
                     try {
-                        commitTransactionIfNeeded(monitor, executionContext);
+                        commitTransactionIfNeeded(executionContext);
                     } catch (DBException e) {
                         log.error("Error committing transaction after changing active database", e);
                     }
@@ -265,14 +265,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     /**
      * Checks whether a transaction commit is needed after changing the active database.
      *
-     * @param monitor          progress monitor
      * @param executionContext execution context to check transaction state
      * @throws DBCException on error committing transaction
      */
-    private static void commitTransactionIfNeeded(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext
-    ) throws DBCException {
+    private static void commitTransactionIfNeeded(@Nullable DBCExecutionContext executionContext) throws DBCException {
         var transactionManager = DBUtils.getTransactionManager(executionContext);
         if (transactionManager == null || transactionManager.isAutoCommit()) {
             return;
@@ -281,6 +277,9 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         if (contextDefaults == null || !contextDefaults.isDefaultsChangeTransactional()) {
             return;
         }
+        // The execution queue guarantees that we don't interfere with toolbar refresh. Eclipse
+        // uses the current shell as the source of truth when refreshing command handlers,
+        // and this ensures that the dialog is shown BEFORE the schema toolbar is refreshed.
         UIExecutionQueue.queueExec(() -> {
             var reply = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
                 .setTitle(UINavigatorMessages.confirm_commit_after_defaults_change_title)
@@ -292,15 +291,22 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             if (reply != Reply.YES) {
                 return;
             }
-            try {
-                DBExecUtils.commitContextTransaction(monitor, executionContext);
-            } catch (DBCException e) {
-                DBWorkbench.getPlatformUI().showError(
-                    "Commit transaction",
-                    "Error committing transaction after changing active database",
-                    e
-                );
-            }
+            new AbstractJob("Commit transaction") {
+                @NotNull
+                @Override
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                    try {
+                        DBExecUtils.commitContextTransaction(monitor, executionContext);
+                    } catch (DBCException e) {
+                        DBWorkbench.getPlatformUI().showError(
+                            "Commit transaction",
+                            "Error committing transaction after changing active database",
+                            e
+                        );
+                    }
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
         });
     }
 
