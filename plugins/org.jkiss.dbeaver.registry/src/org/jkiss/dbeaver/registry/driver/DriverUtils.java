@@ -33,22 +33,19 @@ import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.io.CopyingFileVisitor;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * DriverUtils
@@ -78,14 +75,6 @@ public class DriverUtils {
         return true;
     }
 
-    static void copyZipStream(@NotNull InputStream inputStream, @NotNull OutputStream outputStream) throws IOException {
-        byte[] writeBuffer = new byte[IOUtils.DEFAULT_BUFFER_SIZE];
-        for (int br = inputStream.read(writeBuffer); br != -1; br = inputStream.read(writeBuffer)) {
-            outputStream.write(writeBuffer, 0, br);
-        }
-        outputStream.flush();
-    }
-
     @NotNull
     static List<Path> extractZipArchives(@NotNull List<Path> files) {
         if (files.isEmpty()) {
@@ -98,30 +87,36 @@ public class DriverUtils {
                 continue;
             }
             // Seems to be a zip. Let's try it.
-            try (InputStream is = Files.newInputStream(inputFile)) {
-                try (ZipInputStream zipStream = new ZipInputStream(is)) {
-                    for (; ; ) {
-                        ZipEntry zipEntry = zipStream.getNextEntry();
-                        if (zipEntry == null) {
-                            break;
-                        }
-                        try {
-                            if (!zipEntry.isDirectory()) {
-                                String zipEntryName = zipEntry.getName();
-                                if (zipEntryName.endsWith(DBPDriverLibrary.FILE_EXT_CLASS)) {
-                                    // This is a jar with classes. Stop processing.
-                                    break;
-                                }
-                                if (zipEntryName.endsWith(DBPDriverLibrary.FILE_EXT_JAR) || zipEntryName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
-                                    checkAndExtractEntry(inputFile, zipStream, zipEntry, jarFiles);
-                                }
-                            }
-                        } finally {
-                            zipStream.closeEntry();
-                        }
-                    }
+            try (FileSystem zipFileSystem = FileSystems.newFileSystem(inputFile)) {
+                Path sourceRoot = zipFileSystem.getPath("/");
+                String sourceName = inputFile.getFileName().toString();
+                if (sourceName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
+                    sourceName = sourceName.substring(0, sourceName.length() - 4);
                 }
-
+                Path localCacheDir = DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR).resolve(sourceName);
+                Files.walkFileTree(sourceRoot, new CopyingFileVisitor(sourceRoot, localCacheDir) {
+                    @NotNull
+                    @Override
+                    public FileVisitResult visitFile(
+                        @NotNull Path file,
+                        @NotNull BasicFileAttributes attrs
+                    ) throws IOException {
+                        String fileName = file.getFileName().toString();
+                        if (fileName.endsWith(DBPDriverLibrary.FILE_EXT_CLASS)) {
+                            // This is a jar with classes. Stop processing.
+                            return FileVisitResult.TERMINATE;
+                        }
+                        if (fileName.endsWith(DBPDriverLibrary.FILE_EXT_JAR) ||
+                            fileName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
+                            Path localFile = resolveTargetPath(file);
+                            jarFiles.add(localFile);
+                            if (!Files.exists(localFile)) {
+                                return super.visitFile(file, attrs);
+                            }
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
             } catch (Exception e) {
                 // No a zip
                 log.debug("Error processing zip archive '" + inputFile.getFileName() + "': " + e.getMessage());
@@ -129,46 +124,6 @@ public class DriverUtils {
         }
 
         return jarFiles;
-    }
-
-    private static void checkAndExtractEntry(
-        @NotNull Path sourceFile,
-        @NotNull InputStream zipStream,
-        @NotNull ZipEntry zipEntry,
-        @NotNull List<Path> jarFiles
-    ) throws IOException {
-        if (zipEntry.getName().contains("..")) {
-            throw new IOException("Invalid zip entry: " + zipEntry.getName());
-        }
-        String sourceName = sourceFile.getFileName().toString();
-        if (sourceName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
-            sourceName = sourceName.substring(0, sourceName.length() - 4);
-        }
-        Path localCacheDir = DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR).resolve(sourceName);
-        if (!Files.exists(localCacheDir)) {
-            try {
-                Files.createDirectories(localCacheDir);
-            } catch (IOException e) {
-                throw new IOException("Can't create local cache folder '" + localCacheDir.toAbsolutePath() + "'", e);
-            }
-        }
-        Path localFile = localCacheDir.resolve(zipEntry.getName());
-        jarFiles.add(localFile);
-        if (Files.exists(localFile)) {
-            // Already extracted
-            return;
-        }
-        Path localDir = localFile.getParent();
-        if (!Files.exists(localDir)) { // in case of localFile located in subdirectory inside zip archive
-            try {
-                Files.createDirectories(localDir);
-            } catch (IOException e) {
-                throw new IOException("Can't create local file directory in the cache '" + localDir.toAbsolutePath() + "'", e);
-            }
-        }
-        try (OutputStream os = Files.newOutputStream(localFile)) {
-            copyZipStream(zipStream, os);
-        }
     }
 
     @NotNull
