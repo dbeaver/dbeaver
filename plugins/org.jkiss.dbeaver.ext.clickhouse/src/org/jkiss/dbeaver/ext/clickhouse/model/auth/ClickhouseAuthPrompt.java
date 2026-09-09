@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
-
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.net.URI;
@@ -34,12 +33,36 @@ public interface ClickhouseAuthPrompt {
     /**
      * Default prompt, shows a modal dialog with the verification url and the user code.
      */
-    ClickhouseAuthPrompt DEFAULT = (verificationUri, userCode, cancellation) -> {
-        UIServiceAuth authService = DBWorkbench.getService(UIServiceAuth.class);
-        if (authService == null) {
-            throw new DBException("Browser authentication is available only in desktop applications");
+    ClickhouseAuthPrompt DEFAULT = new ClickhouseAuthPrompt() {
+        @Override
+        public void showUserCode(
+            @NotNull URI verificationUri,
+            @NotNull String userCode,
+            @NotNull CompletableFuture<Void> cancellation
+        ) throws DBException {
+            getAuthService().showCodePopup(verificationUri, userCode, cancellation);
         }
-        authService.showCodePopup(verificationUri, userCode, cancellation);
+
+        @Override
+        public void openBrowser(
+            @NotNull URI authorizationUri,
+            @NotNull CompletableFuture<Void> completion
+        ) throws DBException {
+            try {
+                getAuthService().showBrowserPopup(authorizationUri, completion);
+            } catch (UnsupportedOperationException e) {
+                throw new DBException("Browser authentication is not supported by the current UI service", e);
+            }
+        }
+
+        @NotNull
+        private UIServiceAuth getAuthService() throws DBException {
+            UIServiceAuth authService = DBWorkbench.getService(UIServiceAuth.class);
+            if (authService == null) {
+                throw new DBException("Browser authentication is available only in desktop applications");
+            }
+            return authService;
+        }
     };
 
     /**
@@ -56,6 +79,19 @@ public interface ClickhouseAuthPrompt {
      * Opens the authorization page in the user's browser.
      * Used by the authorization code flow, where there is no code to type in.
      */
+    default void openBrowser(
+        @NotNull URI authorizationUri,
+        @NotNull CompletableFuture<Void> completion
+    ) throws DBException {
+        openBrowser(authorizationUri);
+    }
+
+    /**
+     * Opens the authorization page in the user's browser.
+     *
+     * @deprecated implement {@link #openBrowser(URI, CompletableFuture)} to support cancellation
+     */
+    @Deprecated
     default void openBrowser(@NotNull URI authorizationUri) throws DBException {
         String command;
         if (RuntimeUtils.isMacOS()) {
@@ -68,7 +104,6 @@ public interface ClickhouseAuthPrompt {
         try {
             new ProcessBuilder(command, authorizationUri.toString()).start();
         } catch (Exception e) {
-            // Failing silently would leave the user staring at a progress bar until the login times out
             throw new DBException(
                 "Cannot open the browser automatically. Open this address to sign in: " + authorizationUri, e);
         }
