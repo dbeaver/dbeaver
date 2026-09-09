@@ -26,11 +26,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseAuthModelJWTBase;
-import org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseAuthModelOIDC;
-import org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseJWTProviderRegistry;
-import org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseOIDCProvider;
-import org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseOIDCSettings;
+import org.jkiss.dbeaver.ext.clickhouse.model.auth.*;
 import org.jkiss.dbeaver.ext.clickhouse.ui.internal.ClickhouseMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
@@ -65,17 +61,20 @@ public class ClickhouseOIDCAuthConfigurator extends DatabaseNativeAuthModelConfi
         super.createControl(authPanel, object, propertyChangeListener);
 
         emailText = createText(authPanel, ClickhouseMessages.dialog_connection_auth_oidc_email,
-            ClickhouseMessages.dialog_connection_auth_oidc_email_tip, SWT.BORDER, propertyChangeListener);
+            ClickhouseMessages.dialog_connection_auth_oidc_email_tip, "name@example.com", SWT.BORDER, propertyChangeListener);
         issuerText = createText(authPanel, ClickhouseMessages.dialog_connection_auth_oidc_issuer,
-            ClickhouseMessages.dialog_connection_auth_oidc_issuer_tip, SWT.BORDER, propertyChangeListener);
+            ClickhouseMessages.dialog_connection_auth_oidc_issuer_tip, "https://login.example.com/tenant/v2.0",
+            SWT.BORDER, propertyChangeListener);
         clientIdText = createText(authPanel, ClickhouseMessages.dialog_connection_auth_oidc_client_id,
-            null, SWT.BORDER, propertyChangeListener);
+            null, "00000000-0000-0000-0000-000000000000", SWT.BORDER, propertyChangeListener);
         clientSecretText = createText(authPanel, ClickhouseMessages.dialog_connection_auth_oidc_client_secret,
-            ClickhouseMessages.dialog_connection_auth_oidc_client_secret_tip, SWT.BORDER | SWT.PASSWORD, propertyChangeListener);
+            ClickhouseMessages.dialog_connection_auth_oidc_client_secret_tip, "client-secret (optional)",
+            SWT.BORDER | SWT.PASSWORD, propertyChangeListener);
         audienceText = createText(authPanel, ClickhouseMessages.dialog_connection_auth_oidc_audience,
-            ClickhouseMessages.dialog_connection_auth_oidc_audience_tip, SWT.BORDER, propertyChangeListener);
+            ClickhouseMessages.dialog_connection_auth_oidc_audience_tip, "https://clickhouse.example.com",
+            SWT.BORDER, propertyChangeListener);
         scopesText = createText(authPanel, ClickhouseMessages.dialog_connection_auth_oidc_scopes,
-            null, SWT.BORDER, propertyChangeListener);
+            null, "openid profile email offline_access", SWT.BORDER, propertyChangeListener);
 
         callbackPortSpinner = UIUtils.createLabelSpinner(authPanel,
             ClickhouseMessages.dialog_connection_auth_oidc_callback_port,
@@ -101,11 +100,13 @@ public class ClickhouseOIDCAuthConfigurator extends DatabaseNativeAuthModelConfi
         @NotNull Composite panel,
         @NotNull String label,
         @Nullable String tip,
+        @NotNull String hint,
         int style,
         @NotNull Runnable propertyChangeListener
     ) {
         Text text = UIUtils.createLabelText(panel, label, "", style);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text.setMessage(hint);
         if (tip != null) {
             text.setToolTipText(tip);
         }
