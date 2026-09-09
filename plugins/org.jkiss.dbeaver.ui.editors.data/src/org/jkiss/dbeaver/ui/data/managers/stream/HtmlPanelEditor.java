@@ -51,6 +51,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class HtmlPanelEditor implements IStreamValueEditor<Composite> {
 
     private static final Log log = Log.getLog(HtmlPanelEditor.class);
+    private static final String CONTENT_SECURITY_POLICY =
+        "default-src 'none'; base-uri 'none'; form-action 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:";
 
     private final IValueController valueController;
     private final AtomicLong updateSequence = new AtomicLong();
@@ -143,10 +145,19 @@ public class HtmlPanelEditor implements IStreamValueEditor<Composite> {
         return content.toString();
     }
 
+    @NotNull
+    static String prepareContent(@NotNull String html) {
+        if (html.isEmpty()) {
+            return html;
+        }
+        return "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Security-Policy\" content=\""
+            + CONTENT_SECURITY_POLICY + "\">" + html + "</head><body></body></html>";
+    }
+
     private void updateBrowser(long updateId, @NotNull String html) {
         UIUtils.syncExec(() -> {
             if (updateId == updateSequence.get() && browser != null && !browser.isDisposed()) {
-                browser.setText(html);
+                browser.setText(prepareContent(html));
             }
         });
     }

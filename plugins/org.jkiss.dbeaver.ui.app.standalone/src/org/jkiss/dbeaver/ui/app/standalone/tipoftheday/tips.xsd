@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="https://github.com/dbeaver/dbeaver/blob/devel/plugins/org.jkiss.dbeaver.ui.app.standalone/src/org/jkiss/dbeaver/ui/app/standalone/tipoftheday/tips.xsd"
+           xmlns="https://github.com/dbeaver/dbeaver/blob/devel/plugins/org.jkiss.dbeaver.ui.app.standalone/src/org/jkiss/dbeaver/ui/app/standalone/tipoftheday/tips.xsd"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:element name="tips">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tip" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="tip">
+        <xs:complexType mixed="true">
+            <xs:complexContent>
+                <xs:extension base="formattedText">
+                    <xs:attribute name="product" type="productList" use="optional"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:group name="tipContentMarkupElement">
+        <xs:choice>
+            <xs:element ref="a"/>
+            <xs:element name="b" type="formattedText"/>
+            <xs:element name="i" type="formattedText"/>
+            <xs:element name="u" type="formattedText"/>
+            <xs:element name="br">
+                <xs:complexType/>
+            </xs:element>
+            <xs:element ref="commandRef"/>
+        </xs:choice>
+    </xs:group>
+
+    <xs:group name="tipNoLinksMarkupElement">
+        <xs:choice>
+            <xs:element name="b" type="formattedNoLinksText"/>
+            <xs:element name="i" type="formattedNoLinksText"/>
+            <xs:element name="u" type="formattedNoLinksText"/>
+            <xs:element name="br">
+                <xs:complexType/>
+            </xs:element>
+            <xs:element ref="commandRef"/>
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="formattedText" mixed="true">
+        <xs:group ref="tipContentMarkupElement" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:complexType>
+
+    <xs:complexType name="formattedNoLinksText" mixed="true">
+        <xs:group ref="tipNoLinksMarkupElement" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:complexType>
+
+    <xs:element name="a">
+        <xs:complexType mixed="true">
+            <xs:complexContent>
+                <xs:extension base="formattedNoLinksText">
+                    <xs:attribute name="href" type="xs:anyURI" use="required"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="commandRef">
+        <xs:complexType>
+            <xs:attribute name="commandId" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="productList">
+        <xs:restriction base="xs:string">
+            <!-- todo: consider replacing with list of enumeration, which is clearer - bits.xml should be adjusted for whitespace separator -->
+            <xs:pattern value="(ce|le|ee|ue|te)(,(ce|le|ee|ue|te))*"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

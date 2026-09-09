@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.controls.txn;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
@@ -78,9 +77,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = contextTree.getHeaderHeight() + contextTree.getItemHeight() * 5;
         contextTree.setLayoutData(gd);
-        contextTree.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        contextTree.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (e.item != null && e.item.getData() instanceof DBCExecutionContext) {
                     selectedContext = (DBCExecutionContext) e.item.getData();
                 } else {
@@ -91,8 +88,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 rollbackButton.setEnabled(hasTransaction);
                 logViewer.setFilter(createContextFilter(selectedContext));
                 logViewer.refresh();
-            }
-        });
+            }));
 
         closeOnFocusLost(contextTree);
 
@@ -100,31 +96,16 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
             Composite controlPanel = UIUtils.createPlaceholder(composite, 3, 5);
             controlPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             final Button showAllCheck = UIUtils.createCheckbox(controlPanel, "Show all connections", "Show all datasource connections. Otherwise shows only transactional connections.", false, 1);
-            showAllCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    loadContexts(showAllCheck.getSelection());
-                }
-            });
+            showAllCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> loadContexts(showAllCheck.getSelection())));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             showAllCheck.setLayoutData(gd);
             commitButton = UIUtils.createPushButton(controlPanel, "Commit", DBeaverIcons.getImage(UIIcon.TXN_COMMIT));
             commitButton.setEnabled(false);
-            commitButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    endTransaction(true);
-                }
-            });
+            commitButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> endTransaction(true)));
             rollbackButton = UIUtils.createPushButton(controlPanel, "Rollback", DBeaverIcons.getImage(UIIcon.TXN_ROLLBACK));
             rollbackButton.setEnabled(false);
-            rollbackButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    endTransaction(false);
-                }
-            });
+            rollbackButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> endTransaction(false)));
 
             closeOnFocusLost(showAllCheck, commitButton, rollbackButton);
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -113,12 +112,8 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
         this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
         this.aggregateTable.addDisposeListener(e -> menuMgr.dispose());
 
-        aggregateTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                presentation.getController().updatePanelActions();
-            }
-        });
+        aggregateTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            presentation.getController().updatePanelActions()));
 
         return this.aggregateTable;
     }
@@ -327,7 +322,7 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
         contributionManager.add(item);
         contributionManager.add(new RemoveFunctionAction());
         contributionManager.add(new ResetFunctionsAction());
-        contributionManager.add(new ToolbarSeparatorContribution(true));
+        contributionManager.add(contributionManager instanceof IToolBarManager ? new ToolbarSeparatorContribution(true) : new Separator());
         contributionManager.add(new GroupByColumnsAction());
         contributionManager.add(new ValueTypeToggleAction());
     }

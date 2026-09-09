@@ -72,7 +72,7 @@
                 label="SSL"
                 description="SSL settings"
                 secured="false"
-                desktop="true"
+                desktop="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.databend.DatabendDataSourceProvider"/>

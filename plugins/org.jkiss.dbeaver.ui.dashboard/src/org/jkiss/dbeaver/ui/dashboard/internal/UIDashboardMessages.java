@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ public class UIDashboardMessages extends NLS {
     public static String dialog_add_dashboard_column_description;
     public static String dialog_add_dashboard_message_no_more_dashboards_for;
     public static String dialog_add_dashboard_button_manage;
-    public static String dialog_add_dashboard_button_cancel;
     public static String dialog_add_dashboard_button_add;
 
     //select dashboard database dialog
@@ -98,9 +97,7 @@ public class UIDashboardMessages extends NLS {
     public static String dialog_dashboard_manager_title;
     public static String dialog_dashboard_manager_treecolumn_name;
     public static String dialog_dashboard_manager_button_new;
-    public static String dialog_dashboard_manager_button_copy;
     public static String dialog_dashboard_manager_button_edit;
-    public static String dialog_dashboard_manager_button_delete;
     public static String dialog_dashboard_manager_infolabel_predifined_dashboard;
     public static String dialog_dashboard_manager_shell_delete_title;
     public static String dialog_dashboard_manager_shell_delete_question;
@@ -114,12 +111,8 @@ public class UIDashboardMessages extends NLS {
     public static String dialog_dashboard_view_config_group_viewcfg_checkbox_init_default_tooltip;
     public static String dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn;
     public static String dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn_tooltip;
-    public static String dialog_dashboard_view_config_button_manage;
 
     // dashboard renderer timeseries
-    public static String histogram_timeseries_x_axis_label;
-    public static String histogram_timeseries_y_axis_label;
-    public static String histogram_timeseries_date_axis_label;
 
     // dashboard item
     public static String dashboard_item_errorlabel_text;

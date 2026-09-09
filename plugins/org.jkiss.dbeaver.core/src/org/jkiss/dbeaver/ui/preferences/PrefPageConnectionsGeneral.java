@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -29,6 +28,7 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -62,7 +63,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
-    private static final String VALUE_TRUST_STORE_TYPE_WINDOWS_MY = "WINDOWS-MY"; //$NON-NLS-1$
+    //private static final String VALUE_TRUST_STORE_TYPE_WINDOWS_MY = "WINDOWS-MY"; //$NON-NLS-1$
     private static final String HELP_CONNECTIONS_LINK = "Create-Connection";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
@@ -98,28 +99,39 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
                 GridData.VERTICAL_ALIGN_BEGINNING);
             Composite groupComposite = UIUtils.createComposite(groupDefaults, 2);
             connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupComposite);
-            connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    defaultConnectionType = connectionTypeCombo.getSelectedItem();
-                }
-            });
-            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(groupComposite, this, null);
-            connectionDefaultNamePatternText = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern, CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip);
+            connectionTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                defaultConnectionType = connectionTypeCombo.getSelectedItem()));
+            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(
+                groupComposite, this, null);
+            connectionDefaultNamePatternText = UIUtils.createLabelText(
+                groupComposite,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip
+            );
             ContentAssistUtils.installContentProposal(
                 connectionDefaultNamePatternText,
                 new SmartTextContentAdapter(),
-                new StringContentProposalProvider(Arrays.stream(ConnectionNameResolver.getConnectionVariables()).map(GeneralUtils::variablePattern).toArray(String[]::new))
+                new StringContentProposalProvider(
+                    Arrays.stream(ConnectionNameResolver.getConnectionVariables())
+                        .map(GeneralUtils::variablePattern).toArray(String[]::new))
             );
             connectionDefaultNamePatternText.setText(connectionNamePattern);
             UIUtils.setContentProposalToolTip(connectionDefaultNamePatternText, "Connection name patterns",
                 ConnectionNameResolver.getConnectionVariables());
 
             fakeConnectionNameResolver = generateSampleDatasourceResolver();
-            sampleConnectionName = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip);
+            sampleConnectionName = UIUtils.createLabelText(
+                groupComposite,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample,
+                CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip
+            );
             sampleConnectionName.setEditable(false);
-            sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
-            connectionDefaultNamePatternText.addModifyListener(e -> sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver)));
+            sampleConnectionName.setText(GeneralUtils.replaceVariables(
+                connectionDefaultNamePatternText.getText(),
+                fakeConnectionNameResolver
+            ));
+            connectionDefaultNamePatternText.addModifyListener(e -> sampleConnectionName.setText(
+                GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver)));
 
             new VariablesHintLabel(
                     groupDefaults,
@@ -135,7 +147,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
 
             Composite groupBehavior = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_connection_label_general,
+                UIConnectionMessages.pref_page_connection_label_general,
                 1,
                 GridData.VERTICAL_ALIGN_BEGINNING
             );
@@ -175,12 +187,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         Link urlHelpLabel = UIUtils.createLink(
             composite,
             "<a>" + CoreMessages.pref_page_connections_wiki_link + "</a>",
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK));
-                }
-            });
+            SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK))));
         GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
         urlHelpLabel.setLayoutData(gridData);
 
@@ -226,7 +234,10 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     }
 
     private ConnectionNameResolver generateSampleDatasourceResolver() {
-        final DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        assert activeProject != null;
+
+        final DataSourceRegistry<?> dataSourceRegistry = new DataSourceRegistry<>(activeProject);
         DBPDriver driver = DriverUtils.getRecentDrivers(DriverUtils.getAllDrivers(), 1).getFirst();
         DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
         conConfig.setHostName("hostname");
@@ -235,7 +246,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         conConfig.setHostPort("42");
         conConfig.setServerName("server1");
         conConfig.setUrl("sample//url");
-        DataSourceDescriptor fakeDataSource = (DataSourceDescriptor) dataSourceRegistry.createDataSource(
+        DataSourceDescriptor fakeDataSource = dataSourceRegistry.createDataSource(
             DataSourceDescriptor.generateNewId(driver),
             driver,
             conConfig

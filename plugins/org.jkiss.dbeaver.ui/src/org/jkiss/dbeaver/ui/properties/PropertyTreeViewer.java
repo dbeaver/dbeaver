@@ -233,18 +233,20 @@ public class PropertyTreeViewer extends TreeViewer {
         this.newPropertiesAllowed = newPropertiesAllowed;
     }
 
-    public void loadProperties(DBPPropertySource propertySource)
+    public void loadProperties(@NotNull DBPPropertySource propertySource)
     {
         loadProperties(null, null, propertySource);
     }
 
-    public void loadProperties(DBRProgressMonitor monitor, DBPPropertySource propertySource)
-    {
+    public void loadProperties(@NotNull DBRProgressMonitor monitor, @NotNull DBPPropertySource propertySource) {
         loadProperties(monitor, null, propertySource);
     }
 
-    protected void loadProperties(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
-    {
+    protected void loadProperties(
+        @Nullable DBRProgressMonitor monitor,
+        @Nullable TreeNode parent,
+        @NotNull DBPPropertySource propertySource
+    ) {
         // Make tree model
         customCategories = getCustomCategories();
 
@@ -332,15 +334,20 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
-    private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
-    {
+    private Map<String, TreeNode> loadTreeNodes(
+        @Nullable DBRProgressMonitor monitor,
+        @Nullable TreeNode parent,
+        @NotNull DBPPropertySource propertySource
+    ) {
         Map<String, TreeNode> categories = new LinkedHashMap<>();
         TreeNode lastCategory = null;
         final DBPPropertyDescriptor[] props = filterProperties(propertySource.getEditableValue(), propertySource.getProperties());
         for (DBPPropertyDescriptor prop : props) {
-            if (prop instanceof ObjectPropertyDescriptor) {
+            if (prop instanceof ObjectPropertyDescriptor opd) {
                 Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
-                if (!((ObjectPropertyDescriptor) prop).isPropertyVisible(propertySource.getEditableValue(), propertyValue)) {
+                if ((propertyValue == null && opd.isOptional()) ||
+                    !opd.isPropertyVisible(propertySource.getEditableValue(), propertyValue)
+                ) {
                     // Skip non-visible properties
                     continue;
                 }
@@ -396,7 +403,8 @@ public class PropertyTreeViewer extends TreeViewer {
         return categories;
     }
 
-    protected DBPPropertyDescriptor[] filterProperties(Object object, DBPPropertyDescriptor[] properties) {
+    @NotNull
+    protected DBPPropertyDescriptor[] filterProperties(@NotNull Object object, @NotNull DBPPropertyDescriptor[] properties) {
         return properties;
     }
 
@@ -405,8 +413,7 @@ public class PropertyTreeViewer extends TreeViewer {
         super.setInput(null);
     }
 
-    protected void addProperty(Object node, DBPPropertyDescriptor property, boolean update)
-    {
+    protected void addProperty(Object node, @NotNull DBPPropertyDescriptor property, boolean update) {
         if (node instanceof TreeNode treeNode) {
             while (treeNode.property != null) {
                 treeNode = treeNode.parent;
@@ -418,8 +425,7 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
-    protected void removeProperty(Object node)
-    {
+    protected void removeProperty(Object node) {
         applyEditorValue();
         disposeOldEditor();
         if (node instanceof TreeNode treeNode) {

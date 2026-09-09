@@ -27,8 +27,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -132,14 +131,11 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             }
             cb.setSelection(enabled);
             enabledTypes.put(typeName, enabled);
-            cb.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            cb.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     enabledTypes.put(typeName, cb.getSelection());
                     driverSettings.put(typeName, cb.getSelection());
                     applyFilter();
-                }
-            });
+                }));
         }
 
         return cbGroup;

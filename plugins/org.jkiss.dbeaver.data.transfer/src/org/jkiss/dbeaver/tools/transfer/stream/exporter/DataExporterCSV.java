@@ -61,6 +61,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     public static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
     public static final String PROP_QUOTE_NEVER = "quoteNever";
+    public static final String PROP_ESCAPE_FORMULAS = "escapeFormulas";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     public static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
@@ -89,6 +90,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private String delimiter;
     private String quoteChar = "\"";
     private boolean useQuotes = true;
+    private boolean escapeFormulas = true;
     private QuoteStrategy quoteStrategy = QuoteStrategy.DISABLED;
     private String rowDelimiter;
     private String nullString;
@@ -132,6 +134,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             throw new DBException("Separator cant start with Quote. Separator: [%s] Quote [%s]".formatted(delimiter, quoteChar));
         }
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
+        escapeFormulas = CommonUtils.getBoolean(properties.get(PROP_ESCAPE_FORMULAS), true);
 
         if (headerPosition == null) {
             headerPosition = CommonUtils.valueOf(HeaderPosition.class, CommonUtils.toString(properties.get(PROP_HEADER)), HeaderPosition.top);
@@ -200,7 +203,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     }
                 }
             }
-            writeCellValue(headerCase.transform(colName), true);
+            writeCellValue(sanitizeFormula(headerCase.transform(colName)), true);
             if (i < columnsSize - 1) {
                 writeDelimiter();
             }
@@ -222,7 +225,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                         writeCellValue(DBConstants.NULL_VALUE_LABEL, false);
                     } else if (ContentUtils.isTextContent(content)) {
                         try (Reader reader = cs.getContentReader()) {
-                            writeCellValue(IOUtils.readToString(reader), false);
+                            writeCellValue(sanitizeFormula(IOUtils.readToString(reader)), false);
                         }
                     } else {
                         getSite().writeBinaryData(cs);
@@ -260,7 +263,11 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                         writeCellValue("", true);
                     }
                 } else {
-                    writeCellValue(stringValue, quote);
+                    if (row[i] instanceof Number) {
+                        writeCellValue(stringValue, quote);
+                    } else {
+                        writeCellValue(sanitizeFormula(stringValue), quote);
+                    }
                 }
             }
             if (i < row.length - 1) {
@@ -324,12 +331,25 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         return false;
     }
 
+    @NotNull
+    private String sanitizeFormula(@NotNull String value) {
+        if (!escapeFormulas || value.isEmpty()) {
+            return value;
+        }
+        // see https://owasp.org/www-community/attacks/CSV_Injection
+        boolean startsWithFormulaInitiator = switch (value.charAt(0)) {
+            case '=', '+', '-', '@', '\t', '\r', '\n', '\uFF1D', '\uFF0B', '\uFF0D', '\uFF20' -> true;
+            default -> false;
+        };
+        return startsWithFormulaInitiator ? "'" + value : value;
+    }
+
     private void writeCellValue(@NotNull String value, boolean isQuote) {
         boolean isNeedQuote = isQuote;
         String preparedValue = value;
         if (CommonUtils.isNotEmpty(lineFeedEscapeString) && LINE_BREAK_REGEX.matcher(value).find()) {
-                preparedValue = LINE_BREAK_REGEX.matcher(value).replaceAll(lineFeedEscapeString);
-                isNeedQuote = true;
+            preparedValue = LINE_BREAK_REGEX.matcher(value).replaceAll(lineFeedEscapeString);
+            isNeedQuote = true;
         }
 
         // we decided to escape only one char quotes. Multichar quotes will NOT be escaped
@@ -338,8 +358,8 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             char singleQuoteChar = quoteChar.charAt(0);
             isNeedQuote = true;
             buffer.setLength(0);
-            for (int i = 0; i < value.length(); i++) {
-                char c = value.charAt(i);
+            for (int i = 0; i < preparedValue.length(); i++) {
+                char c = preparedValue.charAt(i);
                 if (c == singleQuoteChar) {
                     buffer.append(singleQuoteChar);
                 }

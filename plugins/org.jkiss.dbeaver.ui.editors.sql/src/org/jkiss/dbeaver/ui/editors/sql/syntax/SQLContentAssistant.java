@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.VerifyEvent;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -34,8 +37,40 @@ public class SQLContentAssistant extends ContentAssistant {
 
     private SQLCompletionSorterUI sorter;
 
-    private int lastCompletionOffset = - 1;
-    private volatile boolean restartRequested = false;
+    private IDocument completionDocument;
+    private ISelectionProvider completionSelectionProvider;
+    private int completionRegionStart = -1;
+    private int completionRegionEnd = -1;
+
+    private final IDocumentListener completionDocumentListener = new IDocumentListener() {
+        @Override
+        public void documentAboutToBeChanged(DocumentEvent event) {
+            int changeStart = event.getOffset();
+            int changeEnd = changeStart + event.getLength();
+            if (changeStart < completionRegionStart ||
+                changeStart > completionRegionEnd ||
+                changeEnd > completionRegionEnd
+            ) {
+                hide();
+            } else {
+                completionRegionEnd += (event.getText() == null ? 0 : event.getText().length()) - event.getLength();
+            }
+        }
+
+        @Override
+        public void documentChanged(DocumentEvent event) {
+            // do nothing
+        }
+    };
+    private final ISelectionChangedListener completionSelectionListener = event -> {
+        if (event.getSelection() instanceof ITextSelection selection) {
+            int selectionStart = selection.getOffset();
+            int selectionEnd = selectionStart + selection.getLength();
+            if (selectionStart < completionRegionStart || selectionEnd > completionRegionEnd) {
+                hide();
+            }
+        }
+    };
 
     public SQLContentAssistant(SQLEditorBase editor) {
         super(); // Sync. Maybe we should make it async
@@ -43,12 +78,36 @@ public class SQLContentAssistant extends ContentAssistant {
         enableColoredLabels(true);
     }
 
-    public void setLastCompletionOffset(int lastCompletionOffset) {
-        this.lastCompletionOffset = lastCompletionOffset;
-        if (lastCompletionOffset == -1 && restartRequested) {
-            restartRequested = false;
-            UIUtils.asyncExec(() -> showPossibleCompletions());
+    public void setCompletionRegionOffset(int offset) {
+        clearCompletionRegion();
+        IDocument document = this.editor.getDocument();
+        if (document == null) {
+            return;
         }
+
+        this.completionDocument = document;
+        this.completionRegionStart = offset;
+        this.completionRegionEnd = offset;
+        this.completionDocument.addDocumentListener(this.completionDocumentListener);
+        if (this.editor.getTextViewer() != null) {
+            this.completionSelectionProvider = this.editor.getTextViewer().getSelectionProvider();
+            if (this.completionSelectionProvider != null) {
+                this.completionSelectionProvider.addSelectionChangedListener(this.completionSelectionListener);
+            }
+        }
+    }
+
+    public void clearCompletionRegion() {
+        if (this.completionDocument != null) {
+            this.completionDocument.removeDocumentListener(this.completionDocumentListener);
+            this.completionDocument = null;
+        }
+        if (this.completionSelectionProvider != null) {
+            this.completionSelectionProvider.removeSelectionChangedListener(this.completionSelectionListener);
+            this.completionSelectionProvider = null;
+        }
+        this.completionRegionStart = -1;
+        this.completionRegionEnd = -1;
     }
 
     public void setSorter(SQLCompletionSorterUI sorter) {
@@ -81,23 +140,6 @@ public class SQLContentAssistant extends ContentAssistant {
             } finally {
                 SQLCompletionProcessor.setSimpleMode(false);
             }
-        }
-
-        @Override
-        public void verifyKey(VerifyEvent event) {
-            if (lastCompletionOffset >= 0 && (
-                event.character == SWT.BS ||
-                (event.character == 0 && event.keyCode == SWT.ARROW_LEFT)
-            ) && editor.getTextViewer() != null) {
-                int pos = editor.getTextViewer().getSelectedRange().x;
-                if ((pos - 1) < lastCompletionOffset) {
-                    restartRequested = true;
-                    hide();
-                    return;
-                }
-            }
-
-            super.verifyKey(event);
         }
     }
 
