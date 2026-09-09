@@ -120,7 +120,7 @@ public class SnowflakeDataSource extends GenericDataSource {
         @Nullable JDBCExecutionContext initFrom
     ) throws DBException {
         SnowflakeExecutionContext executionContext = (SnowflakeExecutionContext) context;
-        String warehouse = SnowflakeUtils.getWarehouse(container.getConnectionConfiguration());
+        String warehouse = SnowflakeUtils.getWarehouse(container.getActualConnectionConfiguration());
         if (!CommonUtils.isEmpty(warehouse)) {
             executionContext.setActiveWarehouse(monitor, warehouse);
         }
