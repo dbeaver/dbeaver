@@ -148,10 +148,7 @@ class IoTDBExecutionContext extends GenericExecutionContext {
         }
 
         if (!CommonUtils.equalObjects(oldDatabaseName, activeDatabaseName)) {
-            GenericSchema newSchema = getDefaultSchema();
-            if (newSchema != null) {
-                DBUtils.fireObjectSelectionChange(oldSchema, newSchema, this);
-            }
+            DBUtils.fireObjectSelectionChange(oldSchema, getDefaultSchema(), this);
             return true;
         }
         return false;
