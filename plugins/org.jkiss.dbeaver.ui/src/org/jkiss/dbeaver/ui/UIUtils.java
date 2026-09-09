@@ -53,6 +53,7 @@ import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
@@ -932,15 +933,12 @@ public class UIUtils {
         //editButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         //editButton.setText("...");
         editButton.setImage(DBeaverIcons.getImage(UIIcon.EDIT)); //$NON-NLS-1$
-        editButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        editButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 String newText = EditTextDialog.editText(parent.getShell(), label, text.getText());
                 if (newText != null) {
                     text.setText(newText);
                 }
-            }
-        });
+            }));
         editTB.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         return text;

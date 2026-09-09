@@ -122,6 +122,7 @@ public class TextRenderingUtils {
         StyledText textWidget,
         int offset
     ) {
+        offset = Math.max(0, Math.min(offset, textWidget.getCharCount()));
         int lineHeight = textWidget.getLineHeight();
         int fontHeight = gc.getFontMetrics().getHeight();
         Point origin = textWidget.getLocationAtOffset(offset);

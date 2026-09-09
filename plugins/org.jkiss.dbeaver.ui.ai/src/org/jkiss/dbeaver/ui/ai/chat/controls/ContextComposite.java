@@ -58,11 +58,9 @@ import org.jkiss.utils.CommonUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Stream;
 
 public class ContextComposite extends Composite {
 
@@ -437,45 +435,44 @@ public class ContextComposite extends Composite {
                             "Database is being connected..." :
                             "Database is not connected")
                 ));
-                return;
-            }
-
-            manager.add(new EmptyAction("Metadata sent to AI"));
-            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-            boolean showSchemas = false;
-            boolean showCatalogs = false;
-            if (contextDefaults != null) {
-                showSchemas = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
-                showCatalogs = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
-            }
-
-            for (AIDatabaseScope scope : AIDatabaseScope.values()) {
-                if ((scope == AIDatabaseScope.CURRENT_SCHEMA && !showSchemas) ||
-                    scope == AIDatabaseScope.CURRENT_DATABASE && !showCatalogs
-                ) {
-                    if (settings.getScope() == scope) {
-                        AIDatabaseScope newScope = scope == AIDatabaseScope.CURRENT_SCHEMA ?
-                            AIDatabaseScope.CURRENT_DATABASE : AIDatabaseScope.CURRENT_DATASOURCE;
-                        log.trace("AI scope fallback to " + newScope);
-                        settings.setScope(newScope);
-                    }
-                    continue;
+            } else {
+                manager.add(new EmptyAction("Metadata sent to AI"));
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+                boolean showSchemas = false;
+                boolean showCatalogs = false;
+                if (contextDefaults != null) {
+                    showSchemas = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                    showCatalogs = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
                 }
-                manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
+
+                for (AIDatabaseScope scope : AIDatabaseScope.values()) {
+                    if ((scope == AIDatabaseScope.CURRENT_SCHEMA && !showSchemas) ||
+                        scope == AIDatabaseScope.CURRENT_DATABASE && !showCatalogs
+                    ) {
+                        if (settings.getScope() == scope) {
+                            AIDatabaseScope newScope = scope == AIDatabaseScope.CURRENT_SCHEMA ?
+                                AIDatabaseScope.CURRENT_DATABASE : AIDatabaseScope.CURRENT_DATASOURCE;
+                            log.trace("AI scope fallback to " + newScope);
+                            settings.setScope(newScope);
+                        }
+                        continue;
+                    }
+                    manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
+                }
             }
         }
 
         manager.add(new Separator());
         manager.add(new EmptyAction("Active configuration"));
-        List.of(AISettingsManager.getInstance().getSettings().getConfigurations()).stream()
+        Stream.of(AISettingsManager.getInstance().getSettings().getConfigurations())
             .sorted(Comparator.comparing(AIConfigurationProfile::getProfileName, String.CASE_INSENSITIVE_ORDER))
             .map(ChangeProfileAction::new)
             .forEach(manager::add);
 
         if (RuntimeUtils.isWindows()) {
             // Highlight selected item
-            manager.addMenuListener(mm -> getDisplay().asyncExec(() -> {
-                Menu swtMenu = ((MenuManager) mm).getMenu();
+            UIUtils.asyncExec(() -> {
+                Menu swtMenu = ((MenuManager) manager).getMenu();
                 if (swtMenu != null && !swtMenu.isDisposed()) {
                     for (MenuItem item : swtMenu.getItems()) {
                         if (item.getData() instanceof ActionContributionItem aci &&
@@ -487,7 +484,7 @@ public class ContextComposite extends Composite {
                         }
                     }
                 }
-            }));
+            });
         }
     }
 

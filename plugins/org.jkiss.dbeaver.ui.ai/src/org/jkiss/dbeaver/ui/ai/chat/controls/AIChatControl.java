@@ -314,7 +314,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     public boolean checkConfiguration() {
         try {
             if (!AIUtils.hasValidConfiguration()) {
-                AIUIUtils.showPreferences(getShell(), true);
+                AIUIUtils.showPreferences(getShell());
                 return false;
             }
         } catch (DBException e) {

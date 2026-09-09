@@ -112,7 +112,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
         List<String> choices = new ArrayList<>();
         if (EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
             choices.add(chunk.delta);
-        } else if (chunk.response != null) {
+        } else if (chunk.response != null && chunk.response.output != null) {
             for (OAIMessage msg : chunk.response.output) {
                 for (OAIMessageContent content : msg.content) {
                     if (!CommonUtils.isEmpty(content.text)) {
