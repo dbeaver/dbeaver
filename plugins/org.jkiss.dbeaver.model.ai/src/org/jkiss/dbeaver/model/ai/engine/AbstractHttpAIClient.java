@@ -36,7 +36,9 @@ public abstract class AbstractHttpAIClient implements AutoCloseable {
 
     public AbstractHttpAIClient() {
         this.client = new MonitoredHttpClient(
-            HttpClient.newHttpClient(),
+            // Force HTTP/1.1: over plaintext http:// the default HTTP_2 client attempts an h2c upgrade,
+            // and OpenAI-compatible servers like uvicorn/httptools then drop the request body
+            HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build(),
             this::mapHttpError,
             this::processErrors
         );

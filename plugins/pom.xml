@@ -25,7 +25,6 @@
         <module>org.jkiss.dbeaver.model.lsm</module>
         <module>org.jkiss.dbeaver.model.nio</module>
         <module>org.jkiss.dbeaver.model.rcp</module>
-        <module>org.jkiss.dbeaver.model.tracking</module>
         <module>org.jkiss.dbeaver.model.sm</module>
         <module>org.jkiss.dbeaver.model.sql</module>
         <module>org.jkiss.dbeaver.model.sql.jdbc</module>
@@ -60,6 +59,8 @@
         <module>org.jkiss.dbeaver.ext.informix</module>
         <module>org.jkiss.dbeaver.ext.iotdb</module>
         <module>org.jkiss.dbeaver.ext.kingbase</module>
+        <module>org.jkiss.dbeaver.ext.manticore</module>
+        <module>org.jkiss.dbeaver.ext.tidblake</module>
         <module>org.jkiss.dbeaver.ext.mssql</module>
         <module>org.jkiss.dbeaver.ext.mysql</module>
         <module>org.jkiss.dbeaver.ext.netezza</module>
@@ -113,7 +114,6 @@
                 <module>org.jkiss.dbeaver.ui.app.standalone</module>
                 <module>org.jkiss.dbeaver.ui.app.eclipse</module>
                 <module>org.jkiss.dbeaver.ui.app.msstore</module>
-                <module>org.jkiss.dbeaver.ui.tracking</module>
                 <module>org.jkiss.dbeaver.ext.athena.ui</module>
                 <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
                 <module>org.jkiss.dbeaver.ext.clickhouse.ui</module>
@@ -125,10 +125,10 @@
                 <module>org.jkiss.dbeaver.ext.duckdb.ui</module>
                 <module>org.jkiss.dbeaver.ext.firebird.ui</module>
                 <module>org.jkiss.dbeaver.ext.generic.ui</module>
-                <module>org.jkiss.dbeaver.ext.h2.ui</module>
                 <module>org.jkiss.dbeaver.ext.hana.ui</module>
                 <module>org.jkiss.dbeaver.ext.iotdb.ui</module>
                 <module>org.jkiss.dbeaver.ext.kingbase.ui</module>
+                <module>org.jkiss.dbeaver.ext.tidblake.ui</module>
                 <module>org.jkiss.dbeaver.ext.mssql.ui</module>
                 <module>org.jkiss.dbeaver.ext.mysql.ui</module>
                 <module>org.jkiss.dbeaver.ext.oceanbase.ui</module>
