@@ -82,11 +82,12 @@ public class WebCSSInitializer implements AutoCloseable {
             case WEB_CSS_PATH -> server.addTextResource(
                 resource,
                 LocalResourceHttpServer.Resource.of(url::openStream)
-                    .map(this::updateCss)
+                    .map(this::updateThemeValues)
             );
             case WEB_HTML_PATH -> server.addTextResource(
                 resource,
                 LocalResourceHttpServer.Resource.of(url::openStream)
+                    .map(this::updateThemeValues)
                     .map(content -> content.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent()))
             );
             default -> server.addResource(resource, url::openStream);
@@ -127,11 +128,11 @@ public class WebCSSInitializer implements AutoCloseable {
     }
 
     @NotNull
-    private String updateCss(@NotNull String cssContent) {
+    private String updateThemeValues(@NotNull String content) {
         for (var entry : cssValues.entrySet()) {
-            cssContent = cssContent.replace(entry.getKey(), entry.getValue());
+            content = content.replace(entry.getKey(), entry.getValue());
         }
-        return cssContent;
+        return content;
     }
 
     @NotNull
