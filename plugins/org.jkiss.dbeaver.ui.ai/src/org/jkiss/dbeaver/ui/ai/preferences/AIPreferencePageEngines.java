@@ -132,6 +132,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         flushSelectedProfile();
         reloadEngines();
         AISettingsManager.getInstance().saveSettings(this.settings);
+        AISettingsManager.getInstance().notifyProfilesChanged();
         try {
             store.save();
         } catch (IOException e) {
