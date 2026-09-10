@@ -20,8 +20,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -137,47 +136,40 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             catalogsTable.setHeaderVisible(true);
             gd = new GridData(SWT.FILL, SWT.TOP, true, false);
             catalogsTable.setLayoutData(gd);
-            catalogsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    if (catalogsTable.getSelectionIndex() < 0) {
-                        return;
-                    }
-                    selectedCatalogs.clear();
-                    for (TableItem item : catalogsTable.getSelection()) {
-                        if (item.getData() != null) {
-                            selectedCatalogs.add((MySQLCatalog) item.getData());
-                        }
-                    }
-                    selectedCatalog = selectedCatalogs.isEmpty() ? null : selectedCatalogs.get(0);
-                    // Reset dependent selections right away: table/procedure lists reload asynchronously,
-                    // and showGrants() below must not see the previous catalog's selection
-                    selectedTable = null;
-                    selectedTables.clear();
-                    selectedColumn = null;
-                    selectedColumns.clear();
-                    selectedProcedure = null;
-                    selectedProcedures.clear();
-                    showCatalogTables();
-                    showCatalogProcedures();
-                    showGrants();
+            catalogsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (catalogsTable.getSelectionIndex() < 0) {
+                    return;
                 }
-            });
+                selectedCatalogs.clear();
+                for (TableItem item : catalogsTable.getSelection()) {
+                    if (item.getData() != null) {
+                        selectedCatalogs.add((MySQLCatalog) item.getData());
+                    }
+                }
+                selectedCatalog = selectedCatalogs.isEmpty() ? null : selectedCatalogs.get(0);
+                // Reset dependent selections right away: table/procedure lists reload asynchronously,
+                // and showGrants() below must not see the previous catalog's selection
+                selectedTable = null;
+                selectedTables.clear();
+                selectedColumn = null;
+                selectedColumns.clear();
+                selectedProcedure = null;
+                selectedProcedures.clear();
+                showCatalogTables();
+                showCatalogProcedures();
+                showGrants();
+            }));
             UIUtils.createTableColumn(catalogsTable, SWT.LEFT, MySQLUIMessages.editors_user_editor_privileges_column_catalog);
             fillCatalogs();
             Composite catalogButtons = UIUtils.createComposite(catalogGroup, 2);
-            UIUtils.createPushButton(catalogButtons, ADD_ITEM_TEXT, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    handleAddCatalog();
-                }
-            });
-            catalogsRemoveButton = UIUtils.createPushButton(catalogButtons, REMOVE_ITEM_TEXT, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
+            UIUtils.createPushButton(catalogButtons, ADD_ITEM_TEXT, null, SelectionListener.widgetSelectedAdapter(e -> {
+                handleAddCatalog();
+            }));
+            catalogsRemoveButton = UIUtils.createPushButton(
+                catalogButtons, REMOVE_ITEM_TEXT, null,
+                SelectionListener.widgetSelectedAdapter(e -> {
                     handleRemoveCatalog();
-                }
-            });
+                }));
             catalogsRemoveButton.setEnabled(false);
         }
 
@@ -196,44 +188,37 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             tablesTable.setHeaderVisible(true);
             gd = new GridData(SWT.FILL, SWT.TOP, true, false);
             tablesTable.setLayoutData(gd);
-            tablesTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    if (tablesTable.getSelectionIndex() < 0) {
-                        return;
-                    }
-                    selectedTables.clear();
-                    for (TableItem item : tablesTable.getSelection()) {
-                        if (item.getData() != null) {
-                            selectedTables.add((MySQLTableBase) item.getData());
-                        }
-                    }
-                    selectedTable = selectedTables.isEmpty() ? null : selectedTables.get(0);
-                    selectedColumn = null;
-                    selectedColumns.clear();
-                    selectedProcedure = null;
-                    selectedProcedures.clear();
-                    proceduresTable.deselectAll();
-                    showTableColumns();
-                    showGrants();
+            tablesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (tablesTable.getSelectionIndex() < 0) {
+                    return;
                 }
-            });
+                selectedTables.clear();
+                for (TableItem item : tablesTable.getSelection()) {
+                    if (item.getData() != null) {
+                        selectedTables.add((MySQLTableBase) item.getData());
+                    }
+                }
+                selectedTable = selectedTables.isEmpty() ? null : selectedTables.get(0);
+                selectedColumn = null;
+                selectedColumns.clear();
+                selectedProcedure = null;
+                selectedProcedures.clear();
+                proceduresTable.deselectAll();
+                showTableColumns();
+                showGrants();
+            }));
             UIUtils.createTableColumn(tablesTable, SWT.LEFT, MySQLUIMessages.editors_user_editor_privileges_column_table);
             UIUtils.packColumns(tablesTable);
             Composite tableButtons = UIUtils.createComposite(tablesGroup, 2);
-            tablesAddButton = UIUtils.createPushButton(tableButtons, ADD_ITEM_TEXT, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    handleAddTable();
-                }
-            });
+            tablesAddButton = UIUtils.createPushButton(tableButtons, ADD_ITEM_TEXT, null, SelectionListener.widgetSelectedAdapter(e -> {
+                handleAddTable();
+            }));
             tablesAddButton.setEnabled(false);
-            tablesRemoveButton = UIUtils.createPushButton(tableButtons, REMOVE_ITEM_TEXT, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
+            tablesRemoveButton = UIUtils.createPushButton(
+                tableButtons, REMOVE_ITEM_TEXT, null,
+                SelectionListener.widgetSelectedAdapter(e -> {
                     handleRemoveTable();
-                }
-            });
+                }));
             tablesRemoveButton.setEnabled(false);
 
             proceduresGroup = UIUtils.createTitledComposite(
@@ -247,44 +232,39 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             proceduresTable.setHeaderVisible(true);
             gd = new GridData(SWT.FILL, SWT.TOP, true, false);
             proceduresTable.setLayoutData(gd);
-            proceduresTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    if (proceduresTable.getSelectionIndex() < 0) {
-                        return;
-                    }
-                    selectedProcedures.clear();
-                    for (TableItem item : proceduresTable.getSelection()) {
-                        if (item.getData() != null) {
-                            selectedProcedures.add((MySQLProcedure) item.getData());
-                        }
-                    }
-                    selectedProcedure = selectedProcedures.isEmpty() ? null : selectedProcedures.get(0);
-                    selectedTable = null;
-                    selectedTables.clear();
-                    selectedColumn = null;
-                    selectedColumns.clear();
-                    tablesTable.deselectAll();
-                    showTableColumns();
-                    showGrants();
+            proceduresTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (proceduresTable.getSelectionIndex() < 0) {
+                    return;
                 }
-            });
+                selectedProcedures.clear();
+                for (TableItem item : proceduresTable.getSelection()) {
+                    if (item.getData() != null) {
+                        selectedProcedures.add((MySQLProcedure) item.getData());
+                    }
+                }
+                selectedProcedure = selectedProcedures.isEmpty() ? null : selectedProcedures.get(0);
+                selectedTable = null;
+                selectedTables.clear();
+                selectedColumn = null;
+                selectedColumns.clear();
+                tablesTable.deselectAll();
+                showTableColumns();
+                showGrants();
+            }));
             UIUtils.createTableColumn(proceduresTable, SWT.LEFT, MySQLUIMessages.editors_user_editor_privileges_column_procedure);
             UIUtils.packColumns(proceduresTable);
             Composite procedureButtons = UIUtils.createComposite(proceduresGroup, 2);
-            proceduresAddButton = UIUtils.createPushButton(procedureButtons, ADD_ITEM_TEXT, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
+            proceduresAddButton = UIUtils.createPushButton(
+                procedureButtons, ADD_ITEM_TEXT, null,
+                SelectionListener.widgetSelectedAdapter(e -> {
                     handleAddProcedure();
-                }
-            });
+                }));
             proceduresAddButton.setEnabled(false);
-            proceduresRemoveButton = UIUtils.createPushButton(procedureButtons, REMOVE_ITEM_TEXT, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
+            proceduresRemoveButton = UIUtils.createPushButton(
+                procedureButtons, REMOVE_ITEM_TEXT, null,
+                SelectionListener.widgetSelectedAdapter(e -> {
                     handleRemoveProcedure();
-                }
-            });
+                }));
             proceduresRemoveButton.setEnabled(false);
         }
 
@@ -300,41 +280,34 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             columnsTable.setHeaderVisible(true);
             gd = new GridData(SWT.FILL, SWT.TOP, true, false);
             columnsTable.setLayoutData(gd);
-            columnsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    if (columnsTable.getSelectionIndex() < 0) {
-                        return;
-                    }
-                    selectedColumns.clear();
-                    for (TableItem item : columnsTable.getSelection()) {
-                        if (item.getData() != null) {
-                            selectedColumns.add((MySQLTableColumn) item.getData());
-                        }
-                    }
-                    selectedColumn = selectedColumns.isEmpty() ? null : selectedColumns.get(0);
-                    selectedProcedure = null;
-                    selectedProcedures.clear();
-                    proceduresTable.deselectAll();
-                    showGrants();
+            columnsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (columnsTable.getSelectionIndex() < 0) {
+                    return;
                 }
-            });
+                selectedColumns.clear();
+                for (TableItem item : columnsTable.getSelection()) {
+                    if (item.getData() != null) {
+                        selectedColumns.add((MySQLTableColumn) item.getData());
+                    }
+                }
+                selectedColumn = selectedColumns.isEmpty() ? null : selectedColumns.get(0);
+                selectedProcedure = null;
+                selectedProcedures.clear();
+                proceduresTable.deselectAll();
+                showGrants();
+            }));
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, MySQLUIMessages.editors_user_editor_privileges_column_column);
             UIUtils.packColumns(columnsTable);
             Composite columnButtons = UIUtils.createComposite(columnsGroup, 2);
-            columnsAddButton = UIUtils.createPushButton(columnButtons, ADD_ITEM_TEXT, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    handleAddColumn();
-                }
-            });
+            columnsAddButton = UIUtils.createPushButton(columnButtons, ADD_ITEM_TEXT, null, SelectionListener.widgetSelectedAdapter(e -> {
+                handleAddColumn();
+            }));
             columnsAddButton.setEnabled(false);
-            columnsRemoveButton = UIUtils.createPushButton(columnButtons, REMOVE_ITEM_TEXT, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
+            columnsRemoveButton = UIUtils.createPushButton(
+                columnButtons, REMOVE_ITEM_TEXT, null,
+                SelectionListener.widgetSelectedAdapter(e -> {
                     handleRemoveColumn();
-                }
-            });
+                }));
             columnsRemoveButton.setEnabled(false);
         }
         Composite ph = UIUtils.createPlaceholder(sash, 1);
