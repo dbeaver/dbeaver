@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,50 +78,32 @@ final class CDataProcessExecutor {
             long deadline = System.nanoTime() + PROCESS_TIMEOUT_NANOS;
             while (!process.waitFor(200, TimeUnit.MILLISECONDS)) {
                 if (monitor.isCanceled()) {
-                    terminate(process);
                     throw new DBException(operation + " was canceled");
                 }
                 if (System.nanoTime() >= deadline) {
-                    terminate(process);
                     throw new DBException(operation + " timed out");
                 }
             }
-            try {
-                return new ProcessResult(process.exitValue(), output.get(5, TimeUnit.SECONDS));
-            } catch (TimeoutException e) {
-                terminate(process);
-                throw new DBException("Unable to read " + operation + " result", e);
-            }
+            return new ProcessResult(process.exitValue(), output.get(5, TimeUnit.SECONDS));
         } catch (IOException e) {
             throw new DBException("Unable to start " + operation, e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            if (process != null) {
-                terminate(process);
-            }
             throw new DBException(operation + " was interrupted", e);
-        } catch (ExecutionException e) {
-            if (process != null) {
-                terminate(process);
-            }
+        } catch (ExecutionException | TimeoutException e) {
             throw new DBException("Unable to read " + operation + " result", e);
         } finally {
+            if (process != null && process.isAlive()) {
+                terminate(process);
+            }
             if (output != null && !output.isDone()) {
                 output.cancel(true);
             }
             if (process != null) {
-                try {
-                    process.getInputStream().close();
-                } catch (IOException ignored) {
-                    // Ignore close failure during cleanup
-                }
+                IOUtils.close(process.getInputStream());
             }
             if (inputWriter != null) {
-                try {
-                    inputWriter.close();
-                } catch (IOException ignored) {
-                    // Ignore close failure during cleanup
-                }
+                IOUtils.close(inputWriter);
             }
             outputExecutor.shutdownNow();
         }

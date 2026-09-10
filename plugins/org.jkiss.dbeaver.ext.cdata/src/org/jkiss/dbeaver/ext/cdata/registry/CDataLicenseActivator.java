@@ -22,10 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -77,7 +76,6 @@ public final class CDataLicenseActivator {
         monitor.beginTask("Activating CData driver license", 1);
         Path activationDirectory = null;
         FileChannel activationLockChannel = null;
-        FileLock activationLock = null;
         try {
             if (activationTarget != null) {
                 validateActivationTarget(driver, activationTarget);
@@ -102,12 +100,11 @@ public final class CDataLicenseActivator {
             );
             activationLockChannel = FileChannel.open(lockPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
             try {
-                activationLock = activationLockChannel.tryLock();
+                if (activationLockChannel.tryLock() == null) {
+                    throw new DBException("CData license activation is already in progress");
+                }
             } catch (OverlappingFileLockException e) {
                 throw new DBException("CData license activation is already in progress", e);
-            }
-            if (activationLock == null) {
-                throw new DBException("CData license activation is already in progress");
             }
 
             Path activationRoot = CDataDriverLoaderDescriptor.getStoragePath().resolve("activation");
@@ -131,12 +128,15 @@ public final class CDataLicenseActivator {
                 );
             }
             Path backupLicense = activationDirectory.resolve("previous-license.backup");
-            CDataDriverLicense verifiedLicense = installAndValidateLicense(
+            final CDataDriverLicense verifiedLicense = installAndValidateLicense(
                 stagedLicense,
                 resolvedDriver.licensePath(),
                 backupLicense,
                 () -> CDataLicenseValidator.validate(monitor, resolvedDriver)
             );
+            // validation acquires the loader monitor before the file lock; release it before re-entering the loader
+            activationLockChannel.close();
+            activationLockChannel = null;
             Boolean updateCurrentDriver = activationTarget == null ? Boolean.TRUE :
                 isCurrentActivationTarget(monitor, driver, resolvedDriver);
             if (!Boolean.FALSE.equals(updateCurrentDriver)) {
@@ -158,7 +158,9 @@ public final class CDataLicenseActivator {
             throw e;
         } finally {
             deleteActivationDirectory(activationDirectory);
-            closeActivationLock(activationLock, activationLockChannel);
+            if (activationLockChannel != null) {
+                IOUtils.close(activationLockChannel);
+            }
             monitor.done();
             driver.endLicenseActivationProcess();
         }
@@ -223,15 +225,12 @@ public final class CDataLicenseActivator {
         @NotNull Path jarPath,
         @NotNull CDataLicenseActivationRequest request
     ) throws DBException {
-        List<String> command = new ArrayList<>();
+        String javaExecutable;
         try {
-            command.add(GeneralUtils.findJavaExecutable());
+            javaExecutable = GeneralUtils.findJavaExecutable();
         } catch (IOException e) {
             throw new DBException("Java executable for CData activation was not found", e);
         }
-        command.add("-jar");
-        command.add(jarPath.toString());
-        command.add("--license");
         String activationKey = request.type() == CDataLicenseType.TRIAL ? "TRIAL" : request.productKey();
         List<CDataProcessExecutor.PromptResponse> responses = List.of(
             new CDataProcessExecutor.PromptResponse("Name:", request.name()),
@@ -241,7 +240,7 @@ public final class CDataLicenseActivator {
         );
         return CDataProcessExecutor.execute(
             monitor,
-            command,
+            List.of(javaExecutable, "-jar", jarPath.toString(), "--license"),
             jarPath.getParent(),
             "CData license activation",
             responses
@@ -316,7 +315,6 @@ public final class CDataLicenseActivator {
             installLicense(stagedLicense, targetLicense);
             CDataDriverLicense verifiedLicense = validator.validate();
             if (!verifiedLicense.getStatus().allowsDriverUsage()) {
-                // CData accepted the activation but does not recognize the license it just issued
                 throw new CDataLicenseActivationException(verifiedLicense.getStatus(), null);
             }
             return verifiedLicense;
@@ -363,23 +361,6 @@ public final class CDataLicenseActivator {
         }
     }
 
-    private static void closeActivationLock(@Nullable FileLock lock, @Nullable FileChannel channel) {
-        try {
-            if (lock != null) {
-                lock.release();
-            }
-        } catch (IOException e) {
-            log.warn("Unable to release the CData license activation lock", e);
-        }
-        try {
-            if (channel != null) {
-                channel.close();
-            }
-        } catch (IOException e) {
-            log.warn("Unable to close the CData license activation lock", e);
-        }
-    }
-
     private static void restrictLicensePermissions(@NotNull Path licensePath) throws DBException {
         try {
             Files.setPosixFilePermissions(
@@ -387,7 +368,7 @@ public final class CDataLicenseActivator {
                 EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)
             );
         } catch (UnsupportedOperationException ignored) {
-            // Non-POSIX file systems apply their platform-specific access rules.
+            // non-POSIX file systems use platform-specific access rules
         } catch (IOException e) {
             throw new DBException("Unable to restrict access to the CData license file", e);
         }

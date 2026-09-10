@@ -38,9 +38,6 @@ public class CDataLicenseActivationException extends DBException {
         return status;
     }
 
-    /**
-     * Short reason suitable for showing to the user, or {@code null} when CData gave none.
-     */
     @Nullable
     public String getDetails() {
         return details;

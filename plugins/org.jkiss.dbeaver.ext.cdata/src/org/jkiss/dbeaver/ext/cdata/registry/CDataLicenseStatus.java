@@ -46,19 +46,11 @@ public enum CDataLicenseStatus {
         return !isExpired() && this != PURCHASED_ACTIVE && this != PURCHASED_EXPIRING;
     }
 
-    /**
-     * The license state could not be determined: the validation probe did not run or CData
-     * returned an answer we do not recognize. This is not a statement about the license itself.
-     */
     public boolean isUnknown() {
         return this == VALIDATION_UNAVAILABLE;
     }
 
-    /**
-     * The driver may be used: either the license is valid, or its state is unknown.
-     * In the latter case CData itself reports the problem when a connection is opened,
-     * so we must not block a user whose license we simply failed to read.
-     */
+    // when the probe cannot determine validity, let CData enforce the license on connection
     public boolean allowsDriverUsage() {
         return isValid() || isUnknown();
     }

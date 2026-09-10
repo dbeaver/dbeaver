@@ -18,8 +18,5 @@ package org.jkiss.dbeaver.ext.cdata.model;
 
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 
-/**
- * CData meta model.
- */
 public class CDataMetaModel extends GenericMetaModel {
 }

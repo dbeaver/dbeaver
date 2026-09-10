@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.cdata.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService;
@@ -56,7 +57,6 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
     private static final long VALIDATION_CACHE_NANOS = TimeUnit.MINUTES.toNanos(5);
     private final AtomicLong licenseGeneration = new AtomicLong();
     private volatile CDataResolvedDriver resolvedDriver;
-    /** Status of the last completed validation, {@code null} until the driver is validated once. */
     private volatile CDataLicenseStatus licenseStatus;
     private volatile long loadedLicenseGeneration = -1;
     private volatile String inspectedLicenseFingerprint;
@@ -74,19 +74,13 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
         loadDriver(monitor, forceReload, false);
     }
 
-    /**
-     * Deliberately not synchronized: the activation dialog blocks the UI thread and the activation
-     * itself calls back into this loader from another thread, so holding this loader's monitor
-     * across the dialog deadlocks. Everything that touches the loader state runs in
-     * {@link #tryLoadDriver}, which is synchronized; the dialog is guarded only by the per-driver
-     * activation lock.
-     */
+    // activation re-enters the loader from a worker thread; holding its monitor across the dialog deadlocks
     private void loadDriver(
         @NotNull DBRProgressMonitor monitor,
         boolean forceReload,
         boolean forceValidation
     ) throws DBException {
-        // Downloading a missing JAR may open its own dialog - do it before taking any lock
+        // downloading may open a dialog, so it must happen before taking a lock
         getAllLibraryFiles(monitor);
         if (tryLoadDriver(monitor, forceReload, forceValidation)) {
             return;
@@ -94,36 +88,23 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
 
         CDataDriverDescriptor driver = (CDataDriverDescriptor) getDriver();
         synchronized (driver.getLicenseActivationLock()) {
-            // Another connection may have activated the license while we were waiting for the lock
+            // another connection may have activated the license while we waited
             if (tryLoadDriver(monitor, false, true)) {
                 return;
             }
             CDataLicenseUIService uiService = DBWorkbench.getService(CDataLicenseUIService.class);
-            if (uiService == null) {
-                throw new CDataLicenseRequiredException(driver, driver.getLicenseStatus());
-            }
-            if (uiService.activateLicense(driver) == null) {
-                throw new CDataLicenseRequiredException(driver, driver.getLicenseStatus());
-            }
-            if (!tryLoadDriver(monitor, false, true)) {
+            if (uiService == null || uiService.activateLicense(driver) == null || !tryLoadDriver(monitor, false, true)) {
                 throw new CDataLicenseRequiredException(driver, driver.getLicenseStatus());
             }
         }
     }
 
-    /**
-     * Attempts to load the driver.
-     *
-     * @return true when the driver is loaded and may be used
-     */
     private synchronized boolean tryLoadDriver(
         @NotNull DBRProgressMonitor monitor,
         boolean forceReload,
         boolean forceValidation
     ) throws DBException {
-        boolean reloadDriver = forceReload ||
-            loadedLicenseGeneration != licenseGeneration.get() ||
-            !Objects.equals(loadedLicenseFingerprint, inspectedLicenseFingerprint);
+        boolean reloadDriver = forceReload || isLicenseChanged();
         if (isDriverLoadable() && !reloadDriver && !forceValidation) {
             super.loadDriver(monitor, false);
             return true;
@@ -137,9 +118,7 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
     public <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (isLicenseValid() && System.nanoTime() - lastValidationNanos >= VALIDATION_CACHE_NANOS) {
             loadDriver(monitor, false, true);
-        } else if (!isDriverLoadable() ||
-            loadedLicenseGeneration != licenseGeneration.get() ||
-            !Objects.equals(loadedLicenseFingerprint, inspectedLicenseFingerprint)) {
+        } else if (!isDriverLoadable() || isLicenseChanged()) {
             loadDriver(monitor, false, false);
         }
         return super.getDriverInstance(monitor);
@@ -186,20 +165,15 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
         }
     }
 
-    /**
-     * Resolves the JAR the driver currently points at. The user may switch the driver to another
-     * version at any moment, and changing the library version does not reset the loader, so the
-     * cached result is only reused while it still matches one of the current library files.
-     */
     @NotNull
     synchronized CDataResolvedDriver resolveDriver(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<Path> libraries = getAllLibraryFiles(monitor);
         CDataResolvedDriver cached = resolvedDriver;
+        // changing the library version does not reset the loader
         if (cached != null && libraries.stream().anyMatch(file -> isSameFile(file, cached.jarPath()))) {
             return cached;
         }
         if (cached != null) {
-            // Another driver version - its license lives in another folder and must be re-checked
             resetLicenseState();
             resolvedDriver = null;
         }
@@ -215,31 +189,16 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
                 throw new DBException("CData JDBC driver JAR is not accessible", e);
             }
             try (JarFile jar = new JarFile(library.toFile())) {
-                var entry = jar.getJarEntry(JDBC_DRIVER_SERVICE);
-                if (entry == null) {
+                String className = readDriverClassName(jar, expectedPackage);
+                if (className == null) {
                     continue;
                 }
-                try (var reader = new BufferedReader(new InputStreamReader(
-                    jar.getInputStream(entry),
-                    StandardCharsets.UTF_8
-                ))) {
-                    String className;
-                    while ((className = reader.readLine()) != null) {
-                        className = className.strip();
-                        if (!className.isEmpty() && !className.startsWith("#") && className.startsWith(expectedPackage)) {
-                            String packageName = className.substring(0, className.lastIndexOf('.'));
-                            Path runtimeJar = prepareCanonicalDriverJar(library, packageName, readMajorVersion(jar));
-                            sourceDriverJar = library;
-                            canonicalDriverJar = runtimeJar;
-                            resolvedDriver = new CDataResolvedDriver(
-                                runtimeJar,
-                                className,
-                                getLicensePath(runtimeJar)
-                            );
-                            return resolvedDriver;
-                        }
-                    }
-                }
+                String packageName = className.substring(0, className.lastIndexOf('.'));
+                Path runtimeJar = prepareCanonicalDriverJar(library, packageName, readMajorVersion(jar));
+                sourceDriverJar = library;
+                canonicalDriverJar = runtimeJar;
+                resolvedDriver = new CDataResolvedDriver(runtimeJar, className, getLicensePath(runtimeJar));
+                return resolvedDriver;
             } catch (IOException e) {
                 throw new DBException("Error reading JDBC driver service from " + library, e);
             }
@@ -257,11 +216,7 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
         return isSameFile(resolveDriver(monitor).jarPath(), target.jarPath());
     }
 
-    /**
-     * CData looks for the license next to the driver JAR, but only recognizes a JAR named
-     * {@code cdata.jdbc.<source>.jar}, which is not how Maven names the artifact. So the downloaded
-     * JAR is exposed under its canonical name as a hard link - the bytes are never duplicated.
-     */
+    // CData only finds licenses beside a JAR named cdata.jdbc.<source>.jar, unlike Maven artifact names
     @NotNull
     private static synchronized Path prepareCanonicalDriverJar(
         @NotNull Path sourceJar,
@@ -278,8 +233,7 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
                 try {
                     Files.delete(canonicalJar);
                 } catch (IOException e) {
-                    // The driver was updated while its previous JAR is still open (typical on Windows).
-                    // Keep serving the loaded one - it is replaced on the next restart.
+                    // Windows may keep the loaded JAR locked until restart
                     log.warn("Unable to replace the CData driver JAR " + canonicalJar, e);
                     return canonicalJar;
                 }
@@ -287,7 +241,7 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
             try {
                 Files.createLink(canonicalJar, sourceJar);
             } catch (IOException | UnsupportedOperationException e) {
-                // Another file system or a platform without hard links
+                // hard links may be unavailable or cross file systems
                 Files.copy(sourceJar, canonicalJar, StandardCopyOption.REPLACE_EXISTING);
             }
             return canonicalJar;
@@ -296,11 +250,7 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
         }
     }
 
-    /**
-     * One folder per driver package and major version. A CData license covers exactly one major
-     * version, so licenses for different majors must not overwrite each other; within a major the
-     * folder stays the same, so a driver build update never loses the license.
-     */
+    // licenses cover one major version and must survive driver build updates
     @NotNull
     static Path getCanonicalDriverPath(@NotNull String packageName, @NotNull String majorVersion) {
         return getStoragePath()
@@ -310,10 +260,6 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
             .resolve(packageName + ".jar");
     }
 
-    /**
-     * Major version of the driver, taken from the JAR manifest ({@code Implementation-Version}),
-     * e.g. {@code 26} for {@code 26.0.9655.0}.
-     */
     @NotNull
     static String readMajorVersion(@NotNull JarFile jar) throws IOException {
         Manifest manifest = jar.getManifest();
@@ -322,11 +268,6 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
         return major.matches("\\d+") ? major : "unknown";
     }
 
-    /**
-     * CData reports a driver of another major version as simply having no license. Recognize the
-     * case where the user does own a license, just for a different major, so that we can say so
-     * instead of silently asking to activate again.
-     */
     static boolean hasLicenseForAnotherMajor(@NotNull CDataResolvedDriver resolved) {
         Path majorFolder = resolved.licensePath().getParent();
         Path licenseName = resolved.licensePath().getFileName();
@@ -432,22 +373,14 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
                     ));
                 }
             } catch (IOException | DBException e) {
-                licenses.add(unavailablePersistedLicense(majorVersion, e));
+                licenses.add(new CDataPersistedLicense(
+                    majorVersion,
+                    new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, "", e.getMessage()),
+                    null
+                ));
             }
         }
         return licenses;
-    }
-
-    @NotNull
-    private static CDataPersistedLicense unavailablePersistedLicense(
-        @NotNull String majorVersion,
-        @NotNull Exception exception
-    ) {
-        return new CDataPersistedLicense(
-            majorVersion,
-            new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, "", exception.getMessage()),
-            null
-        );
     }
 
     @NotNull
@@ -478,25 +411,33 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
             if (!expectedMajorVersion.equals(readMajorVersion(jar))) {
                 throw new DBException("The persisted CData driver JAR major version does not match its folder");
             }
-            var entry = jar.getJarEntry(JDBC_DRIVER_SERVICE);
-            if (entry != null) {
-                try (var reader = new BufferedReader(new InputStreamReader(
-                    jar.getInputStream(entry),
-                    StandardCharsets.UTF_8
-                ))) {
-                    String className;
-                    while ((className = reader.readLine()) != null) {
-                        className = className.strip();
-                        if (!className.isEmpty() && !className.startsWith("#") && className.startsWith(expectedPackage)) {
-                            return className;
-                        }
-                    }
-                }
+            String className = readDriverClassName(jar, expectedPackage);
+            if (className != null) {
+                return className;
             }
         } catch (IOException e) {
             throw new DBException("Error reading the persisted CData driver JAR", e);
         }
         throw new DBException("CData JDBC driver class is missing from the persisted JAR");
+    }
+
+    @Nullable
+    @ForTest
+    static String readDriverClassName(@NotNull JarFile jar, @NotNull String expectedPackage) throws IOException {
+        var entry = jar.getJarEntry(JDBC_DRIVER_SERVICE);
+        if (entry == null) {
+            return null;
+        }
+        try (var reader = new BufferedReader(new InputStreamReader(jar.getInputStream(entry), StandardCharsets.UTF_8))) {
+            String className;
+            while ((className = reader.readLine()) != null) {
+                className = className.strip();
+                if (className.startsWith(expectedPackage)) {
+                    return className;
+                }
+            }
+        }
+        return null;
     }
 
     void invalidateLicenseCache() {
@@ -508,6 +449,11 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
     private boolean isLicenseValid() {
         CDataLicenseStatus status = licenseStatus;
         return status != null && status.isValid();
+    }
+
+    private boolean isLicenseChanged() {
+        return loadedLicenseGeneration != licenseGeneration.get() ||
+            !Objects.equals(loadedLicenseFingerprint, inspectedLicenseFingerprint);
     }
 
     private boolean isDriverLoadable() {
@@ -532,11 +478,7 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
     ) throws DBException {
         CDataDriverLicense license;
         if (!Files.isRegularFile(resolved.licensePath()) && hasLicenseForAnotherMajor(resolved)) {
-            license = new CDataDriverLicense(
-                CDataLicenseStatus.WRONG_MAJOR_VERSION,
-                "",
-                null
-            );
+            license = new CDataDriverLicense(CDataLicenseStatus.WRONG_MAJOR_VERSION, "", null);
         } else {
             license = CDataLicenseValidator.validate(monitor, resolved);
         }

@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ext.cdata.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.utils.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -29,11 +31,18 @@ import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 public class CDataLicenseParserTest extends DBeaverUnitTest {
     @TempDir
@@ -283,6 +292,57 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void resolveDriverClassFromServiceEntry() throws Exception {
+        Path jarPath = tempDirectory.resolve("driver.jar");
+        try (var output = new JarOutputStream(Files.newOutputStream(jarPath))) {
+            output.putNextEntry(new JarEntry("META-INF/services/java.sql.Driver"));
+            output.write(("# cdata.jdbc.test.CommentedDriver\n\n  \n" +
+                "other.jdbc.Driver\n cdata.jdbc.testing.OtherDriver\n  cdata.jdbc.test.TestDriver  \n")
+                .getBytes(StandardCharsets.UTF_8));
+            output.closeEntry();
+        }
+        try (var jar = new JarFile(jarPath.toFile())) {
+            Assertions.assertEquals("cdata.jdbc.test.TestDriver",
+                CDataDriverLoaderDescriptor.readDriverClassName(jar, "cdata.jdbc.test."));
+            Assertions.assertNull(CDataDriverLoaderDescriptor.readDriverClassName(jar, "cdata.jdbc.missing."));
+        }
+    }
+
+    @Test
+    public void ignoreJarWithoutDriverService() throws Exception {
+        Path jarPath = tempDirectory.resolve("dependency.jar");
+        try (var output = new JarOutputStream(Files.newOutputStream(jarPath))) {
+            output.putNextEntry(new JarEntry("unrelated-resource"));
+            output.closeEntry();
+        }
+        try (var jar = new JarFile(jarPath.toFile())) {
+            Assertions.assertNull(CDataDriverLoaderDescriptor.readDriverClassName(jar, "cdata.jdbc.test."));
+        }
+    }
+
+    @Test
+    public void terminateCanceledActivationProcess() throws Exception {
+        Path testBundle = Path.of(CDataPromptProcess.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        Path pidFile = tempDirectory.resolve("process.pid");
+        VoidProgressMonitor monitor = Mockito.mock(VoidProgressMonitor.class);
+        Mockito.when(monitor.isCanceled()).thenAnswer(invocation -> Files.isRegularFile(pidFile));
+
+        DBException error = Assertions.assertThrows(DBException.class, () -> CDataProcessExecutor.execute(
+            monitor,
+            List.of(
+                GeneralUtils.findJavaExecutable(), "-cp", testBundle.toString(), CDataPromptProcess.class.getName(), pidFile.toString()
+            ),
+            tempDirectory,
+            "CData cancellation test",
+            List.of(new CDataProcessExecutor.PromptResponse("unmatched prompt", ""))
+        ));
+
+        Assertions.assertEquals("CData cancellation test was canceled", error.getMessage());
+        long pid = Long.parseLong(Files.readString(pidFile));
+        Assertions.assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false));
+    }
+
+    @Test
     public void useCanonicalCDataLicensePaths() throws Exception {
         Path storagePath = CDataDriverLoaderDescriptor.getStoragePath();
         Assertions.assertEquals(
@@ -362,6 +422,65 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         );
         Assertions.assertEquals(2, result.exitCode());
         Assertions.assertTrue(result.output().contains(CDataLicenseProbe.ERROR_PREFIX));
+    }
+
+    @Test
+    public void releaseActivationFileLockBeforeEnteringLoader() throws Exception {
+        Path packageFolder = Files.createDirectories(
+            CDataDriverLoaderDescriptor.getStoragePath().resolve("drivers/cdata.jdbc.postgresql"));
+        Path majorFolder = Files.createTempDirectory(packageFolder, "26");
+        try {
+            CDataResolvedDriver resolved = resolvedAt(majorFolder);
+            Manifest manifest = new Manifest();
+            manifest.getMainAttributes().putValue("Manifest-Version", "1.0");
+            manifest.getMainAttributes().putValue("Implementation-Version", majorFolder.getFileName() + ".0");
+            manifest.getMainAttributes().putValue("Main-Class", CDataPromptProcess.class.getName());
+            String classEntry = CDataPromptProcess.class.getName().replace('.', '/') + ".class";
+            try (
+                var output = new JarOutputStream(Files.newOutputStream(resolved.jarPath()), manifest);
+                var input = CDataPromptProcess.class.getResourceAsStream("/" + classEntry)
+            ) {
+                output.putNextEntry(new JarEntry(classEntry));
+                input.transferTo(output);
+                output.closeEntry();
+                output.putNextEntry(new JarEntry("META-INF/services/java.sql.Driver"));
+                output.write(resolved.driverClassName().getBytes(StandardCharsets.UTF_8));
+                output.closeEntry();
+            }
+            Files.writeString(resolved.licensePath(), "previous-license");
+            CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
+            Mockito.when(driver.getDriverInfo()).thenReturn(new CDataDriverInfo(
+                "postgresql", "postgresql-jdbc", "Test driver", 2026, CDataDriverTier.PROFESSIONAL, "https://example.org"));
+            Mockito.when(driver.beginLicenseActivationProcess()).thenReturn(true);
+            Mockito.when(driver.getCurrentLicense()).thenCallRealMethod();
+            DBPDriverLibrary library = Mockito.mock(DBPDriverLibrary.class);
+            Mockito.when(library.matchesCurrentPlatform()).thenReturn(true);
+            Mockito.when(library.getType()).thenReturn(DBPDriverLibrary.FileType.jar);
+            Mockito.when(library.getLocalFile()).thenReturn(resolved.jarPath());
+            Mockito.doReturn(List.of(library)).when(driver).getDriverLibraries();
+            CDataDriverLoaderDescriptor loader = new CDataDriverLoaderDescriptor("default", driver);
+            VoidProgressMonitor monitor = new VoidProgressMonitor();
+            Mockito.when(driver.getDefaultDriverLoader()).thenAnswer(invocation -> {
+                try (
+                    var channel = FileChannel.open(majorFolder.resolve("cdata.jdbc.postgresql.lic.lock"), StandardOpenOption.WRITE);
+                    var lock = channel.tryLock()
+                ) {
+                    Assertions.assertNotNull(lock, "activation must release the file lock before entering the loader");
+                }
+                return loader;
+            });
+
+            CDataDriverLicense license = CDataLicenseActivator.activate(monitor, driver, resolved,
+                new CDataLicenseActivationRequest("Test User", "test@example.org", CDataLicenseType.PURCHASED, "test-key"));
+            Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, license.getStatus());
+            Mockito.verify(driver).getDefaultDriverLoader();
+            Mockito.verify(driver).invalidateLicenseCaches();
+            Assertions.assertSame(license, driver.getCurrentLicense());
+            Mockito.verify(driver).endLicenseActivationProcess();
+            Assertions.assertEquals("new-license", Files.readString(resolved.licensePath()));
+        } finally {
+            IOUtils.deleteDirectory(majorFolder);
+        }
     }
 
     @Test

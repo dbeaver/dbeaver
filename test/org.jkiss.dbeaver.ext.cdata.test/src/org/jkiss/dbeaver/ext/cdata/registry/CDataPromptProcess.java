@@ -21,12 +21,21 @@ import org.jkiss.code.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public final class CDataPromptProcess {
     private CDataPromptProcess() {
     }
 
     public static void main(@NotNull String[] args) throws IOException, InterruptedException {
+        if (args.length > 0 && "--license".equals(args[0])) {
+            Files.writeString(Path.of("cdata.jdbc.postgresql.lic"), "new-license");
+            return;
+        }
+        if (args.length > 0) {
+            Files.writeString(Path.of(args[0]), Long.toString(ProcessHandle.current().pid()));
+        }
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         final String name = prompt(reader, "Name:");
         final String email = prompt(reader, "Email Address:");

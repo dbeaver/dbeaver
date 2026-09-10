@@ -36,8 +36,8 @@ final class CDataActivationDialog extends TitleAreaDialog {
     private final CDataDriverDescriptor driver;
     private final CDataLicenseType fixedType;
     private final CDataResolvedDriver activationTarget;
-    private final String initialName;
-    private final String initialEmail;
+    private String endUserName;
+    private String endUserEmail;
     private CDataLicenseType selectedType;
     private Text nameText;
     private Text emailText;
@@ -60,8 +60,8 @@ final class CDataActivationDialog extends TitleAreaDialog {
         this.driver = driver;
         this.fixedType = driver.supportsTrialLicense() ? fixedType : CDataLicenseType.PURCHASED;
         this.activationTarget = activationTarget;
-        this.initialName = initialName;
-        this.initialEmail = initialEmail;
+        this.endUserName = initialName;
+        this.endUserEmail = initialEmail;
         this.selectedType = this.fixedType == null ? CDataLicenseType.PURCHASED : this.fixedType;
     }
 
@@ -81,16 +81,15 @@ final class CDataActivationDialog extends TitleAreaDialog {
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         createLabel(container, CDataUIMessages.activation_driver);
-        Label driverLabel = new Label(container, SWT.NONE);
-        driverLabel.setText(driver.getName());
+        UIUtils.createLabel(container, driver.getName());
 
         createLabel(container, CDataUIMessages.activation_name);
         nameText = createText(container, SWT.BORDER);
-        nameText.setText(initialName);
+        nameText.setText(endUserName);
 
         createLabel(container, CDataUIMessages.activation_email);
         emailText = createText(container, SWT.BORDER);
-        emailText.setText(initialEmail);
+        emailText.setText(endUserEmail);
 
         if (fixedType == null) {
             createLabel(container, CDataUIMessages.activation_type);
@@ -167,9 +166,11 @@ final class CDataActivationDialog extends TitleAreaDialog {
             setErrorMessage(validationError);
             return;
         }
+        endUserName = nameText.getText().strip();
+        endUserEmail = emailText.getText().strip();
         CDataLicenseActivationRequest request = new CDataLicenseActivationRequest(
-            nameText.getText().strip(),
-            emailText.getText().strip(),
+            endUserName,
+            endUserEmail,
             selectedType,
             selectedType == CDataLicenseType.PURCHASED ? productKeyText.getText().strip() : null
         );
@@ -185,10 +186,6 @@ final class CDataActivationDialog extends TitleAreaDialog {
         }
     }
 
-    /**
-     * CData answers with its whole console session, prompts included. Show only the reason it gave;
-     * the full output is in the log.
-     */
     @NotNull
     private static String getErrorMessage(@NotNull DBException error) {
         if (error instanceof CDataLicenseActivationException activation) {
@@ -210,12 +207,12 @@ final class CDataActivationDialog extends TitleAreaDialog {
 
     @NotNull
     String getEndUserName() {
-        return nameText.getText().strip();
+        return endUserName;
     }
 
     @NotNull
     String getEndUserEmail() {
-        return emailText.getText().strip();
+        return endUserEmail;
     }
 
     @NotNull
@@ -242,10 +239,8 @@ final class CDataActivationDialog extends TitleAreaDialog {
         if (productKeyText.getVisible() == visible) {
             return;
         }
-        productKeyLabel.setVisible(visible);
-        ((GridData) productKeyLabel.getLayoutData()).exclude = !visible;
-        productKeyText.setVisible(visible);
-        ((GridData) productKeyText.getLayoutData()).exclude = !visible;
+        UIUtils.setControlVisible(productKeyLabel, visible);
+        UIUtils.setControlVisible(productKeyText, visible);
         productKeyText.getParent().layout(true, true);
     }
 
@@ -264,8 +259,7 @@ final class CDataActivationDialog extends TitleAreaDialog {
 
     @NotNull
     private static Label createLabel(@NotNull Composite parent, @NotNull String text) {
-        Label label = new Label(parent, SWT.NONE);
-        label.setText(text);
+        Label label = UIUtils.createLabel(parent, text);
         label.setLayoutData(new GridData());
         return label;
     }

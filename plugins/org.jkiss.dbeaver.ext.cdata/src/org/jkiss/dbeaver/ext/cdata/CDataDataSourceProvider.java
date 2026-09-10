@@ -38,7 +38,6 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class CDataDataSourceProvider extends GenericDataSourceProvider<CDataDataSource> implements DriverProvider {
-    /** CData names its products {@code <name> JDBC Driver}, a couple of them just {@code <name> Driver}. */
     private static final Pattern DRIVER_NAME_SUFFIX = Pattern.compile("\\s*(JDBC\\s+)?Driver$");
 
     @DynamicCall
@@ -59,8 +58,7 @@ public class CDataDataSourceProvider extends GenericDataSourceProvider<CDataData
     @Override
     public List<DriverDescriptor> getProvidedDrivers(@NotNull DataSourceProviderDescriptor dataSourceProvider) {
         return CDataDriverCatalog.load().stream()
-            .map(driverInfo -> createDriver(dataSourceProvider, driverInfo))
-            .map(DriverDescriptor.class::cast)
+            .<DriverDescriptor>map(driverInfo -> createDriver(dataSourceProvider, driverInfo))
             .toList();
     }
 
@@ -91,10 +89,6 @@ public class CDataDataSourceProvider extends GenericDataSourceProvider<CDataData
         return driver;
     }
 
-    /**
-     * Every commercial driver is shown with its vendor in front, so that CData drivers are
-     * recognizable wherever drivers are listed together.
-     */
     @NotNull
     static String getDriverName(@NotNull CDataDriverInfo driverInfo) {
         return "CData " + DRIVER_NAME_SUFFIX.matcher(driverInfo.driverName()).replaceFirst("");

@@ -318,12 +318,7 @@ public class DriverSelectViewer extends Viewer {
                     switchItem.setSelection(false);
                 }
 
-                selectorViewer = new DriverTabbedViewer(
-                    selectorComposite,
-                    SWT.NONE,
-                    dataSources,
-                    driverComparator
-                );
+                selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE, dataSources, driverComparator);
                 selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             }
 
@@ -392,8 +387,7 @@ public class DriverSelectViewer extends Viewer {
                         filters.add(new DriverInstalledFilter());
                     }
                     if (!(selectorViewer instanceof DriverTabbedViewer)) {
-                        // The tabbed viewer gives commercial drivers a tab of their own.
-                        // Every other selector (driver tree, driver manager) hides them.
+                        // commercial drivers are only shown in their dedicated tab
                         filters.add(new CommercialDriverFilter());
                     }
                     selectorViewer.setFilters(filters.toArray(new ViewerFilter[0]));

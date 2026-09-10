@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -74,16 +73,15 @@ final class CDataLicenseValidator {
                     probeLocation = devClasses;
                 }
             }
-            List<String> command = new ArrayList<>();
-            command.add(GeneralUtils.findJavaExecutable());
-            command.add("-cp");
-            command.add(probeLocation + File.pathSeparator + resolvedDriver.jarPath());
-            command.add(CDataLicenseProbe.class.getName());
-            command.add(resolvedDriver.driverClassName());
-
             CDataProcessExecutor.ProcessResult result = CDataProcessExecutor.execute(
                 monitor,
-                command,
+                List.of(
+                    GeneralUtils.findJavaExecutable(),
+                    "-cp",
+                    probeLocation + File.pathSeparator + resolvedDriver.jarPath(),
+                    CDataLicenseProbe.class.getName(),
+                    resolvedDriver.driverClassName()
+                ),
                 resolvedDriver.jarPath().getParent(),
                 "CData license validation",
                 List.of()
@@ -103,7 +101,6 @@ final class CDataLicenseValidator {
             CDataDriverLicense parsed = CDataLicenseParser.parseInformation(Map.of("License", license, "NodeId", nodeId));
             parsed = keepInstalledLicense(parsed, resolvedDriver);
             if (!parsed.getStatus().allowsDriverUsage()) {
-                // Without the vendor's own words an unusable license is impossible to explain
                 log.warn("CData reports the license of " + resolvedDriver.jarPath().getFileName() +
                     " as " + parsed.getStatus() + ": \"" + license.replaceAll("\\s+", " ").strip() + "\"");
             }
@@ -114,13 +111,7 @@ final class CDataLicenseValidator {
         }
     }
 
-    /**
-     * CData answers "No License" both when nothing is installed and when it refuses to recognize an
-     * installed license: a purchased license is bound to a registered calling class, and this probe
-     * runs in its own JVM from a class CData never registered. Only a missing file proves that
-     * nothing is installed - with a file present the state is simply unknown to us, and CData itself
-     * reports the real problem when the connection is opened.
-     */
+    // the external probe's calling class is not registered with CData, so purchased licenses may appear as "No License"
     @NotNull
     static CDataDriverLicense keepInstalledLicense(
         @NotNull CDataDriverLicense parsed,

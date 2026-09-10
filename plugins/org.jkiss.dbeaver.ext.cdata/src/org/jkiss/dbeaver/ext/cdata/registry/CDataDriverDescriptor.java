@@ -49,8 +49,6 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     private final Set<Runnable> iconUpdateCallbacks = ConcurrentHashMap.newKeySet();
     private volatile boolean iconLoaded;
     private volatile long iconRetryAfterNanos;
-    private volatile DBPImage driverIcon = DBIcon.DATABASE_DEFAULT;
-    private volatile DBPImage driverIconBig = DBIcon.DATABASE_BIG_DEFAULT;
     private volatile CDataDriverLicense currentLicense = new CDataDriverLicense(
         CDataLicenseStatus.VALIDATION_UNAVAILABLE,
         "",
@@ -65,7 +63,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         super(providerDescriptor, id);
         this.driverInfo = driverInfo;
         setCustom(false);
-        updateIcons();
+        updateDriverIcons(DBIcon.DATABASE_DEFAULT, DBIcon.DATABASE_BIG_DEFAULT);
     }
 
     @NotNull
@@ -95,12 +93,6 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
                 }
             });
         }
-    }
-
-    @NotNull
-    @Override
-    public synchronized DriverLoaderDescriptor getDefaultDriverLoader() {
-        return super.getDefaultDriverLoader();
     }
 
     @NotNull
@@ -189,7 +181,6 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
 
     void setCurrentLicense(@NotNull CDataDriverLicense currentLicense) {
         this.currentLicense = currentLicense;
-        updateIcons();
     }
 
     @Override
@@ -224,28 +215,8 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         return (CDataDriverLoaderDescriptor) getDefaultDriverLoader();
     }
 
-    private synchronized void updateIcons() {
-        setIconPlain(new DBIconComposite(
-            driverIcon,
-            false,
-            null,
-            null,
-            null,
-            CDataIcons.CDATA_OVERLAY
-        ));
-        setIconBig(new DBIconComposite(
-            driverIconBig,
-            false,
-            null,
-            null,
-            null,
-            CDataIcons.CDATA_OVERLAY_BIG
-        ));
-    }
-
     private synchronized void updateDriverIcons(@NotNull DBPImage icon, @NotNull DBPImage iconBig) {
-        driverIcon = icon;
-        driverIconBig = iconBig;
-        updateIcons();
+        setIconPlain(new DBIconComposite(icon, false, null, null, null, CDataIcons.CDATA_OVERLAY));
+        setIconBig(new DBIconComposite(iconBig, false, null, null, null, CDataIcons.CDATA_OVERLAY_BIG));
     }
 }

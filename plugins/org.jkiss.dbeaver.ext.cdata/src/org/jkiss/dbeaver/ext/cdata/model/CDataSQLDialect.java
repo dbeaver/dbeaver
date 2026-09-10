@@ -18,9 +18,6 @@ package org.jkiss.dbeaver.ext.cdata.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 
-/**
- * CData SQL dialect.
- */
 public class CDataSQLDialect extends GenericSQLDialect {
     public CDataSQLDialect() {
         super("CData", "cdata");

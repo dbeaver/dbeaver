@@ -28,11 +28,6 @@ public record CDataDriverInfo(
 ) {
     static final String ARTIFACT_SUFFIX = "-jdbc";
 
-    /**
-     * Token CData uses in the driver package and in the JDBC URL:
-     * {@code cdata.jdbc.<jdbcName>.<...>Driver} and {@code jdbc:<jdbcName>:}.
-     * Every CData artifact is named {@code <jdbcName>-jdbc}.
-     */
     @NotNull
     public String jdbcName() {
         return artifactId.substring(0, artifactId.length() - ARTIFACT_SUFFIX.length());

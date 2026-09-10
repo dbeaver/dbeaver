@@ -33,7 +33,6 @@ final class CDataLicenseParser {
     private static final Pattern DAYS_REMAINING = Pattern.compile(
         "(?:(?:expires?|expiration)\\D{0,20}(\\d+)\\s+days?|(\\d+)\\s+days?\\s+(?:left|remaining))"
     );
-    /** CData reports a refusal as {@code Error validating user input: <reason> [code: X nodeid: Y].} */
     private static final Pattern ACTIVATION_ERROR = Pattern.compile(
         "Error validating user input:\\s*(.+?)\\s*(?:\\[code:|\\.(?:\\s|$))",
         Pattern.CASE_INSENSITIVE
@@ -68,10 +67,7 @@ final class CDataLicenseParser {
         boolean trial = isTrial(normalized);
         Integer remainingDays = getRemainingDays(normalized);
         boolean expiring = remainingDays == null ? normalized.contains("expiring") : remainingDays <= 3;
-        if (normalized.contains("trial") && !trial) {
-            return new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, nodeId, null);
-        }
-        if (!trial && !isPurchased(normalized, expiring)) {
+        if (!trial && (normalized.contains("trial") || !isPurchased(normalized, expiring))) {
             return new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, nodeId, null);
         }
         CDataLicenseStatus status = trial
@@ -80,20 +76,12 @@ final class CDataLicenseParser {
         return new CDataDriverLicense(status, nodeId, null, remainingDays);
     }
 
-    /**
-     * Short reason CData gave for refusing the activation, without the prompts we fed it,
-     * the diagnostic codes and the support blurb. The full output goes to the log.
-     */
     @Nullable
     static String parseActivationMessage(@NotNull String output) {
         Matcher matcher = ACTIVATION_ERROR.matcher(output.replaceAll("\\s+", " "));
         return matcher.find() ? matcher.group(1) : null;
     }
 
-    /**
-     * Recognizes why CData refused to issue a license. A successful activation is detected by the
-     * license file CData writes, never by the wording of its output.
-     */
     @NotNull
     static CDataLicenseStatus parseActivationFailure(@NotNull String output) {
         CDataLicenseStatus errorStatus = parseErrorStatus(output.toLowerCase(Locale.ENGLISH));

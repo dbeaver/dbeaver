@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private static final Log log = Log.getLog(CDataPreferencePage.class);
@@ -162,7 +163,7 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
         table.getColumn(table.getColumnCount() - 1).setWidth(Math.max(0, width - used));
     }
 
-    private void createColumn(@NotNull String title, int width, @NotNull LicenseTextProvider textProvider) {
+    private void createColumn(@NotNull String title, int width, @NotNull Function<LicenseEntry, String> textProvider) {
         TableViewerColumn column = new TableViewerColumn(licenseViewer, SWT.LEFT);
         column.getColumn().setText(title);
         column.getColumn().setWidth(width);
@@ -170,7 +171,7 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
             @NotNull
             @Override
             public String getText(@NotNull Object element) {
-                return textProvider.getText((LicenseEntry) element);
+                return textProvider.apply((LicenseEntry) element);
             }
 
             @Nullable
@@ -350,8 +351,7 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
         if (license.getRemainingDays() != null) {
             return NLS.bind(CDataUIMessages.preference_expiration_days, license.getRemainingDays());
         }
-        if (license.getStatus() == CDataLicenseStatus.TRIAL_EXPIRED ||
-            license.getStatus() == CDataLicenseStatus.EXPIRED) {
+        if (license.getStatus().isExpired()) {
             return CDataUIMessages.preference_expiration_expired;
         }
         return CDataUIMessages.preference_expiration_unavailable;
@@ -363,11 +363,5 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
         @NotNull CDataDriverLicense license,
         @Nullable CDataResolvedDriver activationTarget
     ) {
-    }
-
-    @FunctionalInterface
-    private interface LicenseTextProvider {
-        @NotNull
-        String getText(@NotNull LicenseEntry entry);
     }
 }
