@@ -11,7 +11,6 @@ Bundle-Activator: org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator
 Require-Bundle: org.eclipse.e4.ui.css.core,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.data,
  com.sun.jna,
  com.sun.jna.platform
