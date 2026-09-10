@@ -2736,6 +2736,7 @@ public class ResultSetViewer extends Viewer
      */
     void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] attributes)
     {
+        UIUtils.syncExec(undoRedoManager::clear);
         model.setMetaData(resultSet, attributes);
         activePresentation.clearMetaData();
     }
@@ -2745,6 +2746,7 @@ public class ResultSetViewer extends Viewer
         if (viewerPanel.isDisposed()) {
             return;
         }
+        UIUtils.syncExec(undoRedoManager::clear);
         this.curRow = null;
         this.model.setData(monitor, rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
@@ -2784,6 +2786,9 @@ public class ResultSetViewer extends Viewer
     }
 
     void appendData(@NotNull DBRProgressMonitor monitor, List<Object[]> rows, boolean resetOldRows) {
+        if (resetOldRows) {
+            UIUtils.syncExec(undoRedoManager::clear);
+        }
         model.appendData(monitor, rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
@@ -4604,6 +4609,7 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(false);
         }
+        undoRedoManager.updateActions();
     }
 
     void releaseDataReadLock() {
@@ -4613,6 +4619,7 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(false);
         }
+        undoRedoManager.updateActions();
     }
 
     boolean acquireDataReadLock() {
@@ -4622,7 +4629,12 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(true);
         }
+        undoRedoManager.updateActions();
         return true;
+    }
+
+    void clearCellEditHistory() {
+        undoRedoManager.clear();
     }
 
     public void clearData(boolean clearMetaData)
@@ -5135,6 +5147,7 @@ public class ResultSetViewer extends Viewer
     }
 
     void fireResultSetChange() {
+        undoRedoManager.updateActions();
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetChange();
         }

@@ -34,9 +34,7 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.data.storage.BytesContentStorage;
-import org.jkiss.dbeaver.model.data.storage.ExternalContentStorage;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.data.storage.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -50,6 +48,7 @@ import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.managers.ContentValueManager;
 import org.jkiss.dbeaver.ui.editors.IStatefulEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -206,22 +205,13 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
             return;
         }
 
-        DBDContentStorage storage = content.getContents(monitor);
-
         if (contentDetached) {
             release();
             contentFile = null;
             contentDetached = false;
         }
-        if (storage instanceof DBDContentStorageLocal) {
-            if (contentFile != null && !contentDetached) {
-                release();
-            }
-            // User content's storage directly
-            contentFile = ((DBDContentStorageLocal) storage).getDataFile().toFile();
-            contentDetached = true;
-        } else {
-            // Copy content to local file
+        {
+            // Editors must not write directly to the model's storage before an edit is recorded.
             try {
                 // Create file
                 if (contentFile == null) {
@@ -307,11 +297,9 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
             contentFile = extFile.toFile();
             contentDetached = true;
             Object value = getValue();
-            if (value instanceof DBDContent content) {
-                content.updateContents(
-                    new DefaultProgressMonitor(monitor),
-                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile)
-                );
+            if (value instanceof DBDContent) {
+                Object editedValue = extractContentFromFile(new DefaultProgressMonitor(monitor));
+                UIUtils.syncExec(() -> valueController.updateValue(editedValue, true));
             } else {
                 updateStringValueFromFile(extFile);
             }
@@ -325,7 +313,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         try (Reader is = Files.newBufferedReader(extFile)) {
             String str = IOUtils.readToString(is);
             stringStorage.setString(str);
-            valueController.updateValue(str, false);
+            UIUtils.syncExec(() -> valueController.updateValue(str, true));
 
         } catch (IOException e) {
             throw new DBException("Error reading content from file", e);
@@ -366,6 +354,22 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         markReadOnly(valueController.isReadOnly());
     }
 
+    @Nullable
+    Object extractContentFromFile(@NotNull DBRProgressMonitor monitor) throws DBException {
+        Object originalValue = getValue();
+        Object editedValue = originalValue instanceof DBDContent content
+            ? ContentValueManager.copyContentForEdit(monitor, content) : originalValue;
+        try {
+            updateContentFromFile(monitor, editedValue);
+            return editedValue instanceof DBDContent ? editedValue : getValue();
+        } catch (DBException e) {
+            if (editedValue != originalValue && editedValue instanceof DBDContent content) {
+                content.release();
+            }
+            throw e;
+        }
+    }
+
     public void updateContentFromFile(@NotNull DBRProgressMonitor monitor, Object value) throws DBException {
         if (valueController.isReadOnly()) {
             throw new DBCException("Can't update read-only value");
@@ -373,11 +377,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
 
         if (value instanceof DBDContent content) {
             DBDContentStorage storage = content.getContents(monitor);
-            if (storage instanceof DBDContentStorageLocal) {
-                // Nothing to update - we use content's storage
-                content.updateContents(monitor, storage);
-                contentDetached = true;
-            } else if (storage instanceof DBDContentCached) {
+            if (storage instanceof DBDContentCached) {
                 // Create new storage and pass it to content
                 try (FileInputStream is = new FileInputStream(contentFile)) {
                     if (ContentUtils.isTextContent(content)) {
@@ -388,14 +388,26 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                         storage = BytesContentStorage.createFromStream(is, contentFile.length(), fileCharset);
                     }
                     //StringContentStorage.
-                    contentDetached = content.updateContents(monitor, storage);
+                    content.updateContents(monitor, storage);
                 } catch (IOException e) {
                     throw new DBException("Error reading content from file", e);
                 }
             } else {
-                // Create new storage and pass it to content
-                storage = new TemporaryContentStorage(DBWorkbench.getPlatform(), contentFile.toPath(), fileCharset, false);
-                contentDetached = content.updateContents(monitor, storage);
+                // Keep the editor file independent of the value installed in the model.
+                try {
+                    storage = new TemporaryContentStorage(
+                        DBWorkbench.getPlatform(), contentFile.toPath(), fileCharset, false).cloneStorage(monitor);
+                } catch (IOException e) {
+                    throw new DBException("Error copying content from file", e);
+                }
+                boolean acquired = false;
+                try {
+                    acquired = content.updateContents(monitor, storage);
+                } finally {
+                    if (!acquired) {
+                        storage.release();
+                    }
+                }
             }
         } else if (stringStorage != null) {
             // Just read as string

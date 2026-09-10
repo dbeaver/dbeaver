@@ -255,8 +255,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                 ContentEditor.this.dirty = true;
 
                 ContentEditorInput editorInput = getEditorInput();
-                editorInput.updateContentFromFile(new DefaultProgressMonitor(monitor), editorInput.getValue());
-                editorInput.getValueController().updateValue(editorInput.getValue(), true);
+                Object editedValue = editorInput.extractContentFromFile(new DefaultProgressMonitor(monitor));
+                editorInput.getValueController().updateValue(editedValue, true);
 
 /*
                 // Activate owner editor and focus on cell corresponding to this content editor
@@ -505,15 +505,16 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public Object extractEditorValue() throws DBException
     {
+        Object[] editedValue = new Object[1];
         UIUtils.runInUI(monitor -> {
             try {
-                getEditorInput().updateContentFromFile(monitor, getEditorInput().getValue());
+                editedValue[0] = getEditorInput().extractContentFromFile(monitor);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
         });
 
-        return getEditorInput().getValue();
+        return editedValue[0];
     }
 
     @Override

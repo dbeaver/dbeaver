@@ -34,6 +34,7 @@
         <module>org.jkiss.dbeaver.model.ai.test</module>
         <module>org.jkiss.dbeaver.model.sql.test</module>
         <module>org.jkiss.dbeaver.data.transfer.test</module>
+        <module>org.jkiss.dbeaver.ui.editors.data.test</module>
     </modules>
 
     <build>

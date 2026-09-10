@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.data.ResultSetValuePath;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 
 import java.util.ArrayList;
@@ -58,7 +60,7 @@ final class ResultSetUndoRedoManager {
             clear();
             return viewer.getModel().updateCellValue(attribute, row, rowIndexes, value, true);
         }
-        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes, true, false);
+        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes);
         boolean updated;
         try {
             updated = viewer.getModel().updateCellValue(attribute, row, rowIndexes, value, true);
@@ -69,16 +71,16 @@ final class ResultSetUndoRedoManager {
             throw e;
         }
         if (updated && historyItem != null) {
-            ValueSnapshot newValue = snapshotValue(viewer.getModel().getCellValue(historyItem.valueLocation));
+            CellSnapshot newValue = snapshotCell(historyItem.valueLocation);
             if (newValue != null) {
                 historyItem.setNewValue(newValue);
                 addHistoryItem(historyItem);
             } else {
                 historyItem.release();
-                discardRedo();
+                clear();
             }
         } else if (updated) {
-            discardRedo();
+            clear();
         } else if (historyItem != null) {
             historyItem.release();
         }
@@ -107,22 +109,33 @@ final class ResultSetUndoRedoManager {
             viewer.getModel().resetCellValue(attribute, row, rowIndexes);
             return true;
         }
-        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes, false, true);
+        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes);
         viewer.getModel().resetCellValue(attribute, row, rowIndexes);
         if (historyItem != null) {
-            addHistoryItem(historyItem);
+            CellSnapshot newValue = snapshotCell(historyItem.valueLocation);
+            if (newValue != null) {
+                historyItem.setNewValue(newValue);
+                addHistoryItem(historyItem);
+            } else {
+                historyItem.release();
+                clear();
+            }
         } else {
-            discardRedo();
+            clear();
         }
         return true;
     }
 
     boolean canUndo() {
-        return historyPosition > 0;
+        return canReplay() && historyPosition > 0;
     }
 
     boolean canRedo() {
-        return historyPosition < history.size();
+        return canReplay() && historyPosition < history.size();
+    }
+
+    private boolean canReplay() {
+        return !viewer.isActionsDisabled() && !viewer.isRefreshInProgress() && !viewer.getModel().isUpdateInProgress();
     }
 
     void undo() {
@@ -166,23 +179,15 @@ final class ResultSetUndoRedoManager {
     }
 
     private boolean applyHistoryItem(@NotNull CellEditHistoryItem item, boolean redo) {
-        ValueSnapshot snapshot = redo ? item.newValue : item.oldValue;
-        boolean dirty = redo ? item.newDirty : item.oldDirty;
+        CellSnapshot snapshot = redo ? item.newValue : item.oldValue;
         ResultSetCellLocation valueCell = item.valueLocation;
+        if (!viewer.getModel().containsRow(valueCell.getRow())) {
+            clear();
+            return false;
+        }
         try {
-            if (dirty || valueCell.getRow().getState() != ResultSetRow.STATE_NORMAL) {
-                viewer.getModel().updateCellValue(
-                    valueCell.getAttribute(),
-                    valueCell.getRow(),
-                    valueCell.getRowIndexes(),
-                    copyHistoryValue(snapshot.value),
-                    dirty);
-            } else {
-                viewer.getModel().resetCellValue(
-                    valueCell.getAttribute(),
-                    valueCell.getRow(),
-                    valueCell.getRowIndexes());
-            }
+            snapshot.restore(valueCell);
+            viewer.getModel().refreshChangeCount();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Cell edit", "Error restoring cell value", e);
             return false;
@@ -204,9 +209,7 @@ final class ResultSetUndoRedoManager {
     private CellEditHistoryItem makeHistoryItem(
         @NotNull DBDAttributeBinding attribute,
         @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes,
-        boolean newDirty,
-        boolean useRootValue
+        @Nullable int[] rowIndexes
     ) {
         ResultSetCellLocation currentCell = viewer.getActivePresentation().getCurrentCellLocation();
         ResultSetValuePath valuePath = currentCell != null
@@ -220,20 +223,42 @@ final class ResultSetUndoRedoManager {
             row,
             rowIndexes == null ? null : rowIndexes.clone(),
             valuePath);
-        ResultSetCellLocation valueLocation = useRootValue
-            ? new ResultSetCellLocation(attribute.getLevel() == 0 ? attribute : attribute.getTopParent(), row)
-            : cell;
-        ValueSnapshot oldValue = snapshotValue(viewer.getModel().getCellValue(valueLocation));
+        // Nested edits and resets affect the entire root, including its original value and child change markers.
+        ResultSetCellLocation valueLocation = new ResultSetCellLocation(
+            attribute.getLevel() == 0 ? attribute : attribute.getTopParent(), row);
+        CellSnapshot oldValue = snapshotCell(valueLocation);
         if (oldValue == null) {
             return null;
         }
         return new CellEditHistoryItem(
             cell,
             valueLocation,
-            oldValue,
-            new ValueSnapshot(null, false),
-            row.isChanged(attribute),
-            newDirty && row.getState() == ResultSetRow.STATE_NORMAL);
+            oldValue);
+    }
+
+    @Nullable
+    private static CellSnapshot snapshotCell(@NotNull ResultSetCellLocation location) {
+        ResultSetRow row = location.getRow();
+        DBDAttributeBinding root = location.getAttribute();
+        ValueSnapshot value = snapshotValue(row.values[root.getOrdinalPosition()]);
+        if (value == null) {
+            return null;
+        }
+        ValueSnapshot originalValue = null;
+        if (row.isChanged(root)) {
+            originalValue = snapshotValue(row.getChange(root));
+            if (originalValue == null) {
+                value.release();
+                return null;
+            }
+        }
+        List<DBDAttributeBinding> changedChildren = new ArrayList<>();
+        for (var change : row.getChanges()) {
+            if (change.getValue() == root) {
+                changedChildren.add(change.getKey());
+            }
+        }
+        return new CellSnapshot(value, originalValue, changedChildren);
     }
 
     private void addHistoryItem(@NotNull CellEditHistoryItem item) {
@@ -266,12 +291,6 @@ final class ResultSetUndoRedoManager {
         return changed;
     }
 
-    private void discardRedo() {
-        if (truncateRedo()) {
-            updateActions();
-        }
-    }
-
     private boolean truncateRedo() {
         boolean changed = false;
         while (historyPosition < history.size()) {
@@ -281,9 +300,14 @@ final class ResultSetUndoRedoManager {
         return changed;
     }
 
-    private void updateActions() {
-        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_UNDO);
-        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_REDO);
+    void updateActions() {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return;
+        }
+        UIUtils.asyncExec(() -> {
+            ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_UNDO);
+            ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_REDO);
+        });
     }
 
     @Nullable
@@ -316,35 +340,71 @@ final class ResultSetUndoRedoManager {
     private static class CellEditHistoryItem {
         private final ResultSetCellLocation cellLocation;
         private final ResultSetCellLocation valueLocation;
-        private final ValueSnapshot oldValue;
-        private ValueSnapshot newValue;
-        private final boolean oldDirty;
-        private final boolean newDirty;
+        private final CellSnapshot oldValue;
+        private CellSnapshot newValue;
 
         private CellEditHistoryItem(
             @NotNull ResultSetCellLocation cellLocation,
             @NotNull ResultSetCellLocation valueLocation,
-            @NotNull ValueSnapshot oldValue,
-            @NotNull ValueSnapshot newValue,
-            boolean oldDirty,
-            boolean newDirty
+            @NotNull CellSnapshot oldValue
         ) {
             this.cellLocation = cellLocation;
             this.valueLocation = valueLocation;
             this.oldValue = oldValue;
-            this.newValue = newValue;
-            this.oldDirty = oldDirty;
-            this.newDirty = newDirty;
         }
 
-        private void setNewValue(@NotNull ValueSnapshot newValue) {
-            this.newValue.release();
+        private void setNewValue(@NotNull CellSnapshot newValue) {
             this.newValue = newValue;
         }
 
         private void release() {
             oldValue.release();
-            newValue.release();
+            if (newValue != null) {
+                newValue.release();
+            }
+        }
+    }
+
+    private record CellSnapshot(
+        @NotNull ValueSnapshot value,
+        @Nullable ValueSnapshot originalValue,
+        @NotNull List<DBDAttributeBinding> changedChildren
+    ) {
+        private void restore(@NotNull ResultSetCellLocation location) throws DBException {
+            Object restoredValue = copyHistoryValue(value.value);
+            Object restoredOriginal;
+            try {
+                restoredOriginal = originalValue == null ? null : copyHistoryValue(originalValue.value);
+            } catch (DBException e) {
+                if (value.owned) {
+                    DBUtils.releaseValue(restoredValue);
+                }
+                throw e;
+            }
+            ResultSetRow row = location.getRow();
+            DBDAttributeBinding root = location.getAttribute();
+            int index = root.getOrdinalPosition();
+            Object previousValue = row.values[index];
+            Object previousOriginal = row.getChange(root);
+            row.values[index] = restoredValue;
+            row.clearChange(root);
+            if (originalValue != null) {
+                row.addChange(root, restoredOriginal);
+                for (DBDAttributeBinding child : changedChildren) {
+                    row.addChange(child, root);
+                }
+            }
+            DBUtils.releaseValue(previousValue);
+            if (previousOriginal != previousValue) {
+                DBUtils.releaseValue(previousOriginal);
+            }
+        }
+
+        private void release() {
+            value.release();
+            if (originalValue != null) {
+                originalValue.release();
+            }
         }
     }
 

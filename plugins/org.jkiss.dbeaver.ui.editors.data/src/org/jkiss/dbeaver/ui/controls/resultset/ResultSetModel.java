@@ -412,6 +412,11 @@ public class ResultSetModel implements DBDResultSetModel {
         return this.filteredRows != null ? this.filteredRows : this.curRows;
     }
 
+    boolean containsRow(@NotNull ResultSetRow row) {
+        // ResultSetRow.equals compares row numbers, which can be reused after a reload.
+        return curRows.stream().anyMatch(current -> current == row);
+    }
+
     @NotNull
     public Object[] getRowData(int index) {
         return (this.filteredRows != null ? this.filteredRows : this.curRows).get(index).values;
@@ -502,7 +507,7 @@ public class ResultSetModel implements DBDResultSetModel {
             updateChanges = false;
         }
 
-        boolean isOldHistoricValueAbsent = !row.isChanged(attr);
+        boolean isOldHistoricValueAbsent = !row.isChanged(topAttribute);
         Object currentValue = row.values[rootIndex];
         Object valueToEdit = currentValue;
 
