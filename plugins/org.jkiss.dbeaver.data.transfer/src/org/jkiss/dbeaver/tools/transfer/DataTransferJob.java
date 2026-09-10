@@ -139,47 +139,51 @@ public class DataTransferJob extends AbstractJob {
         if (producer == null) {
             throw new DBException("Null producer");
         }
-        IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
-        if (consumer == null) {
-            throw new DBException("Null consumer");
-        }
-
-        String inputName = producer.getObjectName();
-        String outputName = consumer.getObjectName();
+        String inputName = "unknown";
         try {
-            //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
-
-            inputName = producer.getObjectFullName(monitor);
-            outputName = consumer.getObjectFullName(monitor);
-            monitor.beginTask(
-                NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
-                    CommonUtils.truncateString(inputName, 200),
-                    CommonUtils.truncateString(outputName, 200)), 1);
-
-            IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
-
-            IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
-            producer.transferData(monitor, consumer, processor, nodeSettings, task, -1);
-
-            if (isTransferCanceled(monitor)) {
-                throw new DBInterruptedException("Data transfer was canceled");
+            IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
+            if (consumer == null) {
+                throw new DBException("Null consumer");
             }
 
-            totalStatistics.accumulate(producer.getStatistics());
-            totalStatistics.accumulate(consumer.getStatistics());
+            inputName = producer.getObjectName();
+            String outputName = consumer.getObjectName();
+            try {
+                //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
-            consumer.finishTransfer(monitor, false);
-        } catch (Exception e) {
-            consumer.finishTransfer(monitor, e, task, false);
-            log.error("Error transferring data from " + inputName + " to " + outputName, e);
-            throw e;
+                inputName = producer.getObjectFullName(monitor);
+                outputName = consumer.getObjectFullName(monitor);
+                monitor.beginTask(
+                    NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
+                        CommonUtils.truncateString(inputName, 200),
+                        CommonUtils.truncateString(outputName, 200)), 1);
+
+                IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
+
+                IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
+                producer.transferData(monitor, consumer, processor, nodeSettings, task, -1);
+
+                if (isTransferCanceled(monitor)) {
+                    throw new DBInterruptedException("Data transfer was canceled");
+                }
+
+                totalStatistics.accumulate(producer.getStatistics());
+                totalStatistics.accumulate(consumer.getStatistics());
+
+                consumer.finishTransfer(monitor, false);
+            } catch (Exception e) {
+                consumer.finishTransfer(monitor, e, task, false);
+                log.error("Error transferring data from " + inputName + " to " + outputName, e);
+                throw e;
+            } finally {
+                monitor.done();
+            }
         } finally {
             try {
                 producer.close();
             } catch (Exception e) {
                 log.error("Error closing data producer " + inputName, e);
             }
-            monitor.done();
         }
     }
 

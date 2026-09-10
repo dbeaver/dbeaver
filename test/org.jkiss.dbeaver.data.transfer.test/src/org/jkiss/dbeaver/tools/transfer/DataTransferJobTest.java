@@ -34,8 +34,8 @@ class DataTransferJobTest {
     private DataTransferSettings settings;
     private DBTTask task;
     private Log log;
-    private IDataTransferProducer producer;
-    private IDataTransferConsumer consumer;
+    private IDataTransferProducer<?> producer;
+    private IDataTransferConsumer<?, ?> consumer;
     private DataTransferJob job;
 
     @BeforeEach
@@ -77,6 +77,16 @@ class DataTransferJobTest {
             DBException.class, () -> job.transferData(new VoidProgressMonitor(), pipe));
 
         Assertions.assertSame(transferError, thrown);
+        Mockito.verify(producer, Mockito.times(1)).close();
+    }
+
+    @Test
+    void closesProducerWhenConsumerIsMissing() throws Exception {
+        DataTransferPipe pipe = new DataTransferPipe(producer, null);
+
+        Assertions.assertThrows(
+            DBException.class, () -> job.transferData(new VoidProgressMonitor(), pipe));
+
         Mockito.verify(producer, Mockito.times(1)).close();
     }
 
