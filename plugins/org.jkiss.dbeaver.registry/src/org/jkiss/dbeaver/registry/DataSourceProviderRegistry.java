@@ -76,6 +76,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final List<DataSourceHandlerDescriptor> dataSourceHandlers = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
+    private final Object connectionTypesReloadLock = new Object();
     private final Map<String, ExternalResourceDescriptor> resourceContributions = new LinkedHashMap<>();
 
     private final List<EditorContributionDescriptor> editorContributors = new ArrayList<>();
@@ -577,14 +578,16 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     private void reloadConnectionTypes() {
-        synchronized (connectionTypes) {
+        synchronized (connectionTypesReloadLock) {
             Map<String, DBPConnectionType> reloadedConnectionTypes = getSystemConnectionTypes();
             boolean loaded = loadConnectionTypes(reloadedConnectionTypes);
-            if (loaded) {
-                connectionTypes.clear();
-                connectionTypes.putAll(reloadedConnectionTypes);
-            } else if (connectionTypes.isEmpty()) {
-                connectionTypes.putAll(getSystemConnectionTypes());
+            synchronized (connectionTypes) {
+                if (loaded) {
+                    connectionTypes.clear();
+                    connectionTypes.putAll(reloadedConnectionTypes);
+                } else if (connectionTypes.isEmpty()) {
+                    connectionTypes.putAll(getSystemConnectionTypes());
+                }
             }
         }
     }
