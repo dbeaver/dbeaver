@@ -62,7 +62,10 @@ public class LauncherUtilsTest {
         URL legacy = new URL("file://" + UNC_SERVER + "/private/joe/AppData2022");
         File decoded = LauncherUtils.toFile(legacy);
         String path = decoded.getPath();
-        assertEquals(UNC_SERVER + "/private/joe/AppData2022", path.substring(path.indexOf(UNC_SERVER)));
+        assertEquals(
+            UNC_SERVER + File.separator + "private" + File.separator + "joe" + File.separator + "AppData2022",
+            path.substring(path.indexOf(UNC_SERVER))
+        );
     }
 
     @Test

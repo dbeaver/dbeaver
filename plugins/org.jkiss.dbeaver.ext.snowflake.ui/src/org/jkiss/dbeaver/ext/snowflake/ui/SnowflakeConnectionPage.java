@@ -33,6 +33,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeUtils;
 import org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -198,11 +199,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             dbText.setText(databaseName);
         }
         if (warehouseText != null) {
-            String warehouse = connectionInfo.getServerName();
-            if (CommonUtils.isEmpty(warehouse)) {
-                warehouse = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_WAREHOUSE);
-            }
-            warehouseText.setText(CommonUtils.notEmpty(warehouse));
+            warehouseText.setText(CommonUtils.notEmpty(SnowflakeUtils.getWarehouse(connectionInfo)));
         }
         if (schemaText != null) {
             String schema = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA);
