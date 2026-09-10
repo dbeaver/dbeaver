@@ -69,6 +69,21 @@ class ClickhouseJWTProviderTest {
     }
 
     @Test
+    void signInStateTracksUsableCredentials() {
+        ClickhouseJWTProvider provider = new ClickhouseJWTProvider("https://example.com", "client", null);
+        Assertions.assertFalse(provider.isSignedIn());
+
+        long expiresAt = System.currentTimeMillis() / 1000 + 3600;
+        provider.setIdPAccessToken(jwtWithPayload("{\"exp\":" + expiresAt + "}"));
+        Assertions.assertTrue(provider.isSignedIn());
+
+        provider.reset();
+        Assertions.assertFalse(provider.isSignedIn());
+        provider.setRefreshToken("refresh-token");
+        Assertions.assertTrue(provider.isSignedIn());
+    }
+
+    @Test
     void pollResponseWithTokenCompletesTheLogin() {
         Assertions.assertEquals(
             DeviceCodePollResult.TOKEN_ISSUED,
