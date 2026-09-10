@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.VersionUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -99,7 +100,7 @@ public class VersionUpdateDialog extends Dialog {
     }
 
     private boolean isNewVersionAvailable() {
-        return newVersion.getProgramVersion().compareTo(currentVersion) > 0;
+        return VersionUtils.compareVersions(newVersion.getReleaseVersion(), currentVersion.toString()) > 0;
     }
 
     @Override
@@ -133,7 +134,7 @@ public class VersionUpdateDialog extends Dialog {
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_new_version);
         new Label(propGroup, SWT.NONE)
-            .setText(newVersion.getProgramVersion().toString() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
+            .setText(newVersion.getReleaseVersion() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
 
         if (isNewVersionAvailable()) {
             final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_notes);
@@ -158,7 +159,7 @@ public class VersionUpdateDialog extends Dialog {
             hintLabel.setText(NLS.bind(
                 CoreMessages.dialog_version_update_press_more_info,
                 CoreMessages.dialog_version_update_button_more_info,
-                newVersion.getPlainVersion()));
+                newVersion.getReleaseVersion()));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             hintLabel.setLayoutData(gd);
@@ -206,7 +207,7 @@ public class VersionUpdateDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent) {
         if (showConfig && isNewVersionAvailable()) {
             ((GridLayout) parent.getLayout()).numColumns++;
-            dontShowAgainCheck = UIUtils.createCheckbox(parent, NLS.bind(CoreMessages.dialog_version_update_ignore_version, newVersion.getPlainVersion()), false);
+            dontShowAgainCheck = UIUtils.createCheckbox(parent, NLS.bind(CoreMessages.dialog_version_update_ignore_version, newVersion.getReleaseVersion()), false);
         }
 
         if (isNewVersionAvailable()) {
@@ -241,7 +242,7 @@ public class VersionUpdateDialog extends Dialog {
     protected void buttonPressed(int buttonId)
     {
         if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection()) {
-            CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
+            CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getReleaseVersion(), true);
         }
         if (buttonId == INFO_ID) {
             ShellUtils.launchProgram(newVersion.getBaseURL());

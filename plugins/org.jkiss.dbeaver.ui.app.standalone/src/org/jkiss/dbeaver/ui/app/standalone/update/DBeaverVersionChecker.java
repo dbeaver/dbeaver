@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.services.UIServiceApplicationVersionUpdater;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.VersionUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -134,7 +135,8 @@ public class DBeaverVersionChecker extends AbstractJob {
             return Status.CANCEL_STATUS;
         }
 
-        if (showAlways || (!isSuppressed(newVersion) && (SKIP_VERSION_CHECK || newVersion.getProgramVersion().compareTo(currentVersion) > 0))) {
+        if (showAlways || (!isSuppressed(newVersion) && (SKIP_VERSION_CHECK ||
+            VersionUtils.compareVersions(newVersion.getReleaseVersion(), currentVersion.toString()) > 0))) {
             UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
             if (updater != null) {
                 UIUtils.asyncExec(updater::handleVersionUpdate);
@@ -155,11 +157,11 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     private static boolean isSuppressed(@NotNull VersionDescriptor version) {
         CoreApplicationActivator activator = CoreApplicationActivator.getDefault();
-        return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
+        return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getReleaseVersion());
     }
 
     @NotNull
     private static Version getProductVersion() {
-        return OVERRIDE_PRODUCT_VERSION == null ? GeneralUtils.getProductVersion() : OVERRIDE_PRODUCT_VERSION;
+        return OVERRIDE_PRODUCT_VERSION == null ? Version.parseVersion(GeneralUtils.getPlainVersion()) : OVERRIDE_PRODUCT_VERSION;
     }
 }
