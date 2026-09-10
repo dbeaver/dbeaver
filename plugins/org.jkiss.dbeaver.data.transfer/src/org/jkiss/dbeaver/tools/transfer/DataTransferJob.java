@@ -144,28 +144,22 @@ public class DataTransferJob extends AbstractJob {
             throw new DBException("Null consumer");
         }
 
-        String inputName = producer.getObjectFullName(monitor);
-        String outputName = consumer.getObjectFullName(monitor);
-        monitor.beginTask(
-            NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
-                CommonUtils.truncateString(inputName, 200),
-                CommonUtils.truncateString(outputName, 200)), 1);
-
-        IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
+        String inputName = producer.getObjectName();
+        String outputName = consumer.getObjectName();
         try {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
-            IDataTransferProcessor processor;
-            try {
-                processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
-                producer.transferData(monitor, consumer, processor, nodeSettings, task, -1);
-            } finally {
-                try {
-                    producer.close();
-                } catch (Exception e) {
-                    log.error("Error closing data producer " + inputName, e);
-                }
-            }
+            inputName = producer.getObjectFullName(monitor);
+            outputName = consumer.getObjectFullName(monitor);
+            monitor.beginTask(
+                NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
+                    CommonUtils.truncateString(inputName, 200),
+                    CommonUtils.truncateString(outputName, 200)), 1);
+
+            IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
+
+            IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
+            producer.transferData(monitor, consumer, processor, nodeSettings, task, -1);
 
             if (isTransferCanceled(monitor)) {
                 throw new DBInterruptedException("Data transfer was canceled");
@@ -180,6 +174,11 @@ public class DataTransferJob extends AbstractJob {
             log.error("Error transferring data from " + inputName + " to " + outputName, e);
             throw e;
         } finally {
+            try {
+                producer.close();
+            } catch (Exception e) {
+                log.error("Error closing data producer " + inputName, e);
+            }
             monitor.done();
         }
     }
