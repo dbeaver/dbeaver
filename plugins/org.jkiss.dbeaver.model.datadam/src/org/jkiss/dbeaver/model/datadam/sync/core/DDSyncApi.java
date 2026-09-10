@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 /**
  * Remote synchronization endpoints.
  */
-interface DDSyncApi {
+public interface DDSyncApi {
 
     String DATA_KEY_ENDPOINT = "/data/key";
     String GRAPHQL_ENDPOINT = "/graphql";

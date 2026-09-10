@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 /**
  * Remote endpoints for standalone project sharing (separate from Configuration sync).
  */
-interface DDProjectSyncApi {
+public interface DDProjectSyncApi {
 
     String PROJECT_FIELDS = """
         id: projectId
