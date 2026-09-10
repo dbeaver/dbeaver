@@ -541,6 +541,8 @@ public class ContextComposite extends Composite {
         manager.add(new Separator());
         manager.add(new EmptyAction("Chat"));
         manager.add(new SettingsToggleAction("Show total tokens spent", AIConstants.AI_CHAT_SHOW_TOTAL_TOKENS_SPENT));
+        manager.add(new SettingsToggleAction(
+            AIChatMessagesUI.ai_chat_show_profile_and_model, AIConstants.AI_CHAT_SHOW_PROFILE_AND_MODEL, true));
     }
 
     private void contributeConversationActions(@NotNull IContributionManager manager) {
@@ -756,7 +758,7 @@ public class ContextComposite extends Composite {
             if (!isChecked()) {
                 return;
             }
-            chat.getActiveConversation().setProfile(profile);
+            chat.setConversationProfile(chat.getActiveConversation(), profile);
         }
     }
 
