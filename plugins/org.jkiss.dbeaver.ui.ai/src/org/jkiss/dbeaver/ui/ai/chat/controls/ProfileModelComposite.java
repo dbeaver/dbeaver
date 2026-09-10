@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
-import org.jkiss.dbeaver.model.ai.engine.AIModelListUtils;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsEventListener;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -54,10 +53,11 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 class ProfileModelComposite extends Composite {
     private static final Log log = Log.getLog(ProfileModelComposite.class);
@@ -70,10 +70,11 @@ class ProfileModelComposite extends Composite {
     private final ToolBar modelBar;
     private final ToolItem modelItem;
     private final Map<ProfileKey, List<AIModel>> modelsByProfile = new HashMap<>();
+    private final AtomicLong modelListGeneration = new AtomicLong();
     private String profileText;
     private String modelText;
     private Menu menu;
-    private ModelLoadJob modelLoadJob;
+    private AbstractJob modelLoadJob;
 
     ProfileModelComposite(@NotNull AIChatControl chat, @NotNull Composite parent) {
         super(parent, SWT.NONE);
@@ -108,16 +109,35 @@ class ProfileModelComposite extends Composite {
                 refreshAsync(false);
             }
         };
-        AISettingsEventListener settingsListener = registry -> UIUtils.asyncExec(() -> {
-            if (!isDisposed()) {
-                AISettings settings = registry.getSettings();
-                modelsByProfile.keySet().removeIf(key -> !isCurrentProfile(key, settings));
-                if (modelLoadJob != null && !isCurrentProfile(modelLoadJob.key, settings)) {
-                    cancelModelLoading();
-                }
-                refresh();
+        AISettingsEventListener settingsListener = new AISettingsEventListener() {
+            @Override
+            public void onSettingsUpdate(@NotNull AISettingsManager registry) {
+                UIUtils.asyncExec(() -> {
+                    if (!isDisposed()) {
+                        modelsByProfile.keySet().removeIf(key -> {
+                            AIConfigurationProfile profile = registry.getSettings().getConfigurationOrNull(key.profileId());
+                            return profile == null || !profile.getEngineId().equals(key.engineId());
+                        });
+                        refresh();
+                    }
+                });
             }
-        });
+
+            @Override
+            public void onProfilesUpdate(@NotNull AISettingsManager registry) {
+                modelListGeneration.incrementAndGet();
+                UIUtils.asyncExec(() -> {
+                    if (!isDisposed()) {
+                        modelsByProfile.clear();
+                        cancelModelLoading();
+                        if (menu != null) {
+                            menu.setVisible(false);
+                        }
+                        refresh();
+                    }
+                });
+            }
+        };
         chat.getChatSession().addListener(chatListener);
         AISettingsManager.getInstance().addChangedListener(settingsListener);
         addDisposeListener(event -> {
@@ -241,101 +261,69 @@ class ProfileModelComposite extends Composite {
         if (profile == null || chat.isBusy() || modelLoadJob != null || !canConfigure()) {
             return;
         }
-        ProfileKey key;
         try {
             if (!profile.getConfiguration().isModelSelectionSupported()) {
                 return;
             }
-            key = getProfileKey(profile);
         } catch (DBException e) {
             log.debug("Error reading AI profile", e);
             return;
         }
+        ProfileKey key = new ProfileKey(profile.getProfileId(), profile.getEngineId());
         List<AIModel> cachedModels = modelsByProfile.get(key);
         if (!forceRefresh && cachedModels != null) {
             showModelMenu(profile, cachedModels);
             return;
         }
-        modelLoadJob = new ModelLoadJob(profile, chat.getActiveConversation(), key);
+        AIChatConversation conversation = chat.getActiveConversation();
+        long generation = modelListGeneration.get();
+        modelLoadJob = new AbstractJob(AIChatMessagesUI.ai_chat_model_loading) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                List<AIModel> models = List.of();
+                Exception error = null;
+                try {
+                    profile.resolveSecrets();
+                    try (AIEngine<?> engine = profile.getEngineDescriptor().createEngineInstance(profile)) {
+                        models = engine.getModels(monitor);
+                    }
+                } catch (Exception e) {
+                    error = e;
+                }
+                List<AIModel> result = models;
+                Exception failure = error;
+                UIUtils.asyncExec(() -> {
+                    if (isDisposed() || modelLoadJob != this) {
+                        return;
+                    }
+                    modelLoadJob = null;
+                    refresh();
+                    if (monitor.isCanceled() || generation != modelListGeneration.get()) {
+                        return;
+                    }
+                    if (failure == null) {
+                        modelsByProfile.put(key, result);
+                    }
+                    if (conversation != chat.getActiveConversation() || profile != getProfile()
+                        || chat.isBusy() || !isVisible()) {
+                        return;
+                    }
+                    if (failure != null) {
+                        DBWorkbench.getPlatformUI().showError(AIUIMessages.model_selector_refresh_error_title, null, failure);
+                    } else {
+                        showModelMenu(profile, result);
+                    }
+                });
+                return Status.OK_STATUS;
+            }
+        };
         refresh();
         modelLoadJob.schedule();
     }
 
-    @NotNull
-    private ProfileKey getProfileKey(@NotNull AIConfigurationProfile profile) throws DBException {
-        return new ProfileKey(
-            profile.getProfileId(), profile.getEngineId(), AIModelListUtils.getConfigurationFingerprint(profile.getConfiguration()));
-    }
-
-    private boolean isCurrentProfile(@NotNull ProfileKey key, @NotNull AISettings settings) {
-        AIConfigurationProfile profile = settings.getConfigurationOrNull(key.profileId());
-        try {
-            return profile != null && key.equals(getProfileKey(profile));
-        } catch (DBException e) {
-            log.debug("Error reading AI profile", e);
-            return false;
-        }
-    }
-
-    private class ModelLoadJob extends AbstractJob {
-        private final AIConfigurationProfile profile;
-        private final AIChatConversation conversation;
-        private volatile ProfileKey key;
-
-        private ModelLoadJob(
-            @NotNull AIConfigurationProfile profile,
-            @NotNull AIChatConversation conversation,
-            @NotNull ProfileKey key
-        ) {
-            super(AIChatMessagesUI.ai_chat_model_loading);
-            this.profile = profile;
-            this.conversation = conversation;
-            this.key = key;
-        }
-
-        @NotNull
-        @Override
-        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-            List<AIModel> models = List.of();
-            Exception error = null;
-            try {
-                profile.resolveSecrets();
-                key = getProfileKey(profile);
-                try (AIEngine<?> engine = profile.getEngineDescriptor().createEngineInstance(profile)) {
-                    models = engine.getModels(monitor);
-                }
-            } catch (Exception e) {
-                error = e;
-            }
-            List<AIModel> result = models;
-            Exception failure = error;
-            UIUtils.asyncExec(() -> {
-                if (isDisposed() || modelLoadJob != this) {
-                    return;
-                }
-                modelLoadJob = null;
-                refresh();
-                if (monitor.isCanceled() || !isCurrentProfile(key, AISettingsManager.getStaticSettings())) {
-                    return;
-                }
-                if (failure == null) {
-                    modelsByProfile.put(key, result);
-                }
-                if (conversation != chat.getActiveConversation() || profile != getProfile()
-                    || chat.isBusy() || !isVisible()) {
-                    return;
-                }
-                if (failure != null) {
-                    DBWorkbench.getPlatformUI().showError(AIUIMessages.model_selector_refresh_error_title, null, failure);
-                } else {
-                    showModelMenu(profile, result);
-                }
-            });
-            return Status.OK_STATUS;
-        }
-    }
-
     private void showModelMenu(@NotNull AIConfigurationProfile profile, @NotNull List<AIModel> models) {
+        long generation = modelListGeneration.get();
         Menu modelMenu = createMenu(modelBar);
         try {
             AIEngineProperties properties = profile.getConfiguration();
@@ -343,21 +331,23 @@ class ProfileModelComposite extends Composite {
                 return;
             }
             String selected = properties.getModel();
-            Map<String, AIModel> availableModels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            Map<String, AIModel> availableModels = new LinkedHashMap<>();
             models.stream()
-                .filter(AIModelListUtils::isChatModel)
+                .filter(model -> model.features().contains(AIModelFeature.CHAT))
                 .forEach(model -> availableModels.putIfAbsent(model.name(), model));
             if (!CommonUtils.isEmpty(selected)) {
                 availableModels.putIfAbsent(
                     selected, new AIModel(selected, properties.getContextWindowSize(), Set.of(AIModelFeature.CHAT)));
             }
-            for (AIModel model : availableModels.values()) {
+            for (AIModel model : availableModels.values().stream()
+                .sorted(Comparator.comparing(AIModel::name, String.CASE_INSENSITIVE_ORDER)).toList()) {
                 String name = model.name();
                 MenuItem item = new MenuItem(modelMenu, SWT.RADIO);
                 item.setText(name.replace("&", "&&"));
                 item.setSelection(name.equals(selected));
                 item.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
-                    if (item.getSelection() && !chat.isBusy() && profile == getProfile() && canConfigure()) {
+                    if (item.getSelection() && !chat.isBusy() && profile == getProfile() && canConfigure()
+                        && generation == modelListGeneration.get()) {
                         try {
                             AIEngineProperties configuration = profile.getConfiguration();
                             if (configuration.isModelSelectionSupported() && !name.equals(configuration.getModel())) {
@@ -458,6 +448,6 @@ class ProfileModelComposite extends Composite {
         }
     }
 
-    private record ProfileKey(@NotNull String profileId, @NotNull String engineId, @NotNull String configurationFingerprint) {
+    private record ProfileKey(@NotNull String profileId, @NotNull String engineId) {
     }
 }

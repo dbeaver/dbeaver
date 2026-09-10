@@ -21,117 +21,15 @@ import com.google.gson.stream.JsonToken;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.engine.AIModel;
-import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
-import org.jkiss.dbeaver.model.ai.engine.AIModelListUtils;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
-import java.util.List;
-import java.util.Set;
 
 public class AISettingsManagerTest extends DBeaverUnitTest {
-
-    @Test
-    public void modelListFingerprintTracksConnectionChanges() {
-        OpenAIProperties properties = new OpenAIProperties();
-        properties.setBaseUrl("https://first.example.test/v1");
-        properties.setToken("first-test-token");
-        String first = AIModelListUtils.getConfigurationFingerprint(properties);
-
-        properties.setBaseUrl("https://second.example.test/v1");
-        String second = AIModelListUtils.getConfigurationFingerprint(properties);
-        Assertions.assertNotEquals(first, second);
-        properties.setToken("second-test-token");
-        String third = AIModelListUtils.getConfigurationFingerprint(properties);
-        Assertions.assertNotEquals(second, third);
-        properties.setAuthentication(OpenAIProperties.AUTHENTICATION_CHATGPT_ACCOUNT);
-        Assertions.assertNotEquals(third, AIModelListUtils.getConfigurationFingerprint(properties));
-
-        OpenAIProperties firstAccount = AISettingsManager.READ_PROPS_GSON.fromJson(
-            "{\"openai.account.accountId\":\"first\"}", OpenAIProperties.class);
-        OpenAIProperties secondAccount = AISettingsManager.READ_PROPS_GSON.fromJson(
-            "{\"openai.account.accountId\":\"second\"}", OpenAIProperties.class);
-        Assertions.assertNotEquals(
-            AIModelListUtils.getConfigurationFingerprint(firstAccount), AIModelListUtils.getConfigurationFingerprint(secondAccount));
-    }
-
-    @Test
-    public void modelListFingerprintIgnoresRequestSettings() {
-        OpenAIProperties properties = new OpenAIProperties();
-        properties.setBaseUrl("https://models.example.test/v1");
-        properties.setToken("test-token");
-        final String initial = AIModelListUtils.getConfigurationFingerprint(properties);
-
-        properties.selectModel(OpenAIModels.getModelByName("gpt-4o").orElseThrow());
-        properties.setContextWindowSize(65_536);
-        properties.setTemperature(0.5);
-        properties.setLoggingEnabled(true);
-        properties.setTimeout(60);
-
-        Assertions.assertEquals(initial, AIModelListUtils.getConfigurationFingerprint(properties));
-        OpenAIProperties restored = AISettingsManager.READ_PROPS_GSON.fromJson(
-            AISettingsManager.READ_PROPS_GSON.toJson(properties), OpenAIProperties.class);
-        Assertions.assertEquals(initial, AIModelListUtils.getConfigurationFingerprint(restored));
-    }
-
-    @Test
-    public void modelListFingerprintIgnoresAccountTokenRenewal() {
-        OpenAIProperties original = AISettingsManager.READ_PROPS_GSON.fromJson("""
-            {
-              "openai.authentication": "chatgptAccount",
-              "openai.account.accountId": "test-account",
-              "openai.account.accessToken": "original-test-access-token",
-              "openai.account.refreshToken": "original-test-refresh-token",
-              "openai.account.expiresAt": 1
-            }
-            """, OpenAIProperties.class);
-        OpenAIProperties renewed = AISettingsManager.READ_PROPS_GSON.fromJson("""
-            {
-              "openai.authentication": "chatgptAccount",
-              "openai.account.accountId": "test-account",
-              "openai.account.accessToken": "renewed-test-access-token",
-              "openai.account.refreshToken": "renewed-test-refresh-token",
-              "openai.account.expiresAt": 2
-            }
-            """, OpenAIProperties.class);
-
-        Assertions.assertEquals(
-            AIModelListUtils.getConfigurationFingerprint(original), AIModelListUtils.getConfigurationFingerprint(renewed));
-    }
-
-    @Test
-    public void unknownModelCapabilitiesDoNotExcludeChatModels() {
-        Assertions.assertTrue(AIModelListUtils.isChatModel(new AIModel("llama3", null, Set.of())));
-        Assertions.assertTrue(AIModelListUtils.isChatModel(new AIModel("mistral", null, Set.of())));
-        Assertions.assertTrue(AIModelListUtils.isChatModel(new AIModel("vendor/audio-chat", null, Set.of())));
-        Assertions.assertTrue(AIModelListUtils.isChatModel(new AIModel("chat", null, Set.of(AIModelFeature.CHAT))));
-        Assertions.assertFalse(AIModelListUtils.isChatModel(new AIModel("embedding", null, Set.of(AIModelFeature.EMBEDDING))));
-        Assertions.assertFalse(AIModelListUtils.isChatModel(new AIModel("transcription", null, Set.of(AIModelFeature.SPEECH_TO_TEXT))));
-    }
-
-    @Test
-    public void knownNonChatModelNamesAreExcluded() {
-        for (String name : List.of(
-            "gpt-image-1",
-            "gpt-4o-audio-preview",
-            "gpt-4o-realtime-preview",
-            "omni-moderation-latest",
-            "gpt-4o-search-preview",
-            "o3-deep-research",
-            "GPT-4O-AUDIO-PREVIEW",
-            "text-embedding-3-small",
-            "whisper-1"
-        )) {
-            Assertions.assertFalse(AIModelListUtils.isChatModel(
-                new AIModel(name, null, OpenAIModels.detectModelFeatures(name))), name);
-        }
-    }
 
     @Test
     public void modelSelectionIsSavedPerProfile() throws Exception {
