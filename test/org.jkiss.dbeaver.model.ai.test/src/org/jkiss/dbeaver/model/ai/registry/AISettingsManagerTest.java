@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
+import java.util.List;
 import java.util.Set;
 
 public class AISettingsManagerTest extends DBeaverUnitTest {
@@ -108,9 +109,28 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
     public void unknownModelCapabilitiesDoNotExcludeChatModels() {
         Assertions.assertTrue(AIModelListUtils.isChatModel(new AIModel("llama3", null, Set.of())));
         Assertions.assertTrue(AIModelListUtils.isChatModel(new AIModel("mistral", null, Set.of())));
+        Assertions.assertTrue(AIModelListUtils.isChatModel(new AIModel("vendor/audio-chat", null, Set.of())));
         Assertions.assertTrue(AIModelListUtils.isChatModel(new AIModel("chat", null, Set.of(AIModelFeature.CHAT))));
         Assertions.assertFalse(AIModelListUtils.isChatModel(new AIModel("embedding", null, Set.of(AIModelFeature.EMBEDDING))));
         Assertions.assertFalse(AIModelListUtils.isChatModel(new AIModel("transcription", null, Set.of(AIModelFeature.SPEECH_TO_TEXT))));
+    }
+
+    @Test
+    public void knownNonChatModelNamesAreExcluded() {
+        for (String name : List.of(
+            "gpt-image-1",
+            "gpt-4o-audio-preview",
+            "gpt-4o-realtime-preview",
+            "omni-moderation-latest",
+            "gpt-4o-search-preview",
+            "o3-deep-research",
+            "GPT-4O-AUDIO-PREVIEW",
+            "text-embedding-3-small",
+            "whisper-1"
+        )) {
+            Assertions.assertFalse(AIModelListUtils.isChatModel(
+                new AIModel(name, null, OpenAIModels.detectModelFeatures(name))), name);
+        }
     }
 
     @Test

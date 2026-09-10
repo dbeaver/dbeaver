@@ -20,6 +20,7 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.utils.SecurityUtils;
 
@@ -55,6 +56,7 @@ public final class AIModelListUtils {
     }
 
     public static boolean isChatModel(@NotNull AIModel model) {
-        return model.features().isEmpty() || model.features().contains(AIModelFeature.CHAT);
+        return model.features().contains(AIModelFeature.CHAT)
+            || model.features().isEmpty() && !OpenAIModels.isKnownNonChatModel(model.name());
     }
 }

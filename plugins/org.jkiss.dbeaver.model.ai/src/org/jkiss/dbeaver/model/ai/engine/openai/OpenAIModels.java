@@ -125,12 +125,17 @@ public final class OpenAIModels {
         if (!(modelName.startsWith("gpt-") || modelName.startsWith("o"))) {
             return false;
         }
-        for (String keyword : CHAT_EXCLUDED_KEYWORDS) {
-            if (modelName.contains(keyword)) {
-                return false;
-            }
+        return !isKnownNonChatModel(modelName);
+    }
+
+    public static boolean isKnownNonChatModel(@NotNull String modelName) {
+        String name = modelName.toLowerCase(Locale.ROOT);
+        AIModel knownModel = KNOWN_MODELS.get(name);
+        if (knownModel != null) {
+            return !knownModel.features().contains(AIModelFeature.CHAT);
         }
-        return true;
+        return (name.startsWith("gpt-") || name.startsWith("o"))
+            && CHAT_EXCLUDED_KEYWORDS.stream().anyMatch(name::contains);
     }
 
     public static boolean isTemperatureEditable(@NotNull AIModel model) {
