@@ -1060,7 +1060,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.libraries.addAll(this.origLibraries);
 
         resetDriverInstance();
-        setModified(true);
+        setModified(false);
     }
 
     @NotNull
