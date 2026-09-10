@@ -22,10 +22,10 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 interface DDProjectSyncApi {
 
     String PROJECT_FIELDS = """
-        projectId
+        id: projectId
         name
         description
-        ownerAccountId
+        projectOwner: ownerAccountId
         createTime
         updateTime""";
 
@@ -73,7 +73,7 @@ interface DDProjectSyncApi {
     String MUTATION_PUSH_PROJECT_CONFIGURATION = """
         mutation($projectId: ID!, $input: PushProjectConfigurationInput!) {
             pushProjectConfiguration(projectId: $projectId, input: $input) {
-                revisionId
+                id: revisionId
                 userId
                 updateTime
                 configurationFingerprint

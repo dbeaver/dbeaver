@@ -28,8 +28,8 @@ interface DDSyncApi {
         configurationId
         name
         version
-        createdAt
-        lastSyncAt""";
+        createTime: createdAt
+        lastSyncTime: lastSyncAt""";
 
     String CONFIGURATION_WITH_PARTS_FIELDS = CONFIGURATION_FIELDS + """
 
