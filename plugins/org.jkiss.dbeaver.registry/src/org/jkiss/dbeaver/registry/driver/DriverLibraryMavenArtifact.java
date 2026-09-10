@@ -95,15 +95,13 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
 
     @NotNull
     private static MavenArtifactReference copyReference(@NotNull MavenArtifactReference reference) {
-        MavenArtifactReference copy = new MavenArtifactReference(
+        return new MavenArtifactReference(
             reference.getGroupId(),
             reference.getArtifactId(),
             reference.getClassifier(),
             reference.getFallbackVersion(),
             reference.getVersion()
         );
-        copy.setResolveOptionalDependencies(reference.isResolveOptionalDependencies());
-        return copy;
     }
 
     @Nullable
