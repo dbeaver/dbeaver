@@ -20,6 +20,7 @@ import com.dbeaver.datadam.share.api.model.DDPushProjectConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectConfiguration;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectFile;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.junit.jupiter.api.Assertions;
@@ -94,7 +95,7 @@ class DDProjectSyncStoreTest {
         DDPushProjectConfigurationRequest request = captor.getValue();
 
         Assertions.assertEquals("last-known-fingerprint", request.lastKnownConfigurationFingerprint());
-        DDSharedProjectFile pushedFile = request.configuration().files().get(0);
+        DDSharedProjectFile pushedFile = request.configuration().files().getFirst();
         Assertions.assertEquals("a.json", pushedFile.fileName());
         Assertions.assertNotNull(pushedFile.fingerprint());
         byte[] decrypted = DDCrypto.decrypt(
@@ -112,7 +113,8 @@ class DDProjectSyncStoreTest {
         Assertions.assertNull(result);
     }
 
-    private String encryptToBase64(String fileName, byte[] plaintext) throws Exception {
+    @NotNull
+    private String encryptToBase64(@NotNull String fileName, @NotNull byte[] plaintext) throws Exception {
         byte[] encrypted = DDCrypto.encrypt(dataKey, plaintext, DDProjectSyncStore.aad(PROJECT_ID, fileName));
         return Base64.getEncoder().encodeToString(encrypted);
     }
