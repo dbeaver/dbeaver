@@ -77,7 +77,14 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
 
     private DriverLibraryMavenArtifact(@NotNull DriverDescriptor driver, @NotNull DriverLibraryMavenArtifact copyFrom) {
         super(driver, copyFrom);
-        this.reference = copyFrom.reference;
+        this.reference = new MavenArtifactReference(
+            copyFrom.reference.getGroupId(),
+            copyFrom.reference.getArtifactId(),
+            copyFrom.reference.getClassifier(),
+            copyFrom.reference.getFallbackVersion(),
+            copyFrom.reference.getVersion()
+        );
+        this.reference.setResolveOptionalDependencies(copyFrom.reference.isResolveOptionalDependencies());
         this.localVersion = copyFrom.localVersion;
         this.preferredVersion = copyFrom.preferredVersion;
         this.ignoreDependencies = copyFrom.ignoreDependencies;
