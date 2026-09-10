@@ -34,9 +34,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
 public final class CDataLicenseActivator {
     private static final Log log = Log.getLog(CDataLicenseActivator.class);
@@ -379,9 +381,13 @@ public final class CDataLicenseActivator {
         @NotNull String output,
         @NotNull CDataLicenseActivationRequest request
     ) {
-        String sanitized = redact(output, request.name());
-        sanitized = redact(sanitized, request.email());
-        sanitized = redact(sanitized, request.productKey());
+        String sanitized = output;
+        for (String value : Stream.of(request.name(), request.email(), request.productKey())
+            .filter(value -> value != null && !value.isEmpty())
+            .sorted(Comparator.comparingInt(String::length).reversed())
+            .toList()) {
+            sanitized = sanitized.replace(value, "<redacted>");
+        }
         sanitized = sanitized.replaceAll("\\s+", " ").strip();
         if (sanitized.length() > MAX_DIAGNOSTIC_LENGTH) {
             return sanitized.substring(0, MAX_DIAGNOSTIC_LENGTH) + "...";
@@ -397,10 +403,5 @@ public final class CDataLicenseActivator {
         String output = sanitizeOutput(result.output(), request);
         String processDetails = "Exit code: " + result.exitCode() + ", no license file was created.";
         return output.isEmpty() ? processDetails + " CData returned no output." : processDetails + " CData output: " + output;
-    }
-
-    @NotNull
-    private static String redact(@NotNull String text, @Nullable String value) {
-        return value == null || value.isEmpty() ? text : text.replace(value, "<redacted>");
     }
 }

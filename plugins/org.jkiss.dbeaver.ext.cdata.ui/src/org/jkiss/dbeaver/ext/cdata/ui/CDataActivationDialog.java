@@ -19,6 +19,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -117,6 +119,12 @@ final class CDataActivationDialog extends TitleAreaDialog {
 
         eulaConsentButton = new Button(consentComposite, SWT.CHECK);
         eulaConsentButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
+        eulaConsentButton.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            @Override
+            public void getName(@NotNull AccessibleEvent event) {
+                event.result = CDataUIMessages.activation_eula_consent_accessible_name;
+            }
+        });
         Link consentLink = new Link(consentComposite, SWT.WRAP);
         consentLink.setText(CDataUIMessages.activation_eula_consent);
         GridData consentLinkData = new GridData(GridData.FILL_HORIZONTAL);
@@ -228,11 +236,12 @@ final class CDataActivationDialog extends TitleAreaDialog {
             selectedType = trialButton.getSelection() ? CDataLicenseType.TRIAL : CDataLicenseType.PURCHASED;
         }
         setProductKeyVisible(selectedType == CDataLicenseType.PURCHASED);
+        String validationError = validateInput();
         Button okButton = getButton(IDialogConstants.OK_ID);
         if (okButton != null) {
-            okButton.setEnabled(validateInput() == null);
+            okButton.setEnabled(validationError == null);
         }
-        setErrorMessage(null);
+        setErrorMessage(validationError);
     }
 
     private void setProductKeyVisible(boolean visible) {

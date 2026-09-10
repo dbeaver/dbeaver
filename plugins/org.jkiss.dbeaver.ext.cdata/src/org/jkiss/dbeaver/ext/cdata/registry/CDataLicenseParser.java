@@ -67,7 +67,7 @@ final class CDataLicenseParser {
         boolean trial = isTrial(normalized);
         Integer remainingDays = getRemainingDays(normalized);
         boolean expiring = remainingDays == null ? normalized.contains("expiring") : remainingDays <= 3;
-        if (!trial && (normalized.contains("trial") || !isPurchased(normalized, expiring))) {
+        if (!trial && (normalized.contains("trial") || !isPurchased(normalized, remainingDays))) {
             return new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, nodeId, null);
         }
         CDataLicenseStatus status = trial
@@ -151,7 +151,7 @@ final class CDataLicenseParser {
         return null;
     }
 
-    private static boolean isPurchased(@NotNull String normalized, boolean expiring) {
+    private static boolean isPurchased(@NotNull String normalized, @Nullable Integer remainingDays) {
         return normalized.contains("single developer license") ||
             normalized.contains("multi-developer license") ||
             normalized.contains("site license") ||
@@ -159,7 +159,7 @@ final class CDataLicenseParser {
             normalized.contains("purchased license") ||
             normalized.contains("production license") ||
             normalized.contains("subscription license") ||
-            expiring && normalized.contains("license");
+            (remainingDays != null || normalized.contains("expiring")) && normalized.contains("license");
     }
 
     private static boolean isTrial(@NotNull String normalized) {

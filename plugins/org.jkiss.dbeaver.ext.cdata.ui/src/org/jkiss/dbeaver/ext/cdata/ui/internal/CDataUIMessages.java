@@ -32,6 +32,7 @@ public final class CDataUIMessages extends NLS {
     public static String activation_purchased;
     public static String activation_product_key;
     public static String activation_eula_consent;
+    public static String activation_eula_consent_accessible_name;
     public static String activation_buy_link;
     public static String activation_support_link;
     public static String activation_required_fields;

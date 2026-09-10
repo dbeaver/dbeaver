@@ -217,6 +217,9 @@ public final class CDataDriverCatalog {
             }
             requireText(driver.dataSource(), "dataSource");
             requireText(driver.artifactId(), "artifactId");
+            if (!driver.artifactId().matches("[a-zA-Z0-9_][a-zA-Z0-9_.-]*") || driver.artifactId().contains("..")) {
+                throw new IllegalStateException("Invalid CData Maven artifact ID: " + driver.artifactId());
+            }
             if (!driver.artifactId().endsWith(CDataDriverInfo.ARTIFACT_SUFFIX) ||
                 driver.artifactId().length() == CDataDriverInfo.ARTIFACT_SUFFIX.length()) {
                 throw new IllegalStateException(

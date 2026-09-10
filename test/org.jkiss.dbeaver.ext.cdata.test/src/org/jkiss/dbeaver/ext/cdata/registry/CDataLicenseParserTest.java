@@ -102,6 +102,23 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void recognizeGenericPurchasedLicenseBeforeExpirationWarning() {
+        for (int days : List.of(0, 1, 3, 4, 20)) {
+            for (String information : List.of("License expires in " + days + " days", "License: " + days + " days remaining")) {
+                CDataDriverLicense license = parseInformation(information);
+                Assertions.assertEquals(days, license.getRemainingDays(), information);
+                Assertions.assertEquals(days <= 3 ? CDataLicenseStatus.PURCHASED_EXPIRING : CDataLicenseStatus.PURCHASED_ACTIVE,
+                    license.getStatus(), information);
+            }
+        }
+        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("License").getStatus());
+        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE,
+            parseInformation("License expires in 20 days, validation unavailable").getStatus());
+        Assertions.assertEquals(CDataLicenseStatus.TRIAL_ACTIVE, parseInformation("Trial license expires in 20 days").getStatus());
+        Assertions.assertEquals(CDataLicenseStatus.PURCHASED_EXPIRING, parseInformation("License expiring").getStatus());
+    }
+
+    @Test
     public void parseActivationFailureReason() {
         Assertions.assertEquals(
             CDataLicenseStatus.INVALID_KEY,
@@ -262,6 +279,23 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
                 request
             )
         );
+    }
+
+    @Test
+    public void redactOverlappingActivationValues() {
+        for (CDataLicenseActivationRequest request : List.of(
+            new CDataLicenseActivationRequest("ABC", "test@example.org", CDataLicenseType.PURCHASED, "ABC-SECRET"),
+            new CDataLicenseActivationRequest("user", "user@example.org", CDataLicenseType.PURCHASED, "user@example.org-SECRET"),
+            new CDataLicenseActivationRequest("ABC-SECRET", "test@example.org", CDataLicenseType.PURCHASED, "ABC"),
+            new CDataLicenseActivationRequest("name[1]", "name[1]@example.org", CDataLicenseType.PURCHASED, "name[1]@example.org-SECRET$")
+        )) {
+            String output = "Name: " + request.name() + " Email: " + request.email() + " Key: " + request.productKey();
+            Assertions.assertEquals("Name: <redacted> Email: <redacted> Key: <redacted>",
+                CDataLicenseActivator.sanitizeOutput(output, request));
+        }
+        CDataLicenseActivationRequest trial = new CDataLicenseActivationRequest("user", "user@example.org", CDataLicenseType.TRIAL, null);
+        Assertions.assertEquals("Name: <redacted> Email: <redacted>",
+            CDataLicenseActivator.sanitizeOutput("Name: user Email: user@example.org", trial));
     }
 
     @Test

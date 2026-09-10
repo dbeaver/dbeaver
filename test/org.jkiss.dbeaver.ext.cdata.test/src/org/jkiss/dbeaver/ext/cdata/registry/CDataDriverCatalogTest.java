@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.function.ThrowableFunction;
@@ -184,6 +185,49 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
             Assertions.assertEquals(LAST_MODIFIED - 1000, Files.getLastModifiedTime(cacheFile).toMillis());
             assertNoTemporaryFiles();
         }
+    }
+
+    @Test
+    public void rejectUnsafeArtifactIds() throws Exception {
+        for (String artifactId : List.of(
+            "../outside-jdbc", "source/../../outside-jdbc", "/absolute-jdbc", "source\\..\\outside-jdbc",
+            "C:\\outside-jdbc", "source:other-jdbc", "source%2fother-jdbc", "source?other-jdbc",
+            "source#other-jdbc", "source other-jdbc", "source\nother-jdbc", "source..other-jdbc"
+        )) {
+            String invalidCatalog = CATALOG.replace("\"googleads-jdbc\"", JSONUtils.GSON.toJson(artifactId));
+            Mockito.when(downloadConnection.getInputStream()).thenAnswer(
+                invocation -> new ByteArrayInputStream(invalidCatalog.getBytes(StandardCharsets.UTF_8)));
+
+            Assertions.assertTrue(CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).isEmpty(), artifactId);
+            Assertions.assertFalse(Files.exists(cacheFile), artifactId);
+            assertNoTemporaryFiles();
+
+            saveCachedCatalog(LAST_MODIFIED - 1000);
+            var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+            Assertions.assertEquals("googleads-jdbc", drivers.getFirst().artifactId(), artifactId);
+            Assertions.assertEquals(CATALOG, Files.readString(cacheFile), artifactId);
+            assertNoTemporaryFiles();
+            Files.delete(cacheFile);
+        }
+    }
+
+    @Test
+    public void replaceUnsafeCachedArtifactId() throws Exception {
+        Files.writeString(cacheFile, CATALOG.replace("googleads-jdbc", "../outside-jdbc"));
+        Files.setLastModifiedTime(cacheFile, FileTime.fromMillis(LAST_MODIFIED));
+
+        Assertions.assertEquals("googleads-jdbc", CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).getFirst().artifactId());
+        Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
+        Mockito.verifyNoInteractions(headConnection);
+    }
+
+    @Test
+    public void acceptSafeMavenArtifactCharacters() throws Exception {
+        String catalog = CATALOG.replace("googleads-jdbc", "Source_2.v3-jdbc");
+        Mockito.when(downloadConnection.getInputStream()).thenReturn(new ByteArrayInputStream(catalog.getBytes(StandardCharsets.UTF_8)));
+
+        Assertions.assertEquals("Source_2.v3", CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).getFirst().jdbcName());
+        Assertions.assertEquals(catalog, Files.readString(cacheFile));
     }
 
     @Test
