@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
@@ -57,6 +60,7 @@ import org.osgi.framework.Bundle;
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -495,7 +499,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 }
                 tempRootFolder = root;
                 tempFolder = session;
-                cleanupAbandonedTempFolders(root, session);
+                scheduleAbandonedTempFoldersCleanup(root, session);
                 return;
             } catch (IOException e) {
                 if (failure == null) {
@@ -508,9 +512,21 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         throw new IOException("Can't create DBeaver temp folder", failure);
     }
 
+    private static void scheduleAbandonedTempFoldersCleanup(@NotNull Path root, @NotNull Path currentSession) {
+        var cleanupJob = new AbstractJob("Clean abandoned DBeaver temp folders") {
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                cleanupAbandonedTempFolders(root, currentSession);
+                return Status.OK_STATUS;
+            }
+        };
+        cleanupJob.setSystem(true);
+        cleanupJob.schedule();
+    }
+
     private static void cleanupAbandonedTempFolders(@NotNull Path root, @NotNull Path currentSession) {
         try (var children = Files.list(root)) {
-            children.filter(child -> Files.isDirectory(child) &&
+            children.filter(child -> Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS) &&
                 !child.equals(currentSession) &&
                 child.getFileName().toString().startsWith(TEMP_SESSION_PREFIX)
             ).forEach(child -> {
