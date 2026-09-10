@@ -165,6 +165,10 @@ public class ResultSetViewer extends Viewer
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
     private static final String CSS_CLASS_RESULT_SET_VIEWER = "ResultSetViewer";
 
+    // Cached policy value (policy check is expensive)
+    public static final boolean DATA_EDIT_DISABLED = ApplicationPolicyProvider.getInstance().isPolicyEnabled(
+        ApplicationPolicyProvider.POLICY_DATA_EDIT);
+
     private IResultSetFilterManager filterManager;
     @NotNull
     private final IWorkbenchPartSite site;
@@ -2062,9 +2066,7 @@ public class ResultSetViewer extends Viewer
         }
         final IMenuService menuService = getSite().getService(IMenuService.class);
 
-        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT) &&
-            !ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)
-        ) {
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT) && !DATA_EDIT_DISABLED) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
@@ -2364,7 +2366,7 @@ public class ResultSetViewer extends Viewer
                 return status;
             }
         }
-        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+        if (DATA_EDIT_DISABLED) {
             return UIMessages.dialog_policy_data_edit_msg;
         }
         return null;
@@ -2861,7 +2863,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean isReadOnly() {
-        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+        if (DATA_EDIT_DISABLED) {
             return true;
         }
         if (model.isUpdateInProgress() ||

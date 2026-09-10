@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetEditor;
@@ -105,7 +104,7 @@ public class ResultSetPropertyTester extends PropertyTester
             }
             case PROP_CAN_MOVE: {
                 if (actionsDisabled || !rsv.supportsNavigation()) return false;
-                if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+                if (ResultSetViewer.DATA_EDIT_DISABLED) {
                     return false;
                 }
                 ResultSetRow currentRow = rsv.getCurrentRow();
@@ -120,7 +119,7 @@ public class ResultSetPropertyTester extends PropertyTester
                 if (actionsDisabled || !rsv.hasData() || !rsv.supportsEdit()) {
                     return false;
                 }
-                if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+                if (ResultSetViewer.DATA_EDIT_DISABLED) {
                     return false;
                 }
                 if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
