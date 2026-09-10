@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatThemeSettings;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
@@ -47,7 +48,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
-public class WebCSSInitializer {
+public class WebCSSInitializer implements AutoCloseable {
 
     private static final Log log = Log.getLog(WebCSSInitializer.class);
 
@@ -59,22 +60,28 @@ public class WebCSSInitializer {
     private final Path directory;
 
     public WebCSSInitializer() throws IOException {
-        directory = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-ai-chat");
-        for (Bundle bundle : getResourceBundles()) {
-            Enumeration<URL> resources = bundle.findEntries(WEB_ROOT, "*", true);
-            if (resources == null) {
-                continue;
-            }
-            while (resources.hasMoreElements()) {
-                URL resource = resources.nextElement();
-                String resourcePath = getWebResourcePath(resource);
-                if (resourcePath == null || resourcePath.endsWith("/")) {
+        Path root = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-ai-chat");
+        directory = Files.createTempDirectory(root, "view-");
+        try {
+            for (Bundle bundle : getResourceBundles()) {
+                Enumeration<URL> resources = bundle.findEntries(WEB_ROOT, "*", true);
+                if (resources == null) {
                     continue;
                 }
-                try (InputStream is = resource.openStream()) {
-                    copyWebResource(resourcePath, is);
+                while (resources.hasMoreElements()) {
+                    URL resource = resources.nextElement();
+                    String resourcePath = getWebResourcePath(resource);
+                    if (resourcePath == null || resourcePath.endsWith("/")) {
+                        continue;
+                    }
+                    try (InputStream is = resource.openStream()) {
+                        copyWebResource(resourcePath, is);
+                    }
                 }
             }
+        } catch (IOException | RuntimeException e) {
+            ContentUtils.deleteFileRecursive(directory);
+            throw e;
         }
     }
 
@@ -119,6 +126,13 @@ public class WebCSSInitializer {
     @NotNull
     public String getWebHtmlPath() {
         return directory.resolve(WEB_HTML_PATH).toUri().toString();
+    }
+
+    @Override
+    public void close() {
+        if (!ContentUtils.deleteFileRecursive(directory)) {
+            log.warn("Can't delete web resources directory '" + directory + "'");
+        }
     }
 
     @NotNull

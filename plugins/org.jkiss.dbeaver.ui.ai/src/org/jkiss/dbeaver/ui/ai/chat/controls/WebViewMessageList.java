@@ -65,6 +65,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public static final String ATTACHMENT_OPEN_FILE_IN_EXPLORER = "openFileInExplorer";
 
     protected final Browser browser;
+    private final WebCSSInitializer cssInitializer;
     private final AISettingsManager settingsManager;
     private final AIFunctionAllowMenu functionAllowMenu;
     private final Map<Integer, PendingConfirmation> pendingConfirmations = new HashMap<>();
@@ -76,6 +77,8 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public WebViewMessageList(@NotNull AIChatControl chat, @NotNull Composite parent) throws IOException {
         super(parent, SWT.NONE);
         browser = new Browser(this, SWT.NONE);
+        cssInitializer = createCssInitializer();
+        browser.addDisposeListener(e -> UIUtils.asyncExec(cssInitializer::close));
         renderer = new WebViewMessageRenderer(browser, this::getDataSource);
 
         messageChunkBuffer = new AIMessageChunkBuffer(getDisplay(), renderer::addMessageChunk, this::isDisposed);
@@ -211,7 +214,6 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         );
 
         browser.setVisible(false);
-        WebCSSInitializer cssInitializer = createCssInitializer();
         browser.setUrl(cssInitializer.getWebHtmlPath());
 
         browser.addProgressListener(ProgressListener.completedAdapter(e -> {
