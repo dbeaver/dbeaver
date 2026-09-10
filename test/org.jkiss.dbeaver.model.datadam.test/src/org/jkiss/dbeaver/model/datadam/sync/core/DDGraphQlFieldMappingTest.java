@@ -24,6 +24,7 @@ import com.dbeaver.datadam.share.api.model.DDSharedProjectConfiguration;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectFile;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
+import org.jkiss.code.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -80,7 +81,9 @@ class DDGraphQlFieldMappingTest {
             DDSharedProjectRevision.class);
     }
 
-    private static void assertSelectionMatchesRecord(String selectionSet, Class<? extends Record> recordClass) {
+    private static void assertSelectionMatchesRecord(
+        @NotNull String selectionSet, @NotNull Class<? extends Record> recordClass
+    ) {
         Set<String> expected = new LinkedHashSet<>();
         for (RecordComponent component : recordClass.getRecordComponents()) {
             expected.add(component.getName());
@@ -88,7 +91,8 @@ class DDGraphQlFieldMappingTest {
         Assertions.assertEquals(expected, topLevelResponseKeys(selectionSet), recordClass.getSimpleName());
     }
 
-    private static Set<String> topLevelResponseKeys(String selectionSet) {
+    @NotNull
+    private static Set<String> topLevelResponseKeys(@NotNull String selectionSet) {
         Set<String> keys = new LinkedHashSet<>();
         int depth = 0;
         for (String rawLine : selectionSet.split("\n")) {
@@ -114,7 +118,8 @@ class DDGraphQlFieldMappingTest {
         return keys;
     }
 
-    private static String extractBlock(String source, String marker) {
+    @NotNull
+    private static String extractBlock(@NotNull String source, @NotNull String marker) {
         int markerIndex = source.indexOf(marker);
         int braceIndex = source.indexOf('{', markerIndex);
         int depth = 0;
