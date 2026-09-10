@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -57,7 +61,31 @@ class AIModelSelectionTest {
         properties.selectModel(new AIModel("custom-model-without-metadata", null, Set.of(AIModelFeature.CHAT)));
 
         Assertions.assertEquals("custom-model-without-metadata", properties.getModel());
-        Assertions.assertNull(properties.getContextWindowSize());
+        if (properties instanceof OpenAIProperties) {
+            Assertions.assertEquals(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, properties.getContextWindowSize());
+        } else {
+            Assertions.assertNull(properties.getContextWindowSize());
+        }
+    }
+
+    @Test
+    void unknownModelHasUsableContextBudget() throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setContextWindowSize(1_048_576);
+        properties.selectModel(new AIModel("llama3", null, Set.of()));
+
+        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
+            Assertions.assertEquals(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, engine.getContextWindowSize(new VoidProgressMonitor()));
+        }
+    }
+
+    @Test
+    void missingMetadataUsesKnownModelContextWindow() {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setContextWindowSize(1_048_576);
+        properties.selectModel(new AIModel("gpt-4o", null, Set.of(AIModelFeature.CHAT)));
+
+        Assertions.assertEquals(128_000, properties.getContextWindowSize());
     }
 
     @NotNull

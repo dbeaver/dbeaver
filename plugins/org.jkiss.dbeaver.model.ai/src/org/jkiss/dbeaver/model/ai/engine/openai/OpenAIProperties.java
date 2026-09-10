@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -124,7 +125,8 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public void selectModel(@NotNull AIModel model) {
         setModel(model.name());
-        setContextWindowSize(model.contextWindowSize());
+        setContextWindowSize(model.contextWindowSize() != null ? model.contextWindowSize() :
+            OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE));
     }
 
     @Override
