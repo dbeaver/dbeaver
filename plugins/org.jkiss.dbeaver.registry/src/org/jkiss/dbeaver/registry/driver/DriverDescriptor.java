@@ -1018,6 +1018,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public void resetToDefaults() {
+        if (this.origName == null) {
+            throw new IllegalStateException("Driver '" + this.id + "' has no default configuration");
+        }
         this.name = this.origName;
         this.description = this.origDescription;
         this.driverClassName = this.origClassName;
