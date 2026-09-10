@@ -78,8 +78,8 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         super(parent, SWT.NONE);
         browser = new Browser(this, SWT.NONE);
         cssInitializer = createCssInitializer();
-        browser.addDisposeListener(e -> UIUtils.asyncExec(cssInitializer::close));
-        renderer = new WebViewMessageRenderer(browser, this::getDataSource);
+        addDisposeListener(e -> cssInitializer.close());
+        renderer = new WebViewMessageRenderer(browser, this::getDataSource, cssInitializer);
 
         messageChunkBuffer = new AIMessageChunkBuffer(getDisplay(), renderer::addMessageChunk, this::isDisposed);
         chat.getChatSession().addListener(new AIChatListener() {
@@ -240,7 +240,8 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
 
             private boolean shouldOpenExternally(@NotNull String url) {
-                return url.startsWith("http://") || url.startsWith("https://");
+                return !url.startsWith(cssInitializer.getWebPath())
+                    && (url.startsWith("http://") || url.startsWith("https://"));
             }
         });
 
