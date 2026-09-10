@@ -1077,9 +1077,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public synchronized DriverLoaderDescriptor getDefaultDriverLoader() {
         if (defaultDriverLoader == null) {
-            defaultDriverLoader = new DriverLoaderDescriptor(DriverLoaderDescriptor.DEFAULT_LOADER_ID, this);
+            defaultDriverLoader = createDriverLoader(DriverLoaderDescriptor.DEFAULT_LOADER_ID);
         }
         return defaultDriverLoader;
+    }
+
+    @NotNull
+    protected DriverLoaderDescriptor createDriverLoader(@NotNull String loaderId) {
+        return new DriverLoaderDescriptor(loaderId, this);
     }
 
     @NotNull
@@ -1105,7 +1110,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
         DriverLoaderDescriptor loader = driverLoaders.get(loaderId);
         if (loader == null) {
-            loader = new DriverLoaderDescriptor(loaderId, this);
+            loader = createDriverLoader(loaderId);
             driverLoaders.put(loaderId, loader);
         }
         return loader;
@@ -1123,7 +1128,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     for (DBPAuthModelDescriptor authModel : DataSourceProviderRegistry.getInstance().getApplicableAuthModels(this)) {
                         List<? extends DBPDriverLibrary> driverLibraries = authModel.getDriverLibraries();
                         if (!CommonUtils.isEmpty(driverLibraries) && !driverLoaders.containsKey(authModel.getId())) {
-                            DriverLoaderDescriptor loader = new DriverLoaderDescriptor(authModel.getId(), this);
+                            DriverLoaderDescriptor loader = createDriverLoader(authModel.getId());
                             loader.addLibraryProvider(authModel);
                             driverLoaders.put(authModel.getId(), loader);
                         }
