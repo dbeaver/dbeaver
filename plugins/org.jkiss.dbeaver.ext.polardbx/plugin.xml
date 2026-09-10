@@ -27,7 +27,7 @@
                     <file type="jar" path="maven:/dnsjava:dnsjava:RELEASE[3.6.1]" bundle="!drivers.polardbx"/>
                     <file type="jar" path="drivers/polardbx/polardbx-connector-java.jar" bundle="drivers.polardbx"/>
                     <file type="jar" path="drivers/polardbx/dnsjava.jar" bundle="drivers.polardbx"/>
-                    <file type="license" path="docs/root/licenses/external/asl-2.0.txt"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <property name="connectTimeout" value="60000"/>
                     <property name="loginTimeout" value="30"/>
                     <property name="socketTimeout" value="60000"/>
