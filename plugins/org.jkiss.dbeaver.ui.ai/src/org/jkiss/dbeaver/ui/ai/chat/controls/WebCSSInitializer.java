@@ -104,10 +104,11 @@ public class WebCSSInitializer {
         Files.createDirectories(path.getParent());
         if (resource.equals(WEB_CSS_PATH)) {
             String cssContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            cssContent = updateCss(cssContent);
+            cssContent = updateThemeValues(cssContent);
             Files.writeString(path, cssContent);
         } else if (resource.equals(WEB_HTML_PATH)) {
             String htmlContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            htmlContent = updateThemeValues(htmlContent);
             htmlContent = htmlContent.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent());
             Files.writeString(path, htmlContent);
         } else {
@@ -121,12 +122,12 @@ public class WebCSSInitializer {
     }
 
     @NotNull
-    private String updateCss(@NotNull String cssContent) {
+    private String updateThemeValues(@NotNull String content) {
         Map<String, String> values = fillValues();
         for (var entry : values.entrySet()) {
-            cssContent = cssContent.replace(entry.getKey(), entry.getValue());
+            content = content.replace(entry.getKey(), entry.getValue());
         }
-        return cssContent;
+        return content;
     }
 
     @NotNull
