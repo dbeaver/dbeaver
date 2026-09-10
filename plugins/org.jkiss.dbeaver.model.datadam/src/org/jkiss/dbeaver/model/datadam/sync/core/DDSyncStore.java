@@ -52,7 +52,7 @@ public class DDSyncStore {
     private SecretKey dataKey;
 
     public DDSyncStore(@NotNull String url, @NotNull DDSyncCredentials credentials) {
-        this(new DDGraphQlTransport(url, credentials), credentials);
+        this(new DDShareClient(url, credentials), credentials);
     }
 
     public DDSyncStore(@NotNull DDSyncTransport transport, @NotNull DDSyncCredentials credentials) {

@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 
 import java.util.Map;
 
-public record DDProjectPullResult(
+public record DDSharedProjectPullResult(
     @NotNull String configurationFingerprint,
     @NotNull Map<String, byte[]> files
 ) {

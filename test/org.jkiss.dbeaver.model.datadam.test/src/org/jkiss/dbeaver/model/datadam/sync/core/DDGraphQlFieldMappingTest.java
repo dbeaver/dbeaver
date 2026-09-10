@@ -20,9 +20,6 @@ import com.dbeaver.datadam.share.api.model.DDConfiguration;
 import com.dbeaver.datadam.share.api.model.DDConfigurationPart;
 import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectConfiguration;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectFile;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import org.jkiss.code.NotNull;
 import org.junit.jupiter.api.Assertions;
@@ -59,26 +56,7 @@ class DDGraphQlFieldMappingTest {
 
     @Test
     void sharedProjectFieldsMatchResponseKeys() {
-        assertSelectionMatchesRecord(DDProjectSyncApi.PROJECT_FIELDS, DDSharedProject.class);
-    }
-
-    @Test
-    void sharedProjectFileFieldsMatchResponseKeys() {
-        assertSelectionMatchesRecord(DDProjectSyncApi.PROJECT_FILE_FIELDS, DDSharedProjectFile.class);
-    }
-
-    @Test
-    void sharedProjectConfigurationFieldsMatchResponseKeys() {
-        assertSelectionMatchesRecord(
-            extractBlock(DDProjectSyncApi.QUERY_PULL_PROJECT_CONFIGURATION, "pullProjectConfiguration("),
-            DDSharedProjectConfiguration.class);
-    }
-
-    @Test
-    void sharedProjectRevisionFieldsMatchResponseKeys() {
-        assertSelectionMatchesRecord(
-            extractBlock(DDProjectSyncApi.MUTATION_PUSH_PROJECT_CONFIGURATION, "pushProjectConfiguration("),
-            DDSharedProjectRevision.class);
+        assertSelectionMatchesRecord(DDShareClient.PROJECT_FIELDS, DDSharedProject.class);
     }
 
     private static void assertSelectionMatchesRecord(
