@@ -66,7 +66,7 @@ function createAttachmentCard(args) {
         }
 
         items = files.map((f, index) => {
-            const iconSrc = f.icon;
+            const iconSrc = `file://${f.icon}`;
             const name = f.name || (f.path ? f.path.split('/').pop() : 'Unknown');
             return `
         <div class="attachment-item" role="button" tabindex="-1" onclick="window.openFileInExplorer(${args.id}, ${index});" style="cursor: pointer;" title="Click to show in file explorer">
@@ -136,7 +136,7 @@ function createAttachmentCard(args) {
             </div>
         `;
     }
-    const closeIconSrc = closeIcon;
+    const closeIconSrc = `file://${closeIcon}`;
     return `
         <div class="attachment-card">
             <img src="${closeIconSrc}"

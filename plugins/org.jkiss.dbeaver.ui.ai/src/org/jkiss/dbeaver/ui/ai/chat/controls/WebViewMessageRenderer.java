@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.utils.DurationFormat;
 import org.jkiss.dbeaver.utils.DurationFormatter;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -52,18 +53,15 @@ final class WebViewMessageRenderer {
 
     private final Browser browser;
     private final Supplier<DBPDataSource> dataSourceSupplier;
-    private final WebCSSInitializer cssInitializer;
     private SQLSyntaxManager syntaxManager;
     private SQLRuleScanner ruleScanner;
 
     WebViewMessageRenderer(
         @NotNull Browser browser,
-        @NotNull Supplier<DBPDataSource> dataSourceSupplier,
-        @NotNull WebCSSInitializer cssInitializer
+        @NotNull Supplier<DBPDataSource> dataSourceSupplier
     ) {
         this.browser = browser;
         this.dataSourceSupplier = dataSourceSupplier;
-        this.cssInitializer = cssInitializer;
     }
 
     @Nullable
@@ -119,7 +117,7 @@ final class WebViewMessageRenderer {
         DBPImage icon = AIChatUtils.getRoleIcon(message.message());
         String iconPath = "";
         try {
-            iconPath = cssInitializer.getResourceUrl(icon);
+            iconPath = RuntimeUtils.getPlatformFile(icon.getLocation()).toAbsolutePath().toString();
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
         }
@@ -285,7 +283,7 @@ final class WebViewMessageRenderer {
                 attachmentData.put("name", file.getFileName().toString());
                 String fileIconPath = null;
                 try {
-                    fileIconPath = cssInitializer.getResourceUrl(attachment.getIcon(file));
+                    fileIconPath = RuntimeUtils.getPlatformFile(attachment.getIcon(file).getLocation()).toAbsolutePath().toString();
                 } catch (IOException e) {
                     log.error("Error getting icon path for " + file.getFileName(), e);
                 }
@@ -359,7 +357,7 @@ final class WebViewMessageRenderer {
     private Map<String, String> getActionData(@NotNull DBIcon icon, @NotNull String tooltipMessage) {
         Map<String, String> iconData;
         try {
-            iconData = Map.of("icon", cssInitializer.getResourceUrl(icon), "tooltip", tooltipMessage);
+            iconData = Map.of("icon", RuntimeUtils.getPlatformFile(icon.getLocation()).toString(), "tooltip", tooltipMessage);
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
             iconData = Map.of("icon", "", "tooltip", tooltipMessage);
