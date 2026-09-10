@@ -83,22 +83,8 @@
     <extension point="org.jkiss.dbeaver.sql.executors">
         <executor class="org.jkiss.dbeaver.ext.mysql.tools.MySQLScriptExecutor" datasource="mysql"/>
     </extension>
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-            id="org.jkiss.dbeaver.ext.mysql.dataSourceWizardView"
-            dataSource="mysql"
-            targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-            label="%dialog.connection.header"
-            class="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLConnectionPage"
-            icon="icons/mysql_icon.png">
-        </view>
-        <view
-            id="org.jkiss.dbeaver.ext.mysql.dataSourceEditorView"
-            dataSource="mysql"
-            targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-            label="%dialog.connection.header"
-            class="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLConnectionPage">
-        </view>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="mysql" class="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLConnectionPage"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">

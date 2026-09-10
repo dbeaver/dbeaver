@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2026 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.db2.ui.tools;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -81,10 +80,7 @@ class DB2ToolShowErrorDialog extends Dialog {
         // Button
         Button button = new Button(container1, SWT.PUSH);
         button.setText("Retrieve Message");
-        button.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        button.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 Integer sqlIntegerCode = 0;
                 try {
                     sqlIntegerCode = Integer.valueOf(textSqlErrorCode.getText());
@@ -101,8 +97,7 @@ class DB2ToolShowErrorDialog extends Dialog {
                     // Most likely, there is no message for this code. tell this to the user..
                     resultMessage.setText(e1.getMessage());
                 }
-            }
-        });
+            }));
 
         getShell().setDefaultButton(button);
 

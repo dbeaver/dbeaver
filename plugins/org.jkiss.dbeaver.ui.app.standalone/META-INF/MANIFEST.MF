@@ -11,7 +11,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.ui.app.standalone.rpc,
  org.jkiss.dbeaver.ui.app.standalone.update
-Import-Package: org.w3c.css.sac
 Require-Bundle: org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,
  org.eclipse.e4.ui.model.workbench,
@@ -26,6 +25,5 @@ Require-Bundle: org.eclipse.e4.ui.css.core,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.app.config,
- org.jkiss.dbeaver.ui.editors.base,
  org.eclipse.ui.views.log
 Automatic-Module-Name: org.jkiss.dbeaver.ui.app.standalone

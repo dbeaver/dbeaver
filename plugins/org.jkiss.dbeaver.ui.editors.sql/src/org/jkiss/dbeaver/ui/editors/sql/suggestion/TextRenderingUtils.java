@@ -122,6 +122,7 @@ public class TextRenderingUtils {
         StyledText textWidget,
         int offset
     ) {
+        offset = Math.max(0, Math.min(offset, textWidget.getCharCount()));
         int lineHeight = textWidget.getLineHeight();
         int fontHeight = gc.getFontMetrics().getHeight();
         Point origin = textWidget.getLocationAtOffset(offset);
@@ -152,7 +153,8 @@ public class TextRenderingUtils {
         int line = widget.getLineAtOffset(offset);
         int start = widget.getOffsetAtLine(line);
         String contents = widget.getLine(line);
-        return contents.substring(offset - start);
+        int lineOffset = Math.max(0, Math.min(offset - start, contents.length()));
+        return contents.substring(lineOffset);
     }
 
 

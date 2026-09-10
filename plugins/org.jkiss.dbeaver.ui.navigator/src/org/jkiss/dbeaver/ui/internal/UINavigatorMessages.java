@@ -188,6 +188,7 @@ public class UINavigatorMessages extends NLS {
     public static String editors_entity_dialog_persist_title;
     public static String editors_entity_dialog_preview_title;
     public static String editors_entity_properties_text;
+    public static String editors_entity_properties_name_tooltip;
     public static String editors_entity_properties_tooltip_suffix;
     public static String editors_entity_title_uninitialized;
     public static String editors_entity_title_initializing;
@@ -280,6 +281,9 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_provider_element_tooltip_datasource_read_only;
     public static String navigator_provider_element_tooltip_datasource_provided;
     public static String navigator_provider_element_tooltip_datasource_error;
+
+    public static String confirm_commit_after_defaults_change_title;
+    public static String confirm_commit_after_defaults_change_message;
 
     static {
         // initialize resource bundle

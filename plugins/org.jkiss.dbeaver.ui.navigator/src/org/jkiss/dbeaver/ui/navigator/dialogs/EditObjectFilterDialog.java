@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.dialogs;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -142,26 +141,20 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     protected void setEnableCheckbox(@NotNull Composite topPanel) {
         enableButton = UIUtils.createCheckbox(topPanel, UIMessages.button_enable, false);
-        enableButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        enableButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 filter.setEnabled(enableButton.getSelection());
                 enableFiltersContent();
-            }
-        });
+            }));
         GridData cbGd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
         enableButton.setLayoutData(cbGd);
     }
 
     protected void setGlobalFilterLink(@NotNull Composite topPanel) {
         Link globalLink = UIUtils.createLink(
-            topPanel, UINavigatorMessages.dialog_filter_global_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            topPanel, UINavigatorMessages.dialog_filter_global_link, SelectionListener.widgetSelectedAdapter(e -> {
                     setReturnCode(SHOW_GLOBAL_FILTERS_ID);
                     close();
-                }
-            }
+                })
         );
         GridData linkGD = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
         globalLink.setLayoutData(linkGD);
@@ -187,37 +180,26 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         for (String sfName : sfNames) {
             namesCombo.add(sfName);
         }
-        namesCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                changeSavedFilter();
-            }
-        });
+        namesCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> changeSavedFilter()));
         setSaveButton();
         setRemoveButton();
     }
 
     protected void setSaveButton() {
         saveButton = UIUtils.createPushButton(sfGroup, WorkbenchMessages.Save, null);
-        saveButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        saveButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 namesCombo.add(namesCombo.getText());
                 saveConfigurations();
-            }
-        });
+            }));
     }
 
     protected void setRemoveButton() {
         removeButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_remove_button, null);
-        removeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        removeButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 dsRegistry.removeSavedFilter(namesCombo.getText());
                 namesCombo.remove(namesCombo.getText());
                 namesCombo.setText(NULL_FILTER_NAME);
-            }
-        });
+            }));
     }
 
     protected void redrawFilterRelatedContent() {

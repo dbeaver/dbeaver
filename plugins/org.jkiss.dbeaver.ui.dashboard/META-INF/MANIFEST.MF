@@ -10,7 +10,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator
 Require-Bundle: org.jkiss.dbeaver.tasks.ui,
  org.jkiss.dbeaver.ui.charts;visibility:=reexport,
- org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.model.dashboard;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ui.dashboard,

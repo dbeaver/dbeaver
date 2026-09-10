@@ -23,8 +23,7 @@ import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -99,16 +98,13 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
             tabFolder = new CTabFolder(composite, SWT.TOP | SWT.FLAT);
             tabFolder.setLayoutData(gd);
-            tabFolder.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            tabFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     artifacts.clear();
                     CTabItem selection = tabFolder.getSelection();
                     if (selection != null && selection.getData() == TabType.DEPENDENCY_DECLARATION){
                         UIUtils.asyncExec(EditMavenArtifactDialog.this::parseArtifactText);
                     }
-                }
-            });
+                }));
             if (originalArtifact == null) {
                 createDependencyDeclarationTab(tabFolder);
             }
@@ -127,24 +123,16 @@ public class EditMavenArtifactDialog extends BaseDialog {
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies_tip,
                 originalArtifact != null && originalArtifact.isIgnoreDependencies(),
                 2);
-            ignoreDependenciesCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ignoreDependencies = ignoreDependenciesCheckbox.getSelection();
-                }
-            });
+            ignoreDependenciesCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                ignoreDependencies = ignoreDependenciesCheckbox.getSelection()));
 
             Button loadOptionalDependenciesCheckbox = UIUtils.createCheckbox(settingsGroup,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_load_optional_dependencies_tip,
                 originalArtifact != null && originalArtifact.isLoadOptionalDependencies(),
                 2);
-            loadOptionalDependenciesCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    loadOptionalDependencies = loadOptionalDependenciesCheckbox.getSelection();
-                }
-            });
+            loadOptionalDependenciesCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                loadOptionalDependencies = loadOptionalDependenciesCheckbox.getSelection()));
         }
 
         return composite;

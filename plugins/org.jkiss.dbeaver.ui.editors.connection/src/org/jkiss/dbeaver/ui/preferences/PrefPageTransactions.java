@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -91,12 +90,7 @@ public class PrefPageTransactions extends TargetPrefPage {
                 UIConnectionMessages.action_menu_transaction_smart_auto_commit_tip,
                 false,
                 2);
-            smartCommitCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateCommitRecoverCheckBox();
-                }
-            });
+            smartCommitCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateCommitRecoverCheckBox()));
             smartCommitRecoverCheck = UIUtils.createCheckbox(
                 txnNameGroup,
                 UIConnectionMessages.action_menu_transaction_smart_auto_commit_recover,

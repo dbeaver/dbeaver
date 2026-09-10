@@ -156,6 +156,9 @@ public class DataSourceHandler {
         // Save users
         for (DBPDataSourceTask user : dataSourceContainer.getTasks()) {
             if (user instanceof ISaveablePart) {
+                if (!user.shouldSaveOnDisconnect()) {
+                    continue;
+                }
                 if (!SaveChangesHandler.validateAndSave(new VoidProgressMonitor(), (ISaveablePart) user)) {
                     return;
                 }

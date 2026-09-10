@@ -22,7 +22,9 @@ import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -30,6 +32,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -39,17 +42,18 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionPermissionsDialog;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageConnectionTypes
@@ -101,12 +105,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             UIUtils.createTableColumn(typeTable, SWT.LEFT, UIConnectionMessages.pref_page_connection_types_label_table_column_description);
             //typeTable.setHeaderVisible(true);
             typeTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-            typeTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    showSelectedType(getSelectedType());
-                }
-            });
+            typeTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> showSelectedType(getSelectedType())));
 
             if (canEdit) {
                 Composite toolbar = UIUtils.createComposite(composite, 2);
@@ -223,12 +222,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 UIConnectionMessages.pref_page_connection_types_label_confirm_sql_execution_tip,
                 false,
                 2);
-            confirmCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setConfirmExecute(confirmCheck.getSelection());
-                }
-            });
+            confirmCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                getSelectedType().setConfirmExecute(confirmCheck.getSelection())));
 
             confirmDataChangeCheck = UIUtils.createCheckbox(
                 placeholder,
@@ -236,12 +231,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 UIConnectionMessages.pref_page_connection_types_label_confirm_data_change_tip,
                 false,
                 2);
-            confirmDataChangeCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setConfirmDataChange(confirmDataChangeCheck.getSelection());
-                }
-            });
+            confirmDataChangeCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                getSelectedType().setConfirmDataChange(confirmDataChangeCheck.getSelection())));
 
             autocommitCheck = UIUtils.createCheckbox(
                 placeholder,
@@ -249,36 +240,25 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 UIConnectionMessages.pref_page_connection_types_label_auto_commit_by_default_tip,
                 false,
                 2);
-            autocommitCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setAutocommit(autocommitCheck.getSelection());
-                }
-            });
+            autocommitCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                getSelectedType().setAutocommit(autocommitCheck.getSelection())));
 
             smartCommitCheck = UIUtils.createCheckbox(placeholder,
                 UIConnectionMessages.action_menu_transaction_smart_auto_commit,
                 UIConnectionMessages.action_menu_transaction_smart_auto_commit_tip,
                 false,
                 2);
-            smartCommitCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            smartCommitCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     getSelectedType().setSmartCommit(smartCommitCheck.getSelection());
                     updateCommitRecoverCheckBox();
-                }
-            });
+                }));
             smartCommitRecoverCheck = UIUtils.createCheckbox(placeholder,
                 UIConnectionMessages.action_menu_transaction_smart_auto_commit_recover,
                 UIConnectionMessages.action_menu_transaction_smart_auto_commit_recover_tip,
                 false,
                 2);
-            smartCommitRecoverCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setSmartCommitRecover(smartCommitRecoverCheck.getSelection());
-                }
-            });
+            smartCommitRecoverCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                getSelectedType().setSmartCommitRecover(smartCommitRecoverCheck.getSelection())));
             // transactions
             autoCloseTransactionsCheck = UIUtils.createCheckbox(
                 placeholder,
@@ -286,12 +266,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 UIConnectionMessages.pref_page_connection_types_label_auto_close_enabled_tip,
                 true,
                 1);
-            autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setAutoCloseTransactions(autoCloseTransactionsCheck.getSelection());
-                }
-            });
+            autoCloseTransactionsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                getSelectedType().setAutoCloseTransactions(autoCloseTransactionsCheck.getSelection())));
             autoCloseTransactionsTtlText = new Text(placeholder, SWT.BORDER);
             autoCloseTransactionsTtlText.setToolTipText(UIConnectionMessages.pref_page_connection_types_label_auto_close_ttl_tip);
             autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
@@ -308,12 +284,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 UIConnectionMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip,
                 true,
                 1);
-            autoCloseConnectionsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getSelectedType().setAutoCloseConnections(autoCloseConnectionsCheck.getSelection());
-                }
-            });
+            autoCloseConnectionsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                getSelectedType().setAutoCloseConnections(autoCloseConnectionsCheck.getSelection())));
             autoCloseConnectionsTtlText = new Text(placeholder, SWT.BORDER);
             autoCloseConnectionsTtlText.setToolTipText(UIConnectionMessages.pref_page_connection_types_label_auto_close_ttl_tip);
             autoCloseConnectionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
@@ -328,17 +300,14 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 Button editPermissionsButton = UIUtils.createDialogButton(
                     placeholder,
                     UIConnectionMessages.pref_page_label_edit_permissions,
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    SelectionListener.widgetSelectedAdapter(e -> {
                             EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(
                                 getShell(), getSelectedType().getModifyPermission()
                             );
                             if (dialog.open() == IDialogConstants.OK_ID) {
                                 getSelectedType().setModifyPermissions(dialog.getAccessRestrictions());
                             }
-                        }
-                    }
+                        })
                 );
                 GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.horizontalSpan = 2;
@@ -349,12 +318,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         UIUtils.createLink(
             composite,
             "<a>" + UIConnectionMessages.pref_page_connection_types_wiki_link + "</a>",
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTION_TYPES_LINK));
-                }
-            });
+            SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTION_TYPES_LINK))));
 
         performDefaults(false);
         updateCommitRecoverCheckBox();
@@ -581,9 +546,10 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             registry.saveConnectionTypes();
         }
         if (hasExistingTypeChanges) {
-            // Flush projects configs (as they cache connection type information)
+            // Update project data sources (they may cache connection type information and permissions snapshots)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
+                List<DBPDataSourceContainer> affectedDataSources = new ArrayList<>();
                 for (DBPDataSourceContainer ds : projectRegistry.getDataSources()) {
                     DBPConnectionConfiguration cnnCfg = ds.getConnectionConfiguration();
                     DBPConnectionType cnnType = cnnCfg.getConnectionType();
@@ -591,10 +557,22 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         if (toRemove.contains(cnnType)) {
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         }
-                        projectRegistry.flushConfig();
-                        affectedDataSourceRegs.add(projectRegistry);
-                        break;
+                        affectedDataSources.add(ds);
                     }
+                }
+                if (affectedDataSources.isEmpty()) {
+                    continue;
+                }
+                try {
+                    projectRegistry.updateDataSources(affectedDataSources);
+                    affectedDataSourceRegs.add(projectRegistry);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        UIConnectionMessages.pref_page_connection_types_error_title,
+                        e.getMessage(),
+                        e
+                    );
+                    return false;
                 }
             }
         }
