@@ -17,6 +17,18 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.jkiss.dbeaver</groupId>
+                <artifactId>product-generator</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-publisher-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <productsDirectory>${project.build.directory}/generated-products</productsDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-p2-director-plugin</artifactId>
                 <version>${tycho-version}</version>
