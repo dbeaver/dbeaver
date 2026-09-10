@@ -637,22 +637,26 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     public void addConnectionType(@NotNull DBPConnectionType connectionType) {
-        synchronized (connectionTypes) {
-            if (this.connectionTypes.containsKey(connectionType.getId())) {
-                log.warn("Duplicate connection type id: " + connectionType.getId());
-                return;
+        synchronized (connectionTypesReloadLock) {
+            synchronized (connectionTypes) {
+                if (this.connectionTypes.containsKey(connectionType.getId())) {
+                    log.warn("Duplicate connection type id: " + connectionType.getId());
+                    return;
+                }
+                this.connectionTypes.put(connectionType.getId(), connectionType);
             }
-            this.connectionTypes.put(connectionType.getId(), connectionType);
         }
     }
 
     public void removeConnectionType(@NotNull DBPConnectionType connectionType) {
-        synchronized (connectionTypes) {
-            if (!this.connectionTypes.containsKey(connectionType.getId())) {
-                log.warn("Connection type doesn't exist: " + connectionType.getId());
-                return;
+        synchronized (connectionTypesReloadLock) {
+            synchronized (connectionTypes) {
+                if (!this.connectionTypes.containsKey(connectionType.getId())) {
+                    log.warn("Connection type doesn't exist: " + connectionType.getId());
+                    return;
+                }
+                this.connectionTypes.remove(connectionType.getId());
             }
-            this.connectionTypes.remove(connectionType.getId());
         }
     }
 
