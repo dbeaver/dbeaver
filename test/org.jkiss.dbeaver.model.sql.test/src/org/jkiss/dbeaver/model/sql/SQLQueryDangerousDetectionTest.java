@@ -97,10 +97,12 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         for (String queryText : List.of(
             "SELECT * FROM test",
             "SELECT id FROM test UNION SELECT id FROM other_test",
-            "WITH selected AS (SELECT * FROM test) SELECT * FROM selected"
+            "WITH selected AS (SELECT * FROM test) SELECT * FROM selected",
+            "(SELECT * FROM test)"
         )) {
             var query = new SQLQuery(null, queryText);
             Assertions.assertFalse(query.isMutatingStatement(), queryText);
+            Assertions.assertFalse(query.isModifying(), queryText);
         }
     }
 
@@ -120,7 +122,12 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         )) {
             var query = new SQLQuery(null, queryText);
             Assertions.assertTrue(query.isMutatingStatement(), queryText);
+            Assertions.assertTrue(query.isModifying(), queryText);
         }
+
+        var lockingQuery = new SQLQuery(null, "SELECT * FROM test FOR UPDATE");
+        Assertions.assertFalse(lockingQuery.isMutatingStatement());
+        Assertions.assertTrue(lockingQuery.isModifying());
     }
 
 }

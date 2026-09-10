@@ -514,11 +514,11 @@ public class SQLQuery implements SQLScriptElement {
         if (getType() == SQLQueryType.UNKNOWN) {
             return false;
         }
-        if (statement instanceof PlainSelect plainSelect) {
-            return plainSelect.getForMode() != null || plainSelect.getIntoTables() != null;
-        } else {
-            return true;
+        if (statement instanceof Select) {
+            return isMutatingStatement() ||
+                statement instanceof PlainSelect plainSelect && plainSelect.getForMode() != null;
         }
+        return true;
     }
 
     public boolean isMutatingStatement() {
