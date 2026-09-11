@@ -1011,8 +1011,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
         final IDataSourceConnectionEditor activeConnectionEditor = getConnectionEditor();
 
-        if (activeConnectionEditor instanceof IDialogPageProvider) {
-            subPages = ((IDialogPageProvider) activeConnectionEditor).getDialogPages(extrasOnly, true);
+        if (activeConnectionEditor instanceof IDialogPageProvider pageProvider) {
+            subPages = pageProvider.getDialogPages(extrasOnly, true);
 
             if ((!getDriver().isEmbedded() || CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS)))
                 && !CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS))
