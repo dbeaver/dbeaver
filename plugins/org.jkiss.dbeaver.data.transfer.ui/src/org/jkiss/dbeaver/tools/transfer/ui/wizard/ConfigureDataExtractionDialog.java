@@ -239,7 +239,11 @@ public class ConfigureDataExtractionDialog extends BaseDialog {
         producerSettings.setFetchSize(fetchSize.get());
         settings.setMaxJobCount(threadCount.get());
         producerSettings.setSegmentSize(segmentSize.get());
-        producerSettings.setExtractType(extractInSegments.get() ? ExtractType.SEGMENTS : ExtractType.SINGLE_QUERY);
+        if (strategy.get() == Strategy.USE_FETCHED_ROWS) {
+            producerSettings.setExtractType(ExtractType.SINGLE_QUERY);
+        } else {
+            producerSettings.setExtractType(extractInSegments.get() ? ExtractType.SEGMENTS : ExtractType.SINGLE_QUERY);
+        }
 
         super.okPressed();
     }

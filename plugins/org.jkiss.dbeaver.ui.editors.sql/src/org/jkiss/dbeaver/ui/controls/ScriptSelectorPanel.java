@@ -27,8 +27,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -337,10 +335,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         columnController.createColumns();
         columnController.sortByColumn(1, SWT.DOWN);
 
-        scriptTree.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+        scriptTree.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(e -> {
                 List<ResourceInfo> files = new ArrayList<>();
                 for (Object item : ((IStructuredSelection)scriptViewer.getSelection()).toArray()) {
                     if (!((ResourceInfo)item).isDirectory()) {
@@ -354,8 +349,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                 for (ResourceInfo ri : files) {
                     SQLEditorHandlerOpenEditor.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri, null);
                 }
-            }
-        });
+            }));
 
         scriptTree.addListener(SWT.PaintItem, event -> {
             final TreeItem item = (TreeItem) event.item;

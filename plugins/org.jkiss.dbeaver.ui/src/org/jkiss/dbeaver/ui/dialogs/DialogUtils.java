@@ -26,7 +26,6 @@ import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -37,15 +36,14 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
  * DialogUtils
  */
 public class DialogUtils {
-
-    private static final Log log = Log.getLog(DialogUtils.class);
 
     private static final String DIALOG_FOLDER_PROPERTY = "dialog.default.folder";
     
@@ -60,18 +58,28 @@ public class DialogUtils {
         }
     }
 
-    public static File selectFileForSave(Shell parentShell, String valueName)
-    {
+    public static Path selectFileForSave(Shell parentShell, String valueName) {
         return selectFileForSave(parentShell, "Save Content As", null, valueName);
     }
 
     @Nullable
-    public static File selectFileForSave(@NotNull Shell parentShell, @NotNull String title, @Nullable String[] filterExt, @Nullable String fileName) {
+    public static Path selectFileForSave(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @Nullable String[] filterExt,
+        @Nullable String fileName
+    ) {
         return selectFileForSave(parentShell, title, filterExt, null, fileName);
     }
 
     @Nullable
-    public static File selectFileForSave(@NotNull Shell parentShell, @NotNull String title, @Nullable String[] filterExt, @Nullable String[] filterNames, @Nullable String fileName) {
+    public static Path selectFileForSave(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @Nullable String[] filterExt,
+        @Nullable String[] filterNames,
+        @Nullable String fileName
+    ) {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
         fileDialog.setText(title);
         fileDialog.setOverwrite(true);
@@ -89,22 +97,24 @@ public class DialogUtils {
         if (CommonUtils.isEmpty(fileName)) {
             return null;
         }
-        final File saveFile = new File(fileName);
-        File saveDir = saveFile.getParentFile();
-        if (!saveDir.exists()) {
-            DBWorkbench.getPlatformUI().showError("Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
+        Path saveFile = Path.of(fileName);
+        Path saveDir = saveFile.getParent();
+        if (!Files.exists(saveDir)) {
+            DBWorkbench.getPlatformUI().showError(
+                "Bad file name",
+                "Directory '" + saveDir.toAbsolutePath() + "' does not exists"
+            );
             return null;
         }
         return saveFile;
     }
 
-    public static File openFile(Shell parentShell)
+    public static Path openFile(@NotNull Shell parentShell)
     {
         return openFile(parentShell, null);
     }
 
-    public static File openFile(Shell parentShell, String[] filterExt)
-    {
+    public static Path openFile(@NotNull Shell parentShell, @Nullable String[] filterExt) {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN);
         if (filterExt != null) {
             fileDialog.setFilterExtensions(filterExt);
@@ -113,19 +123,22 @@ public class DialogUtils {
         if (CommonUtils.isEmpty(fileName)) {
             return null;
         }
-        final File loadFile = new File(fileName);
-        if (!loadFile.exists()) {
+        Path loadFile = Path.of(fileName);
+        if (!Files.exists(loadFile)) {
             MessageBox aMessageBox = new MessageBox(parentShell, SWT.ICON_WARNING | SWT.OK);
             aMessageBox.setText("File doesn't exists");
-            aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
+            aMessageBox.setMessage("The file "+ loadFile.toAbsolutePath() + " doesn't exists.");
             aMessageBox.open();
             return null;
         }
         return loadFile;
     }
 
-    public static File[] openFileList(Shell parentShell, String title, String[] filterExt)
-    {
+    public static Path[] openFileList(
+        @NotNull Shell parentShell,
+        @Nullable String title,
+        @Nullable String[] filterExt
+    ) {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
         if (title != null) {
             fileDialog.setText(title);
@@ -137,13 +150,13 @@ public class DialogUtils {
         if (CommonUtils.isEmpty(fileName)) {
             return null;
         }
-        File filterPath = new File(fileDialog.getFilterPath());
+        Path filterPath = Path.of(fileDialog.getFilterPath());
         String[] fileNames = fileDialog.getFileNames();
-        return Arrays.stream(fileNames).map(fn -> new File(filterPath, fn)).toArray(File[]::new);
+        return Arrays.stream(fileNames).map(filterPath::resolve).toArray(Path[]::new);
     }
 
-    public static String openFileDialog(FileDialog fileDialog)
-    {
+    @Nullable
+    public static String openFileDialog(@NotNull FileDialog fileDialog) {
         if (curDialogFolder != null) {
             fileDialog.setFilterPath(curDialogFolder);
         }
@@ -167,12 +180,25 @@ public class DialogUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable DBPProject project, boolean multiFS, @Nullable ModifyListener changeListener) {
+    public static Text createOutputFolderChooser(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable DBPProject project,
+        boolean multiFS,
+        @Nullable ModifyListener changeListener
+    ) {
         return createOutputFolderChooser(parent, label, null, project, multiFS, changeListener);
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable DBPProject project, boolean multiFS, @Nullable ModifyListener changeListener) {
+    public static Text createOutputFolderChooser(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable String value,
+        @Nullable DBPProject project,
+        boolean multiFS,
+        @Nullable ModifyListener changeListener
+    ) {
         return createOutputFolderChooser(parent, label, null, value, project, multiFS, changeListener);
     }
 
@@ -264,10 +290,12 @@ public class DialogUtils {
     /* SWT 2021-06-02 bug: file extension is not appended on Windows */
     @NotNull
     private static String fixMissingFileExtension(@NotNull FileDialog dialog, @NotNull String filePath) {
-        if (CommonUtils.isBitSet(dialog.getStyle(), SWT.SAVE) && new File(filePath).getName().indexOf('.') < 0 && RuntimeUtils.isWindows()) {
-            final String[] filters = dialog.getFilterExtensions();
+        if (CommonUtils.isBitSet(dialog.getStyle(), SWT.SAVE) &&
+            Path.of(filePath).getFileName().toString().indexOf('.') < 0 && RuntimeUtils.isWindows()
+        ) {
+            String[] filters = dialog.getFilterExtensions();
             if (dialog.getFilterIndex() >= 0 && dialog.getFilterIndex() < filters.length) {
-                final String filter = filters[dialog.getFilterIndex()];
+                String filter = filters[dialog.getFilterIndex()];
                 if (!filter.equals("*") && !filter.equals("*.*") && filter.indexOf('.') >= 0) {
                     return filePath + filter.substring(filter.lastIndexOf('.'));
                 }

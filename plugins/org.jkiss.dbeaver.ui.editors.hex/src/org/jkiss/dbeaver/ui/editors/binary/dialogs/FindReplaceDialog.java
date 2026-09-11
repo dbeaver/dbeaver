@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.ui.editors.binary.dialogs;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryTextFinder;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.binary.HexManager;
@@ -51,7 +53,7 @@ public class FindReplaceDialog extends Dialog {
     private static final String text1Replacement = BinaryEditorMessages.dialog_find_replace_1_replacement;
     private static final String textBackward = BinaryEditorMessages.dialog_find_replace_backward;
     private static final String textCancel = BinaryEditorMessages.dialog_find_replace_cancel;
-    private static final String textClose = BinaryEditorMessages.dialog_find_replace_close;
+    private static final String textClose = WorkbenchMessages.WorkbenchWindow_close;
     private static final String textDirection = BinaryEditorMessages.dialog_find_replace_direction;
     private static final String textError = BinaryEditorMessages.dialog_find_replace_error_;
     private static final String textFind = BinaryEditorMessages.dialog_find_replace_find;
@@ -71,20 +73,6 @@ public class FindReplaceDialog extends Dialog {
     private static final String textSearching = BinaryEditorMessages.dialog_find_replace_searching;
     private static final String textStop = BinaryEditorMessages.dialog_find_replace_stop;
     private static final String textText = BinaryEditorMessages.dialog_find_replace_text;
-
-    SelectionAdapter defaultSelectionAdapter = new SelectionAdapter() {
-        @Override
-        public void widgetSelected(SelectionEvent e)
-        {
-            if (lastIgnoreCase != checkBox.getSelection() ||
-                lastForward != forwardRadioButton.getSelection() ||
-                lastFindHexButtonSelected != findGroup.hexRadioButton.getSelection() ||
-                lastReplaceHexButtonSelected != replaceGroup.hexRadioButton.getSelection()) {
-                feedbackLabel.setText(""); //$NON-NLS-1$
-            }
-            lastFocused.textCombo.setFocus();
-        }
-    };
 
     private static final List<Object[]> findReplaceFindList = new ArrayList<>();
     private static final List<Object[]> findReplaceReplaceList = new ArrayList<>();
@@ -115,6 +103,16 @@ public class FindReplaceDialog extends Dialog {
     private ProgressBar progressBar = null;
     private Button progressCancelButton = null;
     private Button closeButton = null;
+
+    SelectionListener defaultSelectionAdapter = SelectionListener.widgetSelectedAdapter(e -> {
+            if (lastIgnoreCase != checkBox.getSelection() ||
+                lastForward != forwardRadioButton.getSelection() ||
+                lastFindHexButtonSelected != findGroup.hexRadioButton.getSelection() ||
+                lastReplaceHexButtonSelected != replaceGroup.hexRadioButton.getSelection()) {
+                feedbackLabel.setText(""); //$NON-NLS-1$
+            }
+            lastFocused.textCombo.setFocus();
+        });
 
 
     /**
@@ -159,10 +157,7 @@ public class FindReplaceDialog extends Dialog {
                     }
                 }
             });
-            textCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            textCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     int index = textCombo.getSelectionIndex();
                     if (index < 0) return;
 
@@ -170,8 +165,7 @@ public class FindReplaceDialog extends Dialog {
                     if (selection != null) {
                         refreshHexOrText(selection);
                     }
-                }
-            });
+                }));
             textCombo.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e)
@@ -198,15 +192,11 @@ public class FindReplaceDialog extends Dialog {
             hexRadioButton = new Button(composite, SWT.RADIO);
             hexRadioButton.setText(textHex);
             hexRadioButton.addSelectionListener(defaultSelectionAdapter);
-            hexRadioButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-                {
+            hexRadioButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     Matcher numberMatcher = patternHexDigits.matcher(textCombo.getText());
                     if (!numberMatcher.matches())
                         textCombo.setText(""); //$NON-NLS-1$
-                }
-            });
+                }));
             textRadioButton = new Button(composite, SWT.RADIO);
             textRadioButton.setText(textText);
             textRadioButton.addSelectionListener(defaultSelectionAdapter);
@@ -399,46 +389,22 @@ public class FindReplaceDialog extends Dialog {
         findButton.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         findButton.setText(textFind);
         findButton.addSelectionListener(defaultSelectionAdapter);
-        findButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                doFind();
-            }
-        });
+        findButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> doFind()));
         replaceFindButton = new Button(findReplaceButtonsComposite, SWT.NONE);
         replaceFindButton.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         replaceFindButton.setText(textReplaceFind);
         replaceFindButton.addSelectionListener(defaultSelectionAdapter);
-        replaceFindButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
-                doReplaceFind();
-            }
-        });
+        replaceFindButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> doReplaceFind()));
         replaceButton = new Button(findReplaceButtonsComposite, SWT.NONE);
         replaceButton.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         replaceButton.setText(textReplace);
         replaceButton.addSelectionListener(defaultSelectionAdapter);
-        replaceButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
-                doReplace();
-            }
-        });
+        replaceButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> doReplace()));
         replaceAllButton = new Button(findReplaceButtonsComposite, SWT.NONE);
         replaceAllButton.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         replaceAllButton.setText(textReplaceAll);
         replaceAllButton.addSelectionListener(defaultSelectionAdapter);
-        replaceAllButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
-                doReplaceAll();
-            }
-        });
+        replaceAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> doReplaceAll()));
         sShell.setDefaultButton(findButton);
     }
 
@@ -511,13 +477,8 @@ public class FindReplaceDialog extends Dialog {
         }
         findGroup.initialise();
         findGroup.group.setText(textFindLiteral);
-        SelectionAdapter hexTextSelectionAdapter = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                checkBox.setEnabled(e.widget == findGroup.textRadioButton);
-            }
-        };
+        SelectionListener hexTextSelectionAdapter = SelectionListener.widgetSelectedAdapter(e ->
+            checkBox.setEnabled(e.widget == findGroup.textRadioButton));
         findGroup.textRadioButton.addSelectionListener(hexTextSelectionAdapter);
         findGroup.hexRadioButton.addSelectionListener(hexTextSelectionAdapter);
 
@@ -577,13 +538,7 @@ public class FindReplaceDialog extends Dialog {
         formData6.right = new FormAttachment(100);
         progressCancelButton.setLayoutData(formData6);
         formData5.right = new FormAttachment(progressCancelButton);
-        progressCancelButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                editControl.stopSearching();
-            }
-        });
+        progressCancelButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> editControl.stopSearching()));
         progressComposite.setVisible(false);
 
         closeButton = new Button(sShell, SWT.NONE);
@@ -592,13 +547,7 @@ public class FindReplaceDialog extends Dialog {
         formData1.right = new FormAttachment(100);
         formData1.bottom = new FormAttachment(100);
         closeButton.setLayoutData(formData1);
-        closeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                sShell.close();
-            }
-        });
+        closeButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> sShell.close()));
 
         formData2.right = new FormAttachment(closeButton);
 

@@ -30,7 +30,9 @@ public final class ProductConfigFeatureDescriptor extends AbstractDescriptor {
     private final String description;
     private final boolean enabledByDefault;
     private final ObjectType enablementTesterType;
+    private final ObjectType availabilityTesterType;
     private ProductConfigFeatureTester enablementTester;
+    private ProductConfigFeatureAvailabilityTester availabilityTester;
 
     ProductConfigFeatureDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -40,6 +42,9 @@ public final class ProductConfigFeatureDescriptor extends AbstractDescriptor {
         this.description = config.getAttribute("description");
         this.enabledByDefault = Boolean.parseBoolean(config.getAttribute("enabledByDefault"));
         this.enablementTesterType = Optional.ofNullable(config.getAttribute("enablementTester"))
+            .map(ObjectType::new)
+            .orElse(null);
+        this.availabilityTesterType = Optional.ofNullable(config.getAttribute("availabilityTester"))
             .map(ObjectType::new)
             .orElse(null);
     }
@@ -72,5 +77,16 @@ public final class ProductConfigFeatureDescriptor extends AbstractDescriptor {
             enablementTester = enablementTesterType.createInstance(ProductConfigFeatureTester.class);
         }
         return enablementTester;
+    }
+
+    @Nullable
+    public ProductConfigFeatureAvailabilityTester getAvailabilityTester() throws DBException {
+        if (availabilityTesterType == null) {
+            return null;
+        }
+        if (availabilityTester == null) {
+            availabilityTester = availabilityTesterType.createInstance(ProductConfigFeatureAvailabilityTester.class);
+        }
+        return availabilityTester;
     }
 }

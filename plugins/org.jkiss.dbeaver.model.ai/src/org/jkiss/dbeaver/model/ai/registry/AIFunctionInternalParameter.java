@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer;
+import org.jkiss.dbeaver.model.ai.AIFunctionParameterValueProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -32,6 +33,7 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     private final IConfigurationElement config;
     private String targetSuffix;
     private AIFunctionParameterTransformer transformer;
+    private AIFunctionParameterValueProvider validValuesProvider;
 
     public AIFunctionInternalParameter(@NotNull IConfigurationElement config) {
         super(config);
@@ -43,6 +45,15 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
                 targetSuffix = this.config.getAttribute("targetSuffix");
             } catch (DBException e) {
                 log.error("Error creating transformer");
+            }
+        }
+        String validValuesProviderClass = this.config.getAttribute("validValuesProvider");
+        if (!CommonUtils.isEmpty(validValuesProviderClass)) {
+            try {
+                validValuesProvider = new ObjectType(validValuesProviderClass)
+                    .createInstance(AIFunctionParameterValueProvider.class);
+            } catch (DBException e) {
+                log.error("Error creating valid values provider", e);
             }
         }
     }
@@ -62,7 +73,20 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     @Override
     @Nullable
     public String getDescription() {
-        return config.getAttribute("description");
+        String description = config.getAttribute("description");
+        if (validValuesProvider != null) {
+            String suffix = validValuesProvider.getValidValuesDescription();
+            if (!CommonUtils.isEmpty(suffix)) {
+                if (CommonUtils.isEmpty(description) || description.isBlank()) {
+                    return suffix;
+                }
+                description = description.stripTrailing();
+                char lastChar = description.charAt(description.length() - 1);
+                String separator = lastChar == '.' || lastChar == '!' || lastChar == '?' ? " " : ". ";
+                return description + separator + suffix;
+            }
+        }
+        return description;
     }
 
     @Override
@@ -79,6 +103,12 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     @Override
     @Nullable
     public String[] getValidValues() {
+        if (validValuesProvider != null) {
+            String[] providedValues = validValuesProvider.getValidValues();
+            if (providedValues != null) {
+                return providedValues;
+            }
+        }
         String validValues = config.getAttribute("validValues");
         return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
     }
