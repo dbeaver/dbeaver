@@ -73,7 +73,7 @@ public class AIConfigurationProfile {
     }
 
     public boolean isGlobal() {
-        return global;
+        return configuration == null ? global : configuration.isGlobal();
     }
 
     public void setGlobal(boolean global) {

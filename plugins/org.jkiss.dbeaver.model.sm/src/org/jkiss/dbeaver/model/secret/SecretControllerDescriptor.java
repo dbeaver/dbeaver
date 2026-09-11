@@ -17,18 +17,25 @@
 package org.jkiss.dbeaver.model.secret;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
 public class SecretControllerDescriptor extends AbstractDescriptor {
+    @NotNull
     private final String id;
+    @Nullable
     private final String label;
+    @Nullable
     private final String description;
+    @Nullable
     private final DBPImage icon;
+    @NotNull
     private final ObjectType implType;
 
-    public SecretControllerDescriptor(IConfigurationElement config) {
+    public SecretControllerDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
@@ -37,23 +44,28 @@ public class SecretControllerDescriptor extends AbstractDescriptor {
         this.implType = new ObjectType(config, "class");
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @Nullable
     public String getLabel() {
         return label;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }
 
+    @Nullable
     public DBPImage getIcon() {
         return icon;
     }
 
-    public <T extends DBSSecretControllerAuthorized> T createInstance(Class<T> type) throws DBException {
+    @NotNull
+    public <T extends DBSSecretControllerAuthorized> T createInstance(@NotNull Class<T> type) throws DBException {
         return implType.createInstance(type);
     }
 }

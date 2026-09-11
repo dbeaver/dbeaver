@@ -40,7 +40,7 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
     private Integer timeout;
 
     @Override
-    @Property(order = 0, name = "Global credentials")
+    @Property(order = 0)
     public boolean isGlobal() {
         return global;
     }

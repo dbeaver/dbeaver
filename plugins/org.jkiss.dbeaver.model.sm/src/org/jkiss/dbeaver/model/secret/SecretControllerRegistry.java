@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.secret;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.auth.SMCredentialsProvider;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
@@ -29,10 +31,13 @@ import java.util.Map;
 public class SecretControllerRegistry {
     public static final String EXTENSION_ID = "com.dbeaver.secretController"; //$NON-NLS-1$
 
+    @Nullable
     private static SecretControllerRegistry instance;
 
+    @NotNull
     private final Map<String, SecretControllerDescriptor> secretControllers = new LinkedHashMap<>();
 
+    @NotNull
     public static synchronized SecretControllerRegistry getInstance() {
         if (instance == null) {
             instance = new SecretControllerRegistry(Platform.getExtensionRegistry());
@@ -40,7 +45,7 @@ public class SecretControllerRegistry {
         return instance;
     }
 
-    private SecretControllerRegistry(IExtensionRegistry registry) {
+    private SecretControllerRegistry(@NotNull IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if ("controller".equals(ext.getName())) {
@@ -50,10 +55,11 @@ public class SecretControllerRegistry {
         }
     }
 
+    @NotNull
     public DBSSecretController getAuthorizedSecretController(
-        String id,
-        SMCredentialsProvider credentialsProvider,
-        SMSessionContext smSessionContext
+        @NotNull String id,
+        @Nullable SMCredentialsProvider credentialsProvider,
+        @Nullable SMSessionContext smSessionContext
     ) throws DBException {
         SecretControllerDescriptor descriptor = secretControllers.get(id);
         if (descriptor == null) {

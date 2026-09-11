@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -106,5 +107,21 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             .getAsJsonObject("configuration")
             .get("global")
             .getAsBoolean());
+    }
+
+    @Test
+    public void synchronizesGlobalProfileFlag() {
+        AIConfigurationProfile profile = new AIConfigurationProfile();
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setGlobal(false);
+
+        profile.setConfiguration(properties);
+        Assertions.assertFalse(profile.isGlobal());
+
+        properties.setGlobal(true);
+        Assertions.assertTrue(profile.isGlobal());
+
+        profile.setGlobal(false);
+        Assertions.assertFalse(properties.isGlobal());
     }
 }
