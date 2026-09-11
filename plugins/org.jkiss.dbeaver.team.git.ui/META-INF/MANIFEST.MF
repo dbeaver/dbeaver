@@ -18,5 +18,4 @@ Require-Bundle: org.jkiss.dbeaver.registry;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator
 Bundle-Localization: OSGI-INF/l10n/bundle
-Bundle-Activator: org.jkiss.dbeaver.team.git.ui.Activator
 Automatic-Module-Name: org.jkiss.dbeaver.team.git.ui
