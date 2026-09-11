@@ -614,6 +614,7 @@ public class DBeaverLauncher {
         if (frag.isDirectory())
             return searchFor("eclipse", fragment); //$NON-NLS-1$;
 
+        String libName = null;
         try (
             var fragmentJar = FileSystems.newFileSystem(frag.toPath());
             var entries = Files.newDirectoryStream(fragmentJar.getPath("/"), "eclipse_*") //$NON-NLS-1$ //$NON-NLS-2$
@@ -622,22 +623,26 @@ public class DBeaverLauncher {
                 if (!Files.isRegularFile(entry)) {
                     continue;
                 }
-                String lib = extractFromJAR(fragment, entry.getFileName().toString());
-                if (!getOS().equals("win32")) { //$NON-NLS-1$
-                    try {
-                        Runtime.getRuntime().exec(new String[]{"chmod", "755", lib}).waitFor(); //$NON-NLS-1$ //$NON-NLS-2$
-                    } catch (Throwable e) {
-                        //ignore
-                    }
-                }
-                return lib;
+                libName = entry.getFileName().toString();
+                break;
             }
         } catch (IOException e) {
             log("Exception opening JAR file: " + fragment); //$NON-NLS-1$
             log(e);
             return null;
         }
-        return null;
+        if (libName == null) {
+            return null;
+        }
+        String lib = extractFromJAR(fragment, libName);
+        if (!getOS().equals("win32")) { //$NON-NLS-1$
+            try {
+                Runtime.getRuntime().exec(new String[]{"chmod", "755", lib}).waitFor(); //$NON-NLS-1$ //$NON-NLS-2$
+            } catch (Throwable e) {
+                //ignore
+            }
+        }
+        return lib;
     }
 
     /**
@@ -2984,7 +2989,7 @@ public class DBeaverLauncher {
             }
 
             return splash.exists() ? splash.getAbsolutePath() : null;
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             log("Exception looking for " + jarEntry + " in JAR file: " + jarPath); //$NON-NLS-1$ //$NON-NLS-2$
             log(e);
             return null;
