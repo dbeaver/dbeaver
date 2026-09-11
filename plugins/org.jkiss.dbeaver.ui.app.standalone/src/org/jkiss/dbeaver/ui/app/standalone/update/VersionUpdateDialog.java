@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.app.standalone.update;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
@@ -52,6 +54,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 public class VersionUpdateDialog extends Dialog {
 
@@ -246,14 +249,7 @@ public class VersionUpdateDialog extends Dialog {
         if (buttonId == INFO_ID) {
             ShellUtils.launchProgram(newVersion.getBaseURL());
         } else if (buttonId == UPGRADE_ID) {
-            var app = (DBeaverApplication) DBWorkbench.getPlatform().getApplication();
-            var installer = getPlatformInstaller();
-            var downloadUrl = app.getLatestVersionDownloadUrl(newVersion);
-            if (installer != null && downloadUrl != null) {
-                scheduleDownloadAndInstall(installer, downloadUrl);
-            } else {
-                ShellUtils.launchProgram(getDownloadPageURL(newVersion));
-            }
+            performUpdate(newVersion);
         } else if (buttonId == CHECK_EA_ID) {
             if (!CommonUtils.isEmpty(earlyAccessURL)) {
                 ShellUtils.launchProgram(earlyAccessURL);
@@ -270,7 +266,28 @@ public class VersionUpdateDialog extends Dialog {
         close();
     }
 
-    private void scheduleDownloadAndInstall(@NotNull PlatformInstaller installer, @NotNull URI downloadUrl) {
+    public static void performUpdate(@NotNull VersionDescriptor version) {
+        performUpdate(version, null);
+    }
+
+    static boolean performUpdate(@NotNull VersionDescriptor version, @Nullable Consumer<IStatus> completion) {
+        var app = (DBeaverApplication) DBWorkbench.getPlatform().getApplication();
+        var installer = getPlatformInstaller();
+        var downloadUrl = app.getLatestVersionDownloadUrl(version);
+        if (installer != null && downloadUrl != null) {
+            scheduleDownloadAndInstall(installer, downloadUrl, completion);
+            return true;
+        } else {
+            ShellUtils.launchProgram(getDownloadPageURL(version));
+            return false;
+        }
+    }
+
+    private static void scheduleDownloadAndInstall(
+        @NotNull PlatformInstaller installer,
+        @NotNull URI downloadUrl,
+        @Nullable Consumer<IStatus> completion
+    ) {
         final AbstractJob job = new AbstractJob("Downloading installation file") {
             @NotNull
             @Override
@@ -281,16 +298,23 @@ public class VersionUpdateDialog extends Dialog {
                 try {
                     var url = downloadUrl.toString();
                     var filename = url.substring(url.lastIndexOf('/') + 1);
-                    folder = Files.createTempDirectory(filename);
-                    file = Files.createFile(folder.resolve(filename));
+                    folder = DBWorkbench.getPlatform().getTempFolder(monitor, "updates");
+                    file = folder.resolve(filename);
 
                     log.debug("Downloading installation file to " + file);
-                    WebUtils.downloadRemoteFile(monitor, "Obtaining installer", url, file, null);
+                    try {
+                        WebUtils.downloadRemoteFile(monitor, "Obtaining installer", url, file, null);
+                    } catch (InterruptedException e) {
+                        log.debug("Canceled by user", e);
+                        try {
+                            Files.deleteIfExists(file);
+                        } catch (IOException deleteError) {
+                            log.warn("Could not delete partially downloaded installation file '" + file + "'", deleteError);
+                        }
+                        return Status.CANCEL_STATUS;
+                    }
                 } catch (IOException e) {
                     return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
-                } catch (InterruptedException e) {
-                    log.debug("Canceled by user", e);
-                    return Status.OK_STATUS;
                 }
 
                 if (UIUtils.confirmAction(
@@ -337,11 +361,19 @@ public class VersionUpdateDialog extends Dialog {
             }
         };
         job.setUser(true);
+        if (completion != null) {
+            job.addJobChangeListener(new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event) {
+                    completion.accept(job.isCanceled() ? Status.CANCEL_STATUS : event.getResult());
+                }
+            });
+        }
         job.schedule();
     }
 
     @Nullable
-    private PlatformInstaller getPlatformInstaller() {
+    private static PlatformInstaller getPlatformInstaller() {
         return switch (Platform.getOS()) {
             case Platform.OS_WIN32 -> new WindowsInstaller();
             case Platform.OS_MACOSX -> new MacintoshInstaller();
@@ -350,7 +382,7 @@ public class VersionUpdateDialog extends Dialog {
     }
 
     @NotNull
-    private String getDownloadPageURL(@NotNull VersionDescriptor version) {
+    private static String getDownloadPageURL(@NotNull VersionDescriptor version) {
         String os;
         if (RuntimeUtils.isWindows()) {
             os = OS_WINDOWS;

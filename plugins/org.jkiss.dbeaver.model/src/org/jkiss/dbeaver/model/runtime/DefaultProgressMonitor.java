@@ -78,13 +78,16 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
 
         // Restore previous state
         if (!states.isEmpty()) {
-            ProgressState lastState = states.removeLast();
-            nestedMonitor.beginTask(lastState.taskName, lastState.totalWork);
-            if (lastState.subTask != null) {
-                nestedMonitor.subTask(lastState.subTask);
-            }
-            if (lastState.progress > 0) {
-                nestedMonitor.worked(lastState.progress);
+            states.removeLast();
+            if (!states.isEmpty()) {
+                ProgressState previousState = states.getLast();
+                nestedMonitor.beginTask(previousState.taskName, previousState.totalWork);
+                if (previousState.subTask != null) {
+                    nestedMonitor.subTask(previousState.subTask);
+                }
+                if (previousState.progress > 0) {
+                    nestedMonitor.worked(previousState.progress);
+                }
             }
         } else {
             log.trace(new DBCException("Progress ended without start"));

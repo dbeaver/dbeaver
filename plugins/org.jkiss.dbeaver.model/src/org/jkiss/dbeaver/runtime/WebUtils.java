@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -48,6 +49,7 @@ import java.util.Map;
 public class WebUtils {
     private static final Log log = Log.getLog(WebUtils.class);
     private static final int MAX_RETRY_COUNT = 10;
+    private static final int DOWNLOAD_PROGRESS_MAX = 1000;
 
     @NotNull
     public static URLConnection openConnection(String urlString, String referrer) throws IOException {
@@ -204,11 +206,15 @@ public class WebUtils {
         final NumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
 
         // The value of getContentLength() may be -1 and this should not be handled, see IProgressMonitor#UNKNOWN
-        monitor.beginTask(taskName + " - " + externalURL, contentLength);
+        monitor.beginTask(
+            taskName + " - " + externalURL,
+            contentLength >= 0 ? DOWNLOAD_PROGRESS_MAX : IProgressMonitor.UNKNOWN
+        );
         try (final InputStream inputStream = connection.getInputStream()) {
             final long startTime = System.currentTimeMillis();
             long updateTime = 0;
             long totalRead = 0;
+            int reportedProgress = 0;
 
             while (true) {
                 if (monitor.isCanceled()) {
@@ -236,8 +242,15 @@ public class WebUtils {
                     return totalRead;
                 }
                 outputStream.write(buffer, 0, count);
-                monitor.worked(count);
                 totalRead += count;
+                if (contentLength > 0) {
+                    int progress = (int) Math.min(
+                        DOWNLOAD_PROGRESS_MAX,
+                        totalRead * DOWNLOAD_PROGRESS_MAX / contentLength
+                    );
+                    monitor.worked(progress - reportedProgress);
+                    reportedProgress = progress;
+                }
             }
         } finally {
             monitor.done();
