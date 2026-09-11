@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 public class DefaultProgressMonitorTest {
     @Test
     public void doneDoesNotRestartCompletedTask() {

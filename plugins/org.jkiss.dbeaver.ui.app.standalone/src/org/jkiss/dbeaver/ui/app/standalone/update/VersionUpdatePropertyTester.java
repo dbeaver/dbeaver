@@ -17,10 +17,17 @@
 package org.jkiss.dbeaver.ui.app.standalone.update;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public class VersionUpdatePropertyTester extends PropertyTester {
     @Override
-    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+    public boolean test(
+        @Nullable Object receiver,
+        @NotNull String property,
+        @NotNull Object[] args,
+        @Nullable Object expectedValue
+    ) {
         return VersionUpdateHandler.isUpdateAvailable();
     }
 }

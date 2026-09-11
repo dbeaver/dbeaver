@@ -37,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.io.IOException;
+
 /**
  * Version checker job
  */

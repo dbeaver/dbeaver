@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class WebUtils {
     private static final int DOWNLOAD_PROGRESS_MAX = 1000;
 
     @NotNull
-    public static URLConnection openConnection(String urlString, String referrer) throws IOException {
+    public static URLConnection openConnection(@NotNull String urlString, @Nullable String referrer) throws IOException {
         return openConnection(urlString, null, referrer);
     }
 

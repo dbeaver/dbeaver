@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -63,7 +64,8 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
     }
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    @Nullable
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         VersionDescriptor available = newVersion;
         if (available == null) {
             return null;
@@ -92,7 +94,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters) {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         var icon = downloading ? UIIcon.LOADING.get(animationFrame % UIIcon.LOADING.size()) : UIIcon.DOWNLOAD;
         element.setIcon(DBeaverIcons.getImageDescriptor(icon));
     }

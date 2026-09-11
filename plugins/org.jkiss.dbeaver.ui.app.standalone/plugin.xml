@@ -361,7 +361,7 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
         </menuContribution>
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.trim.command2">
-            <toolbar label="Version update" id="dbeaver-version-update">
+            <toolbar label="%toolbar.versionUpdate.label" id="dbeaver-version-update">
                 <command
                         commandId="org.jkiss.dbeaver.ui.versionUpdate"
                         icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/download.svg"

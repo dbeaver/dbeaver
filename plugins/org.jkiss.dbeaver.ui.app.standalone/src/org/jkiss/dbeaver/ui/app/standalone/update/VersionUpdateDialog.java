@@ -65,6 +65,7 @@ public class VersionUpdateDialog extends Dialog {
     private static final String OS_LINUX = "linux";
     private static final String DISTRIBUTION_DEB = "deb";
     private static final String DISTRIBUTION_RPM = "rpm";
+    private static final String UPDATES_FOLDER = "dbeaver-updates";
 
     private static final int INFO_ID = 1000;
     private static final int UPGRADE_ID = 1001;
@@ -298,7 +299,12 @@ public class VersionUpdateDialog extends Dialog {
                 try {
                     var url = downloadUrl.toString();
                     var filename = url.substring(url.lastIndexOf('/') + 1);
-                    folder = DBWorkbench.getPlatform().getTempFolder(monitor, "updates");
+                    Path globalTempFolder = DBWorkbench.getPlatform().getTempFolder(monitor, UPDATES_FOLDER).getParent();
+                    if (globalTempFolder == null) {
+                        throw new IOException("Could not resolve the parent directory of the DBeaver temporary folder");
+                    }
+                    folder = globalTempFolder.resolveSibling(UPDATES_FOLDER);
+                    Files.createDirectories(folder);
                     file = folder.resolve(filename);
 
                     log.debug("Downloading installation file to " + file);
@@ -364,7 +370,7 @@ public class VersionUpdateDialog extends Dialog {
         if (completion != null) {
             job.addJobChangeListener(new JobChangeAdapter() {
                 @Override
-                public void done(IJobChangeEvent event) {
+                public void done(@NotNull IJobChangeEvent event) {
                     completion.accept(job.isCanceled() ? Status.CANCEL_STATUS : event.getResult());
                 }
             });
