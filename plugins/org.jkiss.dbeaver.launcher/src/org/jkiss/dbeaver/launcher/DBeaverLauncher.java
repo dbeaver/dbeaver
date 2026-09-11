@@ -40,8 +40,6 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.swing.*;
@@ -56,6 +54,7 @@ import javax.swing.*;
  * org.eclipse.core.runtime.adaptor.EclipseStarter. The fields and methods
  * on this class are not API.
  */
+@SuppressWarnings("CheckStyle")
 public class DBeaverLauncher {
 
     public static final String PROP_ECLIPSE_NET_PROXY_ENABLE = "org.eclipse.net.core.enableProxyService";
@@ -615,18 +614,15 @@ public class DBeaverLauncher {
         if (frag.isDirectory())
             return searchFor("eclipse", fragment); //$NON-NLS-1$;
 
-        try (ZipFile fragmentJar = new ZipFile(frag)) {
-            Enumeration<? extends ZipEntry> entries = fragmentJar.entries();
-            String entry = null;
-            while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = entries.nextElement();
-                if (zipEntry.getName().startsWith("eclipse_")) { //$NON-NLS-1$
-                    entry = zipEntry.getName();
-                    break;
+        try (
+            var fragmentJar = FileSystems.newFileSystem(frag.toPath());
+            var entries = Files.newDirectoryStream(fragmentJar.getPath("/"), "eclipse_*") //$NON-NLS-1$ //$NON-NLS-2$
+        ) {
+            for (Path entry : entries) {
+                if (!Files.isRegularFile(entry)) {
+                    continue;
                 }
-            }
-            if (entry != null) {
-                String lib = extractFromJAR(fragment, entry);
+                String lib = extractFromJAR(fragment, entry.getFileName().toString());
                 if (!getOS().equals("win32")) { //$NON-NLS-1$
                     try {
                         Runtime.getRuntime().exec(new String[]{"chmod", "755", lib}).waitFor(); //$NON-NLS-1$ //$NON-NLS-2$
@@ -2286,7 +2282,7 @@ public class DBeaverLauncher {
         String base = getWorkingDirectory(DBEAVER_DATA_FOLDER);
         try {
             String productPath = getProductProperties();
-            Path basePath = Paths.get(base, DBEAVER_INSTALL_FOLDER, productPath);
+            Path basePath = Path.of(base, DBEAVER_INSTALL_FOLDER, productPath);
             String productConfigurationLocation = basePath.toFile().getAbsolutePath();
             return buildURL(productConfigurationLocation, true);
         } catch (IOException e) {
@@ -2956,7 +2952,7 @@ public class DBeaverLauncher {
             cache = cache.substring(0, cache.length() - 4);
         Path cacheDir = cacheRoot.resolve(cache);
 
-        try (FileSystem jarFileSystem = FileSystems.newFileSystem(Paths.get(jarPath))) {
+        try (FileSystem jarFileSystem = FileSystems.newFileSystem(jarFile.toPath())) {
             Path sourceRoot = jarFileSystem.getPath("/"); //$NON-NLS-1$
             Path sourceEntry = sourceRoot.resolve(jarEntry.replace(File.separatorChar, '/'));
             if (!Files.exists(sourceEntry))
