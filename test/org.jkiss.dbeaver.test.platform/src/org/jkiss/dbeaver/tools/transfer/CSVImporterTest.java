@@ -18,9 +18,13 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -32,6 +36,7 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +45,7 @@ public class CSVImporterTest  extends DBeaverUnitTest {
 
     private static final Path DUMMY_FILE = Path.of("dummy");
     private final DataImporterCSV importer = new DataImporterCSV();
+    private final StreamProducerSettings settings = new StreamProducerSettings();
     private StreamEntityMapping mapping;
     private final Map<String, Object> properties = new HashMap<>();
 
@@ -50,6 +56,8 @@ public class CSVImporterTest  extends DBeaverUnitTest {
     public void init() throws DBException {
         mapping = new StreamEntityMapping(DUMMY_FILE);
         importer.init(site);
+        Mockito.when(site.getSettings()).thenReturn(settings);
+        Mockito.when(site.getSourceObject()).thenReturn(mapping);
         Mockito.when(site.getProcessorProperties()).thenReturn(properties);
     }
 
@@ -117,6 +125,30 @@ public class CSVImporterTest  extends DBeaverUnitTest {
         Assertions.assertEquals(2, columnsInfo.size());
         Assertions.assertEquals(DBPDataKind.STRING, columnsInfo.get(0).getDataKind());
         Assertions.assertEquals(DBPDataKind.STRING, columnsInfo.get(1).getDataKind());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void trimWhitespacesInRowWithMissingTrailingColumn() throws DBException, IOException {
+        String data = "ID,TEXT_VALUE\n14\n";
+        properties.put("trimWhitespaces", true);
+        mapping.getStreamColumns().addAll(readColumnsInfo(data, true));
+
+        List<Object[]> rows = new ArrayList<>();
+        IDataTransferConsumer<?, ?> consumer = Mockito.mock(IDataTransferConsumer.class);
+        Mockito.doAnswer(invocation -> {
+            DBCResultSet resultSet = invocation.getArgument(1);
+            rows.add(new Object[] {resultSet.getAttributeValue(0), resultSet.getAttributeValue(1)});
+            return null;
+        }).when(consumer).fetchRow(Mockito.any(), Mockito.any());
+
+        try (ByteArrayInputStream input = new ByteArrayInputStream(data.getBytes())) {
+            importer.runImport(new VoidProgressMonitor(), mapping.getDataSource(), input, consumer);
+        }
+
+        Assertions.assertEquals(1, rows.size());
+        Assertions.assertEquals("14", rows.getFirst()[0]);
+        Assertions.assertNull(rows.getFirst()[1]);
     }
 
     private List<StreamDataImporterColumnInfo> readColumnsInfo(String data, boolean isHeaderPresent) throws DBException, IOException {
