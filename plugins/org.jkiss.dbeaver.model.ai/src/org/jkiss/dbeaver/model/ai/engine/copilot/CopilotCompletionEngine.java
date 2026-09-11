@@ -37,8 +37,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCompletionEngine<P> {
 
@@ -66,16 +66,11 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<CopilotModel> models = client.getInstance().loadModels(monitor, requestSessionToken(monitor));
+        Map<String, AIModelCatalogEntry> catalog = AIModelCatalog.getInstance().getModels(CopilotModels.CATALOG_PROVIDER_ID);
         boolean isPremium = models.stream().anyMatch(CopilotModel::modelPickerEnabled);
         return models.stream()
             .filter(model -> isModelOffered(model, isPremium))
-            .map(model -> new AIModel(
-                model.id(),
-                model.capabilities() != null && model.capabilities().limits() != null ?
-                    model.capabilities().limits().contextWindowTokens() :
-                    null,
-                Set.of(AIModelFeature.CHAT)
-            ))
+            .map(model -> model.toAIModel(catalog.get(model.id())))
             .toList();
     }
 

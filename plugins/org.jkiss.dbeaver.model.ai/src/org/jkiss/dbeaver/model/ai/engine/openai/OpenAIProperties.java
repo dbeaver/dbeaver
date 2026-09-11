@@ -125,8 +125,11 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public void selectModel(@NotNull AIModel model) {
         setModel(model.name());
-        setContextWindowSize(model.contextWindowSize() != null ? model.contextWindowSize() :
-            OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE));
+        Integer contextSize = model.contextWindowSize();
+        if (contextSize == null && (isChatGptAccountAuthentication() || OpenAIModels.isOpenAIEndpoint(getBaseUrl()))) {
+            contextSize = OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(null);
+        }
+        setContextWindowSize(contextSize != null ? contextSize : AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE);
     }
 
     @Override
@@ -159,6 +162,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
+        }
+        if (!isChatGptAccountAuthentication() && !OpenAIModels.isOpenAIEndpoint(getBaseUrl())) {
+            return null;
         }
 
         return OpenAIModels.getModelByName(getModel())

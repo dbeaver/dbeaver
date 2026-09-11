@@ -19,57 +19,29 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URI;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class OpenAIModels {
+    public static final String CATALOG_PROVIDER_ID = "openai";
     private static final Pattern EMBEDDING_MODEL_PATTERN = Pattern.compile("text-embedding-.*");
+    private static final Pattern SNAPSHOT_MODEL_PATTERN = Pattern.compile("^(.+)-\\d{4}-\\d{2}-\\d{2}$");
 
     private OpenAIModels() {
     }
 
-    public static final Map<String, AIModel> KNOWN_MODELS = AIUtils.modelMap(
-        new AIModel("o1-pro", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("o1", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("o1-mini", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("o3", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("o3-mini", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("o3-pro", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("o4-mini", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-3.5-turbo", 16_384, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-4", 8_192, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-4-turbo", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-4.1", 1_048_576, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-4.1-mini", 1_048_576, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-4.1-nano", 1_048_576, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-4o", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-4o-mini", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-5", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("gpt-5-codex", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("gpt-5-mini", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("gpt-5-nano", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("gpt-5.1", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("gpt-5.1-codex", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("gpt-5.2", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-        new AIModel("gpt-5.2-pro", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
-
-        new AIModel("gpt-4o-transcribe", 128_000, Set.of(AIModelFeature.SPEECH_TO_TEXT)),
-        new AIModel("gpt-4o-mini-transcribe", 128_000, Set.of(AIModelFeature.SPEECH_TO_TEXT)),
-        new AIModel("whisper-1", 30_000, Set.of(AIModelFeature.SPEECH_TO_TEXT)),
-
-        new AIModel("text-embedding-3-small", 65_536, Set.of(AIModelFeature.EMBEDDING)),
-        new AIModel("text-embedding-3-large", 65_536, Set.of(AIModelFeature.EMBEDDING)),
-        new AIModel("text-embedding-ada-002", 65_536, Set.of(AIModelFeature.EMBEDDING))
-    );
-
     /**
      * Returns the effective model name for the given model name.
      * If the model name is null or empty, returns null.
-     * If the model name is known, returns it in lowercase.
+     * Model IDs are preserved as supplied by the provider.
      *
      * @param modelName the model name to check
      * @return the effective model name
@@ -79,25 +51,62 @@ public final class OpenAIModels {
         if (CommonUtils.isEmpty(modelName)) {
             return null;
         }
-        String lowerCaseModelName = modelName.toLowerCase(Locale.ROOT);
-        if (KNOWN_MODELS.containsKey(lowerCaseModelName)) {
-            return lowerCaseModelName;
-        }
         return modelName;
     }
 
     @NotNull
     public static Optional<AIModel> getModelByName(@Nullable String modelName) {
-        return AIUtils.getModelByName(KNOWN_MODELS, modelName);
+        String name = getEffectiveModelName(modelName);
+        if (name == null) {
+            return Optional.empty();
+        }
+        AIModelCatalogEntry entry = findCatalogEntry(AIModelCatalog.getInstance().getCachedModels(CATALOG_PROVIDER_ID), name);
+        return Optional.ofNullable(entry).map(metadata -> metadata.enrich(new AIModel(name, null, detectModelFeatures(name))));
     }
 
-    public static Set<AIModelFeature> detectModelFeatures(@NotNull String modelName) {
-        AIModel knownModel = KNOWN_MODELS.get(modelName.toLowerCase(Locale.ROOT));
-        if (knownModel != null) {
-            return knownModel.features();
+    @Nullable
+    public static AIModelCatalogEntry findCatalogEntry(
+        @NotNull Map<String, AIModelCatalogEntry> catalog,
+        @Nullable String modelName
+    ) {
+        if (CommonUtils.isEmpty(modelName)) {
+            return null;
         }
+        AIModelCatalogEntry entry = catalog.get(modelName);
+        if (entry != null) {
+            return entry;
+        }
+        Matcher snapshot = SNAPSHOT_MODEL_PATTERN.matcher(modelName);
+        return snapshot.matches() ? catalog.get(snapshot.group(1)) : null;
+    }
 
-        // If the model is not known, return an empty set
+    public static boolean isOpenAIEndpoint(@Nullable String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            return true;
+        }
+        try {
+            return "api.openai.com".equalsIgnoreCase(URI.create(baseUrl).getHost());
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    @NotNull
+    public static AIModel fromApiModel(@NotNull OAIModel model) {
+        return fromApiModel(model, null);
+    }
+
+    @NotNull
+    public static AIModel fromApiModel(@NotNull OAIModel model, @Nullable AIModelCatalogEntry catalogEntry) {
+        Integer contextSize = model.contextLength();
+        AIModel result = new AIModel(
+            model.id(), contextSize != null && contextSize > 0 ? contextSize : null, detectModelFeatures(model.id())
+        );
+        return catalogEntry == null ? result : catalogEntry.enrich(result);
+    }
+
+    @NotNull
+    public static Set<AIModelFeature> detectModelFeatures(@NotNull String modelName) {
         Set<AIModelFeature> features = new HashSet<>();
 
         if (isChatModel(modelName)) {
@@ -109,6 +118,10 @@ public final class OpenAIModels {
             features.add(AIModelFeature.EMBEDDING);
         }
 
+        if (modelName.startsWith("whisper-") || modelName.contains("-transcribe")) {
+            features.add(AIModelFeature.SPEECH_TO_TEXT);
+        }
+
         return features;
     }
 
@@ -118,6 +131,7 @@ public final class OpenAIModels {
         "moderation",
         "realtime",
         "audio",
+        "transcribe",
         "image"
     );
 
@@ -134,6 +148,7 @@ public final class OpenAIModels {
     }
 
     public static boolean isTemperatureEditable(@NotNull AIModel model) {
-        return !model.features().contains(AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE);
+        return !model.features().contains(AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE)
+            && !model.features().contains(AIModelFeature.TEMPERATURE_UNSUPPORTED);
     }
 }

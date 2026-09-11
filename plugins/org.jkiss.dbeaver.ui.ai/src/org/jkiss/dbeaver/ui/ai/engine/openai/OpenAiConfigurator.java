@@ -180,25 +180,17 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .toList()
             )
             .withModifyListener(() -> {
-                OpenAIModels.getModelByName(modelSelectorField.getSelectedModelName())
-                    .ifPresentOrElse(
-                        model -> {
-                            contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
-                        }, () -> {
-                            contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
-                            temperatureText.setEnabled(true);
-                        }
-                    );
-
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
-                    if (selectedModel != null && selectedModel.contextWindowSize() != null) {
-                        contextWindowSizeField.setValue(selectedModel.contextWindowSize());
-                    }
-                })
-                .build();
+                if (selectedModel == null && (OpenAIModels.isOpenAIEndpoint(baseUrl)
+                    || isAccountAuthentication() && accountAuthenticator instanceof OpenAIAccountAuthenticator)
+                ) {
+                    selectedModel = OpenAIModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
+                }
+                contextWindowSizeField.setValue(selectedModel == null ? null : selectedModel.contextWindowSize());
+                temperatureText.setText(String.valueOf(selectedModel == null ? 0.0 : selectedModel.defaultTemperature()));
+                temperatureText.setEnabled(selectedModel == null || OpenAIModels.isTemperatureEditable(selectedModel));
+            })
+            .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)
@@ -220,13 +212,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         String currentToken = useAccountAuthentication ? apiToken : token;
         String currentBaseUrl = baseUrl;
         if (currentProperties != null && useAccountAuthentication) {
-            return fetchAccountModels(currentProperties, currentAuthenticator).stream()
-                .map(model -> new AIModel(
-                    model,
-                    OpenAIProperties.DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE,
-                    OpenAIModels.detectModelFeatures(model)
-                ))
-                .toList();
+            return fetchAccountModelDetails(currentProperties, currentAuthenticator);
         }
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(currentToken);
@@ -245,6 +231,14 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         @NotNull AIAccountAuthenticator authenticator
     ) throws DBException {
         return ((OpenAIAccountAuthenticator) authenticator).listModels(properties);
+    }
+
+    @NotNull
+    protected List<AIModel> fetchAccountModelDetails(
+        @NotNull PROPERTIES properties,
+        @NotNull AIAccountAuthenticator authenticator
+    ) throws DBException {
+        return ((OpenAIAccountAuthenticator) authenticator).listModelDetails(properties);
     }
 
     @NotNull

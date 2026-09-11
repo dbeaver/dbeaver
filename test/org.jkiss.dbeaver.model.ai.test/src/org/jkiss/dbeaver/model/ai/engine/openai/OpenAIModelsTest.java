@@ -16,44 +16,65 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
-import org.jkiss.junit.DBeaverUnitTest;
+import com.google.gson.Gson;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
+import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
-import static org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels.KNOWN_MODELS;
-import static org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels.getEffectiveModelName;
+import java.util.Map;
 
-public class OpenAIModelsTest extends DBeaverUnitTest {
+public class OpenAIModelsTest {
 
     @Test
     public void effectiveModelNameNullShouldReturnNull() {
         //when
-        var result = getEffectiveModelName(null);
+        var result = OpenAIModels.getEffectiveModelName(null);
         //then
         Assertions.assertNull(result);
     }
 
     @Test
-    public void effectiveModelNameKnownUppercaseShouldReturnKnownModelLowercase() {
-        //given
-        var expectedModelName = KNOWN_MODELS.keySet().stream().findFirst().orElseThrow();
-        var inputModelName = expectedModelName.toUpperCase();
-        //when
-        var result = getEffectiveModelName(inputModelName);
-        //then
-        Assertions.assertEquals(expectedModelName, result);
+    public void modelMetadataComesFromEachProvidersCache() {
+        AIModelCatalog catalog = Mockito.mock(AIModelCatalog.class);
+        AIModelCatalogEntry openai = new Gson().fromJson("{\"limit\":{\"context\":500000}}", AIModelCatalogEntry.class);
+        AIModelCatalogEntry copilot = new Gson().fromJson("{\"limit\":{\"context\":64000}}", AIModelCatalogEntry.class);
+        Mockito.when(catalog.getCachedModels("openai")).thenReturn(Map.of("gpt-test", openai));
+        Mockito.when(catalog.getCachedModels("github-copilot")).thenReturn(Map.of("gpt-test", copilot));
+        try (MockedStatic<AIModelCatalog> singleton = Mockito.mockStatic(AIModelCatalog.class)) {
+            singleton.when(AIModelCatalog::getInstance).thenReturn(catalog);
+
+            Assertions.assertEquals(500_000, OpenAIModels.getModelByName("gpt-test").orElseThrow().contextWindowSize());
+            Assertions.assertEquals(64_000, CopilotModels.getModelByName("gpt-test").orElseThrow().contextWindowSize());
+            Assertions.assertTrue(OpenAIModels.getModelByName("gpt-5").isEmpty());
+            Assertions.assertTrue(CopilotModels.getModelByName("claude-sonnet-4").isEmpty());
+            Mockito.verify(catalog, Mockito.never()).getModels(Mockito.anyString());
+        }
     }
 
     @Test
     public void effectiveModelNameUnknownUppercaseShouldReturnKnownModelUppercase() {
         //given
         var inputModelName = "some-UNKNOWN-MODEL";
-        Assumptions.assumeFalse(KNOWN_MODELS.containsKey(inputModelName.toLowerCase()));
         //when
-        var result = getEffectiveModelName(inputModelName);
+        var result = OpenAIModels.getEffectiveModelName(inputModelName);
         //then
         Assertions.assertEquals(inputModelName, result);
+    }
+
+    @Test
+    public void copilotDoesNotFallBackToFirstPartyOpenAIMetadata() {
+        AIModelCatalog catalog = Mockito.mock(AIModelCatalog.class);
+        Mockito.when(catalog.getCachedModels("github-copilot")).thenReturn(Map.of());
+        try (MockedStatic<AIModelCatalog> singleton = Mockito.mockStatic(AIModelCatalog.class)) {
+            singleton.when(AIModelCatalog::getInstance).thenReturn(catalog);
+
+            Assertions.assertTrue(CopilotModels.getModelByName("gpt-5").isEmpty());
+            Mockito.verify(catalog, Mockito.never()).getCachedModels("openai");
+        }
     }
 
 }

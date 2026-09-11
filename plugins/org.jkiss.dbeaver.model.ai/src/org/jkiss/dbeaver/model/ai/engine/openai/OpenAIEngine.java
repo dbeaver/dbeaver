@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.Map;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
@@ -60,19 +62,13 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             if (!OpenAIAccountAuthenticator.isSupported()) {
                 throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
             }
-            return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModels(openAIProperties).stream()
-                .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
-                    model,
-                    new AIModel(model, OpenAIProperties.DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE, OpenAIModels.detectModelFeatures(model))
-                ))
-                .toList();
+            return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModelDetails(openAIProperties);
         }
-        return openAiService.getInstance().getModels(monitor)
-            .stream()
-            .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
-                model.id(),
-                new AIModel(model.id(), null, OpenAIModels.detectModelFeatures(model.id()))
-            ))
+        List<OAIModel> models = openAiService.getInstance().getModels(monitor);
+        Map<String, AIModelCatalogEntry> catalog = OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl())
+            ? AIModelCatalog.getInstance().getModels(OpenAIModels.CATALOG_PROVIDER_ID) : Map.of();
+        return models.stream()
+            .map(model -> OpenAIModels.fromApiModel(model, OpenAIModels.findCatalogEntry(catalog, model.id())))
             .toList();
     }
 
@@ -126,6 +122,13 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             return contextWindowSize;
         }
 
+        AIModelCatalogEntry catalogEntry = getCachedCatalogEntry();
+        if (catalogEntry != null && catalogEntry.limit() != null && catalogEntry.limit().context() != null
+            && catalogEntry.limit().context() > 0
+        ) {
+            return catalogEntry.limit().context();
+        }
+
         throw new DBException("Context window size is not set for the model: " + model());
     }
 
@@ -147,12 +150,25 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     @NotNull
     private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
         OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        AIModelCatalogEntry catalogEntry = getCachedCatalogEntry();
+        if (catalogEntry != null && Boolean.FALSE.equals(catalogEntry.temperature())) {
+            oaiRequest.temperature = null;
+        }
         if (properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication()
         ) {
             OpenAiUtils.prepareChatGptAccountRequest(oaiRequest);
         }
         return oaiRequest;
+    }
+
+    @Nullable
+    protected AIModelCatalogEntry getCachedCatalogEntry() throws DBException {
+        String modelName = model();
+        boolean accountAuthentication = properties instanceof OpenAIProperties openAIProperties
+            && openAIProperties.isChatGptAccountAuthentication();
+        return modelName == null || !accountAuthentication && !OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl()) ? null
+            : OpenAIModels.findCatalogEntry(AIModelCatalog.getInstance().getCachedModels(OpenAIModels.CATALOG_PROVIDER_ID), modelName);
     }
 
     @NotNull
