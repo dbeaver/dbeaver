@@ -134,20 +134,15 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withRequiredSetting(accessTokenText, CopilotMessages.copilot_access_token_required)
             .withModifyListener(() -> {
-                CopilotModels.getModelByName(modelSelectorField.getSelectedModelName())
-                    .ifPresentOrElse(
-                        model -> {
-                            contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                        }, () -> {
-                            contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
-                        }
-                    );
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
-                if (selectedModel != null) {
-                    contextWindowSizeField.setValue(selectedModel.contextWindowSize());
+                if (selectedModel == null) {
+                    selectedModel = CopilotModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
                 }
+                contextWindowSizeField.setValue(selectedModel == null ? null : selectedModel.contextWindowSize());
+                temperatureText.setText(String.valueOf(selectedModel == null ? 0.0 : selectedModel.defaultTemperature()));
+                temperatureText.setEnabled(
+                    selectedModel == null || !selectedModel.features().contains(AIModelFeature.TEMPERATURE_UNSUPPORTED)
+                );
             })
             .withModelListSupplier(modelListProvider)
             .build();

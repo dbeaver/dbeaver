@@ -24,6 +24,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.oauth.OAuthConstants;
@@ -230,6 +233,11 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
 
     @NotNull
     public List<String> listModels(@NotNull OpenAIProperties properties) throws DBException {
+        return listModelDetails(properties).stream().map(AIModel::name).toList();
+    }
+
+    @NotNull
+    public List<AIModel> listModelDetails(@NotNull OpenAIProperties properties) throws DBException {
         var productVersion = GeneralUtils.getProductVersion();
         String clientVersion = productVersion.getMajor() + "." + productVersion.getMinor() + "." + productVersion.getMicro();
         HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(CODEX_MODELS_ENDPOINT + "?client_version=" + clientVersion))
@@ -244,11 +252,22 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         }
 
         JsonObject response = send(request.build());
-        return parseModels(response);
+        Map<String, AIModelCatalogEntry> catalog = AIModelCatalog.getInstance().getModels(OpenAIModels.CATALOG_PROVIDER_ID);
+        return parseModelDetails(response).stream()
+            .map(model -> {
+                AIModelCatalogEntry entry = OpenAIModels.findCatalogEntry(catalog, model.name());
+                return entry == null ? model : entry.enrich(model);
+            })
+            .toList();
     }
 
     @NotNull
     static List<String> parseModels(@NotNull JsonObject response) {
+        return parseModelDetails(response).stream().map(AIModel::name).toList();
+    }
+
+    @NotNull
+    static List<AIModel> parseModelDetails(@NotNull JsonObject response) {
         List<CatalogModel> models = new ArrayList<>();
         JsonArray catalog = response.has("models") ? response.getAsJsonArray("models") : new JsonArray();
         for (JsonElement element : catalog) {
@@ -259,14 +278,22 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
             if (!model.has("slug") || !model.has("visibility") || !"list".equals(model.get("visibility").getAsString())) {
                 continue;
             }
+            String name = model.get("slug").getAsString();
+            JsonElement contextWindow = model.get("context_window");
+            Integer contextSize = contextWindow == null || contextWindow.isJsonNull() ? null : contextWindow.getAsInt();
+            if (contextSize == null || contextSize <= 0) {
+                contextSize = null;
+            }
             models.add(new CatalogModel(
-                model.get("slug").getAsString(),
+                new AIModel(
+                    name, contextSize, OpenAIModels.detectModelFeatures(name)
+                ),
                 model.has("priority") ? model.get("priority").getAsInt() : Integer.MAX_VALUE
             ));
         }
         return models.stream()
             .sorted(Comparator.comparingInt(CatalogModel::priority))
-            .map(CatalogModel::slug)
+            .map(CatalogModel::model)
             .toList();
     }
 
@@ -497,7 +524,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
     ) {
     }
 
-    private record CatalogModel(@NotNull String slug, int priority) {
+    private record CatalogModel(@NotNull AIModel model, int priority) {
     }
 
 }
