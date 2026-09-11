@@ -36,6 +36,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -1469,12 +1470,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     ResultSetViewer.HistoryStateItem state = stateHistory.get(i);
                     mi.setText(state.describeState());
                     final int statePosition = i;
-                    mi.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            viewer.navigateHistory(statePosition);
-                        }
-                    });
+                    mi.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> viewer.navigateHistory(statePosition)));
                 }
                 historyMenu.setLocation(pt.x, pt.y + rect.height);
                 historyMenu.setVisible(true);

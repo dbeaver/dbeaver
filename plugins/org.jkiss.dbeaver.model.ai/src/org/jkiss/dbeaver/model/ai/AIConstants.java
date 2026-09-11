@@ -23,7 +23,6 @@ public class AIConstants {
 
     // Misc
 
-    public static final String AI_COMPLETION_EXECUTE_IMMEDIATELY = "ai.completion.executeImmediately";
     public static final String AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT = "ai.completion.includeSourceTextInQuery";
 
     public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";
@@ -68,6 +67,7 @@ public class AIConstants {
     public static final String AI_CHAT_SHOW_TIME_SPENT = "ai.chat.show.time.spent";
     public static final String AI_CHAT_SHOW_TOKENS_SPENT = "ai.chat.show.tokens.spent";
     public static final String AI_CHAT_SHOW_TOTAL_TOKENS_SPENT = "ai.chat.show.total.tokens.spent";
+    public static final String AI_CHAT_SHOW_PROFILE_AND_MODEL = "ai.chat.show.profile.and.model";
     public static final String USER_QUOTA_PROPERTY = "ai.userQuota";
     public static final String LOG_STATS_PROPERTY = "ai.logStats";
 }

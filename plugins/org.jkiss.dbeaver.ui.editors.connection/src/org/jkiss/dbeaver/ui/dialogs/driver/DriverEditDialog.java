@@ -33,6 +33,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -574,7 +575,7 @@ public class DriverEditDialog extends BaseDialog {
 
         deleteButton = UIUtils.createToolButton(
             libsControlGroup,
-            UIConnectionMessages.dialog_edit_driver_button_delete,
+            WorkbenchMessages.Workbench_delete,
             SelectionListener.widgetSelectedAdapter(e -> {
                 IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
                 if (selection != null && !selection.isEmpty()) {

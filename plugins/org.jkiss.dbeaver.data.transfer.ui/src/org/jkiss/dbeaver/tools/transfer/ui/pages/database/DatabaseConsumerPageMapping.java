@@ -93,11 +93,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private ControlEditor chooseContainerEditor;
     private Button upButton;
     private Button downButton;
+    private Composite bottomBar;
     private Button recreateCheck;
     private Button transformCheck;
     private Combo transformCombo;
     protected Button mappingRules;
     private ObjectContainerSelectorPanel containerPanel;
+    private boolean transformComboKeyboardSelection;
     private boolean firstInit = true;
     private String mappingErrorMessage;
 
@@ -340,6 +342,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
                 @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.character == SWT.SPACE) {
+                        e.doit = false;
+                    }
+                }
+
+                @Override
                 public void keyReleased(KeyEvent e) {
                     try {
                         boolean updated = false;
@@ -355,10 +364,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             updated = true;
                         } else if (e.character == SWT.SPACE) {
                             for (TreeItem item : mappingViewer.getTree().getSelection()) {
-                                element = item.getData();
-                                applyMappingTransfer(element);
+                                if (item.getData() instanceof DatabaseMappingObject mapping
+                                    && !isConfigurationRow(mapping)) {
+                                    toggleMappingTransfer(mapping);
+                                }
                             }
-                            updated = true;
                         } else if (e.keyCode == SWT.SHIFT) {
                             TreeItem[] selection = mappingViewer.getTree().getSelection();
                             if (selection.length > 0) {
@@ -402,7 +412,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
         {
             boolean withUpDown = getWizard().getSettings().getDataPipes().size() > 1;
-            Composite bottomBar = UIUtils.createComposite(composite, 5 + (withUpDown ? 2 : 0));
+            bottomBar = UIUtils.createComposite(composite, 5 + (withUpDown ? 2 : 0));
             bottomBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             Label hintInfo = new Label(bottomBar, SWT.NONE);
@@ -430,8 +440,41 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DataTransferRegistry.getInstance().getAttributeTransformers()) {
                 transformCombo.add(transformer.getName());
             }
-            transformCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> onTransformComboSelected()));
+            transformCombo.addListener(SWT.KeyDown, event -> {
+                if (event.keyCode == SWT.ARROW_DOWN && !transformCombo.getListVisible()) {
+                    event.doit = false;
+                    transformCombo.setListVisible(true);
+                } else if (transformCombo.getListVisible()
+                    && (event.keyCode == SWT.ARROW_DOWN || event.keyCode == SWT.ARROW_UP)) {
+                    // Native combos fire a selection event while the user is only moving the highlighted item.
+                    transformComboKeyboardSelection = true;
+                    transformCombo.getDisplay().asyncExec(() -> transformComboKeyboardSelection = false);
+                } else if (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR) {
+                    event.doit = false;
+                    int selectionIndex = transformCombo.getSelectionIndex();
+                    transformCombo.setListVisible(false);
+                    transformCombo.select(selectionIndex);
+                    onTransformComboSelected();
+                } else if (transformCombo.getListVisible() && event.keyCode == SWT.ESC) {
+                    event.doit = false;
+                    transformCombo.setListVisible(false);
+                    updateTransformControls(getTransformableSelection());
+                }
+            });
+            transformCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (!transformComboKeyboardSelection) {
+                        onTransformComboSelected();
+                    }
+                }
 
+
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
+                    onTransformComboSelected();
+                }
+            });
             if (withUpDown) {
                 upButton = UIUtils.createPushButton(
                     bottomBar,
@@ -1748,7 +1791,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         updateRecreateCheck(selectedMapping);
         setControlExcluded(recreateCheck, !isContainer);
         setControlExcluded(transformCheck, !isColumn);
-        setControlExcluded(transformCombo, !isColumn);
+        transformCombo.setVisible(isColumn);
         layoutBottomBar();
         updateTransformControls(selectedMapping);
         updateUpAndDownButtons();
@@ -1776,12 +1819,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     private void layoutBottomBar() {
-        if (recreateCheck != null && !recreateCheck.isDisposed()) {
-            Composite parent = recreateCheck.getParent();
-            if (parent != null && !parent.isDisposed()) {
-                parent.layout(true);
-            }
+        if (bottomBar == null || bottomBar.isDisposed()) {
+            return;
         }
+        bottomBar.layout(true);
     }
 
     protected boolean hasMappings(@Nullable DatabaseMappingObject mapping) {

@@ -40,9 +40,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class DefaultFormattingConfigurator implements IObjectPropertyConfigurator<AISchemaGenerator, AISettings> {
-    private Button includeSourceTextInCommentCheck;
-    private Button executeQueryImmediatelyCheck;
-
     private Button sendTypeInfoCheck;
     private Button sendDescriptionCheck;
 
@@ -68,7 +65,9 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         createLeftPanel(leftPanel, propertyChangeListener);
 
         Composite rightPanel = UIUtils.createComposite(settingsPanel, 1);
-        rightPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING));
+        GridData rightPanelData = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING);
+        rightPanelData.horizontalIndent = 20;
+        rightPanel.setLayoutData(rightPanelData);
         createRightPanel(rightPanel);
     }
 
@@ -97,20 +96,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         }
         languageText.setItems(languages.toArray(new String[0]));
 
-        Composite completionGroup = UIUtils.createTitledComposite(
-            leftPanel,
-            "SQL Completion",
-            1,
-            GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
-        );
-        Composite appearanceSettings = UIUtils.createComposite(completionGroup, 2);
-        appearanceSettings.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
-
-        createAppearanceSettings(appearanceSettings, propertyChangeListener);
-
-        Composite completionComposite = UIUtils.createComposite(completionGroup, 2);
-        completionComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createCompletionSettings(completionComposite, propertyChangeListener);
+        createCompletionGroup(leftPanel, propertyChangeListener);
 
         Composite queryExecutionSettingsGroup = UIUtils.createTitledComposite(
             leftPanel,
@@ -182,15 +168,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         createSchemaSettings(schemaGroup);
     }
 
-    protected void createCompletionSettings(Composite completionGroup, Runnable propertyChangeListener) {
-        completionGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        executeQueryImmediatelyCheck = UIUtils.createCheckbox(
-            completionGroup,
-            AIUIMessages.gpt_preference_page_completion_execute_immediately_label,
-            AIUIMessages.gpt_preference_page_completion_execute_immediately_tip,
-            false,
-            2);
-
+    protected void createCompletionGroup(@NotNull Composite leftPanel, @NotNull Runnable propertyChangeListener) {
     }
 
     protected void createSchemaSettings(Composite schemaGroup) {
@@ -209,22 +187,10 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
             2);
     }
 
-    protected void createAppearanceSettings(Composite appearanceGroup, Runnable propertyChangeListener) {
-        includeSourceTextInCommentCheck = UIUtils.createCheckbox(
-            appearanceGroup,
-            AIUIMessages.gpt_preference_page_completion_include_source_label,
-            AIUIMessages.gpt_preference_page_completion_include_source_tip,
-            false,
-            2);
-    }
-
-
     @Override
     public void loadSettings(@NotNull AISettings aiSettings) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         languageText.setText(CommonUtils.notEmpty(store.getString(AIConstants.AI_RESPONSE_LANGUAGE)));
-        includeSourceTextInCommentCheck.setSelection(store.getBoolean(AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
-        executeQueryImmediatelyCheck.setSelection(store.getBoolean(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
         sendTypeInfoCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_TYPE_INFO));
         sendDescriptionCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_DESCRIPTION));
 
@@ -261,8 +227,6 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     public void saveSettings(@NotNull AISettings aiSettings) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(AIConstants.AI_RESPONSE_LANGUAGE, languageText.getText());
-        store.setValue(AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
-        store.setValue(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
         store.setValue(AIConstants.AI_SEND_TYPE_INFO, sendTypeInfoCheck.getSelection());
         store.setValue(AIConstants.AI_SEND_DESCRIPTION, sendDescriptionCheck.getSelection());
         store.setValue(

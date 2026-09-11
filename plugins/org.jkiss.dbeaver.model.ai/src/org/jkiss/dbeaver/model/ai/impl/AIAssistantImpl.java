@@ -109,7 +109,7 @@ public class AIAssistantImpl implements AIAssistant {
 
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
                 Instant now = Instant.now();
-                AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
+                AIEngineResponse completionResponse = requestCompletion(engine, profile, monitor, request);
                 int systemPromptLength = AIPromptUtils.calcSystemPromptLength(completionRequest.getMessages());
                 AIUsage usage = completionResponse.getUsage() != null ?
                     completionResponse.getUsage() :
@@ -257,7 +257,8 @@ public class AIAssistantImpl implements AIAssistant {
         );
 
         if (isLoggingEnabled()) {
-            log.debug("AI chat request:\n" + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
+            log.debug("AI chat request (" + getEngineInfo(profile, engine) + "):\n"
+                + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
             log.debug("AI chat request functions: " + request.getFunctions().stream().map(AIFunctionDescriptor::getId).toList());
 
             AIDatabaseContext context = functionContext.getContext();
@@ -332,7 +333,7 @@ public class AIAssistantImpl implements AIAssistant {
                     chatListener.error(
                         new DBException(
                             "Too many AI function calls (" + AIAssistantImpl.MAX_FUNCTION_CALLS + ")"));
-                    chatListener.complete(List.of(), true);
+                    chatListener.complete(List.of(), true, false);
                     return;
                 }
                 fc.transformArguments(context, functionContext);
@@ -498,13 +499,15 @@ public class AIAssistantImpl implements AIAssistant {
     @NotNull
     protected AIEngineResponse requestCompletion(
         @NotNull AIEngine<?> engine,
+        @NotNull AIConfigurationProfile profile,
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
         try {
             boolean loggingEnabled = isLoggingEnabled();
             if (loggingEnabled) {
-                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
+                log.debug("AI request (" + getEngineInfo(profile, engine) + "):\n"
+                    + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
@@ -521,6 +524,13 @@ public class AIAssistantImpl implements AIAssistant {
                 throw new DBException("Error requesting completion", e);
             }
         }
+    }
+
+    @NotNull
+    protected static String getEngineInfo(@NotNull AIConfigurationProfile profile, @NotNull AIEngine<?> engine) {
+        return "profile: " + profile.getProfileName()
+            + ", engine: " + profile.getEngineId()
+            + ", model: " + engine.getProperties().getModel();
     }
 
     protected boolean isLoggingEnabled() {

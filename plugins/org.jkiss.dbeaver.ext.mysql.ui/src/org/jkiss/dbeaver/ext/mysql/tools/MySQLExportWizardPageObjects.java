@@ -21,8 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -124,13 +123,10 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, MySQLUIMessages.tools_db_export_wizard_page_settings_group_show_views, false);
-            exportViewsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            exportViewsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     wizard.getSettings().setShowViews(exportViewsCheck.getSelection());
                     loadTables(null);
-                }
-            });
+                }));
             exportViewsCheck.setSelection(wizard.getSettings().isShowViews());
             exportViewsCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, tablesTable);

@@ -32,12 +32,11 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.utils.DurationFormat;
 import org.jkiss.dbeaver.utils.DurationFormatter;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -53,15 +52,18 @@ final class WebViewMessageRenderer {
 
     private final Browser browser;
     private final Supplier<DBPDataSource> dataSourceSupplier;
+    private final WebCSSInitializer cssInitializer;
     private SQLSyntaxManager syntaxManager;
     private SQLRuleScanner ruleScanner;
 
     WebViewMessageRenderer(
         @NotNull Browser browser,
-        @NotNull Supplier<DBPDataSource> dataSourceSupplier
+        @NotNull Supplier<DBPDataSource> dataSourceSupplier,
+        @NotNull WebCSSInitializer cssInitializer
     ) {
         this.browser = browser;
         this.dataSourceSupplier = dataSourceSupplier;
+        this.cssInitializer = cssInitializer;
     }
 
     @Nullable
@@ -70,6 +72,15 @@ final class WebViewMessageRenderer {
     }
 
     void showConversationMessages(@NotNull AIChatConversation conversation) {
+        execute("setAnnouncementsSuspended", true);
+        try {
+            doShowConversationMessages(conversation);
+        } finally {
+            execute("setAnnouncementsSuspended", false);
+        }
+    }
+
+    private void doShowConversationMessages(@NotNull AIChatConversation conversation) {
         List<AIChatMessage> messages = conversation.getMessages();
         for (int leftIndex = 0; leftIndex < messages.size(); leftIndex++) {
             AIChatMessage current = messages.get(leftIndex);
@@ -108,7 +119,7 @@ final class WebViewMessageRenderer {
         DBPImage icon = AIChatUtils.getRoleIcon(message.message());
         String iconPath = "";
         try {
-            iconPath = RuntimeUtils.getPlatformFile(icon.getLocation()).toAbsolutePath().toString();
+            iconPath = cssInitializer.getResourceUrl(icon);
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
         }
@@ -159,13 +170,18 @@ final class WebViewMessageRenderer {
     @NotNull
     static String formatUsage(@NotNull AIExtendedUsage usage) {
         return NLS.bind(
-            AIChatMessages.ai_chat_message_meta_tokens,
+            AIChatMessagesUI.ai_chat_message_meta_tokens,
             usage.totalInputTokens(),
             usage.totalOutputTokens()
         );
     }
 
     private void addUsualMessage(@NotNull Map<String, Object> args, @NotNull AIChatMessage message) {
+        AIMessageType role = message.message().getRole();
+        if (role == AIMessageType.WARNING) {
+            args.put("content", CommonUtils.notEmpty(message.message().getDisplayMessage()));
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         String messageContent = message.message().getDisplayMessage();
         MessageChunk[] chunks = AITextUtils.splitIntoChunks(messageContent, false);
@@ -177,7 +193,7 @@ final class WebViewMessageRenderer {
                     sb.append('\n').append(chunk.toRawString()).append('\n');
                 }
             } else {
-                sb.append(chunk.toRawString());
+                sb.append(AIChatHtmlEscaper.escapeText(chunk.toRawString()));
             }
         }
         args.put("content", sb.toString());
@@ -188,7 +204,9 @@ final class WebViewMessageRenderer {
     }
 
     private void addFunctionMessage(@NotNull Map<String, Object> args, @NotNull AIChatMessage message) {
-        String sb = "<a class='interactive-link' data-message-id='" + message.id() + "'>" + message.message().getDisplayMessage() + "</a>";
+        String sb = "<a class='interactive-link' data-message-id='" + message.id() + "'>"
+            + AIChatHtmlEscaper.escapeText(CommonUtils.notEmpty(message.message().getDisplayMessage()))
+            + "</a>";
         args.put("content", sb);
     }
 
@@ -211,13 +229,13 @@ final class WebViewMessageRenderer {
             resultArgs.put("messageId", message.id());
             resultArgs.put("functionName", functionCall.getFunctionName());
             resultArgs.put("result", result);
-            resultArgs.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+            resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
             AIFunctionResult functionResult = message.message().getFunctionResult();
             if (functionResult != null && functionResult.getException() != null) {
                 resultArgs.put("hasException", true);
                 String toolName = function != null ? function.getName() : functionCall.getFunctionName();
-                resultArgs.put("text", NLS.bind(AIChatMessages.ai_chat_confirm_failed, toolName));
-                resultArgs.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
+                resultArgs.put("text", NLS.bind(AIChatMessagesUI.ai_chat_confirm_failed, toolName));
+                resultArgs.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
                 if (!arguments.isEmpty()) {
                     resultArgs.put("arguments", arguments);
                 }
@@ -238,13 +256,13 @@ final class WebViewMessageRenderer {
         args.put("messageId", message.id());
         args.put(
             "text",
-            hasException ? NLS.bind(AIChatMessages.ai_chat_confirm_failed, toolName)
-                : NLS.bind(AIChatMessages.ai_chat_confirm_auto_approved, toolName)
+            hasException ? NLS.bind(AIChatMessagesUI.ai_chat_confirm_failed, toolName)
+                : NLS.bind(AIChatMessagesUI.ai_chat_confirm_auto_approved, toolName)
         );
         args.put("functionName", functionCall.getFunctionName());
         args.put("confirmed", confirmed);
-        args.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
-        args.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+        args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
+        args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
         if (hasException) {
             args.put("hasException", true);
         }
@@ -267,7 +285,7 @@ final class WebViewMessageRenderer {
                 attachmentData.put("name", file.getFileName().toString());
                 String fileIconPath = null;
                 try {
-                    fileIconPath = RuntimeUtils.getPlatformFile(attachment.getIcon(file).getLocation()).toAbsolutePath().toString();
+                    fileIconPath = cssInitializer.getResourceUrl(attachment.getIcon(file));
                 } catch (IOException e) {
                     log.error("Error getting icon path for " + file.getFileName(), e);
                 }
@@ -287,23 +305,40 @@ final class WebViewMessageRenderer {
     void initChat() {
         Map<String, Object> icons = Map.of(
             "copy",
-            getActionData(UIIcon.COPY, AIChatMessages.ai_chat_message_copy_to_clipboard_tip),
+            getActionData(UIIcon.COPY, AIChatMessagesUI.ai_chat_message_copy_to_clipboard_tip),
             "execute",
-            getActionData(UIIcon.SQL_EXECUTE, AIChatMessages.ai_chat_message_execute_query_tip),
+            getActionData(UIIcon.SQL_EXECUTE, AIChatMessagesUI.ai_chat_message_execute_query_tip),
             "editor",
-            getActionData(UIIcon.MOVE, AIChatMessages.ai_chat_message_copy_to_editor_tip),
+            getActionData(UIIcon.MOVE, AIChatMessagesUI.ai_chat_message_copy_to_editor_tip),
             "info",
             getActionData(DBIcon.SMALL_INFO, ""),
             "clean",
-            getActionData(UIIcon.CLEAN, AIChatMessages.ai_chat_message_clear_up_to_here_tip),
+            getActionData(UIIcon.CLEAN, AIChatMessagesUI.ai_chat_message_clear_up_to_here_tip),
             "close",
-            getActionData(UIIcon.CLOSE, AIChatMessages.ai_chat_message_delete_message_tip),
+            getActionData(UIIcon.CLOSE, AIChatMessagesUI.ai_chat_message_delete_message_tip),
             "settings",
             Map.of(
                 "showMessageTime", AIConstants.AI_CHAT_SHOW_MESSAGE_TIME,
                 "showTimeSpent", AIConstants.AI_CHAT_SHOW_TIME_SPENT,
                 "showTokensSpent", AIConstants.AI_CHAT_SHOW_TOKENS_SPENT,
                 "showTotalTokensSpent", AIConstants.AI_CHAT_SHOW_TOTAL_TOKENS_SPENT
+            ),
+            "notice",
+            AIChatMessagesUI.ai_chat_ai_notice,
+            "a11y",
+            Map.of(
+                "transcriptLabel", AIChatMessagesUI.ai_chat_a11y_transcript_label,
+                "waitingForResponse", AIChatMessagesUI.ai_chat_a11y_waiting_for_response,
+                "roles", Map.of(
+                    "user", AIChatMessagesUI.ai_chat_message_role_user_label,
+                    "assistant", AIChatMessagesUI.ai_chat_message_role_assistant_label,
+                    "function", AIChatMessagesUI.ai_chat_message_role_function_label,
+                    "system", AIChatMessagesUI.ai_chat_message_role_system_label,
+                    "generated", AIChatMessagesUI.ai_chat_message_role_generated_label,
+                    "warning", AIChatMessagesUI.ai_chat_message_role_warning_label,
+                    "error", AIChatMessagesUI.ai_chat_message_role_error_label,
+                    "attachment", AIChatMessagesUI.ai_chat_message_role_attachment_label
+                )
             )
         );
 
@@ -324,7 +359,7 @@ final class WebViewMessageRenderer {
     private Map<String, String> getActionData(@NotNull DBIcon icon, @NotNull String tooltipMessage) {
         Map<String, String> iconData;
         try {
-            iconData = Map.of("icon", RuntimeUtils.getPlatformFile(icon.getLocation()).toString(), "tooltip", tooltipMessage);
+            iconData = Map.of("icon", cssInitializer.getResourceUrl(icon), "tooltip", tooltipMessage);
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
             iconData = Map.of("icon", "", "tooltip", tooltipMessage);
@@ -341,7 +376,7 @@ final class WebViewMessageRenderer {
     }
 
     void showEmptyChat() {
-        execute("showCenterText", Map.of("text", AIChatMessages.ai_chat_empty_hint));
+        execute("showCenterText", Map.of("text", AIChatMessagesUI.ai_chat_empty_hint));
     }
 
     void execute(@NotNull String function, @NotNull Object... args) {

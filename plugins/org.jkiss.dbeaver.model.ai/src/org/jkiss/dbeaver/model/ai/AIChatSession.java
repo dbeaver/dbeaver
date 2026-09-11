@@ -451,6 +451,9 @@ public class AIChatSession {
             messages,
             confirmation
         );
+        if (conversation.getState() == AIChatConversation.State.CANCELED) {
+            return CompletableFuture.completedFuture(conversation);
+        }
         try {
             return getAssistant().generateTextStream(
                 monitor,
@@ -554,7 +557,7 @@ public class AIChatSession {
         try {
             chatListener.error(error);
         } finally {
-            chatListener.complete(List.of(), true);
+            chatListener.complete(List.of(), true, false);
         }
         return CompletableFuture.completedFuture(conversation);
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class DirectedGraphLayoutVisitor {
                             return;
                         }
                         ERDConnectionRouterDescriptor diagramRouter = editor.getDiagramRouter();
-                        DirectedGraphLayout layout = null;
+                        DirectedGraphLayout layout;
                         if (diagramRouter.supportedAttributeAssociation()) {
                             layout = new OrthoDirectedGraphLayout(diagram);
                         } else {
@@ -112,7 +112,7 @@ public class DirectedGraphLayoutVisitor {
     protected void addEntityNode(NodePart nodeEditPart)
     {
         Node entityNode = null;
-        ERDEntity entity = null;
+        ERDEntity entity;
         if (nodeEditPart instanceof EntityPart) {
             entity = ((EntityPart) nodeEditPart).getEntity();
             if (entity.hasSelfLinks()) {
@@ -129,12 +129,12 @@ public class DirectedGraphLayoutVisitor {
         partToNodesMap.put(nodeEditPart, entityNode);
         graph.nodes.add(entityNode);
 
-        if (entityNode instanceof Subgraph) {
-            Node sourceAnchor = new Node("Fake node for source links", (Subgraph) entityNode);
+        if (entityNode instanceof Subgraph sg) {
+            Node sourceAnchor = new Node("Fake node for source links", sg);
             sourceAnchor.width = 0;
             sourceAnchor.height = 0;
 
-            Node targetAnchor = new Node("Fake node for target links", (Subgraph) entityNode);
+            Node targetAnchor = new Node("Fake node for target links", sg);
             targetAnchor.width = 0;
             targetAnchor.height = 0;
         }
@@ -145,8 +145,8 @@ public class DirectedGraphLayoutVisitor {
 
     protected void addDiagramEdges(AbstractGraphicalEditPart diagram)
     {
-        for (Object child : diagram.getChildren()) {
-            addEntityEdges((GraphicalEditPart) child);
+        for (GraphicalEditPart child : diagram.getChildren()) {
+            addEntityEdges(child);
         }
     }
 
@@ -167,8 +167,7 @@ public class DirectedGraphLayoutVisitor {
 
     //******************* Connection contribution methods **********/
 
-    protected void addConnectionEdges(AbstractConnectionEditPart connectionPart)
-    {
+    protected void addConnectionEdges(AbstractConnectionEditPart connectionPart) {
         GraphAnimation.recordInitialState((Connection) connectionPart.getFigure());
         Node source = (Node) partToNodesMap.get(connectionPart.getSource());
         if (source == null && connectionPart.getSource() != null) {
@@ -183,9 +182,9 @@ public class DirectedGraphLayoutVisitor {
             return;
         }
 
-        if (source instanceof Subgraph && target instanceof Subgraph) {
-            source = ((Subgraph) source).members.getNode(0);
-            target = ((Subgraph) target).members.getNode(1);
+        if (source instanceof Subgraph ssg && target instanceof Subgraph tsg) {
+            source = ssg.members.getFirst();
+            target = tsg.members.get(1);
         }
 
         Edge e = new Edge(connectionPart, source, target);
@@ -199,8 +198,8 @@ public class DirectedGraphLayoutVisitor {
 
     protected void applyDiagramResults(AbstractGraphicalEditPart diagram)
     {
-        for (Object child : diagram.getChildren()) {
-            applyEntityResults((GraphicalEditPart) child);
+        for (GraphicalEditPart child : diagram.getChildren()) {
+            applyEntityResults(child);
         }
     }
 
@@ -215,7 +214,7 @@ public class DirectedGraphLayoutVisitor {
         Dimension preferredSize = tableFigure.getPreferredSize();
         Dimension snapSize = decorator.getEntitySnapSize();
         Rectangle bounds = new Rectangle(n.x, n.y, preferredSize.width, preferredSize.height);
-        if (snapSize != null) {
+        if (snapSize != null && !snapSize.isEmpty()) {
             bounds.translate(
                 n.x / snapSize.width * snapSize.width - n.x,
                 n.y / snapSize.height * snapSize.height - n.y
@@ -224,10 +223,8 @@ public class DirectedGraphLayoutVisitor {
         tableFigure.setBounds(bounds);
 
         List<?> sourceConnections = entityPart.getSourceConnections();
-        for (int i = 0; i < sourceConnections.size(); i++) {
-            Object srcObject = sourceConnections.get(i);
-            if (srcObject instanceof AbstractConnectionEditPart) {
-                AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) srcObject;
+        for (Object srcObject : sourceConnections) {
+            if (srcObject instanceof AbstractConnectionEditPart connectionPart) {
                 applyConnectionResults(connectionPart);
             } else {
                 log.info("Object: " + srcObject.toString() + " is not an instance of AbstractConnectionEditPart.");
@@ -236,8 +233,7 @@ public class DirectedGraphLayoutVisitor {
         for (Object child : entityPart.getChildren()) {
             if (child instanceof AttributePart) {
                 for (Object srcObject : ((AttributePart) child).getSourceConnections()) {
-                    if (srcObject instanceof AbstractConnectionEditPart) {
-                        AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) srcObject;
+                    if (srcObject instanceof AbstractConnectionEditPart connectionPart) {
                         applyConnectionResults(connectionPart);
                     } else {
                         log.info("Object: " + srcObject.toString() + " is not an instance of AbstractConnectionEditPart.");
@@ -265,8 +261,7 @@ public class DirectedGraphLayoutVisitor {
         //conn.setTargetDecoration(new PolygonDecoration());
         if (edgeNodes != null && edgeNodes.size() > 1) {
             List<AbsoluteBendpoint> bends = new ArrayList<>();
-            for (int i = 0; i < edgeNodes.size(); i++) {
-                Node vn = edgeNodes.getNode(i);
+            for (Node vn : edgeNodes) {
                 int x = vn.x;
                 int y = vn.y;
                 bends.add(new AbsoluteBendpoint(x, y));

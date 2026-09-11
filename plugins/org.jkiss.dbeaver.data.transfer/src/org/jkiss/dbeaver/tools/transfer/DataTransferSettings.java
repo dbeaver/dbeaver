@@ -429,10 +429,6 @@ public class DataTransferSettings implements DBTTaskSettings {
         return nodeSettingsLoaded;
     }
 
-    public boolean isTaskRunning() {
-        return isTaskRunning;
-    }
-
     public void loadNodeSettings(@NotNull DBRProgressMonitor monitor) {
         if (nodeSettingsLoaded) {
             return;

@@ -22,7 +22,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -160,13 +159,10 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
                 composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
                 dataSourceSettingsButton = new Button(composite, SWT.CHECK);
-                dataSourceSettingsButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                dataSourceSettingsButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         boolean enabled = dataSourceSettingsButton.getSelection();
                         enableDataSourceSpecificSettings(enabled);
-                    }
-                });
+                    }));
                 dataSourceSettingsButton.setText(NLS.bind(
                     UINavigatorMessages.pref_page_target_button_use_datasource_settings,
                     dataSourceContainer.getName()

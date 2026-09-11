@@ -22,8 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -141,12 +140,7 @@ public class TransformerSettingsDialog extends BaseDialog {
             }
         }
 
-        attributeTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateAttributeSelection();
-            }
-        });
+        attributeTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateAttributeSelection()));
     }
 
     private void updateTransformItem(TableItem attrItem) {
@@ -283,9 +277,7 @@ public class TransformerSettingsDialog extends BaseDialog {
                 transformerCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 transformerCombo.add(ResultSetViewer.EMPTY_TRANSFORMER_NAME);
                 transformerCombo.select(0);
-                transformerCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                transformerCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         int selectionIndex = transformerCombo.getSelectionIndex();
                         if (selectionIndex == 0) {
                             transformer = null;
@@ -300,8 +292,7 @@ public class TransformerSettingsDialog extends BaseDialog {
                         updateAttributeItemText();
 
                         composite.layout(true, true);
-                    }
-                });
+                    }));
             }
             Label infoLabel = UIUtils.createControlLabel(settingsPanel, "Info");
             infoLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));

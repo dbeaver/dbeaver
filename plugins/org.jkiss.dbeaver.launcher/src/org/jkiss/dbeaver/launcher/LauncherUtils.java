@@ -49,6 +49,24 @@ class LauncherUtils {
     }
 
 
+    static URL toURL(File file) throws MalformedURLException {
+        return file.toURI().toURL();
+    }
+
+
+    static File toFile(URL url) {
+        if (!"file".equalsIgnoreCase(url.getProtocol())) {
+            throw new IllegalArgumentException("Unsupported protocol: " + url.getProtocol());
+        }
+        try {
+            return new File(url.toURI());
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            // Handles legacy URLs (e.g. produced by deprecated File.toURL()) which may be unescaped or use authority (UNC form)
+            return toFileURL(url.toExternalForm());
+        }
+    }
+
+
     static URL adjustTrailingSlash(URL url, boolean trailingSlash) throws MalformedURLException {
         String file = url.getFile();
         if (trailingSlash == (file.endsWith("/"))) //$NON-NLS-1$

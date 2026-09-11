@@ -156,6 +156,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
         DBPAuthModelDescriptor authModelDescriptor = driver.getDataSourceProvider().detectConnectionAuthModel(driver, connectionInfo);
+        if (!authModelDescriptor.isApplicableTo(driver)) {
+            throw new DBCException(
+                "Authentication model '" + authModelDescriptor.getId() + "' is not applicable to connection '" + getName() + "'");
+        }
+
         DBAAuthModel<DBAAuthCredentials> authModel = authModelDescriptor.getInstance();
 
         // Obtain connection
@@ -325,7 +330,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Nullable
-    private Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, DBPDriver driver) throws DBCException {
+    protected Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, DBPDriver driver) throws DBCException {
         // It MUST be a JDBC driver
         Driver driverInstance = null;
         String driverClassName = driver.getDriverClassName();

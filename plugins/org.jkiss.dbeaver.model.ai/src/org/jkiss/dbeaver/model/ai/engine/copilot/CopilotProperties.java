@@ -72,6 +72,12 @@ public class CopilotProperties extends BaseAIEngineProperties {
     }
 
     @Override
+    public void selectModel(@NotNull AIModel model) {
+        setModel(model.name());
+        setContextWindowSize(model.contextWindowSize());
+    }
+
+    @Override
     @Property(order = 3)
     public double getTemperature() {
         if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
@@ -84,7 +90,7 @@ public class CopilotProperties extends BaseAIEngineProperties {
 
     @Override
     @Nullable
-    @Property(order = 4)
+    @Property(order = 4, min = 1)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;

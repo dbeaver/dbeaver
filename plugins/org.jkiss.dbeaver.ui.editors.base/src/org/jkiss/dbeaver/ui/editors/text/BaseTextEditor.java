@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,8 @@ package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
@@ -36,8 +32,10 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -53,6 +51,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,13 +73,13 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         actionContributors.add(contributor);
     }
 
-    public static BaseTextEditor getTextEditor(IEditorPart editor)
-    {
+    @Nullable
+    public static BaseTextEditor getTextEditor(@Nullable IEditorPart editor) {
         if (editor == null) {
             return null;
         }
-        if (editor instanceof BaseTextEditor) {
-            return (BaseTextEditor) editor;
+        if (editor instanceof BaseTextEditor bte) {
+            return bte;
         }
         return editor.getAdapter(BaseTextEditor.class);
     }
@@ -109,14 +108,13 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     public void releaseEditorInput() {
         IEditorInput editorInput = getEditorInput();
-        if (editorInput instanceof IStatefulEditorInput) {
-            ((IStatefulEditorInput) editorInput).release();
+        if (editorInput instanceof IStatefulEditorInput sei) {
+            sei.release();
         }
     }
 
     @Nullable
-    public IDocument getDocument()
-    {
+    public IDocument getDocument() {
         IDocumentProvider provider = getDocumentProvider();
         if (provider == null) {
             return null;
@@ -132,8 +130,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(@NotNull Composite parent) {
         //setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
 
         super.createPartControl(parent);
@@ -152,8 +149,10 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     }
 
     @Override
-    protected void editorContextMenuAboutToShow(IMenuManager menu)
-    {
+    protected void editorContextMenuAboutToShow(@NotNull IMenuManager menu) {
+        if (menu instanceof MenuManager mm && mm.getMenu() != null) {
+            ActionUtils.setHostingObject(mm.getMenu(), this);
+        }
         //super.editorContextMenuAboutToShow(menu);
 
         menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
@@ -208,19 +207,6 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         return (SourceViewer) super.getSourceViewer();
     }
 
-    public void enableUndoManager(boolean enable)
-    {
-        TextViewer textViewer = getTextViewer();
-        final IUndoManager undoManager = textViewer.getUndoManager();
-        if (undoManager != null) {
-            if (!enable) {
-                undoManager.disconnect();
-            } else {
-                undoManager.connect(textViewer);
-            }
-        }
-    }
-
     @Nullable
     public ICommentsSupport getCommentsSupport()
     {
@@ -233,20 +219,25 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     }
 
     public void loadFromExternalFile() {
-        final File[] loadFile = DialogUtils.openFileList(getSite().getShell(), EditorsMessages.file_dialog_select_files, new String[]{"*.sql", "*.txt", "*", "*.*"});
+        Path[] loadFile = DialogUtils.openFileList(
+            getSite().getShell(),
+            EditorsMessages.file_dialog_select_files,
+            new String[]{"*.sql", "*.txt", "*", "*.*"}
+        );
         if (loadFile == null) {
             return;
         }
 
         StringBuilder newContent = new StringBuilder();
-        for (File file : loadFile) {
+        for (Path file : loadFile) {
             try {
-                newContent.append(Files.readString(file.toPath(), GeneralUtils.DEFAULT_FILE_CHARSET));
+                newContent.append(Files.readString(file, GeneralUtils.DEFAULT_FILE_CHARSET));
                 newContent.append(System.lineSeparator());
             } catch (IOException e) {
                 DBWorkbench.getPlatformUI().showError(
-                        EditorsMessages.file_dialog_cannot_load_file,
-                        EditorsMessages.file_dialog_cannot_load_file + " '" + file.getAbsolutePath() + "' - " + e.getMessage());
+                    EditorsMessages.file_dialog_cannot_load_file,
+                    EditorsMessages.file_dialog_cannot_load_file +
+                        " '" + file.toAbsolutePath() + "' - " + e.getMessage());
             }
         }
         if (!CommonUtils.isEmpty(newContent)) {
@@ -255,7 +246,6 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
                 document.set(newContent.toString());
             }
         }
-
     }
 
     public void saveToExternalFile() {
@@ -271,8 +261,13 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             DialogUtils.setCurDialogFolder(currentDirectory);
         }
 
-        final IDocument document = getDocument();
-        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), EditorsMessages.file_dialog_save_as_file, new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);
+        IDocument document = getDocument();
+        Path saveFile = DialogUtils.selectFileForSave(
+            getSite().getShell(),
+            EditorsMessages.file_dialog_save_as_file,
+            new String[]{"*.sql", "*.txt", "*", "*.*"},
+            fileName
+        );
         if (document == null || saveFile == null) {
             return;
         }
@@ -295,7 +290,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         afterSaveToFile(saveFile);
     }
 
-    protected void afterSaveToFile(File saveFile) {
+    protected void afterSaveToFile(Path saveFile) {
 
     }
 

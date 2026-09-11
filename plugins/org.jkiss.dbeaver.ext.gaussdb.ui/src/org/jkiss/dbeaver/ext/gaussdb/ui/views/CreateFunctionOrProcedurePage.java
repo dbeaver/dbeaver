@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,6 @@
 
 package org.jkiss.dbeaver.ext.gaussdb.ui.views;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,6 +24,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBProcedure;
@@ -44,6 +41,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class CreateFunctionOrProcedurePage extends BaseObjectEditPage {
 
@@ -75,8 +76,9 @@ public class CreateFunctionOrProcedurePage extends BaseObjectEditPage {
         return returnType;
     }
 
+    @NotNull
     @Override
-    protected Control createPageContents(Composite parent) {
+    protected Control createPageContents(@NotNull Composite parent) {
         Composite propsGroup = new Composite(parent, SWT.NONE);
         propsGroup.setLayout(new GridLayout(2, false));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);

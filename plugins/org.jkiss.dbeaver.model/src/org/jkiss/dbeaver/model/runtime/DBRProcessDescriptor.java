@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
@@ -37,18 +39,16 @@ public class DBRProcessDescriptor {
     private static final Log log = Log.getLog(DBRProcessDescriptor.class);
 
     private final DBRShellCommand command;
-    private ProcessBuilder processBuilder;
+    private final ProcessBuilder processBuilder;
     private volatile Process process;
     private volatile int exitValue = -1;
     private DBRProcessListener processListener;
 
-    public DBRProcessDescriptor(DBRShellCommand command)
-    {
+    public DBRProcessDescriptor(@NotNull DBRShellCommand command) {
         this(command, null);
     }
 
-    public DBRProcessDescriptor(final DBRShellCommand command, final IVariableResolver variablesResolver)
-    {
+    public DBRProcessDescriptor(@NotNull DBRShellCommand command, @Nullable IVariableResolver variablesResolver) {
         this.command = command;
         List<String> commandParams;
         if (command.getCommandParams() != null) {
@@ -69,32 +69,33 @@ public class DBRProcessDescriptor {
         //processBuilder.redirectErrorStream(true);
     }
 
-    public String getName()
-    {
+    @NotNull
+    public String getName() {
         final List<String> command = processBuilder.command();
-        return command.isEmpty() ? "?" : command.get(0);
+        return command.isEmpty() ? "?" : command.getFirst();
     }
 
-    public DBRShellCommand getCommand()
-    {
+    @NotNull
+    public DBRShellCommand getCommand() {
         return command;
     }
 
+    @Nullable
     public DBRProcessListener getProcessListener() {
         return processListener;
     }
 
-    public void setProcessListener(DBRProcessListener processListener) {
+    public void setProcessListener(@Nullable DBRProcessListener processListener) {
         this.processListener = processListener;
     }
 
-    public ProcessBuilder getProcessBuilder()
-    {
+    @NotNull
+    public ProcessBuilder getProcessBuilder() {
         return processBuilder;
     }
 
-    public Process getProcess()
-    {
+    @Nullable
+    public Process getProcess() {
         return process;
     }
 
@@ -103,22 +104,25 @@ public class DBRProcessDescriptor {
         return theProcess != null && theProcess.isAlive();
     }
 
-    public int getExitValue()
-    {
+    public int getExitValue() {
         return exitValue;
     }
 
     public int getUpdatedExitValueCode() {
+        var process = this.process;
+        if (process == null) {
+            log.debug("Process is not running");
+            return exitValue;
+        }
         try {
-            exitValue = this.process.exitValue();
+            exitValue = process.exitValue();
         } catch (IllegalThreadStateException e) {
             log.debug("Process still executing");
         }
         return exitValue;
     }
 
-    public void execute() throws DBException
-    {
+    public void execute() throws DBException {
         if (process != null) {
             throw new DBException("Process " + getName() + " already running");
         }
@@ -142,62 +146,56 @@ public class DBRProcessDescriptor {
         }
     }
 
-    public void terminate()
-    {
+    public void terminate() {
+        var process = this.process;
         if (process != null) {
-            synchronized (this) {
-                if (process != null) {
-                    process.destroy();
-                }
-            }
+            process.destroy();
             try {
-                if (process != null) {
-                    exitValue = process.waitFor();
-                }
+                exitValue = process.waitFor();
             } catch (InterruptedException e) {
                 // Skip
             }
             //exitValue = process.exitValue();
-            process = null;
+            this.process = null;
             if (processListener != null) {
                 processListener.onProcessTerminated(exitValue);
             }
         }
     }
 
-    public int waitFor()
-    {
+    public int waitFor() {
         return doWaitFor(false, Integer.MAX_VALUE);
     }
 
-    public int waitFor(int timeoutMs)
-    {
+    public int waitFor(int timeoutMs) {
         return doWaitFor(true, timeoutMs);
     }
 
-    private int doWaitFor(boolean useTimeout, int timeoutMs)
-    {
-        if (this.process != null) {
+    private int doWaitFor(boolean useTimeout, int timeoutMs) {
+        var process = this.process;
+        if (process != null) {
             try {
                 if (useTimeout) {
-                    boolean exited = this.process.waitFor(timeoutMs, TimeUnit.MILLISECONDS);
+                    boolean exited = process.waitFor(timeoutMs, TimeUnit.MILLISECONDS);
                     if (exited) {
-                        exitValue = this.process.exitValue();
+                        exitValue = process.exitValue();
                     }
                 } else {
-                    exitValue = this.process.waitFor();
+                    exitValue = process.waitFor();
                 }
             } catch (InterruptedException e) {
                 // Skip
             }
         }
-        if (processListener != null) {
+        if (processListener != null && (process == null || !process.isAlive())) {
             processListener.onProcessTerminated(exitValue);
         }
         return exitValue;
     }
 
+    @Nullable
     public String dumpErrors() {
+        var process = this.process;
         if (process == null) {
             return null;
         }
@@ -215,7 +213,9 @@ public class DBRProcessDescriptor {
         return buf.toString();
     }
 
+    @Nullable
     public String dumpOutput() {
+        var process = this.process;
         if (process == null) {
             return null;
         }

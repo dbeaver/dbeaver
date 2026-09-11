@@ -49,7 +49,7 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
     private boolean help;
 
     @CommandLine.Option(
-        names = {"-V", "--version"},
+        names = {"-v", "-V", "--version"},
         description = "Print version information and exit",
         versionHelp = true,
         scope = CommandLine.ScopeType.INHERIT

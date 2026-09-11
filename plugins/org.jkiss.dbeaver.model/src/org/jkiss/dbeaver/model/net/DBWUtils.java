@@ -140,6 +140,16 @@ public class DBWUtils {
             .toList();
     }
 
+    @Nullable
+    public static DBWHandlerConfiguration getTunnelConfiguration(@NotNull DBPConnectionConfiguration configuration) {
+        for (DBWHandlerConfiguration handler : configuration.getHandlers()) {
+            if (handler.isEnabled() && handler.getType() == DBWHandlerType.TUNNEL) {
+                return handler;
+            }
+        }
+        return null;
+    }
+
 
     public record ConnectivityParameters(
         @Nullable String hostName,

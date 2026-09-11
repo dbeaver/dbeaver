@@ -20,8 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -89,12 +88,8 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
 
         if (supportsRoles) {
             userCombo = UIUtils.createLabelCombo(groupGeneral, PostgreMessages.dialog_create_db_label_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            userCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    owner = allUsers.get(userCombo.getSelectionIndex());
-                }
-            });
+            userCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                owner = allUsers.get(userCombo.getSelectionIndex())));
         }
 
         Composite groupDefinition = UIUtils.createTitledComposite(
@@ -105,35 +100,23 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
         );
         if (supportsTemplates) {
             templateCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_template_db, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            templateCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    dbTemplate = templateCombo.getText();
-                }
-            });
+            templateCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> dbTemplate = templateCombo.getText()));
         }
 
         if (supportsEncodings) {
             encodingCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_encoding, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            encodingCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    encoding = allEncodings.get(encodingCombo.getSelectionIndex());
-                }
-            });
+            encodingCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                encoding = allEncodings.get(encodingCombo.getSelectionIndex())));
         }
         if (supportsTablespaces) {
             tablespaceCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_tablesapce, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            tablespaceCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            tablespaceCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (tablespaceCombo.getSelectionIndex() == 0) {
                         tablespace = null;
                     } else {
                         tablespace = allTablespaces.get(tablespaceCombo.getSelectionIndex() - 1);
                     }
-                }
-            });
+                }));
         }
 
 

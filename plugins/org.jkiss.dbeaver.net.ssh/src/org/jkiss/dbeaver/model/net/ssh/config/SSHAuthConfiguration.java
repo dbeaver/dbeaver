@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,6 @@ public sealed interface SSHAuthConfiguration {
     record KeyData(@NotNull String data, @Nullable String password, boolean savePassword) implements WithPassword {
     }
 
-    record Agent() implements SSHAuthConfiguration {
+    record Agent(@Nullable String authSockPath) implements SSHAuthConfiguration {
     }
 }

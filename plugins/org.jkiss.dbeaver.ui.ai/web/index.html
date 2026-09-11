@@ -2,20 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="color-scheme" content="{{COLOR_SCHEME}}"/>
+    <!-- https://github.com/dbeaver/pro/issues/9933 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; connect-src 'none'; frame-src 'none'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"/>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="chat-root">
     <div id="chat-meta">
         <div id="chat-meta-text">N/A</div>
-        <button class="close" onclick="hideChatMeta()">✕</button>
     </div>
-    <div id="chat">
+    <div id="chat" role="listbox">
         <!-- ... -->
     </div>
+    <div id="ai-notice" hidden></div>
+    <div id="a11y-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 </div>
 <script src="marked.umd.js"></script>
+<script src="purify.min.js"></script>
 <script src="script.js"></script>
+<script src="scripts/a11y.js"></script>
 <script src="scripts/chat-view.js"></script>
 <script src="scripts/tooltips.js"></script>
 <script src="scripts/sql-blocks.js"></script>

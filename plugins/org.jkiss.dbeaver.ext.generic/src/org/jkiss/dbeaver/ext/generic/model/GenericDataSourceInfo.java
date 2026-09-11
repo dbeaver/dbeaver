@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConstants;
@@ -38,8 +39,7 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
     private final boolean supportsTransactionsForDDL;
     private final boolean supportsConstraints;
 
-    public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
-    {
+    public GenericDataSourceInfo(@NotNull DBPDriver driver, @NotNull JDBCDatabaseMetaData metaData) {
         super(metaData);
         supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
         setSupportsResultSetScroll(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false));

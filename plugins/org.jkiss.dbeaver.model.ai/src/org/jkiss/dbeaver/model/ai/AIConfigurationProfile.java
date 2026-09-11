@@ -114,6 +114,10 @@ public class AIConfigurationProfile {
         }
     }
 
+    public void resolveSecrets() throws DBException {
+        getConfiguration().resolveSecrets(this);
+    }
+
     @Override
     public String toString() {
         return profileId + "(" + engineId + ")";

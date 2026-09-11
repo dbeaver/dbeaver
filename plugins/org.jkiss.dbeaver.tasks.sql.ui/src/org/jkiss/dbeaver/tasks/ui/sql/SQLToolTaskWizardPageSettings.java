@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -94,6 +95,8 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
         SashForm settingsPanel = new SashForm(previewSplitter, SWT.HORIZONTAL);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        settingsPanel.setBackground(composite.getBackground());
+        settingsPanel.setBackgroundMode(SWT.INHERIT_DEFAULT);
         Composite objectsPanel;
         {
             objectsPanel = UIUtils.createTitledComposite(
@@ -171,9 +174,9 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                 SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                         int selectionIndex = objectTable.getSelectionIndex();
                         if (selectionIndex > 0) {
-                            DBSObject prevScript = selectedObjects.get(selectionIndex - 1);
+                            DBSObject prevObject = selectedObjects.get(selectionIndex - 1);
                             selectedObjects.set(selectionIndex - 1, selectedObjects.get(selectionIndex));
-                            selectedObjects.set(selectionIndex, prevScript);
+                            selectedObjects.set(selectionIndex, prevObject);
                             refreshObjects();
                         }
                         moveButtons[0].setEnabled(selectionIndex > 1);
@@ -187,9 +190,9 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                 SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                         int selectionIndex = objectTable.getSelectionIndex();
                         if (selectionIndex < objectTable.getItemCount() - 1) {
-                            DBSObject nextScript = selectedObjects.get(selectionIndex + 1);
+                            DBSObject nextObject = selectedObjects.get(selectionIndex + 1);
                             selectedObjects.set(selectionIndex + 1, selectedObjects.get(selectionIndex));
-                            selectedObjects.set(selectionIndex, nextScript);
+                            selectedObjects.set(selectionIndex, nextObject);
                             refreshObjects();
                         }
                         moveButtons[0].setEnabled(selectionIndex > 0);
@@ -246,7 +249,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
         UIUtils.createDialogButton(
             controlsPanel,
-            TasksSQLUIMessages.sql_tool_task_wizard_page_settings_dialog_button_label_copy,
+            WorkbenchMessages.Workbench_copy,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                 String text = serviceSQL.getSQLPanelText(sqlPreviewPanel);
                     if (!CommonUtils.isEmpty(text)) {

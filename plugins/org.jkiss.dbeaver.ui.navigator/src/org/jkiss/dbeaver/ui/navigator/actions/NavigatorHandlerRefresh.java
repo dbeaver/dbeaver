@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,12 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class NavigatorHandlerRefresh extends AbstractHandler {
     private static final Log log = Log.getLog(NavigatorHandlerRefresh.class);
+
+    private static final Set<String> ACTIVE_REFRESH_KEYS = ConcurrentHashMap.newKeySet();
 
     public NavigatorHandlerRefresh() {
 
@@ -149,74 +152,108 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
     public static boolean refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
     {
+        final List<DBNNode> nodesToRefresh = new ArrayList<>(refreshObjects);
+        final List<String> refreshKeys = new ArrayList<>(nodesToRefresh.size());
+        final List<String> acquiredKeys = new ArrayList<>(nodesToRefresh.size());
+        for (DBNNode node : nodesToRefresh) {
+            refreshKeys.add(getRefreshKey(node));
+        }
+        for (String refreshKey : refreshKeys) {
+            if (!ACTIVE_REFRESH_KEYS.add(refreshKey)) {
+                acquiredKeys.forEach(ACTIVE_REFRESH_KEYS::remove);
+                if (log.isDebugEnabled()) {
+                    log.debug("Refresh already in progress for '" + refreshKey + "'");
+                }
+                return true;
+            }
+            acquiredKeys.add(refreshKey);
+        }
+
         Job refreshJob = new AbstractJob("Refresh navigator object(s)") {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                monitor.beginTask("Refresh objects", refreshObjects.size());
-                Set<DBNNode> refreshedSet = new HashSet<>();
-                for (DBNNode node : refreshObjects) {
-                    if (node.isDisposed() || node.isLocked()) {
-                        // Skip locked nodes
-                        continue;
-                    }
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    // Check this node was already refreshed
-                    if (!refreshedSet.isEmpty()) {
-                        boolean skip = false;
-                        for (DBNNode refreshed : refreshedSet) {
-                            if (node == refreshed || node.isChildOf(refreshed)) {
-                                skip = true;
-                                break;
-                            }
-                        }
-                        if (skip) {
+                try {
+                    monitor.beginTask("Refresh objects", nodesToRefresh.size());
+                    Set<DBNNode> refreshedSet = new HashSet<>();
+                    for (DBNNode node : nodesToRefresh) {
+                        if (node.isDisposed() || node.isLocked()) {
+                            // Skip locked nodes
                             continue;
                         }
-                    }
-                    // Check for dirty editor (some local changes) and ask for confirmation
-                    if (node instanceof DBNDatabaseFolder && !(node.getParentNode() instanceof DBNDatabaseFolder) && node.getParentNode() instanceof DBNDatabaseNode) {
-                        // USe parent if this node is a folder
-                        node = node.getParentNode();
-                    }
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        // Check this node was already refreshed
+                        if (!refreshedSet.isEmpty()) {
+                            boolean skip = false;
+                            for (DBNNode refreshed : refreshedSet) {
+                                if (node == refreshed || node.isChildOf(refreshed)) {
+                                    skip = true;
+                                    break;
+                                }
+                            }
+                            if (skip) {
+                                continue;
+                            }
+                        }
+                        // Check for dirty editor (some local changes) and ask for confirmation
+                        if (node instanceof DBNDatabaseFolder && !(node.getParentNode() instanceof DBNDatabaseFolder) && node.getParentNode() instanceof DBNDatabaseNode) {
+                            // USe parent if this node is a folder
+                            node = node.getParentNode();
+                        }
 
-//                    if (!showConfirmation(node)) {
-//                        continue;
-//                    }
-                    setName("Refresh '" + node.getNodeDisplayName() + "'...");
-                    try {
-                        DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
-                        if (refreshed != null) {
-                            refreshedSet.add(refreshed);
-                            Throwable lastLoadError = refreshed.getLastLoadError();
-                            if (lastLoadError != null) {
-                                throw lastLoadError;
+    //                    if (!showConfirmation(node)) {
+    //                        continue;
+    //                    }
+                        setName("Refresh '" + node.getNodeDisplayName() + "'...");
+                        try {
+                            DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                            if (refreshed != null) {
+                                refreshedSet.add(refreshed);
+                                Throwable lastLoadError = refreshed.getLastLoadError();
+                                if (lastLoadError != null) {
+                                    throw lastLoadError;
+                                }
                             }
                         }
-                    }
-                    catch (Throwable ex) {
-                        if (node instanceof DBNDataSource) {
-                            try {
-                                log.info("Unable to refresh datasource, disconnecting");
-                                ((DBNDataSource) node).getDataSourceContainer().disconnect(monitor);
-                            } catch (DBException e) {
-                                log.warn("Unable to disconnect from datasource");
+                        catch (Throwable ex) {
+                            if (node instanceof DBNDataSource) {
+                                try {
+                                    log.info("Unable to refresh datasource, disconnecting");
+                                    ((DBNDataSource) node).getDataSourceContainer().disconnect(monitor);
+                                } catch (DBException e) {
+                                    log.warn("Unable to disconnect from datasource");
+                                }
                             }
+                            DBWorkbench.getPlatformUI().showError("Refresh", "Error refreshing node", ex);
                         }
-                        DBWorkbench.getPlatformUI().showError("Refresh", "Error refreshing node", ex);
+                        monitor.worked(1);
                     }
-                    monitor.worked(1);
+                    monitor.done();
+                    return Status.OK_STATUS;
+                } finally {
+                    acquiredKeys.forEach(ACTIVE_REFRESH_KEYS::remove);
                 }
-                monitor.done();
-                return Status.OK_STATUS;
             }
         };
         refreshJob.setUser(true);
         refreshJob.schedule();
 
         return true;
+    }
+
+    @NotNull
+    private static String getRefreshKey(@NotNull DBNNode node) {
+        if (node instanceof DBNDatabaseFolder && !(node.getParentNode() instanceof DBNDatabaseFolder)
+            && node.getParentNode() instanceof DBNDatabaseNode parentNode) {
+            node = parentNode;
+        }
+        DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(node);
+        if (dataSourceNode != null) {
+            return "ds:" + dataSourceNode.getDataSourceContainer().getId();
+        }
+        return "node:" + node.getNodeUri();
     }
 
     private static boolean showConfirmation(DBNNode node) {
