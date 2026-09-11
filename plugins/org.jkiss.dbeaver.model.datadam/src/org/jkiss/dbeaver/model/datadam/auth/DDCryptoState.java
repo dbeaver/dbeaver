@@ -19,9 +19,6 @@ package org.jkiss.dbeaver.model.datadam.auth;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-/**
- * Crypto configuration of the account, as returned after login.
- */
 public record DDCryptoState(
     @NotNull String accountId,
     boolean cryptoConfigured,
