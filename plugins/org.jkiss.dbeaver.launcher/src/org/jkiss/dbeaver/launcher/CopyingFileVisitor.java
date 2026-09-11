@@ -47,6 +47,10 @@ final class CopyingFileVisitor extends SimpleFileVisitor<Path> {
         for (Path element : relative) {
             target = target.resolve(element.toString());
         }
+        // The target filesystem may interpret separators differently from the source filesystem.
+        if (!target.toAbsolutePath().normalize().startsWith(targetRoot.toAbsolutePath().normalize())) {
+            throw new InvalidPathException(sourcePath.toString(), "Path resolves outside the target directory");
+        }
         return target;
     }
 }
