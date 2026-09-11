@@ -31,18 +31,6 @@ html, body {
     justify-content: space-between;
 }
 
-#chat-meta > .close {
-    color: var(--text-color);
-    background: none;
-    border: none;
-    font-size: 18px;
-    line-height: 0;
-}
-
-#chat-meta > .close:hover {
-    color: #ca4827;
-}
-
 #chat-root {
     width: 100%;
     height: 100%;
