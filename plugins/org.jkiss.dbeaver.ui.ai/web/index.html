@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <!-- https://github.com/dbeaver/pro/issues/9933
-    The chat makes no network requests; forbid them so injected script (XSS) on this file:// origin can't read local files or reach the IPC server. -->
-    <meta http-equiv="Content-Security-Policy" content="connect-src 'none'; frame-src 'none'; object-src 'none'"/>
+    <meta name="color-scheme" content="{{COLOR_SCHEME}}"/>
+    <!-- https://github.com/dbeaver/pro/issues/9933 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; connect-src 'none'; frame-src 'none'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"/>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="chat-root">
     <div id="chat-meta">
         <div id="chat-meta-text">N/A</div>
-        <button class="close" onclick="hideChatMeta()">✕</button>
     </div>
     <div id="chat" role="listbox">
         <!-- ... -->

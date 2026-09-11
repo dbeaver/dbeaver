@@ -434,9 +434,11 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (configurationMap != null) {
             // Folders
             for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(configurationMap, CONFIGURATION_FOLDERS)) {
-                String name = folderMap.getKey();
+                String folderPath = getFolderPath(folderMap.getKey(), folderMap.getValue());
+                int separatorIndex = folderPath.lastIndexOf('/');
+                String name = separatorIndex < 0 ? folderPath : folderPath.substring(separatorIndex + 1);
+                String parentFolder = separatorIndex < 0 ? null : folderPath.substring(0, separatorIndex);
                 String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
-                String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
                 DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true, parseResults);
                 DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true, parseResults) : parent.getChild(name);
                 if (folder == null) {
@@ -1050,12 +1052,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
     private static void saveFolder(@NotNull JsonWriter json, @NotNull DataSourceFolder folder) throws IOException {
-        json.name(folder.getName());
+        json.name(folder.getFolderPath());
 
         json.beginObject();
-        if (folder.getParent() != null) {
-            JSONUtils.field(json, RegistryConstants.ATTR_PARENT, folder.getParent().getFolderPath());
-        }
         JSONUtils.fieldNE(json, RegistryConstants.ATTR_DESCRIPTION, folder.getDescription());
 
         json.endObject();
@@ -1305,6 +1304,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         }
     }
 
+
+    @NotNull
+    protected static String getFolderPath(@NotNull String name, @NotNull Map<String, Object> configuration) {
+        String parentFolder = JSONUtils.getObjectProperty(configuration, RegistryConstants.ATTR_PARENT);
+        return parentFolder == null ? name : parentFolder + "/" + name;
+    }
 
     @NotNull
     private static DBPDriver getReplacementDriver(@NotNull DBPDriver driver) {

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreTestUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
@@ -134,6 +135,38 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
                 ");" + lineBreak;
 
         String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
+        Assertions.assertEquals(expectedDDL, tableDDL);
+    }
+
+    @Test
+    public void generateTableDDLWhenColumnCommentHasApostropheReturnCommaBeforeEveryComment() throws Exception {
+        PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema) {
+            @Override
+            public boolean isTablespaceSpecified() {
+                return false;
+            }
+        };
+        tableRegular.setName("test_table");
+        tableRegular.setPartition(false);
+        PostgreTestUtils.addColumn(tableRegular, "column1", "int4", 1).setDescription("PM's approver of record");
+        PostgreTestUtils.addColumn(tableRegular, "column2", "varchar", 2).setDescription("second comment");
+        PostgreTestUtils.addColumn(tableRegular, "column3", "int4", 3).setDescription("third comment");
+
+        String expectedDDL =
+                "CREATE TABLE test_schema.test_table (" + lineBreak +
+                "\tcolumn1 int4 NULL, -- PM's approver of record" + lineBreak +
+                "\tcolumn2 varchar NULL, -- second comment" + lineBreak +
+                "\tcolumn3 int4 NULL -- third comment" + lineBreak +
+                ");" + lineBreak +
+                lineBreak +
+                "-- Column comments" + lineBreak +
+                lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.column1 IS 'PM''s approver of record';" + lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.column2 IS 'second comment';" + lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.column3 IS 'third comment';" + lineBreak;
+
+        String tableDDL = tableRegular.getObjectDefinitionText(
+            monitor, Collections.singletonMap(DBPScriptObject.OPTION_INCLUDE_COMMENTS, true));
         Assertions.assertEquals(expectedDDL, tableDDL);
     }
 
