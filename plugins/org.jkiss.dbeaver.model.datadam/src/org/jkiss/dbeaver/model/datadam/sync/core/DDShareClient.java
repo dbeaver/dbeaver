@@ -221,7 +221,11 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
                 %s
                     }
                 }""".formatted(PROJECT_FIELDS.indent(8)), variables);
-            return decryptProject(gson.fromJson(data.get("updateProject"), DDSharedProject.class));
+            JsonElement result = data.get("updateProject");
+            if (result == null || result.isJsonNull()) {
+                throw new DDShareException("Project not found: " + projectId);
+            }
+            return decryptProject(gson.fromJson(result, DDSharedProject.class));
         } catch (DBException e) {
             throw new DDShareException("Failed to update project", e);
         }
@@ -255,7 +259,11 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
                         }
                     }
                 }""", Map.of("projectId", projectId.toString()));
-            return gson.fromJson(data.get("pullProjectConfiguration"), DDSharedProjectConfiguration.class);
+            JsonElement result = data.get("pullProjectConfiguration");
+            if (result == null || result.isJsonNull()) {
+                throw new DDShareException("Project not found: " + projectId);
+            }
+            return gson.fromJson(result, DDSharedProjectConfiguration.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to pull project configuration", e);
         }
@@ -303,7 +311,11 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
                     "projectId", projectId.toString(),
                     "projectContent", projectContent,
                     "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint));
-            return gson.fromJson(data.get("pushProjectConfiguration"), DDSharedProjectRevision.class);
+            JsonElement result = data.get("pushProjectConfiguration");
+            if (result == null || result.isJsonNull()) {
+                throw new DDShareException("Project not found or configuration fingerprint is stale: " + projectId);
+            }
+            return gson.fromJson(result, DDSharedProjectRevision.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to push project configuration", e);
         }
