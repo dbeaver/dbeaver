@@ -22,6 +22,10 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 public class GBase8sDialect extends GenericSQLDialect {
     private static final String JSON_TYPE_NAME = "json";
 
+    public GBase8sDialect() {
+        super("GBase 8s", "gbase8s");
+    }
+
     /**
      * override this method to fix #41838
      * {@inheritDoc}
