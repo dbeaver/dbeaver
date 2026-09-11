@@ -325,6 +325,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             DBWorkbench.getPlatformUI().showError(
                 AIUIMessages.ai_engines_page_create_error_title, AIUIMessages.ai_engines_page_create_error_message, e);
         }
+        UIUtils.packColumns(profilesViewer.getTable(), true);
     }
 
     private void duplicateProfile() {
