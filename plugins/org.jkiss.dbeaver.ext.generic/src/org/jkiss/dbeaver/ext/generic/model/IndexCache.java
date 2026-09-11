@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,12 +61,7 @@ public class IndexCache extends JDBCCompositeCache<GenericStructContainer, Gener
         throws SQLException
     {
         try {
-            return session.getMetaData().getIndexInfo(
-                    owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-                    owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
-                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName(),
-                    false,
-                    true).getSourceStatement();
+            return owner.getDataSource().getMetaModel().prepareIndexesLoadStatement(session, owner, forParent);
         } catch (Exception e) {
             if (forParent == null) {
                 throw new SQLException("Catalog/schema indexes read not supported", e);

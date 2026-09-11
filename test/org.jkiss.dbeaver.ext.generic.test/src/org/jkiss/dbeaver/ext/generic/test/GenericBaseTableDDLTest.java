@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -99,6 +100,36 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             ");" + lineBreak;
 
         Assertions.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void markNestedObjectsPersistedAfterCreatingTable() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+        GenericTableBase table = objectMaker.createNewObject(
+            monitor,
+            commandContext,
+            genericSchema,
+            null,
+            Collections.emptyMap()
+        );
+        DBEObjectMaker<GenericTableColumn, GenericTableBase> columnManager =
+            getManagerForClass(GenericTableColumn.class);
+        GenericTableColumn firstColumn = columnManager.createNewObject(
+            monitor, commandContext, table, null, Collections.emptyMap());
+        GenericTableColumn secondColumn = columnManager.createNewObject(
+            monitor, commandContext, table, null, Collections.emptyMap());
+
+        Assertions.assertFalse(table.isPersisted());
+        Assertions.assertFalse(firstColumn.isPersisted());
+        Assertions.assertFalse(secondColumn.isPersisted());
+
+        Assertions.assertEquals(1, commandContext.getFinalCommands().size());
+        DBECommand<?> createTableCommand = commandContext.getFinalCommands().iterator().next();
+        createTableCommand.updateModel();
+
+        Assertions.assertTrue(table.isPersisted());
+        Assertions.assertTrue(firstColumn.isPersisted());
+        Assertions.assertTrue(secondColumn.isPersisted());
     }
 
     @Test
