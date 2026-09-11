@@ -144,8 +144,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     @Override
     public String getName() {
         String inputName;
-        if (valueController instanceof IAttributeController) {
-            inputName = ((IAttributeController) valueController).getColumnId();
+        if (valueController instanceof IAttributeController attributeController) {
+            inputName = attributeController.getColumnId();
         } else {
             inputName = valueController.getValueName();
         }
@@ -179,8 +179,12 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         return null;
     }
 
+    @Nullable
     public Object getValue() {
-        return valueController.getValue();
+        // Content loading and extraction may run in background jobs.
+        Object[] value = new Object[1];
+        UIUtils.syncExec(() -> value[0] = valueController.getValue());
+        return value[0];
     }
 
     public long getContentLength() {
@@ -194,14 +198,10 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     }
 
     private void prepareContent(DBRProgressMonitor monitor) throws DBException {
-        final Object[] value = new Object[1];
-        UIUtils.syncExec(() -> value[0] = getValue());
-        DBDContent content;
-        if (value[0] instanceof DBDContent) {
-            content = (DBDContent) value[0];
-        } else {
+        Object value = getValue();
+        if (!(value instanceof DBDContent content)) {
             // No need to do init
-            stringStorage = new StringEditorInput(getName(), CommonUtils.toString(value[0]), isReadOnly(), fileCharset).getStorage();
+            stringStorage = new StringEditorInput(getName(), CommonUtils.toString(value), isReadOnly(), fileCharset).getStorage();
             return;
         }
 
@@ -216,8 +216,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                 // Create file
                 if (contentFile == null) {
                     String valueId;
-                    if (valueController instanceof IAttributeController) {
-                        valueId = ((IAttributeController) valueController).getColumnId();
+                    if (valueController instanceof IAttributeController attributeController) {
+                        valueId = attributeController.getColumnId();
                     } else {
                         valueId = valueController.getValueName();
                     }
@@ -438,8 +438,8 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         this.fileCharset = fileCharset;
         for (IEditorPart part : editorParts) {
             try {
-                if (part instanceof IReusableEditor) {
-                    ((IReusableEditor) part).setInput(this);
+                if (part instanceof IReusableEditor reusableEditor) {
+                    reusableEditor.setInput(this);
                 } else {
                     part.init(part.getEditorSite(), this);
                 }
