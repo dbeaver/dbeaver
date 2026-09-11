@@ -37,8 +37,8 @@ public class OracleServerSession extends AbstractServerSession {
     public static final String CAT_WAIT = "Wait";
 
     private long instId;
-    private final long sid;
-    private long serial;
+    protected final long sid;
+    protected long serial;
     private long sqlChildNumber; // SergDzh: to show in list
     private String user;
     private String schema;
