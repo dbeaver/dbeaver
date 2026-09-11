@@ -203,9 +203,10 @@ public class ResultSetUndoRedoManagerTest extends DBeaverUnitTest {
         ResultSetRow failedRow = new ResultSetRow(1, new Object[]{"original"});
         model.getAllRows().add(failedRow);
         history.updateCellValue(root, failedRow, null, "failed");
-        var historyField = ResultSetViewer.class.getDeclaredField("undoRedoManager");
-        historyField.setAccessible(true);
-        historyField.set(viewer, history);
+        doAnswer(invocation -> {
+            history.clear();
+            return null;
+        }).when(viewer).clearCellEditHistory();
         ResultSetPersister persister = new ResultSetPersister(viewer);
         ResultSetPersister.DataStatementInfo succeeded = new ResultSetPersister.DataStatementInfo(
             DBSManipulationType.UPDATE, row, mock(DBSEntity.class));
