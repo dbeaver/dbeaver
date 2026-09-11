@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Tibero Tests
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.tibero.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20260622
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Vendor: DBeaver Corp
+Fragment-Host: org.jkiss.dbeaver.ext.tibero
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.junit,
+ org.jkiss.dbeaver.test.platform
