@@ -184,17 +184,6 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             objectCommands.put(getObject(), this);
         }
 
-        @Override
-        public void updateModel() {
-            // sync model for objects involved in nested commands
-            for (NestedObjectCommand<?, ?> command : objectCommands.values()) {
-                if (command != this) {
-                    command.updateModel();
-                }
-            }
-            super.updateModel();
-        }
-
         @Nullable
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {

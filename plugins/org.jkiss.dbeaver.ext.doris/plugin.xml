@@ -8,6 +8,7 @@
                 id="doris"
                 parent="generic"
                 dialect="doris"
+                defaultMetaModel="doris"
                 label="Apache Doris"
                 icon="icons/doris_icon.svg">
 
@@ -43,7 +44,6 @@
                     <parameter name="supports-charsets" value="false"/>
                     <parameter name="supports-collations" value="false"/>
                     <parameter name="supportsClients" value="false"/>
-                    <parameter name="meta-model" value="doris"/>
                 </driver>
             </drivers>
         </datasource>
