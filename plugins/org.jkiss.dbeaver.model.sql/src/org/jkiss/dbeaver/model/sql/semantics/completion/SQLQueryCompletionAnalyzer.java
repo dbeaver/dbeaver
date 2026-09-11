@@ -113,37 +113,38 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         Collection<SQLQueryCompletionSet> completionSets = completionContext.prepareProposal(monitor, this.request);
         SQLQueryCompletionTextProvider textProvider = new SQLQueryCompletionTextProvider(this.request, completionContext, monitor);
 
-        List<SQLQueryCompletionProposal> proposals = new LinkedList<>();
-
-        // FIXME forcibly exclude duplicated completions for now;
-        //  correct fix requires better completion scenarios distinguishing to not prepare unnecessary items at all
-        Set<String> texts = new HashSet<>();
+        // Exclude duplicated completions produced by different completion scenarios;
+        // prefer the proposal which replaces the already typed part of the identifier
+        // over the one inserting at the cursor position (dbeaver/dbeaver#20261)
+        Map<String, SQLQueryCompletionProposal> proposalsByText = new LinkedHashMap<>();
         for (SQLQueryCompletionSet completionSet : completionSets) {
             for (SQLQueryCompletionItem item : completionSet.getItems()) {
                 DBSObject object = SQLQueryConnectionDummyContext.isDummyObject(item.getObject()) ? null : item.getObject();
                 String text = item.apply(textProvider);
-                if (texts.add(text)) {
-                    String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);
-                    String description = item.apply(SQLQueryCompletionDescriptionProvider.INSTANCE);
-                    String replacementString = this.prepareReplacementString(item, text, completionContext);
-                    proposals.add(this.createProposal(
-                        item.getKind(),
-                        object,
-                        this.prepareProposalImage(item),
-                        text,
-                        decoration,
-                        description,
-                        replacementString,
-                        completionSet.getReplacementPosition(),
-                        completionSet.getReplacementLength(),
-                        item.getFilterInfo(),
-                        item.getScore()
-                    ));
+                SQLQueryCompletionProposal existing = proposalsByText.get(text);
+                if (existing != null && existing.getReplacementLength() >= completionSet.getReplacementLength()) {
+                    continue;
                 }
+                String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);
+                String description = item.apply(SQLQueryCompletionDescriptionProvider.INSTANCE);
+                String replacementString = this.prepareReplacementString(item, text, completionContext);
+                proposalsByText.put(text, this.createProposal(
+                    item.getKind(),
+                    object,
+                    this.prepareProposalImage(item),
+                    text,
+                    decoration,
+                    description,
+                    replacementString,
+                    completionSet.getReplacementPosition(),
+                    completionSet.getReplacementLength(),
+                    item.getFilterInfo(),
+                    item.getScore()
+                ));
             }
         }
 
-        return proposals;
+        return new LinkedList<>(proposalsByText.values());
     }
 
     protected SQLQueryCompletionProposal createProposal(

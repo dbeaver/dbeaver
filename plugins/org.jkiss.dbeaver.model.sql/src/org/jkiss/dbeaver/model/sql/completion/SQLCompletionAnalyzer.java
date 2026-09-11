@@ -1053,6 +1053,16 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (parent instanceof DBSObjectContainer objectContainer) {
             if (DBStructUtils.isConnectedContainer(parent)) {
                 children = objectContainer.getChildren(mdMonitor);
+                if (request.getContext().isSearchProcedures() && parent instanceof DBSProcedureContainer procedureContainer) {
+                    // Routines are not among the container children, although they may serve as a row source (dbeaver/dbeaver#20261)
+                    Collection<? extends DBSProcedure> procedures = procedureContainer.getProcedures(mdMonitor);
+                    if (!CommonUtils.isEmpty(procedures)) {
+                        List<DBSObject> childrenWithProcedures = new ArrayList<>(children.size() + procedures.size());
+                        childrenWithProcedures.addAll(children);
+                        childrenWithProcedures.addAll(procedures);
+                        children = childrenWithProcedures;
+                    }
+                }
             }
         } else if (parent instanceof DBSEntity entity) {
             children = entity.getAttributes(mdMonitor);
