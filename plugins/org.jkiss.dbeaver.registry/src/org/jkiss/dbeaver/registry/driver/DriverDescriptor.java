@@ -115,7 +115,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage iconBig;
     private DBPImage logoImage;
     private boolean embedded, origEmbedded;
-    private boolean supportsDistributedMode;
+    private boolean supportsDistributedMode, origSupportsDistributedMode;
     private boolean notAvailableDriver;
     private boolean singleConnection;
     private boolean origThreadSafe, threadSafe;
@@ -124,8 +124,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean anonymousAccess, origAnonymousAccess;
     private boolean allowsEmptyPassword, origAllowsEmptyPassword;
     private boolean licenseRequired;
-    private boolean customDriverLoader;
-    private boolean useURLTemplate;
+    private boolean customDriverLoader, origCustomDriverLoader;
+    private boolean useURLTemplate, origUseURLTemplate;
     private boolean customEndpointInformation;
     private boolean instantiable, origInstantiable;
     private boolean custom;
@@ -315,8 +315,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.databaseDocumentationSuffixURL = config.getAttribute(RegistryConstants.ATTR_DATABASE_DOCUMENTATION_SUFFIX_URL);
         this.propertiesWebURL = config.getAttribute(RegistryConstants.ATTR_PROPERTIES_WEB_URL);
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
-        this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
-        this.useURLTemplate = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
+        this.origCustomDriverLoader = this.customDriverLoader =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
+        this.origUseURLTemplate = this.useURLTemplate =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
         this.customEndpointInformation = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_ENDPOINT), false);
         this.promoted = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_PROMOTED), 0);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
@@ -329,7 +331,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origPropagateDriverProperties = this.propagateDriverProperties =
             CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES));
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
-        this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
+        this.origSupportsDistributedMode = this.supportsDistributedMode =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
         this.custom = false;
 
         for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE)) {
@@ -1015,6 +1018,49 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.libraries.clear();
         this.libraries.addAll(deletedLibs);
         this.libraries.addAll(libs);
+    }
+
+    public void resetToDefaults() {
+        if (this.origName == null) {
+            throw new IllegalStateException("Driver '" + this.id + "' has no default configuration");
+        }
+        this.name = this.origName;
+        this.description = this.origDescription;
+        this.driverClassName = this.origClassName;
+        this.driverDefaultHost = this.origDefaultHost;
+        this.driverDefaultPort = this.origDefaultPort;
+        this.driverDefaultDatabase = this.origDefaultDatabase;
+        this.driverDefaultServer = this.origDefaultServer;
+        this.driverDefaultUser = this.origDefaultUser;
+        this.sampleURL = this.origSampleURL;
+        this.dialectId = this.origDialectId;
+        this.embedded = this.origEmbedded;
+        this.propagateDriverProperties = this.origPropagateDriverProperties;
+        this.threadSafe = this.origThreadSafe;
+        this.anonymousAccess = this.origAnonymousAccess;
+        this.allowsEmptyPassword = this.origAllowsEmptyPassword;
+        this.instantiable = this.origInstantiable;
+        this.customDriverLoader = this.origCustomDriverLoader;
+        this.useURLTemplate = this.origUseURLTemplate;
+        this.supportsDistributedMode = this.origSupportsDistributedMode;
+
+        this.customParameters.clear();
+        this.customParameters.putAll(this.defaultParameters);
+        this.customConnectionProperties.clear();
+        this.customConnectionProperties.putAll(this.originalConnectionProperties);
+        this.nativeClientHomes.clear();
+
+        for (DBPDriverLibrary library : this.origLibraries) {
+            library.setDisabled(false);
+            if (library instanceof DriverLibraryMavenArtifact mavenArtifact) {
+                mavenArtifact.resetToDefaults();
+            }
+        }
+        this.libraries.clear();
+        this.libraries.addAll(this.origLibraries);
+
+        resetDriverInstance();
+        setModified(false);
     }
 
     @NotNull
