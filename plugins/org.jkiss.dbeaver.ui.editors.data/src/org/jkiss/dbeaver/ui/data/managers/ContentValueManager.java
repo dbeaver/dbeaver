@@ -32,13 +32,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentCached;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.storage.ExternalContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -77,6 +75,13 @@ public class ContentValueManager extends BaseValueManager {
     private static final Log log = Log.getLog(ContentValueManager.class);
 
     public static final String PROP_CATEGORY_CONTENT = "CONTENT";
+
+    @NotNull
+    public static DBDContent copyContentForEdit(@NotNull DBRProgressMonitor monitor, @NotNull DBDContent content)
+        throws DBCException {
+        // Keep the model value intact until the controller records and applies the edit.
+        return content instanceof DBDValueCloneable cloneable ? (DBDContent) cloneable.cloneValue(monitor) : content;
+    }
 
     public static void contributeContentActions(
         @NotNull IContributionManager manager,
@@ -266,8 +271,16 @@ public class ContentValueManager extends BaseValueManager {
                 } else {
                     storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile);
                 }
-                value.updateContents(monitor, storage);
-                controller.updateValue(value, true);
+                DBDContent editedValue = copyContentForEdit(monitor, value);
+                try {
+                    editedValue.updateContents(monitor, storage);
+                } catch (DBException e) {
+                    if (editedValue != value) {
+                        editedValue.release();
+                    }
+                    throw e;
+                }
+                controller.updateValue(editedValue, true);
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }

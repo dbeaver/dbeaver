@@ -262,6 +262,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_checkbox_string_editor_for_datetime;
     public static String pref_page_content_editor_checkbox_string_editor_for_datetime_tip;
     public static String pref_page_content_editor_group_editing;
+    public static String pref_page_content_editor_group_history;
+    public static String pref_page_content_editor_label_undo_history_size;
     public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
     public static String pref_page_content_editor_checkbox_disable_editing_if_key_missing;
     public static String pref_page_content_editor_checkbox_new_rows_after;

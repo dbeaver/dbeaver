@@ -30,7 +30,9 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
@@ -3039,6 +3041,48 @@ public class SpreadsheetPresentation extends AbstractPresentation
         ResultSetRow currentRow = getController().getCurrentRow();
         IGridRow focusRow = spreadsheet.getFocusRow();
         return currentAttribute == null || currentRow == null ? null : makeResultSetCellLocation(currentAttribute, currentRow, focusRow);
+    }
+
+    @Override
+    public void setCurrentCellLocation(@NotNull ResultSetCellLocation cellLocation) {
+        boolean recordMode = getController().isRecordMode();
+        IGridColumn column = spreadsheet.getColumnByElement(recordMode ? cellLocation.getRow() : cellLocation.getAttribute());
+        if (column == null) {
+            super.setCurrentCellLocation(cellLocation);
+            return;
+        }
+
+        // Fast-path: locate the row directly by element (common case: no nested row/value path)
+        int fromIndex = recordMode ? 0 : cellLocation.getRow().getVisualNumber();
+        Object rowElement = recordMode ? cellLocation.getAttribute() : cellLocation.getRow();
+        IGridRow row = spreadsheet.getRowByElement(fromIndex, rowElement);
+        if (row != null && trySetCursor(cellLocation, column, row)) {
+            return;
+        }
+
+        // Locate the row by iterating through all rows (needed for nested rows/value paths)
+        for (int rowIndex = 0; rowIndex < spreadsheet.getItemCount(); rowIndex++) {
+            IGridRow row1 = spreadsheet.getRow(rowIndex);
+            if (row1 != null && trySetCursor(cellLocation, column, row1)) {
+                return;
+            }
+        }
+
+        super.setCurrentCellLocation(cellLocation);
+    }
+
+    private boolean trySetCursor(@NotNull ResultSetCellLocation location, @NotNull IGridColumn column, @NotNull IGridRow row) {
+        var cell = new GridCell(column, row);
+        var candidate = getCellLocation(cell);
+        if (candidate.getRow() == location.getRow()
+            && candidate.getAttribute() == location.getAttribute()
+            && Arrays.equals(candidate.getRowIndexes(), location.getRowIndexes())
+            && Objects.equals(candidate.getValuePath(), location.getValuePath())
+        ) {
+            spreadsheet.setCursor(cell, false, true, true);
+            return true;
+        }
+        return false;
     }
 
     @NotNull

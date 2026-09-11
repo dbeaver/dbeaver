@@ -222,7 +222,7 @@
                 class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester"
                 id="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester"
                 namespace="org.jkiss.dbeaver.core.resultset"
-                properties="active,hasData,hasMoreData,hasfilters,canSaveFilters,hasSavedFilter,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount,canPersistData"
+                properties="active,hasData,hasMoreData,hasfilters,canSaveFilters,hasSavedFilter,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,canUndo,canRedo,supportsCount,canPersistData"
                 type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewPropertyTester"
@@ -484,6 +484,22 @@
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.resultset.canCopy"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.canUndo"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.canRedo"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -1358,6 +1374,8 @@
         <toolBar key="resultsetViewer.bottom" name="%org.jkiss.dbeaver.toolBarConfiguration.resultsetViewer.bottom">
             <item commandId="org.jkiss.dbeaver.core.resultset.applyChanges" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" defaultVisibility="true"/>
+            <item commandId="org.eclipse.ui.edit.undo" defaultVisibility="false"/>
+            <item commandId="org.eclipse.ui.edit.redo" defaultVisibility="false"/>
             <item commandId="org.jkiss.dbeaver.core.resultset.row.edit" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.core.resultset.row.add" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.core.resultset.row.copy" defaultVisibility="true"/>
@@ -1380,6 +1398,8 @@
                     <or>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.applyChanges"/>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.rejectChanges"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.eclipse.ui.edit.undo"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.eclipse.ui.edit.redo"/>
                     </or>
                 </visibleWhen>
             </dynamic>
@@ -1391,6 +1411,16 @@
             <command commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.toolbarLabel" >
                 <visibleWhen>
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.rejectChanges"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.eclipse.ui.edit.undo">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.eclipse.ui.edit.undo"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.eclipse.ui.edit.redo">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.eclipse.ui.edit.redo"/>
                 </visibleWhen>
             </command>
             <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.rowCmds.separator">

@@ -582,6 +582,13 @@ class ResultSetPersister {
     // Reflect data changes in viewer
     // Changes affects only rows which statements executed successfully
     private boolean reflectChanges() {
+        // Auto-commit may advance the baseline even when a later statement fails.
+        if (updateStatements.stream().anyMatch(stat -> stat.executed)
+            || insertStatements.stream().anyMatch(stat -> stat.executed)
+            || deleteStatements.stream().anyMatch(stat -> stat.executed)
+        ) {
+            viewer.clearCellEditHistory();
+        }
         boolean rowsChanged = false;
         for (ResultSetRow row : changedRows) {
             for (DataStatementInfo stat : updateStatements) {
