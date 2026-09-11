@@ -37,11 +37,11 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeViewer;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 /**
@@ -108,10 +108,9 @@ class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> impleme
 
         {
             Composite bottomPanel = new Composite(placeholder, SWT.NONE);
-            bottomPanel.setLayout(new GridLayout(2, false));
+            bottomPanel.setLayout(new GridLayout(1, false));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             bottomPanel.setLayoutData(gd);
-            UIUtils.createEmptyLabel(bottomPanel, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             projectSelector = new ProjectSelectorPanel(bottomPanel, NavigatorUtils.getSelectedProject(), SWT.NONE, true);
             if (projectSelector.getSelectedProject() == null) {
                 setErrorMessage("You need to create a project first");
