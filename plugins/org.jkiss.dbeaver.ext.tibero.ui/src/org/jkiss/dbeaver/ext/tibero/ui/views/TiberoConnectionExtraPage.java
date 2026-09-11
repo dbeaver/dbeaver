@@ -1,4 +1,4 @@
-/*
+﻿/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2026 DBeaver Corp and others
  *
@@ -23,7 +23,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.tibero.TiberoConstants;
+import org.jkiss.dbeaver.ext.tibero.ui.internal.TiberoUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -37,14 +38,19 @@ public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
     private Button showOnlyOneSchema;
     private Button hideEmptySchemas;
     private Button readColumnComments;
+    private Button showSchemaTableDescription;
+    private Button showSchemaIndexTableDescription;
+    private Button showSchemaTriggerTableDescription;
+    private Button compilePackageAfterSave;
+    private Button recompileBodyOnSpecSave;
 
     public TiberoConnectionExtraPage() {
-        setTitle("Tibero Properties");
-        setDescription("Tibero connection properties");
+        setTitle(TiberoUIMessages.dialog_connection_tibero_properties);
+        setDescription(TiberoUIMessages.dialog_connection_tibero_properties_description);
     }
 
     @Override
-    public void createControl(@NotNull Composite parent) {
+    public void createControl(Composite parent) {
         Composite cfgGroup = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, false);
         layout.marginHeight = 10;
@@ -54,35 +60,72 @@ public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
 
         Composite contentGroup = UIUtils.createTitledComposite(
             cfgGroup,
-            "Content",
+            TiberoUIMessages.dialog_controlgroup_content,
             1,
             GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
         );
 
         readColumnComments = UIUtils.createCheckbox(
             contentGroup,
-            "Read column comments",
-            "Read column comments from Tibero catalog views while loading table columns.",
+            TiberoUIMessages.edit_checkbox_read_column_comments,
+            TiberoUIMessages.edit_checkbox_read_column_comments_description,
             false,
             1);
 
         Composite navigatorGroup = UIUtils.createTitledComposite(
             cfgGroup,
-            "Navigator",
+            TiberoUIMessages.dialog_controlgroup_navigator,
             1,
             GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
         );
         showOnlyOneSchema = UIUtils.createCheckbox(
             navigatorGroup,
-            "Show only connected user schema",
-            "Show only the schema that belongs to the connected user in Database Navigator.",
+            TiberoUIMessages.edit_checkbox_show_only_one_schema,
+            TiberoUIMessages.edit_checkbox_show_only_one_schema_description,
             false,
             1);
         hideEmptySchemas = UIUtils.createCheckbox(
             navigatorGroup,
-            "Hide empty schemas",
-            "Hide schemas that own no objects in Database Navigator.",
+            TiberoUIMessages.edit_checkbox_hide_empty_schemas,
+            TiberoUIMessages.edit_checkbox_hide_empty_schemas_description,
             false,
+            1);
+        showSchemaTableDescription = UIUtils.createCheckbox(
+            navigatorGroup,
+            TiberoUIMessages.edit_checkbox_show_schema_table_description,
+            TiberoUIMessages.edit_checkbox_show_schema_table_description_description,
+            true,
+            1);
+        showSchemaIndexTableDescription = UIUtils.createCheckbox(
+            navigatorGroup,
+            TiberoUIMessages.edit_checkbox_show_schema_index_table_description,
+            TiberoUIMessages.edit_checkbox_show_schema_index_table_description_description,
+            true,
+            1);
+        showSchemaTriggerTableDescription = UIUtils.createCheckbox(
+            navigatorGroup,
+            TiberoUIMessages.edit_checkbox_show_schema_trigger_table_description,
+            TiberoUIMessages.edit_checkbox_show_schema_trigger_table_description_description,
+            true,
+            1);
+
+        Composite sourceEditorGroup = UIUtils.createTitledComposite(
+            cfgGroup,
+            TiberoUIMessages.dialog_controlgroup_source_editor,
+            1,
+            GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
+        );
+        compilePackageAfterSave = UIUtils.createCheckbox(
+            sourceEditorGroup,
+            TiberoUIMessages.edit_checkbox_compile_package_after_save,
+            TiberoUIMessages.edit_checkbox_compile_package_after_save_description,
+            true,
+            1);
+        recompileBodyOnSpecSave = UIUtils.createCheckbox(
+            sourceEditorGroup,
+            TiberoUIMessages.edit_checkbox_recompile_body_on_spec_save,
+            TiberoUIMessages.edit_checkbox_recompile_body_on_spec_save_description,
+            true,
             1);
 
         setControl(cfgGroup);
@@ -99,18 +142,33 @@ public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         Map<String, String> providerProperties = connectionInfo.getProviderProperties();
 
-        showOnlyOneSchema.setSelection(CommonUtils.toBoolean(providerProperties.get(OracleConstants.PROP_SHOW_ONLY_ONE_SCHEMA)));
-        hideEmptySchemas.setSelection(CommonUtils.toBoolean(providerProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT)));
-        readColumnComments.setSelection(CommonUtils.toBoolean(providerProperties.get(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS)));
+        showOnlyOneSchema.setSelection(CommonUtils.toBoolean(providerProperties.get(TiberoConstants.PROP_SHOW_ONLY_ONE_SCHEMA)));
+        hideEmptySchemas.setSelection(CommonUtils.toBoolean(providerProperties.get(TiberoConstants.PROP_HIDE_EMPTY_SCHEMAS)));
+        readColumnComments.setSelection(CommonUtils.toBoolean(providerProperties.get(TiberoConstants.PROP_READ_COLUMN_COMMENTS)));
+        String showTableDescription = providerProperties.get(TiberoConstants.PROP_SHOW_SCHEMA_TABLE_DESCRIPTION);
+        showSchemaTableDescription.setSelection(showTableDescription == null || CommonUtils.toBoolean(showTableDescription));
+        String showIndexDescription = providerProperties.get(TiberoConstants.PROP_SHOW_SCHEMA_INDEX_TABLE_DESCRIPTION);
+        showSchemaIndexTableDescription.setSelection(showIndexDescription == null || CommonUtils.toBoolean(showIndexDescription));
+        String showTriggerDescription = providerProperties.get(TiberoConstants.PROP_SHOW_SCHEMA_TRIGGER_TABLE_DESCRIPTION);
+        showSchemaTriggerTableDescription.setSelection(showTriggerDescription == null || CommonUtils.toBoolean(showTriggerDescription));
+        String compileAfterSave = providerProperties.get(TiberoConstants.PROP_COMPILE_AFTER_SAVE);
+        compilePackageAfterSave.setSelection(compileAfterSave == null || CommonUtils.toBoolean(compileAfterSave));
+        String recompileBody = providerProperties.get(TiberoConstants.PROP_RECOMPILE_BODY_ON_SPEC_SAVE);
+        recompileBodyOnSpecSave.setSelection(recompileBody == null || CommonUtils.toBoolean(recompileBody));
     }
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         Map<String, String> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
 
-        providerProperties.put(OracleConstants.PROP_SHOW_ONLY_ONE_SCHEMA, String.valueOf(showOnlyOneSchema.getSelection()));
-        providerProperties.put(OracleConstants.PROP_CHECK_SCHEMA_CONTENT, String.valueOf(hideEmptySchemas.getSelection()));
-        providerProperties.put(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS, String.valueOf(readColumnComments.getSelection()));
+        providerProperties.put(TiberoConstants.PROP_SHOW_ONLY_ONE_SCHEMA, String.valueOf(showOnlyOneSchema.getSelection()));
+        providerProperties.put(TiberoConstants.PROP_HIDE_EMPTY_SCHEMAS, String.valueOf(hideEmptySchemas.getSelection()));
+        providerProperties.put(TiberoConstants.PROP_READ_COLUMN_COMMENTS, String.valueOf(readColumnComments.getSelection()));
+        providerProperties.put(TiberoConstants.PROP_SHOW_SCHEMA_TABLE_DESCRIPTION, String.valueOf(showSchemaTableDescription.getSelection()));
+        providerProperties.put(TiberoConstants.PROP_SHOW_SCHEMA_INDEX_TABLE_DESCRIPTION, String.valueOf(showSchemaIndexTableDescription.getSelection()));
+        providerProperties.put(TiberoConstants.PROP_SHOW_SCHEMA_TRIGGER_TABLE_DESCRIPTION, String.valueOf(showSchemaTriggerTableDescription.getSelection()));
+        providerProperties.put(TiberoConstants.PROP_COMPILE_AFTER_SAVE, String.valueOf(compilePackageAfterSave.getSelection()));
+        providerProperties.put(TiberoConstants.PROP_RECOMPILE_BODY_ON_SPEC_SAVE, String.valueOf(recompileBodyOnSpecSave.getSelection()));
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }
 }

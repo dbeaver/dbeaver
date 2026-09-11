@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.tibero.ui.internal.TiberoUIMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -50,8 +51,8 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
     private boolean activated;
 
     @Override
-    public void createControl(@NotNull Composite parent) {
-        final ModifyListener textListener = e -> {
+    public void createControl(Composite parent) {
+        ModifyListener textListener = e -> {
             if (activated) {
                 saveAndUpdate();
             }
@@ -61,17 +62,21 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
         page.setLayout(new GridLayout(1, false));
         page.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite settingsGroup = UIUtils.createTitledComposite(page, "Tibero", 4, GridData.FILL_HORIZONTAL);
-        final SelectionAdapter modeSwitcher = new SelectionAdapter() {
+        Composite settingsGroup = UIUtils.createTitledComposite(
+            page,
+            TiberoUIMessages.dialog_connection_settings_group,
+            4,
+            GridData.FILL_HORIZONTAL);
+        SelectionAdapter modeSwitcher = new SelectionAdapter() {
             @Override
-            public void widgetSelected(@NotNull SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e) {
                 setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
                 saveAndUpdate();
             }
         };
         createConnectionModeSwitcher(settingsGroup, modeSwitcher);
 
-        final Label urlLabel = UIUtils.createControlLabel(settingsGroup, "JDBC URL");
+        Label urlLabel = UIUtils.createControlLabel(settingsGroup, TiberoUIMessages.dialog_connection_jdbc_url);
         urlText = new Text(settingsGroup, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
@@ -81,12 +86,12 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
         urlText.addModifyListener(e -> site.updateButtons());
         addControlToGroup(GROUP_URL, urlLabel, urlText);
 
-        final Label hostLabel = UIUtils.createControlLabel(settingsGroup, "Host");
+        Label hostLabel = UIUtils.createControlLabel(settingsGroup, TiberoUIMessages.dialog_connection_host);
         hostText = new Text(settingsGroup, SWT.BORDER);
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hostText.addModifyListener(textListener);
 
-        final Label portLabel = UIUtils.createControlLabel(settingsGroup, "Port");
+        Label portLabel = UIUtils.createControlLabel(settingsGroup, TiberoUIMessages.dialog_connection_port);
         portText = new Text(settingsGroup, SWT.BORDER);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = UIUtils.getFontHeight(portText) * 7;
@@ -94,7 +99,7 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
 
-        final Label databaseLabel = UIUtils.createControlLabel(settingsGroup, "Database");
+        Label databaseLabel = UIUtils.createControlLabel(settingsGroup, TiberoUIMessages.dialog_connection_database);
         databaseText = new Text(settingsGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
@@ -114,7 +119,7 @@ public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDia
 
         DBPDataSourceContainer dataSource = site.getActiveDataSource();
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
+        boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
 
         hostText.setText(CommonUtils.toString(
             connectionInfo.getHostName(),
