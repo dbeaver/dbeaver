@@ -408,7 +408,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
      * can't be relabeled as belonging to another project or field.
      */
     @NotNull
-    static byte[] aad(@NotNull String projectId, @NotNull String field) {
+    public static byte[] aad(@NotNull String projectId, @NotNull String field) {
         return (projectId + '\u0000' + field).getBytes(StandardCharsets.UTF_8);
     }
 
