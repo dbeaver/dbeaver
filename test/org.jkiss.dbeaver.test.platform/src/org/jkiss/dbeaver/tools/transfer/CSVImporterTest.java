@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -151,7 +152,11 @@ public class CSVImporterTest  extends DBeaverUnitTest {
         Assertions.assertNull(rows.getFirst()[1]);
     }
 
-    private List<StreamDataImporterColumnInfo> readColumnsInfo(String data, boolean isHeaderPresent) throws DBException, IOException {
+    @NotNull
+    private List<StreamDataImporterColumnInfo> readColumnsInfo(
+        @NotNull String data,
+        boolean isHeaderPresent
+    ) throws DBException, IOException {
         properties.put("header", isHeaderPresent ? DataImporterCSV.HeaderPosition.top : DataImporterCSV.HeaderPosition.none);
         try (ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes())) {
             return importer.readColumnsInfo(mapping, is);
