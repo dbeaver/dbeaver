@@ -29,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 public class DataSourceSerializerModernTest {
     private static final String CONNECTION_TYPE_ID = "imported-type";
@@ -54,6 +55,22 @@ public class DataSourceSerializerModernTest {
           "connections": {}
         }
         """;
+
+    @Test
+    public void testFullFolderPath() {
+        Assertions.assertEquals(
+            "Parent/Child",
+            TestSerializer.resolveFolderPath("Parent/Child", Map.of())
+        );
+    }
+
+    @Test
+    public void testLegacyFolderPath() {
+        Assertions.assertEquals(
+            "Parent/Child",
+            TestSerializer.resolveFolderPath("Child", Map.of(RegistryConstants.ATTR_PARENT, "Parent"))
+        );
+    }
 
     @Test
     public void testStandaloneProjectImportsUnknownConnectionType() throws Exception {
@@ -114,9 +131,9 @@ public class DataSourceSerializerModernTest {
         private final DBPDataSourceProviderRegistry providerRegistry;
 
         private TestSerializer(
-            DataSourceRegistry<DataSourceDescriptor> registry,
-            DBPApplication application,
-            DBPDataSourceProviderRegistry providerRegistry
+            @NotNull DataSourceRegistry<DataSourceDescriptor> registry,
+            @NotNull DBPApplication application,
+            @NotNull DBPDataSourceProviderRegistry providerRegistry
         ) {
             super(registry);
             this.application = application;
@@ -133,6 +150,10 @@ public class DataSourceSerializerModernTest {
         @Override
         protected DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
             return providerRegistry;
+        }
+
+        private static String resolveFolderPath(@NotNull String name, @NotNull Map<String, Object> configuration) {
+            return getFolderPath(name, configuration);
         }
     }
 }
