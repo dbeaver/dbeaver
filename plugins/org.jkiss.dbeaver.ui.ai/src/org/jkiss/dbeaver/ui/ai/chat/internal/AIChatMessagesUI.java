@@ -65,6 +65,14 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_a11y_conversation_name;
     public static String ai_chat_a11y_connection_name;
     public static String ai_chat_a11y_waiting_for_response;
+    public static String ai_chat_show_profile_and_model;
+    public static String ai_chat_profile_label;
+    public static String ai_chat_model_label;
+    public static String ai_chat_profile_not_configured;
+    public static String ai_chat_model_not_configured;
+    public static String ai_chat_model_unavailable;
+    public static String ai_chat_model_loading;
+    public static String ai_chat_model_change_error;
 
 
     static {

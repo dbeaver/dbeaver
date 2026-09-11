@@ -123,6 +123,13 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @Override
+    public void selectModel(@NotNull AIModel model) {
+        setModel(model.name());
+        setContextWindowSize(model.contextWindowSize() != null ? model.contextWindowSize() :
+            OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE));
+    }
+
+    @Override
     @Property(order = 4)
     public double getTemperature() {
         if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
