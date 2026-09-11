@@ -27,10 +27,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
+import java.nio.file.FileSystem;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
@@ -42,8 +40,6 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.swing.*;
@@ -58,6 +54,7 @@ import javax.swing.*;
  * org.eclipse.core.runtime.adaptor.EclipseStarter. The fields and methods
  * on this class are not API.
  */
+@SuppressWarnings("CheckStyle")
 public class DBeaverLauncher {
 
     public static final String PROP_ECLIPSE_NET_PROXY_ENABLE = "org.eclipse.net.core.enableProxyService";
@@ -617,33 +614,35 @@ public class DBeaverLauncher {
         if (frag.isDirectory())
             return searchFor("eclipse", fragment); //$NON-NLS-1$;
 
-        try (ZipFile fragmentJar = new ZipFile(frag)) {
-            Enumeration<? extends ZipEntry> entries = fragmentJar.entries();
-            String entry = null;
-            while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = entries.nextElement();
-                if (zipEntry.getName().startsWith("eclipse_")) { //$NON-NLS-1$
-                    entry = zipEntry.getName();
-                    break;
+        String libName = null;
+        try (
+            var fragmentJar = FileSystems.newFileSystem(frag.toPath());
+            var entries = Files.newDirectoryStream(fragmentJar.getPath("/"), "eclipse_*") //$NON-NLS-1$ //$NON-NLS-2$
+        ) {
+            for (Path entry : entries) {
+                if (!Files.isRegularFile(entry)) {
+                    continue;
                 }
-            }
-            if (entry != null) {
-                String lib = extractFromJAR(fragment, entry);
-                if (!getOS().equals("win32")) { //$NON-NLS-1$
-                    try {
-                        Runtime.getRuntime().exec(new String[]{"chmod", "755", lib}).waitFor(); //$NON-NLS-1$ //$NON-NLS-2$
-                    } catch (Throwable e) {
-                        //ignore
-                    }
-                }
-                return lib;
+                libName = entry.getFileName().toString();
+                break;
             }
         } catch (IOException e) {
             log("Exception opening JAR file: " + fragment); //$NON-NLS-1$
             log(e);
             return null;
         }
-        return null;
+        if (libName == null) {
+            return null;
+        }
+        String lib = extractFromJAR(fragment, libName);
+        if (!getOS().equals("win32")) { //$NON-NLS-1$
+            try {
+                Runtime.getRuntime().exec(new String[]{"chmod", "755", lib}).waitFor(); //$NON-NLS-1$ //$NON-NLS-2$
+            } catch (Throwable e) {
+                //ignore
+            }
+        }
+        return lib;
     }
 
     /**
@@ -2288,7 +2287,7 @@ public class DBeaverLauncher {
         String base = getWorkingDirectory(DBEAVER_DATA_FOLDER);
         try {
             String productPath = getProductProperties();
-            Path basePath = Paths.get(base, DBEAVER_INSTALL_FOLDER, productPath);
+            Path basePath = Path.of(base, DBEAVER_INSTALL_FOLDER, productPath);
             String productConfigurationLocation = basePath.toFile().getAbsolutePath();
             return buildURL(productConfigurationLocation, true);
         } catch (IOException e) {
@@ -2950,47 +2949,51 @@ public class DBeaverLauncher {
         if (configURL == null)
             return null;
         // cache the splash in the equinox launcher sub-dir in the config area
-        File splash = new File(configURL.getPath(), PLUGIN_ID);
+        Path cacheRoot = new File(configURL.getPath(), PLUGIN_ID).toPath().toAbsolutePath().normalize();
         //include the name of the jar in the cache location
         File jarFile = new File(jarPath);
         String cache = jarFile.getName();
         if (cache.endsWith(".jar")) //$NON-NLS-1$
             cache = cache.substring(0, cache.length() - 4);
-        splash = new File(splash, cache);
-        splash = new File(splash, jarEntry);
-        // if we have already extracted this file before, then return
-        if (splash.exists()) {
-            // if we are running with -clean then delete the cached splash file
-            boolean clean = false;
-            for (String command : commands) {
-                if (CLEAN.equalsIgnoreCase(command)) {
-                    clean = true;
-                    splash.delete();
-                    break;
-                }
-            }
-            if (!clean)
-                return splash.getAbsolutePath();
+        Path cacheDir = cacheRoot.resolve(cache).normalize();
+        if (!cacheDir.startsWith(cacheRoot)) {
+            log("JAR cache directory resolves outside the launcher cache: " + jarPath); //$NON-NLS-1$
+            return null;
         }
 
-        try (ZipFile file = new ZipFile(jarPath)) {
-            ZipEntry entry = file.getEntry(jarEntry.replace(File.separatorChar, '/'));
-            if (entry == null)
+        try (FileSystem jarFileSystem = FileSystems.newFileSystem(jarFile.toPath())) {
+            Path sourceRoot = jarFileSystem.getPath("/"); //$NON-NLS-1$
+            Path sourceEntry = sourceRoot.resolve(jarEntry.replace(File.separatorChar, '/'));
+            if (!Files.exists(sourceEntry))
                 return null;
 
-            Path outputFile = splash.toPath();
-            Files.createDirectories(outputFile.getParent());
+            CopyingFileVisitor visitor = new CopyingFileVisitor(sourceRoot, cacheDir);
+            File splash = visitor.resolveTargetPath(sourceEntry).toFile();
+            // if we have already extracted this file before, then return
+            if (splash.exists()) {
+                // if we are running with -clean then delete the cached splash file
+                boolean clean = false;
+                for (String command : commands) {
+                    if (CLEAN.equalsIgnoreCase(command)) {
+                        clean = true;
+                        splash.delete();
+                        break;
+                    }
+                }
+                if (!clean)
+                    return splash.getAbsolutePath();
+            }
 
-            try (InputStream input = file.getInputStream(entry)) {
-                Files.copy(input, outputFile);
+            try {
+                Files.walkFileTree(sourceEntry, visitor);
             } catch (IOException e) {
-                log("Exception opening splash: " + entry.getName() + " in JAR file: " + jarPath); //$NON-NLS-1$ //$NON-NLS-2$
+                log("Exception opening splash: " + jarEntry + " in JAR file: " + jarPath); //$NON-NLS-1$ //$NON-NLS-2$
                 log(e);
                 return null;
             }
 
             return splash.exists() ? splash.getAbsolutePath() : null;
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             log("Exception looking for " + jarEntry + " in JAR file: " + jarPath); //$NON-NLS-1$ //$NON-NLS-2$
             log(e);
             return null;
