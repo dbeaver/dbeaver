@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -35,10 +36,9 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
-import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -83,7 +83,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             menuItems.add(ActionUtils.makeActionContribution(
                     new TransactionAutoCommitAction(executionContext, false, !autoCommit, txnLevelCurrent),
                     true));
-            ISmartTransactionManager smartTransactionManager = DBUtils.getAdapter(ISmartTransactionManager.class, activePart);
+            DBCSmartTransactionManager smartTransactionManager = DBUtils.getAdapter(DBCSmartTransactionManager.class, activePart);
             menuItems.add(ActionUtils.makeActionContribution(
                     new SmartAutoCommitAction(dataSource, smartTransactionManager),
                     true));
@@ -153,9 +153,9 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
     }
 
     private static class SmartAutoCommitAction extends Action {
-        private final ISmartTransactionManager smartTransactionManager;
+        private final DBCSmartTransactionManager smartTransactionManager;
 
-         SmartAutoCommitAction(DBPDataSource dataSource, ISmartTransactionManager smartTransactionManager) {
+         SmartAutoCommitAction(DBPDataSource dataSource, DBCSmartTransactionManager smartTransactionManager) {
             this.smartTransactionManager = smartTransactionManager;
             setEnabled(smartTransactionManager != null);
 
