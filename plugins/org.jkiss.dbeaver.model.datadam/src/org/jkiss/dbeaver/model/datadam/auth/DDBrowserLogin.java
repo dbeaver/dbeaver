@@ -39,9 +39,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-/**
- * Logs in through the browser. The site posts the crypto state back to a local port.
- */
 public class DDBrowserLogin {
 
     private static final Log log = Log.getLog(DDBrowserLogin.class);

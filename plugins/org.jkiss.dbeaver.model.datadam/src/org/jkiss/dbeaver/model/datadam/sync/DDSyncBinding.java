@@ -21,9 +21,6 @@ import org.jkiss.code.Nullable;
 
 import java.util.Map;
 
-/**
- * Link between the local workspace and a remote configuration.
- */
 public record DDSyncBinding(
     @NotNull String configurationId,
     @Nullable String name,
