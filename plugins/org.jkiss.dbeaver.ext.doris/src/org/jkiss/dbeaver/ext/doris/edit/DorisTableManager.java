@@ -17,11 +17,17 @@
 package org.jkiss.dbeaver.ext.doris.edit;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.doris.model.DorisTable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
@@ -29,8 +35,10 @@ import java.util.Map;
  */
 public class DorisTableManager extends GenericTableManager {
 
+    private static final Log log = Log.getLog(DorisTableManager.class);
+
     private static final String DEFAULT_DISTRIBUTION = "DISTRIBUTED BY RANDOM BUCKETS 1"; //$NON-NLS-1$
-    private static final String DEFAULT_PROPERTIES = "PROPERTIES (\"replication_num\" = \"1\")"; //$NON-NLS-1$
+    private static final String SINGLE_BACKEND_PROPERTIES = "PROPERTIES (\"replication_num\" = \"1\")"; //$NON-NLS-1$
 
     @Override
     protected void appendTableModifiers(
@@ -41,10 +49,27 @@ public class DorisTableManager extends GenericTableManager {
         boolean alter,
         @NotNull Map<String, Object> options
     ) {
-        if (table instanceof DorisTable) {
-            String delimiter = getDelimiter(options);
-            ddl.append(delimiter).append(DEFAULT_DISTRIBUTION);
-            ddl.append(delimiter).append(DEFAULT_PROPERTIES);
+        String delimiter = getDelimiter(options);
+        ddl.append(delimiter).append(DEFAULT_DISTRIBUTION);
+        if (hasSingleBackend(monitor, table)) {
+            ddl.append(delimiter).append(SINGLE_BACKEND_PROPERTIES);
+        }
+    }
+
+    private static boolean hasSingleBackend(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase table) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Doris backends");
+             JDBCPreparedStatement statement = session.prepareStatement("SHOW BACKENDS"); //$NON-NLS-1$
+             JDBCResultSet resultSet = statement.executeQuery()) {
+            int backendCount = 0;
+            while (resultSet.next()) {
+                if (++backendCount > 1) {
+                    return false;
+                }
+            }
+            return backendCount == 1;
+        } catch (DBException | SQLException e) {
+            log.debug("Unable to determine Doris backend count", e); //$NON-NLS-1$
+            return false;
         }
     }
 }
