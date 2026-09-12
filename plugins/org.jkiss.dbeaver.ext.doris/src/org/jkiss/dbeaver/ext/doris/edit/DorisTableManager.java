@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.doris.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
@@ -38,8 +39,9 @@ public class DorisTableManager extends GenericTableManager {
 
     private static final Log log = Log.getLog(DorisTableManager.class);
 
+    private static final int DEFAULT_REPLICA_COUNT = 3;
     private static final String DEFAULT_DISTRIBUTION = "DISTRIBUTED BY RANDOM BUCKETS 1"; //$NON-NLS-1$
-    private static final String SINGLE_BACKEND_PROPERTIES = "PROPERTIES (\"replication_num\" = \"1\")"; //$NON-NLS-1$
+    private static final String REPLICATION_PROPERTIES = "PROPERTIES (\"replication_num\" = \"%d\")"; //$NON-NLS-1$
 
     @Override
     protected void appendTableModifiers(
@@ -52,12 +54,14 @@ public class DorisTableManager extends GenericTableManager {
     ) {
         String delimiter = getDelimiter(options);
         ddl.append(delimiter).append(DEFAULT_DISTRIBUTION);
-        if (useSingleReplica(monitor, table)) {
-            ddl.append(delimiter).append(SINGLE_BACKEND_PROPERTIES);
+        Integer replicaCount = getReplicaCount(monitor, table);
+        if (replicaCount != null) {
+            ddl.append(delimiter).append(REPLICATION_PROPERTIES.formatted(replicaCount));
         }
     }
 
-    private static boolean useSingleReplica(
+    @Nullable
+    private static Integer getReplicaCount(
         @NotNull DBRProgressMonitor monitor,
         @NotNull GenericTableBase table
     ) {
@@ -68,18 +72,21 @@ public class DorisTableManager extends GenericTableManager {
             int availableBackendCount = 0;
             while (resultSet.next()) {
                 if (!JDBCUtils.safeGetBoolean(resultSet, "Alive") || //$NON-NLS-1$
-                    JDBCUtils.safeGetBoolean(resultSet, "SystemDecommissioned")
-                ) { //$NON-NLS-1$
+                    JDBCUtils.safeGetBoolean(resultSet, "SystemDecommissioned") //$NON-NLS-1$
+                ) {
                     continue;
                 }
-                if (++availableBackendCount > 1) {
-                    return false;
-                }
+                availableBackendCount++;
             }
-            return availableBackendCount == 1;
+            if (availableBackendCount == 0) {
+                return null;
+            }
+            if (availableBackendCount < DEFAULT_REPLICA_COUNT) {
+                return availableBackendCount;
+            }
         } catch (DBException | SQLException e) {
             log.debug("Unable to determine Doris backend count", e); //$NON-NLS-1$
-            return false;
         }
+        return null;
     }
 }
