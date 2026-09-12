@@ -18,9 +18,6 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import org.jkiss.code.NotNull;
 
-/**
- * Working keys of the account: request signing key and data encryption key.
- */
 public record DDKeyBundle(
     @NotNull String accountId,
     @NotNull String signingKey,
