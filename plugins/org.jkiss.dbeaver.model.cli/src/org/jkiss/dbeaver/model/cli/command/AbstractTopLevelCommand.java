@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.cli.command;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ConfigurableLogHandler;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.*;
 import org.jkiss.dbeaver.model.cli.help.CLIGlobalOption;
@@ -106,7 +107,9 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
     public void run() throws CLIException {
         applyLogFormat();
         if (debugLogs || traceLogs) {
-            Log.setLogHandler(null);
+            ConfigurableLogHandler logHandler = new ConfigurableLogHandler();
+            Log.setLogHandler(logHandler);
+            ConfigurableLogHandler.configureLogging();
             if (traceLogs) {
                 Log.enableTraceLogs(true);
             }
@@ -121,7 +124,6 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
                 String threadDump = controller.getThreadDump();
                 context.addResult(threadDump);
                 context.setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
-                return;
             }
         } catch (Exception e) {
             log.error("Error executing command", e);
