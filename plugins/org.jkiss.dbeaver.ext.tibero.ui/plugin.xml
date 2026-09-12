@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.ext.tibero" name="Tibero" description="Tibero Commands"/>
+        <command id="org.jkiss.dbeaver.ext.tibero.code.package.navigate" name="Go to source code" description="Navigate to Tibero package source code" categoryId="org.jkiss.dbeaver.ext.tibero"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.tibero.code.package.navigate" class="org.jkiss.dbeaver.ext.tibero.ui.actions.PackageNavigateHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions_end">
+            <command commandId="org.jkiss.dbeaver.ext.tibero.code.package.navigate">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+            id="org.jkiss.dbeaver.ext.tibero.dataSourceWizardView"
+            targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+            dataSource="tibero"
+            label="Tibero connection settings"
+            class="org.jkiss.dbeaver.ext.tibero.ui.views.TiberoConnectionPage"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.tibero/icons/tibero_icon.png">
+        </view>
+        <view
+            id="org.jkiss.dbeaver.ext.tibero.dataSourceEditorView"
+            targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+            dataSource="tibero"
+            label="Tibero connection settings"
+            class="org.jkiss.dbeaver.ext.tibero.ui.views.TiberoConnectionPage"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.tibero/icons/tibero_icon.png">
+        </view>
+    </extension>
+
+</plugin>
