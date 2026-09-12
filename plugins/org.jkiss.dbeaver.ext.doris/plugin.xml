@@ -8,6 +8,7 @@
                 id="doris"
                 parent="generic"
                 dialect="doris"
+                defaultMetaModel="doris"
                 label="Apache Doris"
                 icon="icons/doris_icon.svg">
 
@@ -46,6 +47,12 @@
                 </driver>
             </drivers>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="doris"
+              class="org.jkiss.dbeaver.ext.doris.model.DorisMetaModel"
+              dialect="doris"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
