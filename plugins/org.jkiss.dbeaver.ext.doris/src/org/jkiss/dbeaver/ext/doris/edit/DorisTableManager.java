@@ -39,6 +39,7 @@ public class DorisTableManager extends GenericTableManager {
 
     private static final Log log = Log.getLog(DorisTableManager.class);
 
+    // Doris uses three replicas when CREATE TABLE omits replication properties.
     private static final int DEFAULT_REPLICA_COUNT = 3;
     private static final String DEFAULT_DISTRIBUTION = "DISTRIBUTED BY RANDOM BUCKETS 1"; //$NON-NLS-1$
     private static final String REPLICATION_PROPERTIES = "PROPERTIES (\"replication_num\" = \"%d\")"; //$NON-NLS-1$
