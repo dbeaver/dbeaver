@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
@@ -54,9 +57,10 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -72,6 +76,9 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
+    private static final String TEMP_SESSION_PREFIX = "session-"; //$NON-NLS-1$
+    private static final String TEMP_SESSION_LOCK = ".lock"; //$NON-NLS-1$
+    private static final long TEMP_SESSION_CREATION_GRACE_PERIOD = 60_000;
     private static final String SETTINGS_FOLDER = "settings";
 
     public static final String CONFIG_FOLDER = ".config";
@@ -95,6 +102,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private DBPPlatformLanguage platformLanguage;
 
     protected Path tempFolder;
+    private Path tempRootFolder;
+    private FileMutex tempFolderLock;
 
     public BasePlatformImpl() {
         this.networkProfileManager = new GlobalNetworkProfileManager(this);
@@ -171,10 +180,28 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
         // Remove temp folder
         if (tempFolder != null) {
+            if (tempFolderLock != null) {
+                try {
+                    tempFolderLock.close();
+                } catch (IOException e) {
+                    log.warn("Error releasing temp folder lock", e);
+                }
+                tempFolderLock = null;
+            }
             if (!ContentUtils.deleteFileRecursive(tempFolder)) {
                 log.warn("Can not delete temp folder '" + tempFolder + "'");
             }
             tempFolder = null;
+            if (tempRootFolder != null) {
+                try {
+                    Files.deleteIfExists(tempRootFolder);
+                } catch (DirectoryNotEmptyException ignored) {
+                    // Another DBeaver instance is using the shared root.
+                } catch (IOException e) {
+                    log.debug("Can not delete temp root folder '" + tempRootFolder + "'", e);
+                }
+                tempRootFolder = null;
+            }
         }
         // Dispose navigator model first
         // It is a part of UI
@@ -432,61 +459,101 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     @NotNull
-    public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
+    public synchronized Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws IOException {
         if (tempFolder == null) {
-            // Make temp folder
-            try {
-                String tempFolderPath = System.getProperty("dbeaver.io.tmpdir");
-                if (!CommonUtils.isEmpty(tempFolderPath)) {
-                    tempFolderPath = GeneralUtils.replaceVariables(tempFolderPath, new SystemVariablesResolver());
-
-                    File dbTempFolder = new File(tempFolderPath);
-                    if (!dbTempFolder.mkdirs()) {
-                        throw new IOException("Can't create temp directory '" + dbTempFolder.getAbsolutePath() + "'");
-                    }
-                } else {
-                    tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
-                }
-                //monitor.subTask("Create temp folder '" + tempFolderPath + "'");
-                Path tmpFolder = Paths.get(tempFolderPath);
-                if (!Files.exists(tmpFolder)) {
-                    log.debug("Create global temp folder '" + tmpFolder + "'");
-                    Files.createDirectories(tmpFolder);
-                }
-                tempFolder = Files.createTempDirectory(tmpFolder, TEMP_PROJECT_NAME);
-            } catch (IOException e) {
-                final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
-                if (!CommonUtils.isEmpty(sysTempFolder)) {
-                    tempFolder = Path.of(sysTempFolder).resolve(TEMP_PROJECT_NAME);
-                    if (!Files.exists(tempFolder)) {
-                        try {
-                            Files.createDirectories(tempFolder);
-                        } catch (IOException ex) {
-                            final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
-                            if (!CommonUtils.isEmpty(sysUserFolder)) {
-                                tempFolder = Path.of(sysUserFolder).resolve(TEMP_PROJECT_NAME);
-                                if (!Files.exists(tempFolder)) {
-                                    try {
-                                        Files.createDirectories(tempFolder);
-                                    } catch (IOException exc) {
-                                        tempFolder = Path.of(TEMP_PROJECT_NAME);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            initializeTempFolder();
         }
         Path localTemp = tempFolder.resolve(name);
-        if (!Files.exists(localTemp)) {
+        Files.createDirectories(localTemp);
+        return localTemp;
+    }
+
+    private void initializeTempFolder() throws IOException {
+        var candidates = new LinkedHashSet<Path>();
+        String configuredPath = System.getProperty("dbeaver.io.tmpdir");
+        if (!CommonUtils.isEmpty(configuredPath)) {
+            candidates.add(Paths.get(GeneralUtils.replaceVariables(configuredPath, new SystemVariablesResolver())));
+        }
+        String systemTempPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
+        if (!CommonUtils.isEmpty(systemTempPath)) {
+            candidates.add(Paths.get(systemTempPath));
+        }
+        String userHomePath = System.getProperty(StandardConstants.ENV_USER_HOME);
+        if (!CommonUtils.isEmpty(userHomePath)) {
+            candidates.add(Paths.get(userHomePath));
+        }
+        candidates.add(Path.of("."));
+
+        IOException failure = null;
+        for (Path candidate : candidates) {
             try {
-                Files.createDirectories(localTemp);
+                Path root = candidate.resolve(TEMP_PROJECT_NAME).toAbsolutePath().normalize();
+                Files.createDirectories(root);
+
+                Path session = Files.createTempDirectory(root, TEMP_SESSION_PREFIX);
+                try {
+                tempFolderLock = FileMutex.tryLock(session.resolve(TEMP_SESSION_LOCK));
+                } catch (IOException e) {
+                    ContentUtils.deleteFileRecursive(session);
+                    throw e;
+                }
+                tempRootFolder = root;
+                tempFolder = session;
+                scheduleAbandonedTempFoldersCleanup(root, session);
+                return;
             } catch (IOException e) {
-                log.error("Can't create temp directory " + localTemp, e);
+                if (failure == null) {
+                    failure = e;
+                } else {
+                    failure.addSuppressed(e);
+                }
             }
         }
-        return localTemp;
+        throw new IOException("Can't create DBeaver temp folder", failure);
+    }
+
+    private static void scheduleAbandonedTempFoldersCleanup(@NotNull Path root, @NotNull Path currentSession) {
+        var cleanupJob = new AbstractJob("Clean abandoned DBeaver temp folders") {
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                cleanupAbandonedTempFolders(root, currentSession);
+                return Status.OK_STATUS;
+            }
+        };
+        cleanupJob.setSystem(true);
+        cleanupJob.schedule();
+    }
+
+    private static void cleanupAbandonedTempFolders(@NotNull Path root, @NotNull Path currentSession) {
+        try (var children = Files.list(root)) {
+            children.filter(child -> Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS) &&
+                !child.equals(currentSession) &&
+                child.getFileName().toString().startsWith(TEMP_SESSION_PREFIX)
+            ).forEach(child -> {
+                Path lockFile = child.resolve(TEMP_SESSION_LOCK);
+                if (Files.exists(lockFile)) {
+                    try (FileMutex ignored = FileMutex.tryLock(lockFile)) {
+                        // The lock is available, so the process that owned this session is no longer running.
+                    } catch (IOException e) {
+                        return;
+                    }
+                } else {
+                    try {
+                        if (Files.getLastModifiedTime(child).toMillis() + TEMP_SESSION_CREATION_GRACE_PERIOD >=
+                            System.currentTimeMillis()) {
+                            return;
+                        }
+                    } catch (IOException e) {
+                        return;
+                    }
+                }
+                if (!ContentUtils.deleteFileRecursive(child)) {
+                    log.warn("Can not delete abandoned temp folder '" + child + "'");
+                }
+            });
+        } catch (IOException e) {
+            log.warn("Error cleaning abandoned temp folders in '" + root + "'", e);
+        }
     }
 
 }
