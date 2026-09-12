@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -51,12 +52,16 @@ public class DorisTableManager extends GenericTableManager {
     ) {
         String delimiter = getDelimiter(options);
         ddl.append(delimiter).append(DEFAULT_DISTRIBUTION);
-        if (hasSingleBackend(monitor, table)) {
+        if (useSingleReplica(monitor, table, options)) {
             ddl.append(delimiter).append(SINGLE_BACKEND_PROPERTIES);
         }
     }
 
-    private static boolean hasSingleBackend(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase table) {
+    private static boolean useSingleReplica(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase table,
+        @NotNull Map<String, Object> options
+    ) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Doris backends");
              JDBCPreparedStatement statement = session.prepareStatement("SHOW BACKENDS"); //$NON-NLS-1$
              JDBCResultSet resultSet = statement.executeQuery()) {
@@ -69,7 +74,8 @@ public class DorisTableManager extends GenericTableManager {
             return backendCount == 1;
         } catch (DBException | SQLException e) {
             log.debug("Unable to determine Doris backend count", e); //$NON-NLS-1$
-            return false;
+            // SHOW BACKENDS requires cluster-level privileges, which users may not have
+            return CommonUtils.getOption(options, OPTION_SKIP_CONFIGURATION);
         }
     }
 }
