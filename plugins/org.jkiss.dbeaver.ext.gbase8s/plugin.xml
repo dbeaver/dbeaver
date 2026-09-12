@@ -13,7 +13,7 @@
             description="GBase 8s connector"
             icon="icons/gbase8s_icon.png"
             parent="generic"
-            dialect="generic"
+            dialect="gbase8s"
             label="GBase 8s">
             <treeInjection path="generic/catalog/schema/table"
                 changeFolderType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTable"/>
@@ -75,4 +75,9 @@
             objectType="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sUniqueKey" />
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="gbase8s" parent="generic" class="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sDialect"
+                 label="gbase8s" description="GBase 8s JDBC dialect" icon="icons/gbase8s_icon.png">
+        </dialect>
+    </extension>
 </plugin>
