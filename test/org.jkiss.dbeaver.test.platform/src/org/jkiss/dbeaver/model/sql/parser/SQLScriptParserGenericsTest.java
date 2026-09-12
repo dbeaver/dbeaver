@@ -86,6 +86,48 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parseStarRocksDivisionOperator() throws DBException {
+        assertParse("starrocks",
+            "select 8 / 2;\nselect 1;",
+            new String[]{"select 8 / 2", "select 1"}
+        );
+    }
+
+    @Test
+    public void parseStarRocksScriptWithCommentedRefresh() throws DBException {
+        assertParse("starrocks",
+            "set pipeline_dop = 8;\n" +
+                "-- refresh marker\n" +
+                "---- refresh external table cdh5_biods.possc_ods.possc_payi;\n" +
+                "drop table if exists bitemp.tmp_xiongyi_card_consume0;",
+            new String[]{
+                "set pipeline_dop = 8",
+                "-- refresh marker\n" +
+                    "---- refresh external table cdh5_biods.possc_ods.possc_payi;\n" +
+                    "drop table if exists bitemp.tmp_xiongyi_card_consume0"
+            }
+        );
+    }
+
+    @Test
+    public void extractStarRocksSelectedCommentOnlyQuery() throws DBException {
+        String query = "-- refresh marker\n" +
+            "---- refresh external table cdh5_biods.possc_ods.possc_payi;";
+        SQLParserContext context = createParserContext(setDialect("starrocks"), query);
+        SQLScriptElement element = SQLScriptParser.extractActiveQuery(context, 0, query.length());
+        Assertions.assertNull(element);
+    }
+
+    @Test
+    public void extractPostgreSQLSelectedCommentOnlyQuery() throws DBException {
+        String query = "-- refresh marker;";
+        SQLParserContext context = createParserContext(setDialect("postgresql"), query);
+        SQLScriptElement element = SQLScriptParser.extractActiveQuery(context, 0, query.length());
+        Assertions.assertNotNull(element);
+        Assertions.assertEquals(query, element.getText());
+    }
+
+    @Test
     public void parseFromCursorPositionBeginTransaction() throws DBException {
         String query = """
             begi<-|n transaction;<-|

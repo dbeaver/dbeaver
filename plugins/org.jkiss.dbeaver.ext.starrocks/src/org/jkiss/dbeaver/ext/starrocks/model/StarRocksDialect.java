@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 /**
@@ -78,7 +79,12 @@ public class StarRocksDialect extends GenericSQLDialect {
     @NotNull
     @Override
     public String[] getScriptDelimiters() {
-        return new String[] { ";", "/" };
+        return SQLConstants.DEFAULT_SCRIPT_DELIMITER;
+    }
+
+    @Override
+    public String[] getSingleLineComments() {
+        return new String[] { SQLConstants.SL_COMMENT };
     }
 
     /**
