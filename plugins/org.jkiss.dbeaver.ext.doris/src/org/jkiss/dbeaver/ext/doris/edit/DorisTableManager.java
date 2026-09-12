@@ -18,26 +18,17 @@ package org.jkiss.dbeaver.ext.doris.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.doris.model.DorisDataSource;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.sql.SQLException;
 import java.util.Map;
 
 /**
  * Doris table manager.
  */
 public class DorisTableManager extends GenericTableManager {
-
-    private static final Log log = Log.getLog(DorisTableManager.class);
 
     // Doris uses three replicas when CREATE TABLE omits replication properties.
     private static final int DEFAULT_REPLICA_COUNT = 3;
@@ -66,27 +57,9 @@ public class DorisTableManager extends GenericTableManager {
         @NotNull DBRProgressMonitor monitor,
         @NotNull GenericTableBase table
     ) {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Doris backends");
-             JDBCPreparedStatement statement = session.prepareStatement("SHOW BACKENDS"); //$NON-NLS-1$
-             JDBCResultSet resultSet = statement.executeQuery()
-        ) {
-            int availableBackendCount = 0;
-            while (resultSet.next()) {
-                if (!JDBCUtils.safeGetBoolean(resultSet, "Alive") || //$NON-NLS-1$
-                    JDBCUtils.safeGetBoolean(resultSet, "SystemDecommissioned") //$NON-NLS-1$
-                ) {
-                    continue;
-                }
-                availableBackendCount++;
-            }
-            if (availableBackendCount == 0) {
-                return null;
-            }
-            if (availableBackendCount < DEFAULT_REPLICA_COUNT) {
-                return availableBackendCount;
-            }
-        } catch (DBException | SQLException e) {
-            log.debug("Unable to determine Doris backend count", e); //$NON-NLS-1$
+        int availableBackendCount = ((DorisDataSource) table.getDataSource()).getAvailableBackendCount(monitor);
+        if (availableBackendCount > 0 && availableBackendCount < DEFAULT_REPLICA_COUNT) {
+            return availableBackendCount;
         }
         return null;
     }

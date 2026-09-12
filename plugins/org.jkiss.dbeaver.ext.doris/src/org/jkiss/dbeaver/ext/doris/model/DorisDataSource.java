@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.doris.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.sql.SQLException;
@@ -44,6 +46,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DorisDataSource extends GenericDataSource {
 
+    private static final Log log = Log.getLog(DorisDataSource.class);
+
     public static final String DEFAULT_CATALOG_NAME = "internal"; //$NON-NLS-1$
     private static final String COL_CATALOG_NAME = "CatalogName"; //$NON-NLS-1$
     private static final String COL_TYPE = "Type"; //$NON-NLS-1$
@@ -53,6 +57,7 @@ public class DorisDataSource extends GenericDataSource {
      * catalog name -> [type, comment]
      */
     private final Map<String, CatalogMetadata> catalogMetadataCache = new ConcurrentHashMap<>();
+    private Integer availableBackendCount;
 
     public record CatalogMetadata(@Nullable String type, @Nullable String comment) {
     }
@@ -131,6 +136,33 @@ public class DorisDataSource extends GenericDataSource {
         return catalogMetadataCache.get(catalogName);
     }
 
+    public synchronized int getAvailableBackendCount(@NotNull DBRProgressMonitor monitor) {
+        if (availableBackendCount == null) {
+            availableBackendCount = readAvailableBackendCount(monitor);
+        }
+        return availableBackendCount;
+    }
+
+    private int readAvailableBackendCount(@NotNull DBRProgressMonitor monitor) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Doris backends");
+             JDBCPreparedStatement statement = session.prepareStatement("SHOW BACKENDS"); //$NON-NLS-1$
+             JDBCResultSet resultSet = statement.executeQuery()
+        ) {
+            int backendCount = 0;
+            while (resultSet.next()) {
+                if (JDBCUtils.safeGetBoolean(resultSet, "Alive") && //$NON-NLS-1$
+                    !JDBCUtils.safeGetBoolean(resultSet, "SystemDecommissioned") //$NON-NLS-1$
+                ) {
+                    backendCount++;
+                }
+            }
+            return backendCount;
+        } catch (DBException | SQLException e) {
+            log.debug("Unable to determine Doris backend count", e); //$NON-NLS-1$
+            return 0;
+        }
+    }
+
     @Nullable
     public DorisCatalog getCatalog(@NotNull String name) {
         return (DorisCatalog) super.getCatalog(name);
@@ -144,5 +176,11 @@ public class DorisDataSource extends GenericDataSource {
     @Override
     public boolean isOmitSchema() {
         return false;
+    }
+
+    @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        availableBackendCount = null;
+        return super.refreshObject(monitor);
     }
 }
