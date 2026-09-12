@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -52,30 +52,34 @@ public class DorisTableManager extends GenericTableManager {
     ) {
         String delimiter = getDelimiter(options);
         ddl.append(delimiter).append(DEFAULT_DISTRIBUTION);
-        if (useSingleReplica(monitor, table, options)) {
+        if (useSingleReplica(monitor, table)) {
             ddl.append(delimiter).append(SINGLE_BACKEND_PROPERTIES);
         }
     }
 
     private static boolean useSingleReplica(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull GenericTableBase table,
-        @NotNull Map<String, Object> options
+        @NotNull GenericTableBase table
     ) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read Doris backends");
              JDBCPreparedStatement statement = session.prepareStatement("SHOW BACKENDS"); //$NON-NLS-1$
-             JDBCResultSet resultSet = statement.executeQuery()) {
-            int backendCount = 0;
+             JDBCResultSet resultSet = statement.executeQuery()
+        ) {
+            int availableBackendCount = 0;
             while (resultSet.next()) {
-                if (++backendCount > 1) {
+                if (!JDBCUtils.safeGetBoolean(resultSet, "Alive") || //$NON-NLS-1$
+                    JDBCUtils.safeGetBoolean(resultSet, "SystemDecommissioned")
+                ) { //$NON-NLS-1$
+                    continue;
+                }
+                if (++availableBackendCount > 1) {
                     return false;
                 }
             }
-            return backendCount == 1;
+            return availableBackendCount == 1;
         } catch (DBException | SQLException e) {
             log.debug("Unable to determine Doris backend count", e); //$NON-NLS-1$
-            // SHOW BACKENDS requires cluster-level privileges, which users may not have
-            return CommonUtils.getOption(options, OPTION_SKIP_CONFIGURATION);
+            return false;
         }
     }
 }
