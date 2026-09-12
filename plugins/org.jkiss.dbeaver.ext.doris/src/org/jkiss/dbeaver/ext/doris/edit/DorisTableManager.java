@@ -30,6 +30,7 @@ import java.util.Map;
 public class DorisTableManager extends GenericTableManager {
 
     private static final String DEFAULT_DISTRIBUTION = "DISTRIBUTED BY RANDOM BUCKETS 1"; //$NON-NLS-1$
+    private static final String DEFAULT_PROPERTIES = "PROPERTIES (\"replication_num\" = \"1\")"; //$NON-NLS-1$
 
     @Override
     protected void appendTableModifiers(
@@ -41,7 +42,9 @@ public class DorisTableManager extends GenericTableManager {
         @NotNull Map<String, Object> options
     ) {
         if (table instanceof DorisTable) {
-            ddl.append(getDelimiter(options)).append(DEFAULT_DISTRIBUTION);
+            String delimiter = getDelimiter(options);
+            ddl.append(delimiter).append(DEFAULT_DISTRIBUTION);
+            ddl.append(delimiter).append(DEFAULT_PROPERTIES);
         }
     }
 }
