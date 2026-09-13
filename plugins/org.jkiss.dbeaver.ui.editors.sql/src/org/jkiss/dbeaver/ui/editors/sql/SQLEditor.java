@@ -4458,11 +4458,18 @@ public class SQLEditor extends SQLEditorBase implements
             if (contextDefaults == null) {
                 return;
             }
-            DBCEntityMetaData entityMetadata = query.getEntityMetadata(false);
+            DBCEntityMetaData entityMetadata = query.getEntityMetadata(true);
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
             String catalogName = entityMetadata == null ? null : entityMetadata.getCatalogName();
             String schemaName = entityMetadata == null ? null : entityMetadata.getSchemaName();
+            SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
+            if (catalogName != null) {
+                catalogName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, catalogName);
+            }
+            if (schemaName != null) {
+                schemaName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, schemaName);
+            }
             if (query.changesSchemaList()) {
                 metadataRefreshTargets.add(new MetadataRefreshTarget(
                     catalogName != null ? catalogName : defaultCatalog == null ? null : defaultCatalog.getName(),
