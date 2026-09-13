@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.h2.util;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.h2.internal.H2Constants;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -72,22 +73,41 @@ public final class H2Utils {
     public static boolean isJavaSourceDefinition(@NotNull Connection connection, @NotNull String query) throws SQLException {
         // H2 is loaded dynamically, so inspect its parsed command without introducing a driver dependency.
         try (PreparedStatement statement = connection.prepareStatement(query)) {
-            return containsJavaSource(getField(statement, "command"));
+            return containsJavaSource(connection, getRequiredField(statement, "command"));
         } catch (ReflectiveOperationException | RuntimeException e) {
             throw new SQLException("Unable to inspect parsed H2 query", e);
         }
     }
 
-    private static boolean containsJavaSource(@NotNull Object command) throws ReflectiveOperationException {
+    private static boolean containsJavaSource(@NotNull Connection connection, @NotNull Object command)
+            throws ReflectiveOperationException, SQLException {
         return switch (command.getClass().getName()) {
-            case "org.h2.command.CommandContainer" -> containsJavaSource(getField(command, "prepared"));
+            case "org.h2.command.CommandContainer" ->
+                containsJavaSource(connection, getRequiredField(command, "prepared"));
             case "org.h2.command.CommandList" -> {
-                if (containsJavaSource(getField(command, "command"))) {
+                if (containsJavaSource(connection, getRequiredField(command, "command"))) {
                     yield true;
                 }
-                for (Object prepared : (List<?>) getField(command, "commands")) {
-                    if (containsJavaSource(prepared)) {
-                        yield true;
+                try {
+                    for (Object prepared : (List<?>) getRequiredField(command, "commands")) {
+                        if (containsJavaSource(connection, prepared)) {
+                            yield true;
+                        }
+                    }
+                } catch (NoSuchFieldException e) {
+                    // Some H2 1.x versions keep subsequent statements only in 'remaining'.
+                }
+                String remaining = (String) getField(command, "remaining");
+                if (remaining != null) {
+                    try {
+                        yield isJavaSourceDefinition(connection, remaining);
+                    } catch (SQLException e) {
+                        if (e.getCause() instanceof ReflectiveOperationException ||
+                            e.getCause() instanceof RuntimeException
+                        ) {
+                            throw e;
+                        }
+                        // It may depend on a preceding statement and cannot be prepared separately.
                     }
                 }
                 yield false;
@@ -98,6 +118,17 @@ public final class H2Utils {
         };
     }
 
+    @NotNull
+    private static Object getRequiredField(@NotNull Object object, @NotNull String name)
+            throws ReflectiveOperationException {
+        Object value = getField(object, name);
+        if (value == null) {
+            throw new IllegalStateException("H2 field '" + name + "' is null");
+        }
+        return value;
+    }
+
+    @Nullable
     private static Object getField(@NotNull Object object, @NotNull String name) throws ReflectiveOperationException {
         for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) {
             try {

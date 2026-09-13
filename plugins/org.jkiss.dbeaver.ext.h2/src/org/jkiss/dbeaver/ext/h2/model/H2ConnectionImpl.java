@@ -43,11 +43,13 @@ public class H2ConnectionImpl extends JDBCConnectionImpl {
         super(context, monitor, purpose, taskTitle);
     }
 
+    @NotNull
     @Override
     protected JDBCStatement createStatementImpl(@NotNull JDBCObjectSupplier<Statement> original) throws SQLException {
         return new H2StatementImpl(this, original, !isLoggingEnabled());
     }
 
+    @NotNull
     @Override
     protected JDBCPreparedStatement createPreparedStatementImpl(
         @NotNull JDBCObjectSupplier<PreparedStatement> statementSupplier,
@@ -57,6 +59,7 @@ public class H2ConnectionImpl extends JDBCConnectionImpl {
         return super.createPreparedStatementImpl(statementSupplier, sql);
     }
 
+    @NotNull
     @Override
     protected JDBCCallableStatement createCallableStatementImpl(
         @NotNull JDBCObjectSupplier<CallableStatement> statementSupplier,
