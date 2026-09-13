@@ -25,6 +25,7 @@
                 <driver
                     id="timeplus_native"
                     label="Timeplus"
+                    threadSafe="false"
                     icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
                     iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"
                     class="com.timeplus.jdbc.TimeplusDriver"
