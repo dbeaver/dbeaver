@@ -33,6 +33,7 @@ public class CSSUtils {
     public static final String COLORED_BY_CONNECTION_TYPE = "coloredByConnectionType";
     public static final String EXCLUDED_FROM_STYLING = "excludedFromStyling";
     public static final String DATABASE_EDITOR_COMPOSITE_DATASOURCE = "databaseEditorCompositeBackground";
+    private static final String WIDGET_DEFAULT_BACKGROUND = "widgetDefaultBackground";
 
     public static String getCSSClass(Widget widget){
         return (String) widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY);
@@ -101,10 +102,25 @@ public class CSSUtils {
     }
 
     public static void setWidgetDefaultBackGround(@NotNull Control widget) {
+        widget.setData(WIDGET_DEFAULT_BACKGROUND, Boolean.TRUE);
         Color bg = CSSUtils.getCurrentEditorConnectionColor(widget);
         if (bg == null && !(widget instanceof Composite)) {
             bg = UIStyles.getDefaultWidgetBackground();//widget.getParent().getBackground();
         }
         widget.setBackground(bg);
+    }
+
+    public static void refreshWidgetDefaultBackgrounds(@NotNull Control root) {
+        if (root.isDisposed()) {
+            return;
+        }
+        if (root.getData(WIDGET_DEFAULT_BACKGROUND) == Boolean.TRUE) {
+            setWidgetDefaultBackGround(root);
+        }
+        if (root instanceof Composite parent) {
+            for (Control child : parent.getChildren()) {
+                refreshWidgetDefaultBackgrounds(child);
+            }
+        }
     }
 }
