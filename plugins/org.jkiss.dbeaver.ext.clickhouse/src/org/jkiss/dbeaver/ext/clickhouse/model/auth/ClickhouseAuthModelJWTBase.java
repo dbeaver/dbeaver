@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.ext.clickhouse.model.auth;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -168,7 +168,7 @@ public abstract class ClickhouseAuthModelJWTBase extends AuthModelDatabaseNative
     /**
      * Seeds a fresh provider with the tokens loaded from the secure storage.
      */
-    private static void restoreTokens(
+    protected static void restoreTokens(
         @NotNull ClickhouseJWTProvider provider,
         @NotNull ClickhouseJWTCredentials credentials
     ) {

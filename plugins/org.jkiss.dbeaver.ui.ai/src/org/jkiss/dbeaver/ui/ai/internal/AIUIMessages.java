@@ -99,9 +99,6 @@ public class AIUIMessages extends NLS {
     public static String openai_configurator_sign_in_device_code;
     public static String openai_configurator_sign_in_device_code_description;
     public static String openai_configurator_sign_in_continue;
-    public static String openai_configurator_browser_dialog_message;
-    public static String openai_configurator_authorization_link;
-    public static String openai_configurator_copy_link;
     public static String openai_configurator_credentials_save_error_title;
     public static String openai_configurator_credentials_save_error_message;
     public static String openai_configurator_sign_out_save_error_title;

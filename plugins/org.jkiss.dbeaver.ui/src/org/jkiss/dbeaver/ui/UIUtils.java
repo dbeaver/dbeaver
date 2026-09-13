@@ -2166,6 +2166,14 @@ public class UIUtils {
         }
     }
 
+    public static void runInUIThread(@NotNull Runnable runnable) {
+        if (isUIThread()) {
+            runnable.run();
+        } else {
+            asyncExec(runnable);
+        }
+    }
+
     public static void syncExec(@NotNull Runnable runnable) {
         try {
             Display display = getDisplay();

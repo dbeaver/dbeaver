@@ -75,6 +75,10 @@
         <manager class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLUserManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="mysql.source" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <editorContribution editorId="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg">
             <supports dataSource="mysql"/>
