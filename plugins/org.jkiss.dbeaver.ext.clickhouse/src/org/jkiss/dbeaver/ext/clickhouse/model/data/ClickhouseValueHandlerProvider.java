@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -38,9 +39,9 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
     ) {
         String lowerTypeName = type.getTypeName().toLowerCase(Locale.ENGLISH);
         DBPDataKind dataKind = type.getDataKind();
-        if ("json".equals(lowerTypeName)) {
-            // Keyed on the type name (not data kind): result-set meta columns report JSON as UNKNOWN
-            // via the static type cache, while editable table columns resolve it to CONTENT.
+        if (ClickhouseTypeParser.isJsonType(type.getTypeName())) {
+            // Keyed on the type name so scalar JSON variants use the same handler,
+            // regardless of the data kind supplied by JDBC metadata.
             return ClickhouseJSONValueHandler.INSTANCE;
         } else if ("enum8".equals(lowerTypeName) || "enum16".equals(lowerTypeName)) {
             return ClickhouseEnumValueHandler.INSTANCE;
