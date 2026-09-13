@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.h2.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.h2.util.H2Utils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -43,27 +41,6 @@ public class H2ConnectionImpl extends JDBCConnectionImpl {
         @NotNull String taskTitle
     ) {
         super(context, monitor, purpose, taskTitle);
-    }
-
-    @NotNull
-    @Override
-    public JDBCStatement prepareStatement(
-        @NotNull DBCStatementType type,
-        @NotNull String sqlQuery,
-        boolean scrollable,
-        boolean updatable,
-        boolean returnGeneratedKeys
-    ) throws DBCException {
-        try {
-            validateQuery(sqlQuery);
-        } catch (SQLException e) {
-            throw new DBCException(
-                e.getMessage(),
-                e,
-                getExecutionContext()
-            );
-        }
-        return super.prepareStatement(type, sqlQuery, scrollable, updatable, returnGeneratedKeys);
     }
 
     @Override
@@ -89,8 +66,11 @@ public class H2ConnectionImpl extends JDBCConnectionImpl {
         return super.createCallableStatementImpl(statementSupplier, sql);
     }
 
-    static void validateQuery(@Nullable String query) throws SQLException {
-        if (query != null && H2Utils.isClassLoadingRestricted() && H2Utils.isJavaSourceDefinition(query)) {
+    void validateQuery(@Nullable String query) throws SQLException {
+        if (query != null &&
+            H2Utils.isClassLoadingRestricted() &&
+            H2Utils.isJavaSourceDefinition(getOriginal(), query)
+        ) {
             throw new SQLException(
                 "Java source aliases and triggers are disabled for embedded H2 databases. " +
                 "Allow all H2 classes in Preferences > Drivers > H2 and restart DBeaver to enable them"

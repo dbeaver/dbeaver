@@ -22,6 +22,10 @@ import org.jkiss.dbeaver.ext.h2.internal.H2Constants;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 
 public final class H2Utils {
@@ -65,91 +69,45 @@ public final class H2Utils {
         return !getSystemAllowedClasses().contains("*");
     }
 
-    public static boolean isJavaSourceDefinition(@NotNull String query) {
-        int state = 0;
-        int length = query.length();
-        StringBuilder token = new StringBuilder();
-        for (int i = 0; i <= length; i++) {
-            char ch = i < length ? query.charAt(i) : '\0';
-            if (i < length && (Character.isLetterOrDigit(ch) || ch == '_')) {
-                token.append(ch);
-                continue;
-            }
-            if (!token.isEmpty()) {
-                state = advanceJavaSourceState(state, token.toString());
-                if (state == 4) {
-                    return true;
-                }
-                token.setLength(0);
-            }
-            if (i >= length) {
-                break;
-            }
-            if (ch == ';') {
-                state = 0;
-            } else if (ch == '-' && i + 1 < length && query.charAt(i + 1) == '-') {
-                i = skipLineComment(query, i + 2);
-            } else if (ch == '/' && i + 1 < length) {
-                if (query.charAt(i + 1) == '*') {
-                    i = skipBlockComment(query, i + 2);
-                } else if (query.charAt(i + 1) == '/') {
-                    i = skipLineComment(query, i + 2);
-                }
-            } else if (ch == '\'' || ch == '"' || ch == '`') {
-                i = skipQuoted(query, i + 1, ch);
-            } else if (ch == '[') {
-                i = skipQuoted(query, i + 1, ']');
-            }
+    public static boolean isJavaSourceDefinition(@NotNull Connection connection, @NotNull String query) throws SQLException {
+        // H2 is loaded dynamically, so inspect its parsed command without introducing a driver dependency.
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            return containsJavaSource(getField(statement, "command"));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            throw new SQLException("Unable to inspect parsed H2 query", e);
         }
-        return false;
     }
 
-    private static int advanceJavaSourceState(int state, @NotNull String token) {
-        return switch (state) {
-            case 0 -> token.equalsIgnoreCase("CREATE") ? 1 : -1;
-            case 1 -> {
-                if (token.equalsIgnoreCase("ALIAS") || token.equalsIgnoreCase("TRIGGER")) {
-                    yield 3;
-                } else if (token.equalsIgnoreCase("OR")) {
-                    yield 2;
-                } else if (token.equalsIgnoreCase("FORCE")) {
-                    yield 1;
+    private static boolean containsJavaSource(@NotNull Object command) throws ReflectiveOperationException {
+        return switch (command.getClass().getName()) {
+            case "org.h2.command.CommandContainer" -> containsJavaSource(getField(command, "prepared"));
+            case "org.h2.command.CommandList" -> {
+                if (containsJavaSource(getField(command, "command"))) {
+                    yield true;
                 }
-                yield -1;
-            }
-            case 2 -> token.equalsIgnoreCase("REPLACE") ? 1 : -1;
-            case 3 -> {
-                if (token.equalsIgnoreCase("AS")) {
-                    yield 4;
-                } else if (token.equalsIgnoreCase("FOR") || token.equalsIgnoreCase("CALL")) {
-                    yield -1;
+                for (Object prepared : (List<?>) getField(command, "commands")) {
+                    if (containsJavaSource(prepared)) {
+                        yield true;
+                    }
                 }
-                yield 3;
+                yield false;
             }
-            default -> -1;
+            case "org.h2.command.ddl.CreateFunctionAlias" -> getField(command, "source") != null;
+            case "org.h2.command.ddl.CreateTrigger" -> getField(command, "triggerSource") != null;
+            default -> false;
         };
     }
 
-    private static int skipLineComment(@NotNull String query, int offset) {
-        int end = query.indexOf('\n', offset);
-        return end < 0 ? query.length() : end;
-    }
-
-    private static int skipBlockComment(@NotNull String query, int offset) {
-        int end = query.indexOf("*/", offset);
-        return end < 0 ? query.length() : end + 1;
-    }
-
-    private static int skipQuoted(@NotNull String query, int offset, char quote) {
-        for (int i = offset; i < query.length(); i++) {
-            if (query.charAt(i) == quote) {
-                if (i + 1 < query.length() && query.charAt(i + 1) == quote) {
-                    i++;
-                } else {
-                    return i;
-                }
+    private static Object getField(@NotNull Object object, @NotNull String name) throws ReflectiveOperationException {
+        for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) {
+            try {
+                Field field = type.getDeclaredField(name);
+                field.setAccessible(true);
+                return field.get(object);
+            } catch (NoSuchFieldException e) {
+                // Continue with the superclass.
             }
         }
-        return query.length();
+        throw new NoSuchFieldException(name);
     }
 }
