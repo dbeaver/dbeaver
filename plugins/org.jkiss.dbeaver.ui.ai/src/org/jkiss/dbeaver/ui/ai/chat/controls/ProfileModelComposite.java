@@ -63,6 +63,7 @@ class ProfileModelComposite extends Composite {
     private static final Log log = Log.getLog(ProfileModelComposite.class);
     private static final int MIN_MODEL_WIDTH = 80;
     private static final int MIN_CHAT_WIDTH = 240;
+    private static final int MODEL_VERTICAL_OFFSET = 1;
 
     private final AIChatControl chat;
     private final ToolBar profileBar;
@@ -422,7 +423,7 @@ class ProfileModelComposite extends Composite {
             fitText(profileItem, profileText, profileWidth);
             fitText(modelItem, modelText, modelWidth);
             profileBar.setBounds(area.x, area.y, profileWidth, area.height);
-            modelBar.setBounds(area.x + profileWidth, area.y, modelWidth, area.height);
+            modelBar.setBounds(area.x + profileWidth, area.y - MODEL_VERTICAL_OFFSET, modelWidth, area.height);
         }
 
         private void restoreText() {
