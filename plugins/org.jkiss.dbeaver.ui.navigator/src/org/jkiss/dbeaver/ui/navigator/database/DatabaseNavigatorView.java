@@ -118,6 +118,10 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     private void updateNavigatorRoot() {
+        DatabaseNavigatorTree navigatorTree = getNavigatorTree();
+        if (navigatorTree == null || navigatorTree.isDisposed()) {
+            return;
+        }
         DBNNode rootNode;
         try {
             rootNode = getRootNode();
@@ -125,7 +129,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
             log.error(e);
             rootNode = new DBNEmptyNode();
         }
-        getNavigatorTree().setInput(rootNode);
+        navigatorTree.setInput(rootNode);
         getSite().getSelectionProvider().setSelection(new StructuredSelection());
     }
 }
