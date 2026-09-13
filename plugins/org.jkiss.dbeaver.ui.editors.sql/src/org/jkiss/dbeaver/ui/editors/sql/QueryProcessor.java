@@ -224,7 +224,9 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
                 processDataExport(scriptContext, queries);
             } else {
                 boolean disableFetchCurrentResultSets;
-                if (queries.size() > QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION) {
+                if (queries.size() > QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION
+                    && owner.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM)
+                ) {
                     if (owner.getDisableFetchResultSet() == null) {
                         DBPPlatformUI.UserChoiceResponse rs = DBWorkbench.getPlatformUI().showUserChoice(
                             SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_title,

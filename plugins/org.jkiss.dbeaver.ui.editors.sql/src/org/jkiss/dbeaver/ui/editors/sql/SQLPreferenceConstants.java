@@ -242,6 +242,7 @@ public class SQLPreferenceConstants {
     public static final String SCRIPT_COMMIT_LINES                      = "script.commit.lines"; //$NON-NLS-1$
     public static final String SCRIPT_ERROR_HANDLING                    = "script.error.handling"; //$NON-NLS-1$
     public static final String SCRIPT_FETCH_RESULT_SETS                 = "script.fetch.resultset"; //$NON-NLS-1$
+    public static final String SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM       = "script.bigScript.noFetch.confirm"; //$NON-NLS-1$
     public static final String NEW_SCRIPT_TEMPLATE_ENABLED              = "new.script.template.enabled"; //$NON-NLS-1$
     public static final String NEW_SCRIPT_TEMPLATE                      = "new.script.template"; //$NON-NLS-1$
     public static final String STATEMENT_INVALIDATE_BEFORE_EXECUTE      = "statement.invalidate.before.execute"; //$NON-NLS-1$
