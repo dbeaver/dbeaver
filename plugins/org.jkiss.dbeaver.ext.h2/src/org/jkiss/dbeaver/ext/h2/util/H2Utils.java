@@ -133,7 +133,9 @@ public final class H2Utils {
         for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) {
             try {
                 Field field = type.getDeclaredField(name);
-                field.setAccessible(true);
+                if (!field.trySetAccessible()) {
+                    throw new IllegalAccessException("H2 field '" + name + "' is not accessible");
+                }
                 return field.get(object);
             } catch (NoSuchFieldException e) {
                 // Continue with the superclass.
