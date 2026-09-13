@@ -19,6 +19,10 @@
         <initializer class="org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorPreferencesInitializer"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="sql.metadata.refresh" name="%notification.sql_metadata_refresh.name" soundEnabled="false"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.resourceHandler">
         <handler type="sql-script" class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl"/>
     </extension>

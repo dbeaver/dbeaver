@@ -93,6 +93,36 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void schemaChangingStatementsShouldHaveDdlType() {
+        for (String queryText : List.of(
+            "CREATE TABLE test (id INT)",
+            "CREATE VIEW test_view AS SELECT 1",
+            "CREATE INDEX test_index ON test (id)",
+            "CREATE SCHEMA test_schema",
+            "CREATE SEQUENCE test_sequence",
+            "CREATE FUNCTION test_function() RETURNS INT RETURN 1",
+            "CREATE PROCEDURE test_procedure() AS 'SELECT 1'",
+            "ALTER TABLE test ADD name VARCHAR(10)",
+            "ALTER VIEW test_view AS SELECT 2",
+            "ALTER SEQUENCE test_sequence RESTART WITH 2",
+            "DROP TABLE test"
+        )) {
+            var query = new SQLQuery(null, queryText);
+            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
+        }
+    }
+
+    @Test
+    public void qualifiedDdlShouldExposeItsTargetContainer() {
+        var query = new SQLQuery(null, "CREATE TABLE test_catalog.test_schema.test (id INT)");
+        var metadata = query.getEntityMetadata(false);
+
+        Assertions.assertNotNull(metadata);
+        Assertions.assertEquals("test_catalog", metadata.getCatalogName());
+        Assertions.assertEquals("test_schema", metadata.getSchemaName());
+    }
+
+    @Test
     public void readOnlySelectStatementsShouldNotBeMutating() {
         for (String queryText : List.of(
             "SELECT * FROM test",

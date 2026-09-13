@@ -203,11 +203,29 @@ public class SQLQuery implements SQLScriptElement {
                         fillSingleSource(tables.get(0));
                     }
                 }
-            } else if (statement instanceof Alter ||
-                statement instanceof CreateTable ||
-                statement instanceof CreateView ||
-                statement instanceof Drop ||
-                statement instanceof CreateIndex) {
+            } else if (statement instanceof Alter alter) {
+                type = SQLQueryType.DDL;
+                fillSingleSource(alter.getTable());
+            } else if (statement instanceof CreateTable createTable) {
+                type = SQLQueryType.DDL;
+                fillSingleSource(createTable.getTable());
+            } else if (statement instanceof CreateView createView) {
+                type = SQLQueryType.DDL;
+                fillSingleSource(createView.getView());
+            } else if (statement instanceof CreateIndex createIndex) {
+                type = SQLQueryType.DDL;
+                fillSingleSource(createIndex.getTable());
+            } else if (statement instanceof Drop drop) {
+                type = SQLQueryType.DDL;
+                fillSingleSource(drop.getName());
+            } else if (
+                statement instanceof CreateFunction ||
+                statement instanceof CreateProcedure ||
+                statement instanceof CreateSchema ||
+                statement instanceof CreateSequence ||
+                statement instanceof CreateSynonym ||
+                statement instanceof AlterView ||
+                statement instanceof AlterSequence) {
                 type = SQLQueryType.DDL;
             } else if (statement instanceof Merge) {
                 type = SQLQueryType.MERGE;
@@ -519,6 +537,12 @@ public class SQLQuery implements SQLScriptElement {
                 statement instanceof PlainSelect plainSelect && plainSelect.getForMode() != null;
         }
         return true;
+    }
+
+    public boolean changesSchemaList() {
+        parseQuery();
+        return statement instanceof CreateSchema ||
+            statement instanceof Drop drop && "SCHEMA".equalsIgnoreCase(drop.getType());
     }
 
     public boolean isMutatingStatement() {

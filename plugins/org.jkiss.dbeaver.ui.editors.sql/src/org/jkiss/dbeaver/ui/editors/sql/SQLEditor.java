@@ -68,6 +68,9 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
@@ -80,9 +83,13 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
@@ -127,6 +134,7 @@ import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StringUtils;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -152,6 +160,7 @@ public class SQLEditor extends SQLEditorBase implements
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
+    private static final String NOTIFICATION_SQL_METADATA_REFRESH = "sql.metadata.refresh";
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
@@ -4274,7 +4283,12 @@ public class SQLEditor extends SQLEditorBase implements
         private final ITextSelection originalSelection;
         private int topOffset, visibleLength;
         private final boolean closeTabOnError;
+        private boolean metadataChanged;
+        private final Set<MetadataRefreshTarget> metadataRefreshTargets = new LinkedHashSet<>();
         private SQLQueryListener extListener;
+
+        private record MetadataRefreshTarget(@Nullable String catalogName, @Nullable String schemaName) {
+        }
 
         SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
             this.originalSelection = (ITextSelection) queryProcessor.getOwner().getSelectionProvider().getSelection();
@@ -4357,6 +4371,10 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void onEndQuery(@NotNull DBCSession session, @NotNull SQLQueryResult result, @NotNull DBCStatistics statistics) {
             try {
+                if (!result.hasError() && result.getStatement().getType() == SQLQueryType.DDL) {
+                    metadataChanged = true;
+                    rememberMetadataRefreshTarget(session.getExecutionContext(), result.getStatement());
+                }
                 SQLEditor owner = getOwner();
                 synchronized (owner.runningQueries) {
                     owner.runningQueries.remove(result.getStatement());
@@ -4410,6 +4428,174 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
                 }
+            }
+        }
+
+        private void showMetadataRefreshNotification(@NotNull DBCExecutionContext executionContext) {
+            if (metadataRefreshTargets.isEmpty()) {
+                return;
+            }
+
+            DBPDataSource dataSource = executionContext.getDataSource();
+            Set<MetadataRefreshTarget> refreshTargets = Set.copyOf(metadataRefreshTargets);
+            DBeaverNotifications.showNotification(
+                NOTIFICATION_SQL_METADATA_REFRESH,
+                NLS.bind(
+                    SQLEditorMessages.sql_editor_metadata_refresh_notification_title,
+                    dataSource.getContainer().getName()
+                ),
+                SQLEditorMessages.sql_editor_metadata_refresh_notification,
+                DBPMessageType.WARNING,
+                () -> refreshMetadata(getOwner(), dataSource.getContainer(), refreshTargets)
+            );
+        }
+
+        private void rememberMetadataRefreshTarget(
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull SQLQuery query
+        ) {
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+            if (contextDefaults == null) {
+                return;
+            }
+            DBCEntityMetaData entityMetadata = query.getEntityMetadata(false);
+            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+            String catalogName = entityMetadata == null ? null : entityMetadata.getCatalogName();
+            String schemaName = entityMetadata == null ? null : entityMetadata.getSchemaName();
+            if (query.changesSchemaList()) {
+                metadataRefreshTargets.add(new MetadataRefreshTarget(
+                    catalogName != null ? catalogName : defaultCatalog == null ? null : defaultCatalog.getName(),
+                    null
+                ));
+                return;
+            }
+            if (schemaName != null && catalogName == null && !contextDefaults.supportsSchemaChange() &&
+                contextDefaults.supportsCatalogChange()) {
+                catalogName = schemaName;
+                schemaName = null;
+            }
+            metadataRefreshTargets.add(new MetadataRefreshTarget(
+                catalogName != null ? catalogName : defaultCatalog == null ? null : defaultCatalog.getName(),
+                schemaName != null ? schemaName : defaultSchema == null ? null : defaultSchema.getName()
+            ));
+        }
+
+        private static void refreshMetadata(
+            @NotNull SQLEditor editor,
+            @NotNull DBPDataSourceContainer dataSourceContainer,
+            @NotNull Set<MetadataRefreshTarget> refreshTargets
+        ) {
+            if (editor.isDisposed() || editor.getProject() == null || !editor.getProject().isOpen()) {
+                return;
+            }
+            DBCExecutionContext executionContext = editor.getExecutionContext();
+            if (executionContext == null || executionContext.getDataSource().getContainer() != dataSourceContainer ||
+                !dataSourceContainer.isConnected()) {
+                return;
+            }
+            try {
+                UIUtils.runInProgressDialog(monitor -> {
+                    try {
+                        boolean refreshed = false;
+                        for (MetadataRefreshTarget target : refreshTargets) {
+                            DBSObject refreshTarget = resolveMetadataRefreshTarget(monitor, executionContext, target);
+                            if (refreshTarget == null) {
+                                continue;
+                            }
+                            DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, refreshTarget, true);
+                            if (node != null && node.isLocked()) {
+                                throw new DBException("Metadata refresh is already in progress");
+                            }
+                            if ((node == null || node.isDisposed()) &&
+                                refreshTarget instanceof DBPRefreshableObject refreshableObject) {
+                                DBSObject refreshedObject = refreshableObject.refreshObject(monitor);
+                                updateContextDefault(monitor, executionContext, refreshTarget, refreshedObject);
+                                refreshed = true;
+                            } else if (node != null) {
+                                var refreshedNode = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                                if (refreshedNode instanceof DBNDatabaseNode refreshedDatabaseNode) {
+                                    updateContextDefault(
+                                        monitor,
+                                        executionContext,
+                                        refreshTarget,
+                                        refreshedDatabaseNode.getObject()
+                                    );
+                                    refreshed = true;
+                                }
+                            }
+                        }
+                        if (refreshed) {
+                            UIUtils.asyncExec(() -> {
+                                if (!editor.isDisposed()) {
+                                    editor.reloadSyntaxRules();
+                                }
+                            });
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    SQLEditorMessages.sql_editor_metadata_refresh_error_title,
+                    SQLEditorMessages.sql_editor_metadata_refresh_error_message,
+                    e.getTargetException()
+                );
+            }
+        }
+
+        @Nullable
+        private static DBSObject resolveMetadataRefreshTarget(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull MetadataRefreshTarget target
+        ) throws DBException {
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+            if (contextDefaults == null) {
+                return null;
+            }
+            DBSObjectContainer dataSourceContainer = DBUtils.getAdapter(
+                DBSObjectContainer.class,
+                executionContext.getDataSource()
+            );
+            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+            DBSObject catalog = defaultCatalog;
+            if (target.catalogName() != null &&
+                (defaultCatalog == null || !target.catalogName().equals(defaultCatalog.getName()))) {
+                catalog = dataSourceContainer == null ? null : dataSourceContainer.getChild(monitor, target.catalogName());
+            }
+            if (target.schemaName() == null) {
+                return catalog != null ? catalog : dataSourceContainer;
+            }
+
+            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+            if (defaultSchema != null && target.schemaName().equals(defaultSchema.getName()) &&
+                (target.catalogName() == null || catalog == defaultCatalog)) {
+                return defaultSchema;
+            }
+            DBSObjectContainer schemaContainer = catalog instanceof DBSObjectContainer objectContainer ? objectContainer :
+                dataSourceContainer;
+            return schemaContainer == null ? null : schemaContainer.getChild(monitor, target.schemaName());
+        }
+
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        private static void updateContextDefault(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull DBSObject oldObject,
+            @Nullable DBSObject newObject
+        ) throws DBException {
+            if (newObject == null || newObject == oldObject) {
+                return;
+            }
+            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+            if (oldObject instanceof DBSSchema && newObject instanceof DBSSchema newSchema &&
+                contextDefaults != null && contextDefaults.getDefaultSchema() == oldObject) {
+                contextDefaults.setDefaultSchema(monitor, newSchema);
+            } else if (oldObject instanceof DBSCatalog && newObject instanceof DBSCatalog newCatalog &&
+                contextDefaults != null && contextDefaults.getDefaultCatalog() == oldObject) {
+                contextDefaults.setDefaultCatalog(monitor, newCatalog, null);
             }
         }
 
@@ -4567,6 +4753,9 @@ public class SQLEditor extends SQLEditorBase implements
         public void onEndSqlJob(@NotNull DBCSession session, @NotNull SqlJobResult result) {
             if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
                 refreshContextDefaults(session);
+                if (metadataChanged) {
+                    showMetadataRefreshNotification(session.getExecutionContext());
+                }
             }
             if (extListener != null) {
                 extListener.onEndSqlJob(session, result);
