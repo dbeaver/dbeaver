@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,13 +78,16 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
 
         // Restore previous state
         if (!states.isEmpty()) {
-            ProgressState lastState = states.removeLast();
-            nestedMonitor.beginTask(lastState.taskName, lastState.totalWork);
-            if (lastState.subTask != null) {
-                nestedMonitor.subTask(lastState.subTask);
-            }
-            if (lastState.progress > 0) {
-                nestedMonitor.worked(lastState.progress);
+            states.removeLast();
+            if (!states.isEmpty()) {
+                ProgressState previousState = states.getLast();
+                nestedMonitor.beginTask(previousState.taskName, previousState.totalWork);
+                if (previousState.subTask != null) {
+                    nestedMonitor.subTask(previousState.subTask);
+                }
+                if (previousState.progress > 0) {
+                    nestedMonitor.worked(previousState.progress);
+                }
             }
         } else {
             log.trace(new DBCException("Progress ended without start"));

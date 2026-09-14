@@ -541,7 +541,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             }
         }
 
-        Set<DBPDataSourceRegistry> affectedDataSourceRegs = new HashSet<>();
+        List<DBPDataSourceContainer> affectedDataSources = new ArrayList<>();
         if (!changedSet.isEmpty()) {
             registry.saveConnectionTypes();
         }
@@ -549,7 +549,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             // Update project data sources (they may cache connection type information and permissions snapshots)
             for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                 DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
-                List<DBPDataSourceContainer> affectedDataSources = new ArrayList<>();
+                List<DBPDataSourceContainer> affectedDataSourcesPerProject = new ArrayList<>();
                 for (DBPDataSourceContainer ds : projectRegistry.getDataSources()) {
                     DBPConnectionConfiguration cnnCfg = ds.getConnectionConfiguration();
                     DBPConnectionType cnnType = cnnCfg.getConnectionType();
@@ -557,15 +557,15 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         if (toRemove.contains(cnnType)) {
                             cnnCfg.setConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         }
+                        affectedDataSourcesPerProject.add(ds);
                         affectedDataSources.add(ds);
                     }
                 }
-                if (affectedDataSources.isEmpty()) {
+                if (affectedDataSourcesPerProject.isEmpty()) {
                     continue;
                 }
                 try {
-                    projectRegistry.updateDataSources(affectedDataSources);
-                    affectedDataSourceRegs.add(projectRegistry);
+                    projectRegistry.updateDataSources(affectedDataSourcesPerProject);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(
                         UIConnectionMessages.pref_page_connection_types_error_title,
@@ -576,8 +576,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             }
         }
-        for (DBPDataSourceRegistry dsReg : affectedDataSourceRegs) {
-            dsReg.notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, null, dsReg));
+        for (DBPDataSourceContainer ds : affectedDataSources) {
+            ds.getRegistry().notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, ds, ds.getRegistry()));
         }
         return super.performOk();
     }
