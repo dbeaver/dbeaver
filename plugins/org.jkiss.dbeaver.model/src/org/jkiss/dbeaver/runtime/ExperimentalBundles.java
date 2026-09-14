@@ -44,7 +44,8 @@ public final class ExperimentalBundles {
             .filter(ExperimentalBundles::isExperimental)
             .toList();
         for (Bundle bundle : experimentalBundles) {
-            if ((bundle.adapt(BundleRevision.class).getTypes() & BundleRevision.TYPE_FRAGMENT) != 0) {
+            BundleRevision revision = bundle.adapt(BundleRevision.class);
+            if (revision == null || (revision.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0) {
                 continue;
             }
             try {
