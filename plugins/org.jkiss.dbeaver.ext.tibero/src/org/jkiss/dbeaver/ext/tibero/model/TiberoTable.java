@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -94,11 +93,7 @@ public class TiberoTable extends OracleTable {
         @NotNull OracleDDLFormat ddlFormat,
         @NotNull java.util.Map<String, Object> options
     ) throws DBException {
-        java.util.Map<String, Object> ddlOptions = new java.util.HashMap<>(options);
-        ddlOptions.put(DBPScriptObject.OPTION_SKIP_INDEXES, true);
-        ddlOptions.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
-        ddlOptions.put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, false);
-        return DBStructUtils.generateTableDDL(monitor, this, ddlOptions, true);
+        return DBStructUtils.generateTableDDL(monitor, this, options, true);
     }
 
     @NotNull
