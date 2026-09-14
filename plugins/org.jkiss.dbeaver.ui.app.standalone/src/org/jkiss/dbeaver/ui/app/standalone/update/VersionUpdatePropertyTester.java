@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync;
+package org.jkiss.dbeaver.ui.app.standalone.update;
 
+import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.Map;
-
-public record DDSyncBinding(
-    @NotNull String configurationId,
-    @Nullable String name,
-    @NotNull String accountId,
-    long configurationVersion,
-    @NotNull Map<String, DDSyncPartState> parts
-) {
+public class VersionUpdatePropertyTester extends PropertyTester {
+    @Override
+    public boolean test(
+        @Nullable Object receiver,
+        @NotNull String property,
+        @NotNull Object[] args,
+        @Nullable Object expectedValue
+    ) {
+        return VersionUpdateHandler.isUpdateAvailable();
+    }
 }
