@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.doris.model.DorisDataSource;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -46,7 +47,7 @@ public class DorisTableManager extends GenericTableManager {
     ) {
         String delimiter = getDelimiter(options);
         ddl.append(delimiter).append(DEFAULT_DISTRIBUTION);
-        Integer replicaCount = getReplicaCount(monitor, table);
+        Integer replicaCount = getReplicaCount(monitor, table, options);
         if (replicaCount != null) {
             ddl.append(delimiter).append(REPLICATION_PROPERTIES.formatted(replicaCount));
         }
@@ -55,9 +56,13 @@ public class DorisTableManager extends GenericTableManager {
     @Nullable
     private static Integer getReplicaCount(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull GenericTableBase table
+        @NotNull GenericTableBase table,
+        @NotNull Map<String, Object> options
     ) {
-        int availableBackendCount = ((DorisDataSource) table.getDataSource()).getAvailableBackendCount(monitor);
+        DorisDataSource dataSource = (DorisDataSource) table.getDataSource();
+        int availableBackendCount = CommonUtils.getOption(options, OPTION_REFRESH_METADATA)
+            ? dataSource.refreshAvailableBackendCount(monitor)
+            : dataSource.getAvailableBackendCount(monitor);
         if (availableBackendCount > 0 && availableBackendCount < DEFAULT_REPLICA_COUNT) {
             return availableBackendCount;
         }

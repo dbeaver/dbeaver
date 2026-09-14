@@ -138,8 +138,13 @@ public class DorisDataSource extends GenericDataSource {
 
     public synchronized int getAvailableBackendCount(@NotNull DBRProgressMonitor monitor) {
         if (availableBackendCount == null) {
-            availableBackendCount = readAvailableBackendCount(monitor);
+            return refreshAvailableBackendCount(monitor);
         }
+        return availableBackendCount;
+    }
+
+    public synchronized int refreshAvailableBackendCount(@NotNull DBRProgressMonitor monitor) {
+        availableBackendCount = readAvailableBackendCount(monitor);
         return availableBackendCount;
     }
 
