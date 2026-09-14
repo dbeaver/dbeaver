@@ -22,6 +22,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.ParenthesedStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -50,6 +51,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
 
@@ -218,14 +220,34 @@ public class SQLQuery implements SQLScriptElement {
             } else if (statement instanceof Drop drop) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(drop.getName());
-            } else if (
-                statement instanceof CreateFunction ||
-                statement instanceof CreateProcedure ||
-                statement instanceof CreateSchema ||
-                statement instanceof CreateSequence ||
-                statement instanceof CreateSynonym ||
-                statement instanceof AlterView ||
-                statement instanceof AlterSequence) {
+            } else if (statement instanceof CreateFunction createFunction) {
+                type = SQLQueryType.DDL;
+                fillSingleSource(createFunction);
+            } else if (statement instanceof CreateProcedure createProcedure) {
+                type = SQLQueryType.DDL;
+                fillSingleSource(createProcedure);
+            } else if (statement instanceof CreateSequence createSequence) {
+                type = SQLQueryType.DDL;
+                var sequence = createSequence.getSequence();
+                if (sequence != null) {
+                    fillSingleSource(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName());
+                }
+            } else if (statement instanceof CreateSynonym createSynonym) {
+                type = SQLQueryType.DDL;
+                var synonym = createSynonym.getSynonym();
+                if (synonym != null) {
+                    fillSingleSource(synonym.getDatabase(), synonym.getSchemaName(), synonym.getName());
+                }
+            } else if (statement instanceof AlterView alterView) {
+                type = SQLQueryType.DDL;
+                fillSingleSource(alterView.getView());
+            } else if (statement instanceof AlterSequence alterSequence) {
+                type = SQLQueryType.DDL;
+                var sequence = alterSequence.getSequence();
+                if (sequence != null) {
+                    fillSingleSource(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName());
+                }
+            } else if (statement instanceof CreateSchema) {
                 type = SQLQueryType.DDL;
             } else if (statement instanceof Merge) {
                 type = SQLQueryType.MERGE;
@@ -268,16 +290,49 @@ public class SQLQuery implements SQLScriptElement {
             CommonUtils.isEmpty(plainSelect.getIntoTables());
     }
 
-    private void fillSingleSource(Table fromItem) {
-        rawSingleTableMetadata = createOriginalSourceTableMetaData(fromItem);
-        singleTableMeta = createUnquotedTableMetaData(rawSingleTableMetadata);
+    private void fillSingleSource(@NotNull Table fromItem) {
+        fillSingleSource(fromItem.getDatabase(), fromItem.getSchemaName(), fromItem.getName());
+    }
+
+    private void fillSingleSource(@Nullable Database database, @Nullable String schemaName, @Nullable String entityName) {
+        if (entityName != null) {
+            rawSingleTableMetadata = new SingleTableMeta(
+                database == null ? null : database.getDatabaseName(),
+                schemaName,
+                entityName
+            );
+            singleTableMeta = createUnquotedTableMetaData(rawSingleTableMetadata);
+        }
+    }
+
+    private void fillSingleSource(@NotNull CreateFunctionalStatement statement) {
+        List<String> declarationParts = statement.getFunctionDeclarationParts();
+        if (CommonUtils.isEmpty(declarationParts)) {
+            return;
+        }
+        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect();
+        String[] nameParts = SQLUtils.splitFullIdentifier(
+            declarationParts.get(0),
+            String.valueOf(dialect.getStructSeparator()),
+            dialect.getIdentifierQuoteStrings(),
+            true
+        );
+        if (nameParts.length == 1) {
+            fillSingleSource(null, null, nameParts[0]);
+        } else if (nameParts.length == 2) {
+            fillSingleSource(null, nameParts[0], nameParts[1]);
+        } else if (nameParts.length == 3) {
+            rawSingleTableMetadata = new SingleTableMeta(nameParts[0], nameParts[1], nameParts[2]);
+            singleTableMeta = createUnquotedTableMetaData(rawSingleTableMetadata);
+        }
     }
 
     SingleTableMeta createTableMetaData(Table fromItem) {
         return createUnquotedTableMetaData(createOriginalSourceTableMetaData(fromItem));
     }
 
-    private SingleTableMeta createOriginalSourceTableMetaData(Table fromItem) {
+    @NotNull
+    private SingleTableMeta createOriginalSourceTableMetaData(@NotNull Table fromItem) {
         Database database = fromItem.getDatabase();
         String catalogName = database == null ? null : database.getDatabaseName();
         String schemaName = fromItem.getSchemaName();

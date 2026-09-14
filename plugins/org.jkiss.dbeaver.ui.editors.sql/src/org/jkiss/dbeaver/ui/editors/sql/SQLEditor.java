@@ -89,8 +89,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
@@ -4373,7 +4373,11 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 if (!result.hasError() && result.getStatement().getType() == SQLQueryType.DDL) {
                     metadataChanged = true;
-                    rememberMetadataRefreshTarget(session.getExecutionContext(), result.getStatement());
+                    rememberMetadataRefreshTarget(
+                        session.getProgressMonitor(),
+                        session.getExecutionContext(),
+                        result.getStatement()
+                    );
                 }
                 SQLEditor owner = getOwner();
                 synchronized (owner.runningQueries) {
@@ -4451,6 +4455,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void rememberMetadataRefreshTarget(
+            @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext executionContext,
             @NotNull SQLQuery query
         ) {
@@ -4459,8 +4464,6 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
             }
             DBCEntityMetaData entityMetadata = query.getEntityMetadata(true);
-            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
-            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
             String catalogName = entityMetadata == null ? null : entityMetadata.getCatalogName();
             String schemaName = entityMetadata == null ? null : entityMetadata.getSchemaName();
             SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
@@ -4470,6 +4473,13 @@ public class SQLEditor extends SQLEditorBase implements
             if (schemaName != null) {
                 schemaName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, schemaName);
             }
+            if ((catalogName == null && contextDefaults.supportsCatalogChange()) ||
+                (schemaName == null && contextDefaults.supportsSchemaChange() && !query.changesSchemaList())
+            ) {
+                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults, executionContext);
+            }
+            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
             if (query.changesSchemaList()) {
                 metadataRefreshTargets.add(new MetadataRefreshTarget(
                     catalogName != null ? catalogName : defaultCatalog == null ? null : defaultCatalog.getName(),
@@ -4606,7 +4616,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        private void processQueryResult(DBRProgressMonitor monitor, SQLQueryResult result, DBCStatistics statistics) {
+        private void processQueryResult(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull SQLQueryResult result,
+            @NotNull DBCStatistics statistics
+        ) {
             SQLEditor owner = getOwner();
             if (!scriptMode) {
                 owner.runPostExecuteActions(result);

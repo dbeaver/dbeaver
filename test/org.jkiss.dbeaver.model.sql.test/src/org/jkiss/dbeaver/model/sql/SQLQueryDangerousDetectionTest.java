@@ -114,12 +114,23 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
 
     @Test
     public void qualifiedDdlShouldExposeItsTargetContainer() {
-        var query = new SQLQuery(null, "CREATE TABLE test_catalog.test_schema.test (id INT)");
-        var metadata = query.getEntityMetadata(false);
+        for (String queryText : List.of(
+            "CREATE TABLE test_catalog.test_schema.test (id INT)",
+            "CREATE VIEW test_catalog.test_schema.test_view AS SELECT 1",
+            "CREATE SEQUENCE test_catalog.test_schema.test_sequence",
+            "CREATE SYNONYM test_catalog.test_schema.test_synonym FOR test",
+            "CREATE FUNCTION test_catalog.test_schema.test_function() RETURNS INT RETURN 1",
+            "CREATE PROCEDURE test_catalog.test_schema.test_procedure() AS 'SELECT 1'",
+            "ALTER VIEW test_catalog.test_schema.test_view AS SELECT 2",
+            "ALTER SEQUENCE test_catalog.test_schema.test_sequence RESTART WITH 2"
+        )) {
+            var query = new SQLQuery(null, queryText);
+            var metadata = query.getEntityMetadata(false);
 
-        Assertions.assertNotNull(metadata);
-        Assertions.assertEquals("test_catalog", metadata.getCatalogName());
-        Assertions.assertEquals("test_schema", metadata.getSchemaName());
+            Assertions.assertNotNull(metadata, queryText);
+            Assertions.assertEquals("test_catalog", metadata.getCatalogName(), queryText);
+            Assertions.assertEquals("test_schema", metadata.getSchemaName(), queryText);
+        }
     }
 
     @Test
