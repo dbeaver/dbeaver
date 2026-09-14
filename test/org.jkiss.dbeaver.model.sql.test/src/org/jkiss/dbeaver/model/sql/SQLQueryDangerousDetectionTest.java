@@ -146,6 +146,15 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void createSchemaShouldExposeItsName() {
+        var query = new SQLQuery(null, "CREATE SCHEMA test_schema");
+        var metadata = query.getEntityMetadata(false);
+
+        Assertions.assertNotNull(metadata);
+        Assertions.assertEquals("test_schema", metadata.getEntityName());
+    }
+
+    @Test
     public void readOnlySelectStatementsShouldNotBeMutating() {
         for (String queryText : List.of(
             "SELECT * FROM test",

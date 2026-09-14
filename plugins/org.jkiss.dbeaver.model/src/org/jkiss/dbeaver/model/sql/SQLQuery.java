@@ -247,8 +247,9 @@ public class SQLQuery implements SQLScriptElement {
                 if (sequence != null) {
                     fillSingleSource(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName());
                 }
-            } else if (statement instanceof CreateSchema) {
+            } else if (statement instanceof CreateSchema createSchema) {
                 type = SQLQueryType.DDL;
+                fillSingleSource(null, null, createSchema.getSchemaName());
             } else if (statement instanceof Merge) {
                 type = SQLQueryType.MERGE;
             } else if (statement instanceof Commit) {
