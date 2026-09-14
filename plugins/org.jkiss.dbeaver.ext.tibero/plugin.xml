@@ -146,11 +146,11 @@
                     <parameter name="dual-table" value="DUAL"/>
                 </driver>
                 <providerProperties drivers="tibero">
-                    <propertyGroup label="Tibero">
-                        <property id="show-only-one-schema@" label="Show only connected user schema" type="boolean" description="Show only the schema that belongs to the connected user in Database Navigator." defaultValue="false"/>
-                        <property id="@dbeaver-check-schema-content@" label="Hide empty schemas" type="boolean" description="Hide schemas that own no objects." defaultValue="false"/>
-                        <property id="@dbeaver-meta-read-column-comments@" label="Read column comments" type="boolean" description="Read column comments from Tibero catalog views while loading table columns." defaultValue="false"/>
-                        <property id="@dbeaver-use-meta-optimizer@" label="Use Oracle meta optimizer" type="boolean" description="Oracle optimizer session hints are not supported by Tibero. Keep this disabled for Tibero connections." defaultValue="false"/>
+                    <propertyGroup label="%provider.property.group.tibero">
+                        <property id="show-only-one-schema@" label="%provider.property.showOnlyConnectedUserSchema.label" type="boolean" description="%provider.property.showOnlyConnectedUserSchema.description" defaultValue="false"/>
+                        <property id="@dbeaver-check-schema-content@" label="%provider.property.hideEmptySchemas.label" type="boolean" description="%provider.property.hideEmptySchemas.description" defaultValue="false"/>
+                        <property id="@dbeaver-meta-read-column-comments@" label="%provider.property.readColumnComments.label" type="boolean" description="%provider.property.readColumnComments.description" defaultValue="false"/>
+                        <property id="@dbeaver-use-meta-optimizer@" label="%provider.property.useOracleMetaOptimizer.label" type="boolean" description="%provider.property.useOracleMetaOptimizer.description" defaultValue="false"/>
                     </propertyGroup>
                 </providerProperties>
             </drivers>

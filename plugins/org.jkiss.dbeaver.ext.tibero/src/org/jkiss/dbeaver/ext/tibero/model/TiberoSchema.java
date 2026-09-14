@@ -176,6 +176,9 @@ public class TiberoSchema extends OracleSchema {
         }
         cacheTables(monitor);
         List<OracleTableIndex> indexes = loadIndexes(monitor);
+        if (monitor.isCanceled()) {
+            return;
+        }
         for (OracleTableIndex index : indexes) {
             cache.cacheObject(index);
         }

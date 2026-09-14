@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
+import org.jkiss.dbeaver.ext.tibero.model.TiberoProcedurePackaged;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -58,7 +58,7 @@ public class PackageNavigateHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
-        final OracleProcedurePackaged procedure = getSelectedProcedure(event);
+        final TiberoProcedurePackaged procedure = getSelectedProcedure(event);
         if (procedure != null) {
             OraclePackage procedurePackage = procedure.getParentObject();
             IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(procedurePackage);
@@ -75,10 +75,10 @@ public class PackageNavigateHandler extends AbstractHandler {
 
     static class NavigateJob extends AbstractJob {
 
-        private final OracleProcedurePackaged procedure;
+        private final TiberoProcedurePackaged procedure;
         private final SQLEditorBase sqlEditor;
 
-        NavigateJob(@NotNull OracleProcedurePackaged procedure, @NotNull SQLEditorBase sqlEditor) {
+        NavigateJob(@NotNull TiberoProcedurePackaged procedure, @NotNull SQLEditorBase sqlEditor) {
             super("Navigate procedure '" + procedure.getFullyQualifiedName(DBPEvaluationContext.UI));
             this.procedure = procedure;
             this.sqlEditor = sqlEditor;
@@ -123,7 +123,7 @@ public class PackageNavigateHandler extends AbstractHandler {
                 }
                 final FindReplaceDocumentAdapter findAdapter = new FindReplaceDocumentAdapter(document);
                 try {
-                    final IRegion procRegion = findAdapter.find(0, procRegex, true, false, false, true);
+                    final IRegion procRegion = findProcedureRegion(findAdapter, procRegex);
                     if (procRegion != null) {
                         UIUtils.asyncExec(() -> sqlEditor.selectAndReveal(procRegion.getOffset(), procRegion.getLength()));
                     }
@@ -132,14 +132,37 @@ public class PackageNavigateHandler extends AbstractHandler {
                 }
             }
         }
+
+        @Nullable
+        private IRegion findProcedureRegion(
+            @NotNull FindReplaceDocumentAdapter findAdapter,
+            @NotNull String procRegex
+        ) throws BadLocationException {
+            final Integer overloadNumber = procedure.getOverloadNumber();
+            if (overloadNumber == null || overloadNumber <= 1) {
+                return findAdapter.find(0, procRegex, true, false, false, true);
+            }
+
+            int offset = 0;
+            int matchedOverload = 0;
+            IRegion region;
+            while ((region = findAdapter.find(offset, procRegex, true, false, false, true)) != null) {
+                matchedOverload++;
+                if (matchedOverload == overloadNumber) {
+                    return region;
+                }
+                offset = region.getOffset() + Math.max(region.getLength(), 1);
+            }
+            return null;
+        }
     }
 
     @Nullable
-    private OracleProcedurePackaged getSelectedProcedure(@NotNull ExecutionEvent event) {
+    private TiberoProcedurePackaged getSelectedProcedure(@NotNull ExecutionEvent event) {
         final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         if (currentSelection instanceof IStructuredSelection structuredSelection && !currentSelection.isEmpty()) {
             Object firstElement = structuredSelection.getFirstElement();
-            return RuntimeUtils.getObjectAdapter(firstElement, OracleProcedurePackaged.class);
+            return RuntimeUtils.getObjectAdapter(firstElement, TiberoProcedurePackaged.class);
         }
         return null;
     }

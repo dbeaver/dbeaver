@@ -90,7 +90,7 @@ public class TiberoProcedureStandalone extends OracleProcedureStandalone {
     ) throws SQLException {
         String whereClause = strict
             ? "OWNER = ? AND OBJECT_NAME = ? AND (PACKAGE_NAME IS NULL OR PACKAGE_NAME='') "
-            : "OWNER = ? AND OBJECT_NAME = ? AND DATA_LEVEL=0 ";
+            : "OWNER = ? AND OBJECT_NAME = ? AND (PACKAGE_NAME IS NULL OR PACKAGE_NAME='') AND DATA_LEVEL=0 ";
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT A.*\n" +
             "     , A.POSITION AS SEQUENCE \n" +

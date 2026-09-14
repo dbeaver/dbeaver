@@ -14,7 +14,7 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+                            <instanceof value="org.jkiss.dbeaver.ext.tibero.model.TiberoProcedurePackaged"/>
                         </adapt>
                     </iterate>
                 </with>
