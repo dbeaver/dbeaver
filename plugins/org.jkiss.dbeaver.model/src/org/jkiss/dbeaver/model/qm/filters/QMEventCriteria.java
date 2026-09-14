@@ -62,12 +62,35 @@ public class QMEventCriteria {
     private boolean desc = true;
     private int fetchingSize = 200;
 
+    @NotNull
+    public static QMEventCriteria copyOf(@NotNull QMEventCriteria criteria) {
+        QMEventCriteria copy = new QMEventCriteria();
+        copy.setContainerId(criteria.getContainerId());
+        copy.setSessionId(criteria.getSessionId());
+        copy.setObjectTypes(criteria.getObjectTypes());
+        copy.setQueryTypes(criteria.getQueryTypes());
+        copy.setSkipEmptyQueries(criteria.isSkipEmptyQueries());
+        copy.setSearchString(criteria.getSearchString());
+        copy.setLastEventId(criteria.getLastEventId());
+        copy.setDriverIds(criteria.getDriverIds());
+        copy.setEventStatuses(criteria.getEventStatuses());
+        copy.setProjectIds(criteria.getProjectIds());
+        copy.setDataSourceIds(criteria.getDataSourceIds());
+        copy.setSchemas(criteria.getSchemas());
+        copy.setCatalogs(criteria.getCatalogs());
+        copy.setSortField(criteria.getSortField());
+        copy.setDateRange(criteria.getDateRange());
+        copy.setDesc(criteria.isDesc());
+        copy.setFetchingSize(criteria.getFetchingSize());
+        return copy;
+    }
+
     @Nullable
     public String getContainerId() {
         return containerId;
     }
 
-    public void setContainerId(String containerId) {
+    public void setContainerId(@Nullable String containerId) {
         this.containerId = containerId;
     }
 
@@ -80,15 +103,16 @@ public class QMEventCriteria {
         return sessionId;
     }
 
-    public void setSessionId(Long sessionId) {
+    public void setSessionId(@Nullable Long sessionId) {
         this.sessionId = sessionId;
     }
 
+    @NotNull
     public QMObjectType[] getObjectTypes() {
         return objectTypes;
     }
 
-    public void setObjectTypes(QMObjectType[] objectTypes) {
+    public void setObjectTypes(@NotNull QMObjectType[] objectTypes) {
         this.objectTypes = objectTypes;
     }
 
@@ -96,16 +120,17 @@ public class QMEventCriteria {
         return objectTypes.length > 0 && objectTypes.length != QMObjectType.values().length;
     }
 
-    public boolean hasObjectType(QMObjectType type) {
+    public boolean hasObjectType(@NotNull QMObjectType type) {
         // If all object types are here it is the same as no object type
         return objectTypes.length > 0 && ArrayUtils.contains(objectTypes, type);
     }
 
+    @NotNull
     public DBCExecutionPurpose[] getQueryTypes() {
         return queryTypes;
     }
 
-    public void setQueryTypes(DBCExecutionPurpose[] queryTypes) {
+    public void setQueryTypes(@NotNull DBCExecutionPurpose[] queryTypes) {
         this.queryTypes = queryTypes;
     }
 
@@ -114,7 +139,7 @@ public class QMEventCriteria {
         return queryTypes.length > 0 && queryTypes.length != DBCExecutionPurpose.values().length;
     }
 
-    public boolean hasQueryType(DBCExecutionPurpose type) {
+    public boolean hasQueryType(@NotNull DBCExecutionPurpose type) {
         return queryTypes.length > 0 && ArrayUtils.contains(queryTypes, type);
     }
 
@@ -123,7 +148,7 @@ public class QMEventCriteria {
         return searchString;
     }
 
-    public void setSearchString(String searchString) {
+    public void setSearchString(@Nullable String searchString) {
         this.searchString = searchString;
     }
 
@@ -150,7 +175,7 @@ public class QMEventCriteria {
     }
 
     public void setDriverIds(@NotNull Set<String> driverIds) {
-        this.driverIds = driverIds;
+        this.driverIds = Set.copyOf(driverIds);
     }
 
     public boolean hasDriverIds() {
@@ -163,7 +188,7 @@ public class QMEventCriteria {
     }
 
     public void setEventStatuses(@NotNull Set<QMEventStatus> eventStatuses) {
-        this.eventStatuses = eventStatuses;
+        this.eventStatuses = Set.copyOf(eventStatuses);
     }
 
     public boolean hasEventStatuses() {
@@ -215,7 +240,7 @@ public class QMEventCriteria {
     }
 
     public void setProjectIds(@NotNull Set<String> projectIds) {
-        this.projectIds = projectIds;
+        this.projectIds = Set.copyOf(projectIds);
     }
 
     public boolean hasProjectIds() {
@@ -228,7 +253,7 @@ public class QMEventCriteria {
     }
 
     public void setDataSourceIds(@NotNull Set<String> dataSourceIds) {
-        this.dataSourceIds = dataSourceIds;
+        this.dataSourceIds = Set.copyOf(dataSourceIds);
     }
 
     @NotNull
@@ -237,7 +262,7 @@ public class QMEventCriteria {
     }
 
     public void setCatalogs(@NotNull Set<String> catalogs) {
-        this.catalogs = catalogs;
+        this.catalogs = Set.copyOf(catalogs);
     }
 
     @NotNull
@@ -246,6 +271,6 @@ public class QMEventCriteria {
     }
 
     public void setSchemas(@NotNull Set<String> schemas) {
-        this.schemas = schemas;
+        this.schemas = Set.copyOf(schemas);
     }
 }

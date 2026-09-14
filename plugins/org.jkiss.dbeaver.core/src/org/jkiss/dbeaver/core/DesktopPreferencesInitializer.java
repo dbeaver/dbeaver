@@ -78,7 +78,7 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_ENTRIES_PER_PAGE, 200);
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_OBJECT_TYPES,
-            QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query)));
+            QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query, QMObjectType.task)));
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
             DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_FILTERED + "," + DBCExecutionPurpose.USER_SCRIPT);
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);

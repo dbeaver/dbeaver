@@ -166,7 +166,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         String getToolTipText(QMEvent event) {
-            return timestampFormat.format(event.getObject().getOpenTime());
+            return timestampFormat.format(QMUtils.getObjectEventTime(event));
         }
 
         @Nullable
@@ -185,7 +185,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         String getText(QMEvent event, boolean briefInfo) {
             QMMObject object = event.getObject();
-            if (object instanceof QMMStatementExecuteInfo statement) {
+            if (object instanceof QMMTaskInfo task) {
+                return task.getTaskName() + " — " + (event.getAction() == QMEventAction.BEGIN
+                    ? ModelMessages.controls_querylog_task_started : ModelMessages.controls_querylog_task_finished);
+            } else if (object instanceof QMMStatementExecuteInfo statement) {
                 //return SQLUtils.stripTransformations(statement.getQueryString());
                 String text = CommonUtils.notEmpty(statement.getQueryString());
                 if (briefInfo) {
@@ -264,6 +267,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final LogColumn COLUMN_RESULT = new LogColumn("result", ModelMessages.controls_querylog_column_result_name, ModelMessages.controls_querylog_column_result_tooltip, 120) { //$NON-NLS-1$
         @Override
         String getText(QMEvent event, boolean briefInfo) {
+            if (event.getObject() instanceof QMMTaskInfo task) {
+                return switch (task.getStatus()) {
+                    case STARTED -> ModelMessages.controls_querylog_task_started;
+                    case SUCCESS -> ModelMessages.controls_querylog_success;
+                    case FAILED -> ModelMessages.controls_querylog_task_failed;
+                    case CANCELED -> ModelMessages.controls_querylog_task_canceled;
+                };
+            }
             if (event.getObject() instanceof QMMStatementExecuteInfo exec) {
                 if (exec.isClosed()) {
                     if (exec.hasError()) {
@@ -287,7 +298,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         String getText(QMEvent event, boolean briefInfo) {
             QMMObject object = event.getObject();
             String containerName = null;
-            if (object instanceof QMMConnectionInfo) {
+            if (object instanceof QMMTaskInfo) {
+                return "";
+            } else if (object instanceof QMMConnectionInfo) {
                 containerName = ((QMMConnectionInfo) object).getContainerName();
             } else if (object instanceof QMMTransactionInfo) {
                 containerName = object.getConnection().getContainerName();
@@ -306,7 +319,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         String getText(QMEvent event, boolean briefInfo) {
             QMMObject object = event.getObject();
             String contextName = null;
-            if (object instanceof QMMConnectionInfo) {
+            if (object instanceof QMMTaskInfo) {
+                return "";
+            } else if (object instanceof QMMConnectionInfo) {
                 contextName = ((QMMConnectionInfo) object).getContextName();
             } else if (object instanceof QMMTransactionInfo) {
                 contextName = object.getConnection().getContextName();
@@ -523,7 +538,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private static String getObjectType(QMMObject object) {
-        if (object instanceof QMMConnectionInfo) {
+        if (object instanceof QMMTaskInfo task) {
+            return ModelMessages.controls_querylog_task + " / " + task.getTaskTypeName();
+        } else if (object instanceof QMMConnectionInfo) {
             return ""; //$NON-NLS-1$
         } else if (object instanceof QMMStatementInfo || object instanceof QMMStatementExecuteInfo) {
             QMMStatementInfo statement;
@@ -572,7 +589,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private Color getObjectBackground(QMEvent event) {
-        if (event.getObject() instanceof QMMStatementExecuteInfo exec) {
+        if (event.getObject() instanceof QMMTaskInfo task) {
+            return task.getStatus() == QMMTaskInfo.Status.FAILED || task.getStatus() == QMMTaskInfo.Status.CANCELED
+                ? QueryLogThemeSettings.instance.colorReverted : null;
+        } else if (event.getObject() instanceof QMMStatementExecuteInfo exec) {
             if (exec.hasError()) {
                 return QueryLogThemeSettings.instance.colorReverted;
             }
@@ -671,7 +691,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     } else {
                         updateExecutions(qmEvent, (QMMTransactionSavepointInfo) object);
                     }
-                } else if (object instanceof QMMConnectionInfo) {
+                } else if (object instanceof QMMConnectionInfo || object instanceof QMMTaskInfo) {
                     QMEventAction action = qmEvent.getAction();
                     if (action == QMEventAction.BEGIN || action == QMEventAction.END) {
                         TableItem item = new TableItem(logTable, SWT.NONE, itemIndex++);
