@@ -828,7 +828,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     }
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI()
-                        .showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
+                        .showError(
+                            "Transfer event processor",
+                            "Error executing data transfer event processor '" + descriptor.getLabel() + "'",
+                            e
+                        );
                 }
             }
         }
