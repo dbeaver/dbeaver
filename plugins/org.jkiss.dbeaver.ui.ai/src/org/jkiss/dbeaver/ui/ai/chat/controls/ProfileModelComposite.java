@@ -48,22 +48,18 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 class ProfileModelComposite extends Composite {
     private static final Log log = Log.getLog(ProfileModelComposite.class);
     private static final int MIN_MODEL_WIDTH = 80;
     private static final int MIN_CHAT_WIDTH = 240;
-    private static final int MODEL_VERTICAL_OFFSET = 1;
+    private static final int MODEL_VERTICAL_OFFSET = RuntimeUtils.isWindows() ? 1 : 0;
 
     private final AIChatControl chat;
     private final ToolBar profileBar;
