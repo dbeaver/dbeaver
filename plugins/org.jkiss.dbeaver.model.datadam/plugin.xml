@@ -2,6 +2,26 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+                type="tunnel"
+                id="datadam-access-point"
+                codeName="DataDam Access Point"
+                prefix="dd-ap"
+                label="DataDam Access Point"
+                description="Routes the connection through a customer-hosted Access Point (pro#9579)"
+                secured="true"
+                desktop="true"
+                distributed="true"
+                order="11"
+                handlerClass="org.jkiss.dbeaver.model.datadam.tunnel.DDAccessPointTunnel">
+            <propertyGroup label="Access Point">
+                <property id="apId" label="Access Point name" type="string"
+                          description="Name the Access Point was registered under (DD_ACCESS_POINT_NAME on the Access Point side)"/>
+            </propertyGroup>
+        </handler>
+    </extension>
+
     <extension point="com.dbeaver.ai.engine">
         <completionEngine
             id="datadam" label="DataDam AI"
