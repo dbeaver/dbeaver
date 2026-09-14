@@ -75,11 +75,15 @@ public class TiberoProcedurePackaged extends OracleProcedurePackaged {
                  ", A.POSITION AS SEQUENCE \n" +
             "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS A \n" +
             "WHERE OWNER = ? AND OBJECT_NAME = ? AND PACKAGE_NAME = ? \n" +
+            (getOverloadNumber() == null ? "AND OVERLOAD IS NULL \n" : "AND OVERLOAD = ? \n") +
             "ORDER BY POSITION, DATA_LEVEL");
         int paramNum = 1;
         dbStat.setString(paramNum++, getSchema().getName());
         dbStat.setString(paramNum++, getName());
         dbStat.setString(paramNum++, getParentObject().getName());
+        if (getOverloadNumber() != null) {
+            dbStat.setInt(paramNum, getOverloadNumber());
+        }
         return dbStat;
     }
 }

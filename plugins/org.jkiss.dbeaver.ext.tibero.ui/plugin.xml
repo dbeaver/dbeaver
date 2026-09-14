@@ -3,8 +3,8 @@
 <plugin>
 
     <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.tibero" name="Tibero" description="Tibero Commands"/>
-        <command id="org.jkiss.dbeaver.ext.tibero.code.package.navigate" name="Go to source code" description="Navigate to Tibero package source code" categoryId="org.jkiss.dbeaver.ext.tibero"/>
+        <category id="org.jkiss.dbeaver.ext.tibero" name="%command.category.name" description="%command.category.description"/>
+        <command id="org.jkiss.dbeaver.ext.tibero.code.package.navigate" name="%command.package.navigate.name" description="%command.package.navigate.description" categoryId="org.jkiss.dbeaver.ext.tibero"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -35,7 +35,7 @@
             id="org.jkiss.dbeaver.ext.tibero.dataSourceWizardView"
             targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
             dataSource="tibero"
-            label="Tibero connection settings"
+            label="%datasource.tibero.connection.settings"
             class="org.jkiss.dbeaver.ext.tibero.ui.views.TiberoConnectionPage"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.tibero/icons/tibero_icon.png">
         </view>
@@ -43,7 +43,7 @@
             id="org.jkiss.dbeaver.ext.tibero.dataSourceEditorView"
             targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
             dataSource="tibero"
-            label="Tibero connection settings"
+            label="%datasource.tibero.connection.settings"
             class="org.jkiss.dbeaver.ext.tibero.ui.views.TiberoConnectionPage"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.tibero/icons/tibero_icon.png">
         </view>

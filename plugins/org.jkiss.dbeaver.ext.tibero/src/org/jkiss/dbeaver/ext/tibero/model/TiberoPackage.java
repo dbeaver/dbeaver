@@ -133,8 +133,9 @@ public class TiberoPackage extends OraclePackage implements DBSObjectContainer, 
                 " AND A.OBJECT_NAME = P.PROCEDURE_NAME\n" +
                 " AND A.ARGUMENT_NAME IS NULL\n" +
                 " AND A.DATA_LEVEL = 0\n" +
+                " AND (A.OVERLOAD IS NULL OR P.MEMBER_NO IS NULL OR A.OVERLOAD = P.MEMBER_NO)\n" +
                 "WHERE P.OWNER=? AND P.OBJECT_NAME=?\n" +
-                "ORDER BY P.PROCEDURE_NAME");
+                "ORDER BY P.PROCEDURE_NAME, P.MEMBER_NO");
             dbStat.setString(1, owner.getSchema().getName());
             dbStat.setString(2, owner.getName());
             return dbStat;
