@@ -211,7 +211,10 @@ public class DatabaseTransferUtils {
                     containerMapping,
                     actions,
                     changedProperties,
-                    consumerSettings != null && consumerSettings.consumeMetadataRefresh());
+                    consumerSettings != null &&
+                    containerMapping.hasNewTargetObject() &&
+                    consumerSettings.consumeMetadataRefresh()
+                );
                 if (hasExtraTargetStructure) {
                     Collections.addAll(actions, consumerSettings.generateExtraTargetTableDDL(
                         monitor, executionContext, schema, containerMapping));
