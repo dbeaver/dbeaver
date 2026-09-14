@@ -112,13 +112,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     private static final String[] EXCLUDE_PREF_PAGES = {
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Perspectives",
-        //"org.eclipse.ui.preferencePages.FileEditors",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.APPEARANCE_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Decorators",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace/org.eclipse.ui.preferencePages.BuildOrder",
-        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
-        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
@@ -129,9 +126,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
 
         PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID,
-
-        // Team preferences - not needed in CE
-        //"org.eclipse.team.ui.TeamPreferences",
     };
 
     // Move to UI
@@ -140,18 +134,34 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
-        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors", //"File Associations"
         PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID + "/" + PrefPageConstants.P2_SITES_PREF_PAGE_ID,
     };
 
     // Move to Editors
     private static final String[] EDITORS_PREF_PAGES = {
-            PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor"
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors", //"File Associations"
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor",
     };
 
-    // Move to General
-    private static final String[] GENERAL_PREF_PAGES = {
-        "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
+    // Move to File Associations
+    private static final String[] FILE_ASSOCIATIONS_PREF_PAGES = {
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
+    };
+
+    // Move to Text Editors
+    private static final String[] TEXT_EDITOR_PREF_PAGES = {
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.compare.internal.ComparePreferencePage",
+    };
+
+    // Move to SQL Editor
+    private static final String[] SQL_EDITOR_PREF_PAGES = {
+        "org.eclipse.debug.ui.DebugPreferencePage",
+    };
+
+    // Move to Workspace
+    private static final String[] WORKSPACE_PREF_PAGES = {
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        "org.eclipse.team.ui.TeamPreferences",
     };
 
     // Move to Connections
@@ -302,8 +312,23 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         FontPreferenceOverrides.hideFontPrefs(FONT_PREFERENCES_TO_HIDE);
 
         WorkbenchUtils.movePreferencePages(EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
+        WorkbenchUtils.movePreferencePages(
+            FILE_ASSOCIATIONS_PREF_PAGES,
+            PrefPageDatabaseEditors.PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors"
+        );
+        WorkbenchUtils.movePreferencePages(
+            TEXT_EDITOR_PREF_PAGES,
+            PrefPageDatabaseEditors.PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor"
+        );
+        WorkbenchUtils.movePreferencePages(
+            SQL_EDITOR_PREF_PAGES,
+            PrefPageDatabaseEditors.PAGE_ID + "/org.jkiss.dbeaver.preferences.main.sqleditor"
+        );
+        WorkbenchUtils.movePreferencePages(
+            WORKSPACE_PREF_PAGES,
+            PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace"
+        );
         WorkbenchUtils.movePreferencePages(UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
-        WorkbenchUtils.movePreferencePages(GENERAL_PREF_PAGES, PrefPageConstants.WORKBENCH_PREF_PAGE_ID);
         WorkbenchUtils.movePreferencePages(NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
 
         WorkbenchUtils.removePreferencePages(getExcludedPreferencePageIds());
