@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <extension point="org.jkiss.dbeaver.service">
+        <service
+            name="org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService"
+            class="org.jkiss.dbeaver.ext.cdata.ui.CDataLicenseUIServiceImpl"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator
+            class="org.jkiss.dbeaver.ext.cdata.CDataAuthModel"
+            uiClass="org.jkiss.dbeaver.ext.cdata.ui.CDataAuthModelConfigurator"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator
+            dataSource="cdata"
+            class="org.jkiss.dbeaver.ext.cdata.ui.CDataConnectionPage"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page
+            category="org.jkiss.dbeaver.preferences.drivers"
+            id="org.jkiss.dbeaver.ext.cdata.preferences"
+            class="org.jkiss.dbeaver.ext.cdata.ui.CDataPreferencePage"
+            name="%cdata.preference.page.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
+        </page>
+    </extension>
+</plugin>

@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.DriverCategoryDescriptor;
 import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -71,8 +72,11 @@ public class DriverTabbedViewer extends StructuredViewer {
         this.listComparator = driverComparator;
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
-        List<DBPDriver> ratedDrivers = new ArrayList<>(allDrivers);
-        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
+        List<DBPDriver> standardDrivers = allDrivers.stream()
+            .filter(driver -> !(driver instanceof DBPDriverWithLicense))
+            .toList();
+        List<DBPDriver> ratedDrivers = new ArrayList<>(standardDrivers);
+        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(standardDrivers, 12);
 
         folderComposite = new TabbedFolderComposite(parent, style) {
             @Override
@@ -172,6 +176,20 @@ public class DriverTabbedViewer extends StructuredViewer {
     @NotNull
     public TabbedFolderComposite getFolderComposite() {
         return folderComposite;
+    }
+
+    @Nullable
+    public String getActiveFolderId() {
+        ITabbedFolder activeFolder = folderComposite.getActiveFolder(false);
+        TabbedFolderInfo[] folders = folderComposite.getFolders();
+        if (activeFolder != null && folders != null) {
+            for (TabbedFolderInfo folder : folders) {
+                if (folder.getContents() == activeFolder) {
+                    return folder.getId();
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable
@@ -348,9 +366,12 @@ public class DriverTabbedViewer extends StructuredViewer {
         }
 
         private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {
+            @NotNull
             @Override
-            public Image getImage(Object element) {
-                return DBeaverIcons.getImage(((DBPDriver) element).getIconBig());
+            public Image getImage(@NotNull Object element) {
+                DBPDriver driver = (DBPDriver) element;
+                DriverIconLoader.load(driver, viewer);
+                return DBeaverIcons.getImage(driver.getIconBig());
             }
 
             @Override

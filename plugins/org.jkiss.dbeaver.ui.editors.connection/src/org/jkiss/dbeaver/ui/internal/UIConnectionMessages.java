@@ -480,6 +480,7 @@ public class UIConnectionMessages extends NLS {
     public static String driver_connection_sort_by;
     public static String pref_page_connection_label_general;
     public static String pref_page_connection_label_use_environment;
+    public static String pref_page_connection_types_error_title;
     public static String pref_page_connection_types_group_parameters;
     public static String pref_page_connection_types_group_settings;
     public static String pref_page_connection_types_label_auto_close_enabled_tip;

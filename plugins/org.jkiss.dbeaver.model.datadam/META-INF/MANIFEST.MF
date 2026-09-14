@@ -7,8 +7,12 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20260720
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.model.datadam
-Require-Bundle: org.jkiss.dbeaver.model,
+Export-Package: org.jkiss.dbeaver.model.datadam,
+ org.jkiss.dbeaver.model.datadam.auth,
+ org.jkiss.dbeaver.model.datadam.sync,
+ org.jkiss.dbeaver.model.datadam.sync.core
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.ai,
+ com.dbeaver.rest.client;visibility:=reexport,
  com.dbeaver.datadam.share.api;visibility:=reexport
 Automatic-Module-Name: org.jkiss.dbeaver.model.datadam

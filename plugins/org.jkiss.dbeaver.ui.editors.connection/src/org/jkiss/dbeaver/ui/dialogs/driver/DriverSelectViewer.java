@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -385,6 +386,10 @@ public class DriverSelectViewer extends Viewer {
                     if (DBWorkbench.isDistributed()) {
                         filters.add(new DriverInstalledFilter());
                     }
+                    if (!(selectorViewer instanceof DriverTabbedViewer)) {
+                        // commercial drivers are only shown in their dedicated tab
+                        filters.add(new CommercialDriverFilter());
+                    }
                     selectorViewer.setFilters(filters.toArray(new ViewerFilter[0]));
                     if (selectorViewer instanceof AbstractTreeViewer atv) {
                         atv.expandAll();
@@ -475,6 +480,13 @@ public class DriverSelectViewer extends Viewer {
                 return driver.getDefaultDriverLoader().isDriverInstalled();
             }
             return true;
+        }
+    }
+
+    private static class CommercialDriverFilter extends ViewerFilter {
+        @Override
+        public boolean select(@NotNull Viewer viewer, @NotNull Object parentElement, @NotNull Object element) {
+            return !(element instanceof DBPDriverWithLicense);
         }
     }
 
