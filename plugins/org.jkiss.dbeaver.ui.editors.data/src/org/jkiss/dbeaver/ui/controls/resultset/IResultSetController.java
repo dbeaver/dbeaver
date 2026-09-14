@@ -190,6 +190,11 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     ResultSetRow addNewRow(@NotNull RowPlacement placement, boolean copyCurrent, boolean updatePresentation);
 
     /**
+     * Adds empty rows at the specified visual index without updating the presentation.
+     */
+    void preserveNewRows(int rowIndex, int rowCount);
+
+    /**
      * Fills rows in current selection with values from row above/below it.
      * <p>
      * Depending on selection, source row may literally be the row before or
