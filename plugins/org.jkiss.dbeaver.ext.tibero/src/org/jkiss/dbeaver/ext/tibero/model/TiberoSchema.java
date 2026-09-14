@@ -145,7 +145,7 @@ public class TiberoSchema extends OracleSchema {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {
-                            break;
+                            return;
                         }
                         final String objectType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
                         if ("TABLE".equals(objectType)) {
