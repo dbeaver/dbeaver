@@ -317,14 +317,12 @@ public class SQLQuery implements SQLScriptElement {
             dialect.getIdentifierQuoteStrings(),
             true
         );
-        if (nameParts.length == 1) {
-            fillSingleSource(null, null, nameParts[0]);
-        } else if (nameParts.length == 2) {
-            fillSingleSource(null, nameParts[0], nameParts[1]);
-        } else if (nameParts.length == 3) {
-            rawSingleTableMetadata = new SingleTableMeta(nameParts[0], nameParts[1], nameParts[2]);
-            singleTableMeta = createUnquotedTableMetaData(rawSingleTableMetadata);
-        }
+        int entityIndex = nameParts.length - 1;
+        String catalogName = nameParts.length >= 3 ? nameParts[entityIndex - 2] : null;
+        String schemaName = nameParts.length >= 2 ? nameParts[entityIndex - 1] : null;
+        String entityName = nameParts.length == 0 ? declarationParts.get(0) : nameParts[entityIndex];
+        rawSingleTableMetadata = new SingleTableMeta(catalogName, schemaName, entityName);
+        singleTableMeta = createUnquotedTableMetaData(rawSingleTableMetadata);
     }
 
     SingleTableMeta createTableMetaData(Table fromItem) {

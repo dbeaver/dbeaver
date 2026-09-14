@@ -134,6 +134,18 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void deeplyQualifiedFunctionShouldExposeNearestTargetContainer() {
+        var query = new SQLQuery(null, "CREATE FUNCTION server.test_catalog.test_schema.test_function() " +
+            "RETURNS INT RETURN 1");
+        var metadata = query.getEntityMetadata(false);
+
+        Assertions.assertNotNull(metadata);
+        Assertions.assertEquals("test_catalog", metadata.getCatalogName());
+        Assertions.assertEquals("test_schema", metadata.getSchemaName());
+        Assertions.assertEquals("test_function", metadata.getEntityName());
+    }
+
+    @Test
     public void readOnlySelectStatementsShouldNotBeMutating() {
         for (String queryText : List.of(
             "SELECT * FROM test",
