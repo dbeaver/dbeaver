@@ -312,10 +312,14 @@ public class SQLQuery implements SQLScriptElement {
             return;
         }
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect();
+        String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
+        if (identifierQuoteStrings == null) {
+            identifierQuoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
+        }
         String[] nameParts = SQLUtils.splitFullIdentifier(
             declarationParts.get(0),
             String.valueOf(dialect.getStructSeparator()),
-            dialect.getIdentifierQuoteStrings(),
+            identifierQuoteStrings,
             true
         );
         int entityIndex = nameParts.length - 1;

@@ -16,9 +16,13 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 
@@ -152,6 +156,27 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
 
         Assertions.assertNotNull(metadata);
         Assertions.assertEquals("test_schema", metadata.getEntityName());
+    }
+
+    @Test
+    public void nullDialectQuotesShouldPreserveSeparatorsInsideQuotedFunctionName() {
+        var dialect = new BasicSQLDialect() {
+            @Nullable
+            @Override
+            public String[][] getIdentifierQuoteStrings() {
+                return null;
+            }
+        };
+        var dataSource = Mockito.mock(DBPDataSource.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        var query = new SQLQuery(dataSource, "CREATE FUNCTION \"test.catalog\".test_schema.test_function() " +
+            "RETURNS INT RETURN 1");
+        var metadata = query.getEntityMetadata(false);
+
+        Assertions.assertNotNull(metadata);
+        Assertions.assertEquals("test.catalog", metadata.getCatalogName());
+        Assertions.assertEquals("test_schema", metadata.getSchemaName());
+        Assertions.assertEquals("test_function", metadata.getEntityName());
     }
 
     @Test
