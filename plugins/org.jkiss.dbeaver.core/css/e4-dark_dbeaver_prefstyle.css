@@ -19,6 +19,12 @@
             'org.jkiss.dbeaver.ui.navigator.node.statistics.background=105,105,105'
 }
 
+Text.readOnlyConnectionUrl {
+    background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+    /* Matches Eclipse's dark-theme read-only text color. */
+    color: #bbbbbb;
+}
+
 IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
     preferences:
         'AbstractTextEditor.Color.Background.SystemDefault=false'
