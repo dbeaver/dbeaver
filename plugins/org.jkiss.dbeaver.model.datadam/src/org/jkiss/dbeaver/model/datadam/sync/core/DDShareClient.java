@@ -17,14 +17,9 @@
 package org.jkiss.dbeaver.model.datadam.sync.core;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
+import com.dbeaver.datadam.share.api.model.*;
 import com.dbeaver.datadam.share.api.model.DDConfiguration;
 import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
-import com.dbeaver.datadam.share.api.model.DDCreateConfigurationRequest;
-import com.dbeaver.datadam.share.api.model.DDSharedProject;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectConfiguration;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectFile;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
-import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
 import com.dbeaver.datadam.share.api.utils.DDFingerprintUtils;
@@ -33,15 +28,7 @@ import com.dbeaver.rest.client.MediaType;
 import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
 import com.dbeaver.rest.client.interceptor.HttpResponseWrapper;
 import com.dbeaver.rest.client.interceptor.InterceptorChain;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -58,13 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import javax.crypto.SecretKey;
 
 public class DDShareClient extends AbstractRestClient implements DDSyncTransport, DDSharedProjectService {
@@ -266,6 +247,30 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
             return gson.fromJson(result, DDSharedProjectConfiguration.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to pull project configuration", e);
+        }
+    }
+
+    @Nullable
+    @Override
+    public DDSharedProjectRevision getCurrentProjectRevision(@NotNull UUID projectId) throws DDShareException {
+        try {
+            JsonObject data = call(
+                """
+                    query($projectId: ID!) {
+                        currentProjectRevision(projectId: $projectId) {
+                            id: revisionId
+                            userId
+                            updateTime
+                            configurationFingerprint
+                        }
+                    }""", Map.of("projectId", projectId.toString())
+            );
+            JsonElement result = data.get("currentProjectRevision");
+            return result == null || result.isJsonNull()
+                ? null
+                : gson.fromJson(result, DDSharedProjectRevision.class);
+        } catch (DBException e) {
+            throw new DDShareException("Failed to get current project revision", e);
         }
     }
 
