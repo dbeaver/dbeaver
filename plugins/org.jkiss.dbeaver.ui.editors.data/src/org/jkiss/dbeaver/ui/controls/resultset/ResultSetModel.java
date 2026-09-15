@@ -231,6 +231,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
+    @Override
     public DBDAttributeBinding getDocumentAttribute() {
         return documentAttribute;
     }
@@ -875,6 +876,44 @@ public class ResultSetModel implements DBDResultSetModel {
         this.curRows.add(rowNum, newRow);
         this.changesCount++;
         return newRow;
+    }
+
+    @NotNull
+    List<ResultSetRow> preserveNewRows(int rowNum, @NotNull List<Object[]> data) {
+        if (this.filteredRows != null) {
+            int firstRowNumber = this.curRows.size();
+            int firstVisualNumber = this.filteredRows.size() + 1;
+            List<ResultSetRow> newRows = new ArrayList<>(data.size());
+            for (int i = 0; i < data.size(); i++) {
+                ResultSetRow newRow = new ResultSetRow(firstRowNumber + i, data.get(i));
+                newRow.setVisualNumber(firstVisualNumber + i);
+                newRow.setState(ResultSetRow.STATE_ADDED);
+                newRows.add(newRow);
+            }
+            this.filteredRows.addAll(newRows);
+            this.curRows.addAll(rowNum, newRows);
+            this.changesCount += newRows.size();
+            return newRows;
+        }
+
+        int rowCount = data.size();
+        for (ResultSetRow row : this.curRows) {
+            if (row.getVisualNumber() >= rowNum) {
+                row.setVisualNumber(row.getVisualNumber() + rowCount);
+            }
+        }
+
+        int firstRowNumber = this.curRows.size();
+        List<ResultSetRow> newRows = new ArrayList<>(rowCount);
+        for (int i = 0; i < rowCount; i++) {
+            ResultSetRow newRow = new ResultSetRow(firstRowNumber + i, data.get(i));
+            newRow.setVisualNumber(rowNum + i);
+            newRow.setState(ResultSetRow.STATE_ADDED);
+            newRows.add(newRow);
+        }
+        this.curRows.addAll(rowNum, newRows);
+        this.changesCount += rowCount;
+        return newRows;
     }
 
     /**
