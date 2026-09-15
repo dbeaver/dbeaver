@@ -11,7 +11,7 @@ Export-Package: org.jkiss.dbeaver.model.datadam,
  org.jkiss.dbeaver.model.datadam.auth,
  org.jkiss.dbeaver.model.datadam.sync,
  org.jkiss.dbeaver.model.datadam.sync.core,
- org.jkiss.dbeaver.model.datadam.tunnel
+ org.jkiss.dbeaver.model.datadam.accesspoint
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.ai,
  com.dbeaver.rest.client;visibility:=reexport,

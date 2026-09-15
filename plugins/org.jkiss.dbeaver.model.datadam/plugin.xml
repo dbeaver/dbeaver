@@ -14,7 +14,7 @@
                 desktop="true"
                 distributed="true"
                 order="11"
-                handlerClass="org.jkiss.dbeaver.model.datadam.tunnel.DDAccessPointTunnel">
+                handlerClass="org.jkiss.dbeaver.model.datadam.accesspoint.DDAccessPointTunnel">
             <propertyGroup label="Access Point">
                 <property id="apId" label="Access Point name" type="string"
                           description="Name the Access Point was registered under (DD_ACCESS_POINT_NAME on the Access Point side)"/>

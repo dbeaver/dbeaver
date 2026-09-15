@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.tunnel;
+package org.jkiss.dbeaver.model.datadam.accesspoint;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -65,7 +65,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
     private static final Log log = Log.getLog(DDAccessPointTunnel.class);
 
     public static final String PROP_AP_ID = "apId";
-    private static final String TUNNEL_LOCAL_HOST = DBConstants.HOST_LOCALHOST;
+    private static final String LOCAL_HOST = DBConstants.HOST_LOCALHOST;
 
     // Same pref/env var as DDSyncPreferencePage (ui.datadam) - duplicated, model can't depend on ui.
     private static final String ENV_URL = "DATADAM_URL";
@@ -117,12 +117,12 @@ public class DDAccessPointTunnel implements DBWTunnel {
         target = info.getHostName() + ":" + info.getHostPort();
 
         localServer = ServerSocketChannel.open();
-        localServer.bind(new InetSocketAddress(TUNNEL_LOCAL_HOST, 0));
+        localServer.bind(new InetSocketAddress(LOCAL_HOST, 0));
         int localPort = ((InetSocketAddress) localServer.getLocalAddress()).getPort();
 
         executor.submit(this::acceptLoop);
 
-        info.setHostName(TUNNEL_LOCAL_HOST);
+        info.setHostName(LOCAL_HOST);
         info.setHostPort(String.valueOf(localPort));
         info.setUrl(configuration.getDataSource().getDriver().getConnectionURL(info));
         log.info("DDAccessPointTunnel: rewritten to " + info.getHostName() + ":" + info.getHostPort() + ", url=" + info.getUrl());
@@ -136,7 +136,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
                 local = localServer.accept();
             } catch (IOException e) {
                 if (!closed) {
-                    log.error("Access Point tunnel " + apId + ": accept failed", e);
+                    log.error("Access Point " + apId + ": accept failed", e);
                 }
                 return;
             }
@@ -158,7 +158,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
                 bridgeSocket.close();
             }
         } catch (Exception e) {
-            log.error("Access Point tunnel " + apId + ": bridge failed", e);
+            log.error("Access Point " + apId + ": bridge failed", e);
         } finally {
             activeConnections.remove(local);
             try {
@@ -173,7 +173,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
     private BridgeTicket requestBridgeTicket() throws Exception {
         byte[] bodyBytes = ("{\"apId\":" + JSONUtils.GSON.toJson(apId) + ",\"target\":" + JSONUtils.GSON.toJson(target) + "}")
             .getBytes(StandardCharsets.UTF_8);
-        URI uri = URI.create(gatewayUrl + "/tunnel/request");
+        URI uri = URI.create(gatewayUrl + "/ap/request");
 
         HttpResponse<String> response = sendSignedRequest(uri, bodyBytes);
         String serverTime = response.headers().firstValue(SERVER_TIME_HEADER).orElse(null);
@@ -182,7 +182,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
             response = sendSignedRequest(uri, bodyBytes);
         }
         if (response.statusCode() != 200) {
-            throw new DBException("Access Point tunnel request failed: HTTP " + response.statusCode() + " " + response.body());
+            throw new DBException("Access Point bridge request failed: HTTP " + response.statusCode() + " " + response.body());
         }
         @SuppressWarnings("unchecked")
         Map<String, Object> json = JSONUtils.GSON.fromJson(response.body(), Map.class);
@@ -221,14 +221,14 @@ public class DDAccessPointTunnel implements DBWTunnel {
         return tls ? SSLSocketFactory.getDefault().createSocket(host, port) : new Socket(host, port);
     }
 
-    // Matches tunnel/server/bridge.go's upgrade. A BufferedReader would over-read past the
-    // headers and swallow tunneled bytes, so this reads one byte at a time instead.
+    // Matches accesspoint/server/bridge.go's upgrade. A BufferedReader would over-read past the
+    // headers and swallow bridged bytes, so this reads one byte at a time instead.
     private void performUpgrade(@NotNull Socket bridgeSocket, @NotNull String token) throws IOException {
         String host = bridgeSocket.getInetAddress().getHostName();
-        String request = "GET /tunnel/bridge?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8) + " HTTP/1.1\r\n"
+        String request = "GET /ap/bridge?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8) + " HTTP/1.1\r\n"
             + "Host: " + host + "\r\n"
             + "Connection: Upgrade\r\n"
-            + "Upgrade: dd-tunnel\r\n"
+            + "Upgrade: dd-ap-bridge\r\n"
             + "\r\n";
         bridgeSocket.getOutputStream().write(request.getBytes(StandardCharsets.US_ASCII));
 
@@ -244,7 +244,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
 
     private void splice(@NotNull SocketChannel local, @NotNull Socket bridgeSocket) throws IOException {
         Socket localSocket = local.socket();
-        Thread outbound = new Thread(() -> pipe(localSocket, bridgeSocket), "DataDam AP tunnel " + apId + " out");
+        Thread outbound = new Thread(() -> pipe(localSocket, bridgeSocket), "DataDam AP bridge " + apId + " out");
         outbound.start();
         pipe(bridgeSocket, localSocket);
         try {
@@ -258,7 +258,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
         try {
             from.getInputStream().transferTo(to.getOutputStream());
         } catch (IOException ignored) {
-            // one side closed - normal end of a tunneled session
+            // one side closed - normal end of a bridged session
         } finally {
             try {
                 if (!to.isClosed()) {
@@ -332,7 +332,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
             try {
                 localServer.close();
             } catch (IOException e) {
-                log.debug("Access Point tunnel " + apId + ": error closing local listener", e);
+                log.debug("Access Point " + apId + ": error closing local listener", e);
             }
         }
         for (Closeable connection : activeConnections) {

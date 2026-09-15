@@ -4,7 +4,7 @@
 <plugin>
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.DDAIEngine" uiClass="org.jkiss.dbeaver.ui.datadam.DDConfigurator"/>
-        <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.tunnel.DDAccessPointTunnel" uiClass="org.jkiss.dbeaver.ui.datadam.tunnel.DDAccessPointConfiguratorUI"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.accesspoint.DDAccessPointTunnel" uiClass="org.jkiss.dbeaver.ui.datadam.accesspoint.DDAccessPointConfiguratorUI"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">

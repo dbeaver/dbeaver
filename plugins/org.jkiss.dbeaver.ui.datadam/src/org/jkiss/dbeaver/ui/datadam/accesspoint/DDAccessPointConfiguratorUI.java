@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.tunnel;
+package org.jkiss.dbeaver.ui.datadam.accesspoint;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -22,7 +22,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.datadam.tunnel.DDAccessPointTunnel;
+import org.jkiss.dbeaver.model.datadam.accesspoint.DDAccessPointTunnel;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
