@@ -56,6 +56,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> {
 
     public static final String OPTION_SKIP_CONFIGURATION = "skip.object.configuration";
+    public static final String OPTION_REFRESH_METADATA = "refresh.metadata";
     // This option may be set by object configurer, e.g. to create other linked objects.
     // For example constraint for a columns.
     // Value of this property must be instance of DBRRunnableWithProgress

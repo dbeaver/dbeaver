@@ -211,7 +211,17 @@ public class DatabaseTransferUtils {
         if (USE_STRUCT_DDL) {
             try {
                 final List<DBEPersistAction> actions = new ArrayList<>();
-                generateStructTableDDL(monitor, executionContext, schema, containerMapping, actions, changedProperties);
+                generateStructTableDDL(
+                    monitor,
+                    executionContext,
+                    schema,
+                    containerMapping,
+                    actions,
+                    changedProperties,
+                    consumerSettings != null &&
+                    containerMapping.hasNewTargetObject() &&
+                    consumerSettings.consumeMetadataRefresh()
+                );
                 if (hasExtraTargetStructure) {
                     Collections.addAll(actions, consumerSettings.generateExtraTargetTableDDL(
                         monitor, executionContext, schema, containerMapping));
@@ -406,6 +416,20 @@ public class DatabaseTransferUtils {
         @NotNull List<DBEPersistAction> actions,
         @Nullable Map<DBPPropertyDescriptor, Object> changedProperties
     ) throws DBException {
+        return generateStructTableDDL(
+            monitor, executionContext, schema, containerMapping, actions, changedProperties, false);
+    }
+
+    @NotNull
+    private static DBSEntity generateStructTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer schema,
+        @NotNull DatabaseMappingContainer containerMapping,
+        @NotNull List<DBEPersistAction> actions,
+        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties,
+        boolean refreshMetadata
+    ) throws DBException {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
         try {
@@ -436,6 +460,9 @@ public class DatabaseTransferUtils {
             Map<String, Object> options = new HashMap<>();
             options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
             options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, true);
+            if (refreshMetadata) {
+                options.put(SQLObjectEditor.OPTION_REFRESH_METADATA, true);
+            }
 
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 

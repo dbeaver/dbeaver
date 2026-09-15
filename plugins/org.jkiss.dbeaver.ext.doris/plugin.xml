@@ -11,6 +11,9 @@
                 label="Apache Doris"
                 icon="icons/doris_icon.svg">
 
+            <treeInjection path="generic/catalog/schema/table"
+                changeFolderType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
+
             <drivers managable="true">
                 <driver
                         id="doris"
