@@ -127,6 +127,7 @@ public class RegistryConstants {
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_META_MODEL = "defaultMetaModel"; //$NON-NLS-1$
     public static final String ATTR_REQUIRES_MUTABILITY = "requiresMutability"; //$NON-NLS-1$
     public static final String ATTR_REQUIRES_EXPORT_PRIVILEGES = "requiresExportPrivileges"; //$NON-NLS-1$
 

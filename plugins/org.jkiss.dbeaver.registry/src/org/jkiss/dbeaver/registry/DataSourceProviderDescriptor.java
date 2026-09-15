@@ -70,6 +70,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private ObjectType implType;
     private final String name;
     private final String description;
+    private final String defaultMetaModelId;
     private final boolean temporary;
     private DBPImage icon;
     private DBPDataSourceProvider<?> instance;
@@ -100,6 +101,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.defaultMetaModelId = CommonUtils.nullIfEmpty(config.getAttribute(RegistryConstants.ATTR_DEFAULT_META_MODEL));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
             this.icon = DBIcon.DATABASE_DEFAULT;
@@ -247,6 +249,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.id = id;
         this.name = id;
         this.description = "Missing datasource provider " + id;
+        this.defaultMetaModelId = null;
         this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
         this.treeDescriptor = new DBXTreeDescriptor(this, null, null, id, id, false, true, false, false, true, null, null);
@@ -298,6 +301,18 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @Override
     public String getName() {
         return CommonUtils.toString(name, id);
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultMetaModelId() {
+        if (defaultMetaModelId != null) {
+            return defaultMetaModelId;
+        } else if (parentProvider != null) {
+            return parentProvider.getDefaultMetaModelId();
+        } else {
+            return null;
+        }
     }
 
     @Nullable

@@ -107,6 +107,13 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="defaultMetaModel" type="string">
+            <annotation>
+               <documentation>
+                  Default generic meta model for drivers without an explicit meta-model parameter (optional)
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
