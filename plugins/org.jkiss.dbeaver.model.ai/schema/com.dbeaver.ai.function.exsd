@@ -62,6 +62,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="settingsId" type="string">
+            <annotation>
+               <documentation>
+                  Optional identifier used for persisted function settings. It does not change the runtime function identifier. Defaults to id
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>

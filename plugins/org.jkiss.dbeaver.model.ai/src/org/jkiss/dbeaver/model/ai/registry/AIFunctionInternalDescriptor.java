@@ -41,6 +41,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final AIToolboxInternalDescriptor toolbox;
     private final ObjectType objectType;
     private final String id;
+    private final String settingsId;
     private final String name;
     private final DBPImage icon;
     private final boolean system;
@@ -66,6 +67,8 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        String settingsId = config.getAttribute("settingsId");
+        this.settingsId = CommonUtils.isEmpty(settingsId) ? id : settingsId;
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
         this.system = CommonUtils.toBoolean(config.getAttribute("system"));
@@ -103,6 +106,12 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     @NotNull
     public String getId() {
         return id;
+    }
+
+    @NotNull
+    @Override
+    public String getSettingsId() {
+        return settingsId;
     }
 
     @NotNull
