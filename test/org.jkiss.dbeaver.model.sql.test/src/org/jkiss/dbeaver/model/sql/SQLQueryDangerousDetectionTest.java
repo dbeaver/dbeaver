@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -156,6 +157,150 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
 
         Assertions.assertNotNull(metadata);
         Assertions.assertEquals("test_schema", metadata.getEntityName());
+    }
+
+    @Test
+    public void containerDdlShouldExposeItsMetadataRefreshScope() {
+        for (String queryText : List.of(
+            "CREATE SCHEMA test_schema",
+            "DROP SCHEMA test_schema",
+            "ALTER SCHEMA test_schema RENAME TO renamed_schema"
+        )) {
+            var query = new SQLQuery(null, queryText);
+            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
+            Assertions.assertEquals(SQLQuery.MetadataRefreshScope.SCHEMA_LIST, query.getMetadataRefreshScope(), queryText);
+            Assertions.assertTrue(query.isMutatingStatement(), queryText);
+        }
+
+        for (String queryText : List.of(
+            "CREATE DATABASE test_database",
+            "DROP DATABASE IF EXISTS test_database",
+            "DROP CATALOG test_catalog",
+            "ALTER DATABASE test_database RENAME TO renamed_database"
+        )) {
+            var query = new SQLQuery(null, queryText);
+            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
+            Assertions.assertEquals(SQLQuery.MetadataRefreshScope.CATALOG_LIST, query.getMetadataRefreshScope(), queryText);
+            Assertions.assertTrue(query.isMutatingStatement(), queryText);
+        }
+    }
+
+    @Test
+    public void commentedContainerDdlShouldExposeItsMetadataRefreshScope() {
+        for (String queryText : List.of(
+            "CREATE /* action */ SCHEMA /* object */ IF /* condition */ NOT /* existence */ EXISTS project.dataset",
+            "ALTER SCHEMA project /* separator */ . /* separator */ dataset /* target */ RENAME TO renamed_dataset"
+        )) {
+            var query = new SQLQuery(null, queryText);
+
+            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
+            Assertions.assertEquals(SQLQuery.MetadataRefreshScope.SCHEMA_LIST, query.getMetadataRefreshScope(), queryText);
+            Assertions.assertTrue(query.isMutatingStatement(), queryText);
+            Assertions.assertNotNull(query.getEntityMetadata(false), queryText);
+            Assertions.assertEquals("project", query.getEntityMetadata(false).getSchemaName(), queryText);
+        }
+    }
+
+    @Test
+    public void dialectLineCommentsShouldNotHideContainerDdl() {
+        var dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public String[] getSingleLineComments() {
+                return new String[] {"--", "//", "#"};
+            }
+        };
+        var dataSource = Mockito.mock(DBPDataSource.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+
+        for (String queryText : List.of(
+            "// comment\nCREATE DATABASE test_database",
+            "CREATE # comment\nDATABASE test_database"
+        )) {
+            var query = new SQLQuery(dataSource, queryText);
+
+            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
+            Assertions.assertEquals(SQLQuery.MetadataRefreshScope.CATALOG_LIST, query.getMetadataRefreshScope(), queryText);
+            Assertions.assertTrue(query.isMutatingStatement(), queryText);
+        }
+    }
+
+    @Test
+    public void createOrReplaceContainerShouldExposeItsMetadataRefreshScope() {
+        for (String queryText : List.of(
+            "CREATE OR REPLACE DATABASE test_database",
+            "CREATE OR REPLACE CATALOG test_catalog"
+        )) {
+            var query = new SQLQuery(null, queryText);
+
+            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
+            Assertions.assertEquals(SQLQuery.MetadataRefreshScope.CATALOG_LIST, query.getMetadataRefreshScope(), queryText);
+            Assertions.assertTrue(query.isMutatingStatement(), queryText);
+        }
+    }
+
+    @Test
+    public void qualifiedSchemaRenameShouldExposeItsParentCatalog() {
+        var query = new SQLQuery(
+            null,
+            "/* leading comment */ ALTER SCHEMA \"test.catalog\".\"old.schema\" RENAME TO \"new.schema\""
+        );
+        var metadata = query.getEntityMetadata(false);
+
+        Assertions.assertEquals(SQLQueryType.DDL, query.getType());
+        Assertions.assertEquals(SQLQuery.MetadataRefreshScope.SCHEMA_LIST, query.getMetadataRefreshScope());
+        Assertions.assertNotNull(metadata);
+        Assertions.assertEquals("test.catalog", metadata.getSchemaName());
+        Assertions.assertEquals("old.schema", metadata.getEntityName());
+    }
+
+    @Test
+    public void escapedIdentifierQuotesShouldBePreservedDuringContainerParsing() {
+        var dialect = new BasicSQLDialect() {
+            @Override
+            public String[][] getIdentifierQuoteStrings() {
+                return new String[][] {{"\"", "\""}, {"`", "`"}, {"[", "]"}};
+            }
+        };
+        var dataSource = Mockito.mock(DBPDataSource.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        var expectedNames = List.of(
+            new String[] {"ALTER SCHEMA \"cat\"\"alog\".\"sche\"\"ma\" RENAME TO renamed", "cat\"alog", "sche\"ma"},
+            new String[] {"ALTER SCHEMA `cat``alog`.`sche``ma` RENAME TO renamed", "cat`alog", "sche`ma"},
+            new String[] {"ALTER SCHEMA [cat]]alog].[sche]]ma] RENAME TO renamed", "cat]alog", "sche]ma"},
+            new String[] {"ALTER SCHEMA \"cat``alog]]\".\"sche``ma]]\" RENAME TO renamed", "cat``alog]]", "sche``ma]]"},
+            new String[] {"ALTER SCHEMA `cat\"\"alog]]`.`sche\"\"ma]]` RENAME TO renamed", "cat\"\"alog]]", "sche\"\"ma]]"},
+            new String[] {"ALTER SCHEMA [cat\"\"alog``].[sche\"\"ma``] RENAME TO renamed", "cat\"\"alog``", "sche\"\"ma``"}
+        );
+
+        for (String[] expected : expectedNames) {
+            var metadata = new SQLQuery(dataSource, expected[0]).getEntityMetadata(false);
+
+            Assertions.assertNotNull(metadata, expected[0]);
+            Assertions.assertEquals(expected[1], metadata.getSchemaName(), expected[0]);
+            Assertions.assertEquals(expected[2], metadata.getEntityName(), expected[0]);
+        }
+    }
+
+    @Test
+    public void nonRenameContainerAlterShouldRefreshTheContainer() {
+        var schemaQuery = new SQLQuery(null, "ALTER SCHEMA test_schema OWNER TO test_user");
+        Assertions.assertEquals(SQLQueryType.DDL, schemaQuery.getType());
+        Assertions.assertEquals(SQLQuery.MetadataRefreshScope.SCHEMA, schemaQuery.getMetadataRefreshScope());
+        Assertions.assertTrue(schemaQuery.isMutatingStatement());
+        Assertions.assertTrue(schemaQuery.isModifying());
+
+        for (String queryText : List.of(
+            "ALTER DATABASE test_database SET TABLESPACE test_tablespace",
+            "ALTER CATALOG test_catalog OWNER TO test_user"
+        )) {
+            var query = new SQLQuery(null, queryText);
+
+            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
+            Assertions.assertEquals(SQLQuery.MetadataRefreshScope.CATALOG, query.getMetadataRefreshScope(), queryText);
+            Assertions.assertTrue(query.isMutatingStatement(), queryText);
+            Assertions.assertTrue(query.isModifying(), queryText);
+        }
     }
 
     @Test

@@ -4287,7 +4287,17 @@ public class SQLEditor extends SQLEditorBase implements
         private final Set<MetadataRefreshTarget> metadataRefreshTargets = new LinkedHashSet<>();
         private SQLQueryListener extListener;
 
-        private record MetadataRefreshTarget(@Nullable String catalogName, @Nullable String schemaName) {
+        private enum MetadataRefreshLevel {
+            DATA_SOURCE,
+            CATALOG,
+            SCHEMA
+        }
+
+        private record MetadataRefreshTarget(
+            @NotNull MetadataRefreshLevel level,
+            @Nullable String catalogName,
+            @Nullable String schemaName
+        ) {
         }
 
         SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
@@ -4459,13 +4469,19 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull DBCExecutionContext executionContext,
             @NotNull SQLQuery query
         ) {
-            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-            if (contextDefaults == null) {
+            SQLQuery.MetadataRefreshScope refreshScope = query.getMetadataRefreshScope();
+            if (refreshScope == SQLQuery.MetadataRefreshScope.CATALOG_LIST) {
+                metadataRefreshTargets.add(new MetadataRefreshTarget(
+                    MetadataRefreshLevel.DATA_SOURCE,
+                    null,
+                    null
+                ));
                 return;
             }
             DBCEntityMetaData entityMetadata = query.getEntityMetadata(true);
             String catalogName = entityMetadata == null ? null : entityMetadata.getCatalogName();
             String schemaName = entityMetadata == null ? null : entityMetadata.getSchemaName();
+            String entityName = entityMetadata == null ? null : entityMetadata.getEntityName();
             SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
             if (catalogName != null) {
                 catalogName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, catalogName);
@@ -4473,28 +4489,62 @@ public class SQLEditor extends SQLEditorBase implements
             if (schemaName != null) {
                 schemaName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, schemaName);
             }
-            if ((catalogName == null && contextDefaults.supportsCatalogChange()) ||
-                (schemaName == null && contextDefaults.supportsSchemaChange() && !query.changesSchemaList())
-            ) {
-                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults, executionContext);
+            if (entityName != null) {
+                entityName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, entityName);
             }
-            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
-            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-            if (query.changesSchemaList()) {
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+            if (refreshScope == SQLQuery.MetadataRefreshScope.SCHEMA_LIST) {
+                DBSCatalog defaultCatalog = contextDefaults == null ? null : contextDefaults.getDefaultCatalog();
+                String targetCatalogName = catalogName != null ? catalogName : schemaName != null ? schemaName :
+                    defaultCatalog == null ? null : defaultCatalog.getName();
                 metadataRefreshTargets.add(new MetadataRefreshTarget(
-                    catalogName != null ? catalogName : defaultCatalog == null ? null : defaultCatalog.getName(),
+                    targetCatalogName == null ? MetadataRefreshLevel.DATA_SOURCE : MetadataRefreshLevel.CATALOG,
+                    targetCatalogName,
                     null
                 ));
                 return;
             }
+            if (refreshScope == SQLQuery.MetadataRefreshScope.CATALOG) {
+                metadataRefreshTargets.add(new MetadataRefreshTarget(
+                    entityName == null ? MetadataRefreshLevel.DATA_SOURCE : MetadataRefreshLevel.CATALOG,
+                    entityName,
+                    null
+                ));
+                return;
+            }
+            if (refreshScope == SQLQuery.MetadataRefreshScope.SCHEMA) {
+                String targetCatalogName = catalogName != null ? catalogName : schemaName;
+                metadataRefreshTargets.add(new MetadataRefreshTarget(
+                    entityName == null ? MetadataRefreshLevel.DATA_SOURCE : MetadataRefreshLevel.SCHEMA,
+                    targetCatalogName,
+                    entityName
+                ));
+                return;
+            }
+            if (contextDefaults == null) {
+                return;
+            }
+            if (refreshScope == SQLQuery.MetadataRefreshScope.OBJECT_CONTAINER &&
+                ((catalogName == null && contextDefaults.supportsCatalogChange()) ||
+                    (schemaName == null && contextDefaults.supportsSchemaChange()))) {
+                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults, executionContext);
+            }
+            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
             if (schemaName != null && catalogName == null && !contextDefaults.supportsSchemaChange() &&
                 contextDefaults.supportsCatalogChange()) {
                 catalogName = schemaName;
                 schemaName = null;
             }
+            String targetCatalogName = catalogName != null ? catalogName :
+                defaultCatalog == null ? null : defaultCatalog.getName();
+            String targetSchemaName = schemaName != null ? schemaName :
+                defaultSchema == null ? null : defaultSchema.getName();
             metadataRefreshTargets.add(new MetadataRefreshTarget(
-                catalogName != null ? catalogName : defaultCatalog == null ? null : defaultCatalog.getName(),
-                schemaName != null ? schemaName : defaultSchema == null ? null : defaultSchema.getName()
+                targetSchemaName != null ? MetadataRefreshLevel.SCHEMA :
+                    targetCatalogName != null ? MetadataRefreshLevel.CATALOG : MetadataRefreshLevel.DATA_SOURCE,
+                targetCatalogName,
+                targetSchemaName
             ));
         }
 
@@ -4568,25 +4618,25 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull DBCExecutionContext executionContext,
             @NotNull MetadataRefreshTarget target
         ) throws DBException {
-            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-            if (contextDefaults == null) {
-                return null;
-            }
             DBSObjectContainer dataSourceContainer = DBUtils.getAdapter(
                 DBSObjectContainer.class,
                 executionContext.getDataSource()
             );
-            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+            if (target.level() == MetadataRefreshLevel.DATA_SOURCE) {
+                return dataSourceContainer;
+            }
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+            DBSCatalog defaultCatalog = contextDefaults == null ? null : contextDefaults.getDefaultCatalog();
             DBSObject catalog = defaultCatalog;
             if (target.catalogName() != null &&
                 (defaultCatalog == null || !target.catalogName().equals(defaultCatalog.getName()))) {
                 catalog = dataSourceContainer == null ? null : dataSourceContainer.getChild(monitor, target.catalogName());
             }
-            if (target.schemaName() == null) {
+            if (target.level() == MetadataRefreshLevel.CATALOG) {
                 return catalog != null ? catalog : dataSourceContainer;
             }
 
-            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+            DBSSchema defaultSchema = contextDefaults == null ? null : contextDefaults.getDefaultSchema();
             if (defaultSchema != null && target.schemaName().equals(defaultSchema.getName()) &&
                 (target.catalogName() == null || catalog == defaultCatalog)) {
                 return defaultSchema;
