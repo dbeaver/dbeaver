@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.*;
 
@@ -92,25 +93,17 @@ public final class AIFunctionSettings {
 
         public boolean isFunctionEnabled(@NotNull AIFunctionDescriptor function) {
             if (function.isEnabledByDefault()) {
-                return !disabledFunctions.contains(function.getId());
+                return !containsFunctionSetting(disabledFunctions, function);
             } else {
-                return enabledFunctions.contains(function.getId());
+                return containsFunctionSetting(enabledFunctions, function);
             }
         }
 
         public void setFunctionEnabled(@NotNull AIFunctionDescriptor function, boolean enabled) {
-            if (function.isEnabledByDefault()) {
-                if (enabled) {
-                    disabledFunctions.remove(function.getId());
-                } else {
-                    disabledFunctions.add(function.getId());
-                }
-            } else {
-                if (enabled) {
-                    enabledFunctions.add(function.getId());
-                } else {
-                    enabledFunctions.remove(function.getId());
-                }
+            removeFunctionSetting(enabledFunctions, function);
+            removeFunctionSetting(disabledFunctions, function);
+            if (enabled != function.isEnabledByDefault()) {
+                (enabled ? enabledFunctions : disabledFunctions).add(function.getSettingsId());
             }
         }
 
@@ -134,14 +127,15 @@ public final class AIFunctionSettings {
 
         @NotNull
         public AIFunctionAllowMode getFunctionAllowMode(@NotNull AIFunctionDescriptor function) {
-            String functionId = function.getId();
-            if (alwaysAllowedFunctions.contains(functionId) || function.isOmitConfirmation()) {
+            if (function.isOmitConfirmation()) {
                 return AIFunctionAllowMode.ALWAYS_ALLOW;
             }
-            if (askFunctions.contains(functionId)) {
-                return AIFunctionAllowMode.ASK;
+
+            AIFunctionAllowMode allowMode = getExplicitAllowMode(function.getSettingsId());
+            if (allowMode == null && !function.getSettingsId().equals(function.getId())) {
+                allowMode = getExplicitAllowMode(function.getId());
             }
-            return function.getDefaultAllowMode();
+            return allowMode == null ? function.getDefaultAllowMode() : allowMode;
         }
 
         public void setFunctionAllowMode(
@@ -151,16 +145,43 @@ public final class AIFunctionSettings {
             if (function.isOmitConfirmation()) {
                 return;
             }
-            String functionId = function.getId();
-            alwaysAllowedFunctions.remove(functionId);
-            askFunctions.remove(functionId);
+            removeFunctionSetting(alwaysAllowedFunctions, function);
+            removeFunctionSetting(askFunctions, function);
 
             if (allowMode != function.getDefaultAllowMode()) {
                 switch (allowMode) {
-                    case ALWAYS_ALLOW -> getAlwaysAllowedFunctions().add(functionId);
-                    case ASK -> getAskFunctions().add(functionId);
+                    case ALWAYS_ALLOW -> getAlwaysAllowedFunctions().add(function.getSettingsId());
+                    case ASK -> getAskFunctions().add(function.getSettingsId());
                 }
             }
+        }
+
+        private static boolean containsFunctionSetting(
+            @NotNull Set<String> settings,
+            @NotNull AIFunctionDescriptor function
+        ) {
+            String settingsId = function.getSettingsId();
+            return settings.contains(settingsId) ||
+                (!settingsId.equals(function.getId()) && settings.contains(function.getId()));
+        }
+
+        private static void removeFunctionSetting(
+            @NotNull Set<String> settings,
+            @NotNull AIFunctionDescriptor function
+        ) {
+            settings.remove(function.getSettingsId());
+            settings.remove(function.getId());
+        }
+
+        @Nullable
+        private AIFunctionAllowMode getExplicitAllowMode(@NotNull String functionId) {
+            if (alwaysAllowedFunctions.contains(functionId)) {
+                return AIFunctionAllowMode.ALWAYS_ALLOW;
+            }
+            if (askFunctions.contains(functionId)) {
+                return AIFunctionAllowMode.ASK;
+            }
+            return null;
         }
     }
 
