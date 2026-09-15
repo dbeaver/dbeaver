@@ -94,7 +94,8 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     public void loadSettings(@NotNull PROPERTIES configuration) {
         token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(configuration.getModel());
-        contextWindowSizeField.setValue(configuration.getContextWindowSize());
+        contextWindowSizeField.setValue(configuration.getConfiguredContextWindowSize());
+        contextWindowSizeField.setDefaultValue(configuration.getContextWindowSize());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
         accessToken = token;
         accessTokenText.setText(accessToken);
@@ -138,13 +139,23 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                 if (selectedModel == null) {
                     selectedModel = CopilotModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
                 }
-                contextWindowSizeField.setValue(selectedModel == null ? null : selectedModel.contextWindowSize());
+                contextWindowSizeField.setValue(null);
+                contextWindowSizeField.setDefaultValue(selectedModel == null ? null : selectedModel.contextWindowSize());
                 temperatureText.setText(String.valueOf(selectedModel == null ? 0.0 : selectedModel.defaultTemperature()));
                 temperatureText.setEnabled(
                     selectedModel == null || !selectedModel.features().contains(AIModelFeature.TEMPERATURE_UNSUPPORTED)
                 );
             })
             .withModelListSupplier(modelListProvider)
+            .withModelsRefreshListener(() -> {
+                AIModel selectedModel = modelSelectorField.getSelectedModel();
+                temperatureText.setEnabled(
+                    selectedModel == null || !selectedModel.features().contains(AIModelFeature.TEMPERATURE_UNSUPPORTED)
+                );
+                if (selectedModel != null && selectedModel.contextWindowSize() != null) {
+                    contextWindowSizeField.setDefaultValue(selectedModel.contextWindowSize());
+                }
+            })
             .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()

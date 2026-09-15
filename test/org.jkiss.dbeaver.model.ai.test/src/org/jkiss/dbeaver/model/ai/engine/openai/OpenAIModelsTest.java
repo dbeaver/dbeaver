@@ -20,14 +20,13 @@ import com.google.gson.Gson;
 import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
 import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import java.util.Map;
 
-public class OpenAIModelsTest {
+public class OpenAIModelsTest extends DBeaverUnitTest {
 
     @Test
     public void effectiveModelNameNullShouldReturnNull() {
@@ -38,20 +37,17 @@ public class OpenAIModelsTest {
     }
 
     @Test
-    public void modelMetadataComesFromEachProvidersCache() {
-        AIModelCatalog catalog = Mockito.mock(AIModelCatalog.class);
+    public void modelMetadataComesFromEachProvidersCache() throws Exception {
         AIModelCatalogEntry openai = new Gson().fromJson("{\"limit\":{\"context\":500000}}", AIModelCatalogEntry.class);
         AIModelCatalogEntry copilot = new Gson().fromJson("{\"limit\":{\"context\":64000}}", AIModelCatalogEntry.class);
-        Mockito.when(catalog.getCachedModels("openai")).thenReturn(Map.of("gpt-test", openai));
-        Mockito.when(catalog.getCachedModels("github-copilot")).thenReturn(Map.of("gpt-test", copilot));
-        try (MockedStatic<AIModelCatalog> singleton = Mockito.mockStatic(AIModelCatalog.class)) {
-            singleton.when(AIModelCatalog::getInstance).thenReturn(catalog);
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of(
+            "openai", Map.of("gpt-test", openai), "github-copilot", Map.of("gpt-test", copilot)
+        ))) {
 
             Assertions.assertEquals(500_000, OpenAIModels.getModelByName("gpt-test").orElseThrow().contextWindowSize());
             Assertions.assertEquals(64_000, CopilotModels.getModelByName("gpt-test").orElseThrow().contextWindowSize());
             Assertions.assertTrue(OpenAIModels.getModelByName("gpt-5").isEmpty());
             Assertions.assertTrue(CopilotModels.getModelByName("claude-sonnet-4").isEmpty());
-            Mockito.verify(catalog, Mockito.never()).getModels(Mockito.anyString());
         }
     }
 
@@ -66,14 +62,11 @@ public class OpenAIModelsTest {
     }
 
     @Test
-    public void copilotDoesNotFallBackToFirstPartyOpenAIMetadata() {
-        AIModelCatalog catalog = Mockito.mock(AIModelCatalog.class);
-        Mockito.when(catalog.getCachedModels("github-copilot")).thenReturn(Map.of());
-        try (MockedStatic<AIModelCatalog> singleton = Mockito.mockStatic(AIModelCatalog.class)) {
-            singleton.when(AIModelCatalog::getInstance).thenReturn(catalog);
+    public void copilotDoesNotFallBackToFirstPartyOpenAIMetadata() throws Exception {
+        AIModelCatalogEntry entry = new Gson().fromJson("{\"limit\":{\"context\":500000}}", AIModelCatalogEntry.class);
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-5", entry)))) {
 
             Assertions.assertTrue(CopilotModels.getModelByName("gpt-5").isEmpty());
-            Mockito.verify(catalog, Mockito.never()).getCachedModels("openai");
         }
     }
 

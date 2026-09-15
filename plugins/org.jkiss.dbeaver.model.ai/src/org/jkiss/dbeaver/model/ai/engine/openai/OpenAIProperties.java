@@ -176,6 +176,11 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         this.contextWindowSize = contextWindowSize;
     }
 
+    @Nullable
+    public Integer getConfiguredContextWindowSize() {
+        return contextWindowSize;
+    }
+
     @NotNull
     public String getAuthentication() {
         return AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)

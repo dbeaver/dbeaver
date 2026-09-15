@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageContent;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -33,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class OpenAIAccountAuthenticatorTest {
+class OpenAIAccountAuthenticatorTest extends DBeaverUnitTest {
     @Test
     void extractsChatGptAccountIdFromIdToken() {
         String token = tokenWithClaims("{\"chatgpt_account_id\":\"account-1\"}");

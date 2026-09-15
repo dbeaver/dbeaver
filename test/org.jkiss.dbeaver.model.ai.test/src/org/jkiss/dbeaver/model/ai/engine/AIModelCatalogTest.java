@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-class AIModelCatalogTest {
+class AIModelCatalogTest extends DBeaverUnitTest {
     private static final String CATALOG = """
         {
           "openai":{"models":{"gpt-test":{"limit":{"context":400000,"input":272000,"output":128000},
@@ -46,7 +47,7 @@ class AIModelCatalogTest {
     Path directory;
     private Clock clock;
     private AtomicLong time;
-    private AIModelCatalog.CatalogLoader loader;
+    private Callable<String> loader;
     private Path cacheFile;
 
     @BeforeEach
@@ -54,8 +55,8 @@ class AIModelCatalogTest {
         time = new AtomicLong(Instant.parse("2026-09-11T12:00:00Z").toEpochMilli());
         clock = Mockito.mock(Clock.class);
         Mockito.when(clock.millis()).thenAnswer(invocation -> time.get());
-        loader = Mockito.mock(AIModelCatalog.CatalogLoader.class);
-        Mockito.when(loader.load()).thenReturn(CATALOG);
+        loader = Mockito.mock(Callable.class);
+        Mockito.when(loader.call()).thenReturn(CATALOG);
         cacheFile = directory.resolve("models-dev.json");
     }
 
@@ -67,7 +68,7 @@ class AIModelCatalogTest {
         Assertions.assertEquals(200_000, catalog.getModels("anthropic").get("claude-test").limit().context());
         Assertions.assertTrue(catalog.getModels("missing-provider").isEmpty());
         Assertions.assertTrue(Files.exists(cacheFile));
-        Mockito.verify(loader, Mockito.times(1)).load();
+        Mockito.verify(loader, Mockito.times(1)).call();
     }
 
     @Test
@@ -77,15 +78,15 @@ class AIModelCatalogTest {
         AIModelCatalog restarted = new AIModelCatalog(cacheFile, clock, loader);
 
         Assertions.assertEquals(400_000, restarted.getModels("openai").get("gpt-test").limit().context());
-        Mockito.verify(loader, Mockito.times(1)).load();
+        Mockito.verify(loader, Mockito.times(1)).call();
 
-        Mockito.when(loader.load()).thenReturn(CATALOG.replace("400000", "500000"));
+        Mockito.when(loader.call()).thenReturn(CATALOG.replace("400000", "500000"));
         time.incrementAndGet();
 
         Assertions.assertEquals(500_000, restarted.getModels("openai").get("gpt-test").limit().context());
         Assertions.assertEquals(500_000,
             new AIModelCatalog(cacheFile, clock, loader).getModels("openai").get("gpt-test").limit().context());
-        Mockito.verify(loader, Mockito.times(2)).load();
+        Mockito.verify(loader, Mockito.times(2)).call();
     }
 
     @Test
@@ -93,30 +94,30 @@ class AIModelCatalogTest {
         AIModelCatalog catalog = new AIModelCatalog(cacheFile, clock, loader);
         catalog.getModels("openai");
         time.addAndGet(Duration.ofDays(7).toMillis());
-        Mockito.when(loader.load()).thenThrow(new IOException("offline"));
+        Mockito.when(loader.call()).thenThrow(new IOException("offline"));
 
         Assertions.assertEquals(400_000, catalog.getModels("openai").get("gpt-test").limit().context());
         AIModelCatalog restarted = new AIModelCatalog(cacheFile, clock, loader);
         Assertions.assertEquals(400_000, restarted.getModels("openai").get("gpt-test").limit().context());
         time.addAndGet(Duration.ofDays(1).toMillis() - 1);
         restarted.getModels("openai");
-        Mockito.verify(loader, Mockito.times(2)).load();
+        Mockito.verify(loader, Mockito.times(2)).call();
 
-        Mockito.doReturn(CATALOG.replace("400000", "600000")).when(loader).load();
+        Mockito.doReturn(CATALOG.replace("400000", "600000")).when(loader).call();
         time.incrementAndGet();
         Assertions.assertEquals(600_000, restarted.getModels("openai").get("gpt-test").limit().context());
-        Mockito.verify(loader, Mockito.times(3)).load();
+        Mockito.verify(loader, Mockito.times(3)).call();
     }
 
     @Test
     void firstDownloadFailureReturnsEmptyAndDoesNotRetryOnEveryCallOrRestart() throws Exception {
-        Mockito.when(loader.load()).thenThrow(new IOException("offline"));
+        Mockito.when(loader.call()).thenThrow(new IOException("offline"));
         AIModelCatalog catalog = new AIModelCatalog(cacheFile, clock, loader);
 
         Assertions.assertTrue(catalog.getModels("openai").isEmpty());
         Assertions.assertTrue(catalog.getModels("openai").isEmpty());
         Assertions.assertTrue(new AIModelCatalog(cacheFile, clock, loader).getModels("openai").isEmpty());
-        Mockito.verify(loader, Mockito.times(1)).load();
+        Mockito.verify(loader, Mockito.times(1)).call();
     }
 
     @Test
@@ -125,13 +126,13 @@ class AIModelCatalogTest {
         catalog.getModels("openai");
         time.addAndGet(Duration.ofDays(7).toMillis());
         for (String response : new String[]{"<html>unavailable</html>", "{}", "null", "{\"openai\":{}}"}) {
-            Mockito.when(loader.load()).thenReturn(response);
+            Mockito.when(loader.call()).thenReturn(response);
             Assertions.assertEquals(400_000, catalog.getModels("openai").get("gpt-test").limit().context());
             Assertions.assertEquals(400_000,
                 new AIModelCatalog(cacheFile, clock, loader).getCachedModels("openai").get("gpt-test").limit().context());
             time.addAndGet(Duration.ofDays(1).toMillis());
         }
-        Mockito.verify(loader, Mockito.times(5)).load();
+        Mockito.verify(loader, Mockito.times(5)).call();
     }
 
     @Test
@@ -152,7 +153,7 @@ class AIModelCatalogTest {
 
         Assertions.assertEquals(400_000, catalog.getModels("openai").get("gpt-test").limit().context());
         Assertions.assertEquals(400_000, catalog.getModels("openai").get("gpt-test").limit().context());
-        Mockito.verify(loader, Mockito.times(1)).load();
+        Mockito.verify(loader, Mockito.times(1)).call();
     }
 
     @Test
@@ -165,7 +166,7 @@ class AIModelCatalogTest {
 
         Assertions.assertEquals(400_000,
             new AIModelCatalog(cacheFile, clock, loader).getCachedModels("openai").get("gpt-test").limit().context());
-        Mockito.verify(loader, Mockito.times(1)).load();
+        Mockito.verify(loader, Mockito.times(1)).call();
     }
 
     @Test
@@ -180,12 +181,12 @@ class AIModelCatalogTest {
                 Assertions.assertEquals(400_000, result.get());
             }
         }
-        Mockito.verify(loader, Mockito.times(1)).load();
+        Mockito.verify(loader, Mockito.times(1)).call();
     }
 
     @Test
     void interruptionUsesFallbackAndPreservesInterruptFlag() throws Exception {
-        Mockito.when(loader.load()).thenThrow(new InterruptedException("cancelled"));
+        Mockito.when(loader.call()).thenThrow(new InterruptedException("cancelled"));
         try {
             Assertions.assertTrue(new AIModelCatalog(null, clock, loader).getModels("openai").isEmpty());
             Assertions.assertTrue(Thread.currentThread().isInterrupted());

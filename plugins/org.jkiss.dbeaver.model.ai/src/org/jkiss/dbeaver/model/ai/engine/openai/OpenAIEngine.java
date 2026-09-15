@@ -117,6 +117,11 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @Override
     public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl())
+            || properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()
+        ) {
+            AIModelCatalog.getInstance().getModels(OpenAIModels.CATALOG_PROVIDER_ID);
+        }
         Integer contextWindowSize = properties.getContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;

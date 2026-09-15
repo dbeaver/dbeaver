@@ -30,19 +30,23 @@ import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.time.Clock;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
-class OpenAIModelCatalogTest {
+class OpenAIModelCatalogTest extends DBeaverUnitTest {
     @ParameterizedTest
     @ValueSource(strings = {"gpt-test", "gpt-test-2025-04-14"})
     void enrichesOnlyAvailableModelsAndUsesOnlyCacheForCompletions(@NotNull String modelId) throws Exception {
@@ -52,16 +56,11 @@ class OpenAIModelCatalogTest {
         DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
         OpenAIClientResponses client = Mockito.mock(OpenAIClientResponses.class);
         Mockito.when(client.getModels(monitor)).thenReturn(List.of(new OAIModel(modelId, "model", 0, "openai", null)));
-        AIModelCatalog catalog = Mockito.mock(AIModelCatalog.class);
         AIModelCatalogEntry entry = new Gson().fromJson("""
             {"limit":{"context":500000},"temperature":false,"tool_call":true}
             """, AIModelCatalogEntry.class);
         Map<String, AIModelCatalogEntry> entries = Map.of("gpt-test", entry, "not-available", entry);
-        Mockito.when(catalog.getModels("openai")).thenReturn(entries);
-        Mockito.when(catalog.getCachedModels("openai")).thenReturn(entries);
-
-        try (MockedStatic<AIModelCatalog> singleton = Mockito.mockStatic(AIModelCatalog.class)) {
-            singleton.when(AIModelCatalog::getInstance).thenReturn(catalog);
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", entries))) {
             try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties) {
                 @NotNull
                 @Override
@@ -87,7 +86,6 @@ class OpenAIModelCatalogTest {
                 );
                 Assertions.assertTrue(sent.getAllValues().stream().allMatch(value -> value.temperature == null));
                 Assertions.assertTrue(sent.getAllValues().stream().allMatch(value -> modelId.equals(value.model)));
-                Mockito.verify(catalog, Mockito.times(1)).getModels("openai");
             }
         }
     }
@@ -102,7 +100,9 @@ class OpenAIModelCatalogTest {
         OpenAIClientResponses client = Mockito.mock(OpenAIClientResponses.class);
         Mockito.when(client.getModels(monitor)).thenReturn(List.of(new OAIModel("gpt-test", "model", 0, "custom", 32000)));
 
-        try (MockedStatic<AIModelCatalog> singleton = Mockito.mockStatic(AIModelCatalog.class)) {
+        AIModelCatalogEntry entry = new Gson().fromJson(
+            "{\"limit\":{\"context\":500000},\"temperature\":false}", AIModelCatalogEntry.class);
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-test", entry)))) {
             try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties) {
                 @NotNull
                 @Override
@@ -123,7 +123,6 @@ class OpenAIModelCatalogTest {
                 ArgumentCaptor<OAIResponsesRequest> sent = ArgumentCaptor.forClass(OAIResponsesRequest.class);
                 Mockito.verify(client).createChatCompletionStream(Mockito.same(monitor), sent.capture(), Mockito.same(consumer));
                 Assertions.assertEquals(0.7, sent.getValue().temperature);
-                singleton.verifyNoInteractions();
             }
         }
     }
@@ -142,32 +141,26 @@ class OpenAIModelCatalogTest {
     }
 
     @Test
-    void cachedContextRespectsEndpointChangesAndExplicitOverrides() {
+    void cachedContextRespectsEndpointChangesAndExplicitOverrides() throws Exception {
         AIModelCatalogEntry entry = new Gson().fromJson("{\"limit\":{\"context\":500000}}", AIModelCatalogEntry.class);
-        AIModelCatalog catalog = Mockito.mock(AIModelCatalog.class);
-        Mockito.when(catalog.getCachedModels("openai")).thenReturn(Map.of("gpt-test", entry));
-        try (MockedStatic<AIModelCatalog> singleton = Mockito.mockStatic(AIModelCatalog.class)) {
-            singleton.when(AIModelCatalog::getInstance).thenReturn(catalog);
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-test", entry)))) {
             OpenAIProperties properties = new OpenAIProperties();
             properties.setModel("gpt-test-2025-04-14");
             Assertions.assertEquals(500_000, properties.getContextWindowSize());
+            Assertions.assertNull(properties.getConfiguredContextWindowSize());
 
             properties.setBaseUrl("https://custom-provider.example/v1");
             Assertions.assertNull(properties.getContextWindowSize());
             properties.setContextWindowSize(32_000);
             Assertions.assertEquals(32_000, properties.getContextWindowSize());
-            Mockito.verify(catalog, Mockito.times(1)).getCachedModels("openai");
-            Mockito.verify(catalog, Mockito.never()).getModels(Mockito.anyString());
+            Assertions.assertEquals(32_000, properties.getConfiguredContextWindowSize());
         }
     }
 
     @Test
-    void accountAuthenticationIgnoresUnusedCustomApiBaseUrl() {
+    void accountAuthenticationIgnoresUnusedCustomApiBaseUrl() throws Exception {
         AIModelCatalogEntry entry = new Gson().fromJson("{\"limit\":{\"context\":500000}}", AIModelCatalogEntry.class);
-        AIModelCatalog catalog = Mockito.mock(AIModelCatalog.class);
-        Mockito.when(catalog.getCachedModels("openai")).thenReturn(Map.of("gpt-test", entry));
-        try (MockedStatic<AIModelCatalog> singleton = Mockito.mockStatic(AIModelCatalog.class)) {
-            singleton.when(AIModelCatalog::getInstance).thenReturn(catalog);
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-test", entry)))) {
             OpenAIProperties properties = new OpenAIProperties();
             properties.setBaseUrl("https://custom-provider.example/v1");
             properties.setAuthentication(OpenAIProperties.AUTHENTICATION_CHATGPT_ACCOUNT);
@@ -176,7 +169,81 @@ class OpenAIModelCatalogTest {
             Assertions.assertEquals(500_000, properties.getContextWindowSize());
             properties.selectModel(new AIModel("gpt-test-2025-04-14", 272_000, Set.of(AIModelFeature.CHAT)));
             Assertions.assertEquals(272_000, properties.getContextWindowSize());
-            Mockito.verify(catalog, Mockito.never()).getModels(Mockito.anyString());
+        }
+    }
+
+    @Test
+    void coldContextLookupInitializesCatalogOutsidePropertyGetters() throws Exception {
+        AtomicInteger downloads = new AtomicInteger();
+        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), () -> {
+            downloads.incrementAndGet();
+            return "{\"openai\":{\"models\":{\"gpt-test\":{\"limit\":{\"context\":128000}}}}}";
+        });
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setModel("gpt-test");
+        try (
+            AutoCloseable ignored = AIModelCatalog.useForTests(catalog);
+            OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)
+        ) {
+            Assertions.assertNull(properties.getContextWindowSize());
+            Assertions.assertEquals(0, downloads.get());
+            Assertions.assertEquals(128_000, engine.getContextWindowSize(monitor));
+            Assertions.assertEquals(128_000, engine.getContextWindowSize(monitor));
+            Assertions.assertEquals(1, downloads.get());
+        }
+    }
+
+    @Test
+    void coldOfflineLookupDoesNotRetryOnEveryRequest() throws Exception {
+        AtomicInteger downloads = new AtomicInteger();
+        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), () -> {
+            downloads.incrementAndGet();
+            throw new IOException("offline");
+        });
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setModel("gpt-test");
+        try (
+            AutoCloseable ignored = AIModelCatalog.useForTests(catalog);
+            OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)
+        ) {
+            Assertions.assertThrows(DBException.class, () -> engine.getContextWindowSize(monitor));
+            Assertions.assertThrows(DBException.class, () -> engine.getContextWindowSize(monitor));
+            Assertions.assertEquals(1, downloads.get());
+            properties.setContextWindowSize(32_000);
+            Assertions.assertEquals(32_000, engine.getContextWindowSize(monitor));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void contextLookupRefreshesExpiredCatalogAndPreservesExplicitBudget(boolean configured) throws Exception {
+        Clock clock = Mockito.mock(Clock.class);
+        AtomicInteger downloads = new AtomicInteger();
+        AIModelCatalog catalog = new AIModelCatalog(null, clock, () -> {
+            int context = downloads.incrementAndGet() == 1 ? 128_000 : 64_000;
+            return "{\"openai\":{\"models\":{\"gpt-test\":{\"limit\":{\"context\":" + context + "},\"temperature\":false}}}}";
+        });
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setModel("gpt-test");
+        if (configured) {
+            properties.setContextWindowSize(32_000);
+        }
+        try (
+            AutoCloseable ignored = AIModelCatalog.useForTests(catalog);
+            OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)
+        ) {
+            Assertions.assertEquals(configured ? 32_000 : null, properties.getContextWindowSize());
+            Assertions.assertEquals(0, downloads.get());
+            Assertions.assertEquals(configured ? 32_000 : 128_000, engine.getContextWindowSize(monitor));
+            Assertions.assertEquals(1, downloads.get());
+
+            Mockito.when(clock.millis()).thenReturn(Duration.ofDays(8).toMillis());
+            Assertions.assertEquals(configured ? 32_000 : 128_000, properties.getContextWindowSize());
+            Assertions.assertEquals(1, downloads.get());
+            Assertions.assertEquals(configured ? 32_000 : 64_000, engine.getContextWindowSize(monitor));
+            Assertions.assertEquals(configured ? 32_000 : 64_000, engine.getContextWindowSize(monitor));
+            Assertions.assertEquals(2, downloads.get());
+            Assertions.assertFalse(catalog.getCachedModels("openai").get("gpt-test").temperature());
         }
     }
 }

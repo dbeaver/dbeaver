@@ -20,12 +20,13 @@ import com.google.gson.Gson;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-class AIModelMetadataTest {
+class AIModelMetadataTest extends DBeaverUnitTest {
     private static final Gson GSON = new Gson();
 
     @Test

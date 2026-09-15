@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.internal.AIActivator;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.HttpConstants;
 
@@ -38,6 +39,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 public final class AIModelCatalog {
     private static final Log log = Log.getLog(AIModelCatalog.class);
@@ -47,16 +49,18 @@ public final class AIModelCatalog {
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
     private static final Gson GSON = new Gson();
     private static final TypeToken<Map<String, Provider>> PROVIDERS_TYPE = new TypeToken<>() {};
+    private static final ThreadLocal<AIModelCatalog> testInstance = new ThreadLocal<>();
 
     @Nullable
     private final Path cacheFile;
     private final Clock clock;
-    private final CatalogLoader loader;
+    private final Callable<String> loader;
     private volatile Map<String, Provider> providers = Map.of();
     private long nextRefreshAt;
     private volatile boolean initialized;
 
-    AIModelCatalog(@Nullable Path cacheFile, @NotNull Clock clock, @NotNull CatalogLoader loader) {
+    @ForTest
+    public AIModelCatalog(@Nullable Path cacheFile, @NotNull Clock clock, @NotNull Callable<String> loader) {
         this.cacheFile = cacheFile;
         this.clock = clock;
         this.loader = loader;
@@ -64,7 +68,36 @@ public final class AIModelCatalog {
 
     @NotNull
     public static AIModelCatalog getInstance() {
-        return InstanceHolder.INSTANCE;
+        AIModelCatalog catalog = testInstance.get();
+        return catalog == null ? InstanceHolder.INSTANCE : catalog;
+    }
+
+    @ForTest
+    @NotNull
+    public static AutoCloseable useForTests(@NotNull AIModelCatalog catalog) {
+        AIModelCatalog previous = testInstance.get();
+        testInstance.set(catalog);
+        return () -> {
+            if (previous == null) {
+                testInstance.remove();
+            } else {
+                testInstance.set(previous);
+            }
+        };
+    }
+
+    @ForTest
+    @NotNull
+    public static AutoCloseable useForTests(@NotNull Map<String, Map<String, AIModelCatalogEntry>> models) {
+        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), () -> {
+            throw new AssertionError("Unexpected catalog download in fixture");
+        });
+        Map<String, Provider> providers = new HashMap<>();
+        models.forEach((id, entries) -> providers.put(id, new Provider(Map.copyOf(entries))));
+        catalog.providers = Map.copyOf(providers);
+        catalog.initialized = true;
+        catalog.nextRefreshAt = Long.MAX_VALUE;
+        return useForTests(catalog);
     }
 
     @NotNull
@@ -75,7 +108,7 @@ public final class AIModelCatalog {
             // retain the retry deadline even when downloading or saving the cache fails
             nextRefreshAt = now + RETRY_INTERVAL.toMillis();
             try {
-                Map<String, Provider> downloaded = readProviders(loader.load());
+                Map<String, Provider> downloaded = readProviders(loader.call());
                 providers = downloaded;
                 nextRefreshAt = clock.millis() + REFRESH_INTERVAL.toMillis();
             } catch (InterruptedException e) {
@@ -207,12 +240,6 @@ public final class AIModelCatalog {
             log.debug("Unable to locate AI model catalog cache directory", e);
         }
         return new AIModelCatalog(cacheFile, Clock.systemUTC(), AIModelCatalog::download);
-    }
-
-    @FunctionalInterface
-    interface CatalogLoader {
-        @NotNull
-        String load() throws IOException, InterruptedException;
     }
 
     private record Provider(@NotNull Map<String, AIModelCatalogEntry> models) {
