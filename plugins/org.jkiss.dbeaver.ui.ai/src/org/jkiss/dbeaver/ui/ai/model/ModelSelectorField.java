@@ -160,6 +160,11 @@ public class ModelSelectorField {
         updateRefreshButtonState();
     }
 
+    public void setEnabled(boolean enabled) {
+        combo.setEnabled(enabled);
+        setRefreshEnabled(enabled, null);
+    }
+
     public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
         loadedModels = modelListProvider.getModels(monitor, refresh);
 
