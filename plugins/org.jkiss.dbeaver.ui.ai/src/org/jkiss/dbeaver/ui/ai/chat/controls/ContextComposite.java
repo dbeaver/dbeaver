@@ -58,8 +58,8 @@ import org.jkiss.utils.CommonUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class ContextComposite extends Composite {
@@ -77,7 +77,6 @@ public class ContextComposite extends Composite {
     private final Label contextName;
     private final MenuManager scopeDropDown;
     private final MenuManager contextDropDown;
-    private final MenuManager settingsDropDown;
     private final MenuManager conversationDropDown;
     private final ToolBarManager toolBarManager;
     private final Composite conversationComposite;
@@ -192,10 +191,6 @@ public class ContextComposite extends Composite {
                     DBWorkbench.getPlatformUI().showError("Error filling context drop-down", "Can't fill context drop-down", e);
                 }
             });
-
-            settingsDropDown = new MenuManager();
-            settingsDropDown.setRemoveAllWhenShown(true);
-            settingsDropDown.addMenuListener(this::contributeSettingActions);
         }
 
         toolBarManager = new ToolBarManager(SWT.FLAT);
@@ -258,7 +253,6 @@ public class ContextComposite extends Composite {
         super.dispose();
         toolBarManager.dispose();
         contextDropDown.dispose();
-        settingsDropDown.dispose();
         scopeDropDown.dispose();
     }
 
@@ -317,7 +311,7 @@ public class ContextComposite extends Composite {
         if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             AIUIUtils.showPreferences(getShell());
         } else {
-            showDropDown(toolBarManager.getControl(), toolBarManager.getControl().getSize().x / 2, settingsDropDown);
+            showScopeDropDown();
         }
     }
 
@@ -467,6 +461,9 @@ public class ContextComposite extends Composite {
             .map(ChangeProfileAction::new)
             .forEach(manager::add);
 
+        manager.add(new Separator());
+        contributeSettingActions(manager);
+
         if (RuntimeUtils.isWindows()) {
             // Highlight selected item
             UIUtils.asyncExec(() -> {
@@ -505,20 +502,13 @@ public class ContextComposite extends Composite {
         setToolTipWithShortcut(changeScopeAction, AIChatController.CMD_OPEN_FILTERS);
 
         manager.add(changeScopeAction);
-        Action settingsAction = new Action(AIChatMessagesUI.ai_chat_settings_label, IAction.AS_DROP_DOWN_MENU) {
-            {
-                setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-            }
-
+        Action settingsAction = new Action(
+            AIChatMessagesUI.ai_chat_settings_label,
+            DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)
+        ) {
             @Override
             public void run() {
                 openSettings();
-            }
-
-            @NotNull
-            @Override
-            public IMenuCreator getMenuCreator() {
-                return new MenuCreator(widget -> settingsDropDown);
             }
         };
         setToolTipWithShortcut(settingsAction, AIChatController.CMD_OPEN_SETTINGS);
