@@ -166,7 +166,7 @@ public final class DBUtils {
     @NotNull
     public static String getUnQuotedNormalizedIdentifier(@NotNull SQLDialect dialect, @NotNull String str) {
         if (dialect.isQuotedIdentifier(str)) {
-            str = dialect.getUnquotedIdentifier(str);
+            str = dialect.getUnquotedIdentifier(str, true);
         } else {
             str = dialect.storesUnquotedCase().transform(str);
         }

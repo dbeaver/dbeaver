@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -866,8 +866,9 @@ public class PostgreUtils {
     }
 
     @NotNull
-    public static String getRealSchemaName(@NotNull PostgreDatabase database, @NotNull String name) {
-        return name.replace(PostgreConstants.USER_VARIABLE, database.getMetaContext().getActiveUser());
+    public static String getRealSchemaName(@NotNull PostgreExecutionContext executionContext, @NotNull String name) {
+        String activeUser = executionContext.getActiveUser();
+        return activeUser == null ? name : name.replace(PostgreConstants.USER_VARIABLE, activeUser);
     }
 
     /**

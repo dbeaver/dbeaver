@@ -383,6 +383,10 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_title_tooltip_url;
     public static String sql_editor_title_tooltip_database;
     public static String sql_editor_title_tooltip_schema;
+    public static String sql_editor_metadata_refresh_notification_title;
+    public static String sql_editor_metadata_refresh_notification;
+    public static String sql_editor_metadata_refresh_error_title;
+    public static String sql_editor_metadata_refresh_error_message;
 
     public static String sql_generator_title_text;
     public static String sql_generator_no_obj_container_text;
