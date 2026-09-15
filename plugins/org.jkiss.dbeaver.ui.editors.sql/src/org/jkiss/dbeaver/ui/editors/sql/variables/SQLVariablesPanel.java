@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.variables;
 
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.*;
@@ -96,7 +97,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
         {
             Composite editorGroup = UIUtils.createPlaceholder(sash, 1);
 
-            UIUtils.createControlLabel(editorGroup, "Value");
+            UIUtils.createControlLabel(editorGroup, SQLEditorMessages.sql_variables_panel_label_value);
 
             Composite editorPH = new Composite(editorGroup, SWT.NONE);
             GridData gd = new GridData(GridData.FILL_BOTH);
@@ -289,19 +290,19 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
 
             varsTable.setContentProvider(new ListContentProvider());
 
-            columnController.addColumn("Variable", "Variable or parameter name", SWT.LEFT, true, true, new ColumnLabelProvider() {
+            columnController.addColumn(SQLEditorMessages.sql_variables_panel_column_variable, SQLEditorMessages.sql_variables_panel_column_variable_tip, SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
                     return ((DBCScriptContext.VariableInfo) element).name;
                 }
             });
-            columnController.addColumn("Value", "Variable or parameter value", SWT.LEFT, true, true, new ColumnLabelProvider() {
+            columnController.addColumn(SQLEditorMessages.sql_variables_panel_column_value, SQLEditorMessages.sql_variables_panel_column_value_tip, SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
                     return CommonUtils.toString(((DBCScriptContext.VariableInfo) element).value);
                 }
             });
-            columnController.addColumn("Type", "Variable type", SWT.LEFT, true, true, new ColumnLabelProvider() {
+            columnController.addColumn(SQLEditorMessages.sql_variables_panel_column_type, SQLEditorMessages.sql_variables_panel_column_type_tip, SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
                     return ((DBCScriptContext.VariableInfo) element).type.getTitle();
@@ -331,7 +332,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
         }
 
         protected void addSearchAction(@NotNull IContributionManager contributionManager) {
-            contributionManager.add(new Action("Find variable", DBeaverIcons.getImageDescriptor(UIIcon.SEARCH)) {
+            contributionManager.add(new Action(SQLEditorMessages.sql_variables_panel_action_find_variable, DBeaverIcons.getImageDescriptor(UIIcon.SEARCH)) {
                 @Override
                 public void run() {
                     performSearch(SearchType.NONE);
@@ -352,7 +353,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
         public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
 
-            addAction = new Action("Add variable", DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
+            addAction = new Action(SQLEditorMessages.sql_variables_panel_action_add_variable, DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
                 @Override
                 public void run() {
                     AssignVariableAction action = new AssignVariableAction(mainEditor, "");
@@ -361,7 +362,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                 }
             };
             contributionManager.add(addAction);
-            deleteAction = new Action("Delete variable", DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
+            deleteAction = new Action(SQLEditorMessages.sql_variables_panel_action_delete_variable, DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
                 @Override
                 public void run() {
                     if (!varsTable.getSelection().isEmpty()) {
@@ -375,7 +376,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
             deleteAction.setEnabled(false);
             contributionManager.add(deleteAction);
 
-            Action showParamsAction = new Action("Show parameters", Action.AS_CHECK_BOX) {
+            Action showParamsAction = new Action(SQLEditorMessages.sql_variables_panel_action_show_parameters, Action.AS_CHECK_BOX) {
                 @Override
                 public void run() {
                     showParameters = !showParameters;
@@ -384,7 +385,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
             };
             showParamsAction.setChecked(showParameters);
             showParamsAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_PARAMETER));
-            showParamsAction.setDescription("Show query parameters");
+            showParamsAction.setDescription(SQLEditorMessages.sql_variables_panel_action_show_parameters_tip);
             contributionManager.add(ActionUtils.makeActionContribution(showParamsAction, true));
         }
     }
