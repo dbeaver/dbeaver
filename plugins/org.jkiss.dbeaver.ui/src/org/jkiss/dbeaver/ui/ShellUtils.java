@@ -29,6 +29,9 @@ import org.jkiss.utils.IOUtils;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -36,13 +39,38 @@ import java.util.StringTokenizer;
  */
 public final class ShellUtils {
     private static final Log log = Log.getLog(ShellUtils.class);
+    private static final String TEST_BROWSER_EXECUTABLE_PROPERTY = "dbeaver.test.browser.executable";
+    private static final String TEST_BROWSER_ARGUMENTS_PROPERTY = "dbeaver.test.browser.arguments";
 
     private ShellUtils() {
         // prevent constructing utility class
     }
 
     public static boolean launchProgram(@NotNull String path) {
+        String browserExecutable = System.getProperty(TEST_BROWSER_EXECUTABLE_PROPERTY);
+        if (browserExecutable != null && !browserExecutable.isBlank()) {
+            return launchTestBrowser(browserExecutable, path);
+        }
         return Program.launch(path);
+    }
+
+    private static boolean launchTestBrowser(@NotNull String browserExecutable, @NotNull String url) {
+        List<String> command = new ArrayList<>();
+        command.add(browserExecutable);
+
+        String browserArguments = System.getProperty(TEST_BROWSER_ARGUMENTS_PROPERTY);
+        if (browserArguments != null && !browserArguments.isBlank()) {
+            Collections.addAll(command, browserArguments.split("\\|"));
+        }
+        command.add(url);
+
+        try {
+            new ProcessBuilder(command).start();
+            return true;
+        } catch (IOException e) {
+            log.error("Error launching test browser", e);
+            return false;
+        }
     }
 
     /**
