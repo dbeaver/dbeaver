@@ -45,6 +45,23 @@ public final class DDProjectSyncContentAdapter {
     }
 
     @NotNull
+    public static DDProjectSyncContentAdapter forUnitIds(@NotNull Collection<String> unitIds) throws DBException {
+        List<DBPSyncUnit> units = new ArrayList<>(unitIds.size());
+        Set<String> uniqueIds = new LinkedHashSet<>();
+        for (String unitId : unitIds) {
+            if (!uniqueIds.add(unitId)) {
+                throw new DBException("Duplicate project synchronization unit: " + unitId);
+            }
+            DBPSyncUnit unit = DBPSyncRegistry.getInstance().findById(unitId);
+            if (unit == null || unit.getScope() != DBPSyncScope.PROJECT) {
+                throw new DBException("Unknown project synchronization unit: " + unitId);
+            }
+            units.add(unit);
+        }
+        return new DDProjectSyncContentAdapter(validateUnits(units));
+    }
+
+    @NotNull
     public Set<String> getUnitIds() {
         Set<String> unitIds = new LinkedHashSet<>();
         for (DBPSyncUnit unit : units) {
