@@ -175,7 +175,8 @@ class OpenAIModelCatalogTest extends DBeaverUnitTest {
     @Test
     void coldContextLookupInitializesCatalogOutsidePropertyGetters() throws Exception {
         AtomicInteger downloads = new AtomicInteger();
-        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), () -> {
+        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), progress -> {
+            Assertions.assertSame(monitor, progress);
             downloads.incrementAndGet();
             return "{\"openai\":{\"models\":{\"gpt-test\":{\"limit\":{\"context\":128000}}}}}";
         });
@@ -196,7 +197,7 @@ class OpenAIModelCatalogTest extends DBeaverUnitTest {
     @Test
     void coldOfflineLookupDoesNotRetryOnEveryRequest() throws Exception {
         AtomicInteger downloads = new AtomicInteger();
-        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), () -> {
+        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), progress -> {
             downloads.incrementAndGet();
             throw new IOException("offline");
         });
@@ -219,7 +220,7 @@ class OpenAIModelCatalogTest extends DBeaverUnitTest {
     void contextLookupRefreshesExpiredCatalogAndPreservesExplicitBudget(boolean configured) throws Exception {
         Clock clock = Mockito.mock(Clock.class);
         AtomicInteger downloads = new AtomicInteger();
-        AIModelCatalog catalog = new AIModelCatalog(null, clock, () -> {
+        AIModelCatalog catalog = new AIModelCatalog(null, clock, progress -> {
             int context = downloads.incrementAndGet() == 1 ? 128_000 : 64_000;
             return "{\"openai\":{\"models\":{\"gpt-test\":{\"limit\":{\"context\":" + context + "},\"temperature\":false}}}}";
         });

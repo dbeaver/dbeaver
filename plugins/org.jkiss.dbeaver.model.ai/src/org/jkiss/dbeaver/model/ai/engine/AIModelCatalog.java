@@ -18,13 +18,17 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.internal.AIActivator;
 import org.jkiss.dbeaver.model.meta.ForTest;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.HttpConstants;
+import org.jkiss.utils.function.ThrowableFunction;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +43,8 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public final class AIModelCatalog {
     private static final Log log = Log.getLog(AIModelCatalog.class);
@@ -47,6 +52,7 @@ public final class AIModelCatalog {
     private static final Duration REFRESH_INTERVAL = Duration.ofDays(7);
     private static final Duration RETRY_INTERVAL = Duration.ofDays(1);
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration POLL_INTERVAL = Duration.ofMillis(100);
     private static final Gson GSON = new Gson();
     private static final TypeToken<Map<String, Provider>> PROVIDERS_TYPE = new TypeToken<>() {};
     private static final ThreadLocal<AIModelCatalog> testInstance = new ThreadLocal<>();
@@ -54,13 +60,17 @@ public final class AIModelCatalog {
     @Nullable
     private final Path cacheFile;
     private final Clock clock;
-    private final Callable<String> loader;
+    private final ThrowableFunction<DBRProgressMonitor, String, Exception> loader;
     private volatile Map<String, Provider> providers = Map.of();
     private long nextRefreshAt;
     private volatile boolean initialized;
 
     @ForTest
-    public AIModelCatalog(@Nullable Path cacheFile, @NotNull Clock clock, @NotNull Callable<String> loader) {
+    public AIModelCatalog(
+        @Nullable Path cacheFile,
+        @NotNull Clock clock,
+        @NotNull ThrowableFunction<DBRProgressMonitor, String, Exception> loader
+    ) {
         this.cacheFile = cacheFile;
         this.clock = clock;
         this.loader = loader;
@@ -89,7 +99,7 @@ public final class AIModelCatalog {
     @ForTest
     @NotNull
     public static AutoCloseable useForTests(@NotNull Map<String, Map<String, AIModelCatalogEntry>> models) {
-        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), () -> {
+        AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), monitor -> {
             throw new AssertionError("Unexpected catalog download in fixture");
         });
         Map<String, Provider> providers = new HashMap<>();
@@ -101,22 +111,34 @@ public final class AIModelCatalog {
     }
 
     @NotNull
-    public synchronized Map<String, AIModelCatalogEntry> getModels(@NotNull String providerId) {
+    public Map<String, AIModelCatalogEntry> getModels(@NotNull String providerId) {
+        return getModels(new VoidProgressMonitor(), providerId);
+    }
+
+    @NotNull
+    public synchronized Map<String, AIModelCatalogEntry> getModels(@NotNull DBRProgressMonitor monitor, @NotNull String providerId) {
+        checkCanceled(monitor);
         loadCache();
         long now = clock.millis();
         if (now >= nextRefreshAt) {
-            // retain the retry deadline even when downloading or saving the cache fails
-            nextRefreshAt = now + RETRY_INTERVAL.toMillis();
             try {
-                Map<String, Provider> downloaded = readProviders(loader.call());
+                Map<String, Provider> downloaded = readProviders(loader.apply(monitor));
+                checkCanceled(monitor);
                 providers = downloaded;
                 nextRefreshAt = clock.millis() + REFRESH_INTERVAL.toMillis();
+            } catch (OperationCanceledException e) {
+                throw e;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 log.debug("AI model catalog download interrupted", e);
+                return providerModels(providerId);
             } catch (Exception e) {
+                checkCanceled(monitor);
+                // Cancellation must not postpone a subsequent attempt or overwrite the disk cache.
+                nextRefreshAt = now + RETRY_INTERVAL.toMillis();
                 log.debug("Unable to refresh AI model catalog; using cached metadata", e);
             }
+            checkCanceled(monitor);
             saveCache();
         }
         return providerModels(providerId);
@@ -209,22 +231,48 @@ public final class AIModelCatalog {
     }
 
     @NotNull
-    private static String download() throws IOException, InterruptedException {
+    private static String download(@NotNull DBRProgressMonitor monitor) throws IOException, InterruptedException {
         try (HttpClient client = HttpClient.newBuilder()
             .connectTimeout(REQUEST_TIMEOUT)
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build()
         ) {
-            HttpRequest request = HttpRequest.newBuilder(CATALOG_URI)
-                .header(HttpConstants.HEADER_ACCEPT, HttpConstants.CONTENT_TYPE_JSON)
-                .timeout(REQUEST_TIMEOUT)
-                .GET()
-                .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return download(monitor, client);
+        }
+    }
+
+    @NotNull
+    static String download(@NotNull DBRProgressMonitor monitor, @NotNull HttpClient client) throws IOException, InterruptedException {
+        checkCanceled(monitor);
+        HttpRequest request = HttpRequest.newBuilder(CATALOG_URI)
+            .header(HttpConstants.HEADER_ACCEPT, HttpConstants.CONTENT_TYPE_JSON)
+            .timeout(REQUEST_TIMEOUT)
+            .GET()
+            .build();
+        CompletableFuture<HttpResponse<String>> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            while (!future.isDone()) {
+                checkCanceled(monitor);
+                Thread.sleep(POLL_INTERVAL);
+            }
+            checkCanceled(monitor);
+            HttpResponse<String> response = future.get();
             if (response.statusCode() != 200) {
                 throw new IOException("AI model catalog returned HTTP " + response.statusCode());
             }
             return response.body();
+        } catch (ExecutionException e) {
+            throw new IOException("Unable to download AI model catalog", e.getCause());
+        } finally {
+            if (!future.isDone()) {
+                future.cancel(true);
+            }
+        }
+    }
+
+    private static void checkCanceled(@NotNull DBRProgressMonitor monitor) {
+        if (monitor.isCanceled()) {
+            throw new OperationCanceledException();
         }
     }
 

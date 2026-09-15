@@ -43,24 +43,26 @@ public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> imp
     }
 
     @NotNull
-    protected Map<String, AIModelCatalogEntry> getModelCatalog(boolean refresh) {
+    protected Map<String, AIModelCatalogEntry> getModelCatalog(@NotNull DBRProgressMonitor monitor) {
         String providerId = getCatalogProviderId();
-        if (providerId == null) {
-            return Map.of();
-        }
-        AIModelCatalog catalog = AIModelCatalog.getInstance();
-        return refresh ? catalog.getModels(providerId) : catalog.getCachedModels(providerId);
+        return providerId == null ? Map.of() : AIModelCatalog.getInstance().getModels(monitor, providerId);
+    }
+
+    @NotNull
+    protected Map<String, AIModelCatalogEntry> getCachedModelCatalog() {
+        String providerId = getCatalogProviderId();
+        return providerId == null ? Map.of() : AIModelCatalog.getInstance().getCachedModels(providerId);
     }
 
     @Nullable
     protected AIModelCatalogEntry getCachedCatalogEntry() throws DBException {
         String model = properties.getModel();
-        return model == null ? null : getModelCatalog(false).get(model);
+        return model == null ? null : getCachedModelCatalog().get(model);
     }
 
     @Override
     public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        getModelCatalog(true);
+        getModelCatalog(monitor);
         Integer contextSize = properties.getContextWindowSize();
         if (contextSize != null && contextSize > 0) {
             return contextSize;

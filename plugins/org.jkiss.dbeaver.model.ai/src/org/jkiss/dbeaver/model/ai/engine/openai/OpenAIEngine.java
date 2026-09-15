@@ -62,10 +62,10 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             if (!OpenAIAccountAuthenticator.isSupported()) {
                 throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
             }
-            return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModelDetails(openAIProperties);
+            return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModelDetails(monitor, openAIProperties);
         }
         List<OAIModel> models = openAiService.getInstance().getModels(monitor);
-        Map<String, AIModelCatalogEntry> catalog = getModelCatalog(true);
+        Map<String, AIModelCatalogEntry> catalog = getModelCatalog(monitor);
         return models.stream()
             .map(model -> OpenAIModels.fromApiModel(model, OpenAIModels.findCatalogEntry(catalog, model.id())))
             .toList();
@@ -151,7 +151,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     @Nullable
     @Override
     protected AIModelCatalogEntry getCachedCatalogEntry() throws DBException {
-        return OpenAIModels.findCatalogEntry(getModelCatalog(false), model());
+        return OpenAIModels.findCatalogEntry(getCachedModelCatalog(), model());
     }
 
     @NotNull

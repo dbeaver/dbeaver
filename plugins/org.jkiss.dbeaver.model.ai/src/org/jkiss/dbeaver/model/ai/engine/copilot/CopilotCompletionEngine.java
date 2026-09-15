@@ -72,7 +72,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<CopilotModel> models = client.getInstance().loadModels(monitor, requestSessionToken(monitor));
-        Map<String, AIModelCatalogEntry> catalog = getModelCatalog(true);
+        Map<String, AIModelCatalogEntry> catalog = getModelCatalog(monitor);
         boolean isPremium = models.stream().anyMatch(CopilotModel::modelPickerEnabled);
         return models.stream()
             .filter(model -> isModelOffered(model, isPremium))

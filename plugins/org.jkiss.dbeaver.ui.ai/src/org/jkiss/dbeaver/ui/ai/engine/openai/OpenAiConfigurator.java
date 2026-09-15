@@ -213,7 +213,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         String currentToken = useAccountAuthentication ? apiToken : token;
         String currentBaseUrl = baseUrl;
         if (currentProperties != null && useAccountAuthentication) {
-            return fetchAccountModelDetails(currentProperties, currentAuthenticator);
+            return fetchAccountModelDetails(monitor, currentProperties, currentAuthenticator);
         }
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(currentToken);
@@ -236,10 +236,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
     @NotNull
     protected List<AIModel> fetchAccountModelDetails(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull PROPERTIES properties,
         @NotNull AIAccountAuthenticator authenticator
     ) throws DBException {
-        return ((OpenAIAccountAuthenticator) authenticator).listModelDetails(properties);
+        return ((OpenAIAccountAuthenticator) authenticator).listModelDetails(monitor, properties);
     }
 
     @NotNull

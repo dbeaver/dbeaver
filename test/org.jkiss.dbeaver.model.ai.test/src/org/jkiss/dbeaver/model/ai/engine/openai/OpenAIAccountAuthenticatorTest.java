@@ -124,6 +124,7 @@ class OpenAIAccountAuthenticatorTest extends DBeaverUnitTest {
 
         var models = OpenAIAccountAuthenticator.parseModelDetails(catalog);
 
+        assertEquals(4, models.size());
         models.forEach(model -> assertNull(model.contextWindowSize()));
     }
 

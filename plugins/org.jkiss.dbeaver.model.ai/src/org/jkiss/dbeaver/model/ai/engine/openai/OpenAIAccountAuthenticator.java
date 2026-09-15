@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
 import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.oauth.OAuthConstants;
@@ -238,6 +240,11 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
 
     @NotNull
     public List<AIModel> listModelDetails(@NotNull OpenAIProperties properties) throws DBException {
+        return listModelDetails(new VoidProgressMonitor(), properties);
+    }
+
+    @NotNull
+    public List<AIModel> listModelDetails(@NotNull DBRProgressMonitor monitor, @NotNull OpenAIProperties properties) throws DBException {
         var productVersion = GeneralUtils.getProductVersion();
         String clientVersion = productVersion.getMajor() + "." + productVersion.getMinor() + "." + productVersion.getMicro();
         HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(CODEX_MODELS_ENDPOINT + "?client_version=" + clientVersion))
@@ -252,7 +259,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         }
 
         JsonObject response = send(request.build());
-        Map<String, AIModelCatalogEntry> catalog = AIModelCatalog.getInstance().getModels(OpenAIModels.CATALOG_PROVIDER_ID);
+        Map<String, AIModelCatalogEntry> catalog = AIModelCatalog.getInstance().getModels(monitor, OpenAIModels.CATALOG_PROVIDER_ID);
         return parseModelDetails(response).stream()
             .map(model -> {
                 AIModelCatalogEntry entry = OpenAIModels.findCatalogEntry(catalog, model.name());
