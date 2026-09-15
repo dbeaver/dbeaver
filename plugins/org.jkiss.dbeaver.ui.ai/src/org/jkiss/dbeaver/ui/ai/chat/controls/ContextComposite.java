@@ -543,7 +543,7 @@ public class ContextComposite extends Composite {
         setToolTipWithShortcut(addConversationAction, AIChatController.CMD_NEW_CONVERSATION);
         manager.add(addConversationAction);
         if (chat.getChatSession().getStorage().canPersist()) {
-            deleteConversationAction = new Action(AIChatMessagesUI.ai_chat_conversation_delete_label, DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
+            deleteConversationAction = new Action(AIChatMessagesUI.ai_chat_conversation_delete_label, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE)) {
                 @Override
                 public void run() {
                     chat.deleteActiveConversationWithConfirmation();
