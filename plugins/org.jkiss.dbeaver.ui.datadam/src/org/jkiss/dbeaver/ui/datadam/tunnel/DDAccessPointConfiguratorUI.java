@@ -33,7 +33,7 @@ public class DDAccessPointConfiguratorUI extends AbstractObjectPropertyConfigura
     private Text apIdText;
 
     @Override
-    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, @NotNull Object object, @NotNull Runnable propertyChangeListener) {
         Composite composite = UIUtils.createTitledComposite(parent, "Access Point", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         composite.setLayout(new GridLayout(2, false));
         apIdText = UIUtils.createLabelText(composite, "Access Point name", "");

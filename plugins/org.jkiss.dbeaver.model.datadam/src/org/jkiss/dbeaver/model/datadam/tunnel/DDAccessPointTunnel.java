@@ -54,17 +54,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Routes a datasource's connection through a customer-hosted Access Point (pro#9579) instead of
- * connecting to the target database directly. Enabling this handler on a connection is the
- * trigger: {@link #initializeHandler} swaps the datasource's real host:port for a local proxy
- * port before the actual driver ever runs, exactly like {@code UdbtTunnel} does for the Team
- * Edition proxy - the driver never knows the difference.
- * <p>
- * Every accepted local connection gets its own freshly signed {@code /tunnel/request} call (the
- * bridge token it returns is single-use), then bridges to it using the same HTTP-Upgrade
- * handshake as {@code tunnel/server/bridge.go} on the DataDam side.
- */
 public class DDAccessPointTunnel implements DBWTunnel {
 
     private static final Log log = Log.getLog(DDAccessPointTunnel.class);
@@ -72,9 +61,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
     public static final String PROP_AP_ID = "apId";
     private static final String TUNNEL_LOCAL_HOST = DBConstants.HOST_LOCALHOST;
 
-    // Same preference/env var DDSyncPreferencePage (ui.datadam) already reads for the Gateway
-    // URL - duplicated here rather than called cross-module, since model code must not depend
-    // on a ui-layer class, but this is a plain string lookup, not anything security-sensitive.
+    // Same pref/env var as DDSyncPreferencePage (ui.datadam) - duplicated, model can't depend on ui.
     private static final String ENV_URL = "DATADAM_URL";
     private static final String PREF_SERVER_URL = "datadam.server-url";
     private static final int GATEWAY_PORT = 9000;
@@ -205,10 +192,8 @@ public class DDAccessPointTunnel implements DBWTunnel {
         return new Socket(host, port);
     }
 
-    // Plain HTTP Upgrade handshake, matching tunnel/server/bridge.go exactly - not a real
-    // WebSocket upgrade, just enough framing that nginx (or any HTTP-aware proxy) can route it
-    // by path. A BufferedReader here would read ahead past the blank line and swallow the first
-    // tunneled bytes, so headers are read one byte at a time instead.
+    // Matches tunnel/server/bridge.go's upgrade. A BufferedReader would over-read past the
+    // headers and swallow tunneled bytes, so this reads one byte at a time instead.
     private void performUpgrade(@NotNull Socket bridgeSocket, @NotNull String token) throws IOException {
         String host = bridgeSocket.getInetAddress().getHostName();
         String request = "GET /tunnel/bridge?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8) + " HTTP/1.1\r\n"
@@ -335,6 +320,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
         return AuthCredentials.NONE;
     }
 
+    @Nullable
     @Override
     public Object getImplementation() {
         return this;
