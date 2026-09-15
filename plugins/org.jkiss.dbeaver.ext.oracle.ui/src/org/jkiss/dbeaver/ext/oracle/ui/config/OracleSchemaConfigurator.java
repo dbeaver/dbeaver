@@ -62,19 +62,19 @@ public class OracleSchemaConfigurator implements DBEObjectConfigurator<OracleSch
         }.execute();
     }
 
-    static class NewUserDialog extends Dialog {
+    public static class NewUserDialog extends Dialog {
 
         private OracleUser user;
         private Text nameText;
         private Text passwordText;
 
-        NewUserDialog(Shell parentShell, OracleDataSource dataSource)
+        public NewUserDialog(Shell parentShell, OracleDataSource dataSource)
         {
             super(parentShell);
             this.user = new OracleUser(dataSource);
         }
 
-        OracleUser getUser()
+        public OracleUser getUser()
         {
             return user;
         }

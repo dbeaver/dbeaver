@@ -43,7 +43,7 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableTrigger> getObjectsCache(OracleTableTrigger object) {
-        return object.getTable().getSchema().tableTriggerCache;
+        return object.getTable().getSchema().getTableTriggerCache();
     }
 
     @Override
@@ -59,7 +59,11 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
-        OracleTableBase table = (OracleTableBase) container;
+        return createTableTrigger((OracleTableBase) container);
+    }
+
+    @NotNull
+    protected OracleTableTrigger createTableTrigger(@NotNull OracleTableBase table) {
         return new OracleTableTrigger(table, "NEW_TRIGGER");
     }
 

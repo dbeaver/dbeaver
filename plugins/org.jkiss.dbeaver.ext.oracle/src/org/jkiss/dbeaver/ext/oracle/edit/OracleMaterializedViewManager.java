@@ -71,7 +71,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     @Override
     public DBSObjectCache<? extends DBSObject, OracleMaterializedView> getObjectsCache(OracleMaterializedView object)
     {
-        return (DBSObjectCache) object.getSchema().tableCache;
+        return (DBSObjectCache) object.getSchema().getTableCache();
     }
 
     @Override
@@ -83,11 +83,16 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         @NotNull Map<String, Object> options
     ) {
         OracleSchema schema = (OracleSchema) container;
-        OracleMaterializedView newView = new OracleMaterializedView(schema, "NEW_MVIEW"); //$NON-NLS-1$
+        OracleMaterializedView newView = createMaterializedView(schema);
         setNewObjectName(monitor, schema, newView);
         newView.setObjectDefinitionText("SELECT 1 FROM DUAL");
         newView.setCurrentDDLFormat(OracleDDLFormat.COMPACT);
         return newView;
+    }
+
+    @NotNull
+    protected OracleMaterializedView createMaterializedView(@NotNull OracleSchema schema) {
+        return new OracleMaterializedView(schema, "NEW_MVIEW"); //$NON-NLS-1$
     }
 
     @NotNull

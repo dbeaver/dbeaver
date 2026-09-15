@@ -262,7 +262,7 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
             this.partitionCount = JDBCUtils.safeGetLong(dbResult, "PARTITION_COUNT");
             if (dataSource.isAdmin() && CommonUtils.isNotEmpty(partitionTablespaceName)) {
                 try {
-                    this.partitionTablespace = dataSource.tablespaceCache.getObject(monitor, dataSource, partitionTablespaceName);
+                    this.partitionTablespace = dataSource.getTablespaceCache().getObject(monitor, dataSource, partitionTablespaceName);
                 } catch (DBException e) {
                     log.debug("Can not find tablespace " + partitionTablespaceName, e);
                 }
