@@ -24,6 +24,7 @@ public class GBase8sConstants {
 
     public static final String JDBC_SQL_MODE = "SQLMODE";
     public static final String JDBC_SQL_MODE_ORACLE = "oracle";
+    public static final String JDBC_SQL_MODE_MYSQL = "mysql";
     public static final String JDBC_SQL_MODE_GBASE = "gbase";
 
     public static final String SQL_TABLE_COMMENT = "COMMENT ON TABLE %s IS %s";

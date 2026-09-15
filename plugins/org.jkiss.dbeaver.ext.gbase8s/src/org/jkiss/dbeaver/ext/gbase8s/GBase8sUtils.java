@@ -17,10 +17,8 @@
 
 package org.jkiss.dbeaver.ext.gbase8s;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -34,6 +32,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Chao Tian
@@ -65,17 +67,25 @@ public class GBase8sUtils {
         }
     }
 
-    public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
+    public static boolean isOracleSqlMode(@NotNull DBPDataSourceContainer container) {
+        return isSqlMode(container, GBase8sConstants.JDBC_SQL_MODE_ORACLE);
+    }
+
+    public static boolean isMySQLSqlMode(@NotNull DBPDataSourceContainer container) {
+        return isSqlMode(container, GBase8sConstants.JDBC_SQL_MODE_MYSQL);
+    }
+
+    private static boolean isSqlMode(@NotNull DBPDataSourceContainer container, @NotNull String expectedSqlMode) {
         DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
         String sqlMode = getSqlModeValue(configuration.getProperties());
         if (sqlMode != null) {
-            return GBase8sConstants.JDBC_SQL_MODE_ORACLE.equalsIgnoreCase(sqlMode);
+            return expectedSqlMode.equalsIgnoreCase(sqlMode);
         }
-        return GBase8sConstants.JDBC_SQL_MODE_ORACLE
-                .equalsIgnoreCase(getSqlModeValue(container.getDriver().getConnectionProperties()));
+        return expectedSqlMode.equalsIgnoreCase(getSqlModeValue(container.getDriver().getConnectionProperties()));
     }
 
-    private static String getSqlModeValue(Map<String, ?> properties) {
+    @Nullable
+    private static String getSqlModeValue(@Nullable Map<String, ?> properties) {
         if (properties == null || properties.isEmpty()) {
             return null;
         }
