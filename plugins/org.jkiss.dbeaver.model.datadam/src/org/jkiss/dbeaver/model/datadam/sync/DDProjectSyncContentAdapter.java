@@ -62,6 +62,15 @@ public final class DDProjectSyncContentAdapter {
     }
 
     @NotNull
+    public static DDProjectSyncContentAdapter forFiles(@NotNull Collection<String> fileNames) throws DBException {
+        Set<String> unitIds = new LinkedHashSet<>();
+        for (String fileName : fileNames) {
+            unitIds.add(decodeFileName(fileName).unitId());
+        }
+        return unitIds.isEmpty() ? forEnabledUnits() : forUnitIds(unitIds);
+    }
+
+    @NotNull
     public Set<String> getUnitIds() {
         Set<String> unitIds = new LinkedHashSet<>();
         for (DBPSyncUnit unit : units) {
