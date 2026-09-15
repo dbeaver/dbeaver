@@ -99,6 +99,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull DBPConnectionConfiguration info
     ) throws DBException, IOException {
+        log.info("DDAccessPointTunnel.initializeHandler called, enabled=" + configuration.isEnabled());
         apId = configuration.getStringProperty(PROP_AP_ID);
         if (CommonUtils.isEmpty(apId)) {
             throw new DBException("Access Point name is not configured");
@@ -126,6 +127,8 @@ public class DDAccessPointTunnel implements DBWTunnel {
 
         info.setHostName(TUNNEL_LOCAL_HOST);
         info.setHostPort(String.valueOf(localPort));
+        info.setUrl(configuration.getDataSource().getDriver().getConnectionURL(info));
+        log.info("DDAccessPointTunnel: rewritten to " + info.getHostName() + ":" + info.getHostPort() + ", url=" + info.getUrl());
         return info;
     }
 
