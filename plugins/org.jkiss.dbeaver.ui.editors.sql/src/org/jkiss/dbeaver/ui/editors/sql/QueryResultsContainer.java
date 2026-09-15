@@ -492,6 +492,12 @@ abstract class QueryResultsContainer implements
     }
 
     @NotNull
+    @Override
+    public String getTitle() {
+        return getResultsTab().getText();
+    }
+
+    @NotNull
     public abstract CTabItem getResultsTab();
 
     public abstract boolean isPinned();
