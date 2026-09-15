@@ -164,8 +164,9 @@ public class AIDatabaseContext {
             if (scope == null) {
                 throw new DBException("Scope must be specified");
             }
-            if (scope == AIDatabaseScope.CUSTOM && customEntities == null) {
-                throw new DBException("Custom entities must be specified when using custom scope");
+            if (scope == AIDatabaseScope.CUSTOM && (customEntities == null || customEntities.isEmpty())) {
+                throw new DBException(
+                    "Custom scope is empty. Add database objects or select All objects in the AI context settings.");
             }
             if (executionContext == null) {
                 throw new DBException("Execution context must be specified");
