@@ -40,7 +40,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Predicate;
 
 /**
@@ -196,7 +199,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         try (Reader reader = Files.newBufferedReader(configPath)) {
             props.load(reader);
         }
-        return propertiesToMap(props);
+        return InstanceServerProperties.readAllFrom(props);
     }
 
     private static void storeRegistry(
@@ -240,49 +243,12 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     }
 
     @NotNull
-    private static Map<Long, InstanceServerProperties> propertiesToMap(@NotNull Properties props) {
-        Set<String> keys = new HashSet<>(props.stringPropertyNames());
-        String prefix = InstanceServerProperties.PROPERTY_INSTANCE + ".";
-        Map<Long, InstanceServerProperties> registry = new LinkedHashMap<>();
-
-        for (String key : keys) {
-            Long pid = extractPid(key, prefix);
-            if (pid == null || registry.containsKey(pid)) {
-                continue;
-            }
-            InstanceServerProperties serverProperties = InstanceServerProperties.readFrom(props, pid);
-            if (serverProperties != null) {
-                registry.put(pid, serverProperties);
-            }
-        }
-
-        return registry;
-    }
-
-    @NotNull
     private static Properties toProperties(@NotNull Map<Long, InstanceServerProperties> registry) {
         Properties props = new Properties();
         for (Map.Entry<Long, InstanceServerProperties> entry : registry.entrySet()) {
             entry.getValue().writeTo(props, entry.getKey());
         }
         return props;
-    }
-
-    @Nullable
-    private static Long extractPid(@NotNull String key, @NotNull String prefix) {
-        if (!key.startsWith(prefix)) {
-            return null;
-        }
-        int dot = key.indexOf('.', prefix.length());
-        if (dot < 0) {
-            return null;
-        }
-        String pidPart = key.substring(prefix.length(), dot);
-        try {
-            return Long.parseLong(pidPart);
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 
     private static boolean isStaleProcessEntry(long pid, @NotNull InstanceServerProperties serverProperties) {

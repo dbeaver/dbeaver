@@ -235,11 +235,11 @@ public class EditorUtils {
     // Datasource <-> resource manipulations
 
     @Nullable
-    public static Object getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
+    public static String getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
         return project.getResourceProperty(project.getResourcePath(resource), propName);
     }
 
-    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
+    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable String value) {
         project.setResourceProperty(project.getResourcePath(resource), propName, value);
     }
 

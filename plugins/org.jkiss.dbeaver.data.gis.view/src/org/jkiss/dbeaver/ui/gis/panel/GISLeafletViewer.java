@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
@@ -73,6 +74,7 @@ import org.jkiss.utils.IOUtils;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -80,7 +82,9 @@ import java.util.Locale;
 public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceListener {
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
-    private static final String VIEW_TEMPLATE_PATH = "web/view_template.html";
+    private static final String WEB_ROOT = "web";
+    private static final String WEB_HTML_TEMPLATE_PATH = WEB_ROOT + "/view_template.html";
+
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
 
     private static final String[] SUPPORTED_FORMATS = new String[] { "png", "gif", "bmp" };
@@ -97,7 +101,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
     private final DBDAttributeBinding[] bindings;
     private final IResultSetPresentation presentation;
-    private final GISLeafletHttpServer.Handle server;
+    private final LocalResourceHttpServer.Handle server;
     private final String template;
 
     private Browser browser;
@@ -122,19 +126,13 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         this.bindings = bindings;
         this.presentation = presentation;
 
-        try (InputStream is = GISViewerActivator.getDefault().getResourceStream(VIEW_TEMPLATE_PATH)) {
+        try (InputStream is = GISViewerActivator.getDefault().getResourceStream(WEB_HTML_TEMPLATE_PATH)) {
             if (is == null) {
-                throw new DBException("View template file not found (" + VIEW_TEMPLATE_PATH + ")");
+                throw new DBException("View template file not found (" + WEB_HTML_TEMPLATE_PATH + ")");
             }
             template = IOUtils.readToString(new InputStreamReader(is));
         } catch (IOException e) {
             throw new DBException("Error reading view template", e);
-        }
-
-        try {
-            server = GISLeafletHttpServer.acquire();
-        } catch (Exception e) {
-            throw new DBException("Error initializing internal HTTP server for GIS viewer", e);
         }
 
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
@@ -158,6 +156,16 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             }
         } finally {
             browserCreating = false;
+        }
+
+        try {
+            server = LocalResourceHttpServer.acquire();
+            server.addBundleResources(GISViewerActivator.getDefault().getBundle(), WEB_ROOT, this::registerWebResource);
+        } catch (Exception e) {
+            if (browser != null) {
+                browser.dispose();
+            }
+            throw new DBException("Error initializing internal HTTP server for GIS viewer", e);
         }
 
         if (browser != null) {
@@ -221,6 +229,10 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         showLabels = preferences.getBoolean(GeometryViewerConstants.PREF_SHOW_LABELS);
 
         preferences.addPropertyChangeListener(this);
+    }
+
+    private void registerWebResource(@NotNull String resource, @NotNull URL url) {
+        server.addResource(resource, url::openStream);
     }
 
     private void registerBrowserFunctions(@NotNull Browser browser) {
@@ -329,8 +341,9 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                     browser.setUrl("about:blank");
                 } else {
                     final Bounds bounds = recenter ? null : Bounds.tryExtractFromBrowser(browser);
-                    server.setIndex(generateViewScript(values, bounds));
-                    browser.setUrl(server.getUrl());
+                    String index = generateViewScript(values, bounds);
+                    server.addTextResource("index.html", () -> index);
+                    browser.setUrl(server.getUrl("index.html"));
                 }
             } catch (IOException e) {
                 throw new DBException("Error generating viewer script", e);
@@ -486,7 +499,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
             public void run() {
-                ShellUtils.launchProgram(server.getUrl());
+                ShellUtils.launchProgram(server.getUrl("index.html"));
             }
         });
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_copy_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {

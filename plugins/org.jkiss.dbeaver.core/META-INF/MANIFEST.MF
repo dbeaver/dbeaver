@@ -43,6 +43,7 @@ Require-Bundle: org.osgi.service.event,
  org.eclipse.e4.ui.workbench,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
+ org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport
 Import-Package: jakarta.annotation

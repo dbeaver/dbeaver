@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUIActivator;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -28,7 +27,7 @@ public class PostgrePreferencesInitializer extends AbstractPreferenceInitializer
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = new BundlePreferenceStore(PostgreUIActivator.getDefault().getBundle());
+        DBPPreferenceStore store = new BundlePreferenceStore(PostgreUIConstants.PLUGIN_ID);
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, false);

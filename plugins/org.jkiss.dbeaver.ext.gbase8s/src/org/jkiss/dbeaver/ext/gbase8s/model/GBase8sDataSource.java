@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +26,20 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -44,9 +50,27 @@ public class GBase8sDataSource extends GenericDataSource {
     private static final Log log = Log.getLog(GBase8sDataType.class);
 
     private static final Set<Integer> FEATURE_NOT_SUPPORTED_CODES = Set.of(
-        -79700,	// this is documented as "Feature not supported", see https://www.gbase.cn/docs/gbase-8s/06%20%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/01%20JDBCDriver%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8C%87%E5%8D%97/09%20%E9%99%84%E5%BD%95#-79700
-        -79882	// this occurs when calling PreparedStatement.setNCharacterStream(), not documented
+        -79700, // this is documented as "Feature not supported", see https://www.gbase.cn/docs/gbase-8s/06%20%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/01%20JDBCDriver%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8C%87%E5%8D%97/09%20%E9%99%84%E5%BD%95#-79700
+        -79882  // this occurs when calling PreparedStatement.setNCharacterStream(), not documented
     );
+
+    private static final String PROPERTY_JDBCTEMP = "JDBCTEMP"; //$NON-NLS-1$
+
+    /**
+     * Path to default JDBCTEMP.  According to Driver's documentation, driver needs JDBCTEMP just to load large CLOB/TEXT
+     * data so it could be shared with different instances.
+     */
+    private static final Path DEFAULT_JDBCTEMP;
+    static {
+        Path jdbcTemp;
+        try {
+            jdbcTemp = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gbase8s-jdbctemp").toAbsolutePath(); //$NON-NLS-1$
+        } catch (IOException e) {
+            log.warn("Failed to configure default JDBC temp", e);
+            jdbcTemp = null;
+        }
+        DEFAULT_JDBCTEMP = jdbcTemp;
+    }
 
     public GBase8sDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container,
             @NotNull GenericMetaModel metaModel) throws DBException {
@@ -92,5 +116,22 @@ public class GBase8sDataSource extends GenericDataSource {
         }
 
         return super.discoverErrorType(error);  // fallback case
+    }
+
+    /**
+     * override this method to set some driver properties dynamically to fix #41669
+     *
+     * @param connectionInfo {@inheritDoc}
+     * @param connectProps {@inheritDoc}
+     */
+    @Override
+    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+        super.fillConnectionProperties(connectionInfo, connectProps);
+
+        // handle JDBCTEMP driver properties (#41669), use existed value first, then fallback to default value
+        String jdbcTemp = connectProps.getProperty(PROPERTY_JDBCTEMP); //$NON-NLS-1$
+        if (CommonUtils.isEmpty(jdbcTemp) && DEFAULT_JDBCTEMP != null) {
+            connectProps.setProperty(PROPERTY_JDBCTEMP, DEFAULT_JDBCTEMP.toString());
+        }
     }
 }

@@ -33,7 +33,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -59,6 +58,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
@@ -148,7 +148,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPDataSourceTask,
     DBPDataSourceAcquirer,
     IResultSetProvider,
-    ISmartTransactionManager,
+    DBCSmartTransactionManager,
     IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
@@ -1257,7 +1257,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         });
         textWidget.addVerifyKeyListener(e -> {
-            if (e.keyCode == SWT.ESC) {
+            if (e.keyCode == SWT.ESC && suggestionTextPainter.hasContentToShow()) {
                 e.doit = false;
                 suggestionTextPainter.removeHint();
             }
@@ -3489,9 +3489,10 @@ public class SQLEditor extends SQLEditorBase implements
         firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
 
         if (getSite() != null) {
-            IWorkbenchPage page = getSite().getWorkbenchWindow().getActivePage();
+            IWorkbenchWindow window = getSite().getWorkbenchWindow();
+            IWorkbenchPage page = window.getActivePage();
             if (page != null && page.getActiveEditor() == this) {
-                DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
+                UIExecutionQueue.queueExec(() -> DataSourceToolbarUtils.refreshSelectorToolbar(window));
             }
         }
 

@@ -332,7 +332,6 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
 
             editorControl.setRedraw(false);
 
-            resetEditorInput();
             final DBPPreferenceStore store = valueController.getExecutionContext() != null
                 ? valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore()
                 : DBWorkbench.getPlatform().getPreferenceStore();
@@ -367,8 +366,26 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         if (encoding == null) {
             encoding = StandardCharsets.UTF_8.name();
         }
-        final ContentEditorInput textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
+        final ContentEditorInput textInput;
         final TextViewer textViewer = editor.getTextViewer();
+        IEditorInput editorInput = editor.getEditorInput();
+        boolean inMemory = !(valueController.getValue() instanceof DBDContent);
+        if (editorInput instanceof ContentEditorInput contentEditorInput && contentEditorInput.isInMemory() == inMemory) {
+            try {
+                contentEditorInput.refreshContent(monitor, valueController, encoding);
+                editor.getDocumentProvider().resetDocument(contentEditorInput);
+            } catch (Exception e) {
+                resetEditorInput();
+                throw new DBException("Error refreshing text editor input", e);
+            }
+            if (textViewer != null && textViewer.getUndoManager() != null) {
+                textViewer.getUndoManager().reset();
+            }
+            textInput = contentEditorInput;
+        } else {
+            resetEditorInput();
+            textInput = new ContentEditorInput(valueController, null, null, encoding, monitor);
+        }
         if (textViewer != null) {
             long contentLength = textInput.getContentLength();
 
@@ -384,11 +401,15 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                     }
                 }
                 editorControl.setWordWrap(false);
-                editor.setInput(textInput);
+                if (editor.getEditorInput() != textInput) {
+                    editor.setInput(textInput);
+                }
 
                 messageBar.hideMessage();
             } else {
-                editor.setInput(textInput);
+                if (editor.getEditorInput() != textInput) {
+                    editor.setInput(textInput);
+                }
             }
             applyEditorStyle();
         }
@@ -401,8 +422,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         }
         try (final InputStream stream = contents.getContentStream()) {
             byte[] displayingContentBytes = stream.readNBytes(lengthInBytes);
-            final String content = new String(displayingContentBytes);
+            final String content = new String(displayingContentBytes, StandardCharsets.UTF_8);
             if (editor != null) {
+                resetEditorInput();
                 editorControl.setWordWrap(false);
                 editor.setInput(new StringEditorInput("Limited Content ", content, true, StandardCharsets.UTF_8.name()));
                 messageBar.showMessage(NLS.bind(ResultSetMessages.panel_editor_text_content_limitation_lbl, lengthInBytes / 1000));

@@ -133,10 +133,6 @@ function formatMessageMeta(meta) {
     return parts.join(', ');
 }
 
-function hideChatMeta() {
-    setSetting(settingKeys.showTotalTokensSpent, false);
-}
-
 function updateChatMeta(text) {
     chatMetaText.innerText = text;
 }

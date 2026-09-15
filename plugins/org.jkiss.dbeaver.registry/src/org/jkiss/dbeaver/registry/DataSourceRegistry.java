@@ -222,7 +222,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     public T findDataSourceByName(String name) {
         synchronized (dataSources) {
             for (T dsd : dataSources.values()) {
-                if (!dsd.isHidden() && dsd.getName().equals(name)) {
+                if (!dsd.isHidden() && Objects.equals(dsd.getName(), name)) {
                     return dsd;
                 }
             }
@@ -628,6 +628,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        persistDataSourceUpdates(List.of(container));
+    }
+
+    protected void persistDataSourceUpdates(@NotNull List<? extends DBPDataSourceContainer> containers) {
         saveDataSources();
     }
 
