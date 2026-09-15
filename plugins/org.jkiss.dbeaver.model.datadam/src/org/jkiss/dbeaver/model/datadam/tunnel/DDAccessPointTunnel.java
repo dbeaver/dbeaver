@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.net.ssl.SSLSocketFactory;
 
 public class DDAccessPointTunnel implements DBWTunnel {
 
@@ -179,17 +180,16 @@ public class DDAccessPointTunnel implements DBWTunnel {
 
     @NotNull
     private Socket openBridgeSocket(@NotNull BridgeTicket ticket) throws IOException {
-        String host;
-        int port;
-        if (!CommonUtils.isEmpty(ticket.bridgeAddr())) {
-            int sep = ticket.bridgeAddr().lastIndexOf(':');
-            host = ticket.bridgeAddr().substring(0, sep);
-            port = Integer.parseInt(ticket.bridgeAddr().substring(sep + 1));
-        } else {
-            host = URI.create(gatewayUrl).getHost();
-            port = ticket.port();
+        boolean explicit = !CommonUtils.isEmpty(ticket.bridgeAddr());
+        String addr = explicit ? ticket.bridgeAddr() : URI.create(gatewayUrl).getHost() + ":" + ticket.port();
+        boolean tls = explicit ? addr.startsWith("https://") : gatewayUrl.startsWith("https://");
+        if (addr.contains("://")) {
+            addr = addr.substring(addr.indexOf("://") + 3);
         }
-        return new Socket(host, port);
+        int sep = addr.lastIndexOf(':');
+        String host = addr.substring(0, sep);
+        int port = Integer.parseInt(addr.substring(sep + 1));
+        return tls ? SSLSocketFactory.getDefault().createSocket(host, port) : new Socket(host, port);
     }
 
     // Matches tunnel/server/bridge.go's upgrade. A BufferedReader would over-read past the
