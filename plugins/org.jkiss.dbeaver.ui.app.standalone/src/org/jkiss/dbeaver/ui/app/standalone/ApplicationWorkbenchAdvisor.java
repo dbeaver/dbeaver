@@ -48,6 +48,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreFeatures;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -80,6 +81,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
+import org.jkiss.dbeaver.ui.preferences.PrefPageGeneral;
 import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -161,6 +163,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     // Move to Workspace
     private static final String[] WORKSPACE_PREF_PAGES = {
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+    };
+
+    // Move to General
+    private static final String[] GENERAL_PREF_PAGES = {
         "org.eclipse.team.ui.TeamPreferences",
     };
 
@@ -231,6 +237,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public String getInitialWindowPerspectiveId() {
         return PERSPECTIVE_ID;
+    }
+
+    @Override
+    public String getMainPreferencePageId() {
+        return PrefPageGeneral.PAGE_ID;
     }
 
     @Override
@@ -332,6 +343,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WorkbenchUtils.movePreferencePages(NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
 
         WorkbenchUtils.removePreferencePages(getExcludedPreferencePageIds());
+        WorkbenchUtils.movePreferencePage(
+            PrefPageConstants.WORKBENCH_PREF_PAGE_ID,
+            PrefPageGeneral.PAGE_ID,
+            CoreMessages.pref_page_general_workbench
+        );
+        WorkbenchUtils.movePreferencePages(GENERAL_PREF_PAGES, PrefPageGeneral.PAGE_ID);
     }
 
     @NotNull
