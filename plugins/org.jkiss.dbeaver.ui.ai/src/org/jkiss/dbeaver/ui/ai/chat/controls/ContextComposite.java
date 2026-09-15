@@ -298,13 +298,11 @@ public class ContextComposite extends Composite {
     }
 
     private void showContextDropDown() {
-        Control[] ccc = contextComposite.getChildren();
-        showDropDown(ccc[ccc.length - 1], 0, contextDropDown);
+        showDropDown(contextComposite, 0, contextDropDown);
     }
 
     private void showConversationDropDown() {
-        Control[] ccc = conversationComposite.getChildren();
-        showDropDown(ccc[ccc.length - 1], 0, conversationDropDown);
+        showDropDown(conversationComposite, 0, conversationDropDown);
     }
 
     public void showScopeDropDown() {
