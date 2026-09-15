@@ -20,7 +20,6 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,37 +33,28 @@ public record AIModelCatalogEntry(
 ) {
     @NotNull
     public AIModel enrich(@NotNull AIModel model) {
-        Set<AIModelFeature> features = new HashSet<>(model.features());
-        updateFeature(features, AIModelFeature.TOOL_CALL, toolCall);
-        updateFeature(features, AIModelFeature.REASONING, reasoning);
-        updateFeature(features, AIModelFeature.STRUCTURED_OUTPUT, structuredOutput);
-        if (temperature != null) {
-            updateFeature(features, AIModelFeature.TEMPERATURE_UNSUPPORTED, !temperature);
-            if (temperature) {
-                features.remove(AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE);
-            }
-        }
-        if (modalities != null && modalities.input() != null) {
-            updateFeature(features, AIModelFeature.VISION, modalities.input().contains("image"));
-            updateFeature(features, AIModelFeature.PDF_INPUT, modalities.input().contains("pdf"));
-        }
-        return new AIModel(
+        AIModel result = new AIModel(
             model.name(),
             preferLimit(model.contextWindowSize(), limit == null ? null : limit.context()),
-            Set.copyOf(features),
+            Set.copyOf(model.features()),
             model.defaultTemperature(),
             preferLimit(model.inputTokenLimit(), limit == null ? null : limit.input()),
             preferLimit(model.outputTokenLimit(), limit == null ? null : limit.output()),
             model.maxTemperature()
-        );
-    }
-
-    private static void updateFeature(@NotNull Set<AIModelFeature> features, @NotNull AIModelFeature feature, @Nullable Boolean supported) {
-        if (Boolean.TRUE.equals(supported)) {
-            features.add(feature);
-        } else if (Boolean.FALSE.equals(supported)) {
-            features.remove(feature);
+        ).withFeature(AIModelFeature.TOOL_CALL, toolCall)
+            .withFeature(AIModelFeature.REASONING, reasoning)
+            .withFeature(AIModelFeature.STRUCTURED_OUTPUT, structuredOutput);
+        if (temperature != null) {
+            result = result.withFeature(AIModelFeature.TEMPERATURE_UNSUPPORTED, !temperature);
+            if (temperature) {
+                result = result.withFeature(AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE, false);
+            }
         }
+        if (modalities != null && modalities.input() != null) {
+            result = result.withFeature(AIModelFeature.VISION, modalities.input().contains("image"))
+                .withFeature(AIModelFeature.PDF_INPUT, modalities.input().contains("pdf"));
+        }
+        return result;
     }
 
     @Nullable

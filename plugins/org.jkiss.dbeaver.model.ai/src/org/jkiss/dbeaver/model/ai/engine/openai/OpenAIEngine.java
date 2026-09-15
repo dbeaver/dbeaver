@@ -65,8 +65,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModelDetails(openAIProperties);
         }
         List<OAIModel> models = openAiService.getInstance().getModels(monitor);
-        Map<String, AIModelCatalogEntry> catalog = OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl())
-            ? AIModelCatalog.getInstance().getModels(OpenAIModels.CATALOG_PROVIDER_ID) : Map.of();
+        Map<String, AIModelCatalogEntry> catalog = getModelCatalog(true);
         return models.stream()
             .map(model -> OpenAIModels.fromApiModel(model, OpenAIModels.findCatalogEntry(catalog, model.id())))
             .toList();
@@ -116,28 +115,6 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     }
 
     @Override
-    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl())
-            || properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()
-        ) {
-            AIModelCatalog.getInstance().getModels(OpenAIModels.CATALOG_PROVIDER_ID);
-        }
-        Integer contextWindowSize = properties.getContextWindowSize();
-        if (contextWindowSize != null) {
-            return contextWindowSize;
-        }
-
-        AIModelCatalogEntry catalogEntry = getCachedCatalogEntry();
-        if (catalogEntry != null && catalogEntry.limit() != null && catalogEntry.limit().context() != null
-            && catalogEntry.limit().context() > 0
-        ) {
-            return catalogEntry.limit().context();
-        }
-
-        throw new DBException("Context window size is not set for the model: " + model());
-    }
-
-    @Override
     public void close() throws DBException {
         openAiService.dispose();
     }
@@ -154,11 +131,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
-        AIModelCatalogEntry catalogEntry = getCachedCatalogEntry();
-        if (catalogEntry != null && Boolean.FALSE.equals(catalogEntry.temperature())) {
-            oaiRequest.temperature = null;
-        }
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), getRequestTemperature());
         if (properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication()
         ) {
@@ -168,12 +141,17 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     }
 
     @Nullable
-    protected AIModelCatalogEntry getCachedCatalogEntry() throws DBException {
-        String modelName = model();
+    @Override
+    protected String getCatalogProviderId() {
         boolean accountAuthentication = properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication();
-        return modelName == null || !accountAuthentication && !OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl()) ? null
-            : OpenAIModels.findCatalogEntry(AIModelCatalog.getInstance().getCachedModels(OpenAIModels.CATALOG_PROVIDER_ID), modelName);
+        return accountAuthentication || OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl()) ? OpenAIModels.CATALOG_PROVIDER_ID : null;
+    }
+
+    @Nullable
+    @Override
+    protected AIModelCatalogEntry getCachedCatalogEntry() throws DBException {
+        return OpenAIModels.findCatalogEntry(getModelCatalog(false), model());
     }
 
     @NotNull
@@ -203,7 +181,4 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         return properties.getModel();
     }
 
-    protected double temperature() throws DBException {
-        return properties.getTemperature();
-    }
 }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public record AIModel(
@@ -42,5 +43,25 @@ public record AIModel(
 
     public AIModel(@NotNull String name, @Nullable Integer contextWindowSize, @NotNull Set<AIModelFeature> features) {
         this(name, contextWindowSize, features, 0.0);
+    }
+
+    @NotNull
+    public AIModel withFeature(@NotNull AIModelFeature feature, @Nullable Boolean supported) {
+        if (supported == null || features.contains(feature) == supported) {
+            return this;
+        }
+        Set<AIModelFeature> updated = new HashSet<>(features);
+        if (supported) {
+            updated.add(feature);
+        } else {
+            updated.remove(feature);
+        }
+        return new AIModel(name, contextWindowSize, Set.copyOf(updated), defaultTemperature,
+            inputTokenLimit, outputTokenLimit, maxTemperature);
+    }
+
+    public boolean isTemperatureEditable() {
+        return !features.contains(AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE)
+            && !features.contains(AIModelFeature.TEMPERATURE_UNSUPPORTED);
     }
 }

@@ -93,32 +93,16 @@ public record CopilotModel(
             return nativeModel;
         }
         AIModel result = catalogEntry.enrich(nativeModel);
-        Set<AIModelFeature> features = new HashSet<>(result.features());
         CopilotModelSupports supports = capabilities == null ? null : capabilities.supports();
         if (supports != null) {
-            applyNativeSupport(features, AIModelFeature.STREAMING, supports.streaming());
-            applyNativeSupport(features, AIModelFeature.TOOL_CALL, supports.toolCalls());
-            applyNativeSupport(features, AIModelFeature.VISION, supports.vision());
+            result = result.withFeature(AIModelFeature.STREAMING, supports.streaming())
+                .withFeature(AIModelFeature.TOOL_CALL, supports.toolCalls())
+                .withFeature(AIModelFeature.VISION, supports.vision());
             if (supports.thinking() != null || supports.adaptiveThinking() != null || supports.reasoningEffort() != null) {
-                applyNativeSupport(features, AIModelFeature.REASONING, nativeModel.features().contains(AIModelFeature.REASONING));
+                result = result.withFeature(AIModelFeature.REASONING, nativeModel.features().contains(AIModelFeature.REASONING));
             }
         }
-        return new AIModel(
-            result.name(), result.contextWindowSize(), Set.copyOf(features), result.defaultTemperature(),
-            result.inputTokenLimit(), result.outputTokenLimit(), result.maxTemperature()
-        );
-    }
-
-    private static void applyNativeSupport(
-        @NotNull Set<AIModelFeature> features,
-        @NotNull AIModelFeature feature,
-        @Nullable Boolean supported
-    ) {
-        if (Boolean.TRUE.equals(supported)) {
-            features.add(feature);
-        } else if (Boolean.FALSE.equals(supported)) {
-            features.remove(feature);
-        }
+        return result;
     }
 
     public record CopilotModelPolicy(@SerializedName("state") @Nullable String state) {

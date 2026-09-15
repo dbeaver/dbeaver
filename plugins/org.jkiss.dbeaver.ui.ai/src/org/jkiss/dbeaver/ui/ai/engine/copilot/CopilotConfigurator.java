@@ -139,23 +139,11 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                 if (selectedModel == null) {
                     selectedModel = CopilotModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
                 }
-                contextWindowSizeField.setValue(null);
-                contextWindowSizeField.setDefaultValue(selectedModel == null ? null : selectedModel.contextWindowSize());
-                temperatureText.setText(String.valueOf(selectedModel == null ? 0.0 : selectedModel.defaultTemperature()));
-                temperatureText.setEnabled(
-                    selectedModel == null || !selectedModel.features().contains(AIModelFeature.TEMPERATURE_UNSUPPORTED)
-                );
+                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, true);
             })
             .withModelListSupplier(modelListProvider)
-            .withModelsRefreshListener(() -> {
-                AIModel selectedModel = modelSelectorField.getSelectedModel();
-                temperatureText.setEnabled(
-                    selectedModel == null || !selectedModel.features().contains(AIModelFeature.TEMPERATURE_UNSUPPORTED)
-                );
-                if (selectedModel != null && selectedModel.contextWindowSize() != null) {
-                    contextWindowSizeField.setDefaultValue(selectedModel.contextWindowSize());
-                }
-            })
+            .withModelsRefreshListener(() -> updateModelParameters(
+                modelSelectorField.getSelectedModel(), temperatureText, contextWindowSizeField, false))
             .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()

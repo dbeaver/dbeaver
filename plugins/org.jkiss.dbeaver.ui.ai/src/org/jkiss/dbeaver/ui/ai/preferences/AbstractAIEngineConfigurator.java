@@ -29,9 +29,11 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -49,6 +51,24 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
 
     private int timeout = AIEngineProperties.DEFAULT_TIMEOUT;
     private boolean logQuery;
+
+    protected void updateModelParameters(
+        @Nullable AIModel model,
+        @NotNull Text temperatureText,
+        @Nullable ContextWindowSizeField contextField,
+        boolean modelChanged
+    ) {
+        if (modelChanged) {
+            if (contextField != null) {
+                contextField.setValue(null);
+            }
+            temperatureText.setText(String.valueOf(model == null ? 0.0 : model.defaultTemperature()));
+        }
+        temperatureText.setEnabled(model == null || model.isTemperatureEditable());
+        if (contextField != null && model != null && model.contextWindowSize() != null) {
+            contextField.setDefaultValue(model.contextWindowSize());
+        }
+    }
 
     @NotNull
     protected Composite createAdvancedSettings(@NotNull Composite parent) {

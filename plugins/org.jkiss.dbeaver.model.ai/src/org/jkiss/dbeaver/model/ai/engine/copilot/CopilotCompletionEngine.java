@@ -64,9 +64,15 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
     @NotNull
     @Override
+    protected String getCatalogProviderId() {
+        return CopilotModels.CATALOG_PROVIDER_ID;
+    }
+
+    @NotNull
+    @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<CopilotModel> models = client.getInstance().loadModels(monitor, requestSessionToken(monitor));
-        Map<String, AIModelCatalogEntry> catalog = AIModelCatalog.getInstance().getModels(CopilotModels.CATALOG_PROVIDER_ID);
+        Map<String, AIModelCatalogEntry> catalog = getModelCatalog(true);
         boolean isPremium = models.stream().anyMatch(CopilotModel::modelPickerEnabled);
         return models.stream()
             .filter(model -> isModelOffered(model, isPremium))
@@ -90,7 +96,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        Double temperature = requestTemperature();
+        Double temperature = getRequestTemperature();
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
             OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature),
             createLegacyChatRequest(request, false, temperature)
@@ -147,7 +153,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull AIEngineRequest request,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        Double temperature = requestTemperature();
+        Double temperature = getRequestTemperature();
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
             OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature),
             createLegacyChatRequest(request, true, temperature)
@@ -158,18 +164,6 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
             copilotChatRequestOAIResponsesRequestPair,
             listener
         );
-    }
-
-    @Override
-    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        AIModelCatalog.getInstance().getModels(CopilotModels.CATALOG_PROVIDER_ID);
-        Integer contextWindowSize = properties.getContextWindowSize();
-        if (contextWindowSize != null) {
-            return contextWindowSize;
-        }
-
-        throw new DBException("Context window size is not defined in Copilot properties. " +
-            "Please set it explicitly or use a known model with a predefined context window size.");
     }
 
     @Override
@@ -215,14 +209,6 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
             .withTopP(1)
             .withN(1)
             .build();
-    }
-
-    @Nullable
-    private Double requestTemperature() {
-        String modelName = getModelName();
-        AIModelCatalogEntry entry = modelName == null ? null
-            : AIModelCatalog.getInstance().getCachedModels(CopilotModels.CATALOG_PROVIDER_ID).get(modelName);
-        return entry != null && Boolean.FALSE.equals(entry.temperature()) ? null : properties.getTemperature();
     }
 
 

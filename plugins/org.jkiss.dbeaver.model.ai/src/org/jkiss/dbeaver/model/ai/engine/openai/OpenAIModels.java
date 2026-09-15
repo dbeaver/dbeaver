@@ -148,7 +148,6 @@ public final class OpenAIModels {
     }
 
     public static boolean isTemperatureEditable(@NotNull AIModel model) {
-        return !model.features().contains(AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE)
-            && !model.features().contains(AIModelFeature.TEMPERATURE_UNSUPPORTED);
+        return model.isTemperatureEditable();
     }
 }

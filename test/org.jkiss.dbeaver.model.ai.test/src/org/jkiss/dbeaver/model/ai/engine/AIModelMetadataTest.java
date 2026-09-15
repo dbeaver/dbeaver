@@ -30,6 +30,24 @@ class AIModelMetadataTest extends DBeaverUnitTest {
     private static final Gson GSON = new Gson();
 
     @Test
+    void featureOverridesPreserveMetadataAndDoNotMutateOriginal() {
+        AIModel nativeModel = new AIModel("test-model", 64000, Set.of(AIModelFeature.CHAT, AIModelFeature.VISION),
+            0.7, 48000, 16000, 2.0);
+        AIModel updated = nativeModel.withFeature(AIModelFeature.VISION, false).withFeature(AIModelFeature.TOOL_CALL, true);
+
+        Assertions.assertTrue(nativeModel.features().contains(AIModelFeature.VISION));
+        Assertions.assertFalse(nativeModel.features().contains(AIModelFeature.TOOL_CALL));
+        Assertions.assertEquals(Set.of(AIModelFeature.CHAT, AIModelFeature.TOOL_CALL), updated.features());
+        Assertions.assertEquals(64000, updated.contextWindowSize());
+        Assertions.assertEquals(48000, updated.inputTokenLimit());
+        Assertions.assertEquals(16000, updated.outputTokenLimit());
+        Assertions.assertEquals(0.7, updated.defaultTemperature());
+        Assertions.assertEquals(2.0, updated.maxTemperature());
+        Assertions.assertSame(updated, updated.withFeature(AIModelFeature.TOOL_CALL, null));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> updated.features().add(AIModelFeature.VISION));
+    }
+
+    @Test
     void providerMetadataDoesNotUsePerModelTemperaturePresets() {
         OAIModel response = GSON.fromJson("""
             {"id":"gpt-5","context_length":128000}
