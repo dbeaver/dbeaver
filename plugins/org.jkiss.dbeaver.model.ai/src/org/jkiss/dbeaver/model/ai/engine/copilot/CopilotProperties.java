@@ -105,6 +105,11 @@ public class CopilotProperties extends BaseAIEngineProperties {
         this.contextWindowSize = contextWindowSize;
     }
 
+    @Nullable
+    public Integer getConfiguredContextWindowSize() {
+        return contextWindowSize;
+    }
+
     /**
      * Resolve secrets from the secret controller.
      */
