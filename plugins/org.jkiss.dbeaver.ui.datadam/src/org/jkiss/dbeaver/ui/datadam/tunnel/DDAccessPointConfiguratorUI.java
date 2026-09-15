@@ -57,6 +57,6 @@ public class DDAccessPointConfiguratorUI extends AbstractObjectPropertyConfigura
 
     @Override
     public boolean isComplete() {
-        return !CommonUtils.isEmpty(apIdText.getText());
+        return !CommonUtils.isEmpty(apIdText.getText().trim());
     }
 }

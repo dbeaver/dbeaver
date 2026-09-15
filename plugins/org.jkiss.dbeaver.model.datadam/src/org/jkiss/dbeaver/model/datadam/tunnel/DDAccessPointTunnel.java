@@ -36,11 +36,13 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -48,9 +50,12 @@ import java.net.http.HttpResponse;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.net.ssl.SSLSocketFactory;
@@ -66,11 +71,15 @@ public class DDAccessPointTunnel implements DBWTunnel {
     private static final String ENV_URL = "DATADAM_URL";
     private static final String PREF_SERVER_URL = "datadam.server-url";
     private static final int GATEWAY_PORT = 9000;
+    private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
 
-    private static final HttpClient HTTP = HttpClient.newHttpClient();
+    private static final HttpClient HTTP = HttpClient.newBuilder()
+        .connectTimeout(Duration.ofSeconds(5))
+        .build();
 
     private final List<Runnable> closeListeners = new ArrayList<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final Set<Closeable> activeConnections = ConcurrentHashMap.newKeySet();
 
     private ServerSocketChannel localServer;
     private volatile boolean closed;
@@ -136,15 +145,22 @@ public class DDAccessPointTunnel implements DBWTunnel {
     }
 
     private void bridge(@NotNull SocketChannel local) {
+        activeConnections.add(local);
         try {
             BridgeTicket ticket = requestBridgeTicket();
-            try (Socket bridgeSocket = openBridgeSocket(ticket)) {
+            Socket bridgeSocket = openBridgeSocket(ticket);
+            activeConnections.add(bridgeSocket);
+            try {
                 performUpgrade(bridgeSocket, ticket.token());
                 splice(local, bridgeSocket);
+            } finally {
+                activeConnections.remove(bridgeSocket);
+                bridgeSocket.close();
             }
         } catch (Exception e) {
             log.error("Access Point tunnel " + apId + ": bridge failed", e);
         } finally {
+            activeConnections.remove(local);
             try {
                 local.close();
             } catch (IOException ignored) {
@@ -155,18 +171,16 @@ public class DDAccessPointTunnel implements DBWTunnel {
 
     @NotNull
     private BridgeTicket requestBridgeTicket() throws Exception {
-        String body = "{\"apId\":" + JSONUtils.GSON.toJson(apId) + ",\"target\":" + JSONUtils.GSON.toJson(target) + "}";
-        byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
-        String bearer = credentials.buildToken("POST", "/tunnel/request", bodyBytes);
+        byte[] bodyBytes = ("{\"apId\":" + JSONUtils.GSON.toJson(apId) + ",\"target\":" + JSONUtils.GSON.toJson(target) + "}")
+            .getBytes(StandardCharsets.UTF_8);
+        URI uri = URI.create(gatewayUrl + "/tunnel/request");
 
-        HttpResponse<String> response = HTTP.send(
-            HttpRequest.newBuilder(URI.create(gatewayUrl + "/tunnel/request"))
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + bearer)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(bodyBytes))
-                .build(),
-            HttpResponse.BodyHandlers.ofString()
-        );
+        HttpResponse<String> response = sendSignedRequest(uri, bodyBytes);
+        String serverTime = response.headers().firstValue(SERVER_TIME_HEADER).orElse(null);
+        if (serverTime != null) {
+            credentials.updateServerTime(Long.parseLong(serverTime));
+            response = sendSignedRequest(uri, bodyBytes);
+        }
         if (response.statusCode() != 200) {
             throw new DBException("Access Point tunnel request failed: HTTP " + response.statusCode() + " " + response.body());
         }
@@ -176,6 +190,21 @@ public class DDAccessPointTunnel implements DBWTunnel {
         String bridgeAddr = (String) json.get("bridgeAddr");
         int port = ((Number) json.get("port")).intValue();
         return new BridgeTicket(token, bridgeAddr, port);
+    }
+
+    @NotNull
+    private HttpResponse<String> sendSignedRequest(@NotNull URI uri, @NotNull byte[] bodyBytes) throws Exception {
+        String pathAndQuery = uri.getRawQuery() == null ? uri.getRawPath() : uri.getRawPath() + "?" + uri.getRawQuery();
+        String bearer = credentials.buildToken("POST", pathAndQuery, bodyBytes);
+        return HTTP.send(
+            HttpRequest.newBuilder(uri)
+                .timeout(Duration.ofSeconds(30))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + bearer)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(bodyBytes))
+                .build(),
+            HttpResponse.BodyHandlers.ofString()
+        );
     }
 
     @NotNull
@@ -269,9 +298,14 @@ public class DDAccessPointTunnel implements DBWTunnel {
             return url;
         }
         String normalized = CommonUtils.removeTrailingSlash(url);
-        URI uri = URI.create(normalized);
-        if (uri.getHost() != null && uri.getPort() == -1) {
-            return normalized + ":" + GATEWAY_PORT;
+        try {
+            URI uri = URI.create(normalized);
+            if (uri.getHost() != null && uri.getPort() == -1) {
+                return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), GATEWAY_PORT,
+                    uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+            }
+        } catch (URISyntaxException ignored) {
+            // fall through to the un-ported URL below
         }
         return normalized;
     }
@@ -299,6 +333,13 @@ public class DDAccessPointTunnel implements DBWTunnel {
                 localServer.close();
             } catch (IOException e) {
                 log.debug("Access Point tunnel " + apId + ": error closing local listener", e);
+            }
+        }
+        for (Closeable connection : activeConnections) {
+            try {
+                connection.close();
+            } catch (IOException ignored) {
+                // no op
             }
         }
         executor.shutdownNow();
