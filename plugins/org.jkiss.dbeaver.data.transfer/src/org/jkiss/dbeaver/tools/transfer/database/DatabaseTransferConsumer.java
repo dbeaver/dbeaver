@@ -76,6 +76,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DBCExecutionContext targetContext;
     private DBCSession targetSession;
     private DBSDataManipulator.ExecuteBatch executeBatch;
+    private boolean useDirectTarget;
     private DBSDataBulkLoader.BulkLoadManager bulkLoadManager;
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
@@ -706,13 +707,18 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
             if (containerMapping.hasNewTargetObject()) {
-                DatabaseTransferUtils.createTargetDynamicTable(
+                DBSDataManipulator target = DatabaseTransferUtils.createTargetDynamicTable(
                     session.getProgressMonitor(),
                     session.getExecutionContext(),
                     schema,
                     containerMapping,
                     containerMapping.getTarget() != null
                 );
+                if (target != null) {
+                    DatabaseTransferUtils.setMappingTarget(containerMapping, target);
+                    useDirectTarget = true;
+                    return false;
+                }
             }
             return true;
         } else {
@@ -781,7 +787,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             try {
                 // Mappings can be outdated so is the target object.
                 // This may happen when several database consumers point to the same container node
-                DatabaseTransferUtils.refreshDatabaseMappings(monitor, settings, containerMapping, true);
+                if (!useDirectTarget) {
+                    DatabaseTransferUtils.refreshDatabaseMappings(monitor, settings, containerMapping, true);
+                }
             } catch (Exception e) {
                 log.error("Error refreshing database model", e);
             }
