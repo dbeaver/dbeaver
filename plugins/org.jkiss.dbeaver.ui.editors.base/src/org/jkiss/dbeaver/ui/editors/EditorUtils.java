@@ -354,11 +354,16 @@ public class EditorUtils {
         }
         RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
-            Object dataSourceId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
-            if (dataSourceId != null && (forceRegistryLoad || projectMeta.isRegistryLoaded())) {
-                DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
+            String dataSourceId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+            String dataSourceProjectId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID);
+            DBPProject dataSourceProject = CommonUtils.isEmpty(dataSourceProjectId) ?
+                projectMeta : DBWorkbench.getPlatform().getWorkspace().getProjectById(dataSourceProjectId);
+            if (dataSourceId != null && dataSourceProject != null &&
+                (forceRegistryLoad || dataSourceProject.isRegistryLoaded())) {
+                DBPDataSourceContainer dataSource = dataSourceProject.getDataSourceRegistry().getDataSource(dataSourceId);
                 if (dataSource == null) {
-                    log.debug("Datasource " + dataSourceId + " not found in project " + projectMeta.getName() + " (" + file.getFullPath().toString() + ")");
+                    log.debug("Datasource " + dataSourceId + " not found in project " + dataSourceProject.getName() +
+                        " (" + file.getFullPath() + ")");
                 }
                 return dataSource;
             } else {
@@ -455,6 +460,10 @@ public class EditorUtils {
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
 
         String resourcePath = projectMeta.getResourcePath(file);
+        projectMeta.setResourceProperty(
+            resourcePath,
+            DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID,
+            dataSourceContainer == null ? null : dataSourceContainer.getProject().getId());
         projectMeta.setResourceProperty(resourcePath, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
         if (!isDefaultContextSettings(context)) {
             String defaultCatalogName = getDefaultCatalogName(context);
