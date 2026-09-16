@@ -43,6 +43,7 @@ public class LogOutputStream extends OutputStream {
     public static final String LOGS_MAX_FILES_COUNT = "logs.files.output.maxCount";
 
     private static final int FILE_OPERATIONS_RETRY_LIMIT = 5;
+    private static final String FALLBACK_LOG_FILE_SUFFIX = "-since";
 
     private static final Operations REAL_OPERATIONS = new Operations() {
         @NotNull
@@ -165,8 +166,7 @@ public class LogOutputStream extends OutputStream {
             this.logFileNameExtension = "";
         }
 
-        final String logFileNameRegexStr = "^" + Pattern.quote(logFileName) + "\\-[0-9]+(-since)?" + Pattern.quote(logFileNameExtension) + "$";
-        this.logFileNamePattern = Pattern.compile(logFileNameRegexStr).asMatchPredicate();
+        this.logFileNamePattern = getArchivedLogFileNamePredicate(fileName);
         
         if (operations.exists(debugLogFile)) {
             this.currentLogSize = operations.length(this.currentLogFile);
@@ -274,9 +274,32 @@ public class LogOutputStream extends OutputStream {
                 this.operations.debugPrint("Failed to rename log " + this.currentLogFile.getAbsolutePath() + " file to " + newFile.getAbsolutePath());
             }
             // if failed to rename, then start using suffix to keep sorting intact
-            this.currentLogFile = new File(this.logFileLocation, this.logFileName + "-" + stamp + "-since" + this.logFileNameExtension);
+            this.currentLogFile = new File(
+                this.logFileLocation,
+                this.logFileName + "-" + stamp + FALLBACK_LOG_FILE_SUFFIX + this.logFileNameExtension
+            );
         }
         this.currentLogSize = 0;
+    }
+
+    /**
+     * Returns a predicate matching archive names generated for the given active log file name.
+     */
+    @NotNull
+    public static Predicate<String> getArchivedLogFileNamePredicate(@NotNull String fileName) {
+        String logFileName;
+        String logFileNameExtension;
+        int fnameExtStart = fileName.lastIndexOf('.');
+        if (fnameExtStart >= 0) {
+            logFileName = fileName.substring(0, fnameExtStart);
+            logFileNameExtension = fileName.substring(fnameExtStart);
+        } else {
+            logFileName = fileName;
+            logFileNameExtension = "";
+        }
+        String regex = "^" + Pattern.quote(logFileName) + "\\-[0-9]+(" + Pattern.quote(FALLBACK_LOG_FILE_SUFFIX) + ")?"
+            + Pattern.quote(logFileNameExtension) + "$";
+        return Pattern.compile(regex).asMatchPredicate();
     }
 
     /**
