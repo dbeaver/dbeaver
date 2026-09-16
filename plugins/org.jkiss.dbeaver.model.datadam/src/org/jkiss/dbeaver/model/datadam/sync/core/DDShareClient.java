@@ -22,7 +22,6 @@ import com.dbeaver.datadam.share.api.model.DDConfiguration;
 import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
-import com.dbeaver.datadam.share.api.utils.DDFingerprintUtils;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.HttpConstants;
+import org.jkiss.utils.Pair;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -333,23 +333,25 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     }
 
     /**
-     * Convenience wrapper over pushProjectConfiguration that also encrypts each file's contents
-     * and computes the fingerprints.
+     * Convenience wrapper over pushProjectConfiguration that encrypts prepared project files.
      */
     @NotNull
     public DDSharedProjectRevision pushFiles(
         @NotNull UUID projectId,
-        @NotNull Map<String, byte[]> files,
+        @NotNull Map<String, Pair<String, byte[]>> files,
+        @NotNull String configurationFingerprint,
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
-            for (Map.Entry<String, byte[]> file : files.entrySet()) {
-                String fingerprint = DDFingerprintUtils.calculateFileFingerprint(projectId, file.getKey(), file.getValue());
+            for (Map.Entry<String, Pair<String, byte[]>> file : files.entrySet()) {
+                Pair<String, byte[]> preparedFile = Objects.requireNonNull(
+                    file.getValue(), "File fingerprint and contents are required");
                 projectFiles.add(new DDSharedProjectFile(
-                    file.getKey(), encryptBytes(projectId.toString(), file.getKey(), file.getValue()), fingerprint));
+                    file.getKey(),
+                    encryptBytes(projectId.toString(), file.getKey(), preparedFile.getSecond()),
+                    preparedFile.getFirst()));
             }
-            String configurationFingerprint = DDFingerprintUtils.calculateConfigurationFingerprint(projectId, projectFiles);
             return pushProjectConfiguration(
                 projectId,
                 new DDSharedProjectConfiguration(configurationFingerprint, projectFiles),

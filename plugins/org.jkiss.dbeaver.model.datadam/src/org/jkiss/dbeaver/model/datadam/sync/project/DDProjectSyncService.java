@@ -19,20 +19,20 @@ package org.jkiss.dbeaver.model.datadam.sync.project;
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
+import com.dbeaver.datadam.share.api.utils.DDFingerprintUtils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSharedProjectPullResult;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Manages associations between local DBeaver projects and individual DataDam projects.
@@ -75,6 +75,43 @@ public class DDProjectSyncService {
     }
 
     @NotNull
+    public DDProjectSyncSnapshot getProjectSyncSnapshot(@NotNull DBPProject project) throws DBException {
+        DDProjectSyncLocalBinding binding = getBinding(project);
+        if (binding == null) {
+            throw new DBException("Project is not bound to DataDam: " + project.getName());
+        }
+        DDSharedProjectRevision serverRevision = getServerRevision(binding);
+        Map<String, byte[]> content = DDProjectSyncContentAdapter.forUnitIds(binding.unitIds()).read(project);
+        Map<String, Pair<String, byte[]>> files = new LinkedHashMap<>(content.size());
+        Map<String, String> fileFingerprints = new LinkedHashMap<>(content.size());
+        for (Map.Entry<String, byte[]> file : content.entrySet()) {
+            String fingerprint = DDFingerprintUtils.calculateFileFingerprint(
+                binding.remoteProjectId(), file.getKey(), file.getValue());
+            files.put(file.getKey(), new Pair<>(fingerprint, file.getValue()));
+            fileFingerprints.put(file.getKey(), fingerprint);
+        }
+        String configurationFingerprint = DDFingerprintUtils.calculateConfigurationFingerprint(
+            binding.remoteProjectId(), fileFingerprints);
+
+        return new DDProjectSyncSnapshot(
+            binding.remoteProjectId(),
+            serverRevision,
+            files,
+            configurationFingerprint,
+            classify(binding.lastSyncedRevision(), serverRevision, configurationFingerprint)
+        );
+    }
+
+    @NotNull
+    private DDSharedProjectRevision getServerRevision(@NotNull DDProjectSyncLocalBinding binding) throws DBException {
+        try {
+            return client.getCurrentProjectRevision(binding.remoteProjectId());
+        } catch (DDShareException e) {
+            throw new DBException("Error reading current DataDam project revision", e);
+        }
+    }
+
+    @NotNull
     public List<DBPProject> getSharedProjects() throws DBException {
         List<DBPProject> projects = new ArrayList<>();
         for (DBPProject project : workspace.getProjects()) {
@@ -96,11 +133,7 @@ public class DDProjectSyncService {
         UUID remoteProjectId = UUID.randomUUID();
         try {
             DDSharedProject remote = client.createProject(remoteProjectId, project.getName(), description);
-            Map<String, byte[]> files = content.read(project);
             DDSharedProjectRevision revision = client.getCurrentProjectRevision(remoteProjectId);
-            if (!files.isEmpty()) {
-                revision = client.pushFiles(remoteProjectId, files, revision.configurationFingerprint());
-            }
             bindingStore.save(
                 project, new DDProjectSyncLocalBinding(
                     remoteProjectId, accountId, revision, content.getUnitIds())
@@ -138,9 +171,6 @@ public class DDProjectSyncService {
                     e.addSuppressed(cleanupError);
                 }
             }
-            if (e instanceof DBException exception) {
-                throw exception;
-            }
             throw new DBException("Error importing DataDam project '" + remote.name() + "'", e);
         }
     }
@@ -161,6 +191,23 @@ public class DDProjectSyncService {
                 throw new DBException("DataDam project '" + remote.name() + "' is already in the workspace");
             }
         }
+    }
+
+    @NotNull
+    private DDSyncChange classify(
+        @NotNull DDSharedProjectRevision lastSyncedRevision,
+        @NotNull DDSharedProjectRevision serverRevision,
+        @NotNull String configurationFingerprint
+    ) {
+        boolean localChanged = !lastSyncedRevision.configurationFingerprint().equals(configurationFingerprint);
+        boolean serverChanged = !lastSyncedRevision.id().equals(serverRevision.id());
+        if (localChanged && serverChanged) {
+            return DDSyncChange.CONFLICT;
+        }
+        if (localChanged) {
+            return DDSyncChange.LOCAL;
+        }
+        return serverChanged ? DDSyncChange.SERVER : DDSyncChange.UNCHANGED;
     }
 
     @NotNull
