@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.EmptyAction;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
 import org.jkiss.utils.CommonUtils;
 
 final class BreadcrumbItem extends Item {
@@ -89,6 +89,7 @@ final class BreadcrumbItem extends Item {
         elementText = new Label(textComposite, SWT.NONE);
         elementText.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
 
+        addElementListener(elementArrow);
         addElementListener(detailComposite);
         addElementListener(imageComposite);
         addElementListener(textComposite);
@@ -239,17 +240,21 @@ final class BreadcrumbItem extends Item {
                 showMenu();
             }
         });
-        control.addMouseListener(new DoubleClickMouseAdapter() {
+        control.addMouseListener(new MouseAdapter() {
             @Override
-            public void onMouseSingleClick(@NotNull MouseEvent e) {
-                showMenu();
+            public void mouseDown(MouseEvent e) {
+                if (e.button == 1) {
+                    showMenu();
+                }
             }
 
             @Override
-            public void onMouseDoubleClick(@NotNull MouseEvent e) {
-                BreadcrumbViewer viewer = getViewer();
-                viewer.selectItem(BreadcrumbItem.this);
-                viewer.fireDoubleClick();
+            public void mouseDoubleClick(MouseEvent e) {
+                if (e.button == 1) {
+                    BreadcrumbViewer viewer = getViewer();
+                    viewer.selectItem(BreadcrumbItem.this);
+                    viewer.fireDoubleClick();
+                }
             }
         });
     }
