@@ -114,7 +114,7 @@ public class NodeBreadcrumbViewer extends BreadcrumbViewer {
     }
 
     @Override
-    protected void handleDispose(DisposeEvent event) {
+    protected void handleDispose(@NotNull DisposeEvent event) {
         restoreSelectionProvider();
         setContextMenu(null);
         for (MenuManager manager : contextMenuManagers.values()) {
@@ -148,7 +148,7 @@ public class NodeBreadcrumbViewer extends BreadcrumbViewer {
         }
         manager.getMenu().addMenuListener(new MenuAdapter() {
             @Override
-            public void menuHidden(MenuEvent e) {
+            public void menuHidden(@NotNull MenuEvent e) {
                 UIUtils.asyncExec(NodeBreadcrumbViewer.this::restoreSelectionProvider);
             }
         });
