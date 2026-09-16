@@ -90,6 +90,7 @@ public class SQLQuery implements SQLScriptElement {
     @NotNull
     private SQLQueryType type;
     private Statement statement;
+    private SQLDdlChange ddlChange;
     private SingleTableMeta singleTableMeta, rawSingleTableMetadata;
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
@@ -124,12 +125,16 @@ public class SQLQuery implements SQLScriptElement {
         this.length = length;
         this.type = SQLQueryType.UNKNOWN;
 
-        // Extract query title
-        queryTitle = null;
+        queryTitle = extractQueryTitle(text);
+    }
+
+    @Nullable
+    private static String extractQueryTitle(@NotNull String text) {
         final Matcher matcher = QUERY_TITLE_PATTERN.matcher(text);
         if (matcher.find()) {
-            queryTitle = matcher.group(1).trim();
+            return matcher.group(1).trim();
         }
+        return null;
     }
 
     @Nullable
@@ -148,6 +153,24 @@ public class SQLQuery implements SQLScriptElement {
             return;
         }
         parsed = true;
+        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect();
+        SQLDdlChange fallbackDdlChange;
+        Throwable fallbackParseError = null;
+        try {
+            fallbackDdlChange = dialect.parseDdlChange(text);
+        } catch (Throwable e) {
+            fallbackParseError = e;
+            fallbackDdlChange = null;
+        }
+        if (fallbackDdlChange == null) {
+            try {
+                fallbackDdlChange = SQLDdlParser.parse(dialect, text);
+            } catch (Throwable e) {
+                if (fallbackParseError == null) {
+                    fallbackParseError = e;
+                }
+            }
+        }
         try {
             if (CommonUtils.isEmpty(text)) {
                 this.statement = null;
@@ -208,48 +231,84 @@ public class SQLQuery implements SQLScriptElement {
             } else if (statement instanceof Alter alter) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(alter.getTable());
+                setDdlChange(SQLDdlChange.Operation.ALTER, SQLDdlChange.ObjectKind.TABLE, alter.getTable());
             } else if (statement instanceof CreateTable createTable) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(createTable.getTable());
+                setDdlChange(SQLDdlChange.Operation.CREATE, SQLDdlChange.ObjectKind.TABLE, createTable.getTable());
             } else if (statement instanceof CreateView createView) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(createView.getView());
+                setDdlChange(SQLDdlChange.Operation.CREATE, SQLDdlChange.ObjectKind.VIEW, createView.getView());
             } else if (statement instanceof CreateIndex createIndex) {
                 type = SQLQueryType.DDL;
-                fillSingleSource(createIndex.getTable());
+                setDdlChange(
+                    SQLDdlChange.Operation.CREATE,
+                    SQLDdlChange.ObjectKind.INDEX,
+                    getIndexNameParts(createIndex)
+                );
             } else if (statement instanceof Drop drop) {
                 type = SQLQueryType.DDL;
-                fillSingleSource(drop.getName());
+                SQLDdlChange.ObjectKind objectKind = getDdlObjectKind(drop.getType());
+                if (objectKind == SQLDdlChange.ObjectKind.TABLE || objectKind == SQLDdlChange.ObjectKind.VIEW) {
+                    fillSingleSource(drop.getName());
+                }
+                setDdlChange(SQLDdlChange.Operation.DROP, objectKind, getNameParts(drop.getName()));
             } else if (statement instanceof CreateFunction createFunction) {
                 type = SQLQueryType.DDL;
-                fillSingleSource(createFunction);
+                setDdlChange(
+                    SQLDdlChange.Operation.CREATE,
+                    SQLDdlChange.ObjectKind.FUNCTION,
+                    getFunctionalNameParts(createFunction)
+                );
             } else if (statement instanceof CreateProcedure createProcedure) {
                 type = SQLQueryType.DDL;
-                fillSingleSource(createProcedure);
+                setDdlChange(
+                    SQLDdlChange.Operation.CREATE,
+                    SQLDdlChange.ObjectKind.PROCEDURE,
+                    getFunctionalNameParts(createProcedure)
+                );
             } else if (statement instanceof CreateSequence createSequence) {
                 type = SQLQueryType.DDL;
                 var sequence = createSequence.getSequence();
                 if (sequence != null) {
-                    fillSingleSource(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName());
+                    setDdlChange(
+                        SQLDdlChange.Operation.CREATE,
+                        SQLDdlChange.ObjectKind.SEQUENCE,
+                        getNameParts(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName())
+                    );
                 }
             } else if (statement instanceof CreateSynonym createSynonym) {
                 type = SQLQueryType.DDL;
                 var synonym = createSynonym.getSynonym();
                 if (synonym != null) {
-                    fillSingleSource(synonym.getDatabase(), synonym.getSchemaName(), synonym.getName());
+                    setDdlChange(
+                        SQLDdlChange.Operation.CREATE,
+                        SQLDdlChange.ObjectKind.SYNONYM,
+                        getNameParts(synonym.getDatabase(), synonym.getSchemaName(), synonym.getName())
+                    );
                 }
             } else if (statement instanceof AlterView alterView) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(alterView.getView());
+                setDdlChange(SQLDdlChange.Operation.ALTER, SQLDdlChange.ObjectKind.VIEW, alterView.getView());
             } else if (statement instanceof AlterSequence alterSequence) {
                 type = SQLQueryType.DDL;
                 var sequence = alterSequence.getSequence();
                 if (sequence != null) {
-                    fillSingleSource(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName());
+                    setDdlChange(
+                        SQLDdlChange.Operation.ALTER,
+                        SQLDdlChange.ObjectKind.SEQUENCE,
+                        getNameParts(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName())
+                    );
                 }
             } else if (statement instanceof CreateSchema createSchema) {
                 type = SQLQueryType.DDL;
-                fillSingleSource(null, null, createSchema.getSchemaName());
+                setDdlChange(
+                    SQLDdlChange.Operation.CREATE,
+                    SQLDdlChange.ObjectKind.SCHEMA,
+                    getNameParts(createSchema.getSchemaName())
+                );
             } else if (statement instanceof Merge) {
                 type = SQLQueryType.MERGE;
             } else if (statement instanceof Commit) {
@@ -257,21 +316,22 @@ public class SQLQuery implements SQLScriptElement {
             } else if (statement instanceof RollbackStatement) {
                 type = SQLQueryType.ROLLBACK;
             } else {
-                SQLContainerDdlParser.ContainerDdl containerDdl = parseContainerDdl();
-                if (containerDdl == null) {
+                ddlChange = fallbackDdlChange;
+                if (fallbackDdlChange == null) {
                     type = SQLQueryType.UNKNOWN;
+                    parseError = fallbackParseError;
                 } else {
                     type = SQLQueryType.DDL;
-                    fillSingleSource(containerDdl.targetNameParts());
                 }
             }
         } catch (Throwable e) {
-            SQLContainerDdlParser.ContainerDdl containerDdl = parseContainerDdl();
-            if (containerDdl == null) {
+            if (ddlChange == null) {
+                ddlChange = fallbackDdlChange;
+            }
+            if (ddlChange == null) {
                 this.type = SQLQueryType.UNKNOWN;
             } else {
                 this.type = SQLQueryType.DDL;
-                fillSingleSource(containerDdl.targetNameParts());
             }
             this.parseError = e;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
@@ -320,42 +380,102 @@ public class SQLQuery implements SQLScriptElement {
         }
     }
 
-    private void fillSingleSource(@NotNull CreateFunctionalStatement statement) {
-        List<String> declarationParts = statement.getFunctionDeclarationParts();
-        if (CommonUtils.isEmpty(declarationParts)) {
-            return;
-        }
-        fillSingleSource(declarationParts.get(0));
+    private void setDdlChange(
+        @NotNull SQLDdlChange.Operation operation,
+        @NotNull SQLDdlChange.ObjectKind objectKind,
+        @Nullable Table table
+    ) {
+        setDdlChange(operation, objectKind, getNameParts(table));
     }
 
-    private void fillSingleSource(@Nullable String qualifiedName) {
+    private void setDdlChange(
+        @NotNull SQLDdlChange.Operation operation,
+        @NotNull SQLDdlChange.ObjectKind objectKind,
+        @NotNull List<String> nameParts
+    ) {
+        if (!nameParts.isEmpty()) {
+            ddlChange = new SQLDdlChange(operation, objectKind, nameParts);
+        }
+    }
+
+    @NotNull
+    private List<String> getIndexNameParts(@NotNull CreateIndex createIndex) {
+        List<String> indexNameParts = createIndex.getIndex() == null ?
+            List.of() : CommonUtils.safeList(createIndex.getIndex().getNameParts());
+        if (indexNameParts.size() != 1) {
+            return indexNameParts;
+        }
+        List<String> tableNameParts = getNameParts(createIndex.getTable());
+        if (tableNameParts.size() <= 1) {
+            return indexNameParts;
+        }
+        List<String> qualifiedIndexName = new ArrayList<>(tableNameParts.size());
+        qualifiedIndexName.addAll(tableNameParts.subList(0, tableNameParts.size() - 1));
+        qualifiedIndexName.add(indexNameParts.getFirst());
+        return List.copyOf(qualifiedIndexName);
+    }
+
+    @NotNull
+    private List<String> getFunctionalNameParts(@NotNull CreateFunctionalStatement statement) {
+        List<String> declarationParts = statement.getFunctionDeclarationParts();
+        return CommonUtils.isEmpty(declarationParts) ? List.of() : getNameParts(declarationParts.get(0));
+    }
+
+    @NotNull
+    private List<String> getNameParts(@Nullable Table table) {
+        if (table == null) {
+            return List.of();
+        }
+        return getNameParts(table.getDatabase(), table.getSchemaName(), table.getName());
+    }
+
+    @NotNull
+    private static List<String> getNameParts(
+        @Nullable Database database,
+        @Nullable String schemaName,
+        @Nullable String entityName
+    ) {
+        List<String> result = new ArrayList<>(3);
+        if (database != null && database.getDatabaseName() != null) {
+            result.add(database.getDatabaseName());
+        }
+        if (schemaName != null) {
+            result.add(schemaName);
+        }
+        if (entityName != null) {
+            result.add(entityName);
+        }
+        return List.copyOf(result);
+    }
+
+    @NotNull
+    private List<String> getNameParts(@Nullable String qualifiedName) {
         if (qualifiedName == null) {
-            return;
+            return List.of();
         }
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect();
-        String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
-        if (identifierQuoteStrings == null) {
-            identifierQuoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
+        String[][] quoteStrings = dialect.getIdentifierQuoteStrings();
+        if (quoteStrings == null) {
+            quoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
         }
-        String[] nameParts = SQLUtils.splitFullIdentifier(
+        return List.of(SQLUtils.splitFullIdentifier(
             qualifiedName,
             String.valueOf(dialect.getStructSeparator()),
-            identifierQuoteStrings,
+            quoteStrings,
             true
-        );
-        fillSingleSource(List.of(nameParts));
+        ));
     }
 
-    private void fillSingleSource(@NotNull List<String> nameParts) {
-        if (nameParts.isEmpty()) {
-            return;
+    @NotNull
+    private static SQLDdlChange.ObjectKind getDdlObjectKind(@Nullable String type) {
+        if (type != null) {
+            try {
+                return SQLDdlChange.ObjectKind.valueOf(type.toUpperCase(java.util.Locale.ENGLISH));
+            } catch (IllegalArgumentException ignored) {
+                // Vendor-specific kinds remain valid DDL changes.
+            }
         }
-        int entityIndex = nameParts.size() - 1;
-        String catalogName = nameParts.size() >= 3 ? nameParts.get(entityIndex - 2) : null;
-        String schemaName = nameParts.size() >= 2 ? nameParts.get(entityIndex - 1) : null;
-        String entityName = nameParts.get(entityIndex);
-        rawSingleTableMetadata = new SingleTableMeta(catalogName, schemaName, entityName);
-        singleTableMeta = createUnquotedTableMetaData(rawSingleTableMetadata);
+        return SQLDdlChange.ObjectKind.OTHER;
     }
 
     SingleTableMeta createTableMetaData(Table fromItem) {
@@ -479,6 +599,8 @@ public class SQLQuery implements SQLScriptElement {
 
     public void setText(@NotNull String text) {
         this.text = text;
+        this.queryTitle = extractQueryTitle(text);
+        resetParsedState();
     }
 
     public String getQueryTitle() {
@@ -548,12 +670,20 @@ public class SQLQuery implements SQLScriptElement {
         return raw ? rawSingleTableMetadata : singleTableMeta;
     }
 
+    @Nullable
+    public SQLDdlChange getDdlChange() {
+        parseQuery();
+        return ddlChange;
+    }
+
     public void setParameters(@Nullable List<SQLQueryParameter> parameters) {
         this.parameters = parameters;
     }
 
     public void reset() {
         this.text = this.originalText;
+        this.queryTitle = extractQueryTitle(originalText);
+        resetParsedState();
         if (this.parameters != null) {
             setParameters(this.parameters);
         }
@@ -607,7 +737,7 @@ public class SQLQuery implements SQLScriptElement {
 
     public boolean isDropDangerous() {
         parseQuery();
-        return statement != null &&
+        return ddlChange != null && ddlChange.operation() == SQLDdlChange.Operation.DROP || statement != null &&
             statement instanceof Drop dropStatement &&
             dropStatement.getName() != null
             && dropStatement.getType() != null;
@@ -624,32 +754,6 @@ public class SQLQuery implements SQLScriptElement {
         return true;
     }
 
-    @NotNull
-    public MetadataRefreshScope getMetadataRefreshScope() {
-        parseQuery();
-        if (statement instanceof CreateSchema) {
-            return MetadataRefreshScope.SCHEMA_LIST;
-        }
-        if (statement instanceof Drop drop) {
-            if ("SCHEMA".equalsIgnoreCase(drop.getType())) {
-                return MetadataRefreshScope.SCHEMA_LIST;
-            }
-            if ("DATABASE".equalsIgnoreCase(drop.getType()) || "CATALOG".equalsIgnoreCase(drop.getType())) {
-                return MetadataRefreshScope.CATALOG_LIST;
-            }
-        }
-        SQLContainerDdlParser.ContainerDdl containerDdl = parseContainerDdl();
-        if (containerDdl == null) {
-            return MetadataRefreshScope.OBJECT_CONTAINER;
-        }
-        if (containerDdl.operation() == SQLContainerDdlParser.Operation.ALTER) {
-            return containerDdl.type() == SQLContainerDdlParser.ContainerType.SCHEMA ?
-                MetadataRefreshScope.SCHEMA : MetadataRefreshScope.CATALOG;
-        }
-        return containerDdl.type() == SQLContainerDdlParser.ContainerType.SCHEMA ?
-            MetadataRefreshScope.SCHEMA_LIST : MetadataRefreshScope.CATALOG_LIST;
-    }
-
     public boolean isMutatingStatement() {
         parseQuery();
         if (statement instanceof Select) {
@@ -657,7 +761,7 @@ public class SQLQuery implements SQLScriptElement {
             visitor.getTables(statement);
             return visitor.isMutating();
         }
-        return parseContainerDdl() != null || statement != null &&
+        return ddlChange != null || statement != null &&
             (statement instanceof Drop || statement instanceof Delete || statement instanceof Update ||
             statement instanceof Insert || statement instanceof CreateTable || statement instanceof CreateIndex ||
             statement instanceof CreateView || statement instanceof CreateFunction || statement instanceof CreateProcedure ||
@@ -666,17 +770,16 @@ public class SQLQuery implements SQLScriptElement {
             statement instanceof Merge);
     }
 
-    @Nullable
-    private SQLContainerDdlParser.ContainerDdl parseContainerDdl() {
-        return SQLContainerDdlParser.parse(dataSource == null ? null : dataSource.getSQLDialect(), text);
-    }
-
-    public enum MetadataRefreshScope {
-        OBJECT_CONTAINER,
-        SCHEMA,
-        CATALOG,
-        SCHEMA_LIST,
-        CATALOG_LIST
+    private void resetParsedState() {
+        parsed = false;
+        parseError = null;
+        type = SQLQueryType.UNKNOWN;
+        statement = null;
+        ddlChange = null;
+        singleTableMeta = null;
+        rawSingleTableMetadata = null;
+        selectItems = null;
+        allSelectEntitiesNames.clear();
     }
 
     private static class SelectMutationVisitor extends TablesNamesFinder<Void> {

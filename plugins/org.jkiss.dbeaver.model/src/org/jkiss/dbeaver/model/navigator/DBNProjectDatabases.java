@@ -435,6 +435,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             }
             case OBJECT_UPDATE:
             case OBJECT_SELECT: {
+                if (event.getData() == DBPEvent.METADATA_REFRESH) {
+                    break;
+                }
                 DBNDatabaseNode dbmNode = model.getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;

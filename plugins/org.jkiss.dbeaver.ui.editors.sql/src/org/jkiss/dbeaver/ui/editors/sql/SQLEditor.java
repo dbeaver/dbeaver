@@ -68,9 +68,6 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
@@ -83,10 +80,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -134,7 +128,6 @@ import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StringUtils;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -3767,7 +3760,8 @@ public class SQLEditor extends SQLEditorBase implements
         DBPEvent.Action eventAction = event.getAction();
         DBSObject eventObject = event.getObject();
         boolean isEditorContext = eventObject == this.getDataSourceContainer() || event.getData() == this.getExecutionContext();
-        boolean contextChanged = isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_UPDATE);
+        boolean contextChanged = event.getData() == DBPEvent.METADATA_REFRESH ||
+            isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_UPDATE);
         if (!contextChanged && isEditorContext && eventAction.equals(DBPEvent.Action.OBJECT_SELECT) && event.getEnabled()) {
             DBCExecutionContext execContext = this.getExecutionContext();
             if (execContext != null) {
@@ -4284,21 +4278,8 @@ public class SQLEditor extends SQLEditorBase implements
         private int topOffset, visibleLength;
         private final boolean closeTabOnError;
         private boolean metadataChanged;
-        private final Set<MetadataRefreshTarget> metadataRefreshTargets = new LinkedHashSet<>();
+        private final Set<SQLMetadataRefreshCoordinator.RefreshTarget> metadataRefreshTargets = new LinkedHashSet<>();
         private SQLQueryListener extListener;
-
-        private enum MetadataRefreshLevel {
-            DATA_SOURCE,
-            CATALOG,
-            SCHEMA
-        }
-
-        private record MetadataRefreshTarget(
-            @NotNull MetadataRefreshLevel level,
-            @Nullable String catalogName,
-            @Nullable String schemaName
-        ) {
-        }
 
         SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
             this.originalSelection = (ITextSelection) queryProcessor.getOwner().getSelectionProvider().getSelection();
@@ -4451,7 +4432,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             DBPDataSource dataSource = executionContext.getDataSource();
-            Set<MetadataRefreshTarget> refreshTargets = Set.copyOf(metadataRefreshTargets);
+            Set<SQLMetadataRefreshCoordinator.RefreshTarget> refreshTargets = Set.copyOf(metadataRefreshTargets);
             DBeaverNotifications.showNotification(
                 NOTIFICATION_SQL_METADATA_REFRESH,
                 NLS.bind(
@@ -4460,7 +4441,7 @@ public class SQLEditor extends SQLEditorBase implements
                 ),
                 SQLEditorMessages.sql_editor_metadata_refresh_notification,
                 DBPMessageType.WARNING,
-                () -> refreshMetadata(getOwner(), dataSource.getContainer(), refreshTargets)
+                () -> SQLMetadataRefreshCoordinator.refresh(getOwner(), dataSource.getContainer(), refreshTargets)
             );
         }
 
@@ -4469,200 +4450,18 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull DBCExecutionContext executionContext,
             @NotNull SQLQuery query
         ) {
-            SQLQuery.MetadataRefreshScope refreshScope = query.getMetadataRefreshScope();
-            if (refreshScope == SQLQuery.MetadataRefreshScope.CATALOG_LIST) {
-                metadataRefreshTargets.add(new MetadataRefreshTarget(
-                    MetadataRefreshLevel.DATA_SOURCE,
-                    null,
-                    null
-                ));
-                return;
-            }
-            DBCEntityMetaData entityMetadata = query.getEntityMetadata(true);
-            String catalogName = entityMetadata == null ? null : entityMetadata.getCatalogName();
-            String schemaName = entityMetadata == null ? null : entityMetadata.getSchemaName();
-            String entityName = entityMetadata == null ? null : entityMetadata.getEntityName();
-            SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
-            if (catalogName != null) {
-                catalogName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, catalogName);
-            }
-            if (schemaName != null) {
-                schemaName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, schemaName);
-            }
-            if (entityName != null) {
-                entityName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, entityName);
-            }
-            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-            if (refreshScope == SQLQuery.MetadataRefreshScope.SCHEMA_LIST) {
-                DBSCatalog defaultCatalog = contextDefaults == null ? null : contextDefaults.getDefaultCatalog();
-                String targetCatalogName = catalogName != null ? catalogName : schemaName != null ? schemaName :
-                    defaultCatalog == null ? null : defaultCatalog.getName();
-                metadataRefreshTargets.add(new MetadataRefreshTarget(
-                    targetCatalogName == null ? MetadataRefreshLevel.DATA_SOURCE : MetadataRefreshLevel.CATALOG,
-                    targetCatalogName,
-                    null
-                ));
-                return;
-            }
-            if (refreshScope == SQLQuery.MetadataRefreshScope.CATALOG) {
-                metadataRefreshTargets.add(new MetadataRefreshTarget(
-                    entityName == null ? MetadataRefreshLevel.DATA_SOURCE : MetadataRefreshLevel.CATALOG,
-                    entityName,
-                    null
-                ));
-                return;
-            }
-            if (refreshScope == SQLQuery.MetadataRefreshScope.SCHEMA) {
-                String targetCatalogName = catalogName != null ? catalogName : schemaName;
-                metadataRefreshTargets.add(new MetadataRefreshTarget(
-                    entityName == null ? MetadataRefreshLevel.DATA_SOURCE : MetadataRefreshLevel.SCHEMA,
-                    targetCatalogName,
-                    entityName
-                ));
-                return;
-            }
-            if (contextDefaults == null) {
-                return;
-            }
-            if (refreshScope == SQLQuery.MetadataRefreshScope.OBJECT_CONTAINER &&
-                ((catalogName == null && contextDefaults.supportsCatalogChange()) ||
-                    (schemaName == null && contextDefaults.supportsSchemaChange()))) {
-                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults, executionContext);
-            }
-            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
-            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-            if (schemaName != null && catalogName == null && !contextDefaults.supportsSchemaChange() &&
-                contextDefaults.supportsCatalogChange()) {
-                catalogName = schemaName;
-                schemaName = null;
-            }
-            String targetCatalogName = catalogName != null ? catalogName :
-                defaultCatalog == null ? null : defaultCatalog.getName();
-            String targetSchemaName = schemaName != null ? schemaName :
-                defaultSchema == null ? null : defaultSchema.getName();
-            metadataRefreshTargets.add(new MetadataRefreshTarget(
-                targetSchemaName != null ? MetadataRefreshLevel.SCHEMA :
-                    targetCatalogName != null ? MetadataRefreshLevel.CATALOG : MetadataRefreshLevel.DATA_SOURCE,
-                targetCatalogName,
-                targetSchemaName
-            ));
-        }
-
-        private static void refreshMetadata(
-            @NotNull SQLEditor editor,
-            @NotNull DBPDataSourceContainer dataSourceContainer,
-            @NotNull Set<MetadataRefreshTarget> refreshTargets
-        ) {
-            if (editor.isDisposed() || editor.getProject() == null || !editor.getProject().isOpen()) {
-                return;
-            }
-            DBCExecutionContext executionContext = editor.getExecutionContext();
-            if (executionContext == null || executionContext.getDataSource().getContainer() != dataSourceContainer ||
-                !dataSourceContainer.isConnected()) {
+            SQLDdlChange change = query.getDdlChange();
+            if (change == null) {
                 return;
             }
             try {
-                UIUtils.runInProgressDialog(monitor -> {
-                    try {
-                        boolean refreshed = false;
-                        for (MetadataRefreshTarget target : refreshTargets) {
-                            DBSObject refreshTarget = resolveMetadataRefreshTarget(monitor, executionContext, target);
-                            if (refreshTarget == null) {
-                                continue;
-                            }
-                            DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, refreshTarget, true);
-                            if (node != null && node.isLocked()) {
-                                throw new DBException("Metadata refresh is already in progress");
-                            }
-                            if ((node == null || node.isDisposed()) &&
-                                refreshTarget instanceof DBPRefreshableObject refreshableObject) {
-                                DBSObject refreshedObject = refreshableObject.refreshObject(monitor);
-                                updateContextDefault(monitor, executionContext, refreshTarget, refreshedObject);
-                                refreshed = true;
-                            } else if (node != null) {
-                                var refreshedNode = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
-                                if (refreshedNode instanceof DBNDatabaseNode refreshedDatabaseNode) {
-                                    updateContextDefault(
-                                        monitor,
-                                        executionContext,
-                                        refreshTarget,
-                                        refreshedDatabaseNode.getObject()
-                                    );
-                                    refreshed = true;
-                                }
-                            }
-                        }
-                        if (refreshed) {
-                            UIUtils.asyncExec(() -> {
-                                if (!editor.isDisposed()) {
-                                    editor.reloadSyntaxRules();
-                                }
-                            });
-                        }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError(
-                    SQLEditorMessages.sql_editor_metadata_refresh_error_title,
-                    SQLEditorMessages.sql_editor_metadata_refresh_error_message,
-                    e.getTargetException()
-                );
-            }
-        }
-
-        @Nullable
-        private static DBSObject resolveMetadataRefreshTarget(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull MetadataRefreshTarget target
-        ) throws DBException {
-            DBSObjectContainer dataSourceContainer = DBUtils.getAdapter(
-                DBSObjectContainer.class,
-                executionContext.getDataSource()
-            );
-            if (target.level() == MetadataRefreshLevel.DATA_SOURCE) {
-                return dataSourceContainer;
-            }
-            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-            DBSCatalog defaultCatalog = contextDefaults == null ? null : contextDefaults.getDefaultCatalog();
-            DBSObject catalog = defaultCatalog;
-            if (target.catalogName() != null &&
-                (defaultCatalog == null || !target.catalogName().equals(defaultCatalog.getName()))) {
-                catalog = dataSourceContainer == null ? null : dataSourceContainer.getChild(monitor, target.catalogName());
-            }
-            if (target.level() == MetadataRefreshLevel.CATALOG) {
-                return catalog != null ? catalog : dataSourceContainer;
-            }
-
-            DBSSchema defaultSchema = contextDefaults == null ? null : contextDefaults.getDefaultSchema();
-            if (defaultSchema != null && target.schemaName().equals(defaultSchema.getName()) &&
-                (target.catalogName() == null || catalog == defaultCatalog)) {
-                return defaultSchema;
-            }
-            DBSObjectContainer schemaContainer = catalog instanceof DBSObjectContainer objectContainer ? objectContainer :
-                dataSourceContainer;
-            return schemaContainer == null ? null : schemaContainer.getChild(monitor, target.schemaName());
-        }
-
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        private static void updateContextDefault(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull DBSObject oldObject,
-            @Nullable DBSObject newObject
-        ) throws DBException {
-            if (newObject == null || newObject == oldObject) {
-                return;
-            }
-            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
-            if (oldObject instanceof DBSSchema && newObject instanceof DBSSchema newSchema &&
-                contextDefaults != null && contextDefaults.getDefaultSchema() == oldObject) {
-                contextDefaults.setDefaultSchema(monitor, newSchema);
-            } else if (oldObject instanceof DBSCatalog && newObject instanceof DBSCatalog newCatalog &&
-                contextDefaults != null && contextDefaults.getDefaultCatalog() == oldObject) {
-                contextDefaults.setDefaultCatalog(monitor, newCatalog, null);
+                SQLMetadataRefreshCoordinator.RefreshTarget target =
+                    SQLMetadataRefreshCoordinator.createTarget(monitor, executionContext, change);
+                if (target != null) {
+                    metadataRefreshTargets.add(target);
+                }
+            } catch (DBException e) {
+                log.debug("Error resolving metadata refresh target", e);
             }
         }
 

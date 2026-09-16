@@ -31,8 +31,11 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -51,6 +54,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 public class NavigatorHandlerRefresh extends AbstractHandler {
     private static final Log log = Log.getLog(NavigatorHandlerRefresh.class);
@@ -152,8 +156,20 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
     public static boolean refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
     {
+        return refreshNavigator(refreshObjects, null);
+    }
+
+    /**
+     * Schedules a coordinated navigator refresh. The completion handler runs in the refresh job after at least one
+     * node was refreshed successfully and before metadata refresh events are broadcast.
+     */
+    public static boolean refreshNavigator(
+        final Collection<? extends DBNNode> refreshObjects,
+        @Nullable BiConsumer<DBRProgressMonitor, Collection<DBNNode>> completionHandler
+    )
+    {
         final List<DBNNode> nodesToRefresh = new ArrayList<>(refreshObjects);
-        final List<String> refreshKeys = new ArrayList<>(nodesToRefresh.size());
+        final Set<String> refreshKeys = new LinkedHashSet<>(nodesToRefresh.size());
         final List<String> acquiredKeys = new ArrayList<>(nodesToRefresh.size());
         for (DBNNode node : nodesToRefresh) {
             refreshKeys.add(getRefreshKey(node));
@@ -210,11 +226,11 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         try {
                             DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                             if (refreshed != null) {
-                                refreshedSet.add(refreshed);
                                 Throwable lastLoadError = refreshed.getLastLoadError();
                                 if (lastLoadError != null) {
                                     throw lastLoadError;
                                 }
+                                refreshedSet.add(refreshed);
                             }
                         }
                         catch (Throwable ex) {
@@ -229,6 +245,29 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                             DBWorkbench.getPlatformUI().showError("Refresh", "Error refreshing node", ex);
                         }
                         monitor.worked(1);
+                    }
+                    if (!refreshedSet.isEmpty()) {
+                        if (completionHandler != null) {
+                            try {
+                                completionHandler.accept(monitor, Collections.unmodifiableSet(refreshedSet));
+                            } catch (Throwable e) {
+                                log.error("Error completing navigator refresh", e);
+                            }
+                        }
+                        Set<DBPDataSourceContainer> refreshedDataSources = new HashSet<>();
+                        for (DBNNode refreshedNode : refreshedSet) {
+                            DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(refreshedNode);
+                            if (dataSourceNode != null && !(refreshedNode instanceof DBNDataSource)) {
+                                refreshedDataSources.add(dataSourceNode.getDataSourceContainer());
+                            }
+                        }
+                        for (DBPDataSourceContainer dataSource : refreshedDataSources) {
+                            dataSource.fireEvent(new DBPEvent(
+                                DBPEvent.Action.OBJECT_UPDATE,
+                                dataSource,
+                                DBPEvent.METADATA_REFRESH
+                            ));
+                        }
                     }
                     monitor.done();
                     return Status.OK_STATUS;
