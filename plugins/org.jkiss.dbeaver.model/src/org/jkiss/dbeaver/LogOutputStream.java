@@ -156,17 +156,10 @@ public class LogOutputStream extends OutputStream {
         this.logFileLocation = debugLogFile.getParentFile();
         this.maxLogSize = prefStore.getLong(LOGS_MAX_FILE_SIZE);
         this.maxLogFiles = prefStore.getInt(LOGS_MAX_FILES_COUNT);
-        final String fileName = debugLogFile.getName();
-        int fnameExtStart = fileName.lastIndexOf('.');
-        if (fnameExtStart >= 0) {
-            this.logFileName = fileName.substring(0, fnameExtStart);
-            this.logFileNameExtension = fileName.substring(fnameExtStart);
-        } else {
-            this.logFileName = fileName;
-            this.logFileNameExtension = "";
-        }
-
-        this.logFileNamePattern = getArchivedLogFileNamePredicate(fileName);
+        LogFileNameParts logFileNameParts = LogFileNameParts.from(debugLogFile.getName());
+        this.logFileName = logFileNameParts.name();
+        this.logFileNameExtension = logFileNameParts.extension();
+        this.logFileNamePattern = logFileNameParts.getArchivedLogFileNamePredicate();
         
         if (operations.exists(debugLogFile)) {
             this.currentLogSize = operations.length(this.currentLogFile);
@@ -287,19 +280,25 @@ public class LogOutputStream extends OutputStream {
      */
     @NotNull
     public static Predicate<String> getArchivedLogFileNamePredicate(@NotNull String fileName) {
-        String logFileName;
-        String logFileNameExtension;
-        int fnameExtStart = fileName.lastIndexOf('.');
-        if (fnameExtStart >= 0) {
-            logFileName = fileName.substring(0, fnameExtStart);
-            logFileNameExtension = fileName.substring(fnameExtStart);
-        } else {
-            logFileName = fileName;
-            logFileNameExtension = "";
+        return LogFileNameParts.from(fileName).getArchivedLogFileNamePredicate();
+    }
+
+    private record LogFileNameParts(@NotNull String name, @NotNull String extension) {
+        @NotNull
+        private static LogFileNameParts from(@NotNull String fileName) {
+            int extensionStart = fileName.lastIndexOf('.');
+            if (extensionStart >= 0) {
+                return new LogFileNameParts(fileName.substring(0, extensionStart), fileName.substring(extensionStart));
+            }
+            return new LogFileNameParts(fileName, "");
         }
-        String regex = "^" + Pattern.quote(logFileName) + "\\-[0-9]+(" + Pattern.quote(FALLBACK_LOG_FILE_SUFFIX) + ")?"
-            + Pattern.quote(logFileNameExtension) + "$";
-        return Pattern.compile(regex).asMatchPredicate();
+
+        @NotNull
+        private Predicate<String> getArchivedLogFileNamePredicate() {
+            String regex = "^" + Pattern.quote(name) + "\\-[0-9]+(" + Pattern.quote(FALLBACK_LOG_FILE_SUFFIX) + ")?"
+                + Pattern.quote(extension) + "$";
+            return Pattern.compile(regex).asMatchPredicate();
+        }
     }
 
     /**
