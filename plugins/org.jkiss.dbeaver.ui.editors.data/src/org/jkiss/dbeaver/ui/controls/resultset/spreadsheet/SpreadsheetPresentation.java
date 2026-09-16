@@ -713,11 +713,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows(), settings.isIgnoreQuotes());
 
                     if (insertNewRows) {
-                        for (int i = 0; i < newLines.length; i++) {
-                            controller.addNewRow(RowPlacement.BEFORE_SELECTION, false, false);
-                        }
+                        ResultSetRow currentRow = controller.getCurrentRow();
+                        int insertionIndex = controller.isRecordMode() && currentRow != null ?
+                            currentRow.getVisualNumber() : rowNum;
+                        controller.preserveNewRows(insertionIndex, newLines.length);
                         spreadsheet.refreshRowsData();
-                        //rowNum++;
                     } else {
                         while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
                             controller.addNewRow(RowPlacement.AT_END, false, false);

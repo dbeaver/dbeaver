@@ -63,6 +63,8 @@ import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.data.order.OrderingUtils;
+import org.jkiss.dbeaver.model.data.resultset.DBDDataUpdateListener;
+import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -1763,9 +1765,15 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @Nullable
+    @Override
+    public DBDAttributeBinding getDocumentAttribute() {
+        return model.getDocumentAttribute();
+    }
+
     @NotNull
     @Override
-    public DBDAttributeBinding[] getAttributes() throws DBException {
+    public DBDAttributeBinding[] getAttributes() {
         return model.getAttributes();
     }
 
@@ -4686,15 +4694,19 @@ public class ResultSetViewer extends Viewer
 
     /**
      * Saves changes to database
+     *
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
-    private boolean saveChanges(@Nullable final DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings, @Nullable final ResultSetPersister.DataUpdateListener listener)
-    {
+    private boolean saveChanges(
+        @Nullable final DBRProgressMonitor monitor,
+        @NotNull ResultSetSaveSettings settings,
+        @Nullable final DBDDataUpdateListener listener
+    ) {
         UIUtils.syncExec(() -> getActivePresentation().applyChanges());
         try {
             final ResultSetPersister persister = createDataPersister(false);
-            final ResultSetPersister.DataUpdateListener applyListener = success -> {
+            final DBDDataUpdateListener applyListener = success -> {
                 if (listener != null) {
                     listener.onUpdate(success);
                 }
@@ -4714,16 +4726,43 @@ public class ResultSetViewer extends Viewer
                 UIUtils.syncExec(() -> autoRefreshControl.scheduleAutoRefresh(!success));
             };
 
-            return persister.applyChanges(monitor, false, settings, applyListener);
+
+            return executeChanges(monitor, settings, persister, applyListener, false);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
             return false;
         }
     }
 
+    private boolean executeChanges(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull ResultSetSaveSettings settings,
+        @NotNull ResultSetPersister persister,
+        @Nullable DBDDataUpdateListener applyListener,
+        boolean generateScript
+    ) throws DBException {
+        if (monitor == null) {
+            try {
+                UIUtils.runInProgressService(monitor1 -> {
+                    try {
+                        persister.prepareStatements(monitor1, settings);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                throw new DBException("Error preparing update statements", e.getTargetException());
+            } catch (InterruptedException e) {
+                return false;
+            }
+        } else {
+            persister.prepareStatements(monitor, settings);
+        }
+        return persister.execute(monitor, generateScript, settings, applyListener);
+    }
+
     @Override
-    public void rejectChanges()
-    {
+    public void rejectChanges() {
         if (!isDirty()) {
             return;
         }
@@ -4754,12 +4793,13 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @NotNull
     @Override
     public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings) {
         try {
             ResultSetPersister persister = createDataPersister(false);
-            persister.applyChanges(monitor, true, settings, null);
-            return persister.getScript();
+            executeChanges(monitor, settings, persister, null, true);
+            return persister.getActions();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);
             return Collections.emptyList();
@@ -4919,6 +4959,67 @@ public class ResultSetViewer extends Viewer
         }
 
         return curRow;
+    }
+
+    @Override
+    public void preserveNewRows(int rowIndex, int rowCount) {
+        if (rowCount <= 0) {
+            return;
+        }
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            throw new IllegalStateException("Can't add rows in disconnected results");
+        }
+
+        final DBDAttributeBinding docAttribute = model.getDocumentAttribute();
+        final DBDAttributeBinding[] attributes = model.getAttributes();
+        final List<Object[]> rows = new ArrayList<>(rowCount);
+        try (DBCSession session = executionContext.openSession(
+            new VoidProgressMonitor(),
+            DBCExecutionPurpose.UTIL,
+            ResultSetMessages.controls_resultset_viewer_add_new_row_context_name
+        )) {
+            for (int row = 0; row < rowCount; row++) {
+                final Object[] cells = new Object[docAttribute == null ? attributes.length : 1];
+                if (docAttribute != null) {
+                    try {
+                        cells[0] = docAttribute.getValueHandler().createNewValueObject(session, docAttribute.getAttribute());
+                    } catch (DBCException e) {
+                        log.warn(e);
+                    }
+                } else {
+                    for (int index = 0; index < attributes.length; index++) {
+                        final DBDAttributeBinding metaAttr = attributes[index];
+                        if (!metaAttr.isPseudoAttribute() && !metaAttr.isAutoGenerated()) {
+                            try {
+                                cells[index] = metaAttr.getValueHandler().createNewValueObject(session, metaAttr.getAttribute());
+                            } catch (DBCException e) {
+                                log.warn(e);
+                            }
+                        }
+                    }
+                }
+                rows.add(cells);
+            }
+        }
+
+        List<ResultSetRow> newRows = model.preserveNewRows(rowIndex, rows);
+        this.curRow = newRows.getLast();
+        if (recordMode) {
+            this.selectedRecords = new int[]{this.curRow.getVisualNumber()};
+        } else {
+            int[] updatedSelection = Arrays.copyOf(this.selectedRecords, this.selectedRecords.length + rowCount);
+            for (int i = 0; i < this.selectedRecords.length; i++) {
+                if (updatedSelection[i] >= rowIndex) {
+                    updatedSelection[i] += rowCount;
+                }
+            }
+            for (int i = 0; i < rowCount; i++) {
+                updatedSelection[this.selectedRecords.length + i] = rowIndex + i;
+            }
+            Arrays.sort(updatedSelection);
+            this.selectedRecords = updatedSelection;
+        }
     }
 
     private int[] selectedRowsIncludingNewRow(int newRowIndex) {
