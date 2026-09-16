@@ -24,9 +24,8 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalMatchers;
 import org.mockito.Mockito;
-
-import static org.mockito.AdditionalMatchers.aryEq;
 
 public class DataSourceRegistryRMTest {
     private static final String DATA_SOURCE_ID = "data-source";
@@ -48,7 +47,7 @@ public class DataSourceRegistryRMTest {
         registry.removeFolder(root, false);
 
         Mockito.verify(rmController).deleteProjectDataSourceFolders(
-            Mockito.eq("project"), aryEq(new String[]{"root"}), Mockito.eq(false));
+            Mockito.eq("project"), AdditionalMatchers.aryEq(new String[]{"root"}), Mockito.eq(false));
         Mockito.verifyNoMoreInteractions(rmController);
     }
 
