@@ -94,7 +94,7 @@ public class DDProjectSyncService {
         String configurationFingerprint = DDFingerprintUtils.calculateConfigurationFingerprint(
             binding.remoteProjectId(), fileFingerprints);
         return new DDProjectSyncSnapshot(
-            binding.remoteProjectId(),
+            binding,
             serverRevision,
             new PreparedFiles(files, configurationFingerprint),
             classify(binding.lastSyncedRevision(), serverRevision, configurationFingerprint)
@@ -103,15 +103,64 @@ public class DDProjectSyncService {
 
     @NotNull
     public DDSharedProjectRevision pushFiles(
-        @NotNull UUID projectId,
+        @NotNull DBPProject project,
+        @NotNull DDProjectSyncLocalBinding binding,
         @NotNull PreparedFiles preparedFiles,
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DBException {
         try {
-            return client.pushFiles(projectId, preparedFiles, lastKnownConfigurationFingerprint);
+            DDSharedProjectRevision revision = client.pushFiles(
+                binding.remoteProjectId(), preparedFiles, lastKnownConfigurationFingerprint);
+            saveRevision(project, binding, revision);
+            return revision;
         } catch (DDShareException e) {
             throw new DBException("Error pushing DataDam project files", e);
         }
+    }
+
+    @NotNull
+    public DDSharedProjectRevision pullFiles(
+        @NotNull DBPProject project,
+        @NotNull DDProjectSyncLocalBinding binding
+    ) throws DBException {
+        DDSharedProjectPullResult result = getProjectPullResult(binding);
+        if (!binding.lastSyncedRevision().configurationFingerprint().equals(
+            result.currentRevision().configurationFingerprint())) {
+            throw new DBException("Server project revision has changed: " + binding.remoteProjectId());
+        }
+        return forcePullFiles(project, binding, result);
+    }
+
+    @NotNull
+    private DDSharedProjectPullResult getProjectPullResult(@NotNull DDProjectSyncLocalBinding binding) throws DBException {
+        try {
+            return client.pullFiles(binding.remoteProjectId());
+        } catch (DDShareException e) {
+            throw new DBException("Error pulling DataDam project files", e);
+        }
+    }
+
+    @NotNull
+    public DDSharedProjectRevision forcePullFiles(
+        @NotNull DBPProject project,
+        @NotNull DDProjectSyncLocalBinding binding
+    ) throws DBException {
+        try {
+            return forcePullFiles(project, binding, client.pullFiles(binding.remoteProjectId()));
+        } catch (DDShareException e) {
+            throw new DBException("Error pulling DataDam project files", e);
+        }
+    }
+
+    @NotNull
+    private DDSharedProjectRevision forcePullFiles(
+        @NotNull DBPProject project,
+        @NotNull DDProjectSyncLocalBinding binding,
+        @NotNull DDSharedProjectPullResult result
+    ) throws DBException {
+        DDProjectSyncContentAdapter.forUnitIds(binding.unitIds()).write(project, result.files());
+        saveRevision(project, binding, result.currentRevision());
+        return result.currentRevision();
     }
 
     @NotNull
@@ -121,6 +170,18 @@ public class DDProjectSyncService {
         } catch (DDShareException e) {
             throw new DBException("Error reading current DataDam project revision", e);
         }
+    }
+
+    private void saveRevision(
+        @NotNull DBPProject project,
+        @NotNull DDProjectSyncLocalBinding binding,
+        @NotNull DDSharedProjectRevision revision
+    ) throws DBException {
+        bindingStore.save(
+            project,
+            new DDProjectSyncLocalBinding(
+                binding.remoteProjectId(), binding.accountId(), revision, binding.unitIds())
+        );
     }
 
     @NotNull

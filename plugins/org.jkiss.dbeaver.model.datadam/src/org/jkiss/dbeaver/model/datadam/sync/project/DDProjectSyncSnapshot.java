@@ -21,13 +21,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
 import org.jkiss.dbeaver.model.datadam.sync.core.PreparedFiles;
 
-import java.util.UUID;
-
 /**
- * Consistent local and server state used by a project synchronization operation.
+ * Consistent local and server state used by a project synchronization operation. Used not to recalculate fingerprints, since its expensive operation
  */
 public record DDProjectSyncSnapshot(
-    @NotNull UUID remoteProjectId,
+    @NotNull DDProjectSyncLocalBinding binding,
     @NotNull DDSharedProjectRevision serverRevision,
     @NotNull PreparedFiles preparedFiles,
     @NotNull DDSyncChange change
