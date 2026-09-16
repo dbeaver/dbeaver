@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync;
+package org.jkiss.dbeaver.model.datadam.sync.project;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
