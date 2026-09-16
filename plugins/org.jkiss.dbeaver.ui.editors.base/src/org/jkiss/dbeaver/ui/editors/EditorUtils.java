@@ -284,17 +284,24 @@ public class EditorUtils {
                 if (localFile != null) {
                     final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
                     String dataSourceId = (String) efManager.getFileProperty(localFile, PROP_SQL_DATA_SOURCE_ID);
-                    String projectName = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
-                    if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
+                    String projectId = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
+                    if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectId)) {
                         return null;
                     }
-                    final IProject project = DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
-                    if (project == null || !project.exists()) {
-                        log.error("Can't locate project '" + projectName + "' in workspace");
+                    DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
+                    if (projectMeta == null) {
+                        // External file metadata created by older versions contains the Eclipse project name.
+                        final IProject project = DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace()
+                            .getRoot().getProject(projectId);
+                        if (project.exists()) {
+                            projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
+                        }
+                    }
+                    if (projectMeta == null) {
+                        log.error("Can't locate project '" + projectId + "' in workspace");
                         return null;
                     }
-                    DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                    return projectMeta == null || (!forceRegistryLoad && !projectMeta.isRegistryLoaded()) ?
+                    return !forceRegistryLoad && !projectMeta.isRegistryLoaded() ?
                         null :
                         projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
 
@@ -436,7 +443,7 @@ public class EditorUtils {
         efManager.setFileProperty(
             localFile,
             PROP_SQL_PROJECT_ID,
-            dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
+            dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getId());
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
         efManager.setFileProperty(
             localFile,
