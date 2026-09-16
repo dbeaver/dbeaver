@@ -232,7 +232,13 @@ final class BreadcrumbItem extends Item {
     }
 
     private void addElementListener(@NotNull Control control) {
-        control.addMenuDetectListener(e -> showMenu());
+        control.addMenuDetectListener(e -> {
+            if (viewer.showContextMenu(this, e.x, e.y)) {
+                e.doit = false;
+            } else {
+                showMenu();
+            }
+        });
         control.addMouseListener(new DoubleClickMouseAdapter() {
             @Override
             public void onMouseSingleClick(@NotNull MouseEvent e) {

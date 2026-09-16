@@ -38,10 +38,10 @@ import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
-import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.ILazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
+import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.ui.navigator.breadcrumb.NodeBreadcrumbViewer;
 
 import java.util.function.Consumer;
@@ -102,7 +102,7 @@ public class BreadcrumbTrim {
         }
     }
 
-    private static void installListeners(@NotNull BreadcrumbViewer viewer) {
+    private static void installListeners(@NotNull NodeBreadcrumbViewer viewer) {
         var propertyListener = new IPropertyListener() {
             @Override
             public void propertyChanged(Object source, int propId) {
@@ -128,7 +128,10 @@ public class BreadcrumbTrim {
             @Override
             public void partClosed(IWorkbenchPart part) {
                 if (part instanceof IEditorPart editorPart) {
-                    UIExecutionQueue.queueExec(() -> setLastEditorPart(editorPart, false));
+                    UIExecutionQueue.queueExec(() -> {
+                        setLastEditorPart(editorPart, false);
+                        viewer.disposeContextMenuSite(editorPart.getSite());
+                    });
                 }
             }
 
@@ -142,11 +145,23 @@ public class BreadcrumbTrim {
                 if (shouldRemoveLastEditor) {
                     lastEditorPart.removePropertyListener(propertyListener);
                     lastEditorPart = null;
+                    viewer.setSelectionSiteSupplier(null);
+                    viewer.setContextMenuSite(null);
                     viewer.setInput(null);
                 }
                 if (shouldSetLastEditor) {
                     lastEditorPart = part;
                     lastEditorPart.addPropertyListener(propertyListener);
+                    viewer.setSelectionSiteSupplier(() -> {
+                        if (part instanceof MultiPageAbstractEditor multiPageEditor) {
+                            IEditorPart editor = multiPageEditor.getActiveEditor();
+                            if (editor != null) {
+                                return editor.getSite();
+                            }
+                        }
+                        return part.getSite();
+                    });
+                    viewer.setContextMenuSite(part.getSite());
                     setInput(viewer, part.getEditorInput());
                 }
             }
@@ -170,6 +185,10 @@ public class BreadcrumbTrim {
         for (IWorkbenchPage page : window.getPages()) {
             page.addPartListener(partListener);
         }
+        IWorkbenchPage activePage = window.getActivePage();
+        if (activePage != null && activePage.getActiveEditor() != null) {
+            partListener.partActivated(activePage.getActiveEditor());
+        }
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
             switch (event.getProperty()) {
@@ -183,7 +202,7 @@ public class BreadcrumbTrim {
         });
     }
 
-    private static void setInput(@NotNull BreadcrumbViewer viewer, @NotNull IEditorInput input) {
+    private static void setInput(@NotNull NodeBreadcrumbViewer viewer, @NotNull IEditorInput input) {
         if (viewer.getControl().isDisposed()) {
             return;
         }

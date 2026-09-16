@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
@@ -31,10 +32,20 @@ public class NavigatorPropertyTester extends PropertyTester
     public static final String PROP_ACTIVE = "active";
     public static final String PROP_FOCUSED = "focused";
 
+    // Breadcrumb popups use navigator handlers while their owning editor remains the active part.
+    private static IWorkbenchPart breadcrumbContextMenuPart;
+
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+        if (PROP_FOCUSED.equals(property) && receiver == breadcrumbContextMenuPart) {
+            return true;
+        }
         INavigatorModelView nmv = getActiveNavigator((IWorkbenchPart)receiver);
         return nmv != null && checkNavigatorProperty(nmv, property, expectedValue);
+    }
+
+    public static void setBreadcrumbContextMenuPart(@Nullable IWorkbenchPart part) {
+        breadcrumbContextMenuPart = part;
     }
 
     private boolean checkNavigatorProperty(INavigatorModelView rsv, String property, Object expectedValue)
