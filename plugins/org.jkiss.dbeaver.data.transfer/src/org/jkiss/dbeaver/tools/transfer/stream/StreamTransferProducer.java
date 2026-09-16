@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -184,6 +185,13 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             return CommonUtils.equalObjects(entityMapping, ((StreamTransferProducer) obj).entityMapping);
         }
         return super.equals(obj);
+    }
+
+    @Override
+    public void close() {
+        if (entityMapping != null) {
+            entityMapping.getDataSource().getDefaultInstance().shutdown(new VoidProgressMonitor());
+        }
     }
 
     public static class ObjectSerializer implements DTObjectSerializer<DBTTask, StreamTransferProducer> {

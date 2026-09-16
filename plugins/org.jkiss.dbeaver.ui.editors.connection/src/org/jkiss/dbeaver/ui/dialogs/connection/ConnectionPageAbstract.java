@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -69,6 +70,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected static final String GROUP_URL = "url"; //$NON-NLS-1$
     protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
     protected static final List<String> GROUP_URL_ARR = List.of(GROUP_URL);
+    private static final String CSS_CLASS_READ_ONLY_CONNECTION_URL = "readOnlyConnectionUrl";
 
     protected static final String URL_TEXT_DATA_ERROR_DECORATOR_KEY = "decorator";
 
@@ -440,6 +442,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     ) {
         addControlToGroup(GROUP_URL, urlText);
         setupConnectionModeSelection(useUrl, Collections.singleton(GROUP_URL), nonUrlPropGroups);
+        urlText.setEnabled(true);
+        CSSUtils.setCSSClass(urlText, useUrl ? null : CSS_CLASS_READ_ONLY_CONNECTION_URL);
+        CSSUtils.applyStyles(urlText);
     }
 
     protected void setupConnectionModeSelection(

@@ -252,6 +252,8 @@ public class SQLEditorMessages extends NLS {
 
     public static String pref_page_sql_editor_checkbox_fetch_resultsets;
     public static String pref_page_sql_editor_checkbox_fetch_resultsets_tip;
+    public static String pref_page_sql_editor_checkbox_confirm_large_script_fetch;
+    public static String pref_page_sql_editor_checkbox_confirm_large_script_fetch_tip;
     public static String pref_page_sql_editor_text_statement_delimiter;
     public static String pref_page_sql_editor_checkbox_ignore_native_delimiter;
     public static String pref_page_sql_editor_checkbox_ignore_native_delimiter_tip;

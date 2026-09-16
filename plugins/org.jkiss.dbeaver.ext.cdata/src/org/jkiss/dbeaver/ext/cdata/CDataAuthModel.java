@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.cdata;
 
-package org.jkiss.dbeaver.ui;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 
-/**
- * Smart transaction manager
- */
-public interface ISmartTransactionManager {
-
-    boolean isSmartAutoCommit();
-
-    void setSmartAutoCommit(boolean smartAutoCommit);
-
+public class CDataAuthModel extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+    public static final String ID = "cdata_native_url_builder";
 }

@@ -67,9 +67,7 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ### Annotations
 
 - Use `@NotNull` and `@Nullable` from `org.jkiss.code` on all method parameters and return types where applicable.
-- Expose object properties to the UI via `@Property` (from `org.jkiss.dbeaver.model.meta`) on getter methods.
-- Mark associations (child collections) with `@Association`.
-- Use `@ForTest` on members that exist solely for unit-testing access.
+- Expose object properties to the UI via `@Property` (from `org.jkiss.dbeaver.model.meta`) on getter methods. Object properties are needed in UI rendering.
 
 ### Code style
 
@@ -109,7 +107,6 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ## Common Pitfalls / Known Issues
 
 - UI thread safety: All SWT/UI updates must run on the display thread. Use functions like `UIUtils.asyncExec(Runnable)` if needed.
-- `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
 - Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.
 
 ## Creating unit tests
