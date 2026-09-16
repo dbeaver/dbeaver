@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSharedProjectPullResult;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
+import org.jkiss.dbeaver.model.datadam.sync.core.PreparedFiles;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -92,14 +93,25 @@ public class DDProjectSyncService {
         }
         String configurationFingerprint = DDFingerprintUtils.calculateConfigurationFingerprint(
             binding.remoteProjectId(), fileFingerprints);
-
         return new DDProjectSyncSnapshot(
             binding.remoteProjectId(),
             serverRevision,
-            files,
-            configurationFingerprint,
+            new PreparedFiles(files, configurationFingerprint),
             classify(binding.lastSyncedRevision(), serverRevision, configurationFingerprint)
         );
+    }
+
+    @NotNull
+    public DDSharedProjectRevision pushFiles(
+        @NotNull UUID projectId,
+        @NotNull PreparedFiles preparedFiles,
+        @NotNull String lastKnownConfigurationFingerprint
+    ) throws DBException {
+        try {
+            return client.pushFiles(projectId, preparedFiles, lastKnownConfigurationFingerprint);
+        } catch (DDShareException e) {
+            throw new DBException("Error pushing DataDam project files", e);
+        }
     }
 
     @NotNull
@@ -147,7 +159,6 @@ public class DDProjectSyncService {
     @NotNull
     public DBPProject importProject(@NotNull DDSharedProject remote) throws DBException {
         requireRemoteProjectAvailable(remote);
-
         DBPProject project = null;
         try {
             DDSharedProjectPullResult pullResult = client.pullFiles(remote.id());
@@ -170,6 +181,9 @@ public class DDProjectSyncService {
                 } catch (DBException cleanupError) {
                     e.addSuppressed(cleanupError);
                 }
+            }
+            if (e instanceof DBException dbException) {
+                throw dbException;
             }
             throw new DBException("Error importing DataDam project '" + remote.name() + "'", e);
         }

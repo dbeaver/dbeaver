@@ -338,15 +338,13 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     @NotNull
     public DDSharedProjectRevision pushFiles(
         @NotNull UUID projectId,
-        @NotNull Map<String, Pair<String, byte[]>> files,
-        @NotNull String configurationFingerprint,
+        @NotNull PreparedFiles preparedFiles,
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
-            for (Map.Entry<String, Pair<String, byte[]>> file : files.entrySet()) {
-                Pair<String, byte[]> preparedFile = Objects.requireNonNull(
-                    file.getValue(), "File fingerprint and contents are required");
+            for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
+                Pair<String, byte[]> preparedFile = file.getValue();
                 projectFiles.add(new DDSharedProjectFile(
                     file.getKey(),
                     encryptBytes(projectId.toString(), file.getKey(), preparedFile.getSecond()),
@@ -354,7 +352,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
             }
             return pushProjectConfiguration(
                 projectId,
-                new DDSharedProjectConfiguration(configurationFingerprint, projectFiles),
+                new DDSharedProjectConfiguration(preparedFiles.configurationFingerprint(), projectFiles),
                 lastKnownConfigurationFingerprint);
         } catch (DBException e) {
             throw new DDShareException("Failed to encrypt project files", e);

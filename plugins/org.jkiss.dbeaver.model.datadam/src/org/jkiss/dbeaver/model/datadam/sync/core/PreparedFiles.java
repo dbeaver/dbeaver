@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync.project;
+package org.jkiss.dbeaver.model.datadam.sync.core;
 
-import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
-import org.jkiss.dbeaver.model.datadam.sync.core.PreparedFiles;
+import org.jkiss.utils.Pair;
 
-import java.util.UUID;
+import java.util.Map;
 
 /**
- * Consistent local and server state used by a project synchronization operation.
+ * Plain project files prepared for encrypted upload.
  */
-public record DDProjectSyncSnapshot(
-    @NotNull UUID remoteProjectId,
-    @NotNull DDSharedProjectRevision serverRevision,
-    @NotNull PreparedFiles preparedFiles,
-    @NotNull DDSyncChange change
+public record PreparedFiles(
+    @NotNull Map<String, Pair<String, byte[]>> files,
+    @NotNull String configurationFingerprint
 ) {
 }
