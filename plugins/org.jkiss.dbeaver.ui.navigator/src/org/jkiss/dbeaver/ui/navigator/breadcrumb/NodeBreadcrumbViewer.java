@@ -105,7 +105,9 @@ public class NodeBreadcrumbViewer extends BreadcrumbViewer {
                 restoreSelectionProvider();
                 contextMenuSite = null;
                 setContextMenu(null);
-                getControl().setMenu(null);
+                if (!getControl().isDisposed()) {
+                    getControl().setMenu(null);
+                }
             }
             manager.dispose();
         }
