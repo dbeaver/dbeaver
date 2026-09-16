@@ -568,8 +568,9 @@ public class DBNModel {
             return image;
         }
         if (image instanceof DBIconComposite ic) {
-            ic.setBottomRight(overlayImage);
-            return image;
+            // driver icons may be shared by connected and disconnected data sources
+            return new DBIconComposite(ic.getMain(), ic.isDisabled(), ic.getTopLeft(), ic.getTopRight(),
+                ic.getBottomLeft(), overlayImage);
         }
         return new DBIconComposite(image, false, null, null, null, overlayImage);
     }
