@@ -94,33 +94,19 @@ public class DDProjectSyncService {
         }
 
         UUID remoteProjectId = UUID.randomUUID();
-        boolean remoteCreated = false;
         try {
-            Map<String, byte[]> files = content.read(project);
             DDSharedProject remote = client.createProject(remoteProjectId, project.getName(), description);
-            remoteCreated = true;
-            DDSharedProjectPullResult initial = client.pullFiles(remoteProjectId);
-            String fingerprint = initial.currentRevision().configurationFingerprint();
+            Map<String, byte[]> files = content.read(project);
+            DDSharedProjectRevision revision = client.getCurrentProjectRevision(remoteProjectId);
             if (!files.isEmpty()) {
-                DDSharedProjectRevision revision = client.pushFiles(remoteProjectId, files, fingerprint);
-                fingerprint = revision.configurationFingerprint();
+                revision = client.pushFiles(remoteProjectId, files, revision.configurationFingerprint());
             }
             bindingStore.save(
                 project, new DDProjectSyncLocalBinding(
-                    remoteProjectId, accountId, fingerprint, content.getUnitIds())
+                    remoteProjectId, accountId, revision, content.getUnitIds())
             );
             return remote;
         } catch (Exception e) {
-            if (remoteCreated) {
-                try {
-                    client.deleteProject(remoteProjectId);
-                } catch (DDShareException cleanupError) {
-                    e.addSuppressed(cleanupError);
-                }
-            }
-            if (e instanceof DBException exception) {
-                throw exception;
-            }
             throw new DBException("Error sharing project '" + project.getName() + "' with DataDam", e);
         }
     }
@@ -141,7 +127,7 @@ public class DDProjectSyncService {
             content.write(project, pullResult.files());
             bindingStore.save(
                 project, new DDProjectSyncLocalBinding(
-                    remote.id(), accountId, pullResult.currentRevision().configurationFingerprint(), content.getUnitIds())
+                    remote.id(), accountId, pullResult.currentRevision(), content.getUnitIds())
             );
             return project;
         } catch (Exception e) {
