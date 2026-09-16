@@ -70,6 +70,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
                 return;
             }
+            propertySource = null;
+            prevConnectionInfo = null;
+            propsControl.loadProperties(new PropertySourceCustom());
+            setErrorMessage(null);
 
             final DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
             final DataSourceDescriptor tempDataSource = site.getDataSourceRegistry()
@@ -104,8 +108,8 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             }
             if (propertySource != null) {
                 propsControl.loadProperties(propertySource);
+                prevConnectionInfo = activeDataSource.getConnectionConfiguration();
             }
-            prevConnectionInfo = activeDataSource.getConnectionConfiguration();
 
             tempDataSource.dispose();
         }
@@ -122,7 +126,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         if (propsControl != null) {
             propsControl.saveEditorValues();
         }
-        if (propertySource != null) {
+        if (propertySource != null && prevConnectionInfo == site.getActiveDataSource().getConnectionConfiguration()) {
             final Map<String, String> properties = dataSource.getConnectionConfiguration().getProperties();
             properties.clear();
             for (Map.Entry<String, Object> entry : propertySource.getPropertyValues().entrySet()) {
