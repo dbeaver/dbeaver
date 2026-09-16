@@ -222,10 +222,6 @@ public class BreadcrumbViewer extends StructuredViewer {
         fireOpen(new OpenEvent(this, new StructuredSelection(element)));
     }
 
-    void fireDoubleClick() {
-        fireDoubleClick(new DoubleClickEvent(this, getSelection()));
-    }
-
     boolean showContextMenu(@NotNull BreadcrumbItem item, int x, int y) {
         if (contextMenu == null || contextMenu.isDisposed()) {
             return false;
