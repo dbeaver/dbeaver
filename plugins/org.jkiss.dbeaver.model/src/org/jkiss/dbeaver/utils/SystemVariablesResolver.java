@@ -63,7 +63,7 @@ public class SystemVariablesResolver implements IVariableResolver {
             case VAR_APP_NAME:
                 return GeneralUtils.getProductName();
             case VAR_APP_VERSION:
-                return GeneralUtils.getProductVersion().toString();
+                return GeneralUtils.getPlainVersion();
             case VAR_HOME:
                 return getUserHome();
             case VAR_WORKSPACE:

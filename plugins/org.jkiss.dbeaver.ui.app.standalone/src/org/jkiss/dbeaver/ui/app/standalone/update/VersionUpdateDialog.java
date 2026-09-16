@@ -103,7 +103,7 @@ public class VersionUpdateDialog extends Dialog {
     }
 
     private boolean isNewVersionAvailable() {
-        return newVersion.getProgramVersion().compareTo(currentVersion) > 0;
+        return VersionDescriptor.comparePublicVersions(newVersion.getPlainVersion(), currentVersion.toString()) > 0;
     }
 
     @Override
@@ -137,7 +137,7 @@ public class VersionUpdateDialog extends Dialog {
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_new_version);
         new Label(propGroup, SWT.NONE)
-            .setText(newVersion.getProgramVersion().toString() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
+            .setText(newVersion.getPlainVersion() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
 
         if (isNewVersionAvailable()) {
             final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_notes);

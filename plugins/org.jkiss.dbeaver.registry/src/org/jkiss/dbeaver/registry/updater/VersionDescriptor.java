@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.dbeaver.utils.VersionUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLException;
@@ -67,7 +68,16 @@ public class VersionDescriptor {
     }
 
     public String getPlainVersion() {
-        return programVersion.getMajor() + "." + programVersion.getMinor() + "." + programVersion.getMicro();
+        return programVersion.toString();
+    }
+
+    public static int comparePublicVersions(@NotNull String first, @NotNull String second) {
+        return VersionUtils.compareVersions(normalizePublicVersion(first), normalizePublicVersion(second));
+    }
+
+    @NotNull
+    private static String normalizePublicVersion(@NotNull String version) {
+        return version.matches("\\d+\\.\\d+\\.\\d+") ? version + ".0" : version;
     }
 
     public String getUpdateTime() {

@@ -203,7 +203,7 @@ public class AboutBoxDialog extends InformationDialog
         Text versionLabel = new Text(group, SWT.NONE);
         versionLabel.setEditable(false);
         versionLabel.setBackground(background);
-        versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getProductVersion());
+        versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getPlainVersion());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         versionLabel.setLayoutData(gd);

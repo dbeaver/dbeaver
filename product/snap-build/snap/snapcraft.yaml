@@ -49,12 +49,15 @@ parts:
     override-build: |
       set -e
       snapcraftctl build
-      VERSION=$(echo $SNAPCRAFT_PART_INSTALL/usr/share/dbeaver-ce/plugins/org.jkiss.dbeaver.core_*.jar)
-      VERSION="${VERSION##*_}"
-      VERSION="${VERSION%.*}"
+      if [ -s "$SNAPCRAFT_PROJECT_DIR/release-version" ]; then
+        VERSION=$(cat "$SNAPCRAFT_PROJECT_DIR/release-version")
+      else
+        VERSION=$(echo "$SNAPCRAFT_PART_INSTALL"/usr/share/dbeaver-ce/plugins/org.jkiss.dbeaver.core_*.jar)
+        VERSION="${VERSION##*_}"
+        VERSION="${VERSION%.*}"
+      fi
       snapcraftctl set-version "$VERSION"
       LD_BIND_NOW=1
     override-prime: |
       snapcraftctl prime
       rm -vf usr/lib/jvm/java-*/lib/security/blacklisted.certs
-

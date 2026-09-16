@@ -134,7 +134,7 @@ public class StatisticsTransmitter {
             parametersMap.put("Country", Locale.getDefault().getISO3Country());
             parametersMap.put("Timezone", TimeZone.getDefault().getID());
             parametersMap.put("Application-Name", GeneralUtils.getProductName());
-            parametersMap.put("Application-Version", GeneralUtils.getProductVersion().toString());
+            parametersMap.put("Application-Version", GeneralUtils.getPlainVersion());
             parametersMap.put("OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME)));
             if (DBWorkbench.isPlatformStarted()) {
                 parametersMap.putAll(DBWorkbench.getPlatform().getApplication()

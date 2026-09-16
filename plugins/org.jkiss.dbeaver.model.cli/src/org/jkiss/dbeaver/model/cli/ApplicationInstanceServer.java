@@ -128,7 +128,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     @NotNull
     @Override
     public String getVersion() {
-        return GeneralUtils.getProductVersion().toString();
+        return GeneralUtils.getPlainVersion();
     }
 
 

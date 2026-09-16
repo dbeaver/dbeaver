@@ -108,7 +108,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                     DBWorkbench.getPlatform().getDeploymentId(),
                     DBWorkbench.getPlatform().getWorkspace().getWorkspaceId(),
                     GeneralUtils.getProductName(),
-                    GeneralUtils.getProductVersion().toString(),
+                    GeneralUtils.getPlainVersion(),
                     System.getProperty(StandardConstants.ENV_OS_NAME),
                     RuntimeUtils.getOSVersion().toString(),
                     localMacAddress(),

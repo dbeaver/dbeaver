@@ -158,7 +158,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
 
             if (parseResult.isVersionHelpRequested()) {
-                String version = GeneralUtils.getLongProductTitle();
+                String version = GeneralUtils.getProductTitle();
                 return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, version);
             }
 

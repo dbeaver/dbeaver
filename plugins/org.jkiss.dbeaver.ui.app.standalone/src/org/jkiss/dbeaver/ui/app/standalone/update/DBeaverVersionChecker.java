@@ -113,7 +113,10 @@ public class DBeaverVersionChecker extends AbstractJob {
             return Status.CANCEL_STATUS;
         }
 
-        boolean newVersionAvailable = newVersion.getProgramVersion().compareTo(currentVersion) > 0;
+        boolean newVersionAvailable = VersionDescriptor.comparePublicVersions(
+            newVersion.getPlainVersion(),
+            currentVersion.toString()
+        ) > 0;
         boolean suppressed = isSuppressed(newVersion);
         UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
         boolean showToolbarNotification = updater == null && newVersionAvailable && !showAlways;
@@ -144,6 +147,6 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     @NotNull
     private static Version getProductVersion() {
-        return OVERRIDE_PRODUCT_VERSION == null ? GeneralUtils.getProductVersion() : OVERRIDE_PRODUCT_VERSION;
+        return OVERRIDE_PRODUCT_VERSION == null ? Version.parseVersion(GeneralUtils.getPlainVersion()) : OVERRIDE_PRODUCT_VERSION;
     }
 }
