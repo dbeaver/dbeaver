@@ -8,7 +8,6 @@
                 id="doris"
                 parent="generic"
                 dialect="doris"
-                defaultMetaModel="doris"
                 label="Apache Doris"
                 icon="icons/doris_icon.svg">
 

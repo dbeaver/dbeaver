@@ -54,11 +54,6 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
     @NotNull
     SQLDialectMetadata getScriptDialect();
 
-    @Nullable
-    default String getDefaultMetaModelId() {
-        return null;
-    }
-
     boolean isTemporary();
 
     @Nullable

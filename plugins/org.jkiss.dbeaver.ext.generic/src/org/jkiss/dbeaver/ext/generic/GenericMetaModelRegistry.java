@@ -94,15 +94,6 @@ public class GenericMetaModelRegistry {
                 log.warn("Driver meta model '" + metaModelId + "' not recognized. Default one will be used");
             }
         }
-        if (metaModel == null && metaModelId == null) {
-            String defaultMetaModelId = dataSourceContainer.getDriver().getProviderDescriptor().getDefaultMetaModelId();
-            if (defaultMetaModelId != null) {
-                metaModel = metaModels.get(defaultMetaModelId);
-                if (metaModel == null) {
-                    log.warn("Data source provider meta model '" + defaultMetaModelId + "' not recognized. Default one will be used");
-                }
-            }
-        }
         if (metaModel == null) {
             // Try to get model by driver class
             metaModel = metaModels.get(dataSourceContainer.getDriver().getDriverClassName());
