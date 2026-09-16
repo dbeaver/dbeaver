@@ -281,7 +281,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             }
             String database = paramsByGenericUrl.getFirstParamValue("database");
             if (CommonUtils.isNotEmpty(database) && CommonUtils.isEmpty(connectionInfo.getDatabase())) {
-                connectionInfo.setDatabase(host);
+                connectionInfo.setDatabase(database);
             }
             for (Map.Entry<String, String> param : DatabaseURL.Generic.extractExtraParams(paramsByGenericUrl).entrySet()) {
                 switch (param.getKey()) {
