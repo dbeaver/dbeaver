@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.registry;
 
+import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
@@ -23,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -79,5 +81,47 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             Assertions.assertTrue(new AISettingsManager.EngineConfigAdapter().read(reader).isEmpty());
             Assertions.assertEquals(JsonToken.END_DOCUMENT, reader.peek());
         }
+    }
+
+    @Test
+    public void serializesNonGlobalProfileFlag() {
+        String config = """
+            {
+              "name": "User OpenAI",
+              "engine": "openai",
+              "configuration": {
+                "global": false
+              }
+            }
+            """;
+
+        AIConfigurationProfile profile = AISettingsManager.READ_PROPS_GSON.fromJson(
+            config,
+            AIConfigurationProfile.class
+        );
+
+        Assertions.assertFalse(profile.isGlobal());
+        String serialized = AISettingsManager.SAVE_PROPS_GSON.toJson(profile);
+        Assertions.assertFalse(JsonParser.parseString(serialized)
+            .getAsJsonObject()
+            .getAsJsonObject("configuration")
+            .get("global")
+            .getAsBoolean());
+    }
+
+    @Test
+    public void synchronizesGlobalProfileFlag() {
+        AIConfigurationProfile profile = new AIConfigurationProfile();
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setGlobal(false);
+
+        profile.setConfiguration(properties);
+        Assertions.assertFalse(profile.isGlobal());
+
+        properties.setGlobal(true);
+        Assertions.assertTrue(profile.isGlobal());
+
+        profile.setGlobal(false);
+        Assertions.assertFalse(properties.isGlobal());
     }
 }
