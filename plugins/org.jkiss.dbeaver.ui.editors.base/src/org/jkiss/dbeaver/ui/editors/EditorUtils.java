@@ -460,20 +460,28 @@ public class EditorUtils {
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
 
         String resourcePath = projectMeta.getResourcePath(file);
-        projectMeta.setResourceProperty(
-            resourcePath,
-            DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID,
-            dataSourceContainer == null ? null : dataSourceContainer.getProject().getId());
-        projectMeta.setResourceProperty(resourcePath, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
+        Map<String, String> oldProperties = projectMeta.getResourceProperties(resourcePath);
+        Map<String, String> newProperties = oldProperties == null ?
+            new LinkedHashMap<>() : new LinkedHashMap<>(oldProperties);
+        if (dataSourceContainer == null) {
+            newProperties.remove(DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID);
+            newProperties.remove(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+        } else {
+            newProperties.put(DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID, dataSourceContainer.getProject().getId());
+            newProperties.put(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
+        }
         if (!isDefaultContextSettings(context)) {
             String defaultCatalogName = getDefaultCatalogName(context);
             if (!CommonUtils.isEmpty(defaultCatalogName)) {
-                projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_CATALOG, defaultCatalogName);
+                newProperties.put(PROP_CONTEXT_DEFAULT_CATALOG, defaultCatalogName);
             }
             String defaultSchemaName = getDefaultSchemaName(context);
             if (!CommonUtils.isEmpty(defaultSchemaName)) {
-                projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_SCHEMA, defaultSchemaName);
+                newProperties.put(PROP_CONTEXT_DEFAULT_SCHEMA, defaultSchemaName);
             }
+        }
+        if (!newProperties.equals(oldProperties)) {
+            projectMeta.setResourceProperties(resourcePath, newProperties);
         }
     }
 
