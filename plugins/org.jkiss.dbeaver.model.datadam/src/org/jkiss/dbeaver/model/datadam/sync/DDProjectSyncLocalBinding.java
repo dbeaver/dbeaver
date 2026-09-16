@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.sync;
 
+import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
 
 import java.util.Set;
@@ -24,13 +25,13 @@ import java.util.UUID;
 /**
  * Local association between a DBeaver project and its DataDam project.
  */
-public record DDProjectSyncBinding(
+public record DDProjectSyncLocalBinding(
     @NotNull UUID remoteProjectId,
     @NotNull UUID accountId,
-    @NotNull String lastKnownFingerprint,
+    @NotNull DDSharedProjectRevision lastSyncedRevision,
     @NotNull Set<String> unitIds
 ) {
-    public DDProjectSyncBinding {
+    public DDProjectSyncLocalBinding {
         unitIds = Set.copyOf(unitIds);
     }
 }

@@ -37,13 +37,13 @@ final class DDProjectSyncBindingStore {
     private static final String BINDING_FILE_NAME = "datadam-sync.json";
 
     @Nullable
-    DDProjectSyncBinding load(@NotNull DBPProject project) throws DBException {
+    DDProjectSyncLocalBinding load(@NotNull DBPProject project) throws DBException {
         Path file = getBindingFile(project, false);
         if (!Files.isRegularFile(file)) {
             return null;
         }
         try {
-            DDProjectSyncBinding binding = JSONUtils.GSON.fromJson(Files.readString(file), DDProjectSyncBinding.class);
+            DDProjectSyncLocalBinding binding = JSONUtils.GSON.fromJson(Files.readString(file), DDProjectSyncLocalBinding.class);
             validate(binding);
             return binding;
         } catch (IOException | RuntimeException e) {
@@ -51,7 +51,7 @@ final class DDProjectSyncBindingStore {
         }
     }
 
-    void save(@NotNull DBPProject project, @NotNull DDProjectSyncBinding binding) throws DBException {
+    void save(@NotNull DBPProject project, @NotNull DDProjectSyncLocalBinding binding) throws DBException {
         validate(binding);
         Path file = getBindingFile(project, true);
         Path temporary = null;
@@ -86,7 +86,7 @@ final class DDProjectSyncBindingStore {
         }
     }
 
-    private void validate(@Nullable DDProjectSyncBinding binding) throws DBException {
+    private void validate(@Nullable DDProjectSyncLocalBinding binding) throws DBException {
         //for deserialization possible problems
         if (binding == null || binding.remoteProjectId() == null || binding.accountId() == null ||
             CommonUtils.isEmpty(binding.lastKnownFingerprint()) || CommonUtils.isEmpty(binding.unitIds())) {

@@ -65,8 +65,8 @@ public class DDProjectSyncService {
     }
 
     @Nullable
-    public DDProjectSyncBinding getBinding(@NotNull DBPProject project) throws DBException {
-        DDProjectSyncBinding binding = bindingStore.load(project);
+    public DDProjectSyncLocalBinding getBinding(@NotNull DBPProject project) throws DBException {
+        DDProjectSyncLocalBinding binding = bindingStore.load(project);
         return binding != null && accountId.equals(binding.accountId()) ? binding : null;
     }
 
@@ -106,7 +106,7 @@ public class DDProjectSyncService {
                 fingerprint = revision.configurationFingerprint();
             }
             bindingStore.save(
-                project, new DDProjectSyncBinding(
+                project, new DDProjectSyncLocalBinding(
                     remoteProjectId, accountId, fingerprint, content.getUnitIds())
             );
             return remote;
@@ -140,7 +140,7 @@ public class DDProjectSyncService {
             project = workspace.createProject(uniqueProjectName(remote.name()), remote.description());
             content.write(project, pullResult.files());
             bindingStore.save(
-                project, new DDProjectSyncBinding(
+                project, new DDProjectSyncLocalBinding(
                     remote.id(), accountId, pullResult.currentRevision().configurationFingerprint(), content.getUnitIds())
             );
             return project;
@@ -170,7 +170,7 @@ public class DDProjectSyncService {
             throw new DBException("DataDam project belongs to another account: " + remote.id());
         }
         for (DBPProject project : workspace.getProjects()) {
-            DDProjectSyncBinding binding = bindingStore.load(project);
+            DDProjectSyncLocalBinding binding = bindingStore.load(project);
             if (binding != null && accountId.equals(binding.accountId()) && remote.id().equals(binding.remoteProjectId())) {
                 throw new DBException("DataDam project '" + remote.name() + "' is already in the workspace");
             }
