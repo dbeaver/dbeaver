@@ -27,6 +27,10 @@
             name="%cdata.preference.page.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
+            <keywordReference id="org.jkiss.dbeaver.ext.cdata.ui.keyword.pref.licenses"/>
         </page>
+    </extension>
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ext.cdata.ui.keyword.pref.licenses" label="%keyword.org.jkiss.dbeaver.ext.cdata.ui.keyword.pref.licenses.label"/>
     </extension>
 </plugin>
