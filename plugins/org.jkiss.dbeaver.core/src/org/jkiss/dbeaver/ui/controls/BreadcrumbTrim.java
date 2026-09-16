@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.ui.navigator.breadcrumb.NodeBreadcrumbViewer;
 import java.util.function.Consumer;
 
 public class BreadcrumbTrim {
-    private static final String BREADCRUMBS_ID = "org.jkiss.dbeaver.core.ui.Breadcrumb"; //$NON-NLS-1$
+    private static final String STATUS_CONTROLS_ID = "org.jkiss.dbeaver.core.ui.Breadcrumb"; //$NON-NLS-1$
     private static final String BOTTOM_TRIM_ID = "org.eclipse.ui.trim.status"; //$NON-NLS-1$
 
     @PostConstruct
@@ -62,10 +62,17 @@ public class BreadcrumbTrim {
         var viewer = new NodeBreadcrumbViewer(composite, SWT.BOTTOM);
 
         installListeners(viewer);
-        UIUtils.asyncExec(BreadcrumbTrim::updateElementVisibility);
+        UIUtils.asyncExec(() -> updateElementVisibility(viewer));
     }
 
-    private static void updateElementVisibility() {
+    private static void updateElementVisibility(@NotNull NodeBreadcrumbViewer viewer) {
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        var breadcrumbsVisible = BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_STATUS_BAR;
+        if (!viewer.getControl().isDisposed()) {
+            UIUtils.setControlVisible(viewer.getControl(), breadcrumbsVisible);
+            viewer.getControl().getParent().layout(true, true);
+        }
+
         for (IWorkbenchWindow window : Workbench.getInstance().getWorkbenchWindows()) {
             if (window instanceof WorkbenchWindow workbenchWindow) {
                 updateElementVisibility(workbenchWindow);
@@ -80,10 +87,9 @@ public class BreadcrumbTrim {
 
         boolean dirty = false;
 
-        var breadcrumbsElement = modelService.find(BREADCRUMBS_ID, model);
-        var breadcrumbsVisible = BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_STATUS_BAR;
-        if (breadcrumbsElement != null && breadcrumbsElement.isToBeRendered() != breadcrumbsVisible) {
-            breadcrumbsElement.setToBeRendered(breadcrumbsVisible);
+        var statusControlsElement = modelService.find(STATUS_CONTROLS_ID, model);
+        if (statusControlsElement != null && !statusControlsElement.isToBeRendered()) {
+            statusControlsElement.setToBeRendered(true);
             dirty = true;
         }
 
@@ -194,7 +200,7 @@ public class BreadcrumbTrim {
             switch (event.getProperty()) {
                 case DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS:
                 case DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE:
-                    updateElementVisibility();
+                    updateElementVisibility(viewer);
                     break;
                 default:
                     break;
