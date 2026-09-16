@@ -89,7 +89,7 @@ final class DDProjectSyncBindingStore {
     private void validate(@Nullable DDProjectSyncLocalBinding binding) throws DBException {
         //for deserialization possible problems
         if (binding == null || binding.remoteProjectId() == null || binding.accountId() == null ||
-            CommonUtils.isEmpty(binding.lastKnownFingerprint()) || CommonUtils.isEmpty(binding.unitIds())) {
+            binding.lastSyncedRevision() == null || CommonUtils.isEmpty(binding.unitIds())) {
             throw new DBException("Invalid DataDam project binding");
         }
         for (String unitId : binding.unitIds()) {

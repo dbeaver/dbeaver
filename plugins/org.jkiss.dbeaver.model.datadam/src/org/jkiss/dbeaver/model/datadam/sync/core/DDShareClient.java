@@ -225,7 +225,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DDSharedProjectRevision getCurrentProjectRevision(@NotNull UUID projectId) throws DDShareException {
         try {
@@ -241,9 +241,10 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
                     }""", Map.of("projectId", projectId.toString())
             );
             JsonElement result = data.get("currentProjectRevision");
-            return result == null || result.isJsonNull()
-                ? null
-                : gson.fromJson(result, DDSharedProjectRevision.class);
+            if (result == null || result.isJsonNull()) {
+                throw new DDShareException("Project not found or has no current revision: " + projectId);
+            }
+            return gson.fromJson(result, DDSharedProjectRevision.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to get current project revision", e);
         }
