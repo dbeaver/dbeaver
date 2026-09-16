@@ -100,7 +100,7 @@ public class DDProjectSyncService {
             DDSharedProject remote = client.createProject(remoteProjectId, project.getName(), description);
             remoteCreated = true;
             DDSharedProjectPullResult initial = client.pullFiles(remoteProjectId);
-            String fingerprint = initial.configurationFingerprint();
+            String fingerprint = initial.currentRevision().configurationFingerprint();
             if (!files.isEmpty()) {
                 DDSharedProjectRevision revision = client.pushFiles(remoteProjectId, files, fingerprint);
                 fingerprint = revision.configurationFingerprint();
@@ -141,7 +141,7 @@ public class DDProjectSyncService {
             content.write(project, pullResult.files());
             bindingStore.save(
                 project, new DDProjectSyncBinding(
-                    remote.id(), accountId, pullResult.configurationFingerprint(), content.getUnitIds())
+                    remote.id(), accountId, pullResult.currentRevision().configurationFingerprint(), content.getUnitIds())
             );
             return project;
         } catch (Exception e) {

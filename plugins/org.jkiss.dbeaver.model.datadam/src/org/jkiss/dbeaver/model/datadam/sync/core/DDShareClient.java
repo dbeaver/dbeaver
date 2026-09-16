@@ -275,19 +275,45 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     }
 
     /**
-     * Convenience wrapper over pullProjectConfiguration that also decrypts each file's contents.
+     * Pulls a consistent project revision and decrypts its files.
      */
     @NotNull
     public DDSharedProjectPullResult pullFiles(@NotNull UUID projectId) throws DDShareException {
-        DDSharedProjectConfiguration remote = pullProjectConfiguration(projectId);
         try {
+            JsonObject data = call("""
+                query($projectId: ID!) {
+                    pullProject(projectId: $projectId) {
+                        files {
+                            fileName
+                            encryptedContents
+                            fingerprint
+                        }
+                        currentRevision {
+                            id: revisionId
+                            userId
+                            updateTime
+                            configurationFingerprint
+                        }
+                    }
+                }""", Map.of("projectId", projectId.toString()));
+            JsonElement result = data.get("pullProject");
+            if (result == null || result.isJsonNull()) {
+                throw new DDShareException("Project not found or has no current revision: " + projectId);
+            }
+            JsonObject response = result.getAsJsonObject();
+            JsonElement revisionElement = response.get("currentRevision");
+            if (revisionElement == null || revisionElement.isJsonNull()) {
+                throw new DDShareException("Project has no current revision: " + projectId);
+            }
+            DDSharedProjectRevision currentRevision = gson.fromJson(revisionElement, DDSharedProjectRevision.class);
+            DDSharedProjectFile[] remoteFiles = gson.fromJson(response.get("files"), DDSharedProjectFile[].class);
             Map<String, byte[]> files = new LinkedHashMap<>();
-            for (DDSharedProjectFile file : remote.files()) {
+            for (DDSharedProjectFile file : remoteFiles) {
                 files.put(file.fileName(), decryptBytes(projectId.toString(), file.fileName(), file.encryptedContents()));
             }
-            return new DDSharedProjectPullResult(remote.configurationFingerprint(), files);
+            return new DDSharedProjectPullResult(files, currentRevision);
         } catch (DBException e) {
-            throw new DDShareException("Failed to decrypt project files", e);
+            throw new DDShareException("Failed to pull project files", e);
         }
     }
 
