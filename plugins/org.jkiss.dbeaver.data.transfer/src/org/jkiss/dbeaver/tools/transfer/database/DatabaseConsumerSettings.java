@@ -74,22 +74,8 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
     private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
     private transient Map<String, Object> dialogSettings;
-    private transient boolean refreshMetadata;
 
     public DatabaseConsumerSettings() {
-    }
-
-    @Nullable
-    @Override
-    public Object prepareRuntimeParameters() {
-        refreshMetadata = true;
-        return null;
-    }
-
-    boolean consumeMetadataRefresh() {
-        boolean refresh = refreshMetadata;
-        refreshMetadata = false;
-        return refresh;
     }
 
     @Nullable

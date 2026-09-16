@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.sql.SQLException;
@@ -57,7 +56,7 @@ public class DorisDataSource extends GenericDataSource {
      * catalog name -> [type, comment]
      */
     private final Map<String, CatalogMetadata> catalogMetadataCache = new ConcurrentHashMap<>();
-    private Integer availableBackendCount;
+    private volatile int availableBackendCount;
 
     public record CatalogMetadata(@Nullable String type, @Nullable String comment) {
     }
@@ -93,6 +92,12 @@ public class DorisDataSource extends GenericDataSource {
         } else {
             dorisContext.refreshDefaults(monitor, true);
         }
+    }
+
+    @Override
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.initialize(monitor);
+        availableBackendCount = readAvailableBackendCount(monitor);
     }
 
     @Override
@@ -136,15 +141,7 @@ public class DorisDataSource extends GenericDataSource {
         return catalogMetadataCache.get(catalogName);
     }
 
-    public synchronized int getAvailableBackendCount(@NotNull DBRProgressMonitor monitor) {
-        if (availableBackendCount == null) {
-            return refreshAvailableBackendCount(monitor);
-        }
-        return availableBackendCount;
-    }
-
-    public synchronized int refreshAvailableBackendCount(@NotNull DBRProgressMonitor monitor) {
-        availableBackendCount = readAvailableBackendCount(monitor);
+    public int getAvailableBackendCount() {
         return availableBackendCount;
     }
 
@@ -181,11 +178,5 @@ public class DorisDataSource extends GenericDataSource {
     @Override
     public boolean isOmitSchema() {
         return false;
-    }
-
-    @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        availableBackendCount = null;
-        return super.refreshObject(monitor);
     }
 }
