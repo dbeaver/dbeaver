@@ -225,31 +225,6 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         }
     }
 
-    @NotNull
-    @Override
-    public DDSharedProjectConfiguration pullProjectConfiguration(@NotNull UUID projectId) throws DDShareException {
-        try {
-            JsonObject data = call("""
-                query($projectId: ID!) {
-                    pullProjectConfiguration(projectId: $projectId) {
-                        configurationFingerprint
-                        files {
-                            fileName
-                            encryptedContents
-                            fingerprint
-                        }
-                    }
-                }""", Map.of("projectId", projectId.toString()));
-            JsonElement result = data.get("pullProjectConfiguration");
-            if (result == null || result.isJsonNull()) {
-                throw new DDShareException("Project not found: " + projectId);
-            }
-            return gson.fromJson(result, DDSharedProjectConfiguration.class);
-        } catch (DBException e) {
-            throw new DDShareException("Failed to pull project configuration", e);
-        }
-    }
-
     @Nullable
     @Override
     public DDSharedProjectRevision getCurrentProjectRevision(@NotNull UUID projectId) throws DDShareException {
@@ -274,15 +249,13 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         }
     }
 
-    /**
-     * Pulls a consistent project revision and decrypts its files.
-     */
     @NotNull
-    public DDSharedProjectPullResult pullFiles(@NotNull UUID projectId) throws DDShareException {
+    @Override
+    public DDSharedProjectPullResponse pullProjectConfiguration(@NotNull UUID projectId) throws DDShareException {
         try {
             JsonObject data = call("""
                 query($projectId: ID!) {
-                    pullProject(projectId: $projectId) {
+                    pullProjectConfiguration(projectId: $projectId) {
                         files {
                             fileName
                             encryptedContents
@@ -296,22 +269,28 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
                         }
                     }
                 }""", Map.of("projectId", projectId.toString()));
-            JsonElement result = data.get("pullProject");
+            JsonElement result = data.get("pullProjectConfiguration");
             if (result == null || result.isJsonNull()) {
                 throw new DDShareException("Project not found or has no current revision: " + projectId);
             }
-            JsonObject response = result.getAsJsonObject();
-            JsonElement revisionElement = response.get("currentRevision");
-            if (revisionElement == null || revisionElement.isJsonNull()) {
-                throw new DDShareException("Project has no current revision: " + projectId);
-            }
-            DDSharedProjectRevision currentRevision = gson.fromJson(revisionElement, DDSharedProjectRevision.class);
-            DDSharedProjectFile[] remoteFiles = gson.fromJson(response.get("files"), DDSharedProjectFile[].class);
+            return gson.fromJson(result, DDSharedProjectPullResponse.class);
+        } catch (DBException e) {
+            throw new DDShareException("Failed to pull project configuration", e);
+        }
+    }
+
+    /**
+     * Pulls a consistent project revision and decrypts its files.
+     */
+    @NotNull
+    public DDSharedProjectPullResult pullFiles(@NotNull UUID projectId) throws DDShareException {
+        try {
+            DDSharedProjectPullResponse response = pullProjectConfiguration(projectId);
             Map<String, byte[]> files = new LinkedHashMap<>();
-            for (DDSharedProjectFile file : remoteFiles) {
+            for (DDSharedProjectFile file : response.files()) {
                 files.put(file.fileName(), decryptBytes(projectId.toString(), file.fileName(), file.encryptedContents()));
             }
-            return new DDSharedProjectPullResult(files, currentRevision);
+            return new DDSharedProjectPullResult(files, response.currentRevision());
         } catch (DBException e) {
             throw new DDShareException("Failed to pull project files", e);
         }
