@@ -493,6 +493,31 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         return grants == null ? Collections.emptyList() : grants;
     }
 
+    /**
+     * Whether the user has a grant on the edited object itself (not merely inherited schema-wide
+     * access). Removing a user is object-scoped, so the "-" action is meaningful only in that case.
+     */
+    private boolean hasObjectScopedGrant(@NotNull MySQLUser user) {
+        List<MySQLGrant> grants = userGrants.get(user);
+        if (grants == null) {
+            return false;
+        }
+        for (MySQLGrant grant : grants) {
+            if (rootTable != null) {
+                if (grant.matches(rootTable)) {
+                    return true;
+                }
+            } else if (rootProcedure != null) {
+                if (grant.matchesProcedure(rootProcedure)) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ==== list/panel filling (mirrors user editor semantics, keyed by selected user) ====
 
     private void fillObjectLists() {
@@ -925,7 +950,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         if (usersRemoveButton == null || usersRemoveButton.isDisposed()) {
             return;
         }
-        usersRemoveButton.setEnabled(selectedUser != null);
+        usersRemoveButton.setEnabled(selectedUser != null && hasObjectScopedGrant(selectedUser));
         if (tablesAddButton != null) {
             tablesAddButton.setEnabled(selectedUser != null);
             tablesRemoveButton.setEnabled(selectedUser != null && selectedTable != null);
@@ -1067,7 +1092,10 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         updateButtons();
     }
 
-    // ==== remove ("-") handlers: revoke everything the user has on the object ====
+    // ==== remove ("-") handlers: revoke the grants the user has on the edited object only ====
+    // Object-scoped, like the PostgreSQL privileges editor: removing a user from a table revokes
+    // only that table's grants. Schema-wide (db.*) grants are left untouched; they can be managed
+    // from the schema-level editor or the inherited-privileges panel.
 
     private void handleRemoveUser() {
         if (selectedUser == null) {
@@ -1075,7 +1103,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
         MySQLUser user = selectedUser;
         for (MySQLGrant grant : new ArrayList<>(grantsOfSelectedUser())) {
-            if (rootTable != null && !(grant.matches(rootTable) || isSchemaLevelGrant(grant))) {
+            if (rootTable != null && !grant.matches(rootTable)) {
                 continue;
             }
             if (rootProcedure != null && !grant.matchesProcedure(rootProcedure)) {
