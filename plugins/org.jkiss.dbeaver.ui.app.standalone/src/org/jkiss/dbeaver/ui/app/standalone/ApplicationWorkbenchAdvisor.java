@@ -48,6 +48,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreFeatures;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -80,6 +81,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
+import org.jkiss.dbeaver.ui.preferences.PrefPageGeneral;
 import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -124,23 +126,29 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID,
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
-
-        PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID,
     };
 
     // Move to UI
     private static final String[] UI_PREF_PAGES = {
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
-        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
-        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
-        PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID + "/" + PrefPageConstants.P2_SITES_PREF_PAGE_ID,
     };
 
     // Move to Editors
     private static final String[] EDITORS_PREF_PAGES = {
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors", //"File Associations"
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
+    };
+
+    // Move to Search
+    private static final String[] SEARCH_PREF_PAGES = {
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
+    };
+
+    // Move to Workbench
+    private static final String[] WORKBENCH_PREF_PAGES = {
+        PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID + "/" + PrefPageConstants.P2_SITES_PREF_PAGE_ID,
     };
 
     // Move to File Associations
@@ -161,6 +169,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     // Move to Workspace
     private static final String[] WORKSPACE_PREF_PAGES = {
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+    };
+
+    // Move to General
+    private static final String[] GENERAL_PREF_PAGES = {
         "org.eclipse.team.ui.TeamPreferences",
     };
 
@@ -231,6 +243,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public String getInitialWindowPerspectiveId() {
         return PERSPECTIVE_ID;
+    }
+
+    @Override
+    public String getMainPreferencePageId() {
+        return PrefPageGeneral.PAGE_ID;
     }
 
     @Override
@@ -313,6 +330,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         WorkbenchUtils.movePreferencePages(EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
         WorkbenchUtils.movePreferencePages(
+            SEARCH_PREF_PAGES,
+            PrefPageDatabaseEditors.PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage"
+        );
+        WorkbenchUtils.movePreferencePages(
             FILE_ASSOCIATIONS_PREF_PAGES,
             PrefPageDatabaseEditors.PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors"
         );
@@ -332,6 +353,17 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WorkbenchUtils.movePreferencePages(NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
 
         WorkbenchUtils.removePreferencePages(getExcludedPreferencePageIds());
+        WorkbenchUtils.movePreferencePage(
+            PrefPageConstants.WORKBENCH_PREF_PAGE_ID,
+            PrefPageGeneral.PAGE_ID,
+            CoreMessages.pref_page_general_workbench
+        );
+        WorkbenchUtils.movePreferencePages(
+            WORKBENCH_PREF_PAGES,
+            PrefPageGeneral.PAGE_ID + "/" + PrefPageConstants.WORKBENCH_PREF_PAGE_ID
+        );
+        WorkbenchUtils.movePreferencePages(GENERAL_PREF_PAGES, PrefPageGeneral.PAGE_ID);
+        WorkbenchUtils.removePreferencePages(PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID);
     }
 
     @NotNull
