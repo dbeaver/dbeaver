@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 
@@ -61,6 +62,9 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         this.allowedTypes = allowedTypes;
         this.resultTypes = resultTypes == null ? allowedTypes : resultTypes;
         this.leafTypes = leafTypes;
+        if (rootNode instanceof DBNDatabaseNode) {
+            setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.table);
+        }
     }
 
     public void setNameFilter(Predicate<String> nameFilter) {
