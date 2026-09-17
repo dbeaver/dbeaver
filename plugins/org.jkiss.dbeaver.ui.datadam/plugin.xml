@@ -25,10 +25,10 @@
 
     <extension point="org.eclipse.ui.handlers">
         <handler
-            class="org.jkiss.dbeaver.ui.datadam.DDProjectShareHandler"
+            class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectShareHandler"
             commandId="org.jkiss.dbeaver.datadam.commands.project.share"/>
         <handler
-            class="org.jkiss.dbeaver.ui.datadam.DDProjectUpdateHandler"
+            class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectUpdateHandler"
             commandId="org.jkiss.dbeaver.datadam.commands.project.update"/>
     </extension>
 
