@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.app.standalone.update;
 
-package org.jkiss.dbeaver.ui;
+import org.eclipse.core.expressions.PropertyTester;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-/**
- * Smart transaction manager
- */
-public interface ISmartTransactionManager {
-
-    boolean isSmartAutoCommit();
-
-    void setSmartAutoCommit(boolean smartAutoCommit);
-
+public class VersionUpdatePropertyTester extends PropertyTester {
+    @Override
+    public boolean test(
+        @Nullable Object receiver,
+        @NotNull String property,
+        @NotNull Object[] args,
+        @Nullable Object expectedValue
+    ) {
+        return VersionUpdateHandler.isUpdateAvailable();
+    }
 }
