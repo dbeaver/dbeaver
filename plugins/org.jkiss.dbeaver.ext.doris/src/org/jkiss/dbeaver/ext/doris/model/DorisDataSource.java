@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -64,15 +65,9 @@ public class DorisDataSource extends GenericDataSource {
     public DorisDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container,
-        @NotNull DorisMetaModel metaModel
+        @NotNull GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new DorisDialect());
-    }
-
-    @NotNull
-    @Override
-    public DorisMetaModel getMetaModel() {
-        return (DorisMetaModel) super.getMetaModel();
     }
 
     @Override
