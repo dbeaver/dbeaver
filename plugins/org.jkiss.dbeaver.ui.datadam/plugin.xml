@@ -2,6 +2,51 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.datadam.commands.category" name="%command.datadam.category.name"/>
+        <command
+            categoryId="org.jkiss.dbeaver.datadam.commands.category"
+            id="org.jkiss.dbeaver.datadam.commands.project.share"
+            name="%command.datadam.project.share.name"/>
+        <command
+            categoryId="org.jkiss.dbeaver.datadam.commands.category"
+            id="org.jkiss.dbeaver.datadam.commands.project.update"
+            name="%command.datadam.project.update.name"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image
+            commandId="org.jkiss.dbeaver.datadam.commands.project.share"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.svg"/>
+        <image
+            commandId="org.jkiss.dbeaver.datadam.commands.project.update"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler
+            class="org.jkiss.dbeaver.ui.datadam.DDProjectShareHandler"
+            commandId="org.jkiss.dbeaver.datadam.commands.project.share"/>
+        <handler
+            class="org.jkiss.dbeaver.ui.datadam.DDProjectUpdateHandler"
+            commandId="org.jkiss.dbeaver.datadam.commands.project.update"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
+            <command
+                commandId="org.jkiss.dbeaver.datadam.commands.project.share"
+                id="org.jkiss.dbeaver.datadam.menu.projects"
+                label="%menu.datadam.projects.label"
+                style="pulldown"
+                tooltip="%menu.datadam.projects.tooltip"/>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.datadam.menu.projects">
+            <command commandId="org.jkiss.dbeaver.datadam.commands.project.share"/>
+            <command commandId="org.jkiss.dbeaver.datadam.commands.project.update"/>
+        </menuContribution>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.DDAIEngine" uiClass="org.jkiss.dbeaver.ui.datadam.DDConfigurator"/>
     </extension>

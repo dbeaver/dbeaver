@@ -59,6 +59,20 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_conflict_resolved_label;
     public static String sync_preference_page_conflict_resolve_failed;
 
+    public static String project_sync_title;
+    public static String project_sync_invalid_account;
+    public static String project_sync_share_select;
+    public static String project_sync_share_none;
+    public static String project_sync_share_success;
+    public static String project_sync_share_failed;
+    public static String project_sync_update_select;
+    public static String project_sync_update_none;
+    public static String project_sync_update_success;
+    public static String project_sync_update_unchanged;
+    public static String project_sync_update_server_changed;
+    public static String project_sync_update_conflict;
+    public static String project_sync_update_failed;
+
     public static String create_configuration_dialog_title;
     public static String create_configuration_dialog_name_label;
     public static String create_configuration_dialog_include_label;
