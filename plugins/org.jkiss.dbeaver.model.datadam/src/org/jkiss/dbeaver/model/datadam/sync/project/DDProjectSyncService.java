@@ -23,6 +23,7 @@ import com.dbeaver.datadam.share.api.utils.DDFingerprintUtils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
@@ -39,6 +40,8 @@ import java.util.*;
  * Manages associations between local DBeaver projects and individual DataDam projects.
  */
 public class DDProjectSyncService {
+
+    private static final Log log = Log.getLog(DDProjectSyncService.class);
 
     private final DDShareClient client;
     private final DBPWorkspace workspace;
@@ -81,6 +84,7 @@ public class DDProjectSyncService {
         if (binding == null) {
             throw new DBException("Project is not bound to DataDam: " + project.getName());
         }
+        log.debug("Creating sync snapshot for project '" + project.getName() + "' with local binding " + binding);
         DDSharedProjectRevision serverRevision = getServerRevision(binding);
         Map<String, byte[]> content = getLocalContentAdapter(binding).read(project);
         Map<String, Pair<String, byte[]>> files = new LinkedHashMap<>(content.size());
@@ -93,12 +97,14 @@ public class DDProjectSyncService {
         }
         String configurationFingerprint = DDFingerprintUtils.calculateConfigurationFingerprint(
             binding.remoteProjectId(), fileFingerprints);
-        return new DDProjectSyncSnapshot(
+        DDProjectSyncSnapshot snapshot = new DDProjectSyncSnapshot(
             binding,
             serverRevision,
             new PreparedFiles(files, configurationFingerprint),
             classify(binding.lastSyncedRevision(), serverRevision, configurationFingerprint)
         );
+        log.debug("Created sync snapshot for project '" + project.getName() + "' status result: " + snapshot.change());
+        return snapshot;
     }
 
     @NotNull
@@ -129,6 +135,8 @@ public class DDProjectSyncService {
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DBException {
         try {
+            log.debug("Pushing project '" + project.getName() + "' to " + binding.remoteProjectId() +
+                " with expected server fingerprint " + lastKnownConfigurationFingerprint);
             DDSharedProjectRevision revision = client.pushFiles(
                 binding.remoteProjectId(), preparedFiles, lastKnownConfigurationFingerprint);
             saveBinding(project, binding.remoteProjectId(), revision, binding.unitIds());
@@ -144,6 +152,8 @@ public class DDProjectSyncService {
         @NotNull DDProjectSyncLocalBinding binding,
         @NotNull DDSharedProjectRevision expectedServerRevision
     ) throws DBException {
+        log.debug("Pulling project '" + project.getName() + "' from " + binding.remoteProjectId() +
+            " with expected server revision " + expectedServerRevision);
         DDSharedProjectPullResult result = getPullResult(binding);
         if (!expectedServerRevision.configurationFingerprint().equals(
             result.currentRevision().configurationFingerprint())) {
@@ -158,7 +168,10 @@ public class DDProjectSyncService {
     @NotNull
     private DDSharedProjectPullResult getPullResult(@NotNull DDProjectSyncLocalBinding binding) throws DBException {
         try {
-            return client.pullFiles(binding.remoteProjectId());
+            DDSharedProjectPullResult result = client.pullFiles(binding.remoteProjectId());
+            log.debug("Pulled " + result.files().size() + " files for project " + binding.remoteProjectId() +
+                " at server revision " + result.currentRevision());
+            return result;
         } catch (DDShareException e) {
             throw new DBException("Error pulling DataDam project files", e);
         }
@@ -167,7 +180,9 @@ public class DDProjectSyncService {
     @NotNull
     private DDSharedProjectRevision getServerRevision(@NotNull DDProjectSyncLocalBinding binding) throws DBException {
         try {
-            return client.getCurrentProjectRevision(binding.remoteProjectId());
+            DDSharedProjectRevision revision = client.getCurrentProjectRevision(binding.remoteProjectId());
+            log.debug("Received server revision for project " + binding.remoteProjectId() + ": " + revision);
+            return revision;
         } catch (DDShareException e) {
             throw new DBException("Error reading current DataDam project revision", e);
         }
@@ -186,6 +201,7 @@ public class DDProjectSyncService {
 
     @NotNull
     public DDSharedProject shareProject(@NotNull DBPProject project, @Nullable String description) throws DBException {
+        log.debug("Sharing project '" + project.getName() + "' with DataDam");
         requireUnbound(project);
         DDProjectSyncContentAdapter content = DDProjectSyncContentAdapter.forEnabledUnits();
         if (content.getUnitIds().isEmpty()) {
@@ -195,8 +211,10 @@ public class DDProjectSyncService {
         UUID remoteProjectId = UUID.randomUUID();
         try {
             DDSharedProject remote = client.createProject(remoteProjectId, project.getName(), description);
+
             DDSharedProjectRevision revision = client.getCurrentProjectRevision(remoteProjectId);
             saveBinding(project, remoteProjectId, revision, content.getUnitIds());
+            log.debug("Shared project '" + project.getName() + "' as DataDam project " + remoteProjectId);
             return remote;
         } catch (Exception e) {
             throw new DBException("Error sharing project '" + project.getName() + "' with DataDam", e);
@@ -205,6 +223,7 @@ public class DDProjectSyncService {
 
     @NotNull
     public DBPProject importProject(@NotNull DDSharedProject remote) throws DBException {
+        log.debug("Importing DataDam project '" + remote.name() + "' (" + remote.id() + ")");
         requireRemoteProjectAvailable(remote);
         DBPProject project = null;
         try {
@@ -217,6 +236,7 @@ public class DDProjectSyncService {
             project = workspace.createProject(uniqueProjectName(remote.name()), remote.description());
             content.write(project, pullResult.files());
             saveBinding(project, remote.id(), pullResult.currentRevision(), content.getUnitIds());
+            log.debug("Imported DataDam project " + remote.id() + " as local project '" + project.getName() + "'");
             return project;
         } catch (Exception e) {
             if (project != null) {
@@ -245,23 +265,28 @@ public class DDProjectSyncService {
         @NotNull DDSharedProjectRevision revision,
         @NotNull Set<String> syncUnitIds
     ) throws DBException {
-        bindingStore.save(
-            project,
-            new DDProjectSyncLocalBinding(remoteProjectId, accountId, revision, syncUnitIds));
+        DDProjectSyncLocalBinding binding = new DDProjectSyncLocalBinding(
+            remoteProjectId, accountId, revision, syncUnitIds);
+        bindingStore.save(project, binding);
+        log.debug("Saved sync binding for project '" + project.getName() + "': " + binding);
     }
 
     @NotNull
     private DDProjectSyncContentAdapter getLocalContentAdapter(
         @NotNull DDProjectSyncLocalBinding binding
     ) throws DBException {
-        return DDProjectSyncContentAdapter.forUnitIds(binding.unitIds());
+        DDProjectSyncContentAdapter content = DDProjectSyncContentAdapter.forUnitIds(binding.unitIds());
+        log.debug("Resolved local content adapters for project " + binding.remoteProjectId() + ": " + content.getUnitIds());
+        return content;
     }
 
     @NotNull
     private DDProjectSyncContentAdapter getServerContentAdapter(
         @NotNull Map<String, byte[]> files
     ) throws DBException {
-        return DDProjectSyncContentAdapter.forFiles(files.keySet());
+        DDProjectSyncContentAdapter content = DDProjectSyncContentAdapter.forFiles(files.keySet());
+        log.debug("Resolved server content adapters for " + files.size() + " files: " + content.getUnitIds());
+        return content;
     }
 
     private void requireRemoteProjectAvailable(@NotNull DDSharedProject remote) throws DBException {
@@ -283,14 +308,22 @@ public class DDProjectSyncService {
         @NotNull String configurationFingerprint
     ) {
         boolean localChanged = !lastSyncedRevision.configurationFingerprint().equals(configurationFingerprint);
-        boolean serverChanged = !lastSyncedRevision.configurationFingerprint().equals(serverRevision.configurationFingerprint());
-        if (localChanged && serverChanged) {
-            return DDSyncChange.CONFLICT;
+        String serverFingerprint = serverRevision.configurationFingerprint();
+        boolean serverChanged = !lastSyncedRevision.configurationFingerprint().equals(serverFingerprint);
+        DDSyncChange change;
+        if (configurationFingerprint.equals(serverFingerprint)) {
+            change = serverChanged ? DDSyncChange.SERVER : DDSyncChange.UNCHANGED;
+        } else if (localChanged && serverChanged) {
+            change = DDSyncChange.CONFLICT;
+        } else if (localChanged) {
+            change = DDSyncChange.LOCAL;
+        } else {
+            change = DDSyncChange.SERVER;
         }
-        if (localChanged) {
-            return DDSyncChange.LOCAL;
-        }
-        return serverChanged ? DDSyncChange.SERVER : DDSyncChange.UNCHANGED;
+        log.debug("Classified project sync change as " + change + ": baseline=" +
+            lastSyncedRevision.configurationFingerprint() + ", local=" + configurationFingerprint +
+            ", server=" + serverFingerprint);
+        return change;
     }
 
     @NotNull
