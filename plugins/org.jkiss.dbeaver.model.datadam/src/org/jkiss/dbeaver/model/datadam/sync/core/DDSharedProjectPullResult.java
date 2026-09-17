@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.datadam.sync.core;
 
-package org.jkiss.dbeaver.ui;
+import org.jkiss.code.NotNull;
 
-/**
- * Smart transaction manager
- */
-public interface ISmartTransactionManager {
+import java.util.Map;
 
-    boolean isSmartAutoCommit();
-
-    void setSmartAutoCommit(boolean smartAutoCommit);
-
+public record DDSharedProjectPullResult(
+    @NotNull String configurationFingerprint,
+    @NotNull Map<String, byte[]> files
+) {
 }
