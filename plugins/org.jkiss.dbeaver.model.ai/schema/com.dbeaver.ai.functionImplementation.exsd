@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
+   <annotation>
+      <appInfo>
+         <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.functionImplementation" name="AI function implementations"/>
+      </appInfo>
+      <documentation>
+         Runtime-specific implementations of model-defined AI functions
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <complexType>
+         <sequence>
+            <element ref="implementation" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="implementation">
+      <complexType>
+         <sequence>
+            <element ref="parameterTransformer" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="functionId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Identifier of a function declared through com.dbeaver.ai.function
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>
+                  Class implementing AIFunction. It may be omitted for actions executed by a headless application's client
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunction"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="headless" type="boolean">
+            <annotation>
+               <documentation>
+                  Whether this implementation is used in headless applications. Defaults to false
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="parameterTransformer">
+      <complexType>
+         <attribute name="parameter" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Name of a parameter declared by the referenced function
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Runtime-specific parameter transformer
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="targetSuffix" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Suffix appended to the parameter name when storing the transformed value
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+</schema>
