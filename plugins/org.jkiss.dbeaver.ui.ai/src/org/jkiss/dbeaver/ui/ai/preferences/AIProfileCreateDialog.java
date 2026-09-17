@@ -75,10 +75,12 @@ public class AIProfileCreateDialog extends BaseDialog {
 
         UIUtils.createControlLabel(enginePanel, "Engine");
         Composite engineSelector = new Composite(enginePanel, SWT.NONE);
-        engineSelector.setLayout(GridLayoutFactory.fillDefaults().margins(2, 2).numColumns(2).create());
+        engineSelector.setLayout(GridLayoutFactory.fillDefaults().margins(2, 2).numColumns(3).create());
         engineSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         new CompositeBorderPainter(engineSelector);
 
+        Label engineIcon = new Label(engineSelector, SWT.NONE);
+        engineIcon.setImage(DBeaverIcons.getImage(selectedEngine.getIcon()));
         Label engineName = new Label(engineSelector, SWT.NONE);
         engineName.setText(selectedEngine.getLabel());
         engineName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -116,6 +118,7 @@ public class AIProfileCreateDialog extends BaseDialog {
                 }
                 String oldAutoId = genProfileId(selectedEngine);
                 selectedEngine = engine;
+                engineIcon.setImage(DBeaverIcons.getImage(engine.getIcon()));
                 engineName.setText(engine.getLabel());
                 engineSelector.layout(true, true);
                 if (oldAutoId.equals(profileId)) {
@@ -134,6 +137,7 @@ public class AIProfileCreateDialog extends BaseDialog {
         };
         MouseListener mouseListener = MouseListener.mouseDownAdapter(e -> showEngineMenu.run());
         engineSelector.addMouseListener(mouseListener);
+        engineIcon.addMouseListener(mouseListener);
         engineName.addMouseListener(mouseListener);
         engineArrow.addMouseListener(mouseListener);
         engineSelector.addKeyListener(KeyListener.keyPressedAdapter(e -> {
