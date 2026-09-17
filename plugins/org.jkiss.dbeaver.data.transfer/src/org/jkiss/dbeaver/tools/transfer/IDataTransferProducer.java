@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 /**
  * Data transfer
  */
-public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> extends IDataTransferNode<SETTINGS> {
+public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> extends IDataTransferNode<SETTINGS>, AutoCloseable {
 
     /**
      * Transfer data to consumer
@@ -51,5 +51,9 @@ public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> e
     @NotNull
     default DBCStatistics getStatistics() {
         return new DBCStatistics();
+    }
+
+    @Override
+    default void close() throws DBException {
     }
 }
