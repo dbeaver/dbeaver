@@ -1527,6 +1527,7 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.presentation" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation" name="%page.org.jkiss.dbeaver.preferences.main.resultset.presentation.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.data.keyword.pref.presentation"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.resultset.presentation" id="org.jkiss.dbeaver.preferences.main.resultset.grid" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationGrid" name="%page.org.jkiss.dbeaver.preferences.main.resultset.grid.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
@@ -1542,7 +1543,13 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataviewer" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataViewer" name="%page.org.jkiss.dbeaver.preferences.main.dataviewer.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.data.keyword.pref.data.viewer"/>
         </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ui.editors.data.keyword.pref.presentation" label="%keyword.org.jkiss.dbeaver.ui.editors.data.keyword.pref.presentation.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.data.keyword.pref.data.viewer" label="%keyword.org.jkiss.dbeaver.ui.editors.data.keyword.pref.data.viewer.label"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
