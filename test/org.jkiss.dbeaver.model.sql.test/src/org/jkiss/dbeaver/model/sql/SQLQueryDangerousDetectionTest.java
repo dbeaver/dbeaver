@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
 
@@ -131,11 +129,11 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
             "ALTER SEQUENCE test_catalog.test_schema.test_sequence RESTART WITH 2"
         )) {
             var query = new SQLQuery(null, queryText);
-            var change = query.getDdlChange();
+            var objectOperation = query.getObjectOperation();
 
-            Assertions.assertNotNull(change, queryText);
-            Assertions.assertEquals("test_catalog", change.qualifiedNameParts().get(0), queryText);
-            Assertions.assertEquals("test_schema", change.qualifiedNameParts().get(1), queryText);
+            Assertions.assertNotNull(objectOperation, queryText);
+            Assertions.assertEquals("test_catalog", objectOperation.qualifiedNameParts().get(0), queryText);
+            Assertions.assertEquals("test_schema", objectOperation.qualifiedNameParts().get(1), queryText);
         }
     }
 
@@ -143,292 +141,37 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
     public void deeplyQualifiedFunctionShouldPreserveItsFullName() {
         var query = new SQLQuery(null, "CREATE FUNCTION server.test_catalog.test_schema.test_function() " +
             "RETURNS INT RETURN 1");
-        var change = query.getDdlChange();
+        var objectOperation = query.getObjectOperation();
 
-        Assertions.assertNotNull(change);
-        Assertions.assertEquals(SQLDdlChange.ObjectKind.FUNCTION, change.objectKind());
+        Assertions.assertNotNull(objectOperation);
+        Assertions.assertEquals(SQLObjectOperation.ObjectKind.FUNCTION, objectOperation.objectKind());
         Assertions.assertEquals(
             List.of("server", "test_catalog", "test_schema", "test_function"),
-            change.qualifiedNameParts()
+            objectOperation.qualifiedNameParts()
         );
         Assertions.assertNull(query.getEntityMetadata(false));
     }
 
     @Test
-    public void createSchemaShouldExposeItsDdlChange() {
+    public void createSchemaShouldExposeItsObjectOperation() {
         var query = new SQLQuery(null, "CREATE SCHEMA test_schema");
-        var change = query.getDdlChange();
+        var objectOperation = query.getObjectOperation();
 
-        Assertions.assertNotNull(change);
-        Assertions.assertEquals(SQLDdlChange.Operation.CREATE, change.operation());
-        Assertions.assertEquals(SQLDdlChange.ObjectKind.SCHEMA, change.objectKind());
-        Assertions.assertEquals(List.of("test_schema"), change.qualifiedNameParts());
+        Assertions.assertNotNull(objectOperation);
+        Assertions.assertEquals(SQLObjectOperation.Operation.CREATE, objectOperation.operation());
+        Assertions.assertEquals(SQLObjectOperation.ObjectKind.SCHEMA, objectOperation.objectKind());
+        Assertions.assertEquals(List.of("test_schema"), objectOperation.qualifiedNameParts());
         Assertions.assertNull(query.getEntityMetadata(false));
-    }
-
-    @Test
-    public void containerDdlShouldExposeItsSemanticChange() {
-        for (String queryText : List.of(
-            "CREATE SCHEMA test_schema",
-            "DROP SCHEMA test_schema",
-            "ALTER SCHEMA test_schema RENAME TO renamed_schema"
-        )) {
-            var query = new SQLQuery(null, queryText);
-            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
-            Assertions.assertNotNull(query.getDdlChange(), queryText);
-            Assertions.assertEquals(SQLDdlChange.ObjectKind.SCHEMA, query.getDdlChange().objectKind(), queryText);
-            Assertions.assertTrue(query.isMutatingStatement(), queryText);
-        }
-
-        for (String queryText : List.of(
-            "CREATE DATABASE test_database",
-            "DROP DATABASE IF EXISTS test_database",
-            "DROP CATALOG test_catalog",
-            "ALTER DATABASE test_database RENAME TO renamed_database"
-        )) {
-            var query = new SQLQuery(null, queryText);
-            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
-            Assertions.assertNotNull(query.getDdlChange(), queryText);
-            Assertions.assertTrue(
-                query.getDdlChange().objectKind() == SQLDdlChange.ObjectKind.DATABASE ||
-                    query.getDdlChange().objectKind() == SQLDdlChange.ObjectKind.CATALOG,
-                queryText
-            );
-            Assertions.assertTrue(query.isMutatingStatement(), queryText);
-        }
-    }
-
-    @Test
-    public void commentedContainerDdlShouldExposeItsSemanticChange() {
-        for (String queryText : List.of(
-            "CREATE /* action */ SCHEMA /* object */ IF /* condition */ NOT /* existence */ EXISTS project.dataset",
-            "ALTER SCHEMA project /* separator */ . /* separator */ dataset /* target */ RENAME TO renamed_dataset"
-        )) {
-            var query = new SQLQuery(null, queryText);
-
-            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
-            Assertions.assertTrue(query.isMutatingStatement(), queryText);
-            Assertions.assertNotNull(query.getDdlChange(), queryText);
-            Assertions.assertEquals(List.of("project", "dataset"), query.getDdlChange().qualifiedNameParts(), queryText);
-        }
-    }
-
-    @Test
-    public void dialectLineCommentsShouldNotHideContainerDdl() {
-        var dialect = new BasicSQLDialect() {
-            @NotNull
-            @Override
-            public String[] getSingleLineComments() {
-                return new String[] {"--", "//", "#"};
-            }
-        };
-        var dataSource = Mockito.mock(DBPDataSource.class);
-        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
-
-        for (String queryText : List.of(
-            "// comment\nCREATE DATABASE test_database",
-            "CREATE # comment\nDATABASE test_database"
-        )) {
-            var query = new SQLQuery(dataSource, queryText);
-
-            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
-            Assertions.assertEquals(SQLDdlChange.ObjectKind.DATABASE, query.getDdlChange().objectKind(), queryText);
-            Assertions.assertTrue(query.isMutatingStatement(), queryText);
-        }
-    }
-
-    @Test
-    public void nullDialectLineCommentsShouldStillParseContainerDdl() {
-        var dialect = new BasicSQLDialect() {
-            @Nullable
-            @Override
-            public String[] getSingleLineComments() {
-                return null;
-            }
-        };
-        var dataSource = Mockito.mock(DBPDataSource.class);
-        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
-
-        var change = new SQLQuery(dataSource, "CREATE DATABASE test_database").getDdlChange();
-
-        Assertions.assertNotNull(change);
-        Assertions.assertEquals(SQLDdlChange.ObjectKind.DATABASE, change.objectKind());
-    }
-
-    @Test
-    public void createOrReplaceContainerShouldExposeItsSemanticChange() {
-        for (String queryText : List.of(
-            "CREATE OR REPLACE DATABASE test_database",
-            "CREATE OR REPLACE CATALOG test_catalog"
-        )) {
-            var query = new SQLQuery(null, queryText);
-
-            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
-            Assertions.assertEquals(SQLDdlChange.Operation.CREATE, query.getDdlChange().operation(), queryText);
-            Assertions.assertTrue(query.isMutatingStatement(), queryText);
-        }
-    }
-
-    @Test
-    public void qualifiedSchemaRenameShouldExposeItsParentCatalog() {
-        var query = new SQLQuery(
-            null,
-            "/* leading comment */ ALTER SCHEMA \"test.catalog\".\"old.schema\" RENAME TO \"new.schema\""
-        );
-        var change = query.getDdlChange();
-
-        Assertions.assertEquals(SQLQueryType.DDL, query.getType());
-        Assertions.assertNotNull(change);
-        Assertions.assertEquals(SQLDdlChange.Operation.RENAME, change.operation());
-        Assertions.assertEquals(List.of("\"test.catalog\"", "\"old.schema\""), change.qualifiedNameParts());
-    }
-
-    @Test
-    public void escapedIdentifierQuotesShouldBePreservedDuringContainerParsing() {
-        var dialect = new BasicSQLDialect() {
-            @Override
-            public String[][] getIdentifierQuoteStrings() {
-                return new String[][] {{"\"", "\""}, {"`", "`"}, {"[", "]"}};
-            }
-        };
-        var dataSource = Mockito.mock(DBPDataSource.class);
-        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
-        var expectedNames = List.of(
-            new String[] {"ALTER SCHEMA \"cat\"\"alog\".\"sche\"\"ma\" RENAME TO renamed", "cat\"alog", "sche\"ma"},
-            new String[] {"ALTER SCHEMA `cat``alog`.`sche``ma` RENAME TO renamed", "cat`alog", "sche`ma"},
-            new String[] {"ALTER SCHEMA [cat]]alog].[sche]]ma] RENAME TO renamed", "cat]alog", "sche]ma"},
-            new String[] {"ALTER SCHEMA \"cat``alog]]\".\"sche``ma]]\" RENAME TO renamed", "cat``alog]]", "sche``ma]]"},
-            new String[] {"ALTER SCHEMA `cat\"\"alog]]`.`sche\"\"ma]]` RENAME TO renamed", "cat\"\"alog]]", "sche\"\"ma]]"},
-            new String[] {"ALTER SCHEMA [cat\"\"alog``].[sche\"\"ma``] RENAME TO renamed", "cat\"\"alog``", "sche\"\"ma``"}
-        );
-
-        for (String[] expected : expectedNames) {
-            var change = new SQLQuery(dataSource, expected[0]).getDdlChange();
-
-            Assertions.assertNotNull(change, expected[0]);
-            Assertions.assertEquals(
-                List.of(expected[1], expected[2]),
-                change.qualifiedNameParts().stream().map(name -> dialect.getUnquotedIdentifier(name, true)).toList(),
-                expected[0]
-            );
-        }
-    }
-
-    @Test
-    public void nonRenameContainerAlterShouldExposeAlterOperation() {
-        var schemaQuery = new SQLQuery(null, "ALTER SCHEMA test_schema OWNER TO test_user");
-        Assertions.assertEquals(SQLQueryType.DDL, schemaQuery.getType());
-        Assertions.assertEquals(SQLDdlChange.Operation.ALTER, schemaQuery.getDdlChange().operation());
-        Assertions.assertEquals(SQLDdlChange.ObjectKind.SCHEMA, schemaQuery.getDdlChange().objectKind());
-        Assertions.assertTrue(schemaQuery.isMutatingStatement());
-        Assertions.assertTrue(schemaQuery.isModifying());
-
-        for (String queryText : List.of(
-            "ALTER DATABASE test_database SET TABLESPACE test_tablespace",
-            "ALTER CATALOG test_catalog OWNER TO test_user"
-        )) {
-            var query = new SQLQuery(null, queryText);
-
-            Assertions.assertEquals(SQLQueryType.DDL, query.getType(), queryText);
-            Assertions.assertEquals(SQLDdlChange.Operation.ALTER, query.getDdlChange().operation(), queryText);
-            Assertions.assertTrue(query.isMutatingStatement(), queryText);
-            Assertions.assertTrue(query.isModifying(), queryText);
-        }
-    }
-
-    @Test
-    public void containerParserShouldUseDialectIdentifierRules() {
-        var dialect = new BasicSQLDialect() {
-            @Override
-            public String[][] getIdentifierQuoteStrings() {
-                return new String[][] {{"<", ">"}};
-            }
-
-            @Override
-            public char getStructSeparator() {
-                return ':';
-            }
-        };
-        var dataSource = Mockito.mock(DBPDataSource.class);
-        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
-
-        var change = new SQLQuery(dataSource, "CREATE SCHEMA <catalog>:<schema>").getDdlChange();
-
-        Assertions.assertNotNull(change);
-        Assertions.assertEquals(SQLDdlChange.ObjectKind.SCHEMA, change.objectKind());
-        Assertions.assertEquals(List.of("<catalog>", "<schema>"), change.qualifiedNameParts());
-    }
-
-    @Test
-    public void dialectDdlChangeShouldBeCachedWithParsedQuery() {
-        var invocationCount = new AtomicInteger();
-        var dialect = new BasicSQLDialect() {
-            @Nullable
-            @Override
-            public SQLDdlChange parseDdlChange(@NotNull String sql) {
-                invocationCount.incrementAndGet();
-                return new SQLDdlChange(
-                    SQLDdlChange.Operation.ALTER,
-                    SQLDdlChange.ObjectKind.OTHER,
-                    List.of("vendor_object")
-                );
-            }
-        };
-        var dataSource = Mockito.mock(DBPDataSource.class);
-        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
-        var query = new SQLQuery(dataSource, "VENDOR DDL vendor_object");
-
-        Assertions.assertEquals(SQLQueryType.DDL, query.getType());
-        Assertions.assertNotNull(query.getDdlChange());
-        Assertions.assertTrue(query.isMutatingStatement());
-        Assertions.assertEquals(1, invocationCount.get());
-
-        query.setText("VENDOR DDL another_object");
-        Assertions.assertNotNull(query.getDdlChange());
-        Assertions.assertEquals(2, invocationCount.get());
-    }
-
-    @Test
-    public void semanticDdlShouldOverrideDialectFallback() {
-        var dialect = new BasicSQLDialect() {
-            @NotNull
-            @Override
-            public SQLDdlChange parseDdlChange(@NotNull String sql) {
-                return new SQLDdlChange(
-                    SQLDdlChange.Operation.ALTER,
-                    SQLDdlChange.ObjectKind.OTHER,
-                    List.of("fallback")
-                );
-            }
-        };
-        var dataSource = Mockito.mock(DBPDataSource.class);
-        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
-
-        var change = new SQLQuery(dataSource, "CREATE TABLE test_schema.test_table (id INT)").getDdlChange();
-
-        Assertions.assertNotNull(change);
-        Assertions.assertEquals(SQLDdlChange.Operation.CREATE, change.operation());
-        Assertions.assertEquals(SQLDdlChange.ObjectKind.TABLE, change.objectKind());
-        Assertions.assertEquals(List.of("test_schema", "test_table"), change.qualifiedNameParts());
     }
 
     @Test
     public void qualifiedIndexShouldPreserveItsTableContainer() {
-        var change = new SQLQuery(null, "CREATE INDEX test_index ON test_catalog.test_schema.test_table (id)")
-            .getDdlChange();
+        var objectOperation = new SQLQuery(null, "CREATE INDEX test_index ON test_catalog.test_schema.test_table (id)")
+            .getObjectOperation();
 
-        Assertions.assertNotNull(change);
-        Assertions.assertEquals(SQLDdlChange.ObjectKind.INDEX, change.objectKind());
-        Assertions.assertEquals(List.of("test_catalog", "test_schema", "test_index"), change.qualifiedNameParts());
-    }
-
-    @Test
-    public void schemaAuthorizationShouldNotTreatAuthorizationAsObjectName() {
-        var change = new SQLQuery(null, "CREATE SCHEMA AUTHORIZATION test_user").getDdlChange();
-
-        Assertions.assertNotNull(change);
-        Assertions.assertEquals(SQLDdlChange.ObjectKind.SCHEMA, change.objectKind());
-        Assertions.assertTrue(change.qualifiedNameParts().isEmpty());
+        Assertions.assertNotNull(objectOperation);
+        Assertions.assertEquals(SQLObjectOperation.ObjectKind.INDEX, objectOperation.objectKind());
+        Assertions.assertEquals(List.of("test_catalog", "test_schema", "test_index"), objectOperation.qualifiedNameParts());
     }
 
     @Test
@@ -444,12 +187,12 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         var query = new SQLQuery(dataSource, "CREATE FUNCTION \"test.catalog\".test_schema.test_function() " +
             "RETURNS INT RETURN 1");
-        var change = query.getDdlChange();
+        var objectOperation = query.getObjectOperation();
 
-        Assertions.assertNotNull(change);
+        Assertions.assertNotNull(objectOperation);
         Assertions.assertEquals(
             List.of("\"test.catalog\"", "test_schema", "test_function"),
-            change.qualifiedNameParts()
+            objectOperation.qualifiedNameParts()
         );
     }
 

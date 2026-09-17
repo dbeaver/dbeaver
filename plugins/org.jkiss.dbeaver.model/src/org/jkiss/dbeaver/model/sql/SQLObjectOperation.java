@@ -21,14 +21,14 @@ import org.jkiss.code.NotNull;
 import java.util.List;
 
 /**
- * Semantic description of an object changed by a DDL statement.
+ * Semantic description of an operation on a database object.
  */
-public record SQLDdlChange(
+public record SQLObjectOperation(
     @NotNull Operation operation,
     @NotNull ObjectKind objectKind,
     @NotNull List<String> qualifiedNameParts
 ) {
-    public SQLDdlChange {
+    public SQLObjectOperation {
         qualifiedNameParts = List.copyOf(qualifiedNameParts);
     }
 

@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDdlChange;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLObjectOperation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -57,28 +57,28 @@ final class SQLMetadataRefreshCoordinator {
     static RefreshTarget createTarget(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull SQLDdlChange change
+        @NotNull SQLObjectOperation operation
     ) throws DBException {
         SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
-        List<String> nameParts = change.qualifiedNameParts().stream()
+        List<String> nameParts = operation.qualifiedNameParts().stream()
             .map(name -> DBUtils.getUnQuotedNormalizedIdentifier(dialect, name))
             .toList();
         DBCExecutionContextDefaults<?, ?> defaults = executionContext.getContextDefaults();
         DBSCatalog defaultCatalog = defaults == null ? null : defaults.getDefaultCatalog();
         DBSSchema defaultSchema = defaults == null ? null : defaults.getDefaultSchema();
 
-        if (change.objectKind() == SQLDdlChange.ObjectKind.DATABASE ||
-            change.objectKind() == SQLDdlChange.ObjectKind.CATALOG) {
-            if (change.operation() != SQLDdlChange.Operation.ALTER) {
+        if (operation.objectKind() == SQLObjectOperation.ObjectKind.DATABASE ||
+            operation.objectKind() == SQLObjectOperation.ObjectKind.CATALOG) {
+            if (operation.operation() != SQLObjectOperation.Operation.ALTER) {
                 return new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null);
             }
             return nameParts.isEmpty() ? new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null) :
                 new RefreshTarget(RefreshLevel.CATALOG, nameParts.getLast(), null);
         }
-        if (change.objectKind() == SQLDdlChange.ObjectKind.SCHEMA) {
+        if (operation.objectKind() == SQLObjectOperation.ObjectKind.SCHEMA) {
             String catalogName = nameParts.size() > 1 ? nameParts.get(nameParts.size() - 2) :
                 defaultCatalog == null ? null : defaultCatalog.getName();
-            if (change.operation() != SQLDdlChange.Operation.ALTER) {
+            if (operation.operation() != SQLObjectOperation.Operation.ALTER) {
                 return new RefreshTarget(
                     catalogName == null ? RefreshLevel.DATA_SOURCE : RefreshLevel.CATALOG,
                     catalogName,

@@ -90,7 +90,7 @@ public class SQLQuery implements SQLScriptElement {
     @NotNull
     private SQLQueryType type;
     private Statement statement;
-    private SQLDdlChange ddlChange;
+    private SQLObjectOperation objectOperation;
     private SingleTableMeta singleTableMeta, rawSingleTableMetadata;
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
@@ -153,24 +153,6 @@ public class SQLQuery implements SQLScriptElement {
             return;
         }
         parsed = true;
-        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect();
-        SQLDdlChange fallbackDdlChange;
-        Throwable fallbackParseError = null;
-        try {
-            fallbackDdlChange = dialect.parseDdlChange(text);
-        } catch (Throwable e) {
-            fallbackParseError = e;
-            fallbackDdlChange = null;
-        }
-        if (fallbackDdlChange == null) {
-            try {
-                fallbackDdlChange = SQLDdlParser.parse(dialect, text);
-            } catch (Throwable e) {
-                if (fallbackParseError == null) {
-                    fallbackParseError = e;
-                }
-            }
-        }
         try {
             if (CommonUtils.isEmpty(text)) {
                 this.statement = null;
@@ -231,50 +213,50 @@ public class SQLQuery implements SQLScriptElement {
             } else if (statement instanceof Alter alter) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(alter.getTable());
-                setDdlChange(SQLDdlChange.Operation.ALTER, SQLDdlChange.ObjectKind.TABLE, alter.getTable());
+                setObjectOperation(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.TABLE, alter.getTable());
             } else if (statement instanceof CreateTable createTable) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(createTable.getTable());
-                setDdlChange(SQLDdlChange.Operation.CREATE, SQLDdlChange.ObjectKind.TABLE, createTable.getTable());
+                setObjectOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.TABLE, createTable.getTable());
             } else if (statement instanceof CreateView createView) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(createView.getView());
-                setDdlChange(SQLDdlChange.Operation.CREATE, SQLDdlChange.ObjectKind.VIEW, createView.getView());
+                setObjectOperation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.VIEW, createView.getView());
             } else if (statement instanceof CreateIndex createIndex) {
                 type = SQLQueryType.DDL;
-                setDdlChange(
-                    SQLDdlChange.Operation.CREATE,
-                    SQLDdlChange.ObjectKind.INDEX,
+                setObjectOperation(
+                    SQLObjectOperation.Operation.CREATE,
+                    SQLObjectOperation.ObjectKind.INDEX,
                     getIndexNameParts(createIndex)
                 );
             } else if (statement instanceof Drop drop) {
                 type = SQLQueryType.DDL;
-                SQLDdlChange.ObjectKind objectKind = getDdlObjectKind(drop.getType());
-                if (objectKind == SQLDdlChange.ObjectKind.TABLE || objectKind == SQLDdlChange.ObjectKind.VIEW) {
+                SQLObjectOperation.ObjectKind objectKind = getDdlObjectKind(drop.getType());
+                if (objectKind == SQLObjectOperation.ObjectKind.TABLE || objectKind == SQLObjectOperation.ObjectKind.VIEW) {
                     fillSingleSource(drop.getName());
                 }
-                setDdlChange(SQLDdlChange.Operation.DROP, objectKind, getNameParts(drop.getName()));
+                setObjectOperation(SQLObjectOperation.Operation.DROP, objectKind, getNameParts(drop.getName()));
             } else if (statement instanceof CreateFunction createFunction) {
                 type = SQLQueryType.DDL;
-                setDdlChange(
-                    SQLDdlChange.Operation.CREATE,
-                    SQLDdlChange.ObjectKind.FUNCTION,
+                setObjectOperation(
+                    SQLObjectOperation.Operation.CREATE,
+                    SQLObjectOperation.ObjectKind.FUNCTION,
                     getFunctionalNameParts(createFunction)
                 );
             } else if (statement instanceof CreateProcedure createProcedure) {
                 type = SQLQueryType.DDL;
-                setDdlChange(
-                    SQLDdlChange.Operation.CREATE,
-                    SQLDdlChange.ObjectKind.PROCEDURE,
+                setObjectOperation(
+                    SQLObjectOperation.Operation.CREATE,
+                    SQLObjectOperation.ObjectKind.PROCEDURE,
                     getFunctionalNameParts(createProcedure)
                 );
             } else if (statement instanceof CreateSequence createSequence) {
                 type = SQLQueryType.DDL;
                 var sequence = createSequence.getSequence();
                 if (sequence != null) {
-                    setDdlChange(
-                        SQLDdlChange.Operation.CREATE,
-                        SQLDdlChange.ObjectKind.SEQUENCE,
+                    setObjectOperation(
+                        SQLObjectOperation.Operation.CREATE,
+                        SQLObjectOperation.ObjectKind.SEQUENCE,
                         getNameParts(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName())
                     );
                 }
@@ -282,31 +264,31 @@ public class SQLQuery implements SQLScriptElement {
                 type = SQLQueryType.DDL;
                 var synonym = createSynonym.getSynonym();
                 if (synonym != null) {
-                    setDdlChange(
-                        SQLDdlChange.Operation.CREATE,
-                        SQLDdlChange.ObjectKind.SYNONYM,
+                    setObjectOperation(
+                        SQLObjectOperation.Operation.CREATE,
+                        SQLObjectOperation.ObjectKind.SYNONYM,
                         getNameParts(synonym.getDatabase(), synonym.getSchemaName(), synonym.getName())
                     );
                 }
             } else if (statement instanceof AlterView alterView) {
                 type = SQLQueryType.DDL;
                 fillSingleSource(alterView.getView());
-                setDdlChange(SQLDdlChange.Operation.ALTER, SQLDdlChange.ObjectKind.VIEW, alterView.getView());
+                setObjectOperation(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.VIEW, alterView.getView());
             } else if (statement instanceof AlterSequence alterSequence) {
                 type = SQLQueryType.DDL;
                 var sequence = alterSequence.getSequence();
                 if (sequence != null) {
-                    setDdlChange(
-                        SQLDdlChange.Operation.ALTER,
-                        SQLDdlChange.ObjectKind.SEQUENCE,
+                    setObjectOperation(
+                        SQLObjectOperation.Operation.ALTER,
+                        SQLObjectOperation.ObjectKind.SEQUENCE,
                         getNameParts(sequence.getDatabase(), sequence.getSchemaName(), sequence.getName())
                     );
                 }
             } else if (statement instanceof CreateSchema createSchema) {
                 type = SQLQueryType.DDL;
-                setDdlChange(
-                    SQLDdlChange.Operation.CREATE,
-                    SQLDdlChange.ObjectKind.SCHEMA,
+                setObjectOperation(
+                    SQLObjectOperation.Operation.CREATE,
+                    SQLObjectOperation.ObjectKind.SCHEMA,
                     getNameParts(createSchema.getSchemaName())
                 );
             } else if (statement instanceof Merge) {
@@ -316,19 +298,10 @@ public class SQLQuery implements SQLScriptElement {
             } else if (statement instanceof RollbackStatement) {
                 type = SQLQueryType.ROLLBACK;
             } else {
-                ddlChange = fallbackDdlChange;
-                if (fallbackDdlChange == null) {
-                    type = SQLQueryType.UNKNOWN;
-                    parseError = fallbackParseError;
-                } else {
-                    type = SQLQueryType.DDL;
-                }
+                type = SQLQueryType.UNKNOWN;
             }
         } catch (Throwable e) {
-            if (ddlChange == null) {
-                ddlChange = fallbackDdlChange;
-            }
-            if (ddlChange == null) {
+            if (objectOperation == null) {
                 this.type = SQLQueryType.UNKNOWN;
             } else {
                 this.type = SQLQueryType.DDL;
@@ -380,21 +353,21 @@ public class SQLQuery implements SQLScriptElement {
         }
     }
 
-    private void setDdlChange(
-        @NotNull SQLDdlChange.Operation operation,
-        @NotNull SQLDdlChange.ObjectKind objectKind,
+    private void setObjectOperation(
+        @NotNull SQLObjectOperation.Operation operation,
+        @NotNull SQLObjectOperation.ObjectKind objectKind,
         @Nullable Table table
     ) {
-        setDdlChange(operation, objectKind, getNameParts(table));
+        setObjectOperation(operation, objectKind, getNameParts(table));
     }
 
-    private void setDdlChange(
-        @NotNull SQLDdlChange.Operation operation,
-        @NotNull SQLDdlChange.ObjectKind objectKind,
+    private void setObjectOperation(
+        @NotNull SQLObjectOperation.Operation operation,
+        @NotNull SQLObjectOperation.ObjectKind objectKind,
         @NotNull List<String> nameParts
     ) {
         if (!nameParts.isEmpty()) {
-            ddlChange = new SQLDdlChange(operation, objectKind, nameParts);
+            objectOperation = new SQLObjectOperation(operation, objectKind, nameParts);
         }
     }
 
@@ -467,15 +440,15 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     @NotNull
-    private static SQLDdlChange.ObjectKind getDdlObjectKind(@Nullable String type) {
+    private static SQLObjectOperation.ObjectKind getDdlObjectKind(@Nullable String type) {
         if (type != null) {
             try {
-                return SQLDdlChange.ObjectKind.valueOf(type.toUpperCase(java.util.Locale.ENGLISH));
+                return SQLObjectOperation.ObjectKind.valueOf(type.toUpperCase(java.util.Locale.ENGLISH));
             } catch (IllegalArgumentException ignored) {
-                // Vendor-specific kinds remain valid DDL changes.
+                // Vendor-specific kinds remain valid object operations.
             }
         }
-        return SQLDdlChange.ObjectKind.OTHER;
+        return SQLObjectOperation.ObjectKind.OTHER;
     }
 
     SingleTableMeta createTableMetaData(Table fromItem) {
@@ -671,9 +644,9 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     @Nullable
-    public SQLDdlChange getDdlChange() {
+    public SQLObjectOperation getObjectOperation() {
         parseQuery();
-        return ddlChange;
+        return objectOperation;
     }
 
     public void setParameters(@Nullable List<SQLQueryParameter> parameters) {
@@ -737,7 +710,7 @@ public class SQLQuery implements SQLScriptElement {
 
     public boolean isDropDangerous() {
         parseQuery();
-        return ddlChange != null && ddlChange.operation() == SQLDdlChange.Operation.DROP || statement != null &&
+        return objectOperation != null && objectOperation.operation() == SQLObjectOperation.Operation.DROP || statement != null &&
             statement instanceof Drop dropStatement &&
             dropStatement.getName() != null
             && dropStatement.getType() != null;
@@ -761,7 +734,7 @@ public class SQLQuery implements SQLScriptElement {
             visitor.getTables(statement);
             return visitor.isMutating();
         }
-        return ddlChange != null || statement != null &&
+        return objectOperation != null || statement != null &&
             (statement instanceof Drop || statement instanceof Delete || statement instanceof Update ||
             statement instanceof Insert || statement instanceof CreateTable || statement instanceof CreateIndex ||
             statement instanceof CreateView || statement instanceof CreateFunction || statement instanceof CreateProcedure ||
@@ -775,7 +748,7 @@ public class SQLQuery implements SQLScriptElement {
         parseError = null;
         type = SQLQueryType.UNKNOWN;
         statement = null;
-        ddlChange = null;
+        objectOperation = null;
         singleTableMeta = null;
         rawSingleTableMetadata = null;
         selectItems = null;

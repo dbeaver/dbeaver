@@ -543,15 +543,6 @@ public interface SQLDialect {
     @NotNull
     SQLTokenPredicateSet getSkipTokenPredicates();
 
-    /**
-     * Describes a DDL statement that is not supported by the common semantic parser.
-     * Dialects may override this method for vendor-specific grammar.
-     */
-    @Nullable
-    default SQLDdlChange parseDdlChange(@NotNull String sql) {
-        return null;
-    }
-
     default EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
         return EnumSet.of(
             ProjectionAliasVisibilityScope.WHERE,

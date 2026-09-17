@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ options {
 @header {
     /*
      * DBeaver - Universal Database Manager
-     * Copyright (C) 2010-2024 DBeaver Corp and others
+     * Copyright (C) 2010-2026 DBeaver Corp and others
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
      * you may not use this file except in compliance with the License.
@@ -342,10 +342,12 @@ orderingSpecification: (ASC|DESC);
 
 // schema definition
 sqlSchemaStatement: schemaDefinition|
-    createTableStatement|createViewStatement|alterTableStatement|
-    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement;
-schemaDefinition: CREATE SCHEMA (IF NOT EXISTS)? schemaNameClause schemaCharacterSetSpecification? schemaElement*;
-schemaNameClause: schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier;
+    createCatalogDatabaseStatement|alterContainerStatement|dropCatalogDatabaseStatement|
+    createTableStatement|createViewStatement|createIndexStatement|alterTableStatement|
+    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropIndexStatement|dropCharacterSetStatement|
+    createNamedObjectStatement|alterNamedObjectStatement|dropNamedObjectStatement|renameNamedObjectStatement;
+schemaDefinition: CREATE (OR REPLACE)? SCHEMA (IF NOT EXISTS)? schemaNameClause schemaCharacterSetSpecification? schemaElement*;
+schemaNameClause: AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier|schemaName;
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
@@ -372,14 +374,34 @@ createTableTail: anyUnexpected??;
 //        PARTITION|ON|FOR
 //    ))|(LeftParen anyUnexpected* RightParen))+;
 
-createViewStatement: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
+createViewStatement: CREATE (OR REPLACE)? MATERIALIZED? VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
 
 // schema ddl
-dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
+createIndexStatement: CREATE (OR REPLACE)? UNIQUE? INDEX (IF NOT EXISTS)? qualifiedName ON tableName ddlStatementTail?;
+createNamedObjectStatement: CREATE (OR REPLACE)? createObjectKind (IF NOT EXISTS)? qualifiedName ddlStatementTail?;
+createObjectKind: FUNCTION|PROCEDURE|SEQUENCE|SYNONYM;
+alterNamedObjectStatement: ALTER alterObjectKind ifExistsSpec? qualifiedName ddlStatementTail;
+alterObjectKind: VIEW|MATERIALIZED VIEW|INDEX|FUNCTION|PROCEDURE|SEQUENCE|SYNONYM;
+dropIndexStatement: DROP INDEX ifExistsSpec? qualifiedName (ON tableName)? ddlStatementTail?;
+dropNamedObjectStatement: DROP dropObjectKind ifExistsSpec? qualifiedName ddlStatementTail?;
+dropObjectKind: FUNCTION|SEQUENCE|SYNONYM|ROLE|MATERIALIZED VIEW|identifier;
+renameNamedObjectStatement: RENAME renameObjectKind qualifiedName TO qualifiedName ddlStatementTail?;
+renameObjectKind: TABLE|VIEW|INDEX|SCHEMA|DATABASE|CATALOG|FUNCTION|PROCEDURE|SEQUENCE|SYNONYM|identifier;
+ddlStatementTail: (~Semicolon)+;
+createCatalogDatabaseStatement: CREATE (OR REPLACE)? containerKind (IF NOT EXISTS)? qualifiedName containerStatementTail?;
+alterContainerStatement: ALTER alterContainerKind ifExistsSpec? qualifiedName alterContainerAction;
+alterContainerAction: renameContainerAction|nonRenameContainerTail;
+renameContainerAction: RENAME TO qualifiedName containerStatementTail?;
+nonRenameContainerTail: ~(RENAME|Semicolon) (~Semicolon)*;
+dropCatalogDatabaseStatement: DROP containerKind ifExistsSpec? qualifiedName containerStatementTail?;
+containerKind: DATABASE|CATALOG;
+alterContainerKind: SCHEMA|DATABASE|CATALOG;
+containerStatementTail: (~Semicolon)+;
+dropSchemaStatement: DROP SCHEMA ifExistsSpec? schemaName dropBehaviour?;
 dropBehaviour: (CASCADE|RESTRICT);
-alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? (tableName (alterTableAction (Comma alterTableAction)*)?)?;
+alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? ONLY? (tableName (alterTableAction (Comma alterTableAction)*)?)?;
 alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|anyWordsWithProperty;
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
 renameColumnDefinition: RENAME (COLUMN)? columnName TO identifier;
@@ -392,7 +414,7 @@ addTableConstraintDefinition: ADD tableConstraintDefinition;
 dropTableConstraintDefinition: DROP CONSTRAINT constraintName dropBehaviour;
 dropTableStatement: DROP TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
 dropViewStatement: DROP VIEW ifExistsSpec?  (tableName (Comma tableName)*)? dropBehaviour?;
-dropProcedureStatement: DROP PROCEDURE ifExistsSpec? qualifiedName dropBehaviour?;
+dropProcedureStatement: DROP PROCEDURE ifExistsSpec? qualifiedName ddlStatementTail?;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 ifExistsSpec: IF EXISTS ;
 
@@ -466,11 +488,12 @@ tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
 
 nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE | RIGHT | LEFT |
-    DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
+    DATE | DATABASE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
     ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
     CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
     EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
     SESSION | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
-    VIEW | WORK | WRITE | ARRAY | REPLACE | TOP | PERCENT | TIES | IN
+    VIEW | WORK | WRITE | ARRAY | REPLACE | TOP | PERCENT | TIES | IN |
+    INDEX | MATERIALIZED | ROLE | SEQUENCE | SYNONYM
 ;

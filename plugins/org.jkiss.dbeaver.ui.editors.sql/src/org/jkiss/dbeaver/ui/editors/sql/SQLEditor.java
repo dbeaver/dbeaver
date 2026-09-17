@@ -79,6 +79,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.semantics.SQLObjectOperationRecognizer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -3098,7 +3099,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (dataSourceContainer.isConnectionReadOnly() &&
-            queries.stream().anyMatch(q -> (q instanceof SQLQuery sqlQuery && sqlQuery.isMutatingStatement()))
+            queries.stream().anyMatch(q -> q instanceof SQLQuery sqlQuery &&
+                (sqlQuery.isMutatingStatement() || isDDL(sqlQuery)))
         ) {
             DBWorkbench.getPlatformUI().showError(
                 SQLEditorMessages.editors_sql_error_cant_execute_query_title,
@@ -3263,8 +3265,25 @@ public class SQLEditor extends SQLEditorBase implements
             .stream()
             .filter(q -> q instanceof SQLQuery)
             .map(q -> (SQLQuery) q)
-            .filter(SQLQuery::isDropDangerous)
+            .filter(query -> query.isDropDangerous() || isDropOperation(recognizeObjectOperation(query)))
             .toList();
+    }
+
+    private static boolean isDropOperation(@Nullable SQLObjectOperation operation) {
+        return operation != null && operation.operation() == SQLObjectOperation.Operation.DROP;
+    }
+
+    private boolean isDDL(@NotNull SQLQuery query) {
+        return recognizeObjectOperation(query) != null;
+    }
+
+    @Nullable
+    private SQLObjectOperation recognizeObjectOperation(@NotNull SQLQuery query) {
+        SQLObjectOperation operation = query.getObjectOperation();
+        return operation != null ? operation : SQLObjectOperationRecognizer.recognize(
+            getSyntaxManager().getDialect(),
+            query.getText()
+        );
     }
 
     @NotNull
@@ -4363,13 +4382,17 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void onEndQuery(@NotNull DBCSession session, @NotNull SQLQueryResult result, @NotNull DBCStatistics statistics) {
             try {
-                if (!result.hasError() && result.getStatement().getType() == SQLQueryType.DDL) {
-                    metadataChanged = true;
-                    rememberMetadataRefreshTarget(
-                        session.getProgressMonitor(),
-                        session.getExecutionContext(),
-                        result.getStatement()
-                    );
+                if (!result.hasError()) {
+                    SQLQuery query = result.getStatement();
+                    SQLObjectOperation objectOperation = recognizeObjectOperation(query);
+                    if (query.getType() == SQLQueryType.DDL || objectOperation != null) {
+                        metadataChanged = true;
+                        rememberMetadataRefreshTarget(
+                            session.getProgressMonitor(),
+                            session.getExecutionContext(),
+                            objectOperation
+                        );
+                    }
                 }
                 SQLEditor owner = getOwner();
                 synchronized (owner.runningQueries) {
@@ -4449,15 +4472,14 @@ public class SQLEditor extends SQLEditorBase implements
         private void rememberMetadataRefreshTarget(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext executionContext,
-            @NotNull SQLQuery query
+            @Nullable SQLObjectOperation objectOperation
         ) {
-            SQLDdlChange change = query.getDdlChange();
-            if (change == null) {
+            if (objectOperation == null) {
                 return;
             }
             try {
                 SQLMetadataRefreshCoordinator.RefreshTarget target =
-                    SQLMetadataRefreshCoordinator.createTarget(monitor, executionContext, change);
+                    SQLMetadataRefreshCoordinator.createTarget(monitor, executionContext, objectOperation);
                 if (target != null) {
                     metadataRefreshTargets.add(target);
                 }
