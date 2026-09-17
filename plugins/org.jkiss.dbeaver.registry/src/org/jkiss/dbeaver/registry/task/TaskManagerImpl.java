@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.task;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -65,6 +66,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         .serializeNulls()
         .setPrettyPrinting()
         .create();
+    private static final Gson STRICT_CONFIG_GSON = new GsonBuilder().setStrictness(Strictness.STRICT).create();
 
     final SimpleDateFormat systemDateFormat;
 
@@ -369,16 +371,39 @@ public class TaskManagerImpl implements DBTTaskManager {
             log.warn("The user has no permission to see tasks for this project: " + getProject().getDisplayName());
             return;
         }
-        String configFile = null;
         try {
-            configFile = loadConfigFile();
+            applyConfiguration(parseConfiguration(loadConfigFile(), false));
         } catch (DBException e) {
             log.error("Error loading task configuration file.", e);
         }
-        if (CommonUtils.isEmpty(configFile)) {
-            return;
+    }
+
+    private record TaskConfiguration(List<TaskImpl> tasks, List<TaskFolderImpl> folders) {
+    }
+
+    @NotNull
+    private TaskConfiguration parseConfiguration(@Nullable String configFile, boolean strict) throws DBException {
+        try {
+            return parseConfigurationContents(configFile, strict);
+        } catch (RuntimeException e) {
+            // parser messages may include secret values from task properties
+            throw new DBException("Invalid task configuration");
         }
-        Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configFile));
+    }
+
+    @NotNull
+    private TaskConfiguration parseConfigurationContents(@Nullable String configFile, boolean strict) throws DBException {
+        List<TaskImpl> parsedTasks = new ArrayList<>();
+        List<TaskFolderImpl> parsedFolders = new ArrayList<>();
+        if (CommonUtils.isEmpty(configFile)) {
+            return new TaskConfiguration(parsedTasks, parsedFolders);
+        }
+        Gson parser = strict ? STRICT_CONFIG_GSON : CONFIG_GSON;
+        JsonObject object = parser.fromJson(configFile, JsonObject.class);
+        if (object == null) {
+            throw new DBException("Task configuration must be a JSON object");
+        }
+        Map<String, Object> jsonMap = JSONUtils.parseMap(parser, new StringReader(object.toString()));
         // First read and create folders
         for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, TaskConstants.TASKS_FOLDERS_TAG)) {
             String folderName = folderMap.getKey();
@@ -386,17 +411,17 @@ public class TaskManagerImpl implements DBTTaskManager {
                 Object property = JSONUtils.getObjectProperty(folderMap.getValue(), TaskConstants.TAG_PARENT);
                 TaskFolderImpl parentFolder = null;
                 if (property != null) {
-                    Optional<TaskFolderImpl> first = tasksFolders.stream()
+                    Optional<TaskFolderImpl> first = parsedFolders.stream()
                         .filter(e -> e.getName().equals(property.toString()))
                         .findFirst();
                     if (first.isPresent()) {
                         parentFolder = first.get();
                     }
                 }
-                try {
-                    createTaskFolder(projectMetadata, folderName, parentFolder, new DBTTask[0]);
-                } catch (DBException ex) {
-                    log.error("Error creating tasks folder.", ex);
+                TaskFolderImpl folder = new TaskFolderImpl(folderName, parentFolder, projectMetadata, new ArrayList<>());
+                parsedFolders.add(folder);
+                if (parentFolder != null) {
+                    parentFolder.addFolderToFoldersList(folder);
                 }
             }
         }
@@ -418,11 +443,21 @@ public class TaskManagerImpl implements DBTTaskManager {
 
                     DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
                     if (taskDescriptor == null) {
+                        if (strict) {
+                            throw new DBException("Unknown task type: " + task);
+                        }
                         log.error("Can't find task descriptor " + task);
                         continue;
                     }
 
-                    TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
+                    TaskFolderImpl taskFolder = null;
+                    if (CommonUtils.isNotEmpty(taskFolderName)) {
+                        taskFolder = DBUtils.findObject(parsedFolders, taskFolderName);
+                        if (taskFolder == null) {
+                            taskFolder = new TaskFolderImpl(taskFolderName, null, projectMetadata, new ArrayList<>());
+                            parsedFolders.add(taskFolder);
+                        }
+                    }
                     TaskImpl taskConfig = createTask(
                         taskDescriptor,
                         id,
@@ -438,23 +473,50 @@ public class TaskManagerImpl implements DBTTaskManager {
 
                     if (taskFolder != null) {
                         taskFolder.addTaskToFolder(taskConfig);
-                        if (!tasksFolders.contains(taskFolder)) {
-                            synchronized (tasksFolders) {
-                                tasksFolders.add(taskFolder);
-                            }
-                        }
                     }
-
-                    synchronized (tasks) {
-                        tasks.add(taskConfig);
-                    }
+                    parsedTasks.add(taskConfig);
                 }
 
             } catch (Exception e) {
+                if (strict) {
+                    throw new DBException("Invalid task configuration: " + taskMap.getKey(), e);
+                }
                 log.warn("Error parsing task configuration", e);
             }
 
         }
+        return new TaskConfiguration(parsedTasks, parsedFolders);
+    }
+
+    private void applyConfiguration(@NotNull TaskConfiguration configuration) {
+        synchronized (tasks) {
+            synchronized (tasksFolders) {
+                tasks.clear();
+                tasks.addAll(configuration.tasks());
+                tasksFolders.clear();
+                tasksFolders.addAll(configuration.folders());
+            }
+        }
+        for (TaskFolderImpl folder : configuration.folders()) {
+            TaskRegistry.getInstance().notifyTaskFoldersListeners(
+                new DBTTaskFolderEvent(folder, DBTTaskFolderEvent.Action.TASK_FOLDER_ADD));
+        }
+    }
+
+    @Override
+    public synchronized void validateConfiguration(@Nullable String contents) throws DBException {
+        parseConfiguration(contents, true);
+    }
+
+    @Override
+    public synchronized void refreshConfiguration() throws DBException {
+        if (hasRunningTasks()) {
+            throw new DBException("Cannot reload configuration while tasks are running");
+        }
+        if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_VIEW)) {
+            throw new DBException("Task configuration access denied");
+        }
+        applyConfiguration(parseConfiguration(loadConfigFile(), true));
     }
 
     @NotNull

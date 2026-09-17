@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,13 @@ public interface DBTTaskManager {
     void removeTaskFolder(@NotNull DBTTaskFolder taskFolder) throws DBException;
 
     void updateConfiguration();
+
+    default void refreshConfiguration() throws DBException {
+    }
+
+    default void validateConfiguration(@Nullable String contents) throws DBException {
+        throw new DBException("Task configuration validation is not supported");
+    }
 
     boolean hasRunningTasks();
 
