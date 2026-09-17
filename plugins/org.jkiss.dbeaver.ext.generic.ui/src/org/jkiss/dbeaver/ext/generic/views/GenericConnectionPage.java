@@ -138,6 +138,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_URL, urlLabel);
             addControlToGroup(GROUP_URL, urlText);
         }
+        createUrlControls(settingsGroup);
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
             hostLabel.setText(GenericMessages.dialog_connection_host_label);
@@ -292,6 +293,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         return UIUtils.createEmptyLabel(parent, 2, 1);
     }
 
+    protected void createUrlControls(@NotNull Composite parent) {
+    }
+
     @Nullable
     private String showDatabaseFileSelectorDialog(int style) {
         if (this.urlPattern.hasProperty(DBConstants.PROP_FILE)) {
@@ -406,6 +410,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
     @Override
     public void loadSettings() {
+        activated = false;
         super.loadSettings();
 
         // Load values from new connection info
@@ -458,7 +463,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
 
         if (urlText != null) {
-            if (CommonUtils.isEmpty(connectionInfo.getUrl())) {
+            if (CommonUtils.isEmpty(connectionInfo.getUrl()) && !isCustomURL()) {
                 try {
                     saveSettings(dataSource);
                 } catch (Exception e) {

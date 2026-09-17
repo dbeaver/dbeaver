@@ -1036,6 +1036,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.toolbar" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.toolbar.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.accessibility" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.accessibility.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.general.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.dataformat.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.qm.label"/>
@@ -1055,6 +1057,10 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.database.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.database.connection.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.user.interface" label="%keyword.org.jkiss.dbeaver.core.keyword.user.interface.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.error.logs" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.error.logs.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.confirmations" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.confirmations.label"/>
+        <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="%keyword.org.jkiss.dbeaver.keyword.pref.ui.misc.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="%keyword.org.jkiss.dbeaver.core.keyword.network.expert.label"/>
 
     </extension>
 
@@ -1080,6 +1086,9 @@
             <themeid refid="org.eclipse.e4.ui.css.theme.e4_default"/>
         </stylesheet>
         <stylesheet uri="css/e4-dark_dbeaver_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
+        <stylesheet uri="css/e4-dark_dbeaver_macos.css" os="macosx">
             <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
         </stylesheet>
     </extension>
@@ -1152,12 +1161,15 @@
             category="org.jkiss.dbeaver.preferences.main"
             id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
             class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
-            name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
+            name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.toolbar"/>
+        </page>
         <page
             id="org.jkiss.dbeaver.preferences.accessibility"
              category="org.jkiss.dbeaver.preferences.main"
             class="org.jkiss.dbeaver.ui.preferences.PrefPageAccessibility"
              name="%page.org.jkiss.dbeaver.preferences.accessibility.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.accessibility"/>
         </page>
     </extension>
 
