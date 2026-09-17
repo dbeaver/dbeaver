@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,10 @@ public class DataMessages extends NLS {
     public static String database_resultsets_label_order_policy_default;
     public static String database_resultsets_label_order_policy_primary_key_asc;
     public static String database_resultsets_label_order_policy_primary_key_desc;
+
+    public static String controls_resultset_viewer_monitor_aply_changes;
+    public static String controls_resultset_viewer_job_update;
+    public static String controls_resultset_check_autocommit_state;
 
     static {
         // initialize resource bundle

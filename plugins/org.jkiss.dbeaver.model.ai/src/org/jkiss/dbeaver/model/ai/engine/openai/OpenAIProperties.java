@@ -95,7 +95,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Nullable
     @Override
-    @Property(order = 1, password = true, required = true)
+    @Property(order = 1, password = true, hideExpr = AIConstants.AI_NON_GLOBAL_CREDENTIALS_HIDE_EXPRESSION)
     public String getToken() {
         return token;
     }
