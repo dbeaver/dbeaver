@@ -281,7 +281,36 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         }
     }
 
+    /**
+     * Reads the raw grant statements for this user (SHOW GRANTS) as returned by the server.
+     *
+     * <p>Unlike {@link #getGrants(DBRProgressMonitor)}, statements are returned verbatim,
+     * suitable for displaying as a script.
+     */
+    @NotNull
+    public List<String> getGrantScript(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<String> script = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read user grants")) {
+            // Escape the account name: single quotes in user/host must be doubled
+            String accountName = "'" + userName.replace("'", "''") + "'@'" + host.replace("'", "''") + "'";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + accountName)) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String grant = JDBCUtils.safeGetString(dbResult, 1);
+                        if (!CommonUtils.isEmpty(grant)) {
+                            script.add(grant);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return script;
+    }
+
     @Property(viewable = true, order = 20)
+    @Nullable
     public String getSslType() {
         return sslType;
     }

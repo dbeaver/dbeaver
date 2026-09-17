@@ -29,10 +29,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -44,10 +40,8 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -91,23 +85,13 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
     private void showGrantsScript() {
         final MySQLUser user = getDatabaseObject();
         final StringBuilder script = new StringBuilder();
-        // Escape the account name (single quotes in user/host must be doubled)
-        final String accountName = "'" + user.getUserName().replace("'", "''") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            + "'@'" + user.getHost().replace("'", "''") + "'"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         try {
             UIUtils.runInProgressService(monitor -> {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, user, "Read user grants")) {
-                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + accountName)) { //$NON-NLS-1$
-                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                            while (dbResult.next()) {
-                                String grant = JDBCUtils.safeGetString(dbResult, 1);
-                                if (!CommonUtils.isEmpty(grant)) {
-                                    script.append(grant).append(";\n"); //$NON-NLS-1$
-                                }
-                            }
-                        }
+                try {
+                    for (String grant : user.getGrantScript(monitor)) {
+                        script.append(grant).append(";\n"); //$NON-NLS-1$
                     }
-                } catch (SQLException | DBException e) {
+                } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });

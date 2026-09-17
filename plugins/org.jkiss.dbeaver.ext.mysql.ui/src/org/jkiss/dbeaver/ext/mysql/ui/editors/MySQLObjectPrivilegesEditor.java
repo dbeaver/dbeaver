@@ -41,10 +41,6 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -58,7 +54,6 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
@@ -369,7 +364,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 data.otherPrivs.add(priv);
             }
         }
-        Set<String> candidateKeys = findCandidateUsers(monitor, dataSource, catalog);
+        Set<String> candidateKeys = dataSource.getObjectGrantees(monitor, catalog);
         for (MySQLUser user : dataSource.getUsers(monitor)) {
             if (!candidateKeys.contains(userKey(user.getUserName(), user.getHost()))) {
                 continue;
@@ -491,78 +486,6 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             }
         }
         return false;
-    }
-
-    private static @NotNull Set<String> findCandidateUsers(
-        @NotNull DBRProgressMonitor monitor, @NotNull MySQLDataSource dataSource, @NotNull MySQLCatalog catalog) throws DBException {
-        Set<String> keys = new HashSet<>();
-        String catalogName = catalog.getName();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find users with grants on object")) { //$NON-NLS-1$
-            collectGrantees(session, keys,
-                "SELECT DISTINCT GRANTEE FROM information_schema.SCHEMA_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName); //$NON-NLS-1$
-            collectGrantees(session, keys,
-                "SELECT DISTINCT GRANTEE FROM information_schema.TABLE_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName); //$NON-NLS-1$
-            collectGrantees(session, keys,
-                "SELECT DISTINCT GRANTEE FROM information_schema.COLUMN_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName); //$NON-NLS-1$
-            collectGrantees(session, keys,
-                "SELECT DISTINCT GRANTEE FROM information_schema.USER_PRIVILEGES WHERE PRIVILEGE_TYPE <> 'USAGE'", null); //$NON-NLS-1$
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT DISTINCT User, Host FROM mysql.procs_priv WHERE Db = ?")) { //$NON-NLS-1$
-                dbStat.setString(1, catalogName);
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        keys.add(userKey(
-                            JDBCUtils.safeGetString(dbResult, "User"), //$NON-NLS-1$
-                            JDBCUtils.safeGetString(dbResult, "Host"))); //$NON-NLS-1$
-                    }
-                }
-            } catch (SQLException e) {
-                log.debug("Can't query mysql.procs_priv: " + e.getMessage()); //$NON-NLS-1$
-            }
-        }
-        return keys;
-    }
-
-    private static void collectGrantees(
-        @NotNull JDBCSession session, @NotNull Set<String> keys, @NotNull String sql, @Nullable String param) {
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            if (param != null) {
-                dbStat.setString(1, param);
-            }
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                while (dbResult.next()) {
-                    String key = granteeToKey(JDBCUtils.safeGetString(dbResult, "GRANTEE")); //$NON-NLS-1$
-                    if (key != null) {
-                        keys.add(key);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            log.debug("Can't query privileges view: " + e.getMessage()); //$NON-NLS-1$
-        }
-    }
-
-    @Nullable
-    private static String granteeToKey(@Nullable String grantee) {
-        if (grantee == null) {
-            return null;
-        }
-        int at = grantee.lastIndexOf("@"); //$NON-NLS-1$
-        if (at < 0) {
-            return null;
-        }
-        return userKey(unquote(grantee.substring(0, at)), unquote(grantee.substring(at + 1)));
-    }
-
-    private static @NotNull String unquote(@NotNull String value) {
-        String trimmed = value.trim();
-        if (trimmed.length() >= 2) {
-            char q = trimmed.charAt(0);
-            if ((q == '\'' || q == '`' || q == '"') && trimmed.charAt(trimmed.length() - 1) == q) {
-                return trimmed.substring(1, trimmed.length() - 1).replace("''", "'"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        }
-        return trimmed;
     }
 
     private @NotNull List<MySQLGrant> grantsOfSelectedUser() {
