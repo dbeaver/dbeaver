@@ -2,6 +2,38 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"
+            id="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.datadam.projectSync"
+            properties="canShare,canSync"
+            type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canShareProject">
+            <with variable="selection">
+                <count value="1"/>
+                <iterate operator="and">
+                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
+                        <test property="org.jkiss.dbeaver.ui.datadam.projectSync.canShare"/>
+                    </adapt>
+                </iterate>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canSyncProject">
+            <with variable="selection">
+                <count value="1"/>
+                <iterate operator="and">
+                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
+                        <test property="org.jkiss.dbeaver.ui.datadam.projectSync.canSync"/>
+                    </adapt>
+                </iterate>
+            </with>
+        </definition>
+    </extension>
+
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.datadam.commands.category" name="%command.datadam.category.name"/>
         <command
@@ -12,6 +44,10 @@
             categoryId="org.jkiss.dbeaver.datadam.commands.category"
             id="org.jkiss.dbeaver.datadam.commands.project.update"
             name="%command.datadam.project.update.name"/>
+        <command
+            categoryId="org.jkiss.dbeaver.datadam.commands.category"
+            id="org.jkiss.dbeaver.datadam.commands.project.unbind"
+            name="%command.datadam.project.unbind.name"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -26,33 +62,37 @@
     <extension point="org.eclipse.ui.handlers">
         <handler
             class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectShareHandler"
-            commandId="org.jkiss.dbeaver.datadam.commands.project.share"/>
+            commandId="org.jkiss.dbeaver.datadam.commands.project.share">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.canShareProject"/>
+            </enabledWhen>
+        </handler>
         <handler
             class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectUpdateHandler"
-            commandId="org.jkiss.dbeaver.datadam.commands.project.update"/>
+            commandId="org.jkiss.dbeaver.datadam.commands.project.update">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.canSyncProject"/>
+            </enabledWhen>
+        </handler>
+        <handler
+            class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectUnbindHandler"
+            commandId="org.jkiss.dbeaver.datadam.commands.project.unbind">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.canSyncProject"/>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <command commandId="org.jkiss.dbeaver.datadam.commands.project.share">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.datadam.commands.project.update">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.datadam.commands.project.unbind">
+                <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
     </extension>

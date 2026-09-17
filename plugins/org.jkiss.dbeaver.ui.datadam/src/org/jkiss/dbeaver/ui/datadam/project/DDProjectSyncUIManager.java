@@ -72,6 +72,7 @@ public final class DDProjectSyncUIManager {
         synchronized (this) {
             service = null;
         }
+        DDProjectSyncPropertyTester.firePropertyChange();
     }
 
     @Nullable

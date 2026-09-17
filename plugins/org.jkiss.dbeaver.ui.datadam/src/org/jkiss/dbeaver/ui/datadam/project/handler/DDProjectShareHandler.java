@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncSnapshot;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -55,6 +56,7 @@ public class DDProjectShareHandler extends AbstractHandler {
                     service.shareProject(project, null);
                     DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);
                     service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
+                    DDProjectSyncPropertyTester.firePropertyChange();
                     ddManager.showMessage(DDTrackingUIMessages.project_sync_share_success, false);
                 } catch (DBException e) {
                     ddManager.showError(DDTrackingUIMessages.project_sync_share_failed, e);
