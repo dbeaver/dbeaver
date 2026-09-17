@@ -24,30 +24,33 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncSnapshot;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUI;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 
 public class DDProjectShareHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
-        DBPProject project = DDProjectSyncUI.getSelectedProject(event);
+        DDProjectSyncUIManager manager = DDProjectSyncUIManager.getInstance();
+        DBPProject project = manager.getSelectedProject(event);
         if (project == null) {
             return null;
         }
-        DDProjectSyncService service = DDProjectSyncUI.createService();
-        if (service == null) {
+        if (!manager.isEnabled()) {
             return null;
         }
+        DDProjectSyncService service = manager.getService();
         try {
-            DDProjectSyncUI.runInProgress(() -> {
+            UIUtils.runWithDialog(monitor -> {
                 service.shareProject(project, null);
                 DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);
                 service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
+                return null;
             });
-            DDProjectSyncUI.showMessage(DDTrackingUIMessages.project_sync_share_success, false);
+            manager.showMessage(DDTrackingUIMessages.project_sync_share_success, false);
         } catch (DBException e) {
-            DDProjectSyncUI.showError(DDTrackingUIMessages.project_sync_share_failed, e);
+            manager.showError(DDTrackingUIMessages.project_sync_share_failed, e);
         }
         return null;
     }

@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -481,8 +482,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     @Override
     protected void performApply() {
         String url = urlText.getText().trim();
+        boolean changed = !savedUrl.equals(url);
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SERVER_URL, url);
         savedUrl = url;
+        if (changed) {
+            DDProjectSyncUIManager.getInstance().refresh();
+        }
         updateApplyState();
     }
 
@@ -536,6 +541,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             });
             DDKeyStore.save(keyBundle[0]);
+            DDProjectSyncUIManager.getInstance().refresh();
             DDTrackingInitializer.start();
             refresh();
         } catch (DBException e) {
@@ -550,6 +556,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         try {
             DDTrackingInitializer.stop();
             DDKeyStore.clear();
+            DDProjectSyncUIManager.getInstance().refresh();
             refresh();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, e);
