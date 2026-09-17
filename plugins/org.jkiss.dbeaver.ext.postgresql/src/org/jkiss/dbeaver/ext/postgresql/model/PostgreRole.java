@@ -670,7 +670,7 @@ public class PostgreRole implements
                         SELECT *,
                         (aclexplode(defaclacl)).grantee as grantee
                         FROM pg_default_acl a WHERE a.defaclnamespace <> 0) as g
-                        where """ + " " + defaultPrivilegeGranteeFilter)) {
+                        where %s""".formatted(defaultPrivilegeGranteeFilter))) {
                     if (!publicRole) {
                         dbStat.setString(1, granteeName);
                     }
