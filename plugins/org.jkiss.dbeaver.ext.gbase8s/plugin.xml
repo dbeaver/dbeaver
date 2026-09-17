@@ -68,7 +68,7 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="gbase8s" parent="generic" class="org.jkiss.dbeaver.ext.gbase8s.model.GBase8sSQLDialect"
-            label="GBase 8s" description="GBase 8s SQL dialect." icon="icons/gbase8s_icon.png" />
+            label="%dialect.gbase8s.label" description="%dialect.gbase8s.description" icon="icons/gbase8s_icon.png" />
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
