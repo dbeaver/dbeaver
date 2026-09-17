@@ -50,8 +50,8 @@ public class GBase8sDataSource extends GenericDataSource {
     private static final Log log = Log.getLog(GBase8sDataType.class);
 
     private static final Set<Integer> FEATURE_NOT_SUPPORTED_CODES = Set.of(
-        -79700, // this is documented as "Feature not supported", see https://www.gbase.cn/docs/gbase-8s/06%20%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/01%20JDBCDriver%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8C%87%E5%8D%97/09%20%E9%99%84%E5%BD%95#-79700
-        -79882  // this occurs when calling PreparedStatement.setNCharacterStream(), not documented
+        -79700,	// this is documented as "Feature not supported", see https://www.gbase.cn/docs/gbase-8s/06%20%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/01%20JDBCDriver%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8C%87%E5%8D%97/09%20%E9%99%84%E5%BD%95#-79700
+        -79882	// this occurs when calling PreparedStatement.setNCharacterStream(), not documented
     );
 
     private static final String PROPERTY_JDBCTEMP = "JDBCTEMP"; //$NON-NLS-1$
