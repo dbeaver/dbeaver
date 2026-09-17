@@ -58,7 +58,7 @@ Out of the box DBeaver supports following database drivers:
 
 ### PRO versions
 
-<a href="https://dbeaver.com/download/">Commercial versions</a> extends functionality of many popular drivers and also support non-JDBC datasources such as:
+<a href="https://dbeaver.com/download/">Commercial versions</a> extends functionality of community drivers, supports NoSQL databases and many more:
 - Amazon Aurora DSQL, Apache Arrow, AWS DocumentDB, AWS Keyspaces, AWS Neptune, AWS Timestream, Azure CosmosDB, BigTable, Cassandra, Couchbase, CouchDB, DynamoDB, etcd, FerretDB, Firestore, Fujitsu Enterprise Postgres, Google AlloyDB, Google Cloud SQL, InfluxDB, Kafka KSQL, Microsoft Fabric, MongoDB, Neo4j, NetSuite, ODBC, Raima, Redis, Salesforce, ScyllaDB, SingleStore, SQLite Crypt, Valkey, Yugabyte.
 - Files as databases: CSV, DDL, JSON, Parquet, XLSX, and XML.
 - Federated (multi-source) database based on Apache Calcite.
