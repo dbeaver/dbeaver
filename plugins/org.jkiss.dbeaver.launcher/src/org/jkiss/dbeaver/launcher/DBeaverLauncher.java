@@ -2879,7 +2879,7 @@ public class DBeaverLauncher {
             for (String e : entries) {
                 String entry = resolve(e);
                 if (entry != null && entry.startsWith(FILE_SCHEME)) {
-                    File entryFile = new File(entry.substring(5).replace('/', File.separatorChar));
+                    File entryFile = LauncherUtils.toFileURL(entry);
                     entry = searchFor(entryFile.getName(), entryFile.getParent());
                     if (entry != null)
                         path.add(entry);
@@ -2949,7 +2949,7 @@ public class DBeaverLauncher {
         if (configURL == null)
             return null;
         // cache the splash in the equinox launcher sub-dir in the config area
-        Path cacheRoot = new File(configURL.getPath(), PLUGIN_ID).toPath().toAbsolutePath().normalize();
+        Path cacheRoot = new File(LauncherUtils.toFile(configURL), PLUGIN_ID).toPath().toAbsolutePath().normalize();
         //include the name of the jar in the cache location
         File jarFile = new File(jarPath);
         String cache = jarFile.getName();

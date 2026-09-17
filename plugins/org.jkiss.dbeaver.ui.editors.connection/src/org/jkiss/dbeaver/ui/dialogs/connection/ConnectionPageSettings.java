@@ -208,10 +208,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             } else if (connectionEditor != null) {
                 connectionEditor.loadSettings();
             }
-            activateCurrentItem();
         } finally {
             control.setRedraw(true);
         }
+        // activating driver properties may open a modal download dialog
+        control.update();
+        activateCurrentItem();
         handlersToolbar.setVisible(!getDriver().isEmbedded());
         //getContainer().updateTitleBar();
         UIUtils.asyncExec(() -> connectionEditor.activateEditor());
