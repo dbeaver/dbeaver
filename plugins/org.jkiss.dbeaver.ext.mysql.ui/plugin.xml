@@ -211,7 +211,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.ext.mysql.object.privileges" name="Privileges" description="Show users and their privileges on this object" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.ext.mysql.object.privileges" name="%command.org.jkiss.dbeaver.ext.mysql.object.privileges.name" description="%command.org.jkiss.dbeaver.ext.mysql.object.privileges.description" categoryId="org.jkiss.dbeaver.core.util"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
