@@ -1121,4 +1121,8 @@
         </colorDefinition>
     </extension>
 
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ui.navigator.keyword.pref.navigator" label="%keyword.org.jkiss.dbeaver.ui.navigator.keyword.pref.navigator.label"/>
+    </extension>
+
 </plugin>
