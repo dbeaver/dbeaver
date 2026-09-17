@@ -17,7 +17,9 @@
                 <count value="1"/>
                 <iterate operator="and">
                     <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
-                        <test property="org.jkiss.dbeaver.ui.datadam.projectSync.canShare"/>
+                        <test
+                            forcePluginActivation="true"
+                            property="org.jkiss.dbeaver.ui.datadam.projectSync.canShare"/>
                     </adapt>
                 </iterate>
             </with>
@@ -27,7 +29,9 @@
                 <count value="1"/>
                 <iterate operator="and">
                     <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
-                        <test property="org.jkiss.dbeaver.ui.datadam.projectSync.canSync"/>
+                        <test
+                            forcePluginActivation="true"
+                            property="org.jkiss.dbeaver.ui.datadam.projectSync.canSync"/>
                     </adapt>
                 </iterate>
             </with>

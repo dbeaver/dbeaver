@@ -54,9 +54,9 @@ public class DDProjectShareHandler extends AbstractHandler {
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     service.shareProject(project, null);
+                    DDProjectSyncPropertyTester.firePropertyChange();
                     DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);
                     service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
-                    DDProjectSyncPropertyTester.firePropertyChange();
                     ddManager.showMessage(DDTrackingUIMessages.project_sync_share_success, false);
                 } catch (DBException e) {
                     ddManager.showError(DDTrackingUIMessages.project_sync_share_failed, e);
