@@ -20,6 +20,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -37,6 +38,8 @@ import java.util.Collections;
 import java.util.List;
 
 final class ResultSetUndoRedoManager {
+    private static final Log log = Log.getLog(ResultSetUndoRedoManager.class);
+
     private final ResultSetViewer viewer;
     private final List<CellEditHistoryItem> history = new ArrayList<>();
     private int historyPosition;
@@ -186,7 +189,9 @@ final class ResultSetUndoRedoManager {
             return false;
         }
         try {
-            snapshot.restore(valueCell);
+            if (!snapshot.restore(valueCell)) {
+                return false;
+            }
             viewer.getModel().refreshChangeCount();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Cell edit", "Error restoring cell value", e);
@@ -312,10 +317,11 @@ final class ResultSetUndoRedoManager {
 
     @Nullable
     private static ValueSnapshot snapshotValue(@Nullable Object value) {
-        if (value instanceof DBDValueCloneable cloneable) {
+        if (value instanceof DBDValueCloneable) {
             try {
-                return new ValueSnapshot(cloneable.cloneValue(new VoidProgressMonitor()), true);
-            } catch (DBCException e) {
+                Object copy = copyHistoryValue(value);
+                return copy == null ? null : new ValueSnapshot(copy, true);
+            } catch (DBException e) {
                 return null;
             }
         }
@@ -329,7 +335,12 @@ final class ResultSetUndoRedoManager {
     private static Object copyHistoryValue(@Nullable Object value) throws DBException {
         if (value instanceof DBDValueCloneable cloneable) {
             try {
-                return cloneable.cloneValue(new VoidProgressMonitor());
+                DBDValueCloneable copy = cloneable.cloneValue(new VoidProgressMonitor());
+                if (copy == value) {
+                    log.debug("Value did not create an independent copy for edit history");
+                    return null;
+                }
+                return copy;
             } catch (DBCException e) {
                 throw new DBException("Error copying cell value from edit history", e);
             }
@@ -370,8 +381,11 @@ final class ResultSetUndoRedoManager {
         @Nullable ValueSnapshot originalValue,
         @NotNull List<DBDAttributeBinding> changedChildren
     ) {
-        private void restore(@NotNull ResultSetCellLocation location) throws DBException {
+        private boolean restore(@NotNull ResultSetCellLocation location) throws DBException {
             Object restoredValue = copyHistoryValue(value.value);
+            if (value.value instanceof DBDValueCloneable && restoredValue == null) {
+                return false;
+            }
             Object restoredOriginal;
             try {
                 restoredOriginal = originalValue == null ? null : copyHistoryValue(originalValue.value);
@@ -380,6 +394,12 @@ final class ResultSetUndoRedoManager {
                     DBUtils.releaseValue(restoredValue);
                 }
                 throw e;
+            }
+            if (originalValue != null && originalValue.value instanceof DBDValueCloneable && restoredOriginal == null) {
+                if (value.owned) {
+                    DBUtils.releaseValue(restoredValue);
+                }
+                return false;
             }
             ResultSetRow row = location.getRow();
             DBDAttributeBinding root = location.getAttribute();
@@ -398,6 +418,7 @@ final class ResultSetUndoRedoManager {
             if (previousOriginal != previousValue) {
                 DBUtils.releaseValue(previousOriginal);
             }
+            return true;
         }
 
         private void release() {

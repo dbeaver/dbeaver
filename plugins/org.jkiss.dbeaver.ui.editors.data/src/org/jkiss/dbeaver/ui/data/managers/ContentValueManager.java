@@ -79,7 +79,7 @@ public class ContentValueManager extends BaseValueManager {
     @NotNull
     public static DBDContent copyContentForEdit(@NotNull DBRProgressMonitor monitor, @NotNull DBDContent content)
         throws DBCException {
-        // Keep the model value intact until the controller records and applies the edit.
+        // Copy when supported; otherwise preserve editing without capturing the value in undo history.
         return content instanceof DBDValueCloneable cloneable ? (DBDContent) cloneable.cloneValue(monitor) : content;
     }
 
