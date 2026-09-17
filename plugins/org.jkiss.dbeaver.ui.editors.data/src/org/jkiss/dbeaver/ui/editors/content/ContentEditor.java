@@ -505,7 +505,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public Object extractEditorValue() throws DBException
     {
-        Object[] editedValue = new Object[1];
+        Object[] editedValue = {getEditorInput().getValue()};
         UIUtils.runInUI(monitor -> {
             try {
                 editedValue[0] = getEditorInput().extractContentFromFile(monitor);
