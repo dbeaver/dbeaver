@@ -33,7 +33,7 @@ import java.util.List;
 
 public class AIDatabaseContextTest extends DBeaverUnitTest {
     private static final String EMPTY_SCOPE_MESSAGE =
-        "Custom scope is empty. Add database objects or select All objects in the AI context settings.";
+        "Custom scope is empty. Add database objects or select a non-custom scope in the AI context settings.";
 
     @Test
     public void rejectsMissingCustomEntities() {

@@ -67,7 +67,7 @@ public class AIChatSessionTest extends DBeaverUnitTest {
         ArgumentCaptor<Throwable> error = ArgumentCaptor.forClass(Throwable.class);
         Mockito.verify(consumer).error(error.capture());
         Assertions.assertEquals(
-            "Custom scope is empty. Add database objects or select All objects in the AI context settings.",
+            "Custom scope is empty. Add database objects or select a non-custom scope in the AI context settings.",
             error.getValue().getMessage()
         );
         Mockito.verify(consumer, Mockito.never()).warning(Mockito.anyString());
