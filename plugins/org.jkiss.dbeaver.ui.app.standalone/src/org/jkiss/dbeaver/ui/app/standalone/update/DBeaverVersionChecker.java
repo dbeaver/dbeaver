@@ -116,7 +116,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         boolean newVersionAvailable = newVersion.getProgramVersion().compareTo(currentVersion) > 0;
         boolean suppressed = isSuppressed(newVersion);
         UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
-        boolean showToolbarNotification = updater == null && newVersionAvailable && (showAlways || !suppressed);
+        boolean showToolbarNotification = updater == null && newVersionAvailable && !showAlways;
         if (showAlways || (!suppressed && (SKIP_VERSION_CHECK || newVersionAvailable))) {
             if (updater != null) {
                 UIUtils.asyncExec(updater::handleVersionUpdate);

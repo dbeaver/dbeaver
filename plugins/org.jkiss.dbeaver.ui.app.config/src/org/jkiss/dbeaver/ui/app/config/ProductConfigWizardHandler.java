@@ -33,7 +33,8 @@ public final class ProductConfigWizardHandler extends AbstractHandler {
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         var dialog = new ProductConfigWizardDialog(
             HandlerUtil.getActiveWorkbenchWindow(event),
-            ProductConfigWizard.Origin.BY_USER
+            ProductConfigWizard.Origin.BY_USER,
+            HandlerUtil.getActiveShell(event)
         );
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
