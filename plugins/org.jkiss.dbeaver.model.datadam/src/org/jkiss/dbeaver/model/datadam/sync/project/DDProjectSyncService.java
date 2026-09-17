@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSharedProjectPullResult;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
@@ -101,7 +100,7 @@ public class DDProjectSyncService {
             binding,
             serverRevision,
             new PreparedFiles(files, configurationFingerprint),
-            classify(binding.lastSyncedRevision(), serverRevision, configurationFingerprint)
+            DDProjectSyncUtils.classify(binding.lastSyncedRevision(), serverRevision, configurationFingerprint)
         );
         log.debug("Created sync snapshot for project '" + project.getName() + "' status result: " + snapshot.change());
         return snapshot;
@@ -299,31 +298,6 @@ public class DDProjectSyncService {
                 throw new DBException("DataDam project '" + remote.name() + "' is already in the workspace");
             }
         }
-    }
-
-    @NotNull
-    private DDSyncChange classify(
-        @NotNull DDSharedProjectRevision lastSyncedRevision,
-        @NotNull DDSharedProjectRevision serverRevision,
-        @NotNull String configurationFingerprint
-    ) {
-        boolean localChanged = !lastSyncedRevision.configurationFingerprint().equals(configurationFingerprint);
-        String serverFingerprint = serverRevision.configurationFingerprint();
-        boolean serverChanged = !lastSyncedRevision.configurationFingerprint().equals(serverFingerprint);
-        DDSyncChange change;
-        if (configurationFingerprint.equals(serverFingerprint)) {
-            change = serverChanged ? DDSyncChange.SERVER : DDSyncChange.UNCHANGED;
-        } else if (localChanged && serverChanged) {
-            change = DDSyncChange.CONFLICT;
-        } else if (localChanged) {
-            change = DDSyncChange.LOCAL;
-        } else {
-            change = DDSyncChange.SERVER;
-        }
-        log.debug("Classified project sync change as " + change + ": baseline=" +
-            lastSyncedRevision.configurationFingerprint() + ", local=" + configurationFingerprint +
-            ", server=" + serverFingerprint);
-        return change;
     }
 
     @NotNull
