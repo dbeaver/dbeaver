@@ -16,20 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDSyncPreferencePage;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -49,7 +45,7 @@ public final class DDProjectSyncUIManager {
         return INSTANCE;
     }
 
-    public boolean isEnabled() {
+    public boolean isDDEnabled() {
         return getCurrentContext() != null;
     }
 
@@ -102,21 +98,14 @@ public final class DDProjectSyncUIManager {
         }
     }
 
-    @Nullable
-    public DBPProject getSelectedProject(@NotNull ExecutionEvent event) {
-        if (HandlerUtil.getCurrentSelection(event) instanceof IStructuredSelection selection &&
-            selection.size() == 1 && selection.getFirstElement() instanceof DBNProject projectNode) {
-            return projectNode.getProject();
-        }
-        return null;
-    }
-
     public void showMessage(@NotNull String message, boolean warning) {
-        DBWorkbench.getPlatformUI().showMessageBox(DDTrackingUIMessages.project_sync_title, message, warning);
+        UIUtils.asyncExec(() ->
+            DBWorkbench.getPlatformUI().showMessageBox(DDTrackingUIMessages.project_sync_title, message, warning));
     }
 
     public void showError(@NotNull String message, @NotNull DBException exception) {
-        DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.project_sync_title, message, exception);
+        UIUtils.asyncExec(() ->
+            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.project_sync_title, message, exception));
     }
 
     private record ServiceContext(

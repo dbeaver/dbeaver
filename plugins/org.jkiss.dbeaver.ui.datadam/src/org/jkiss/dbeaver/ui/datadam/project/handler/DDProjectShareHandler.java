@@ -18,40 +18,50 @@ package org.jkiss.dbeaver.ui.datadam.project.handler;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncSnapshot;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class DDProjectShareHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
-        DDProjectSyncUIManager manager = DDProjectSyncUIManager.getInstance();
-        DBPProject project = manager.getSelectedProject(event);
+        DBPProject project = NavigatorUtils.getSelectedProject(
+            HandlerUtil.getCurrentSelection(event), HandlerUtil.getActivePart(event));
         if (project == null) {
             return null;
         }
-        if (!manager.isEnabled()) {
+        DDProjectSyncUIManager ddManager = DDProjectSyncUIManager.getInstance();
+        if (!ddManager.isDDEnabled()) {
             return null;
         }
-        DDProjectSyncService service = manager.getService();
-        try {
-            UIUtils.runWithDialog(monitor -> {
-                service.shareProject(project, null);
-                DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);
-                service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
-                return null;
-            });
-            manager.showMessage(DDTrackingUIMessages.project_sync_share_success, false);
-        } catch (DBException e) {
-            manager.showError(DDTrackingUIMessages.project_sync_share_failed, e);
-        }
+        DDProjectSyncService service = ddManager.getService();
+        new AbstractJob(DDTrackingUIMessages.project_sync_share_job) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    service.shareProject(project, null);
+                    DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);
+                    service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
+                    ddManager.showMessage(DDTrackingUIMessages.project_sync_share_success, false);
+                } catch (DBException e) {
+                    ddManager.showError(DDTrackingUIMessages.project_sync_share_failed, e);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
         return null;
     }
 }
