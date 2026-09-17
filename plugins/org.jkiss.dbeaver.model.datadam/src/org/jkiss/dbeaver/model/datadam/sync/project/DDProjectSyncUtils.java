@@ -34,10 +34,10 @@ public final class DDProjectSyncUtils {
         @NotNull DDSharedProjectRevision serverRevision,
         @NotNull String localFingerprint
     ) {
-        String baselineFingerprint = lastSyncedRevision.configurationFingerprint();
+        String lastKnownRevisionFingerprintprint = lastSyncedRevision.configurationFingerprint();
         String serverFingerprint = serverRevision.configurationFingerprint();
-        DDSyncChange change = classify(localFingerprint, baselineFingerprint, serverFingerprint);
-        log.debug("Classified project sync change as " + change + ": baseline=" + baselineFingerprint +
+        DDSyncChange change = classify(localFingerprint, lastKnownRevisionFingerprintprint, serverFingerprint);
+        log.debug("Classified project sync change as " + change + ": lastKnownRevision=" + lastKnownRevisionFingerprintprint +
             ", local=" + localFingerprint + ", server=" + serverFingerprint);
         return change;
     }
