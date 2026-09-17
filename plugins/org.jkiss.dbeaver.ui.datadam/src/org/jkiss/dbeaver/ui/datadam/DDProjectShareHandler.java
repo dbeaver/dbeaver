@@ -18,47 +18,27 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncSnapshot;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DDProjectShareHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
+        DBPProject project = DDProjectSyncUI.getSelectedProject(event);
+        if (project == null) {
+            return null;
+        }
         DDProjectSyncService service = DDProjectSyncUI.createService();
         if (service == null) {
             return null;
         }
         try {
-            DBPProject[] projects = DDProjectSyncUI.runInProgress(() -> {
-                List<DBPProject> available = new ArrayList<>();
-                for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-                    if (!service.isShared(project)) {
-                        available.add(project);
-                    }
-                }
-                return available.toArray(DBPProject[]::new);
-            });
-            Shell shell = HandlerUtil.getActiveShell(event);
-            DBPProject project = DDProjectSyncUI.selectProject(
-                shell,
-                projects,
-                DDTrackingUIMessages.project_sync_share_select,
-                DDTrackingUIMessages.project_sync_share_none);
-            if (project == null) {
-                return null;
-            }
             DDProjectSyncUI.runInProgress(() -> {
                 service.shareProject(project, null);
                 DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);

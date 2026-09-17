@@ -31,16 +31,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.DDBrowserLogin;
-import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
-import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
-import org.jkiss.dbeaver.model.datadam.sync.DDLocalSyncConflictException;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncBinding;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncConflict;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncResult;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncService;
+import org.jkiss.dbeaver.model.datadam.auth.*;
+import org.jkiss.dbeaver.model.datadam.sync.*;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationNotFoundException;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationSummary;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -303,8 +295,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
         List<String> resolved = new ArrayList<>();
         try {
-            runInProgress(() -> {
+            runInProgressAction(monitor -> {
                 for (DDSyncConflict conflict : conflicts) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     if (takeRemote) {
                         service.forceDownload(conflict.key());
                     } else {
@@ -343,11 +338,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return holder.get();
     }
 
-    private void runInProgress(@NotNull DBRunnable runnable) throws DBException {
+    private void runInProgressAction(@NotNull DBRunnable runnable) throws DBException {
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    runnable.run();
+                    runnable.run(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -372,7 +367,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     @FunctionalInterface
     private interface DBRunnable {
-        void run() throws DBException;
+        void run(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 
     private void showChanged(@NotNull String emptyMessage, @NotNull String label, @NotNull DDSyncResult result) {

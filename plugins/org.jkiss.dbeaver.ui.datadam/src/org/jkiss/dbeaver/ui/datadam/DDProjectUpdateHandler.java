@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -32,22 +30,15 @@ public class DDProjectUpdateHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
+        DBPProject project = DDProjectSyncUI.getSelectedProject(event);
+        if (project == null) {
+            return null;
+        }
         DDProjectSyncService service = DDProjectSyncUI.createService();
         if (service == null) {
             return null;
         }
         try {
-            DBPProject[] projects = DDProjectSyncUI.runInProgress(
-                () -> service.getSharedProjects().toArray(DBPProject[]::new));
-            Shell shell = HandlerUtil.getActiveShell(event);
-            DBPProject project = DDProjectSyncUI.selectProject(
-                shell,
-                projects,
-                DDTrackingUIMessages.project_sync_update_select,
-                DDTrackingUIMessages.project_sync_update_none);
-            if (project == null) {
-                return null;
-            }
             DDProjectSyncSnapshot snapshot = DDProjectSyncUI.runInProgress(
                 () -> service.getProjectSyncSnapshot(project));
             switch (snapshot.change()) {

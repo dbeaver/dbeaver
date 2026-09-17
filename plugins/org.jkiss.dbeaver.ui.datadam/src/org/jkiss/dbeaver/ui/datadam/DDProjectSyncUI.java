@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.window.Window;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
@@ -69,30 +69,12 @@ final class DDProjectSyncUI {
     }
 
     @Nullable
-    static DBPProject selectProject(
-        @NotNull Shell shell,
-        @NotNull DBPProject[] projects,
-        @NotNull String message,
-        @NotNull String emptyMessage
-    ) {
-        if (projects.length == 0) {
-            showMessage(emptyMessage, true);
-            return null;
+    static DBPProject getSelectedProject(@NotNull ExecutionEvent event) {
+        if (HandlerUtil.getCurrentSelection(event) instanceof IStructuredSelection selection &&
+            selection.size() == 1 && selection.getFirstElement() instanceof DBNProject projectNode) {
+            return projectNode.getProject();
         }
-        ElementListSelectionDialog dialog = new ElementListSelectionDialog(shell, new LabelProvider() {
-            @NotNull
-            @Override
-            public String getText(@NotNull Object element) {
-                return ((DBPProject) element).getName();
-            }
-        });
-        dialog.setTitle(DDTrackingUIMessages.project_sync_title);
-        dialog.setMessage(message);
-        dialog.setElements(projects);
-        if (dialog.open() != Window.OK) {
-            return null;
-        }
-        return (DBPProject) dialog.getFirstResult();
+        return null;
     }
 
     @NotNull

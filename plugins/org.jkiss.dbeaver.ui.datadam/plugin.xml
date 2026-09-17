@@ -33,17 +33,27 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
-            <command
-                commandId="org.jkiss.dbeaver.datadam.commands.project.share"
-                id="org.jkiss.dbeaver.datadam.menu.projects"
-                label="%menu.datadam.projects.label"
-                style="pulldown"
-                tooltip="%menu.datadam.projects.tooltip"/>
-        </menuContribution>
-        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.datadam.menu.projects">
-            <command commandId="org.jkiss.dbeaver.datadam.commands.project.share"/>
-            <command commandId="org.jkiss.dbeaver.datadam.commands.project.update"/>
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
+            <command commandId="org.jkiss.dbeaver.datadam.commands.project.share">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.datadam.commands.project.update">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
         </menuContribution>
     </extension>
 
