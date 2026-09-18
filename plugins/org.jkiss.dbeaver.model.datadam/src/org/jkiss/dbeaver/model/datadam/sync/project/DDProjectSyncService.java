@@ -59,12 +59,26 @@ public class DDProjectSyncService {
     }
 
     @NotNull
-    public List<DDSharedProject> listRemoteProjects() throws DBException {
+    public List<DDSharedProject> listAllRemoteProjects() throws DBException {
         try {
             return client.listProjects();
         } catch (DDShareException e) {
             throw new DBException("Error listing DataDam projects", e);
         }
+    }
+
+    @NotNull
+    public List<DDSharedProject> listNotAlreadyBindRemoteProjects() throws DBException {
+        Set<UUID> boundProjectIds = new HashSet<>();
+        for (DBPProject project : workspace.getProjects()) {
+            DDProjectSyncLocalBinding binding = getBinding(project);
+            if (binding != null) {
+                boundProjectIds.add(binding.remoteProjectId());
+            }
+        }
+        return listAllRemoteProjects().stream()
+            .filter(project -> !boundProjectIds.contains(project.id()))
+            .toList();
     }
 
     @Nullable

@@ -74,6 +74,15 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_unbind_job;
     public static String project_sync_unbind_success;
     public static String project_sync_unbind_failed;
+    public static String project_sync_import_list_job;
+    public static String project_sync_import_dialog_title;
+    public static String project_sync_import_dialog_message;
+    public static String project_sync_import_button;
+    public static String project_sync_import_no_projects;
+    public static String project_sync_import_list_failed;
+    public static String project_sync_import_job;
+    public static String project_sync_import_success;
+    public static String project_sync_import_failed;
 
     public static String create_configuration_dialog_title;
     public static String create_configuration_dialog_name_label;

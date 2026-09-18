@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DDProjectSyncPropertyTester extends PropertyTester {
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.datadam.projectSync";
+    public static final String PROP_ENABLED = "enabled";
     public static final String PROP_CAN_SHARE = "canShare";
     public static final String PROP_CAN_SYNC = "canSync";
 
@@ -38,6 +39,9 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         DDProjectSyncUIManager manager = DDProjectSyncUIManager.getInstance();
         if (!manager.isDDEnabled()) {
             return false;
+        }
+        if (PROP_ENABLED.equals(property)) {
+            return true;
         }
         try {
             boolean shared = manager.getService().isShared(projectNode.getProject());
@@ -54,6 +58,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
 
     public static void firePropertyChange() {
         UIUtils.asyncExec(() -> {
+            ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_ENABLED);
             ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_CAN_SHARE);
             ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_CAN_SYNC);
         });

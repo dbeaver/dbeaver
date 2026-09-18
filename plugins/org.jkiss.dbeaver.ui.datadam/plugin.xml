@@ -7,7 +7,7 @@
             class="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"
             id="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"
             namespace="org.jkiss.dbeaver.ui.datadam.projectSync"
-            properties="canShare,canSync"
+            properties="enabled,canShare,canSync"
             type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
     </extension>
 
@@ -36,6 +36,18 @@
                 </iterate>
             </with>
         </definition>
+        <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.enabled">
+            <with variable="selection">
+                <count value="1"/>
+                <iterate operator="and">
+                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject">
+                        <test
+                            forcePluginActivation="true"
+                            property="org.jkiss.dbeaver.ui.datadam.projectSync.enabled"/>
+                    </adapt>
+                </iterate>
+            </with>
+        </definition>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -52,6 +64,10 @@
             categoryId="org.jkiss.dbeaver.datadam.commands.category"
             id="org.jkiss.dbeaver.datadam.commands.project.unbind"
             name="%command.datadam.project.unbind.name"/>
+        <command
+            categoryId="org.jkiss.dbeaver.datadam.commands.category"
+            id="org.jkiss.dbeaver.datadam.commands.project.import"
+            name="%command.datadam.project.import.name"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -61,6 +77,9 @@
         <image
             commandId="org.jkiss.dbeaver.datadam.commands.project.update"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
+        <image
+            commandId="org.jkiss.dbeaver.datadam.commands.project.import"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -85,6 +104,13 @@
                 <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.canSyncProject"/>
             </enabledWhen>
         </handler>
+        <handler
+            class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectImportHandler"
+            commandId="org.jkiss.dbeaver.datadam.commands.project.import">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.enabled"/>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -96,6 +122,9 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.datadam.commands.project.unbind">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.datadam.commands.project.import">
                 <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
