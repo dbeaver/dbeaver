@@ -43,14 +43,21 @@ public enum OracleObjectType implements DBSObjectType {
         @Override
         public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.proceduresCache.getObject(monitor, schema, objectName);
+            return schema.getProceduresCache().getObject(monitor, schema, objectName);
+        }
+    }),
+    UDF("UDF", DBIcon.TREE_PROCEDURE, OracleProcedureStandalone.class, new ObjectFinder() {
+        @Override
+        public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException {
+            // YashanDB UDF is same as function
+            return schema.getProceduresCache().getObject(monitor, schema, objectName);
         }
     }),
 	INDEX("INDEX", DBIcon.TREE_INDEX, OracleTableIndex.class, new ObjectFinder() {
         @Override
         public OracleTableIndex findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.indexCache.getObject(monitor, schema, objectName);
+            return schema.getIndexCache().getObject(monitor, schema, objectName);
         }
     }),
 	INDEX_PARTITION("INDEX PARTITION", null, DBSObject.class, null),
@@ -74,21 +81,21 @@ public enum OracleObjectType implements DBSObjectType {
         @Override
         public OraclePackage findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.packageCache.getObject(monitor, schema, objectName);
+            return schema.getPackageCache().getObject(monitor, schema, objectName);
         }
     }),
 	PACKAGE_BODY("PACKAGE BODY", DBIcon.TREE_PACKAGE, OraclePackage.class, new ObjectFinder() {
         @Override
         public OraclePackage findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.packageCache.getObject(monitor, schema, objectName);
+            return schema.getPackageCache().getObject(monitor, schema, objectName);
         }
     }),
 	PROCEDURE("PROCEDURE", DBIcon.TREE_PROCEDURE, OracleProcedureStandalone.class, new ObjectFinder() {
         @Override
         public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.proceduresCache.getObject(monitor, schema, objectName);
+            return schema.getProceduresCache().getObject(monitor, schema, objectName);
         }
     }),
 	PROGRAM("PROGRAM", null, DBSObject.class, null),
@@ -120,7 +127,7 @@ public enum OracleObjectType implements DBSObjectType {
         @Override
         public OracleTableBase findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.tableCache.getObject(monitor, schema, objectName);
+            return schema.getTableCache().getObject(monitor, schema, objectName);
         }
     }),
 	TABLE_PARTITION("TABLE PARTITION", null, DBSObject.class, null),
@@ -129,7 +136,7 @@ public enum OracleObjectType implements DBSObjectType {
         public OracleTrigger findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             // First we will try to find a trigger at the tables level
-            OracleTableTrigger trigger = schema.tableTriggerCache.getObject(monitor, schema, objectName);
+            OracleTableTrigger trigger = schema.getTableTriggerCache().getObject(monitor, schema, objectName);
             if (trigger != null) {
                 return trigger;
             }
@@ -141,21 +148,21 @@ public enum OracleObjectType implements DBSObjectType {
         @Override
         public OracleDataType findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.dataTypeCache.getObject(monitor, schema, objectName);
+            return schema.getDataTypeCache().getObject(monitor, schema, objectName);
         }
     }),
 	TYPE_BODY("TYPE BODY", DBIcon.TREE_DATA_TYPE, OracleDataType.class, new ObjectFinder() {
         @Override
         public OracleDataType findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.dataTypeCache.getObject(monitor, schema, objectName);
+            return schema.getDataTypeCache().getObject(monitor, schema, objectName);
         }
     }),
 	VIEW("VIEW", DBIcon.TREE_VIEW, OracleView.class, new ObjectFinder() {
         @Override
         public OracleView findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
-            return schema.tableCache.getObject(monitor, schema, objectName, OracleView.class);
+            return schema.getTableCache().getObject(monitor, schema, objectName, OracleView.class);
         }
     }),
 	WINDOW("WINDOW", null, DBSObject.class, null),

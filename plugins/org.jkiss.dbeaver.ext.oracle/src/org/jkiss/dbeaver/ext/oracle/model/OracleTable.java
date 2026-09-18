@@ -85,10 +85,10 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     private transient volatile Long tableSize;
 
     public class AdditionalInfo extends TableAdditionalInfo {
-        private int pctFree;
+        public int pctFree;
         private int pctUsed;
-        private int iniTrans;
-        private int maxTrans;
+        public int iniTrans;
+        public int maxTrans;
         private int initialExtent;
         private int nextExtent;
         private int minExtents;
@@ -97,8 +97,8 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         private int freelists;
         private int freelistGroups;
 
-        private int blocks;
-        private int emptyBlocks;
+        public int blocks;
+        public int emptyBlocks;
         private int avgSpace;
         private int chainCount;
 
@@ -149,7 +149,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
     }
 
-    private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    protected final AdditionalInfo additionalInfo = new AdditionalInfo();
     private DBDPseudoAttribute[] allPseudoAttributes = null;
 
     public OracleTable(OracleSchema schema, String name)
@@ -341,7 +341,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         // This is dummy implementation
         // Get references from this schema only
         final Collection<OracleTableForeignKey> allForeignKeys =
-            getContainer().foreignKeyCache.getObjects(monitor, getContainer(), null);
+            getContainer().getForeignKeyCache().getObjects(monitor, getContainer(), null);
         for (OracleTableForeignKey constraint : allForeignKeys) {
             if (constraint.getReferencedTable() == this) {
                 refs.add(constraint);
@@ -355,13 +355,13 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     public Collection<OracleTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().foreignKeyCache.getObjects(monitor, getContainer(), this);
+        return getContainer().getForeignKeyCache().getObjects(monitor, getContainer(), this);
     }
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().foreignKeyCache.clearObjectCache(this);
+        getContainer().getForeignKeyCache().clearObjectCache(this);
         if (tableSize != null) {
             tableSize = null;
             getTableSize(monitor);
@@ -439,7 +439,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
+    protected void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
