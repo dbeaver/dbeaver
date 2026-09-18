@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.forms.UIControlBuilder.*;
 import org.jkiss.dbeaver.ui.forms.UIControlBuilderImpl.*;
@@ -66,8 +67,13 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
-        var builder = UIPanelBuilderImpl.expandable(text, expanded);
+    public UIRowBuilder expandablePanel(
+        @NotNull String text,
+        boolean expanded,
+        @NotNull Consumer<ExpandableComposite> onExpansionChanged,
+        @NotNull Consumer<? super UIPanelBuilder> handler
+    ) {
+        var builder = UIPanelBuilderImpl.expandable(text, expanded, onExpansionChanged);
         handler.accept(builder);
         controls.add(builder);
         return this;
