@@ -867,13 +867,19 @@ public class SQLEditor extends SQLEditorBase implements
         // On macOS, SWT doesn't update connection-colored toolbar backgrounds after a datasource change.
         if (RuntimeUtils.isMacOS()) {
             if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
-                CSSUtils.applyStyles(topBar);
+                refreshToolbarBackground(topBar);
             }
             if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
-                CSSUtils.applyStyles(bottomBar);
+                refreshToolbarBackground(bottomBar);
             }
         }
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
+    }
+
+    private static void refreshToolbarBackground(@NotNull ToolBar toolBar) {
+        Color connectionColor = CSSUtils.getCurrentEditorConnectionColor(toolBar);
+        toolBar.setBackground(connectionColor != null ? connectionColor : toolBar.getParent().getBackground());
+        toolBar.redraw();
     }
 
     private class OpenContextJob extends AbstractJob {
