@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
@@ -66,8 +67,12 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         }
         List<OAIModel> models = openAiService.getInstance().getModels(monitor);
         Map<String, AIModelCatalogEntry> catalog = getModelCatalog(monitor);
+        boolean defaultEndpoint = OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl());
         return models.stream()
-            .map(model -> OpenAIModels.fromApiModel(model, OpenAIModels.findCatalogEntry(catalog, model.id())))
+            .map(model -> defaultEndpoint
+                ? OpenAIModels.fromApiModel(model, OpenAIModels.findCatalogEntry(catalog, model.id()))
+                : new AIModel(model.id(), model.contextLength() != null && model.contextLength() > 0 ? model.contextLength() : null,
+                    Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)))
             .toList();
     }
 

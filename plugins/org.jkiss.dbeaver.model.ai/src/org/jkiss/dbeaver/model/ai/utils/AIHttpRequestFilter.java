@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.doris;
+package org.jkiss.dbeaver.model.ai.utils;
 
-import org.jkiss.dbeaver.ext.doris.model.DorisDataSource;
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+
+import java.net.http.HttpRequest;
 
 /**
- * Doris DataSource Provider - creates DorisDataSource instances.
+ * Modifies an HTTP request before it is sent by an AI client.
  */
-public class DorisDataSourceProvider extends GenericDataSourceProvider<DorisDataSource> {
-
-    public DorisDataSourceProvider() {
-        super(DorisDataSource.class);
-    }
+public interface AIHttpRequestFilter {
+    @NotNull
+    HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) throws DBException;
 }

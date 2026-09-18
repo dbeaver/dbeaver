@@ -90,19 +90,20 @@ class OpenAIModelCatalogTest extends DBeaverUnitTest {
         }
     }
 
-    @Test
-    void compatibleEndpointsDoNotUseFirstPartyCatalogOrTemperatureRestrictions() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"gpt-test", "llama-test", "deepseek-test"})
+    void compatibleEndpointsDoNotUseFirstPartyCatalogOrTemperatureRestrictions(@NotNull String modelId) throws Exception {
         OpenAIProperties properties = new OpenAIProperties();
         properties.setBaseUrl("https://custom-provider.example/v1");
-        properties.setModel("gpt-test");
+        properties.setModel(modelId);
         properties.setTemperature(0.7);
         DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
         OpenAIClientResponses client = Mockito.mock(OpenAIClientResponses.class);
-        Mockito.when(client.getModels(monitor)).thenReturn(List.of(new OAIModel("gpt-test", "model", 0, "custom", 32000)));
+        Mockito.when(client.getModels(monitor)).thenReturn(List.of(new OAIModel(modelId, "model", 0, "custom", 32000)));
 
         AIModelCatalogEntry entry = new Gson().fromJson(
             "{\"limit\":{\"context\":500000},\"temperature\":false}", AIModelCatalogEntry.class);
-        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-test", entry)))) {
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of(modelId, entry)))) {
             try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties) {
                 @NotNull
                 @Override
@@ -113,9 +114,10 @@ class OpenAIModelCatalogTest extends DBeaverUnitTest {
                 Assertions.assertNull(properties.getContextWindowSize());
                 Assertions.assertThrows(DBException.class, () -> engine.getContextWindowSize(monitor));
                 AIModel nativeModel = engine.getModels(monitor).getFirst();
+                Assertions.assertEquals(Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING), nativeModel.features());
                 properties.selectModel(nativeModel);
                 Assertions.assertEquals(32_000, engine.getContextWindowSize(monitor));
-                properties.selectModel(new AIModel("gpt-test", null, Set.of(AIModelFeature.CHAT)));
+                properties.selectModel(new AIModel(modelId, null, Set.of(AIModelFeature.CHAT)));
                 Assertions.assertEquals(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, properties.getContextWindowSize());
                 AIEngineResponseConsumer consumer = Mockito.mock(AIEngineResponseConsumer.class);
                 engine.requestCompletionStream(monitor, new AIEngineRequest(AIMessage.userMessage("test")), consumer);

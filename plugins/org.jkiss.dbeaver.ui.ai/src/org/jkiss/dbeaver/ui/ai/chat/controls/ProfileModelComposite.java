@@ -410,8 +410,9 @@ class ProfileModelComposite extends Composite {
             arrowLabel = new Label(this, SWT.NONE);
             arrowLabel.setImage(DBeaverIcons.getImage(UIIcon.TREE_COLLAPSE));
 
-            MouseListener mouseListener = MouseListener.mouseDownAdapter(event -> {
-                if (isEnabled()) {
+            // open after release so macOS menus cannot select an item with the opening click
+            MouseListener mouseListener = MouseListener.mouseUpAdapter(event -> {
+                if (event.button == 1 && isEnabled()) {
                     setFocus();
                     showMenu.run();
                 }
