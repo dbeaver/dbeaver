@@ -57,10 +57,21 @@ public class DDProjectUpdateHandler extends AbstractHandler {
                         case UNCHANGED -> ddUIManager.showMessage(
                             DDTrackingUIMessages.project_sync_update_unchanged, false);
                         case LOCAL -> {
-                            service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
-                            ddUIManager.showMessage(DDTrackingUIMessages.project_sync_update_success, false);
+                            try {
+                                service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
+                                ddUIManager.showMessage(DDTrackingUIMessages.project_sync_push_success, false);
+                            } catch (DBException e) {
+                                ddUIManager.showError(DDTrackingUIMessages.project_sync_push_failed, e);
+                            }
                         }
-                        case SERVER -> throw new DBException(DDTrackingUIMessages.project_sync_update_server_changed);
+                        case SERVER -> {
+                            try {
+                                service.pullFiles(project, snapshot.binding(), snapshot.serverRevision());
+                                ddUIManager.showMessage(DDTrackingUIMessages.project_sync_pull_success, false);
+                            } catch (DBException e) {
+                                ddUIManager.showError(DDTrackingUIMessages.project_sync_pull_failed, e);
+                            }
+                        }
                         case CONFLICT -> throw new DBException(DDTrackingUIMessages.project_sync_update_conflict);
                     }
                 } catch (DBException e) {
