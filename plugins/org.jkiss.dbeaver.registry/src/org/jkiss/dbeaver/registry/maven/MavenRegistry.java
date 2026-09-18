@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,13 +190,27 @@ public class MavenRegistry {
     }
 
     @Nullable
-    public MavenArtifactVersion findArtifact(@NotNull DBRProgressMonitor monitor, @Nullable MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
+    public MavenArtifactVersion findArtifact(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable MavenArtifactVersion owner,
+        @NotNull MavenArtifactReference ref
+    ) {
+        return findArtifact(monitor, owner, ref, this.repositories);
+    }
+
+    @Nullable
+    public MavenArtifactVersion findArtifact(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable MavenArtifactVersion owner,
+        @NotNull MavenArtifactReference ref,
+        @NotNull List<MavenRepository> repositories
+    ) {
         String fullId = ref.getId();
         MavenArtifactVersion notFoundVersion = notFoundArtifacts.get(fullId);
         if (notFoundVersion != null) {
             return notFoundVersion;
         }
-        MavenArtifactVersion artifact = findInRepositories(monitor, owner, ref);
+        MavenArtifactVersion artifact = findInRepositories(monitor, owner, ref, repositories);
         if (artifact != null) {
             return artifact;
         }
@@ -224,7 +238,10 @@ public class MavenRegistry {
     }
 
     @Nullable
-    private MavenArtifactVersion findInRepositories(@NotNull DBRProgressMonitor monitor, MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
+    private MavenArtifactVersion findInRepositories(
+        @NotNull DBRProgressMonitor monitor, MavenArtifactVersion owner, @NotNull MavenArtifactReference ref,
+        @NotNull List<MavenRepository> repositories
+    ) {
         MavenRepository currentRepository = owner == null ? null : owner.getArtifact().getRepository();
         if (currentRepository != null) {
             MavenArtifactVersion artifact = currentRepository.findArtifact(monitor, ref);
