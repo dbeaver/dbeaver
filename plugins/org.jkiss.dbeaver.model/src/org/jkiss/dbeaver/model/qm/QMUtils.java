@@ -93,6 +93,10 @@ public class QMUtils {
         getQueryManager().unregisterMetaListener(metaListener);
     }
 
+    public static void flushEvents(@NotNull DBRProgressMonitor monitor) {
+        getQueryManager().getMetaCollector().flushEvents(monitor);
+    }
+
     @Nullable
     public static QMEventBrowser getEventBrowser(boolean currentSessionOnly) {
         if (qmRegistry == null) {
