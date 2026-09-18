@@ -77,6 +77,11 @@ public class DDProjectSyncService {
         return getBinding(project) != null;
     }
 
+    public void unbindProject(@NotNull DBPProject project) throws DBException {
+        bindingStore.delete(project);
+        log.debug("Removed DataDam sync binding for project '" + project.getName() + "'");
+    }
+
     @NotNull
     public DDProjectSyncSnapshot getProjectSyncSnapshot(@NotNull DBPProject project) throws DBException {
         DDProjectSyncLocalBinding binding = getBinding(project);
