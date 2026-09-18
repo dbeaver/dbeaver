@@ -41,6 +41,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
@@ -83,7 +87,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         ISearchContextProvider,
         INavigatorModelView,
         IEntityEditorContext,
-        IDatabasePostSaveProcessor
+        IDatabasePostSaveProcessor,
+        DBPEventListener
 {
     private static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
@@ -100,6 +105,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Nullable
     private TabbedFolderPageForm propertiesPanel;
     private Composite mainComposite;
+    @Nullable
+    private DBPDataSourceRegistry dataSourceRegistry;
 
     public ObjectPropertiesEditor()
     {
@@ -138,6 +145,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         pageControl.createProgressPanel();
 
         curFolderId = getEditorInput().getDefaultFolderId();
+
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer != null) {
+            dataSourceRegistry = dataSourceContainer.getRegistry();
+            dataSourceRegistry.addDataSourceListener(this);
+        }
     }
 
     private void createPropertyBrowser(Composite container)
@@ -339,6 +352,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public void dispose()
     {
+        if (dataSourceRegistry != null) {
+            dataSourceRegistry.removeDataSourceListener(this);
+            dataSourceRegistry = null;
+        }
+
         // Remove contributors
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
         for (IEditorActionBarContributor contributor : pageContributors.values()) {
@@ -502,7 +520,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-
         Runnable afterRefresh = () -> {
             if (folderComposite != null && folderComposite.getFolders() != null) {
                 for (TabbedFolderInfo folder : folderComposite.getFolders()) {
@@ -526,6 +543,30 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
 
         return RefreshResult.REFRESHED;
+    }
+
+    @Override
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && dataSourceContainer != null &&
+            (event.getObject() == dataSourceContainer || event.getData() == dataSourceContainer.getRegistry())
+        ) {
+            UIUtils.asyncExec(this::refreshConnectionTypeColors);
+        }
+    }
+
+    @Nullable
+    private DBPDataSourceContainer getDataSourceContainer() {
+        DBNDatabaseNode navigatorNode = getEditorInput().getNavigatorNode();
+        return navigatorNode == null ? null : navigatorNode.getDataSourceContainer();
+    }
+
+    private void refreshConnectionTypeColors() {
+        if (pageControl == null || pageControl.isDisposed()) {
+            return;
+        }
+        CSSUtils.applyStyles(pageControl);
+        CSSUtils.refreshWidgetDefaultBackgrounds(pageControl);
     }
 
     @Override
