@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.net.HttpURLConnection;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -32,6 +33,9 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class MonitoredHttpClient implements AutoCloseable {
+
+    private static final int HTTP_TEMPORARY_REDIRECT = 307;
+    private static final int HTTP_PERMANENT_REDIRECT = 308;
 
     /**
      * Maps an HTTP status code and response body to a {@link DBException}.
@@ -102,6 +106,10 @@ public class MonitoredHttpClient implements AutoCloseable {
             }
 
             HttpResponse<String> response = responseCompletableFuture.get();
+            DBException redirectError = getRedirectError(response);
+            if (redirectError != null) {
+                throw redirectError;
+            }
             if (response.statusCode() == 200) {
                 return response.body();
             } else {
@@ -137,6 +145,12 @@ public class MonitoredHttpClient implements AutoCloseable {
         AtomicBoolean suppressCompletion = new AtomicBoolean(false);
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
             .thenAccept(response -> {
+                DBException redirectError = getRedirectError(response);
+                if (redirectError != null) {
+                    response.body().close();
+                    errorHandler.accept(redirectError);
+                    return;
+                }
                 int statusCode = response.statusCode();
                 if (errorProcessor.process(errorMapper, errorHandler, response, suppressCompletion, backupOption, statusCode)) {
                     return;
@@ -153,6 +167,22 @@ public class MonitoredHttpClient implements AutoCloseable {
                     }
                 }
             });
+    }
+
+    @Nullable
+    private static DBException getRedirectError(@NotNull HttpResponse<?> response) {
+        return switch (response.statusCode()) {
+            case HttpURLConnection.HTTP_MOVED_PERM, HttpURLConnection.HTTP_MOVED_TEMP, HttpURLConnection.HTTP_SEE_OTHER,
+                HTTP_TEMPORARY_REDIRECT, HTTP_PERMANENT_REDIRECT -> new DBException(
+                    "Received HTTP " + response.statusCode() + " redirect"
+                        + response.headers().firstValue("Location")
+                            .filter(location -> !location.isBlank())
+                            .map(location -> " to " + location)
+                            .orElse(" without a Location header")
+                        + ". Set the API base URL to the final endpoint; redirects are not followed automatically."
+                );
+            default -> null;
+        };
     }
 
     @Override
