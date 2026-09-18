@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
 import org.jkiss.dbeaver.model.datadam.sync.core.PreparedFiles;
 
 /**
- * Consistent local and server state used by a project synchronization operation. Used not to recalculate fingerprints, since its expensive operation
+ * Consistent local and server state used by a project synchronization operation. Used to avoid recalculating fingerprints, since it's an expensive operation.
  */
 public record DDProjectSyncSnapshot(
     @NotNull DDProjectSyncLocalBinding binding,

@@ -34,10 +34,10 @@ public final class DDProjectSyncUtils {
         @NotNull DDSharedProjectRevision serverRevision,
         @NotNull String localFingerprint
     ) {
-        String lastKnownRevisionFingerprintprint = lastSyncedRevision.configurationFingerprint();
+        String lastKnownRevisionFingerprint = lastSyncedRevision.configurationFingerprint();
         String serverFingerprint = serverRevision.configurationFingerprint();
-        DDSyncChange change = classify(localFingerprint, lastKnownRevisionFingerprintprint, serverFingerprint);
-        log.debug("Classified project sync change as " + change + ": lastKnownRevision=" + lastKnownRevisionFingerprintprint +
+        DDSyncChange change = classify(localFingerprint, lastKnownRevisionFingerprint, serverFingerprint);
+        log.debug("Classified project sync change as " + change + ": lastKnownRevision=" + lastKnownRevisionFingerprint +
             ", local=" + localFingerprint + ", server=" + serverFingerprint);
         return change;
     }
@@ -52,7 +52,7 @@ public final class DDProjectSyncUtils {
         boolean serverChanged = !lastKnownRevisionFingerprint.equals(serverFingerprint);
         DDSyncChange change;
         if (localFingerprint.equals(serverFingerprint)) {
-            //case when local and server have the same file state for some reason. Then - we must pull and up[date last sync
+            // Case when local and server have the same file state for some reason; then we must pull and update last sync.
             change = serverChanged ? DDSyncChange.SERVER : DDSyncChange.UNCHANGED;
         } else if (localChanged && serverChanged) {
             change = DDSyncChange.CONFLICT;
