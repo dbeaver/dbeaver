@@ -118,18 +118,20 @@
 
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
-            <command commandId="org.jkiss.dbeaver.datadam.commands.project.share">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.datadam.commands.project.update">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.datadam.commands.project.unbind">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.datadam.commands.project.import">
-                <visibleWhen checkEnabled="true"/>
-            </command>
+            <menu id="org.jkiss.dbeaver.datadam.project.menu" label="%menu.datadam.label">
+                <command commandId="org.jkiss.dbeaver.datadam.commands.project.share">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.datadam.commands.project.update">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.datadam.commands.project.unbind">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.datadam.commands.project.import">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+            </menu>
         </menuContribution>
     </extension>
 
