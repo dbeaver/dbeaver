@@ -235,7 +235,9 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
 
             if (!selected) {
                 event.gc.setForeground(table.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                event.gc.setAlpha(48);
                 event.gc.drawLine(0, bounds.y + bounds.height - 1, width, bounds.y + bounds.height - 1);
+                event.gc.setAlpha(255);
             } else if (table.isFocusControl()) {
                 event.gc.drawFocus(1, bounds.y + 1, width - 2, bounds.height - 2);
             }

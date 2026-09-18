@@ -230,12 +230,24 @@ public class AdvancedList extends Canvas {
 
     private void updateMeasures() {
         int itemsPerRow = getItemsPerRow();
-        int totalRows = itemsPerRow == 0 ? 0 : (items.size() / itemsPerRow) + 2;
+        int totalRows = (items.size() + itemsPerRow - 1) / itemsPerRow;
         int itemHeight = getItemSize().y;
-        int visibleRowCount = getVisibleRowCount();
+        int viewportHeight = getClientArea().height;
+        int contentHeight = totalRows * itemHeight;
+        int maximum = Math.max(1, contentHeight);
+        int thumb = Math.max(1, Math.min(maximum, viewportHeight));
+        int selection = Math.min(vScroll.getSelection(), maximum - thumb);
 
-        vScroll.setValues(0, 0, totalRows * itemHeight, visibleRowCount * itemHeight, itemHeight / 2, itemHeight);
-        vScroll.setVisible(totalRows * itemHeight > getSize().y);
+        vScroll.setValues(selection, 0, maximum, thumb, Math.max(1, itemHeight / 2), itemHeight);
+
+        boolean scrollVisible = contentHeight > viewportHeight;
+        if (vScroll.getVisible() != scrollVisible) {
+            UIUtils.asyncExec(() -> {
+                if (!vScroll.isDisposed() && vScroll.getVisible() != scrollVisible) {
+                    vScroll.setVisible(scrollVisible);
+                }
+            });
+        }
     }
 
     private void onPaint(PaintEvent e) {
@@ -277,7 +289,8 @@ public class AdvancedList extends Canvas {
     }
 
     private int getVisibleRowCount() {
-        return getSize().y / getItemSize().y + 1;
+        int itemHeight = getItemSize().y;
+        return Math.max(1, (getClientArea().height + itemHeight - 1) / itemHeight);
     }
 
     Point getItemSize() {
@@ -288,8 +301,8 @@ public class AdvancedList extends Canvas {
 
     private int getItemsPerRow() {
         Point itemSize = getItemSize();
-        Point containerSize = getSize();
-        return Math.floorDiv(containerSize.x, itemSize.x);
+        Rectangle clientArea = getClientArea();
+        return Math.max(1, Math.floorDiv(clientArea.width, itemSize.x));
     }
 
     private void navigateByKey(KeyEvent e) {
