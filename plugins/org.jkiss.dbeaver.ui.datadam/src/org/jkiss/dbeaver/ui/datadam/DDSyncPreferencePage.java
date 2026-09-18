@@ -508,7 +508,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    result[0] = new DDBrowserLogin(siteUrl).login();
+                    result[0] = new DDBrowserLogin(siteUrl).login(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -520,6 +520,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
 
         DDCryptoState state = result[0];
+        if (state == null) {
+            return;
+        }
         if (!state.cryptoConfigured()) {
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
