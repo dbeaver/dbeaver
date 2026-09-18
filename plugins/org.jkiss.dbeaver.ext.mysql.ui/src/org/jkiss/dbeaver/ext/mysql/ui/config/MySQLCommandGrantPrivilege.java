@@ -72,6 +72,19 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         this.privileges.add(privilege);
     }
 
+    /**
+     * Grant/revoke a user-level (global or schema-wide) privilege with no specific table or procedure.
+     */
+    public MySQLCommandGrantPrivilege(
+        @NotNull MySQLUser user,
+        boolean grant,
+        boolean withGrantOption,
+        @Nullable MySQLCatalog schema,
+        @NotNull MySQLPrivilege privilege
+    ) {
+        this(user, grant, withGrantOption, schema, (MySQLTableBase) null, privilege);
+    }
+
     public MySQLCommandGrantPrivilege(
         @NotNull MySQLUser user,
         boolean grant,
