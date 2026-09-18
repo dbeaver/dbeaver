@@ -92,8 +92,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
 
     private DataSourceProviderRegistry() {
-        dataSourceTypes.put("custom", new DataSourceTypeDescriptor(
-            "custom", "Custom", "Custom data source", "User-defined data source type", DBIcon.DATABASE_DEFAULT));
+        dataSourceTypes.put(DBPDataSourceType.CUSTOM_ID, new DataSourceTypeDescriptor(
+            DBPDataSourceType.CUSTOM_ID, "Custom", "Custom data source", "User-defined data source type", DBIcon.DATABASE_DEFAULT));
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
             @Override
             public void addPropertyChangeListener(@NotNull DBPPreferenceListener listener) {
@@ -446,10 +446,21 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     @NotNull
     public DataSourceTypeDescriptor resolveDataSourceType(@Nullable String typeId, @NotNull DBPDriver driver) {
-        String resolvedId = driver.isCustom() ? "custom" :
-            CommonUtils.isEmpty(typeId) ? driver.getProviderId() + ":" + driver.getId() : typeId;
+        String resolvedId;
+        if (driver.isCustom()) {
+            resolvedId = DBPDataSourceType.CUSTOM_ID;
+        } else {
+            if (CommonUtils.isEmpty(typeId)) {
+                log.debug("Cannot determine datasource type for driver " + driver.getFullId() + "'");
+                resolvedId = driver.getProviderId() + ":" + driver.getId();
+            } else {
+                resolvedId = typeId;
+            }
+        }
         DataSourceTypeDescriptor type = dataSourceTypes.get(resolvedId);
         if (type == null) {
+            // Shouldn't be here
+            log.debug("Create new datasource type '" + resolvedId + "'");
             type = new DataSourceTypeDescriptor(resolvedId, driver);
             dataSourceTypes.put(resolvedId, type);
         }

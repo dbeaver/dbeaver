@@ -45,7 +45,7 @@ public class DataSourceProviderRegistryTest {
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
         DriverDescriptor driver = new DriverDescriptor(registry.getDataSourceProvider("generic"), "test-custom-driver");
 
-        Assertions.assertSame(registry.getDataSourceType("custom"), driver.getDataSourceType());
+        Assertions.assertSame(registry.getDataSourceType(DBPDataSourceType.CUSTOM_ID), driver.getDataSourceType());
     }
 
     @Test

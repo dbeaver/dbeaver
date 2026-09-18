@@ -27,6 +27,8 @@ import java.util.List;
  * A database or another kind of data source that can be accessed by one or more drivers.
  */
 public interface DBPDataSourceType extends DBPNamedObject {
+    String CUSTOM_ID = "custom";
+
     @NotNull
     String getId();
 
