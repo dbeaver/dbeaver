@@ -27,6 +27,7 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.custom.VerifyKeyListener;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -79,7 +80,7 @@ public class SQLContentAssistant extends ContentAssistant {
         }
     };
 
-    public SQLContentAssistant(SQLEditorBase editor) {
+    public SQLContentAssistant(@NotNull SQLEditorBase editor) {
         super(); // Sync. Maybe we should make it async
         this.editor = editor;
         this.proposalActivationKeyListener = event -> {
@@ -97,7 +98,7 @@ public class SQLContentAssistant extends ContentAssistant {
     }
 
     @Override
-    public void install(ITextViewer textViewer) {
+    public void install(@NotNull ITextViewer textViewer) {
         super.install(textViewer);
         installedTextViewer = textViewer;
         promoteProposalActivationKeyListener();
@@ -110,7 +111,7 @@ public class SQLContentAssistant extends ContentAssistant {
         }
     }
 
-    public void assistSessionStarted(ContentAssistEvent event) {
+    public void assistSessionStarted(@NotNull ContentAssistEvent event) {
         promoteProposalActivationKeyListener();
         if (this.sorter != null) {
             this.sorter.refreshSettings();
@@ -164,6 +165,7 @@ public class SQLContentAssistant extends ContentAssistant {
     }
 
     @Override
+    @NotNull
     protected AutoAssistListener createAutoAssistListener() {
         return new SQLAutoAssistListener();
     }

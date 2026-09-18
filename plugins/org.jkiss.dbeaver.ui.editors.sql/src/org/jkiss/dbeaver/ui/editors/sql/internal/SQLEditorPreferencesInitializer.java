@@ -92,7 +92,11 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
                 SQLPreferenceConstants.COMPLETION_PROPOSAL_ACTIVATION_KEY,
                 ProposalActivationKey.BOTH.name()
             );
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_INSERT_CASE, SQLCompletionContext.PROPOSAL_CASE_DEFAULT);
+            PrefUtils.setDefaultPreferenceValue(
+                store,
+                SQLPreferenceConstants.PROPOSAL_INSERT_CASE,
+                SQLCompletionContext.PROPOSAL_CASE_DEFAULT
+            );
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_REPLACE_WORD, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_VALUES, false);

@@ -106,6 +106,8 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
                     }
                     break;
                 }
+                default:
+                    break;
             }
         });
         

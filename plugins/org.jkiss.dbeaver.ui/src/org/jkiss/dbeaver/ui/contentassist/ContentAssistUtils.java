@@ -99,11 +99,12 @@ public class ContentAssistUtils {
         }
 
         @NotNull
-        private static ProposalActivationKey valueByName(String name) {
+        private static ProposalActivationKey valueByName(@NotNull String name) {
             return CommonUtils.valueOf(ProposalActivationKey.class, name, BOTH);
         }
     }
 
+    @NotNull
     public static ContentProposalAdapter installContentProposal(
         @NotNull Control control,
         @NotNull IControlContentAdapter contentAdapter,
@@ -112,15 +113,7 @@ public class ContentAssistUtils {
         return installContentProposal(control, contentAdapter, provider, null, true);
     }
 
-    public static ContentProposalAdapter installContentProposalWithPreferences(
-        @NotNull Control control,
-        @NotNull IControlContentAdapter contentAdapter,
-        @NotNull IContentProposalProvider provider,
-        @NotNull Supplier<DBPPreferenceStore> preferenceStoreSupplier
-    ) {
-        return installContentProposal(control, contentAdapter, provider, null, null, true, preferenceStoreSupplier);
-    }
-
+    @NotNull
     public static ContentProposalAdapter installContentProposal(
         @NotNull Control control,
         @NotNull IControlContentAdapter contentAdapter,
@@ -130,7 +123,7 @@ public class ContentAssistUtils {
         return installContentProposal(control, contentAdapter, provider, null, autoActivation);
     }
 
-   
+    @NotNull
     public static ContentProposalAdapter installContentProposal(
         @NotNull Control control,
         @NotNull IControlContentAdapter contentAdapter,
@@ -140,9 +133,8 @@ public class ContentAssistUtils {
     ) {
         return installContentProposal(control, contentAdapter, provider, labelProvider, null, autoActivation);
     }
-    
-   
-    
+
+    @NotNull
     public static ContentProposalAdapter installContentProposal(
         @NotNull Control control,
         @NotNull IControlContentAdapter contentAdapter,
@@ -162,6 +154,7 @@ public class ContentAssistUtils {
         );
     }
 
+    @NotNull
     private static ContentProposalAdapter installContentProposal(
         @NotNull Control control,
         @NotNull IControlContentAdapter contentAdapter,
@@ -196,6 +189,16 @@ public class ContentAssistUtils {
 
         //proposalAdapter.setFilterStyle(ContentProposalAdapter.FILTER_CHARACTER);
         return proposalAdapter;
+    }
+
+    @NotNull
+    public static ContentProposalAdapter installContentProposalWithPreferences(
+        @NotNull Control control,
+        @NotNull IControlContentAdapter contentAdapter,
+        @NotNull IContentProposalProvider provider,
+        @NotNull Supplier<DBPPreferenceStore> preferenceStoreSupplier
+    ) {
+        return installContentProposal(control, contentAdapter, provider, null, null, true, preferenceStoreSupplier);
     }
 
     public static void installProposalActivationKeyHandler(
