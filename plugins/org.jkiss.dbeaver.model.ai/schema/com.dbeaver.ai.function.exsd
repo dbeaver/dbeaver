@@ -62,6 +62,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="legacyId" type="string">
+             <annotation>
+                <documentation>
+                   Legacy identifier accepted when reading persisted settings and function calls
+                </documentation>
+             </annotation>
+         </attribute>
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
