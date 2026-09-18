@@ -492,7 +492,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
                 Path session = Files.createTempDirectory(root, TEMP_SESSION_PREFIX);
                 try {
-                tempFolderLock = FileMutex.tryLock(session.resolve(TEMP_SESSION_LOCK));
+                    tempFolderLock = FileMutex.tryLock(session.resolve(TEMP_SESSION_LOCK));
                 } catch (IOException e) {
                     ContentUtils.deleteFileRecursive(session);
                     throw e;
