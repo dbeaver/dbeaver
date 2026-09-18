@@ -647,11 +647,13 @@ public abstract class LightGrid extends Canvas {
                 if (!fitValue) {
                     // If grid width more than screen - lets narrow too long columns
                     int clientWidth = getCurrentOrLastClientArea().width;
-                    if (totalWidth > clientWidth && clientWidth != 0) {
+                    int visibleRowHeaderWidth = rowHeaderVisible ? rowHeaderWidth : 0;
+                    int availableWidth = clientWidth - getBorderWidth() - visibleRowHeaderWidth - vScroll.getWidth();
+                    if (totalWidth > availableWidth && availableWidth > 0) {
                         int normalWidth = 0;
                         List<GridColumn> fatColumns = new ArrayList<>();
                         for (GridColumn curColumn : columns) {
-                            int curColumnWidthPercent = (int)((curColumn.getWidth() / (double)  clientWidth) * 100);
+                            int curColumnWidthPercent = (int)((curColumn.getWidth() / (double) availableWidth) * 100);
                             if (CommonUtils.isEmpty(curColumn.getChildren()) && curColumnWidthPercent > maxColumnDefWidth) {
                                 fatColumns.add(curColumn);
                             } else {
@@ -660,14 +662,24 @@ public abstract class LightGrid extends Canvas {
                         }
                         if (!fatColumns.isEmpty()) {
                             // Narrow fat columns on decWidth
-                            int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - vScroll.getWidth())
-                                / fatColumns.size();
-                            int freeSpacePercent = (int) (((double) freeSpace / clientWidth) * 100);
-                            int newFatWidth = (freeSpacePercent > maxColumnDefWidth ? freeSpace : (int) ((double) maxColumnDefWidth / 100 * clientWidth));
+                            int freeSpace = (availableWidth - normalWidth) / fatColumns.size();
+                            int freeSpacePercent = (int) (((double) freeSpace / availableWidth) * 100);
+                            int newFatWidth = (freeSpacePercent > maxColumnDefWidth ? freeSpace : (int) ((double) maxColumnDefWidth / 100 * availableWidth));
                             for (GridColumn curColumn : fatColumns) {
                                 curColumn.setWidth(newFatWidth);
                             }
                         }
+                    } else if (totalWidth < availableWidth && availableWidth > 0 && !columns.isEmpty()) {
+                        // Expand leaf columns proportionally to fill available screen width
+                        double scale = (double) availableWidth / totalWidth;
+                        int adjustedTotal = 0;
+                        for (int i = 0; i < columns.size() - 1; i++) {
+                            GridColumn curColumn = columns.get(i);
+                            int newWidth = Math.max(1, (int) (curColumn.getWidth() * scale));
+                            curColumn.setWidth(newWidth, false);
+                            adjustedTotal += newWidth;
+                        }
+                        columns.get(columns.size() - 1).setWidth(Math.max(1, availableWidth - adjustedTotal), false);
                     }
                 }
             }
