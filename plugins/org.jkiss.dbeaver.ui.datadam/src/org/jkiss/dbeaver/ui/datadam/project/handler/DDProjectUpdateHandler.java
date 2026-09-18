@@ -73,6 +73,7 @@ public class DDProjectUpdateHandler extends AbstractHandler {
                             }
                         }
                         case CONFLICT -> throw new DBException(DDTrackingUIMessages.project_sync_update_conflict);
+                        default -> throw new DBException("Unsupported project synchronization state: " + snapshot.change());
                     }
                 } catch (DBException e) {
                     ddUIManager.showError(DDTrackingUIMessages.project_sync_update_failed, e);

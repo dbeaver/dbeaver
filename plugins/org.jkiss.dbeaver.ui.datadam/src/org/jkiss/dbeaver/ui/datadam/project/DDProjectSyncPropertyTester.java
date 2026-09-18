@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.datadam.project;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -32,7 +34,12 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
     private static final Log log = Log.getLog(DDProjectSyncPropertyTester.class);
 
     @Override
-    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+    public boolean test(
+        @Nullable Object receiver,
+        @NotNull String property,
+        @NotNull Object[] args,
+        @Nullable Object expectedValue
+    ) {
         if (!(receiver instanceof DBNProject projectNode)) {
             return false;
         }

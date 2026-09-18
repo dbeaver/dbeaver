@@ -177,9 +177,9 @@ public class DDProjectSyncService {
             result.currentRevision().configurationFingerprint())) {
             throw new DBException("Server project configuration has changed: " + binding.remoteProjectId());
         }
-        DDProjectSyncContentAdapter content = getServerContentAdapter(result.files());
+        DDProjectSyncContentAdapter content = getLocalContentAdapter(binding);
         content.write(project, result.files());
-        saveBinding(project, binding.remoteProjectId(), result.currentRevision(), content.getUnitIds());
+        saveBinding(project, binding.remoteProjectId(), result.currentRevision(), binding.unitIds());
         return result.currentRevision();
     }
 
@@ -256,18 +256,23 @@ public class DDProjectSyncService {
             saveBinding(project, remote.id(), pullResult.currentRevision(), content.getUnitIds());
             log.debug("Imported DataDam project " + remote.id() + " as local project '" + project.getName() + "'");
             return project;
+        } catch (DBException e) {
+            rollbackImport(project, e);
+            throw e;
         } catch (Exception e) {
-            if (project != null) {
-                try {
-                    workspace.deleteProject(project);
-                } catch (DBException cleanupError) {
-                    e.addSuppressed(cleanupError);
-                }
-            }
-            if (e instanceof DBException dbException) {
-                throw dbException;
-            }
+            rollbackImport(project, e);
             throw new DBException("Error importing DataDam project '" + remote.name() + "'", e);
+        }
+    }
+
+    private void rollbackImport(@Nullable DBPProject project, @NotNull Exception cause) {
+        if (project == null) {
+            return;
+        }
+        try {
+            workspace.deleteProject(project);
+        } catch (DBException cleanupError) {
+            cause.addSuppressed(cleanupError);
         }
     }
 
