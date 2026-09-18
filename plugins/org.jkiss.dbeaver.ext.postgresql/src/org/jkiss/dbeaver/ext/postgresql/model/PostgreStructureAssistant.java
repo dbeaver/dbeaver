@@ -126,7 +126,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         } else if (!params.isGlobalSearch()) {
             // Limit object search with search path
             for (String sn : executionContext.computeSearchPath()) {
-                PostgreSchema schema = database.getSchema(monitor, PostgreUtils.getRealSchemaName(database, sn));
+                PostgreSchema schema = database.getSchema(monitor, PostgreUtils.getRealSchemaName(executionContext, sn));
                 if (schema != null) {
                     nsList.add(schema);
                 }

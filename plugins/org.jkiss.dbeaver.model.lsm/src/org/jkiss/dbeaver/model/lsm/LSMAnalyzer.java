@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,5 +27,14 @@ public interface LSMAnalyzer {
     @Nullable
     STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener);
 
-    
+    /**
+     * Parses the source through the grammar entry point that consumes a query sequence.
+     * This makes trailing or additional queries visible to callers that require exactly one complete query.
+     */
+    @Nullable
+    STMTreeRuleNode parseSqlQueriesTree(
+        @NotNull STMSource source,
+        @Nullable STMErrorListener errorListener
+    );
+
 }
