@@ -78,6 +78,9 @@
             commandId="org.jkiss.dbeaver.datadam.commands.project.update"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
         <image
+            commandId="org.jkiss.dbeaver.datadam.commands.project.unbind"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.svg"/>
+        <image
             commandId="org.jkiss.dbeaver.datadam.commands.project.import"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.svg"/>
     </extension>
@@ -142,7 +145,7 @@
         <page category="org.eclipse.ui.preferencePages.Workbench"
               id="org.jkiss.dbeaver.preferences.synchronization"
               class="org.jkiss.dbeaver.ui.datadam.DDSyncPreferencePage"
-              name="Synchronization">
+              name="DataDam">
             <keywordReference id="org.jkiss.dbeaver.ui.datadam.keyword.pref.synchronization"/>
         </page>
     </extension>
