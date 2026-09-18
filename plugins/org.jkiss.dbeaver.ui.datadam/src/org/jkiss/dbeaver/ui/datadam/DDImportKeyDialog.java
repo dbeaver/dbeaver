@@ -50,6 +50,26 @@ public class DDImportKeyDialog extends BaseDialog {
         gd.widthHint = 500;
         gd.heightHint = UIUtils.getFontHeight(phraseText) * 6;
         phraseText.setLayoutData(gd);
+        phraseText.addListener(SWT.KeyDown, event -> {
+            if ((event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR) && event.stateMask == 0) {
+                event.doit = false;
+                okPressed();
+            }
+        });
+        phraseText.addVerifyListener(event -> {
+            // native paste (including the context menu) arrives as a multi-character edit
+            if (!event.doit || event.text.length() <= 1) {
+                return;
+            }
+            String current = phraseText.getText();
+            String candidate = current.substring(0, event.start) + event.text + current.substring(event.end);
+            phraseText.getDisplay().asyncExec(() -> {
+                if (!phraseText.isDisposed()
+                    && DDRecoveryPhrase.normalize(candidate).equals(DDRecoveryPhrase.normalize(phraseText.getText()))) {
+                    acceptPhrase(false);
+                }
+            });
+        });
         UIUtils.createPushButton(
             composite, DDTrackingUIMessages.import_key_dialog_paste_button, null,
             SelectionListener.widgetSelectedAdapter(e -> {
@@ -67,11 +87,17 @@ public class DDImportKeyDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
+        acceptPhrase(true);
+    }
+
+    private void acceptPhrase(boolean reportError) {
         String value;
         try {
             value = DDRecoveryPhrase.normalizeAndValidate(phraseText.getText());
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.import_key_dialog_title, e.getMessage());
+            if (reportError) {
+                DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.import_key_dialog_title, e.getMessage());
+            }
             return;
         }
         phrase = value;

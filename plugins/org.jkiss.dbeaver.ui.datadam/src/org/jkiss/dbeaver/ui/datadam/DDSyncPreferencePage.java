@@ -146,6 +146,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             }));
 
+        DDProjectShareControls.create(composite, this::applyAndGetGatewayUrl);
+
         Composite syncGroup = UIUtils.createTitledComposite(
             composite,
             DDTrackingUIMessages.sync_preference_page_configuration_group,
@@ -412,7 +414,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_log_in_first, true);
             return null;
         }
-        String url = getGatewayUrl();
+        String url = applyAndGetGatewayUrl();
         if (CommonUtils.isEmpty(url)) {
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_url_not_configured, true);
@@ -491,6 +493,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         updateApplyState();
     }
 
+    @NotNull
+    private String applyAndGetGatewayUrl() {
+        performApply();
+        return getGatewayUrl();
+    }
+
     @Override
     public boolean performOk() {
         performApply();
@@ -498,6 +506,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void logIn() {
+        performApply();
         String siteUrl = getAccountUrl();
         if (CommonUtils.isEmpty(siteUrl)) {
             DBWorkbench.getPlatformUI().showMessageBox(
@@ -553,6 +562,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private void logOut() {
         try {
+            performApply();
             DDTrackingInitializer.stop();
             DDKeyStore.clear();
             refresh();
