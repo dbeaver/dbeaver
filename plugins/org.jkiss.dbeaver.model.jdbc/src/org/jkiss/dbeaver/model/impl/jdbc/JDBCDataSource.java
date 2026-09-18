@@ -192,6 +192,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     url = getConnectionURL(connectionInfo);
                     log.debug("Configuration info was changed after auth initialization. Connection URL was updated to: " + url);
                 }
+                url = prepareConnectionURL(url, connectProps);
             } catch (DBException e) {
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
@@ -273,6 +274,14 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    /**
+     * Allows a data source to adapt its URL after authentication has supplied the final connection properties.
+     */
+    @Nullable
+    protected String prepareConnectionURL(@Nullable String url, @NotNull Properties connectionProperties) {
+        return url;
     }
 
     private void initializeDriverContext(Driver driverInstance) {
