@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
@@ -283,20 +284,24 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         }
 
         String projectId = documentUri.getProjectId();
-        DBPProject project = sessionProvider != null ?
-            sessionProvider.getWorkspace().getProject(projectId) :
-            DBWorkbench.getPlatform().getWorkspace().getProject(projectId);
+        DBPWorkspace workspace = sessionProvider != null ?
+            sessionProvider.getWorkspace() : DBWorkbench.getPlatform().getWorkspace();
+        DBPProject project = workspace.getProject(projectId);
 
         DBPDataSourceContainer dataSourceContainer = null;
         if (project != null) {
             // Note: default datasource id is defined as a resource property:
             // in Cloudbeaver - from front-end - LocalResourceController#setResourceProperty
             // in Desktop - EditorUtils#setInputDataSource
-            String dataSourceId = String.valueOf(
-                project.getResourceProperty(documentUri.getResourcePath(), DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE)
-            );
-            if (dataSourceId != null) {
-                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
+            String resourcePath = documentUri.getResourcePath();
+            String dataSourceId = project.getResourceProperty(resourcePath, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+            String dataSourceProjectId = project.getResourceProperty(
+                resourcePath,
+                DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID);
+            DBPProject dataSourceProject = dataSourceProjectId == null ?
+                project : workspace.getProjectById(dataSourceProjectId);
+            if (dataSourceId != null && dataSourceProject != null) {
+                dataSourceContainer = dataSourceProject.getDataSourceRegistry().getDataSource(dataSourceId);
             }
         }
 

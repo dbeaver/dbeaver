@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpRequest;
 
-public class OpenAIRequestFilter implements OpenAiClientBase.HttpRequestFilter {
+public class OpenAIRequestFilter implements AIHttpRequestFilter {
     private final String token;
 
     public OpenAIRequestFilter(@NotNull String token) {

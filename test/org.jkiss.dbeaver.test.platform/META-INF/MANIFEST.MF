@@ -8,7 +8,8 @@ Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.junit
-Require-Bundle: org.jkiss.dbeaver.headless,
+Require-Bundle: junit-jupiter-api,
+ org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.data.transfer,
