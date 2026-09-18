@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonParser;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageContent;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -31,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class OpenAIAccountAuthenticatorTest {
+class OpenAIAccountAuthenticatorTest extends DBeaverUnitTest {
     @Test
     void extractsChatGptAccountIdFromIdToken() {
         String token = tokenWithClaims("{\"chatgpt_account_id\":\"account-1\"}");
@@ -90,6 +93,54 @@ class OpenAIAccountAuthenticatorTest {
             """).getAsJsonObject();
 
         assertEquals(List.of("first", "second"), OpenAIAccountAuthenticator.parseModels(catalog));
+    }
+
+    @Test
+    void usesAccountContextInsteadOfApiModelLimitsOrExperimentalMaximum() {
+        var catalog = JsonParser.parseString("""
+            {"models":[
+              {"slug":"gpt-5","visibility":"list","context_window":272000,"max_context_window":1000000},
+              {"slug":"custom-model","visibility":"list","context_window":64000}
+            ]}
+            """).getAsJsonObject();
+
+        var models = OpenAIAccountAuthenticator.parseModelDetails(catalog);
+
+        assertEquals(272_000, models.get(0).contextWindowSize());
+        assertEquals(0.0, models.get(0).defaultTemperature());
+        assertEquals(64_000, models.get(1).contextWindowSize());
+    }
+
+    @Test
+    void missingOrInvalidAccountContextRemainsUnknown() {
+        var catalog = JsonParser.parseString("""
+            {"models":[
+              {"slug":"gpt-5","visibility":"list","context_window":null},
+              {"slug":"custom-model","visibility":"list","context_window":0},
+              {"slug":"missing-context","visibility":"list"},
+              {"slug":"negative-context","visibility":"list","context_window":-1}
+            ]}
+            """).getAsJsonObject();
+
+        var models = OpenAIAccountAuthenticator.parseModelDetails(catalog);
+
+        assertEquals(4, models.size());
+        models.forEach(model -> assertNull(model.contextWindowSize()));
+    }
+
+    @Test
+    void catalogFillsMissingAccountContextWithoutReplacingNativeLimit() {
+        var response = JsonParser.parseString("""
+            {"models":[
+              {"slug":"gpt-5","visibility":"list"},
+              {"slug":"custom-model","visibility":"list","context_window":272000}
+            ]}
+            """).getAsJsonObject();
+        var entry = new Gson().fromJson("{\"limit\":{\"context\":500000}}", AIModelCatalogEntry.class);
+        var models = OpenAIAccountAuthenticator.parseModelDetails(response);
+
+        assertEquals(500_000, entry.enrich(models.get(0)).contextWindowSize());
+        assertEquals(272_000, entry.enrich(models.get(1)).contextWindowSize());
     }
 
     @Test
