@@ -864,11 +864,14 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
-            CSSUtils.applyStyles(topBar);
-        }
-        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
-            CSSUtils.applyStyles(bottomBar);
+        // On macOS, SWT doesn't update connection-colored toolbar backgrounds after a datasource change.
+        if (RuntimeUtils.isMacOS()) {
+            if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+                CSSUtils.applyStyles(topBar);
+            }
+            if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+                CSSUtils.applyStyles(bottomBar);
+            }
         }
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
