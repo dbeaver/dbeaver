@@ -20,59 +20,42 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
-import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 
 import java.util.List;
 
 /**
- * Data source provider descriptor
+ * A database or another kind of data source that can be accessed by one or more drivers.
  */
-public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
-
+public interface DBPDataSourceType extends DBPNamedObject {
     @NotNull
     String getId();
 
     @Nullable
     String getDescription();
 
-    @Nullable
-    DBPImage getIcon();
-
-    @Nullable
-    default DBPDataSourceType getDataSourceType() {
-        return null;
+    /** Brief information about the data source technology. */
+    @NotNull
+    default String getDataSourceInformation() {
+        return getName();
     }
 
-    boolean isDriversManageable();
-    boolean supportsDriverMigration();
+    @NotNull
+    List<String> getCategories();
 
     @NotNull
-    List<? extends DBPDriver> getEnabledDrivers();
+    DBPImage getIcon();
 
     @NotNull
-    String getPluginId();
+    DBPImage getIconBig();
 
     @Nullable
-    DBXTreeDescriptor getTreeDescriptor();
-
-    @NotNull
-    SQLDialectMetadata getScriptDialect();
-
-    boolean isTemporary();
-
-    @Nullable
-    DBPDriver getDriver(@NotNull String id);
+    DBPImage getLogoImage();
 
     @NotNull
     List<? extends DBPDriver> getDrivers();
 
-    @Nullable
-    DBPDataSourceProviderDescriptor getParentProvider();
-
     @NotNull
-    List<DBPDataSourceProviderDescriptor> getChildrenProviders();
+    List<? extends DBPDriver> getEnabledDrivers();
 
-    // Returns true if this provider or one of parent providers has specified ID
-    boolean matchesId(@NotNull String id);
+    int getPromotedScore();
 }

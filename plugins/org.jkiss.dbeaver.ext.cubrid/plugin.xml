@@ -20,10 +20,19 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="cubrid"
+            label="CUBRID"
+            description="CUBRID database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/cubrid_icon.png"
+            iconBig="icons/cubrid_icon_big.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.cubrid.CubridDataSourceProvider"
             description="Cubrid JDBC connector"
             id="cubrid"
+            dataSourceType="cubrid"
             parent="generic"
             label="Cubrid"
             icon="icons/cubrid_icon.png"
@@ -190,8 +199,6 @@
                 <driver
                     id="cubrid_jdbc"
                     label="CUBRID"
-                    icon="icons/cubrid_icon.png"
-                    iconBig="icons/cubrid_icon_big.png"
                     class="cubrid.jdbc.driver.CUBRIDDriver"
                     sampleURL="jdbc:CUBRID:{host}:{port}:{database}:::"
                     defaultPort="30000"

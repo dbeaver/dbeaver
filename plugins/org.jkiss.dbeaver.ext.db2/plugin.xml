@@ -4,11 +4,20 @@
 
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="db2"
+            label="IBM Db2"
+            description="IBM Db2 database"
+            dataSourceInformation="Enterprise relational database from IBM"
+            categories="sql"
+            icon="icons/db2_icon.png"
+            iconBig="icons/db2_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
                 description="Db2 connector"
                 icon="icons/db2_icon.png"
                 id="db2"
+                dataSourceType="db2"
                 label="Db2"
                 dialect="db2_luw">
             <tree
@@ -434,8 +443,6 @@
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     supportedConfigurationTypes="MANUAL,URL"
                     useURL="false"
-                    icon="icons/db2_icon.png"
-                    iconBig="icons/db2_icon_big.png"
                     defaultPort="50000"
                     webURL="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                     propertiesURL="https://www.ibm.com/docs/en/db2/latest?topic=pdsdjs-common-data-server-driver-jdbc-sqlj-properties-all-database-products"

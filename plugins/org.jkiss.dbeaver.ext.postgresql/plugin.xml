@@ -66,6 +66,70 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="risingwave"
+            label="RisingWave"
+            description="RisingWave database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/risingwave_icon.png"
+            iconBig="icons/risingwave_icon_big.png"/>
+        <dataSourceType
+            id="edb"
+            label="EDB"
+            description="EDB database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/edb_icon.png"
+            iconBig="icons/edb_icon_big.png"/>
+        <dataSourceType
+            id="materialize"
+            label="Materialize"
+            description="Materialize database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/materialize_icon.png"
+            iconBig="icons/materialize_icon_big.png"/>
+        <dataSourceType
+            id="cockroachdb"
+            label="CockroachDB"
+            description="CockroachDB database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/cockroach_icon.png"
+            iconBig="icons/cockroach_icon_big.png"/>
+        <dataSourceType
+            id="yugabytedb"
+            label="YugabyteDB"
+            description="YugabyteDB distributed database"
+            dataSourceInformation="Distributed database supporting SQL and Cassandra-compatible APIs"
+            categories="sql,nosql,bigdata,keyvalue"
+            icon="icons/yugabyte_icon.png"
+            iconBig="icons/yugabyte_icon_big.png"/>
+        <dataSourceType
+            id="yellowbrick"
+            label="Yellowbrick"
+            description="Yellowbrick database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/yellowbrick_icon.png"
+            iconBig="icons/yellowbrick_icon_big.png"/>
+        <dataSourceType
+            id="timescaledb"
+            label="TimescaleDB"
+            description="TimescaleDB time-series database"
+            dataSourceInformation="Time-series database for operational data"
+            categories="timeseries"
+            icon="icons/timescale_icon.png"
+            iconBig="icons/timescale_icon_big.png"/>
+        <dataSourceType
+            id="redshift"
+            label="Amazon Redshift"
+            description="Amazon Redshift database"
+            dataSourceInformation="High-performance analytical database platform"
+            categories="sql,analytic,bigdata,aws"
+            icon="icons/redshift_icon.svg"
+            iconBig="icons/redshift_icon_big.svg"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"
                 description="%datasource.postgresql.description"
@@ -305,9 +369,8 @@
 
                 <driver
                     id="postgres-jdbc"
+                    dataSourceType="postgresql"
                     label="PostgreSQL"
-                    icon="icons/postgresql_icon.png"
-                    iconBig="icons/postgresql_icon_big.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
@@ -341,9 +404,8 @@
                 <!-- Bad driver: it must be declared in generic provider -->
                 <driver
                     id="postgresql"
+                    dataSourceType="postgresql"
                     label="PostgreSQL (Old)"
-                    icon="icons/postgresql_icon.png"
-                    iconBig="icons/postgresql_icon_big.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
@@ -356,6 +418,7 @@
 
                 <driver
                     id="postgres-greenplum-jdbc"
+                    dataSourceType="greenplum"
                     label="Greenplum"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
@@ -372,9 +435,8 @@
 
                 <driver
                     id="postgres-timescale-jdbc"
+                    dataSourceType="timescaledb"
                     label="TimescaleDB"
-                    icon="icons/timescale_icon.png"
-                    iconBig="icons/timescale_icon_big.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
@@ -398,9 +460,8 @@
 
                 <driver
                     id="yellowbrick-jdbc"
+                    dataSourceType="yellowbrick"
                     label="Yellowbrick"
-                    icon="icons/yellowbrick_icon.png"
-                    iconBig="icons/yellowbrick_icon_big.png"
                     class="io.yellowbrick.jdbc.YellowbrickDriver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
@@ -420,13 +481,12 @@
                     <property name="connectTimeout" value="20"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
-                <driver id="postgres-yellowbrick-jdbc"/>
+                <driver id="postgres-yellowbrick-jdbc" dataSourceType="yellowbrick"/>
 
                 <driver
                         id="postgres-yugabytedb-jdbc"
+                        dataSourceType="yugabytedb"
                         label="YugabyteDB"
-                        icon="icons/yugabyte_icon.png"
-                        iconBig="icons/yugabyte_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -448,9 +508,8 @@
 
                 <driver
                         id="postgres-cockroach-jdbc"
+                        dataSourceType="cockroachdb"
                         label="CockroachDB"
-                        icon="icons/cockroach_icon.png"
-                        iconBig="icons/cockroach_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -471,9 +530,8 @@
 
                 <driver
                         id="postgres-materialize-jdbc"
+                        dataSourceType="materialize"
                         label="Materialize"
-                        icon="icons/materialize_icon.png"
-                        iconBig="icons/materialize_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -494,9 +552,8 @@
 
                 <driver
                     id="postgres-redshift-jdbc"
+                    dataSourceType="redshift"
                     label="Redshift"
-                    icon="icons/redshift_icon.svg"
-                    iconBig="icons/redshift_icon_big.svg"
                     category="AWS"
                     class="com.amazon.redshift.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
@@ -530,9 +587,8 @@
 
                 <driver
                         id="postgres-edb-jdbc"
+                        dataSourceType="edb"
                         label="EDB"
-                        icon="icons/edb_icon.png"
-                        iconBig="icons/edb_icon_big.png"
                         class="com.edb.Driver"
                         sampleURL="jdbc:edb://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -553,6 +609,7 @@
 
                 <driver
                         id="postgres-gcloud-jdbc"
+                        dataSourceType="postgresql"
                         label="Google Cloud SQL - PostgreSQL"
 	                    icon="icons/google_cloud_sql_icon.png"
 	                    iconBig="icons/google_cloud_sql_icon_big.png"
@@ -581,9 +638,8 @@
 
                 <driver
                         id="postgres-cratedb-jdbc"
+                        dataSourceType="cratedb"
                         label="CrateDB"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/cratedb_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/cratedb_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -605,9 +661,8 @@
 
                 <driver
                         id="postgres-risingwave-jdbc"
+                        dataSourceType="risingwave"
                         label="RisingWave"
-                        icon="icons/risingwave_icon.png"
-                        iconBig="icons/risingwave_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"

@@ -4,6 +4,14 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="mariadb"
+            label="MariaDB"
+            description="MariaDB database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/mariadb_icon.png"
+            iconBig="icons/mariadb_icon_big.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
             description="MySQL connector"
@@ -153,12 +161,11 @@
                 </propertyGroup>
             </driver-properties>
             <drivers managable="true">
-                <driver id="mysql3"/>
+                <driver id="mysql3" dataSourceType="mysql"/>
                 <driver
                         id="mysql5"
+                        dataSourceType="mysql"
                         label="MySQL 5 (Legacy)"
-                        icon="icons/mysql_icon.png"
-                        iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -184,9 +191,8 @@
 
                 <driver
                         id="mysql8"
+                        dataSourceType="mysql"
                         label="MySQL"
-                        icon="icons/mysql_icon.png"
-                        iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -213,9 +219,8 @@
                 </driver>
                 <driver
                     id="mysql_ndb"
+                    dataSourceType="mysql"
                     label="NDB Cluster"
-                    icon="icons/mysql_icon.png"
-                    iconBig="icons/mysql_icon_big.png"
                     class="com.mysql.jdbc.Driver"
                     sampleURL="jdbc:mysql:loadbalance://{host}[:{port}]/[{database}]"
                     useURL="false"
@@ -237,9 +242,8 @@
 
                 <driver
                     id="mariaDB"
+                    dataSourceType="mariadb"
                     label="MariaDB"
-                    icon="icons/mariadb_icon.png"
-                    iconBig="icons/mariadb_icon_big.png"
                     class="org.mariadb.jdbc.Driver"
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"
@@ -258,7 +262,7 @@
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
                 </driver>
-                <driver id="starRocks"/>
+                <driver id="starRocks" dataSourceType="starrocks"/>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">
                         <property id="@dbeaver-show-all-dbs@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only." defaultValue="false"/>
@@ -270,7 +274,7 @@
             <nativeClients>
                 <client id="mariadb_client" label="MariaDB Binaries">
                     <dist os="win32" targetPath="clients/mariadb/win" remotePath="repo:/drivers/mariadb/client/win" resourcePath="clients/mariadb/win">
-                        <driver id="mariaDB"/>
+                        <driver id="mariaDB" dataSourceType="mariadb"/>
                         <file type="exec" name="mariadb.exe"/>
                         <file type="exec" name="mariadb-dump.exe"/>
                     </dist>

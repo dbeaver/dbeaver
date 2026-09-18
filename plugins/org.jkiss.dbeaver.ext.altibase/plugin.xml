@@ -7,10 +7,20 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="altibase"
+            label="Altibase"
+            description="Altibase database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/altibase_icon.png"
+            iconBig="icons/altibase_icon_big.png"
+            logoImage="icons/altibase_logo_wide.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.altibase.AltibaseDataSourceProvider"
                 description="Altibase JDBC connector"
                 id="altibase"
+                dataSourceType="altibase"
                 parent="generic"
                 label="Altibase"
                 icon="icons/altibase_icon.png"
@@ -23,9 +33,6 @@
                      defaultPort="20300"
                      defaultUser="SYS"
                      description="Altibase JDBC Driver"
-                     icon="icons/altibase_icon.png"
-                     iconBig="icons/altibase_icon_big.png"
-                     logoImage="icons/altibase_logo_wide.png"
                      id="Altibase"
                      label="Altibase"
                      sampleURL="jdbc:Altibase://{host}:{port}/{database}"

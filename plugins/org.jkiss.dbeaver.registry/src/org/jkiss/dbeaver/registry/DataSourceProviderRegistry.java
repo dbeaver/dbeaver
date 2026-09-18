@@ -73,6 +73,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
     private final Map<String, DataSourceProviderDescriptor> dataSourceProvidersMap = new LinkedHashMap<>();
+    private final Map<String, DataSourceTypeDescriptor> dataSourceTypes = new LinkedHashMap<>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final List<DataSourceHandlerDescriptor> dataSourceHandlers = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
@@ -91,6 +92,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
 
     private DataSourceProviderRegistry() {
+        dataSourceTypes.put("custom", new DataSourceTypeDescriptor(
+            "custom", "Custom", "Custom data source", "User-defined data source type", DBIcon.DATABASE_DEFAULT));
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
             @Override
             public void addPropertyChangeListener(@NotNull DBPPreferenceListener listener) {
@@ -130,8 +133,26 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         // Load datasource providers from external plugins
         {
             // Sort - parse providers with parent in the end
-            List<IConfigurationElement> configurationElements = sortConfigurationElements(
+            List<IConfigurationElement> allConfigurationElements = Arrays.asList(
                 registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID));
+
+            for (IConfigurationElement ext : allConfigurationElements) {
+                if (RegistryConstants.TAG_DATASOURCE_TYPE.equals(ext.getName())) {
+                    DataSourceTypeDescriptor type = new DataSourceTypeDescriptor(ext);
+                    DataSourceTypeDescriptor oldType = dataSourceTypes.putIfAbsent(type.getId(), type);
+                    if (oldType != null) {
+                        log.warn("Duplicate data source type '" + type.getId() + "'");
+                    }
+                }
+            }
+
+            List<IConfigurationElement> configurationElements = sortConfigurationElements(allConfigurationElements.stream()
+                .filter(ext -> RegistryConstants.TAG_DATASOURCE.equals(ext.getName()))
+                .toArray(IConfigurationElement[]::new));
+            configurationElements.addAll(allConfigurationElements.stream()
+                .filter(ext -> !RegistryConstants.TAG_DATASOURCE.equals(ext.getName()))
+                .filter(ext -> !RegistryConstants.TAG_DATASOURCE_TYPE.equals(ext.getName()))
+                .toList());
 
             // Load datasource providers in three steps to link them with parent providers and load the rest of config
             for (IConfigurationElement ext : configurationElements) {
@@ -383,6 +404,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             providerDescriptor.dispose();
         }
         this.dataSourceProviders.clear();
+        this.dataSourceTypes.clear();
         this.resourceContributions.clear();
         this.dataSourceConfigurationStorageDescriptors.clear();
     }
@@ -405,6 +427,38 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     @NotNull
     public List<DataSourceProviderDescriptor> getDataSourceProviders() {
         return dataSourceProviders;
+    }
+
+    @Override
+    public @NotNull List<DataSourceTypeDescriptor> getDataSourceTypes() {
+        for (DataSourceProviderDescriptor provider : dataSourceProviders) {
+            provider.getDrivers().forEach(DBPDriver::getDataSourceType);
+        }
+        return dataSourceTypes.values().stream()
+            .filter(type -> !type.getEnabledDrivers().isEmpty())
+            .toList();
+    }
+
+    @Override
+    public @Nullable DataSourceTypeDescriptor getDataSourceType(@NotNull String id) {
+        return dataSourceTypes.get(id);
+    }
+
+    @NotNull
+    public DataSourceTypeDescriptor resolveDataSourceType(@Nullable String typeId, @NotNull DBPDriver driver) {
+        String resolvedId = driver.isCustom() ? "custom" :
+            CommonUtils.isEmpty(typeId) ? driver.getProviderId() + ":" + driver.getId() : typeId;
+        DataSourceTypeDescriptor type = dataSourceTypes.get(resolvedId);
+        if (type == null) {
+            type = new DataSourceTypeDescriptor(resolvedId, driver);
+            dataSourceTypes.put(resolvedId, type);
+        }
+        type.addDriver(driver);
+        return type;
+    }
+
+    void removeDriver(@NotNull DBPDriver driver) {
+        dataSourceTypes.values().forEach(type -> type.removeDriver(driver));
     }
 
     @NotNull

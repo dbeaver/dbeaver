@@ -86,6 +86,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
+    private DBPDataSourceType dataSourceType;
     private String category;
     private final List<String> categories;
     private String name;
@@ -224,6 +225,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (copyFrom != null) {
             // Copy props from source
             applyFrom(copyFrom);
+            this.dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType("custom", this);
         } else {
             this.name = "";
         }
@@ -298,10 +300,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             origClassName = null;
             origDefaultHost = origDefaultPort = origDefaultDatabase = origDefaultServer = origDefaultUser = null;;
             origSampleURL = null;;
+            iconPlain = DBIcon.DATABASE_DEFAULT;
+            iconBig = DBIcon.DATABASE_BIG_DEFAULT;
+            dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType(
+                config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE), this);
+            makeIconExtensions();
             return;
         }
         this.category = config.getAttribute(RegistryConstants.ATTR_CATEGORY);
-        this.categories = Arrays.asList(CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_CATEGORIES), ","));
+        this.categories = new ArrayList<>(Arrays.asList(CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_CATEGORIES), ",")));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
         this.origDefaultHost = this.driverDefaultHost = config.getAttribute(RegistryConstants.ATTR_DEFAULT_HOST);
@@ -360,18 +367,31 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.fileSources.add(new DriverFileSource(lib));
         }
 
+        String dataSourceTypeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
+        if (CommonUtils.isEmpty(dataSourceTypeId)) {
+            dataSourceTypeId = providerDescriptor.getDataSourceTypeId();
+        }
+        this.dataSourceType = CommonUtils.isEmpty(dataSourceTypeId) ? null :
+            providerDescriptor.getRegistry().getDataSourceType(dataSourceTypeId);
+        if (categories.isEmpty() && dataSourceType != null) {
+            categories.addAll(dataSourceType.getCategories());
+        }
+
         this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.iconPlain == null) {
-            this.iconPlain = providerDescriptor.getIcon();
+            this.iconPlain = dataSourceType == null ? providerDescriptor.getIcon() : dataSourceType.getIcon();
         }
-        this.iconBig = this.iconPlain;
+        this.iconBig = dataSourceType == null ? this.iconPlain : dataSourceType.getIconBig();
         if (config.getAttribute(RegistryConstants.ATTR_ICON_BIG) != null) {
             this.iconBig = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG));
         }
         String logoImageAttr = config.getAttribute("logoImage");
         if (!CommonUtils.isEmpty(logoImageAttr)) {
             this.logoImage = iconToImage(logoImageAttr);
+        } else if (dataSourceType != null) {
+            this.logoImage = dataSourceType.getLogoImage();
         }
+        this.dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType(dataSourceTypeId, this);
         makeIconExtensions();
 
         {
@@ -545,6 +565,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public DataSourceProviderDescriptor getProviderDescriptor() {
         return providerDescriptor;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceType getDataSourceType() {
+        if (dataSourceType == null) {
+            dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType(
+                isCustom() ? "custom" : providerDescriptor.getDataSourceTypeId(), this);
+        }
+        return dataSourceType;
     }
 
     @NotNull

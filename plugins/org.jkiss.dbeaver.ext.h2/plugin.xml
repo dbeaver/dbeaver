@@ -8,10 +8,27 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="h2gis"
+            label="H2GIS"
+            description="H2GIS database"
+            dataSourceInformation="Lightweight embedded relational database"
+            categories="spatial,sql,embedded"
+            icon="icons/h2gis_icon.png"
+            iconBig="icons/h2gis_icon_big.png"/>
+        <dataSourceType
+            id="h2"
+            label="H2"
+            description="H2 database"
+            dataSourceInformation="Open-source, lightweight RDBMS written in Java"
+            categories="sql"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.h2.H2DataSourceProvider"
                 description="H2"
                 id="h2"
+                dataSourceType="h2"
                 parent="generic"
                 label="H2"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
@@ -28,8 +45,6 @@
                 <driver
                         id="h2_server"
                         label="H2 Server"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
                         category="H2"
                         class="org.h2.Driver"
                         sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
@@ -55,8 +70,6 @@
                 <driver
                         id="h2_embedded"
                         label="H2 Embedded (legacy)"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
                         category="H2"
                         class="org.h2.Driver"
                         sampleURL="jdbc:h2:{file}"
@@ -82,8 +95,6 @@
                 <driver
                         id="h2_embedded_v2"
                         label="H2 Embedded V.2.1"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
                         category="H2"
                         class="org.h2.Driver"
                         sampleURL="jdbc:h2:{file}"
@@ -110,8 +121,6 @@
                 <driver
                     id="h2_embedded_v3"
                     label="H2 Embedded"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
                     category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:{file}"
@@ -141,6 +150,7 @@
                 class="org.jkiss.dbeaver.ext.h2gis.H2GISDataSourceProvider"
                 description="H2GIS datasource"
                 id="h2gis"
+                dataSourceType="h2gis"
                 parent="generic"
                 label="H2GIS"
                 icon="icons/h2gis_icon.png"
@@ -150,8 +160,6 @@
                 <driver
                         id="h2gis_embedded"
                         label="H2GIS Embedded"
-                        icon="icons/h2gis_icon.png"
-                        iconBig="icons/h2gis_icon_big.png"
                         category="H2"
                         class="org.h2.Driver"
                         sampleURL="jdbc:h2:{file}"
@@ -173,8 +181,6 @@
                 <driver
                         id="h2gis_server"
                         label="H2GIS Server"
-                        icon="icons/h2gis_icon.png"
-                        iconBig="icons/h2gis_icon_big.png"
                         category="H2"
                         class="org.h2.Driver"
                         sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"

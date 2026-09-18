@@ -11,10 +11,19 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="databend"
+            label="Databend"
+            description="Databend database"
+            dataSourceInformation="Column-oriented analytical database system"
+            categories="sql,analytic,columns"
+            icon="icons/databend_icon.png"
+            iconBig="icons/databend_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.databend.DatabendDataSourceProvider"
                 description="Databend"
                 id="databend"
+                dataSourceType="databend"
                 parent="generic"
                 label="Databend"
                 icon="icons/databend_icon.png"
@@ -27,8 +36,6 @@
                     class="com.databend.jdbc.DatabendDriver"
                     sampleURL="jdbc:databend://{host}:{port}[/{database}]"
                     defaultPort="8000"
-                    icon="icons/databend_icon.png"
-                    iconBig="icons/databend_icon_big.png"
                     description="Databend driver (server version 1.0.0+)"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/datafuselabs/databend-jdbc"

@@ -2,6 +2,24 @@
 <?eclipse version="3.2"?>
 <plugin>
    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+      <dataSourceType
+          id="timechodb"
+          label="TimechoDB"
+          description="TimechoDB time-series database"
+          dataSourceInformation="Time-series database for operational data"
+          categories="timeseries"
+          icon="icons/timechoDB_icon.png"
+          iconBig="icons/timechoDB_icon_big.png"
+          logoImage="icons/timechoDB_logo.png"/>
+      <dataSourceType
+          id="apache_iotdb"
+          label="Apache IoTDB"
+          description="Apache IoTDB time-series database"
+          dataSourceInformation="Time-series database for operational data"
+          categories="timeseries"
+          icon="icons/iotdb_icon.png"
+          iconBig="icons/iotdb_icon_big.png"
+          logoImage="icons/iotdb_logo.png"/>
       <datasource class="org.jkiss.dbeaver.ext.iotdb.IoTDBDataSourceProvider"
                   id="iotdb"
                   description="Generic IoTDB JDBC connector"
@@ -84,13 +102,11 @@
 
          <drivers managable="true">
             <driver id="iotdb"
+dataSourceType="apache_iotdb"
                     label="Apache IoTDB"
                     class="org.apache.iotdb.jdbc.IoTDBDriver"
                     sampleURL="jdbc:iotdb://{host}:{port}/?sql_dialect={sqlDialect}"
                     defaultPort="6667"
-                    icon="icons/iotdb_icon.png"
-                    iconBig="icons/iotdb_icon_big.png"
-                    logoImage="icons/iotdb_logo.png"
                     description="Apache IoTDB JDBC Driver"
                     defaultUser="root"
                     defaultServer="tree"
@@ -107,13 +123,11 @@
                 <parameter name="read-only-meta-data" value="true"/>
             </driver>
             <driver id="timechoDB"
+dataSourceType="timechodb"
                     label="TimechoDB"
                     class="org.apache.iotdb.jdbc.IoTDBDriver"
                     sampleURL="jdbc:iotdb://{host}:{port}/?sql_dialect={sqlDialect}"
                     defaultPort="6667"
-                    icon="icons/timechoDB_icon.png"
-                    iconBig="icons/timechoDB_icon_big.png"
-                    logoImage="icons/timechoDB_logo.png"
                     description="TimechoDB JDBC Driver"
                     defaultUser="root"
                     defaultServer="tree"

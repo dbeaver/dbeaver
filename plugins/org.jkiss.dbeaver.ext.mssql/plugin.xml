@@ -9,6 +9,34 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
+        <dataSourceType
+            id="sap_ase"
+            label="SAP ASE"
+            description="SAP ASE database"
+            dataSourceInformation="Enterprise relational database from SAP"
+            categories="sql"
+            icon="icons/sap_ase_icon.png"
+            iconBig="icons/sap_ase_icon_big.png"
+            logoImage="icons/sap_ase_logo.png"/>
+
+        <dataSourceType
+            id="babelfish"
+            label="Babelfish"
+            description="Babelfish database"
+            dataSourceInformation="Relational database management system"
+            categories="sql,server,aws"
+            icon="icons/babelfish_icon.png"
+            iconBig="icons/babelfish_icon_big.png"/>
+
+        <dataSourceType
+            id="mssql"
+            label="SQL Server"
+            description="SQL Server database"
+            dataSourceInformation="Enterprise relational database from Microsoft"
+            categories="sql"
+            icon="icons/mssql_icon.png"
+            iconBig="icons/mssql_icon_big.png"/>
+
         <!-- SQL Server. New connector replaces all Generic-based SQL Server drivers -->
 
         <datasource
@@ -148,9 +176,8 @@
 
                 <driver
                         id="microsoft"
+                        dataSourceType="mssql"
                         label="SQL Server"
-                        icon="icons/mssql_icon.png"
-                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -185,6 +212,7 @@
 
                 <driver
                         id="azure"
+                        dataSourceType="mssql"
                         label="Azure SQL Server"
                         icon="icons/azure_sql_server_icon.png"
                         iconBig="icons/azure_sql_server_icon_big.png"
@@ -212,9 +240,8 @@
 
                 <driver
                         id="babelfish"
+                        dataSourceType="babelfish"
                         label="Babelfish via TDS (beta)"
-                        icon="icons/babelfish_icon.png"
-                        iconBig="icons/babelfish_icon_big.png"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
                         useURL="false"
@@ -237,9 +264,8 @@
                 <!-- jTDS driver - deprecated -->
                 <driver
                         id="jtds"
+                        dataSourceType="mssql"
                         label="jTDS driver"
-                        icon="icons/mssql_icon.png"
-                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="net.sourceforge.jtds.jdbc.Driver"
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -269,9 +295,8 @@
                 <!-- Obsolete -->
                 <driver
                     id="mssql_jdbc_jtds"
+                    dataSourceType="mssql"
                     label="jTDS driver (Deprecated)"
-                    icon="icons/mssql_icon.png"
-                    iconBig="icons/mssql_icon_big.png"
                     category="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -284,9 +309,8 @@
 
                 <driver
                     id="mssql_jdbc_ms"
+                    dataSourceType="mssql"
                     label="SQL Server (Deprecated)"
-                    icon="icons/mssql_icon.png"
-                    iconBig="icons/mssql_icon_big.png"
                     category="MS SQL Server"
                     class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                     sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -299,9 +323,8 @@
 
                 <driver
                         id="mssql_jdbc_ms_new"
+                        dataSourceType="mssql"
                         label="SQL Server (Deprecated)"
-                        icon="icons/mssql_icon.png"
-                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -316,6 +339,7 @@
 
                 <driver
                         id="mssql_jdbc_azure"
+                        dataSourceType="mssql"
                         label="Azure SQL Server (Deprecated)"
                         icon="icons/azure_sql_server_icon.png"
                         iconBig="icons/azure_sql_server_icon_big.png"
@@ -330,9 +354,8 @@
 
                 <driver
                         id="mssql_jdbc_legacy"
+                        dataSourceType="mssql"
                         label="SQL Server (Old driver, MS)"
-                        icon="icons/mssql_icon.png"
-                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -348,9 +371,8 @@
 
                 <driver
                         id="mssql_jtds_legacy"
+                        dataSourceType="mssql"
                         label="SQL Server (Old driver, jTDS)"
-                        icon="icons/mssql_icon.png"
-                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="net.sourceforge.jtds.jdbc.Driver"
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -389,6 +411,7 @@
 
                 <driver
                         id="sybase_jtds"
+                        dataSourceType="sap_ase"
                         label="Sybase jTDS"
                         icon="icons/sybase_icon.png"
                         iconBig="icons/sybase_icon_big.png"
@@ -421,6 +444,7 @@
 
                 <driver
                         id="sybase_jconn"
+                        dataSourceType="sap_ase"
                         label="Sybase jConnect"
                         icon="icons/sybase_icon.png"
                         iconBig="icons/sybase_icon_big.png"
@@ -453,10 +477,8 @@
                 </driver>
                 <driver
                         id="sypase_jconn"
+                        dataSourceType="sap_ase"
                         label="SAP ASE jConnect"
-                        icon="icons/sap_ase_icon.png"
-                        iconBig="icons/sap_ase_icon_big.png"
-                        logoImage="icons/sap_ase_logo.png"
                         class="com.sybase.jdbc4.jdbc.SybDriver"
                         sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
                         useURL="false"

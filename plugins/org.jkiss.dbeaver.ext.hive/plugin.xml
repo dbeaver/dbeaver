@@ -9,10 +9,19 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="hive"
+            label="Apache Hive"
+            description="Apache Hive data warehouse"
+            dataSourceInformation="Relational database management system"
+            categories="hadoop"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.hive.model.HiveDataSourceProvider"
                 description="Hive datasource"
                 id="hive"
+                dataSourceType="hive"
                 parent="generic"
                 label="Apache Hive"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
@@ -28,8 +37,6 @@
                 <driver
                         id="apache_hive2"
                         label="Apache Hive 2"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon_big.png"
                         class="org.apache.hive.jdbc.HiveDriver"
                         sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                         defaultPort="10000"
@@ -58,8 +65,6 @@
                 <driver
                         id="apache_hive4"
                         label="Apache Hive 4+"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon_big.png"
                         class="org.apache.hive.jdbc.HiveDriver"
                         sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                         defaultPort="10000"

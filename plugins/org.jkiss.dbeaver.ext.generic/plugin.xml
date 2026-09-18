@@ -5,6 +5,415 @@
     <extension-point id="org.jkiss.dbeaver.generic.meta" name="Generic meta model retrieval" schema="schema/org.jkiss.dbeaver.generic.meta.exsd"/>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="open_distro_elasticsearch"
+            label="Open Distro Elasticsearch"
+            description="Open Distro search and analytics data store"
+            dataSourceInformation="Search and analytics data platform"
+            categories="fulltext"
+            icon="icons/opendistro_icon.png"
+            iconBig="icons/opendistro_icon_big.png"/>
+        <dataSourceType
+            id="elasticsearch"
+            label="Elasticsearch"
+            description="Elasticsearch search and analytics data store"
+            dataSourceInformation="Search and analytics data platform"
+            categories="fulltext"
+            icon="icons/elasticsearch_icon.png"
+            iconBig="icons/elasticsearch_icon_big.png"/>
+        <dataSourceType
+            id="odbc_legacy"
+            label="ODBC - Legacy"
+            description="Relational data sources through ODBC"
+            dataSourceInformation="Protocol-based access to relational data sources"
+            categories="sql"
+            icon="icons/odbc_icon.png"
+            iconBig="icons/odbc_icon_big.png"/>
+        <dataSourceType
+            id="teiid"
+            label="Teiid"
+            description="Teiid data virtualization platform"
+            dataSourceInformation="Relational database management system"
+            icon="icons/teiid_icon.png"
+            iconBig="icons/teiid_icon_big.png"
+            logoImage="icons/teiid_logo.png"/>
+        <dataSourceType
+            id="salesforce_data_360"
+            label="Salesforce Data 360"
+            description="Salesforce customer data platform"
+            dataSourceInformation="Unified platform for enterprise customer data"
+            categories="sql"
+            icon="icons/salesforce_icon.svg"
+            iconBig="icons/salesforce_icon_big.svg"
+            logoImage="icons/salesforce_logo.svg"/>
+        <dataSourceType
+            id="jennifer"
+            label="Jennifer"
+            description="Jennifer database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/jennifer_icon.png"
+            iconBig="icons/jennifer_icon_big.png"/>
+        <dataSourceType
+            id="postgresql"
+            label="PostgreSQL"
+            description="PostgreSQL database"
+            dataSourceInformation="Open-source object-relational database system"
+            categories="sql"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon.png"
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon_big.png"/>
+        <dataSourceType
+            id="mysql"
+            label="MySQL"
+            description="MySQL database"
+            dataSourceInformation="Popular open-source relational database"
+            categories="sql"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon.png"
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon_big.png"/>
+        <dataSourceType
+            id="apache_kylin"
+            label="Apache Kylin"
+            description="Apache Kylin OLAP platform"
+            dataSourceInformation="Distributed analytics platform for large datasets"
+            categories="sql"
+            icon="icons/apache_icon.png"
+            iconBig="icons/apache_icon_big.png"
+            logoImage="icons/apache_logo.png"/>
+        <dataSourceType
+            id="apache_calcite_avatica"
+            label="Apache Calcite Avatica"
+            description="Apache Calcite SQL query engine"
+            dataSourceInformation="Framework for querying heterogeneous data sources"
+            categories="sql,federated"
+            icon="icons/calcite_icon.png"
+            iconBig="icons/calcite_icon_big.png"/>
+        <dataSourceType
+            id="sqream_db"
+            label="SQream DB"
+            description="SQream DB database"
+            dataSourceInformation="Column-oriented analytical database system"
+            categories="sql,analytic,columns"
+            icon="icons/sqream_icon.png"
+            iconBig="icons/sqream_icon_big.png"/>
+        <dataSourceType
+            id="pervasive_sql"
+            label="Pervasive SQL"
+            description="Pervasive SQL database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            iconBig="icons/pervasive_icon_big@2x.png"/>
+        <dataSourceType
+            id="gizmosql"
+            label="GizmoSQL"
+            description="GizmoSQL database"
+            dataSourceInformation="High-performance analytical database platform"
+            categories="sql,analytic"
+            icon="icons/gizmosql_icon.png"
+            iconBig="icons/gizmosql_icon_big.png"/>
+        <dataSourceType
+            id="cratedb"
+            label="CrateDB"
+            description="CrateDB database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/cratedb_icon.png"
+            iconBig="icons/cratedb_icon_big.png"/>
+        <dataSourceType
+            id="omnisci_formerly_mapd"
+            label="OmniSci (formerly MapD)"
+            description="OmniSci (formerly MapD) database"
+            dataSourceInformation="Relational database management system"
+            categories="analytics,sql"
+            icon="icons/omnisci_icon.png"
+            iconBig="icons/omnisci_icon_big.png"/>
+        <dataSourceType
+            id="apache_ignite"
+            label="Apache Ignite"
+            description="Apache Ignite database"
+            dataSourceInformation="Relational database management system"
+            categories="hadoop"
+            icon="icons/ignite_icon.png"
+            iconBig="icons/ignite_icon_big.png"/>
+        <dataSourceType
+            id="dremio"
+            label="Dremio"
+            description="Dremio lakehouse query platform"
+            dataSourceInformation="Lakehouse platform for unified SQL analytics"
+            categories="analytic,hadoop,sql"
+            icon="icons/dremio_icon.png"
+            iconBig="icons/dremio_icon_big.png"/>
+        <dataSourceType
+            id="monetdb"
+            label="MonetDB"
+            description="MonetDB database"
+            dataSourceInformation="Column-oriented analytical database system"
+            categories="sql,columns"
+            icon="icons/monetdb_icon.png"
+            iconBig="icons/monetdb_icon_big.png"/>
+        <dataSourceType
+            id="openedge"
+            label="OpenEdge"
+            description="OpenEdge database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/openedge_icon.png"
+            iconBig="icons/openedge_icon_big.png"/>
+        <dataSourceType
+            id="solr"
+            label="Solr"
+            description="Apache Solr search platform"
+            dataSourceInformation="Search and analytics data platform"
+            categories="fulltext"
+            icon="icons/solr_icon.png"
+            iconBig="icons/solr_icon_big.png"/>
+        <dataSourceType
+            id="trino"
+            label="Trino"
+            description="Trino distributed SQL query engine"
+            dataSourceInformation="Distributed SQL engine for heterogeneous data"
+            categories="sql,federated,bigdata,hadoop"
+            icon="icons/trino_icon.png"
+            iconBig="icons/trino_icon_big.png"/>
+        <dataSourceType
+            id="prestosql"
+            label="PrestoSQL"
+            description="PrestoSQL distributed SQL query engine"
+            dataSourceInformation="Distributed SQL engine for heterogeneous data"
+            categories="sql,federated,bigdata,hadoop"
+            icon="icons/presto_icon.png"
+            iconBig="icons/presto_icon_big.png"/>
+        <dataSourceType
+            id="prestodb"
+            label="PrestoDB"
+            description="PrestoDB distributed SQL query engine"
+            dataSourceInformation="Distributed SQL engine for heterogeneous data"
+            categories="sql,bigdata,hadoop"
+            icon="icons/presto_icon.png"
+            iconBig="icons/presto_icon_big.png"/>
+        <dataSourceType
+            id="orientdb"
+            label="OrientDB"
+            description="OrientDB graph database"
+            dataSourceInformation="Graph database for highly connected data"
+            categories="graph"
+            icon="icons/orientdb_icon.png"
+            iconBig="icons/orientdb_icon_big.png"/>
+        <dataSourceType
+            id="dolphindb"
+            label="DolphinDB"
+            description="DolphinDB time-series database"
+            dataSourceInformation="Time-series database for operational data"
+            categories="sql,analytic,timeseries"
+            icon="icons/dolphindb_icon.png"
+            iconBig="icons/dolphindb_icon_big.png"/>
+        <dataSourceType
+            id="tdengine"
+            label="TDengine"
+            description="TDengine time-series database"
+            dataSourceInformation="Time-series database for operational data"
+            categories="timeseries"
+            icon="icons/tdengine_icon.png"
+            iconBig="icons/tdengine_icon_big.png"/>
+        <dataSourceType
+            id="machbase"
+            label="Machbase"
+            description="Machbase time-series database"
+            dataSourceInformation="Time-series database for operational data"
+            categories="timeseries"
+            iconBig="icons/machbase_icon_big.png"/>
+        <dataSourceType
+            id="virtuoso"
+            label="Virtuoso"
+            description="Virtuoso database"
+            dataSourceInformation="Relational database management system"
+            categories="sql,object"
+            icon="icons/virtuoso_icon.png"
+            iconBig="icons/virtuoso_icon_big.png"
+            logoImage="icons/virtuoso_logo.png"/>
+        <dataSourceType
+            id="cloudera_impala"
+            label="Cloudera Impala"
+            description="Cloudera Impala distributed SQL query engine"
+            dataSourceInformation="Distributed SQL analytics for Apache Hadoop"
+            categories="hadoop"
+            icon="icons/impala_icon.png"
+            iconBig="icons/impala_icon_big.png"/>
+        <dataSourceType
+            id="apache_drill"
+            label="Apache Drill"
+            description="Apache Drill distributed SQL query engine"
+            dataSourceInformation="Schema-free SQL engine for distributed data"
+            categories="hadoop"
+            icon="icons/drill_icon.png"
+            iconBig="icons/drill_icon_big.png"/>
+        <dataSourceType
+            id="apache_kyuubi"
+            label="Apache Kyuubi"
+            description="Apache Kyuubi distributed SQL gateway"
+            dataSourceInformation="Distributed SQL gateway for data lakes"
+            categories="hadoop"
+            icon="icons/kyuubi_hive_icon.png"
+            iconBig="icons/kyuubi_hive_icon_big.png"/>
+        <dataSourceType
+            id="apache_spark"
+            label="Apache Spark"
+            description="Apache Spark analytics engine"
+            dataSourceInformation="Distributed engine for analytics workloads"
+            categories="hadoop"
+            icon="icons/spark_hive_icon.png"
+            iconBig="icons/spark_hive_icon_big.png"/>
+        <dataSourceType
+            id="snappydata"
+            label="SnappyData"
+            description="SnappyData database"
+            dataSourceInformation="Relational database management system"
+            categories="hadoop"
+            icon="icons/snappy_icon.png"
+            iconBig="icons/snappy_icon_big.png"/>
+        <dataSourceType
+            id="gemfire_xd"
+            label="Gemfire XD"
+            description="Gemfire XD database"
+            dataSourceInformation="Relational database management system"
+            categories="hadoop"
+            icon="icons/gemfire_icon.png"
+            iconBig="icons/gemfire_icon_big.png"/>
+        <dataSourceType
+            id="apache_phoenix"
+            label="Apache Phoenix"
+            description="Apache Phoenix database"
+            dataSourceInformation="Relational database management system"
+            categories="hadoop"
+            icon="icons/phoenix_icon.png"
+            iconBig="icons/phoenix_icon_big.png"/>
+        <dataSourceType
+            id="nuodb"
+            label="NuoDB"
+            description="NuoDB database"
+            dataSourceInformation="Cloud-native distributed data platform"
+            categories="sql,cloud"
+            icon="icons/nuodb_icon.png"
+            iconBig="icons/nuodb_icon_big.png"/>
+        <dataSourceType
+            id="netezza"
+            label="Netezza"
+            description="Netezza database"
+            dataSourceInformation="High-performance analytical database platform"
+            categories="sql,analytic"
+            icon="icons/netezza_icon.png"
+            iconBig="icons/netezza_icon_big.png"/>
+        <dataSourceType
+            id="ms_access"
+            label="Microsoft Access"
+            description="Microsoft Access database files"
+            dataSourceInformation="Desktop relational database stored in files"
+            categories="sql,embedded,file"
+            icon="icons/msaccess_icon.png"
+            iconBig="icons/msaccess_icon_big.png"/>
+        <dataSourceType
+            id="jdbcx"
+            label="JDBCX"
+            description="JDBCX federated data sources"
+            dataSourceInformation="Federated access to heterogeneous data sources"
+            categories="sql,federated"
+            icon="icons/jdbcx_icon.png"
+            iconBig="icons/jdbcx_icon_big.png"/>
+        <dataSourceType
+            id="dbf"
+            label="DBF"
+            description="DBF files"
+            dataSourceInformation="File-based data source for structured content"
+            categories="embedded,file"
+            icon="icons/dbf_icon.png"
+            iconBig="icons/dbf_icon_big.png"/>
+        <dataSourceType
+            id="csv"
+            label="CSV"
+            description="CSV files"
+            dataSourceInformation="Tabular data stored in comma-separated text files"
+            categories="embedded,file"
+            icon="icons/csv_icon.png"
+            iconBig="icons/csv_icon_big.png"/>
+        <dataSourceType
+            id="teradata"
+            label="Teradata"
+            description="Teradata database"
+            dataSourceInformation="High-performance analytical database platform"
+            categories="sql,analytic"
+            icon="icons/teradata_icon.png"
+            iconBig="icons/teradata_icon_big.png"
+            logoImage="icons/teradata_logo.png"/>
+        <dataSourceType
+            id="ingres"
+            label="Ingres"
+            description="Ingres database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            iconBig="icons/ingres_icon_big.png"/>
+        <dataSourceType
+            id="intersystems_cache"
+            label="InterSystems Caché"
+            description="InterSystems Caché database"
+            dataSourceInformation="Relational database management system"
+            categories="sql,object"
+            icon="icons/intersystems_icon.png"
+            iconBig="icons/intersystems_icon_big.png"/>
+        <dataSourceType
+            id="intersystems_iris"
+            label="InterSystems IRIS"
+            description="InterSystems IRIS database"
+            dataSourceInformation="Relational database management system"
+            categories="sql,object"
+            icon="icons/intersystems_icon.png"
+            iconBig="icons/intersystems_icon_big.png"/>
+        <dataSourceType
+            id="hsqldb"
+            label="HSQLDB"
+            description="HSQLDB database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/hsqldb_icon.png"
+            iconBig="icons/hsqldb_icon_big.png"/>
+        <dataSourceType
+            id="mimer_sql"
+            label="Mimer SQL"
+            description="Mimer SQL database"
+            dataSourceInformation="Lightweight embedded relational database"
+            categories="sql,embedded"
+            icon="icons/mimer_icon.png"
+            iconBig="icons/mimer_icon_big.png"/>
+        <dataSourceType
+            id="derby"
+            label="Apache Derby"
+            description="Apache Derby database"
+            dataSourceInformation="Lightweight embedded relational database"
+            categories="sql,embedded"
+            icon="icons/derby_icon.png"
+            iconBig="icons/derby_icon_big.png"/>
+        <dataSourceType
+            id="informix"
+            label="Informix"
+            description="Informix database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/informix_icon.png"
+            iconBig="icons/informix_icon_big.png"/>
+        <dataSourceType
+            id="opensearch"
+            label="OpenSearch"
+            description="OpenSearch search and analytics data store"
+            dataSourceInformation="Distributed search and analytics platform"
+            categories="sql"
+            icon="icons/opensearch_icon.png"
+            iconBig="icons/opensearch_icon_big.png"/>
+        <dataSourceType
+            id="maxdb"
+            label="MaxDB"
+            description="MaxDB database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/sap_maxdb_icon.png"
+            iconBig="icons/sap_maxdb_icon_big.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
             description="Generic JDBC connector"
@@ -180,10 +589,9 @@
 
                 <driver
                     id="sap_maxdb"
+                    dataSourceType="maxdb"
                     category="SAP"
                     label="MaxDB"
-                    icon="icons/sap_maxdb_icon.png"
-                    iconBig="icons/sap_maxdb_icon_big.png"
                     class="com.sap.dbtech.jdbc.DriverSapDB"
                     sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
                     defaultPort="7200"
@@ -200,9 +608,8 @@
                 </driver>
                 <driver
                     id="opensearch"
+                    dataSourceType="opensearch"
                     label="OpenSearch"
-                    icon="icons/opensearch_icon.png"
-                    iconBig="icons/opensearch_icon_big.png"
                     class="org.opensearch.jdbc.Driver"
                     sampleURL="jdbc:opensearch://[{scheme}://][{host}][:{port}]"
                     defaultPort="443"
@@ -216,9 +623,8 @@
                 </driver>
                 <driver
                     id="informix"
+                    dataSourceType="informix"
                     label="Informix"
-                    icon="icons/informix_icon.png"
-                    iconBig="icons/informix_icon_big.png"
                     class="com.informix.jdbc.IfxDriver"
                     sampleURL="jdbc:informix-sqli://{host}:{port}/{database}:INFORMIXSERVER={server}"
                     defaultPort="1533"
@@ -244,9 +650,8 @@
                 </driver>
                 <driver
                     id="derby"
+                    dataSourceType="derby"
                     label="Derby Embedded"
-                    icon="icons/derby_icon.png"
-                    iconBig="icons/derby_icon_big.png"
                     category="Derby"
                     class="org.apache.derby.jdbc.EmbeddedDriver"
                     sampleURL="jdbc:derby:{folder}"
@@ -274,9 +679,8 @@
                 </driver>
                 <driver
                     id="derby_server"
+                    dataSourceType="derby"
                     label="Derby Server"
-                    icon="icons/derby_icon.png"
-                    iconBig="icons/derby_icon_big.png"
                     category="Derby"
                     class="org.apache.derby.client.ClientAutoloadedDriver"
                     sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
@@ -302,9 +706,8 @@
                 </driver>
                 <driver
                     id="mimer"
+                    dataSourceType="mimer_sql"
                     label="Mimer SQL"
-                    icon="icons/mimer_icon.png"
-                    iconBig="icons/mimer_icon_big.png"
                     class="com.mimer.jdbc.Driver"
                     sampleURL="jdbc:mimer:tcp://{host}:{port}/{database}"
                     defaultPort="1360"
@@ -316,9 +719,8 @@
                 </driver>
                 <driver
                     id="hsqldb_server"
+                    dataSourceType="hsqldb"
                     label="HSQL Server"
-                    icon="icons/hsqldb_icon.png"
-                    iconBig="icons/hsqldb_icon_big.png"
                     category="HSQLDB"
                     class="org.hsqldb.jdbcDriver"
                     sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
@@ -341,9 +743,8 @@
                 </driver>
                 <driver
                     id="hsqldb_embedded"
+                    dataSourceType="hsqldb"
                     label="HSQL Embedded"
-                    icon="icons/hsqldb_icon.png"
-                    iconBig="icons/hsqldb_icon_big.png"
                     category="HSQLDB"
                     class="org.hsqldb.jdbc.JDBCDriver"
                     sampleURL="jdbc:hsqldb:file:{folder}"
@@ -367,9 +768,8 @@
                 </driver>
                 <driver
                     id="cache"
+                    dataSourceType="intersystems_cache"
                     label="Cache"
-                    icon="icons/intersystems_icon.png"
-                    iconBig="icons/intersystems_icon_big.png"
                     class="com.intersys.jdbc.CacheDriver"
                     sampleURL="jdbc:Cache://{host}:{port}/{database}"
                     defaultPort="1972"
@@ -383,9 +783,8 @@
                 </driver>
                 <driver
                     id="iris"
+                    dataSourceType="intersystems_iris"
                     label="InterSystems IRIS"
-                    icon="icons/intersystems_icon.png"
-                    iconBig="icons/intersystems_icon_big.png"
                     class="com.intersystems.jdbc.IRISDriver"
                     sampleURL="jdbc:IRIS://{host}:{port}/{database}"
                     defaultPort="1972"
@@ -400,6 +799,7 @@
                 </driver>
                 <driver
                     id="ingres"
+                    dataSourceType="ingres"
                     label="Ingres"
                     class="com.ingres.jdbc.IngresDriver"
                     sampleURL="jdbc:ingres://{host}:{port}/{database}"
@@ -407,7 +807,6 @@
                     webURL="https://www.actian.com/databases/ingres/"
                     description="Ingres Database"
                     supportedConfigurationTypes="MANUAL,URL"
-                    iconBig="icons/ingres_icon_big.png"
                     categories="sql">
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE[12.0-4.4.4]" bundle="!drivers.ingres"/>
                     <file type="license" path="https://communities.actian.com/s/supportservices/policy/policy-license-terms"/>
@@ -416,14 +815,12 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
-                <driver id="duckdb_jdbc"/>
+                <driver id="duckdb_jdbc" dataSourceType="duckdb"/>
                 <!-- Teradata -->
                 <driver
                     id="teradata"
+                    dataSourceType="teradata"
                     label="Teradata"
-                    icon="icons/teradata_icon.png"
-                    iconBig="icons/teradata_icon_big.png"
-                    logoImage="icons/teradata_logo.png"
                     class="com.teradata.jdbc.TeraDriver"
                     sampleURL="jdbc:teradata://{host}/[DATABASE={database},]DBS_PORT={port}"
                     defaultPort="1025"
@@ -448,9 +845,8 @@
 
                 <driver
                     id="csvjdbc"
+                    dataSourceType="csv"
                     label="CSV Basic"
-                    icon="icons/csv_icon.png"
-                    iconBig="icons/csv_icon_big.png"
                     category="Flat files"
                     class="org.relique.jdbc.csv.CsvDriver"
                     sampleURL="jdbc:relique:csv:{folder}"
@@ -485,9 +881,8 @@
                 </driver>
                 <driver
                     id="csvjdbc_dbf"
+                    dataSourceType="dbf"
                     label="DBF"
-                    icon="icons/dbf_icon.png"
-                    iconBig="icons/dbf_icon_big.png"
                     category="Flat files"
                     class="org.relique.jdbc.csv.CsvDriver"
                     sampleURL="jdbc:relique:csv:{folder}"
@@ -518,12 +913,11 @@
                 </driver>
                 <driver
                     id="jdbcx"
+                    dataSourceType="jdbcx"
                     label="JDBCX"
                     class="io.github.jdbcx.WrappedDriver"
                     sampleURL="jdbcx:[extension:][vendor://{host}[:{port}][/{database}]]"
                     defaultPort=""
-                    icon="icons/jdbcx_icon.png"
-                    iconBig="icons/jdbcx_icon_big.png"
                     description="Extended JDBC driver for dynamic multi-language queries with optional bridge server for federated datasource connectivity."
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/jdbcx/jdbcx"
@@ -535,9 +929,8 @@
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
+                    dataSourceType="ms_access"
                     label="MS Access (UCanAccess)"
-                    icon="icons/msaccess_icon.png"
-                    iconBig="icons/msaccess_icon_big.png"
                     category="MS Access"
                     class="net.ucanaccess.jdbc.UcanaccessDriver"
                     sampleURL="jdbc:ucanaccess://{file}"
@@ -555,9 +948,8 @@
                 </driver>
                 <driver
                     id="netezza"
+                    dataSourceType="netezza"
                     label="Netezza"
-                    icon="icons/netezza_icon.png"
-                    iconBig="icons/netezza_icon_big.png"
                     class="org.netezza.Driver"
                     sampleURL="jdbc:netezza://{host}:{port}/{database}"
                     defaultPort="5480"
@@ -570,9 +962,8 @@
 
                 <driver
                     id="nuodb"
+                    dataSourceType="nuodb"
                     label="NuoDB"
-                    icon="icons/nuodb_icon.png"
-                    iconBig="icons/nuodb_icon_big.png"
                     class="com.nuodb.jdbc.Driver"
                     sampleURL="jdbc:com.nuodb://{host}[:{port}]/[{database}]"
                     defaultPort=""
@@ -587,9 +978,8 @@
                 <!-- Hadoop -->
                 <driver
                     id="phoenix_hbase"
+                    dataSourceType="apache_phoenix"
                     label="Apache Phoenix"
-                    icon="icons/phoenix_icon.png"
-                    iconBig="icons/phoenix_icon_big.png"
                     class="org.apache.phoenix.jdbc.PhoenixDriver"
                     sampleURL="jdbc:phoenix:{host}[:{port}]"
                     defaultPort="2181"
@@ -606,9 +996,8 @@
                 </driver>
                 <driver
                     id="gemfire_xd"
+                    dataSourceType="gemfire_xd"
                     label="Gemfire XD"
-                    icon="icons/gemfire_icon.png"
-                    iconBig="icons/gemfire_icon_big.png"
                     class="com.pivotal.gemfirexd.jdbc.ClientDriver"
                     sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
                     defaultPort="1527"
@@ -622,9 +1011,8 @@
                 </driver>
                 <driver
                     id="snappydata_store_client"
+                    dataSourceType="snappydata"
                     label="SnappyData"
-                    icon="icons/snappy_icon.png"
-                    iconBig="icons/snappy_icon_big.png"
                     class="io.snappydata.jdbc.ClientDriver"
                     sampleURL="jdbc:snappydata://{host}[:{port}]/"
                     defaultPort="1528"
@@ -640,9 +1028,8 @@
 
                 <driver
                     id="spark_hive"
+                    dataSourceType="apache_spark"
                     label="Apache Spark"
-                    icon="icons/spark_hive_icon.png"
-                    iconBig="icons/spark_hive_icon_big.png"
                     class="org.apache.hive.jdbc.HiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
@@ -662,9 +1049,8 @@
                 </driver>
                 <driver
                     id="kyuubi_hive"
+                    dataSourceType="apache_kyuubi"
                     label="Apache Kyuubi"
-                    icon="icons/kyuubi_hive_icon.png"
-                    iconBig="icons/kyuubi_hive_icon_big.png"
                     class="org.apache.kyuubi.jdbc.KyuubiHiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10009"
@@ -682,9 +1068,8 @@
                 </driver>
                 <driver
                     id="apache_drill"
+                    dataSourceType="apache_drill"
                     label="Apache Drill"
-                    icon="icons/drill_icon.png"
-                    iconBig="icons/drill_icon_big.png"
                     class="org.apache.drill.jdbc.Driver"
                     sampleURL="jdbc:drill:zk={host}/{server}[;schema={database}]"
                     description="Apache Drill JDBC"
@@ -704,9 +1089,8 @@
                 <!-- Cloudera -->
                 <driver
                     id="cloudera_impala"
+                    dataSourceType="cloudera_impala"
                     label="Cloudera Impala"
-                    icon="icons/impala_icon.png"
-                    iconBig="icons/impala_icon_big.png"
                     class="com.cloudera.impala.jdbc41.Driver"
                     sampleURL="jdbc:impala://{host}:{port}/{database}"
                     defaultPort="21050"
@@ -727,10 +1111,8 @@
                 <!-- Virtuoso  -->
                 <driver
                     id="virtuoso_opensource"
+                    dataSourceType="virtuoso"
                     label="Virtuoso"
-                    icon="icons/virtuoso_icon.png"
-                    iconBig="icons/virtuoso_icon_big.png"
-                    logoImage="icons/virtuoso_logo.png"
                     class="virtuoso.jdbc4.Driver"
                     sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
                     defaultPort="1111"
@@ -745,6 +1127,7 @@
                 <!-- Machbase -->
                 <driver
                     id="machbase"
+                    dataSourceType="machbase"
                     label="Machbase"
                     class="com.machbase.jdbc.MachDriver"
                     sampleURL="jdbc:machbase://{host}/mhdb"
@@ -752,7 +1135,6 @@
                     description="MACHBASE standard driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://www.machbase.com"
-                    iconBig="icons/machbase_icon_big.png"
                     categories="timeseries">
                     <file type="jar" path="maven:/com.machbase:machjdbc:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
@@ -761,6 +1143,7 @@
                 <!-- TDengine -->
                 <driver
                     id="tdengine"
+                    dataSourceType="tdengine"
                     label="TDengine"
                     class="com.taosdata.jdbc.ws.WebSocketDriver"
                     sampleURL="jdbc:TAOS-WS://{host}:{port}/[{db}]"
@@ -768,8 +1151,6 @@
                     description="TDengine driver"
                     supportedConfigurationTypes="MANUAL"
                     webURL="http://www.tdengine.com"
-                    icon="icons/tdengine_icon.png"
-                    iconBig="icons/tdengine_icon_big.png"
                     categories="timeseries">
                     <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
@@ -783,9 +1164,8 @@
                 <!-- TDengine Cloud -->
                 <driver
                     id="tdengine_cloud"
+                    dataSourceType="tdengine"
                     label="TDengine Cloud"
-                    icon="icons/tdengine_icon.png"
-                    iconBig="icons/tdengine_icon_big.png"
                     class="com.taosdata.jdbc.ws.WebSocketDriver"
                     anonymous="true"
                     webURL="http://cloud.tdengine.com"
@@ -801,12 +1181,11 @@
                 <!-- DolphinDB -->
                 <driver
                     id="DolphinDB"
+                    dataSourceType="dolphindb"
                     label="DolphinDB"
                     class="com.dolphindb.jdbc.Driver"
                     sampleURL="jdbc:dolphindb://{host}:{port}"
                     defaultPort="8848"
-                    icon="icons/dolphindb_icon.png"
-                    iconBig="icons/dolphindb_icon_big.png"
                     description="DolphinDB Driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/dolphindb/jdbc"
@@ -823,9 +1202,8 @@
                 <!-- OrientDB -->
                 <driver
                     id="orientdb_jdbc"
+                    dataSourceType="orientdb"
                     label="OrientDB"
-                    icon="icons/orientdb_icon.png"
-                    iconBig="icons/orientdb_icon_big.png"
                     class="com.orientechnologies.orient.jdbc.OrientJdbcDriver"
                     sampleURL="jdbc:orient:remote:{host}/{database}"
                     defaultPort=""
@@ -842,9 +1220,8 @@
                 <!-- PrestoDB -->
                 <driver
                     id="presto_jdbc"
+                    dataSourceType="prestodb"
                     label="PrestoDB"
-                    icon="icons/presto_icon.png"
-                    iconBig="icons/presto_icon_big.png"
                     class="com.facebook.presto.jdbc.PrestoDriver"
                     sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                     defaultPort="8080"
@@ -867,9 +1244,8 @@
                 <!-- PrestoSQL -->
                 <driver
                         id="prestosql_jdbc"
+                        dataSourceType="prestosql"
                         label="PrestoSQL"
-                        icon="icons/presto_icon.png"
-                        iconBig="icons/presto_icon_big.png"
                         class="io.prestosql.jdbc.PrestoDriver"
                         sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                         defaultPort="8080"
@@ -887,9 +1263,8 @@
                 <!-- Trino, formerly PrestoSQL -->
                 <driver
                     id="trino_jdbc"
+                    dataSourceType="trino"
                     label="Trino"
-                    icon="icons/trino_icon.png"
-                    iconBig="icons/trino_icon_big.png"
                     class="io.trino.jdbc.TrinoDriver"
                     sampleURL="jdbc:trino://{host}:{port}[/{database}]"
                     defaultPort="8080"
@@ -911,6 +1286,7 @@
                 <!-- CUBRID -->
                 <driver
                         id="cubrid_jdbc"
+                        dataSourceType="cubrid"
                         label="CUBRID"
                         icon="icons/cubrid_icon.png"
                         iconBig="icons/cubrid_icon_big.png"
@@ -928,9 +1304,8 @@
                 <!-- Solr -->
                 <driver
                         id="apache_solrj"
+                        dataSourceType="solr"
                         label="Solr"
-                        icon="icons/solr_icon.png"
-                        iconBig="icons/solr_icon_big.png"
                         class="org.apache.solr.client.solrj.io.sql.DriverImpl"
                         sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
                         defaultPort="9983"
@@ -945,9 +1320,8 @@
                 <!-- OpenEdge -->
                 <driver
                         id="openedge_generic"
+                        dataSourceType="openedge"
                         label="OpenEdge"
-                        icon="icons/openedge_icon.png"
-                        iconBig="icons/openedge_icon_big.png"
                         class="com.ddtek.jdbc.openedge.OpenEdgeDriver"
                         sampleURL="jdbc:datadirect:openedge://{host}:{port};databaseName={database}"
                         supportsDistributedMode="false"
@@ -965,9 +1339,8 @@
                 <!-- MonetDB -->
                 <driver
                         id="monetdb"
+                        dataSourceType="monetdb"
                         label="MonetDB"
-                        icon="icons/monetdb_icon.png"
-                        iconBig="icons/monetdb_icon_big.png"
                         class="org.monetdb.jdbc.MonetDriver"
                         sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
                         defaultPort="50000"
@@ -982,9 +1355,8 @@
 
                 <driver
                         id="dremio"
+                        dataSourceType="dremio"
                         label="Dremio"
-                        icon="icons/dremio_icon.png"
-                        iconBig="icons/dremio_icon_big.png"
                         class="com.dremio.jdbc.Driver"
                         sampleURL="jdbc:dremio:direct={host}[:{port}][;schema={database}]"
                         defaultPort="31010"
@@ -1002,9 +1374,8 @@
 
                 <driver
                         id="apache_ignite"
+                        dataSourceType="apache_ignite"
                         label="Apache Ignite"
-                        icon="icons/ignite_icon.png"
-                        iconBig="icons/ignite_icon_big.png"
                         class="org.apache.ignite.IgniteJdbcThinDriver"
                         sampleURL="jdbc:ignite:thin://{host}[:{port}][;schema={database}]"
                         defaultPort=""
@@ -1021,9 +1392,8 @@
 
                 <driver
                         id="omnisci_mapd"
+                        dataSourceType="omnisci_formerly_mapd"
                         label="OmniSci (formerly MapD)"
-                        icon="icons/omnisci_icon.png"
-                        iconBig="icons/omnisci_icon_big.png"
                         class="com.omnisci.jdbc.OmniSciDriver"
                         sampleURL="jdbc:omnisci:{host}:{port}:{database}"
                         defaultPort="6274"
@@ -1039,9 +1409,8 @@
 
                 <driver
                     id="cratedb"
+                    dataSourceType="cratedb"
                     label="CrateDB (Legacy)"
-                    icon="icons/cratedb_icon.png"
-                    iconBig="icons/cratedb_icon_big.png"
                     class="io.crate.client.jdbc.CrateDriver"
                     sampleURL="crate://{host}[:{port}]/"
                     defaultPort="5432"
@@ -1055,9 +1424,8 @@
                 <!-- GizmoSQL -->
                 <driver
                     id="gizmosql"
+                    dataSourceType="gizmosql"
                     label="GizmoSQL"
-                    icon="icons/gizmosql_icon.png"
-                    iconBig="icons/gizmosql_icon_big.png"
                     class="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"
                     sampleURL="jdbc:gizmosql://{host}:{port}[?catalog={database}]"
                     defaultPort="31337"
@@ -1091,8 +1459,8 @@
 
                 <driver
                     id="pervasive_jdbc"
+                    dataSourceType="pervasive_sql"
                     label="Pervasive SQL"
-                    iconBig="icons/pervasive_icon_big@2x.png"
                     class="com.pervasive.jdbc.v2.Driver"
                     sampleURL="jdbc:pervasive://{host}:{port}/{database}?transport=tcp"
                     defaultPort="1583"
@@ -1107,9 +1475,8 @@
 
                 <driver
                         id="sqream_db"
+                        dataSourceType="sqream_db"
                         label="SQream DB"
-                        icon="icons/sqream_icon.png"
-                        iconBig="icons/sqream_icon_big.png"
                         class="com.sqream.jdbc.SQDriver"
                         sampleURL="jdbc:Sqream://{host}:{port}/{database};cluster=true"
                         defaultPort="3108"
@@ -1154,9 +1521,8 @@
 
                 <driver
                     id="apache_calcite_avatica"
+                    dataSourceType="apache_calcite_avatica"
                     label="Apache Calcite Avatica"
-                    icon="icons/calcite_icon.png"
-                    iconBig="icons/calcite_icon_big.png"
                     class="org.apache.calcite.avatica.remote.Driver"
                     sampleURL="jdbc:avatica:remote:url=http://{host}:{port}/"
                     defaultPort="8765"
@@ -1180,10 +1546,8 @@
 
                 <driver
                     id="apache_kylin"
+                    dataSourceType="apache_kylin"
                     label="Apache Kylin"
-                    icon="icons/apache_icon.png"
-                    iconBig="icons/apache_icon_big.png"
-                    logoImage="icons/apache_logo.png"
                     class="org.apache.kylin.jdbc.Driver"
                     sampleURL="jdbc:kylin://{host}:{port}/{database}"
                     defaultPort="443"
@@ -1206,9 +1570,8 @@
 
                 <driver
                         id="db2_luw_old"
+                        dataSourceType="db2"
                         label="Db2 for LUW (Old 8.x)"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.db2/icons/db2_icon_big.png"
                         category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
@@ -1235,9 +1598,8 @@
                 </driver>
                 <driver
                         id="mysql3"
+                        dataSourceType="mysql"
                         label="MySQL (Old)"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="3306"
@@ -1251,9 +1613,8 @@
 
                 <driver
                         id="postgresql_generic"
+                        dataSourceType="postgresql"
                         label="PostgreSQL (Old)"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
@@ -1279,10 +1640,9 @@
                 <!-- Jennifer -->
                 <driver
                         id="jennifer_jdbc"
+                        dataSourceType="jennifer"
                         label="Jennifer"
                         class="jennifer.jdbc.driver.JenniferDriver"
-                        icon="icons/jennifer_icon.png"
-                        iconBig="icons/jennifer_icon_big.png"
                         sampleURL="jdbc:jennifer://{host}:{port}/"
                         defaultPort="8001"
                         description="Jennifer JDBC driver"
@@ -1298,11 +1658,9 @@
                 <!-- Salesforce Data 360 (Legacy) -->
                 <driver
                         id="salesforce_datacloud_jdbc"
+                        dataSourceType="salesforce_data_360"
                         label="Salesforce Data 360 (Legacy)"
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
-                        icon="icons/salesforce_icon.svg"
-                        iconBig="icons/salesforce_icon_big.svg"
-                        logoImage="icons/salesforce_logo.svg"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
                         description="Legacy Salesforce Data 360 JDBC driver"
@@ -1318,11 +1676,9 @@
                 <!-- Salesforce Data 360 -->
                 <driver
                         id="salesforce_datacloud"
+                        dataSourceType="salesforce_data_360"
                         label="Salesforce Data 360"
                         class="com.salesforce.datacloud.jdbc.DataCloudJDBCDriver"
-                        icon="icons/salesforce_icon.svg"
-                        iconBig="icons/salesforce_icon_big.svg"
-                        logoImage="icons/salesforce_logo.svg"
                         sampleURL="jdbc:salesforce-datacloud://{database}"
                         defaultDatabase="login.salesforce.com"
                         description="Salesforce Data 360 JDBC driver"
@@ -1341,10 +1697,8 @@
                 <!-- Teiid -->
                 <driver
                         id="teiid"
+                        dataSourceType="teiid"
                         label="Teiid"
-		                icon="icons/teiid_icon.png"
-                        iconBig="icons/teiid_icon_big.png"
-                        logoImage="icons/teiid_logo.png"
                         class="org.teiid.jdbc.TeiidDriver"
                         sampleURL="jdbc:teiid:{database}@mms://{host}:{port}"
                         defaultPort="31000"
@@ -1401,38 +1755,37 @@
                 We leave just IDs to allow correct driver migration.
                 -->
 
-                <driver id="aws_athena_42"/>
-                <driver id="aws_redshift"/>
-                <driver id="aws_redshift_42"/>
-                <driver id="azure_databricks"/>
-                <driver id="db2"/>
-                <driver id="db2_iseries"/>
-                <driver id="db2_zos"/>
-                <driver id="exasol"/>
-                <driver id="firebird_jaybird"/>
-                <driver id="firebird_jaybird3"/>
-                <driver id="h2_server"/>
-                <driver id="h2_embedded"/>
-                <driver id="h2_embedded_v2"/>
-                <driver id="mssql"/>
-                <driver id="mssql_ms"/>
-                <driver id="postgresql"/>
-                <driver id="oracle"/>
-                <driver id="snowflake_generic"/>
-                <driver id="salesforce_jdbc"/>
-                <driver id="sap_hana"/>
-                <driver id="sqlite_jdbc"/>
-                <driver id="sybase"/>
-                <driver id="vertica"/>
-                <driver id="yandex_clickhouse"/>
-                <driver id="apache_hive2"/>
+                <driver id="aws_athena_42" dataSourceType="athena"/>
+                <driver id="aws_redshift" dataSourceType="redshift"/>
+                <driver id="aws_redshift_42" dataSourceType="redshift"/>
+                <driver id="azure_databricks" dataSourceType="databricks"/>
+                <driver id="db2" dataSourceType="db2"/>
+                <driver id="db2_iseries" dataSourceType="db2"/>
+                <driver id="db2_zos" dataSourceType="db2"/>
+                <driver id="exasol" dataSourceType="exasol"/>
+                <driver id="firebird_jaybird" dataSourceType="firebird"/>
+                <driver id="firebird_jaybird3" dataSourceType="firebird"/>
+                <driver id="h2_server" dataSourceType="h2"/>
+                <driver id="h2_embedded" dataSourceType="h2"/>
+                <driver id="h2_embedded_v2" dataSourceType="h2"/>
+                <driver id="mssql" dataSourceType="mssql"/>
+                <driver id="mssql_ms" dataSourceType="mssql"/>
+                <driver id="postgresql" dataSourceType="postgresql"/>
+                <driver id="oracle" dataSourceType="oracle"/>
+                <driver id="snowflake_generic" dataSourceType="snowflake"/>
+                <driver id="salesforce_jdbc" dataSourceType="salesforce_data_360"/>
+                <driver id="sap_hana" dataSourceType="hana"/>
+                <driver id="sqlite_jdbc" dataSourceType="sqlite"/>
+                <driver id="sybase" dataSourceType="sap_ase"/>
+                <driver id="vertica" dataSourceType="vertica"/>
+                <driver id="yandex_clickhouse" dataSourceType="clickhouse"/>
+                <driver id="apache_hive2" dataSourceType="hive"/>
 
                 <!-- Drivers Teasers -->
                 <driver
                         id="odbc"
+                        dataSourceType="odbc_legacy"
                         label="ODBC - Legacy"
-                        icon="icons/odbc_icon.png"
-                        iconBig="icons/odbc_icon_big.png"
                         class="sun.jdbc.odbc.JdbcOdbcDriver"
                         sampleURL="jdbc:odbc:{database}"
                         webURL="https://sun.com"
@@ -1445,6 +1798,7 @@
                 </driver>
                 <driver
                         id="mongo-ce"
+                        dataSourceType="mongodb"
                         label="MongoDB"
                         description="Driver for MongoDB"
                         iconBig="icons/mongodb_icon_big.png"
@@ -1454,6 +1808,7 @@
                 </driver>
                 <driver
                         id="cql-ce"
+                        dataSourceType="cassandra"
                         label="Cassandra"
                         description="Driver for Apache Cassandra 2.x/3.x/4.x"
                         iconBig="icons/cassandra_icon_big.png"
@@ -1463,6 +1818,7 @@
                 </driver>
                 <driver
                         id="salesforce-ce"
+                        dataSourceType="salesforce"
                         label="Salesforce"
                         description="Salesforce JDBC driver"
                         iconBig="icons/salesforce_pro_icon.png"
@@ -1472,6 +1828,7 @@
                 </driver>
                 <driver
                         id="couchbase-ce"
+                        dataSourceType="couchbase"
                         label="Couchbase"
                         description="Couchbase Driver"
                         iconBig="icons/couchbase_pro_icon.png"
@@ -1481,6 +1838,7 @@
                 </driver>
                 <driver
                         id="redis-ce"
+                        dataSourceType="redis"
                         label="Redis"
                         description="Redis Driver"
                         iconBig="icons/redis_pro_icon.png"
@@ -1490,6 +1848,7 @@
                 </driver>
                 <driver
                         id="timestream-ce"
+                        dataSourceType="timestream"
                         label="Timestream"
                         description="AWS Timestream Driver"
                         iconBig="icons/timestream_pro_icon.png"
@@ -1499,6 +1858,7 @@
                 </driver>
                 <driver
                         id="neo4j_jdbc"
+                        dataSourceType="neo4j"
                         label="Neo4j"
                         description="Driver for Neo4j"
                         iconBig="icons/neo4j_icon_big.png"
@@ -1515,6 +1875,7 @@
                 class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
                 description="Elasticsearch datasource"
                 id="elasticsearch"
+                dataSourceType="elasticsearch"
                 parent="generic"
                 label="Elasticsearch"
                 icon="icons/elasticsearch_icon.png"
@@ -1525,8 +1886,6 @@
                         id="elastic_search_jdbc"
                         label="Elasticsearch"
                         class="org.elasticsearch.xpack.sql.jdbc.EsDriver"
-                        icon="icons/elasticsearch_icon.png"
-                        iconBig="icons/elasticsearch_icon_big.png"
                         sampleURL="jdbc:es://{host}:{port}/"
                         defaultPort="9200"
                         description="Elasticsearch JDBC driver"
@@ -1550,6 +1909,7 @@
                 class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
                 description="Opendistro datasource"
                 id="open-distro-elasticsearch"
+                dataSourceType="open_distro_elasticsearch"
                 parent="generic"
                 label="Open Distro Elasticsearch"
                 icon="icons/opendistro_icon.png"
@@ -1560,8 +1920,6 @@
                         id="open_distro_elastic_search_jdbc"
                         label="Open Distro Elasticsearch"
                         class="com.amazon.opendistroforelasticsearch.jdbc.Driver"
-                        icon="icons/opendistro_icon.png"
-                        iconBig="icons/opendistro_icon_big.png"
                         sampleURL="jdbc:elasticsearch://https://{host}:{port}/"
                         defaultPort="443"
                         description="Opendistro Elasticsearch JDBC driver"

@@ -4,12 +4,12 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-
         <!-- DB2 for IBM i -->
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.i.DB2IDataSourceProvider"
                 description="%datasource.db2_i.description"
                 id="db2_i"
+                dataSourceType="db2"
                 parent="generic"
                 label="Db2 for IBM i data source"
                 icon="icons/db2_i_icon.png"

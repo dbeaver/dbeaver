@@ -7,10 +7,19 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="kingbase"
+            label="Kingbase"
+            description="Kingbase database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/kingbase_icon.png"
+            iconBig="icons/kingbase_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.kingbase.KingbaseDataSourceProvider"
                 description="%datasource.kingbase.description"
                 id="kingbase"
+                dataSourceType="kingbase"
                 parent="postgresql"
                 label="Kingbase"
                 icon="icons/kingbase_icon.png"
@@ -49,8 +58,6 @@
                 <driver
                         id="kingbase-jdbc"
                         label="Kingbase"
-                        icon="icons/kingbase_icon.png"
-                        iconBig="icons/kingbase_icon_big.png"
                         class="com.kingbase8.Driver"
                         sampleURL="jdbc:kingbase8://{host}[:{port}]/[{database}]"
                         defaultPort="54321"

@@ -3,10 +3,19 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="tidb"
+            label="TiDB"
+            description="TiDB database"
+            dataSourceInformation="Relational database management system"
+            categories="sql"
+            icon="icons/tidb_icon.png"
+            iconBig="icons/tidb_icon_big.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.tidb.TiDBDataSourceProvider"
             description="TiDB"
             id="tidb"
+            dataSourceType="tidb"
             parent="mysql"
             dialect="tidb"
             label="TiDB"
@@ -66,8 +75,6 @@
                  <driver
                     id="tidb"
                     label="TiDB"
-                    icon="icons/tidb_icon.png"
-                    iconBig="icons/tidb_icon_big.png"
                     class="com.mysql.cj.jdbc.Driver"
                     sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                     defaultPort="4000"

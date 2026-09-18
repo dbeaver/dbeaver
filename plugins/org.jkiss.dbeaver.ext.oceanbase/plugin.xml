@@ -3,10 +3,19 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="oceanbase"
+            label="OceanBase"
+            description="OceanBase database"
+            dataSourceInformation="Distributed relational database with multiple compatibility modes"
+            categories="sql"
+            icon="icons/ob_icon.png"
+            iconBig="icons/ob_icon_big.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.oceanbase.OceanbaseDataSourceProvider"
             description="Oceanbase"
             id="oceanbase"
+            dataSourceType="oceanbase"
             parent="mysql"
             dialect="mysql"
             label="Oceanbase">
@@ -22,8 +31,6 @@
                     sampleURL="jdbc:oceanbase://{host}[:{port}][/{database}]"
                     defaultPort="2881"
                     webURL="https://open.oceanbase.com"
-                    icon="icons/ob_icon.png"
-                    iconBig="icons/ob_icon_big.png"
                     description="Driver for OceanBase (MySQL tenant mode)"
                     supportedPageFields="host,port,database,server"
                     categories="sql">
@@ -49,6 +56,7 @@
             class="org.jkiss.dbeaver.ext.oceanbase.OceanbaseOracleDataSourceProvider"
             description="Oceanbase (Oracle mode)"
             id="oceanbase_oracle"
+            dataSourceType="oceanbase"
             parent="generic"
             dialect="oracle"
             icon="icons/ob_icon.png"
@@ -61,8 +69,6 @@
                     sampleURL="jdbc:oceanbase://{host}[:{port}][/{database}]"
                     defaultPort="2881"
                     webURL="https://open.oceanbase.com"
-                    icon="icons/ob_icon.png"
-                    iconBig="icons/ob_icon_big.png"
                     description="Driver for OceanBase (Oracle tenant mode)"
                     supportedPageFields="host,port,database,server"
                     categories="sql">
