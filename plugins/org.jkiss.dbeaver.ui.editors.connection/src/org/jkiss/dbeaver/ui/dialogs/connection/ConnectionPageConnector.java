@@ -20,14 +20,12 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -40,6 +38,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -123,22 +122,42 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
         private static final int HORIZONTAL_PADDING = 14;
         private static final int TEXT_SPACING = 4;
         private static final int VERTICAL_PADDING = 14;
-        private static final int MAX_VISIBLE_ITEMS = 5;
+        private static final int MAX_VISIBLE_ITEMS = 3;
+        private static final int TABLE_WIDTH_HINT = 100;
 
         private final Font titleFont;
 
         private ConnectorViewer(Composite parent) {
             super(parent, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
             Table table = getTable();
-            table.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+            GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
+            layoutData.widthHint = TABLE_WIDTH_HINT;
+            table.setLayoutData(layoutData);
             table.setLinesVisible(false);
+            TableColumn column = new TableColumn(table, SWT.NONE);
+            table.addListener(SWT.Resize, event -> {
+                int width = table.getClientArea().width - 1;
+//                ScrollBar verticalBar = table.getVerticalBar();
+//                if (verticalBar != null && verticalBar.isVisible()) {
+//                    width -= verticalBar.getSize().x;
+//                }
+                if (column.getWidth() != width) {
+                    column.setWidth(width);
+                }
+            });
             setContentProvider(ArrayContentProvider.getInstance());
             setLabelProvider(new LabelProvider() {
                 @Override
                 public String getText(Object element) {
                     DBPDriver driver = (DBPDriver) element;
-                    String description = CommonUtils.getSingleLineString(CommonUtils.notEmpty(driver.getDescription()));
-                    return description.isEmpty() ? driver.getName() : driver.getName() + " - " + description;
+                    GC gc = new GC(table);
+                    try {
+                        gc.setFont(table.getFont());
+                        String description = getDescription(driver, gc);
+                        return description.isEmpty() ? driver.getName() : driver.getName() + " - " + description;
+                    } finally {
+                        gc.dispose();
+                    }
                 }
             });
 
@@ -175,8 +194,11 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             event.gc.setFont(titleFont);
             int titleHeight = event.gc.getFontMetrics().getHeight();
             event.gc.setFont(getTable().getFont());
-            int descriptionHeight = event.gc.getFontMetrics().getHeight();
-            event.height = Math.max(ROW_HEIGHT, titleHeight + descriptionHeight + TEXT_SPACING + VERTICAL_PADDING * 2);
+            DBPDriver driver = (DBPDriver) event.item.getData();
+            String description = getDescription(driver, event.gc);
+            int descriptionHeight = description.isEmpty() ? 0 : event.gc.textExtent(description).y;
+            event.height = Math.max(ROW_HEIGHT, titleHeight + descriptionHeight +
+                (description.isEmpty() ? 0 : TEXT_SPACING) + VERTICAL_PADDING * 2);
         }
 
         private void eraseItem(Event event) {
@@ -210,7 +232,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             int imageY = bounds.y + (bounds.height - imageHeight) / 2;
             event.gc.drawImage(image, 0, 0, imageBounds.width, imageBounds.height, imageX, imageY, imageWidth, imageHeight);
 
-            String description = CommonUtils.getSingleLineString(CommonUtils.notEmpty(driver.getDescription()));
+            String description = getDescription(driver, event.gc);
             int textX = HORIZONTAL_PADDING + IMAGE_AREA_WIDTH + HORIZONTAL_PADDING;
             event.gc.setFont(titleFont);
             event.gc.setForeground(selected ?
@@ -219,7 +241,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             int descriptionHeight = 0;
             if (!description.isEmpty()) {
                 event.gc.setFont(table.getFont());
-                descriptionHeight = event.gc.getFontMetrics().getHeight();
+                descriptionHeight = event.gc.textExtent(description).y;
             }
             int textY = bounds.y + (bounds.height - titleHeight - descriptionHeight -
                 (description.isEmpty() ? 0 : TEXT_SPACING)) / 2;
@@ -241,6 +263,17 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             } else if (table.isFocusControl()) {
                 event.gc.drawFocus(1, bounds.y + 1, width - 2, bounds.height - 2);
             }
+        }
+
+        private String getDescription(DBPDriver driver, GC gc) {
+            String description = CommonUtils.getSingleLineString(CommonUtils.notEmpty(driver.getDescription()));
+            int textX = HORIZONTAL_PADDING + IMAGE_AREA_WIDTH + HORIZONTAL_PADDING;
+            int availableWidth = getTable().getClientArea().width - textX - HORIZONTAL_PADDING;
+            int averageCharacterWidth = (int) gc.getFontMetrics().getAverageCharacterWidth();
+            if (availableWidth > 0 && averageCharacterWidth > 0) {
+                description = StringUtils.wrap(description, Math.max(1, availableWidth / averageCharacterWidth));
+            }
+            return description;
         }
     }
 
