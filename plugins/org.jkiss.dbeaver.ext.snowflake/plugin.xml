@@ -14,7 +14,6 @@
             label="Snowflake"
             description="Snowflake database"
             dataSourceInformation="High-performance analytical database platform"
-            categories="sql,analytic"
             icon="icons/snowflake_icon.png"
             iconBig="icons/snowflake_icon_big.png"
             logoImage="icons/snowflake_logo.png"/>

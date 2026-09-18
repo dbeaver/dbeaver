@@ -66,7 +66,6 @@
                 <appInfo><meta.attribute translatable="true"/></appInfo>
              </annotation>
           </attribute>
-         <attribute name="categories" type="string"/>
          <attribute name="icon" type="string">
             <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
          </attribute>

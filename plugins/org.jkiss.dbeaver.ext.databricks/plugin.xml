@@ -13,7 +13,6 @@
             label="Databricks"
             description="Databricks lakehouse platform"
             dataSourceInformation="Cloud lakehouse for analytics and engineering"
-            categories="sql,analytic,cloud"
             icon="icons/databricks_icon.svg"
             iconBig="icons/databricks_icon_big.svg"
             logoImage="icons/databricks_logo.svg"/>

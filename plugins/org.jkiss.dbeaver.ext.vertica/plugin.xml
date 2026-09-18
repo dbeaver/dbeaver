@@ -13,7 +13,6 @@
             label="Vertica"
             description="Vertica database"
             dataSourceInformation="Column-oriented analytical database system"
-            categories="sql,analytic,columns"
             icon="icons/vertica_icon.png"
             iconBig="icons/vertica_icon_big.png"
             logoImage="icons/vertica_logo.png"/>

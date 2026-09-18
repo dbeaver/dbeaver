@@ -8,7 +8,6 @@
             label="OceanBase"
             description="OceanBase database"
             dataSourceInformation="Distributed relational database with multiple compatibility modes"
-            categories="sql"
             icon="icons/ob_icon.png"
             iconBig="icons/ob_icon_big.png"
             logoImage="icons/ob_logo.png"/>

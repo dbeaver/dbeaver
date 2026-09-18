@@ -7,7 +7,6 @@
             label="GreptimeDB"
             description="GreptimeDB time-series database"
             dataSourceInformation="Time-series database for operational data"
-            categories="sql,analytic,timeseries,streaming"
             icon="icons/greptime_icon.svg"
             iconBig="icons/greptime_icon_big.svg"
             logoImage="icons/greptime_logo.svg"/>

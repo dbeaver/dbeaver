@@ -8,7 +8,6 @@
             label="TiDB"
             description="TiDB database"
             dataSourceInformation="Relational database management system"
-            categories="sql,analytic,columns"
             icon="icons/tidb_icon.png"
             iconBig="icons/tidb_icon_big.png"
             logoImage="icons/tidb_logo.png"/>

@@ -7,7 +7,6 @@
             label="Dameng"
             description="Dameng database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/dm_icon.png"
             iconBig="icons/dm_icon_big.png"/>
         <datasource

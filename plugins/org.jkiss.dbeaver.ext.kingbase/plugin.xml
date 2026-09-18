@@ -12,7 +12,6 @@
             label="Kingbase"
             description="Kingbase database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/kingbase_icon.png"
             iconBig="icons/kingbase_icon_big.png"
             logoImage="icons/kingbase_icon.png"/>

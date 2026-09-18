@@ -14,7 +14,6 @@
             label="Firebird"
             description="Firebird database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/firebird_icon.png"
             iconBig="icons/firebird_icon_big.png"/>
 

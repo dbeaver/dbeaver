@@ -13,7 +13,6 @@
             label="Manticore Search"
             description="Manticore Search search data store"
             dataSourceInformation="Search and analytics data platform"
-            categories="sql,fulltext"
             icon="icons/manticore_icon.svg"
             iconBig="icons/manticore_icon_big.svg"/>
         <datasource

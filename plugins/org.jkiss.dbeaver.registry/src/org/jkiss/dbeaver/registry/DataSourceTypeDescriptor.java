@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPDataSourceType {
@@ -35,7 +34,6 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
     private final String name;
     private final String description;
     private final String dataSourceInformation;
-    private final List<String> categories;
     private final DBPImage icon;
     private final DBPImage iconBig;
     private final DBPImage logoImage;
@@ -53,7 +51,6 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
         this.name = name;
         this.description = description;
         this.dataSourceInformation = dataSourceInformation;
-        this.categories = List.of();
         this.icon = icon;
         this.iconBig = icon;
         this.logoImage = null;
@@ -67,7 +64,6 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
         description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         String information = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_INFORMATION);
         dataSourceInformation = CommonUtils.isEmpty(information) ? name : information;
-        categories = Arrays.asList(CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_CATEGORIES), ","));
         DBPImage smallIcon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         icon = smallIcon == null ? DBIcon.DATABASE_DEFAULT : smallIcon;
         DBPImage largeIcon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG));
@@ -81,7 +77,6 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
         name = CommonUtils.isEmpty(driver.getName()) ? id : driver.getName();
         description = driver.getDescription();
         dataSourceInformation = name;
-        categories = driver.getCategories();
         icon = driver.getPlainIcon();
         iconBig = driver.getIconBig();
         logoImage = driver.getLogoImage();
@@ -115,11 +110,6 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
     @Override
     public @NotNull String getDataSourceInformation() {
         return dataSourceInformation;
-    }
-
-    @Override
-    public @NotNull List<String> getCategories() {
-        return List.copyOf(categories);
     }
 
     @Override

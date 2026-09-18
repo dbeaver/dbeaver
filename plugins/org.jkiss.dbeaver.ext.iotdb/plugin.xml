@@ -7,7 +7,6 @@
           label="TimechoDB"
           description="TimechoDB time-series database"
           dataSourceInformation="Time-series database for operational data"
-          categories="timeseries"
           icon="icons/timechoDB_icon.png"
           iconBig="icons/timechoDB_icon_big.png"
           logoImage="icons/timechoDB_logo.png"/>
@@ -16,7 +15,6 @@
           label="Apache IoTDB"
           description="Apache IoTDB time-series database"
           dataSourceInformation="Time-series database for operational data"
-          categories="timeseries"
           icon="icons/iotdb_icon.png"
           iconBig="icons/iotdb_icon_big.png"
           logoImage="icons/iotdb_logo.png"/>

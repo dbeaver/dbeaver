@@ -13,7 +13,6 @@
             label="Denodo"
             description="Denodo data virtualization platform"
             dataSourceInformation="Enterprise platform for virtualized data access"
-            categories="sql,analytic"
             icon="icons/denodo_icon.png"
             iconBig="icons/denodo_icon_big.png"/>
 

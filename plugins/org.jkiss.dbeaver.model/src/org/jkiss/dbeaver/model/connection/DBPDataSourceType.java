@@ -42,9 +42,6 @@ public interface DBPDataSourceType extends DBPNamedObject {
     }
 
     @NotNull
-    List<String> getCategories();
-
-    @NotNull
     DBPImage getIcon();
 
     @NotNull

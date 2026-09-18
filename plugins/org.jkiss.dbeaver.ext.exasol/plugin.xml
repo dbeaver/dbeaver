@@ -7,7 +7,6 @@
             label="%driver.exasol.label"
             description="Exasol database"
             dataSourceInformation="Column-oriented analytical database system"
-            categories="sql,analytic,columns"
             icon="icons/exasol_icon.png"
             iconBig="icons/exasol_icon_big.png"
             logoImage="icons/exasol.png"/>

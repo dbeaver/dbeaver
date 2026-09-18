@@ -374,9 +374,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         this.dataSourceType = CommonUtils.isEmpty(dataSourceTypeId) ? null :
             providerDescriptor.getRegistry().getDataSourceType(dataSourceTypeId);
-        if (categories.isEmpty() && dataSourceType != null) {
-            categories.addAll(dataSourceType.getCategories());
-        }
 
         this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.iconPlain == null) {

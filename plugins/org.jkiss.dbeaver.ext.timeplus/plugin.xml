@@ -16,7 +16,6 @@
             label="Timeplus"
             description="Timeplus database"
             dataSourceInformation="High-performance analytical database platform"
-            categories="sql,analytic,streaming"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
             iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"/>
         <datasource

@@ -13,7 +13,6 @@
             label="H2GIS"
             description="H2GIS database"
             dataSourceInformation="Lightweight embedded relational database"
-            categories="spatial,sql,embedded"
             icon="icons/h2gis_icon.png"
             iconBig="icons/h2gis_icon_big.png"/>
         <dataSourceType
@@ -21,7 +20,6 @@
             label="H2"
             description="H2 database"
             dataSourceInformation="Open-source, lightweight RDBMS written in Java"
-            categories="sql"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
             iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"/>
         <datasource

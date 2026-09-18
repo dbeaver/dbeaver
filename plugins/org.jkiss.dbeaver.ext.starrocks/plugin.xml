@@ -7,7 +7,6 @@
             label="StarRocks"
             description="StarRocks database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/starrocks_icon.svg"
             iconBig="icons/starrocks_icon_big.svg"/>
         <datasource

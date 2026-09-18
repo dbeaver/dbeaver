@@ -14,7 +14,6 @@
             label="LibSQL"
             description="LibSQL database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/libsql_icon.png"
             iconBig="icons/libsql_icon_big.png"/>
         <dataSourceType
@@ -22,7 +21,6 @@
             label="SQLite"
             description="SQLite database"
             dataSourceInformation="Lightweight embedded relational database engine"
-            categories="sql,embedded"
             icon="icons/sqlite_icon.png"
             iconBig="icons/sqlite_icon_big.png"/>
         <datasource

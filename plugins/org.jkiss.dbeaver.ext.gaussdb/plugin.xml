@@ -24,7 +24,6 @@
             label="GaussDB"
             description="GaussDB database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/gaussdb_icon.png"
             iconBig="icons/gaussdb_icon_big.png"
             logoImage="icons/gaussdb_logo.png"/>

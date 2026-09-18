@@ -14,7 +14,6 @@
             label="SAP ASE"
             description="SAP ASE database"
             dataSourceInformation="Enterprise relational database from SAP"
-            categories="sql"
             icon="icons/sap_ase_icon.png"
             iconBig="icons/sap_ase_icon_big.png"
             logoImage="icons/sap_ase_logo.png"/>
@@ -24,7 +23,6 @@
             label="Babelfish"
             description="Babelfish database"
             dataSourceInformation="Relational database management system"
-            categories="sql,server,aws"
             icon="icons/babelfish_icon.png"
             iconBig="icons/babelfish_icon_big.png"
             logoImage="icons/babelfish_logo.png"/>
@@ -34,7 +32,6 @@
             label="SQL Server"
             description="SQL Server database"
             dataSourceInformation="Enterprise relational database from Microsoft"
-            categories="sql"
             icon="icons/mssql_icon.png"
             iconBig="icons/mssql_icon_big.png"
             logoImage="icons/mssql_logo.png"/>
@@ -299,6 +296,7 @@
                 <driver
                     id="mssql_jdbc_jtds"
                     dataSourceType="mssql"
+                    categories="sql"
                     label="jTDS driver (Deprecated)"
                     category="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
@@ -313,6 +311,7 @@
                 <driver
                     id="mssql_jdbc_ms"
                     dataSourceType="mssql"
+                    categories="sql"
                     label="SQL Server (Deprecated)"
                     category="MS SQL Server"
                     class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
@@ -327,6 +326,7 @@
                 <driver
                         id="mssql_jdbc_ms_new"
                         dataSourceType="mssql"
+                        categories="sql"
                         label="SQL Server (Deprecated)"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
@@ -343,6 +343,7 @@
                 <driver
                         id="mssql_jdbc_azure"
                         dataSourceType="mssql"
+                        categories="sql"
                         label="Azure SQL Server (Deprecated)"
                         icon="icons/azure_sql_server_icon.png"
                         iconBig="icons/azure_sql_server_icon_big.png"

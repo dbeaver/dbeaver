@@ -47,12 +47,8 @@ import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderInfo;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 /** Data source type gallery used by the new connection wizard. */
 public class DataSourceTypeViewer extends Viewer {
@@ -148,7 +144,8 @@ public class DataSourceTypeViewer extends Viewer {
                 continue;
             }
             List<DBPDataSourceType> categoryTypes = types.stream()
-                .filter(type -> type.getCategories().contains(category.getId()))
+                .filter(type -> type.getEnabledDrivers().stream()
+                    .anyMatch(driver -> driver.getCategories().contains(category.getId())))
                 .toList();
             if (!categoryTypes.isEmpty()) {
                 TypeListFolder folder = new TypeListFolder(categoryTypes);
@@ -242,8 +239,6 @@ public class DataSourceTypeViewer extends Viewer {
                     return CommonUtils.isEmpty(pattern) || type.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
                         CommonUtils.toString(type.getDescription()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
                         type.getDataSourceInformation().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                        type.getCategories().stream().anyMatch(category ->
-                            category.toLowerCase(Locale.ENGLISH).contains(pattern)) ||
                         type.getEnabledDrivers().stream().anyMatch(driver ->
                             driver.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
                             driver.getFullName().toLowerCase(Locale.ENGLISH).contains(pattern) ||

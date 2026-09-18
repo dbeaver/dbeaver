@@ -9,7 +9,6 @@
             label="DuckDB"
             description="DuckDB database"
             dataSourceInformation="Lightweight embedded relational database"
-            categories="sql,embedded"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"
             iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon_big.png"/>
         <datasource

@@ -12,7 +12,6 @@
             label="GBase 8s"
             description="GBase 8s database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/gbase8s_icon.png"
             iconBig="icons/gbase8s_icon_big.png"
             logoImage="icons/gbase8s_logo.png"/>

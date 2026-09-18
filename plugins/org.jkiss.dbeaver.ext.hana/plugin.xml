@@ -13,7 +13,6 @@
            label="HANA"
            description="HANA database"
            dataSourceInformation="Relational database management system"
-           categories="sql"
            icon="icons/sap_hana_icon.png"
            iconBig="icons/sap_hana_icon_big.png"
            logoImage="icons/sap_hana_logo.png"/>

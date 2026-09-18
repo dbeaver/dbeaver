@@ -12,7 +12,6 @@
             label="Altibase"
             description="Altibase database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/altibase_icon.png"
             iconBig="icons/altibase_icon_big.png"
             logoImage="icons/altibase_logo_wide.png"/>

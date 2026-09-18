@@ -9,7 +9,6 @@
             label="Amazon Athena"
             description="Amazon Athena analytics service"
             dataSourceInformation="Serverless SQL analytics for object storage"
-            categories="sql,aws"
             icon="icons/athena_icon.svg"
             iconBig="icons/athena_icon_big.svg"
             logoImage="icons/aws_athena_logo.png"/>

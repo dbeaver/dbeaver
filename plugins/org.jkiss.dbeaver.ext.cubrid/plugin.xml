@@ -25,7 +25,6 @@
             label="CUBRID"
             description="CUBRID database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/cubrid_icon.png"
             iconBig="icons/cubrid_icon_big.png"/>
         <datasource

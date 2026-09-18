@@ -37,14 +37,9 @@ public interface DBPDataSourceProviderRegistry {
     List<? extends DBPDataSourceProviderDescriptor> getEnabledDataSourceProviders();
 
     @NotNull
-    default List<? extends DBPDataSourceType> getDataSourceTypes() {
-        return List.of();
-    }
-
+    List<? extends DBPDataSourceType> getDataSourceTypes();
     @Nullable
-    default DBPDataSourceType getDataSourceType(@NotNull String id) {
-        return null;
-    }
+    DBPDataSourceType getDataSourceType(@NotNull String id);
 
     @Nullable
     DBPDataSourceProviderDescriptor getDataSourceProvider(@NotNull String id);

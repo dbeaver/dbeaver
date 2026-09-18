@@ -14,7 +14,6 @@
             label="Apache Hive"
             description="Apache Hive data warehouse"
             dataSourceInformation="Relational database management system"
-            categories="hadoop"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon.png"
             iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hive_icon_big.png"/>
         <datasource

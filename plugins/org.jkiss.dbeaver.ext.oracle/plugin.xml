@@ -9,7 +9,6 @@
             label="Oracle Database"
             description="Oracle Database"
             dataSourceInformation="Enterprise relational database management system"
-            categories="sql"
             icon="icons/oracle_icon.png"
             iconBig="icons/oracle_icon_big.png"
             logoImage="icons/oracle_logo.png"/>

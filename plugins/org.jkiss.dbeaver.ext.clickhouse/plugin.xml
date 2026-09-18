@@ -16,7 +16,6 @@
             label="ClickHouse"
             description="ClickHouse database"
             dataSourceInformation="Column-oriented analytical database system"
-            categories="sql,analytic,columns"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
             iconBig="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon_big.png"/>
         <datasource

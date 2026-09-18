@@ -7,7 +7,6 @@
             label="Apache Doris"
             description="Apache Doris database"
             dataSourceInformation="Relational database management system"
-            categories="sql,federated"
             icon="icons/doris_icon.svg"
             iconBig="icons/doris_icon_big.svg"/>
         <datasource

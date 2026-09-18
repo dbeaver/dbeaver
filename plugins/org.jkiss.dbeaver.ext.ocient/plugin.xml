@@ -14,7 +14,6 @@
             label="Ocient"
             description="Ocient database"
             dataSourceInformation="High-performance analytical database platform"
-            categories="sql,analytic"
             icon="icons/ocient_icon.png"
             iconBig="icons/ocient_icon_big.png"/>
         <datasource

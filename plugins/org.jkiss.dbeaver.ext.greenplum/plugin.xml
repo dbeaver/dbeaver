@@ -33,7 +33,6 @@
             label="Greengage"
             description="Greengage database"
             dataSourceInformation="High-performance analytical database platform"
-            categories="sql,analytic"
             icon="icons/greengage_icon.svg"
             iconBig="icons/greengage_icon_big.svg"
             logoImage="icons/greengage_logo.svg"/>
@@ -42,7 +41,6 @@
             label="Cloudberry"
             description="Cloudberry database"
             dataSourceInformation="High-performance analytical database platform"
-            categories="sql,analytic"
             icon="icons/cloudberry_icon.png"
             iconBig="icons/cloudberry_icon_big.png"
             logoImage="icons/cloudberry_logo.png"/>
@@ -51,7 +49,6 @@
             label="Greenplum"
             description="Greenplum database"
             dataSourceInformation="High-performance analytical database platform"
-            categories="sql,analytic"
             icon="icons/greenplum_icon.png"
             iconBig="icons/greenplum_icon_big.png"
             logoImage="icons/greenplum_logo.png"/>

@@ -16,7 +16,6 @@
             label="Databend"
             description="Databend database"
             dataSourceInformation="Column-oriented analytical database system"
-            categories="sql,analytic,columns"
             icon="icons/databend_icon.png"
             iconBig="icons/databend_icon_big.png"/>
         <datasource

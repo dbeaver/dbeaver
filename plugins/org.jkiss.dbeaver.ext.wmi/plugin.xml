@@ -9,7 +9,6 @@
             label="WMI"
             description="Windows Management Instrumentation data"
             dataSourceInformation="Windows system management and monitoring data"
-            categories="embedded"
             icon="icons/wmi_icon.png"
             iconBig="icons/wmi_icon_big.png"
             logoImage="icons/wmi_icon_big.png"/>

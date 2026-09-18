@@ -10,7 +10,6 @@
             label="Google Cloud Spanner"
             description="Google Cloud Spanner database"
             dataSourceInformation="Cloud-native distributed data platform"
-            categories="sql,bigdata,cloud,gcp"
             icon="icons/spanner_icon.png"
             iconBig="icons/spanner_icon_big.png"
             logoImage="icons/spanner_logo.png"/>

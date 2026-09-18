@@ -9,7 +9,6 @@
             label="MariaDB"
             description="MariaDB database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
             icon="icons/mariadb_icon.png"
             iconBig="icons/mariadb_icon_big.png"
             logoImage="icons/mariadb_logo.png"/>
