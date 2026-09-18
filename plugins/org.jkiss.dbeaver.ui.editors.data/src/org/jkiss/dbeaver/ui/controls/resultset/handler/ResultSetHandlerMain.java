@@ -152,6 +152,12 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
         IResultSetPresentation presentation = rsv.getActivePresentation();
         DBPDataSource dataSource = rsv.getDataSource();
         switch (actionId) {
+            case IWorkbenchCommandConstants.EDIT_UNDO:
+                rsv.undoCellEdit();
+                break;
+            case IWorkbenchCommandConstants.EDIT_REDO:
+                rsv.redoCellEdit();
+                break;
             case IWorkbenchCommandConstants.FILE_REFRESH:
                 rsv.refreshData(null);
                 break;
@@ -285,6 +291,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 rsv.redrawData(false, false);
                 rsv.updatePanelsContent(false);
+                rsv.updateEditControls();
                 break;
             }
             case IResultSetCommands.CMD_APPLY_CHANGES:

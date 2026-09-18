@@ -52,6 +52,8 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_NAVIGATE_LINK = "canNavigateLink";
     public static final String PROP_SUPPORTS_COUNT = "supportsCount";
     public static final String PROP_CAN_NAVIGATE_HISTORY = "canNavigateHistory";
+    public static final String PROP_CAN_UNDO = "canUndo";
+    public static final String PROP_CAN_REDO = "canRedo";
     public static final String PROP_EDITABLE = "editable";
     private static final String PROP_CHANGED = "changed";
     private static final String PROP_CAN_PERSIST_DATA = "canPersistData";
@@ -173,6 +175,10 @@ public class ResultSetPropertyTester extends PropertyTester
                     }
                 }
                 return false;
+            case PROP_CAN_UNDO:
+                return !actionsDisabled && rsv.canUndoCellEdit();
+            case PROP_CAN_REDO:
+                return !actionsDisabled && rsv.canRedoCellEdit();
             case PROP_CAN_PERSIST_DATA: {
                 if (rsv.getModel().isUpdateInProgress()) {
                     return false;

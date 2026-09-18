@@ -26,12 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.resultset.DBDDataStatementInfo;
-import org.jkiss.dbeaver.model.data.resultset.DBDDataUpdateListener;
-import org.jkiss.dbeaver.model.data.resultset.DBDResultSetDataUpdater;
-import org.jkiss.dbeaver.model.data.resultset.DataUpdaterJob;
-import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
-import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
+import org.jkiss.dbeaver.model.data.resultset.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -417,6 +412,13 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
     // Reflect data changes in viewer
     // Changes affects only rows which statements executed successfully
     private boolean reflectChanges() {
+        // Auto-commit may advance the baseline even when a later statement fails.
+        if (updateStatements.stream().anyMatch(DBDDataStatementInfo::isExecuted)
+            || insertStatements.stream().anyMatch(DBDDataStatementInfo::isExecuted)
+            || deleteStatements.stream().anyMatch(DBDDataStatementInfo::isExecuted)
+        ) {
+            viewer.clearCellEditHistory();
+        }
         boolean rowsChanged = false;
         for (ResultSetRow row : changedRows) {
             for (DataStatementInfo stat : updateStatements) {
