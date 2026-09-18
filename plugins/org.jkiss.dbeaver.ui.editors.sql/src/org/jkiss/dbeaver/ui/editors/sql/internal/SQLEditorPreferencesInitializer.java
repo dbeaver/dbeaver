@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -86,8 +87,16 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 0);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.TAB_AUTOCOMPLETION, true);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_INSERT_CASE, SQLCompletionContext.PROPOSAL_CASE_DEFAULT);
+            PrefUtils.setDefaultPreferenceValue(
+                store,
+                SQLPreferenceConstants.COMPLETION_PROPOSAL_ACTIVATION_KEY,
+                ProposalActivationKey.BOTH.name()
+            );
+            PrefUtils.setDefaultPreferenceValue(
+                store,
+                SQLPreferenceConstants.PROPOSAL_INSERT_CASE,
+                SQLCompletionContext.PROPOSAL_CASE_DEFAULT
+            );
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_REPLACE_WORD, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_VALUES, false);
