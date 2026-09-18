@@ -169,8 +169,12 @@ public class DataSourceParser {
             String profileId = vmMap.getKey();
             Map<String, Object> profileMap = vmMap.getValue();
             DBWNetworkProfile profile = new DBWNetworkProfile(parameters.project);
-            profile.setProfileName(profileId);
-            profile.setProfileName(profileId);
+            profile.setProfileId(profileId);
+            profile.setProfileName(CommonUtils.notNull(
+                JSONUtils.getString(profileMap, RegistryConstants.ATTR_NAME),
+                profileId
+            ));
+            profile.setProfileDescription(JSONUtils.getString(profileMap, RegistryConstants.ATTR_DESCRIPTION));
             profile.setProperties(JSONUtils.deserializeStringMap(profileMap, "properties"));
 
             for (Map.Entry<String, Map<String, Object>> handlerMap : JSONUtils.getNestedObjects(profileMap, "handlers")) {
@@ -276,7 +280,7 @@ public class DataSourceParser {
         String handlerId = handlerObject.getKey();
         Map<String, Object> handlerCfg = handlerObject.getValue();
 
-        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
+        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getRawDescriptor(handlerId);
         if (handlerDescriptor == null) {
             log.warn("Can't find network handler '" + handlerId + "'");
             return null;

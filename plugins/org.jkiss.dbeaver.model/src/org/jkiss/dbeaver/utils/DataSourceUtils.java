@@ -596,7 +596,7 @@ public class DataSourceUtils {
             return;
         }
         DBWHandlerRegistry handlerRegistry = DBWorkbench.getPlatform().getNetworkHandlerRegistry();
-        Map<String, ? extends DBWHandlerDescriptor> availableHandlers = handlerRegistry.getDescriptors(dataSource.getDriver())
+        Map<String, ? extends DBWHandlerDescriptor> availableHandlers = handlerRegistry.getDescriptors(dataSource)
             .stream()
             .collect(Collectors.toMap(DBWHandlerDescriptor::getPrefix, h -> h));
 
