@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.sync.project;
 
+import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -33,8 +34,17 @@ import java.nio.file.StandardCopyOption;
 final class DDProjectSyncBindingStore {
 
     private static final Log log = Log.getLog(DDProjectSyncBindingStore.class);
-
     private static final String BINDING_FILE_NAME = "datadam-sync.json";
+    private static final Gson GSON = JSONUtils.PRETTY_GSON;
+    private static final DDProjectSyncBindingStore INSTANCE = new DDProjectSyncBindingStore();
+
+    private DDProjectSyncBindingStore() {
+    }
+
+    @NotNull
+    static DDProjectSyncBindingStore getInstance() {
+        return INSTANCE;
+    }
 
     @Nullable
     DDProjectSyncLocalBinding load(@NotNull DBPProject project) throws DBException {
@@ -43,7 +53,7 @@ final class DDProjectSyncBindingStore {
             return null;
         }
         try {
-            DDProjectSyncLocalBinding binding = JSONUtils.GSON.fromJson(Files.readString(file), DDProjectSyncLocalBinding.class);
+            DDProjectSyncLocalBinding binding = GSON.fromJson(Files.readString(file), DDProjectSyncLocalBinding.class);
             validate(binding);
             return binding;
         } catch (IOException | RuntimeException e) {
@@ -58,7 +68,7 @@ final class DDProjectSyncBindingStore {
         try {
             Files.createDirectories(file.getParent());
             temporary = Files.createTempFile(file.getParent(), BINDING_FILE_NAME + ".", ".tmp");
-            Files.writeString(temporary, JSONUtils.GSON.toJson(binding));
+            Files.writeString(temporary, GSON.toJson(binding));
             try {
                 Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             } catch (AtomicMoveNotSupportedException e) {

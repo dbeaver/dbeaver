@@ -45,7 +45,7 @@ public class DDProjectSyncService {
     private final DDShareClient client;
     private final DBPWorkspace workspace;
     private final UUID accountId;
-    private final DDProjectSyncBindingStore bindingStore = new DDProjectSyncBindingStore();
+    private final DDProjectSyncBindingStore bindingStore = DDProjectSyncBindingStore.getInstance();
 
     public DDProjectSyncService(
         @NotNull String url,
