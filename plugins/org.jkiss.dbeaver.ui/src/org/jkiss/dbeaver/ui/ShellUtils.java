@@ -48,10 +48,15 @@ public final class ShellUtils {
 
     public static boolean launchProgram(@NotNull String path) {
         String browserExecutable = System.getProperty(TEST_BROWSER_EXECUTABLE_PROPERTY);
-        if (browserExecutable != null && !browserExecutable.isBlank()) {
+        if (isWebUrl(path) && browserExecutable != null && !browserExecutable.isBlank()) {
             return launchTestBrowser(browserExecutable, path);
         }
         return Program.launch(path);
+    }
+
+    private static boolean isWebUrl(@NotNull String path) {
+        return path.regionMatches(true, 0, "http://", 0, 7)
+            || path.regionMatches(true, 0, "https://", 0, 8);
     }
 
     private static boolean launchTestBrowser(@NotNull String browserExecutable, @NotNull String url) {
