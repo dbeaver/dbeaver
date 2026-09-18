@@ -11,7 +11,8 @@
             dataSourceInformation="Enterprise relational database from IBM"
             categories="sql"
             icon="icons/db2_icon.png"
-            iconBig="icons/db2_icon_big.png"/>
+            iconBig="icons/db2_icon_big.png"
+            logoImage="icons/db2_logo.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
                 description="Db2 connector"

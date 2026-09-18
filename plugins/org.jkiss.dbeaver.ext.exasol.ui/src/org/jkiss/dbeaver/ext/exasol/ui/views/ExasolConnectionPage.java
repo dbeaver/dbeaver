@@ -20,7 +20,6 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -52,23 +51,6 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
     private boolean showBackupHosts = false;
     private Button encryptCommunication;
     private Button useLegacyEncryption;
-
-    private Image logoImage;
-
-    public ExasolConnectionPage() {
-        logoImage = createImage("icons/exasol.png"); //$NON-NLS-1$
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        UIUtils.dispose(logoImage);
-    }
-
-    @Override
-    public Image getImage() {
-        return logoImage;
-    }
 
     @Override
     public void createControl(Composite composite) {

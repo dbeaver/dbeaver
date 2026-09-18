@@ -61,7 +61,8 @@
             dataSourceInformation="Open-source object-relational database system"
             categories="sql"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon.png"
-            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon_big.png"/>
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon_big.png"
+            logoImage="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_logo.png"/>
         <dataSourceType
             id="mysql"
             label="MySQL"
@@ -69,7 +70,8 @@
             dataSourceInformation="Popular open-source relational database"
             categories="sql"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon.png"
-            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon_big.png"/>
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon_big.png"
+            logoImage="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_logo.png"/>
         <dataSourceType
             id="apache_kylin"
             label="Apache Kylin"
@@ -117,7 +119,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             icon="icons/cratedb_icon.png"
-            iconBig="icons/cratedb_icon_big.png"/>
+            iconBig="icons/cratedb_icon_big.png"
+            logoImage="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/cratedb_logo.png"/>
         <dataSourceType
             id="omnisci_formerly_mapd"
             label="OmniSci (formerly MapD)"
@@ -350,14 +353,6 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             iconBig="icons/ingres_icon_big.png"/>
-        <dataSourceType
-            id="intersystems_cache"
-            label="InterSystems Caché"
-            description="InterSystems Caché database"
-            dataSourceInformation="Relational database management system"
-            categories="sql,object"
-            icon="icons/intersystems_icon.png"
-            iconBig="icons/intersystems_icon_big.png"/>
         <dataSourceType
             id="intersystems_iris"
             label="InterSystems IRIS"
@@ -768,7 +763,7 @@
                 </driver>
                 <driver
                     id="cache"
-                    dataSourceType="intersystems_cache"
+                    dataSourceType="intersystems_iris"
                     label="Cache"
                     class="com.intersys.jdbc.CacheDriver"
                     sampleURL="jdbc:Cache://{host}:{port}/{database}"

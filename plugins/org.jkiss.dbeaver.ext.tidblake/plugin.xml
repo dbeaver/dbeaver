@@ -11,19 +11,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <dataSourceType
-            id="tidblake"
-            label="TiDBLake"
-            description="TiDBLake database"
-            dataSourceInformation="Column-oriented analytical database system"
-            categories="sql,analytic,columns"
-            icon="icons/tidb-small.svg"
-            iconBig="icons/tidb-big.svg"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.tidblake.TiDBLakeDataSourceProvider"
                 description="TiDBLake"
                 id="tidblake"
-                dataSourceType="tidblake"
+                dataSourceType="tidb"
                 parent="generic"
                 label="TiDBLake"
                 icon="icons/tidb-small.svg"

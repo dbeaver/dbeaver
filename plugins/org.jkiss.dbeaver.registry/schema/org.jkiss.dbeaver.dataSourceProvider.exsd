@@ -428,6 +428,16 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="logoImage" type="string">
+             <annotation>
+                <documentation>
+                   Driver logo image. Overrides the data source type logo image.
+                </documentation>
+                <appInfo>
+                   <meta.attribute kind="resource"/>
+                </appInfo>
+             </annotation>
+         </attribute>
          <attribute name="class" type="string">
             <annotation>
                <documentation>

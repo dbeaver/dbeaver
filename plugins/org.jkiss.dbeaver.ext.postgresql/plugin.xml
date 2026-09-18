@@ -73,7 +73,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             icon="icons/risingwave_icon.png"
-            iconBig="icons/risingwave_icon_big.png"/>
+            iconBig="icons/risingwave_icon_big.png"
+            logoImage="icons/risingwave_logo.png"/>
         <dataSourceType
             id="edb"
             label="EDB"
@@ -81,7 +82,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             icon="icons/edb_icon.png"
-            iconBig="icons/edb_icon_big.png"/>
+            iconBig="icons/edb_icon_big.png"
+            logoImage="icons/edb_logo.png"/>
         <dataSourceType
             id="materialize"
             label="Materialize"
@@ -89,7 +91,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             icon="icons/materialize_icon.png"
-            iconBig="icons/materialize_icon_big.png"/>
+            iconBig="icons/materialize_icon_big.png"
+            logoImage="icons/materialize_logo.png"/>
         <dataSourceType
             id="cockroachdb"
             label="CockroachDB"
@@ -97,7 +100,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             icon="icons/cockroach_icon.png"
-            iconBig="icons/cockroach_icon_big.png"/>
+            iconBig="icons/cockroach_icon_big.png"
+            logoImage="icons/cockroach_logo.png"/>
         <dataSourceType
             id="yugabytedb"
             label="YugabyteDB"
@@ -105,7 +109,8 @@
             dataSourceInformation="Distributed database supporting SQL and Cassandra-compatible APIs"
             categories="sql,nosql,bigdata,keyvalue"
             icon="icons/yugabyte_icon.png"
-            iconBig="icons/yugabyte_icon_big.png"/>
+            iconBig="icons/yugabyte_icon_big.png"
+            logoImage="icons/yugabyte_logo.png"/>
         <dataSourceType
             id="yellowbrick"
             label="Yellowbrick"
@@ -113,7 +118,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             icon="icons/yellowbrick_icon.png"
-            iconBig="icons/yellowbrick_icon_big.png"/>
+            iconBig="icons/yellowbrick_icon_big.png"
+            logoImage="icons/yellowbrick_logo.png"/>
         <dataSourceType
             id="timescaledb"
             label="TimescaleDB"
@@ -121,7 +127,8 @@
             dataSourceInformation="Time-series database for operational data"
             categories="timeseries"
             icon="icons/timescale_icon.png"
-            iconBig="icons/timescale_icon_big.png"/>
+            iconBig="icons/timescale_icon_big.png"
+            logoImage="icons/timescale_logo.png"/>
         <dataSourceType
             id="redshift"
             label="Amazon Redshift"
@@ -129,7 +136,8 @@
             dataSourceInformation="High-performance analytical database platform"
             categories="sql,analytic,bigdata,aws"
             icon="icons/redshift_icon.svg"
-            iconBig="icons/redshift_icon_big.svg"/>
+            iconBig="icons/redshift_icon_big.svg"
+            logoImage="icons/redshift_logo.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"
                 description="%datasource.postgresql.description"
@@ -613,6 +621,7 @@
                         label="Google Cloud SQL - PostgreSQL"
 	                    icon="icons/google_cloud_sql_icon.png"
 	                    iconBig="icons/google_cloud_sql_icon_big.png"
+                        logoImage="icons/google_cloud_sql_logo.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql:///[{database}]?cloudSqlInstance={host}"
                         useURL="true"

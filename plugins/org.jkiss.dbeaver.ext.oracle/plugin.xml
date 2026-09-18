@@ -11,7 +11,8 @@
             dataSourceInformation="Enterprise relational database management system"
             categories="sql"
             icon="icons/oracle_icon.png"
-            iconBig="icons/oracle_icon_big.png"/>
+            iconBig="icons/oracle_icon_big.png"
+            logoImage="icons/oracle_logo.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
             description="Oracle connector"

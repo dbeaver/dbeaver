@@ -26,7 +26,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql,server,aws"
             icon="icons/babelfish_icon.png"
-            iconBig="icons/babelfish_icon_big.png"/>
+            iconBig="icons/babelfish_icon_big.png"
+            logoImage="icons/babelfish_logo.png"/>
 
         <dataSourceType
             id="mssql"
@@ -35,7 +36,8 @@
             dataSourceInformation="Enterprise relational database from Microsoft"
             categories="sql"
             icon="icons/mssql_icon.png"
-            iconBig="icons/mssql_icon_big.png"/>
+            iconBig="icons/mssql_icon_big.png"
+            logoImage="icons/mssql_logo.png"/>
 
         <!-- SQL Server. New connector replaces all Generic-based SQL Server drivers -->
 
@@ -216,6 +218,7 @@
                         label="Azure SQL Server"
                         icon="icons/azure_sql_server_icon.png"
                         iconBig="icons/azure_sql_server_icon_big.png"
+                        logoImage="icons/azure_logo.png"
                         category="Azure"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
@@ -343,6 +346,7 @@
                         label="Azure SQL Server (Deprecated)"
                         icon="icons/azure_sql_server_icon.png"
                         iconBig="icons/azure_sql_server_icon_big.png"
+                        logoImage="icons/azure_logo.png"
                         category="Azure"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
@@ -415,6 +419,7 @@
                         label="Sybase jTDS"
                         icon="icons/sybase_icon.png"
                         iconBig="icons/sybase_icon_big.png"
+                        logoImage="icons/sybase_logo.png"
                         class="net.sourceforge.jtds.jdbc.Driver"
                         sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
                         useURL="false"
@@ -448,6 +453,7 @@
                         label="Sybase jConnect"
                         icon="icons/sybase_icon.png"
                         iconBig="icons/sybase_icon_big.png"
+                        logoImage="icons/sybase_logo.png"
                         class="com.sybase.jdbc4.jdbc.SybDriver"
                         sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
                         useURL="false"

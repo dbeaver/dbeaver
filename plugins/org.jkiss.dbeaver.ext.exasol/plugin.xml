@@ -9,7 +9,8 @@
             dataSourceInformation="Column-oriented analytical database system"
             categories="sql,analytic,columns"
             icon="icons/exasol_icon.png"
-            iconBig="icons/exasol_icon_big.png"/>
+            iconBig="icons/exasol_icon_big.png"
+            logoImage="icons/exasol.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider"
                 description="%datasource.exasol.description"

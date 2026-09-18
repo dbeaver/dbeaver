@@ -26,7 +26,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             icon="icons/gaussdb_icon.png"
-            iconBig="icons/gaussdb_icon_big.png"/>
+            iconBig="icons/gaussdb_icon_big.png"
+            logoImage="icons/gaussdb_logo.png"/>
         <datasource class="org.jkiss.dbeaver.ext.gaussdb.GaussDBDataSourceProvider"
                     description="%datasource.gaussdb.description" id="gaussdb"
                     dataSourceType="gaussdb" parent="postgresql" label="GaussDB"

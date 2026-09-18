@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.oceanbase.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -31,7 +30,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative;
-import org.jkiss.dbeaver.ext.oceanbase.ui.internal.Activator;
 import org.jkiss.dbeaver.ext.oceanbase.ui.internal.OceanbaseMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -48,7 +46,6 @@ import java.util.Locale;
  */
 public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     private static final Log log = Log.getLog(OceanbaseConnectionPage.class);
-    private static final ImageDescriptor logoImage = Activator.getImageDescriptor("icons/ob_logo.png");
 
     private Text portText;
     private Text hostText;
@@ -59,8 +56,6 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
     public void createControl(Composite composite) {
         // Composite group = new Composite(composite, SWT.NONE);
         // group.setLayout(new GridLayout(1, true));
-        setImageDescriptor(logoImage);
-
         ModifyListener textListener = e -> evaluateURL();
 
         Composite addrGroup = new Composite(composite, SWT.NONE);

@@ -35,7 +35,8 @@
             dataSourceInformation="High-performance analytical database platform"
             categories="sql,analytic"
             icon="icons/greengage_icon.svg"
-            iconBig="icons/greengage_icon_big.svg"/>
+            iconBig="icons/greengage_icon_big.svg"
+            logoImage="icons/greengage_logo.svg"/>
         <dataSourceType
             id="cloudberry"
             label="Cloudberry"
@@ -43,7 +44,8 @@
             dataSourceInformation="High-performance analytical database platform"
             categories="sql,analytic"
             icon="icons/cloudberry_icon.png"
-            iconBig="icons/cloudberry_icon_big.png"/>
+            iconBig="icons/cloudberry_icon_big.png"
+            logoImage="icons/cloudberry_logo.png"/>
         <dataSourceType
             id="greenplum"
             label="Greenplum"
@@ -51,7 +53,8 @@
             dataSourceInformation="High-performance analytical database platform"
             categories="sql,analytic"
             icon="icons/greenplum_icon.png"
-            iconBig="icons/greenplum_icon_big.png"/>
+            iconBig="icons/greenplum_icon_big.png"
+            logoImage="icons/greenplum_logo.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.greenplum.GreenplumDataSourceProvider"
                 description="%datasource.greenplum.description"

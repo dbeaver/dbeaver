@@ -15,7 +15,8 @@
            dataSourceInformation="Relational database management system"
            categories="sql"
            icon="icons/sap_hana_icon.png"
-           iconBig="icons/sap_hana_icon_big.png"/>
+           iconBig="icons/sap_hana_icon_big.png"
+           logoImage="icons/sap_hana_logo.png"/>
        <datasource
              class="org.jkiss.dbeaver.ext.hana.HANADataSourceProvider"
              description="%datasource.hana.description"

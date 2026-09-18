@@ -242,10 +242,16 @@ public class DataSourceTypeViewer extends Viewer {
                     return CommonUtils.isEmpty(pattern) || type.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
                         CommonUtils.toString(type.getDescription()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
                         type.getDataSourceInformation().toLowerCase(Locale.ENGLISH).contains(pattern) ||
+                        type.getCategories().stream().anyMatch(category ->
+                            category.toLowerCase(Locale.ENGLISH).contains(pattern)) ||
                         type.getEnabledDrivers().stream().anyMatch(driver ->
                             driver.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
+                            driver.getFullName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
                             driver.getId().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            CommonUtils.toString(driver.getDescription()).toLowerCase(Locale.ENGLISH).contains(pattern));
+                            CommonUtils.toString(driver.getDescription()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
+                            CommonUtils.toString(driver.getCategory()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
+                            driver.getCategories().stream().anyMatch(category ->
+                                category.toLowerCase(Locale.ENGLISH).contains(pattern)));
                 }
             });
         }

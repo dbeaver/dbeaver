@@ -8,9 +8,10 @@
             label="TiDB"
             description="TiDB database"
             dataSourceInformation="Relational database management system"
-            categories="sql"
+            categories="sql,analytic,columns"
             icon="icons/tidb_icon.png"
-            iconBig="icons/tidb_icon_big.png"/>
+            iconBig="icons/tidb_icon_big.png"
+            logoImage="icons/tidb_logo.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.tidb.TiDBDataSourceProvider"
             description="TiDB"
@@ -122,4 +123,3 @@
         </dialect>
     </extension>
 </plugin>
-

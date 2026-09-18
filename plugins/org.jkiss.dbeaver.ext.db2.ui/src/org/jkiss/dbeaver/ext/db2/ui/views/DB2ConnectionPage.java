@@ -23,7 +23,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -54,25 +53,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
     private Text portText;
     private Text dbText;
 
-    private Image logoImage;
-
     private boolean activated = false;
-
-    public DB2ConnectionPage() {
-        logoImage = createImage("icons/db2_logo.png"); //$NON-NLS-1$
-    }
-
-    @Override
-    public void dispose()
-    {
-        super.dispose();
-        UIUtils.dispose(logoImage);
-    }
-
-    @Override
-    public Image getImage() {
-        return logoImage;
-    }
 
     @Override
     public void createControl(Composite composite)

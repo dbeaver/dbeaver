@@ -215,7 +215,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         control.update();
         activateCurrentItem();
         handlersToolbar.setVisible(!getDriver().isEmbedded());
-        //getContainer().updateTitleBar();
         UIUtils.asyncExec(() -> connectionEditor.activateEditor());
     }
 
@@ -230,8 +229,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public Image getImage() {
-        if (this.connectionEditor != null) {
-            Image image = this.connectionEditor.getImage();
+        DBPImage logoImage = getDriver().getLogoImage();
+        if (logoImage != null) {
+            return DBeaverIcons.getImage(logoImage);
+        }
+        if (connectionEditor != null) {
+            Image image = connectionEditor.getImage();
             if (image != null) {
                 return image;
             }

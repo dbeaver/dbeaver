@@ -12,7 +12,8 @@
             dataSourceInformation="Serverless cloud data warehouse"
             categories="sql,gcp"
             icon="icons/bigquery_icon.png"
-            iconBig="icons/bigquery_icon_big.png"/>
+            iconBig="icons/bigquery_icon_big.png"
+            logoImage="icons/bigquery_logo.png"/>
 
         <!-- BigQuery -->
 

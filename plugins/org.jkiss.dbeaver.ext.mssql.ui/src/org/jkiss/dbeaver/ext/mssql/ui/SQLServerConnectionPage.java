@@ -23,7 +23,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -35,10 +34,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
@@ -65,27 +62,6 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     private boolean needsPort;
 
     private boolean activated;
-
-    private final Image LOGO_AZURE;
-    private final Image LOGO_BABELFISH;
-    private final Image LOGO_SQLSERVER;
-    private final Image LOGO_SYBASE;
-
-    public SQLServerConnectionPage() {
-        LOGO_AZURE = createImage("icons/azure_logo.png");
-        LOGO_BABELFISH = createImage("icons/babelfish_logo.png");
-        LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
-        LOGO_SYBASE = createImage("icons/sybase_logo.png");
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        UIUtils.dispose(LOGO_AZURE);
-        UIUtils.dispose(LOGO_BABELFISH);
-        UIUtils.dispose(LOGO_SQLSERVER);
-        UIUtils.dispose(LOGO_SYBASE);
-    }
 
     @Override
     public void createControl(Composite composite) {
@@ -215,25 +191,6 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         } else {
             return hostText != null && !CommonUtils.isEmpty(hostText.getText());
         }
-    }
-
-    @Override
-    public Image getImage() {
-        DBPImage logoImage = site.getDriver().getLogoImage();
-        if (logoImage != null) {
-            return DBeaverIcons.getImage(logoImage);
-        }
-        Image logo = LOGO_SYBASE;
-        if (isSqlServer()) {
-            if (isDriverAzure()) {
-                logo = LOGO_AZURE;
-            } else if (isDriverBabelfish()) {
-                logo = LOGO_BABELFISH;
-            } else {
-                logo = LOGO_SQLSERVER;
-            }
-        }
-        return logo;
     }
 
     private boolean isDriverAzure() {

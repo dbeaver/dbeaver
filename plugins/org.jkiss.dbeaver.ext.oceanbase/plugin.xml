@@ -10,7 +10,8 @@
             dataSourceInformation="Distributed relational database with multiple compatibility modes"
             categories="sql"
             icon="icons/ob_icon.png"
-            iconBig="icons/ob_icon_big.png"/>
+            iconBig="icons/ob_icon_big.png"
+            logoImage="icons/ob_logo.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.oceanbase.OceanbaseDataSourceProvider"
             description="Oceanbase"

@@ -14,7 +14,8 @@
             dataSourceInformation="Relational database management system"
             categories="sql"
             icon="icons/kingbase_icon.png"
-            iconBig="icons/kingbase_icon_big.png"/>
+            iconBig="icons/kingbase_icon_big.png"
+            logoImage="icons/kingbase_icon.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.kingbase.KingbaseDataSourceProvider"
                 description="%datasource.kingbase.description"
