@@ -131,8 +131,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -864,22 +864,13 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        // On macOS, SWT doesn't update connection-colored toolbar backgrounds after a datasource change.
-        if (RuntimeUtils.isMacOS()) {
-            if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
-                refreshToolbarBackground(topBar);
-            }
-            if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
-                refreshToolbarBackground(bottomBar);
-            }
+        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+            //CSSUtils.refreshConnectionTypeToolbar(topBar);
+        }
+        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+            //CSSUtils.refreshConnectionTypeToolbar(bottomBar);
         }
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
-    }
-
-    private static void refreshToolbarBackground(@NotNull ToolBar toolBar) {
-        Color connectionColor = CSSUtils.getCurrentEditorConnectionColor(toolBar);
-        toolBar.setBackground(connectionColor != null ? connectionColor : toolBar.getParent().getBackground());
-        toolBar.redraw();
     }
 
     private class OpenContextJob extends AbstractJob {
@@ -3474,6 +3465,15 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
+        }
+        // Native toolbar items must be restyled after the datasource marker is set on macOS.
+        if (RuntimeUtils.isMacOS()) {
+            if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+                CSSUtils.applyStyles(topBar);
+            }
+            if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+                CSSUtils.applyStyles(bottomBar);
+            }
         }
 
         // Repaint the workbench editor tab folder so the custom tab renderer
