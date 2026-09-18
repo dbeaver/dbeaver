@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.runtime;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.hooks.resolver.ResolverHook;
 import org.osgi.framework.hooks.resolver.ResolverHookFactory;
 import org.osgi.framework.wiring.BundleCapability;
@@ -37,13 +39,34 @@ public final class ExperimentalBundles {
     }
 
     public static void initialize(@NotNull BundleContext context) {
-        if (Boolean.parseBoolean(context.getProperty(ENABLE_PROPERTY))) {
+        boolean enabled = Boolean.parseBoolean(context.getProperty(ENABLE_PROPERTY));
+        var experimentalBundles = Arrays.stream(context.getBundles())
+            .filter(ExperimentalBundles::isExperimental)
+            .toList();
+        for (Bundle bundle : experimentalBundles) {
+            BundleRevision revision = bundle.adapt(BundleRevision.class);
+            if (revision == null || (revision.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0) {
+                continue;
+            }
+            try {
+                if (enabled) {
+                    // Re-arm lazy activation after a previous run with experimental bundles disabled.
+                    bundle.start(Bundle.START_ACTIVATION_POLICY);
+                } else {
+                    // Clear persistent autostart before filtering resolution. Otherwise Equinox
+                    // reports a FrameworkEvent.ERROR when it reaches the bundle's start level.
+                    bundle.stop();
+                }
+            } catch (BundleException e) {
+                Log.getLog(ExperimentalBundles.class).error("Cannot update experimental bundle state: " + bundle.getSymbolicName(), e);
+            }
+        }
+        if (enabled) {
             return;
         }
         ResolverHook hook = new ExperimentalResolverHook();
         context.registerService(ResolverHookFactory.class, triggers -> hook, null);
-        var resolvedBundles = Arrays.stream(context.getBundles())
-            .filter(ExperimentalBundles::isExperimental)
+        var resolvedBundles = experimentalBundles.stream()
             .filter(bundle -> bundle.getState() != Bundle.INSTALLED && bundle.getState() != Bundle.UNINSTALLED)
             .toList();
         if (!resolvedBundles.isEmpty()) {

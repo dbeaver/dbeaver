@@ -151,6 +151,7 @@ public class AISettings implements DBPAdaptable {
     ) throws DBException {
         AIConfigurationProfile copy = createConfiguration(id, source.getEngineDescriptor());
         copy.setProfileName(name);
+        copy.setGlobal(source.isGlobal());
         AIEngineProperties sourceConfiguration = source.getConfiguration();
         copy.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
             AISettingsManager.READ_PROPS_GSON.toJson(sourceConfiguration),
