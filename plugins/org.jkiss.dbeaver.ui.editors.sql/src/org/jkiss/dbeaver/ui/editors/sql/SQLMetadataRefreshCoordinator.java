@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLObjectOperation;
+import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshLevel;
+import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshTarget;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -51,71 +51,6 @@ final class SQLMetadataRefreshCoordinator {
     private static final Log log = Log.getLog(SQLMetadataRefreshCoordinator.class);
 
     private SQLMetadataRefreshCoordinator() {
-    }
-
-    @Nullable
-    static RefreshTarget createTarget(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull SQLObjectOperation operation
-    ) throws DBException {
-        SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
-        List<String> nameParts = operation.qualifiedNameParts().stream()
-            .map(name -> DBUtils.getUnQuotedNormalizedIdentifier(dialect, name))
-            .toList();
-        DBCExecutionContextDefaults<?, ?> defaults = executionContext.getContextDefaults();
-        DBSCatalog defaultCatalog = defaults == null ? null : defaults.getDefaultCatalog();
-        DBSSchema defaultSchema = defaults == null ? null : defaults.getDefaultSchema();
-
-        if (operation.objectKind() == SQLObjectOperation.ObjectKind.DATABASE ||
-            operation.objectKind() == SQLObjectOperation.ObjectKind.CATALOG) {
-            if (operation.operation() != SQLObjectOperation.Operation.ALTER) {
-                return new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null);
-            }
-            return nameParts.isEmpty() ? new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null) :
-                new RefreshTarget(RefreshLevel.CATALOG, nameParts.getLast(), null);
-        }
-        if (operation.objectKind() == SQLObjectOperation.ObjectKind.SCHEMA) {
-            String catalogName = nameParts.size() > 1 ? nameParts.get(nameParts.size() - 2) :
-                defaultCatalog == null ? null : defaultCatalog.getName();
-            if (operation.operation() != SQLObjectOperation.Operation.ALTER) {
-                return new RefreshTarget(
-                    catalogName == null ? RefreshLevel.DATA_SOURCE : RefreshLevel.CATALOG,
-                    catalogName,
-                    null
-                );
-            }
-            return nameParts.isEmpty() ? new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null) :
-                new RefreshTarget(RefreshLevel.SCHEMA, catalogName, nameParts.getLast());
-        }
-
-        String catalogName = null;
-        String schemaName = null;
-        if (nameParts.size() >= 3) {
-            catalogName = nameParts.get(nameParts.size() - 3);
-            schemaName = nameParts.get(nameParts.size() - 2);
-        } else if (nameParts.size() == 2) {
-            if (defaults != null && !defaults.supportsSchemaChange() && defaults.supportsCatalogChange()) {
-                catalogName = nameParts.getFirst();
-            } else {
-                schemaName = nameParts.getFirst();
-            }
-        }
-        if (defaults != null &&
-            ((catalogName == null && defaults.supportsCatalogChange()) ||
-                (schemaName == null && defaults.supportsSchemaChange()))) {
-            DBUtils.refreshContextDefaultsAndReflect(monitor, defaults, executionContext);
-            defaultCatalog = defaults.getDefaultCatalog();
-            defaultSchema = defaults.getDefaultSchema();
-        }
-        catalogName = catalogName != null ? catalogName : defaultCatalog == null ? null : defaultCatalog.getName();
-        schemaName = schemaName != null ? schemaName : defaultSchema == null ? null : defaultSchema.getName();
-        return new RefreshTarget(
-            schemaName != null ? RefreshLevel.SCHEMA :
-                catalogName != null ? RefreshLevel.CATALOG : RefreshLevel.DATA_SOURCE,
-            catalogName,
-            schemaName
-        );
     }
 
     static void refresh(
@@ -212,14 +147,18 @@ final class SQLMetadataRefreshCoordinator {
         if (target.catalogName() != null && catalog == null) {
             return dataSourceContainer;
         }
+        String schemaName = target.schemaName();
+        if (schemaName == null) {
+            return catalog != null ? catalog : dataSourceContainer;
+        }
         DBSSchema defaultSchema = defaults == null ? null : defaults.getDefaultSchema();
-        if (defaultSchema != null && target.schemaName().equals(defaultSchema.getName()) &&
+        if (defaultSchema != null && schemaName.equals(defaultSchema.getName()) &&
             (target.catalogName() == null || catalog == defaultCatalog)) {
             return defaultSchema;
         }
         DBSObjectContainer schemaContainer = catalog instanceof DBSObjectContainer objectContainer ?
             objectContainer : dataSourceContainer;
-        return schemaContainer == null ? null : schemaContainer.getChild(monitor, target.schemaName());
+        return schemaContainer == null ? null : schemaContainer.getChild(monitor, schemaName);
     }
 
     private static void refreshContextDefaults(
@@ -240,16 +179,4 @@ final class SQLMetadataRefreshCoordinator {
         return depth;
     }
 
-    enum RefreshLevel {
-        DATA_SOURCE,
-        CATALOG,
-        SCHEMA
-    }
-
-    record RefreshTarget(
-        @NotNull RefreshLevel level,
-        @Nullable String catalogName,
-        @Nullable String schemaName
-    ) {
-    }
 }

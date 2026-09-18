@@ -312,6 +312,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_sound_on_query_end;
     public static String pref_page_sql_editor_label_refresh_defaults_after_execute;
     public static String pref_page_sql_editor_label_refresh_defaults_after_execute_tip;
+    public static String pref_page_sql_editor_label_show_metadata_refresh_notification;
+    public static String pref_page_sql_editor_label_show_metadata_refresh_notification_tip;
     public static String pref_page_sql_editor_label_clear_output_before_execute;
     public static String pref_page_sql_editor_label_clear_output_before_execute_tip;
 

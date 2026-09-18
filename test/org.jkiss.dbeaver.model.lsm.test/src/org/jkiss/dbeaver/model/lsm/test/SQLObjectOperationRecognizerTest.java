@@ -17,16 +17,32 @@
 package org.jkiss.dbeaver.model.lsm.test;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.sql.SQLObjectOperation;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.semantics.SQLObjectOperationRecognizer;
+import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
+import org.jkiss.dbeaver.model.stm.STMSource;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
+public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
+    private static final SQLDialect BRACKET_DIALECT = new BasicSQLDialect() {
+        @Override
+        public String[][] getIdentifierQuoteStrings() {
+            return new String[][]{{"[", "]"}};
+        }
+    };
+
     @Test
     void recognizesObjectOperations() {
         assertOperation("CREATE TABLE cat.sch.tab (id INT)", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.TABLE, "cat", "sch", "tab");
@@ -67,7 +83,7 @@ class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
 
         assertOperation("CREATE DATABASE db;", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.DATABASE, "db");
         assertOperation("DROP DATABASE IF EXISTS db", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.DATABASE, "db");
-        assertOperation("ALTER /* kind */ DATABASE [old database] RENAME TO [new database]", SQLObjectOperation.Operation.RENAME, SQLObjectOperation.ObjectKind.DATABASE, "[old database]");
+        assertOperation(BRACKET_DIALECT, "ALTER /* kind */ DATABASE [old database] RENAME TO [new database]", SQLObjectOperation.Operation.RENAME, SQLObjectOperation.ObjectKind.DATABASE, "[old database]");
         assertOperation("ALTER DATABASE db SET OWNER admin", SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.DATABASE, "db");
 
         assertOperation("CREATE OR REPLACE CATALOG \"my catalog\"", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.CATALOG, "\"my catalog\"");
@@ -80,6 +96,18 @@ class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    void recognizesMultipleDropTargetsInSourceOrder() {
+        assertMultipleDropTargets(
+            "DROP TABLE schema1.a, schema2.b",
+            SQLObjectOperation.ObjectKind.TABLE
+        );
+        assertMultipleDropTargets(
+            "DROP VIEW schema1.a, schema2.b",
+            SQLObjectOperation.ObjectKind.VIEW
+        );
+    }
+
+    @Test
     void ignoresNonDdl() {
         Assertions.assertNull(parse("SELECT * FROM example"));
     }
@@ -87,7 +115,56 @@ class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     @Test
     void ignoresMalformedAndMultipleQueries() {
         Assertions.assertNull(parse("CREATE DATABASE"));
+        Assertions.assertNull(parse("CREATE DATABASE \"unterminated"));
         Assertions.assertNull(parse("CREATE DATABASE first; DROP DATABASE second"));
+    }
+
+    @Test
+    void treeOverloadRequiresOneValidQuery() {
+        Assertions.assertEquals(
+            new SQLObjectOperation(
+                SQLObjectOperation.Operation.CREATE,
+                SQLObjectOperation.ObjectKind.DATABASE,
+                List.of("db")
+            ),
+            SQLObjectOperationRecognizer.recognize(parseTree("CREATE DATABASE db;"))
+        );
+        Assertions.assertNull(SQLObjectOperationRecognizer.recognize(parseTree("CREATE DATABASE")));
+        Assertions.assertNull(SQLObjectOperationRecognizer.recognize(
+            parseTree("CREATE DATABASE first; DROP DATABASE second")
+        ));
+    }
+
+    @Test
+    void recognizesSupportedCommentsAndOptionalSemicolon() {
+        assertOperation("-- comment\nCREATE DATABASE db;", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.DATABASE, "db");
+    }
+
+    @Test
+    void recognizesCreateOrReplaceAndContainerAlterKinds() {
+        assertOperation("CREATE OR REPLACE DATABASE db", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.DATABASE, "db");
+        assertOperation("ALTER DATABASE old_name RENAME TO new_name", SQLObjectOperation.Operation.RENAME, SQLObjectOperation.ObjectKind.DATABASE, "old_name");
+        assertOperation("ALTER DATABASE db SET OWNER admin", SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.DATABASE, "db");
+    }
+
+    @Test
+    void recognizesConfiguredAndEscapedIdentifierQuotes() {
+        assertOperation(BRACKET_DIALECT, "CREATE SCHEMA [catalog].[schema]", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.SCHEMA, "[catalog]", "[schema]");
+        assertOperation(quotedDialect("<", ">"), "CREATE SCHEMA <catalog>.<schema>", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.SCHEMA, "<catalog>", "<schema>");
+        assertOperation("CREATE SCHEMA \"cat\"\"alog\".\"sche\"\"ma\"", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.SCHEMA, "\"cat\"\"alog\"", "\"sche\"\"ma\"");
+    }
+
+    @Test
+    void acceptsNullIdentifierQuoteMetadata() {
+        SQLDialect dialect = new BasicSQLDialect() {
+            @Nullable
+            @Override
+            public String[][] getIdentifierQuoteStrings() {
+                return null;
+            }
+        };
+
+        assertOperation(dialect, "CREATE FUNCTION \"test.catalog\".sch.func() RETURNS INT RETURN 1", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.FUNCTION, "\"test.catalog\"", "sch", "func");
     }
 
     private static void assertOperation(
@@ -96,10 +173,59 @@ class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
         @NotNull SQLObjectOperation.ObjectKind objectKind,
         @NotNull String... nameParts
     ) {
-        Assertions.assertEquals(new SQLObjectOperation(operation, objectKind, List.of(nameParts)), parse(sql), sql);
+        assertOperation(BasicSQLDialect.INSTANCE, sql, operation, objectKind, nameParts);
+    }
+
+    private static void assertOperation(
+        @NotNull SQLDialect dialect,
+        @NotNull String sql,
+        @NotNull SQLObjectOperation.Operation operation,
+        @NotNull SQLObjectOperation.ObjectKind objectKind,
+        @NotNull String... nameParts
+    ) {
+        Assertions.assertEquals(
+            new SQLObjectOperation(operation, objectKind, List.of(nameParts)),
+            SQLObjectOperationRecognizer.recognize(dialect, sql),
+            sql
+        );
     }
 
     private static SQLObjectOperation parse(@NotNull String sql) {
         return SQLObjectOperationRecognizer.recognize(BasicSQLDialect.INSTANCE, sql);
+    }
+
+    private static void assertMultipleDropTargets(
+        @NotNull String sql,
+        @NotNull SQLObjectOperation.ObjectKind objectKind
+    ) {
+        List<SQLObjectOperation> expected = List.of(
+            new SQLObjectOperation(SQLObjectOperation.Operation.DROP, objectKind, List.of("schema1", "a")),
+            new SQLObjectOperation(SQLObjectOperation.Operation.DROP, objectKind, List.of("schema2", "b"))
+        );
+        Assertions.assertEquals(expected, SQLObjectOperationRecognizer.recognizeAll(BasicSQLDialect.INSTANCE, sql));
+        Assertions.assertEquals(expected, SQLObjectOperationRecognizer.recognizeAll(parseTree(sql)));
+        Assertions.assertEquals(expected.getFirst(), SQLObjectOperationRecognizer.recognize(BasicSQLDialect.INSTANCE, sql));
+        Assertions.assertEquals(expected.getFirst(), SQLObjectOperationRecognizer.recognize(parseTree(sql)));
+    }
+
+    @NotNull
+    private static STMTreeNode parseTree(@NotNull String sql) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(BasicSQLDialect.INSTANCE, syntaxManager.getPreferenceStore());
+        LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerFactoryForDialect(BasicSQLDialect.INSTANCE)
+            .createAnalyzer(LSMAnalyzerParameters.forDialect(BasicSQLDialect.INSTANCE, syntaxManager));
+        STMTreeNode tree = analyzer.parseSqlQueriesTree(STMSource.fromString(sql), new STMSkippingErrorListener());
+        Assertions.assertNotNull(tree);
+        return tree;
+    }
+
+    @NotNull
+    private static SQLDialect quotedDialect(@NotNull String openQuote, @NotNull String closeQuote) {
+        return new BasicSQLDialect() {
+            @Override
+            public String[][] getIdentifierQuoteStrings() {
+                return new String[][]{{openQuote, closeQuote}};
+            }
+        };
     }
 }

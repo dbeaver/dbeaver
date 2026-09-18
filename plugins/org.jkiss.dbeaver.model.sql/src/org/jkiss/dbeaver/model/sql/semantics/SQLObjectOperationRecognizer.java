@@ -17,26 +17,26 @@
 package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.sql.SQLObjectOperation;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLObjectOperation;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * Recognizes database object operations from DDL syntax trees produced by the LSM parser.
@@ -53,44 +53,117 @@ public final class SQLObjectOperationRecognizer {
         @NotNull SQLDialect dialect,
         @NotNull String queryText
     ) {
-        String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
-        Map<String, String> knownIdentifierQuotes = identifierQuotes == null ? Map.of() :
-            Arrays.stream(identifierQuotes).collect(Collectors.toUnmodifiableMap(pair -> pair[0], pair -> pair[1]));
-        LSMAnalyzerParameters parameters = new LSMAnalyzerParameters(
-            knownIdentifierQuotes,
-            false,
-            false,
-            '?',
-            List.of(),
-            false
-        );
-        SQLStandardLexer lexer = new SQLStandardLexer(STMSource.fromString(queryText).getStream(), parameters);
-        SQLStandardParser parser = new SQLStandardParser(new CommonTokenStream(lexer), parameters);
-        RecognitionErrorListener errorListener = new RecognitionErrorListener();
-        // Replace ANTLR's console listeners and reject both lexical and syntax errors.
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errorListener);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errorListener);
-
-        SQLStandardParser.SqlQueriesContext tree = parser.sqlQueries();
-        tree.fixup(parser);
-        if (errorListener.hasErrors || tree.findChildrenOfName(STMKnownRuleNames.sqlQuery).size() != 1) {
-            return null;
-        }
-        return recognize(tree);
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(dialect, syntaxManager.getPreferenceStore());
+        return recognize(dialect, syntaxManager, queryText);
     }
 
+    /**
+     * Parses one query at execution time using the supplied syntax settings and recognizes its first database object
+     * operation.
+     */
+    @Nullable
+    public static SQLObjectOperation recognize(
+        @NotNull SQLDialect dialect,
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull String queryText
+    ) {
+        return recognizeAll(dialect, syntaxManager, queryText).stream().findFirst().orElse(null);
+    }
+
+    /**
+     * Recognizes an operation from an error-free LSM {@code sqlQueries}, {@code sqlQuery}, or
+     * {@code sqlSchemaStatement} root. A {@code sqlQueries} root must contain exactly one complete query.
+     *
+     * @return the recognized operation, or {@code null} for invalid, multiple, or unsupported statements
+     */
     @Nullable
     public static SQLObjectOperation recognize(@NotNull STMTreeNode root) {
+        return recognizeAll(root).stream().findFirst().orElse(null);
+    }
+
+    /**
+     * Parses one query at execution time and recognizes its database object operations.
+     *
+     * @return recognized operations in source order, or an empty immutable list for invalid, multiple, or unsupported
+     *     statements
+     */
+    @NotNull
+    public static List<SQLObjectOperation> recognizeAll(
+        @NotNull SQLDialect dialect,
+        @NotNull String queryText
+    ) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(dialect, syntaxManager.getPreferenceStore());
+        return recognizeAll(dialect, syntaxManager, queryText);
+    }
+
+    /**
+     * Parses one query at execution time using the supplied syntax settings and recognizes its database object
+     * operations.
+     *
+     * @return recognized operations in source order, or an empty immutable list for invalid, multiple, or unsupported
+     *     statements
+     */
+    @NotNull
+    public static List<SQLObjectOperation> recognizeAll(
+        @NotNull SQLDialect dialect,
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull String queryText
+    ) {
+        LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerFactoryForDialect(dialect)
+            .createAnalyzer(LSMAnalyzerParameters.forDialect(dialect, syntaxManager));
+        RecognitionErrorListener errorListener = new RecognitionErrorListener();
+        STMTreeNode tree = analyzer.parseSqlQueriesTree(STMSource.fromString(queryText), errorListener);
+        if (tree == null || errorListener.hasErrors) {
+            return List.of();
+        }
+        return recognizeAll(tree);
+    }
+
+    /**
+     * Recognizes operations from an error-free LSM {@code sqlQueries}, {@code sqlQuery}, or
+     * {@code sqlSchemaStatement} root. A {@code sqlQueries} root must contain exactly one complete query.
+     *
+     * @return recognized operations in source order, or an empty immutable list for invalid, multiple, or unsupported
+     *     statements
+     */
+    @NotNull
+    public static List<SQLObjectOperation> recognizeAll(@NotNull STMTreeNode root) {
+        if (hasErrors(root) || root.getNodeName().equals(STMKnownRuleNames.sqlQueries) &&
+            root.findChildrenOfName(STMKnownRuleNames.sqlQuery).size() != 1) {
+            return List.of();
+        }
         STMTreeNode schemaStatement = unwrapSchemaStatement(root);
         if (schemaStatement == null) {
-            return null;
+            return List.of();
         }
         STMTreeNode statement = schemaStatement.findFirstNonErrorChild();
         if (statement == null) {
-            return null;
+            return List.of();
         }
+        if (statement.getNodeName().equals(STMKnownRuleNames.dropTableStatement)) {
+            return createOperations(
+                statement,
+                SQLObjectOperation.Operation.DROP,
+                SQLObjectOperation.ObjectKind.TABLE,
+                STMKnownRuleNames.tableName
+            );
+        }
+        if (statement.getNodeName().equals(STMKnownRuleNames.dropViewStatement)) {
+            return createOperations(
+                statement,
+                SQLObjectOperation.Operation.DROP,
+                SQLObjectOperation.ObjectKind.VIEW,
+                STMKnownRuleNames.tableName
+            );
+        }
+        SQLObjectOperation operation = recognizeSingle(statement);
+        return operation == null ? List.of() : List.of(operation);
+    }
+
+    @Nullable
+    private static SQLObjectOperation recognizeSingle(@NotNull STMTreeNode statement) {
         if (statement.getNodeName().equals(STMKnownRuleNames.schemaDefinition)) {
             STMTreeNode name = findDescendant(statement, STMKnownRuleNames.schemaName);
             if (name == null) {
@@ -312,7 +385,32 @@ public final class SQLObjectOperationRecognizer {
         return null;
     }
 
-    private static final class RecognitionErrorListener extends BaseErrorListener {
+    @NotNull
+    private static List<SQLObjectOperation> createOperations(
+        @NotNull STMTreeNode statement,
+        @NotNull SQLObjectOperation.Operation operation,
+        @NotNull SQLObjectOperation.ObjectKind objectKind,
+        @NotNull String nameNodeName
+    ) {
+        return statement.findChildrenOfName(nameNodeName).stream()
+            .map(name -> createOperation(operation, objectKind, name))
+            .filter(Objects::nonNull)
+            .toList();
+    }
+
+    private static boolean hasErrors(@NotNull STMTreeNode node) {
+        if (node instanceof ErrorNode || node.hasErrorChildren()) {
+            return true;
+        }
+        for (STMTreeNode child : node.getChildren()) {
+            if (hasErrors(child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final class RecognitionErrorListener extends BaseErrorListener implements STMErrorListener {
         private boolean hasErrors;
 
         @Override

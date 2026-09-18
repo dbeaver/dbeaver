@@ -3098,9 +3098,10 @@ public class SQLEditor extends SQLEditorBase implements
             return false;
         }
 
+        Map<SQLQuery, List<SQLObjectOperation>> objectOperationCache = new IdentityHashMap<>();
         if (dataSourceContainer.isConnectionReadOnly() &&
             queries.stream().anyMatch(q -> q instanceof SQLQuery sqlQuery &&
-                (sqlQuery.isMutatingStatement() || isDDL(sqlQuery)))
+                (sqlQuery.isMutatingStatement() || isDDL(sqlQuery, objectOperationCache)))
         ) {
             DBWorkbench.getPlatformUI().showError(
                 SQLEditorMessages.editors_sql_error_cant_execute_query_title,
@@ -3114,7 +3115,7 @@ public class SQLEditor extends SQLEditorBase implements
             scriptContext = createScriptContext();
         }
 
-        if (stopDangerousQueriesExecutionConfirmation(queries)) {
+        if (stopDangerousQueriesExecutionConfirmation(queries, objectOperationCache)) {
             return false;
         }
 
@@ -3247,9 +3248,12 @@ public class SQLEditor extends SQLEditorBase implements
         );
     }
 
-    private boolean stopDangerousQueriesExecutionConfirmation(@NotNull List<SQLScriptElement> queries) {
+    private boolean stopDangerousQueriesExecutionConfirmation(
+        @NotNull List<SQLScriptElement> queries,
+        @NotNull Map<SQLQuery, List<SQLObjectOperation>> objectOperationCache
+    ) {
         boolean isStopDropQueriesConfirmed = showDangerousQueriesStopExecutionConfirmation(
-            getDropQueries(queries),
+            getDropQueries(queries, objectOperationCache),
             this::createDropQueryConfirmationDialog
         );
         return isStopDropQueriesConfirmed ||
@@ -3260,12 +3264,16 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @NotNull
-    private List<SQLQuery> getDropQueries(@NotNull List<SQLScriptElement> queries) {
+    private List<SQLQuery> getDropQueries(
+        @NotNull List<SQLScriptElement> queries,
+        @NotNull Map<SQLQuery, List<SQLObjectOperation>> objectOperationCache
+    ) {
         return queries
             .stream()
             .filter(q -> q instanceof SQLQuery)
             .map(q -> (SQLQuery) q)
-            .filter(query -> query.isDropDangerous() || isDropOperation(recognizeObjectOperation(query)))
+            .filter(query -> query.isDropDangerous() ||
+                isDropOperation(recognizeObjectOperation(query, objectOperationCache)))
             .toList();
     }
 
@@ -3273,17 +3281,42 @@ public class SQLEditor extends SQLEditorBase implements
         return operation != null && operation.operation() == SQLObjectOperation.Operation.DROP;
     }
 
-    private boolean isDDL(@NotNull SQLQuery query) {
-        return recognizeObjectOperation(query) != null;
+    private boolean isDDL(
+        @NotNull SQLQuery query,
+        @NotNull Map<SQLQuery, List<SQLObjectOperation>> objectOperationCache
+    ) {
+        return recognizeObjectOperation(query, objectOperationCache) != null;
     }
 
     @Nullable
     private SQLObjectOperation recognizeObjectOperation(@NotNull SQLQuery query) {
-        SQLObjectOperation operation = query.getObjectOperation();
-        return operation != null ? operation : SQLObjectOperationRecognizer.recognize(
-            getSyntaxManager().getDialect(),
+        return recognizeObjectOperations(query).stream().findFirst().orElse(null);
+    }
+
+    @NotNull
+    private List<SQLObjectOperation> recognizeObjectOperations(@NotNull SQLQuery query) {
+        SQLSyntaxManager syntaxManager = getSyntaxManager();
+        List<SQLObjectOperation> operations = SQLObjectOperationRecognizer.recognizeAll(
+            syntaxManager.getDialect(),
+            syntaxManager,
             query.getText()
         );
+        if (!operations.isEmpty()) {
+            return operations;
+        }
+        SQLObjectOperation operation = query.getObjectOperation();
+        return operation == null ? List.of() : List.of(operation);
+    }
+
+    @Nullable
+    private SQLObjectOperation recognizeObjectOperation(
+        @NotNull SQLQuery query,
+        @NotNull Map<SQLQuery, List<SQLObjectOperation>> objectOperationCache
+    ) {
+        return objectOperationCache.computeIfAbsent(query, this::recognizeObjectOperations)
+            .stream()
+            .findFirst()
+            .orElse(null);
     }
 
     @NotNull
@@ -4298,7 +4331,7 @@ public class SQLEditor extends SQLEditorBase implements
         private int topOffset, visibleLength;
         private final boolean closeTabOnError;
         private boolean metadataChanged;
-        private final Set<SQLMetadataRefreshCoordinator.RefreshTarget> metadataRefreshTargets = new LinkedHashSet<>();
+        private final Set<SQLMetadataRefreshTargetResolver.RefreshTarget> metadataRefreshTargets = new LinkedHashSet<>();
         private SQLQueryListener extListener;
 
         SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
@@ -4382,46 +4415,50 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void onEndQuery(@NotNull DBCSession session, @NotNull SQLQueryResult result, @NotNull DBCStatistics statistics) {
             try {
-                if (!result.hasError()) {
-                    SQLQuery query = result.getStatement();
-                    SQLObjectOperation objectOperation = recognizeObjectOperation(query);
-                    if (query.getType() == SQLQueryType.DDL || objectOperation != null) {
-                        metadataChanged = true;
-                        rememberMetadataRefreshTarget(
-                            session.getProgressMonitor(),
-                            session.getExecutionContext(),
-                            objectOperation
-                        );
-                    }
-                }
                 SQLEditor owner = getOwner();
-                synchronized (owner.runningQueries) {
-                    owner.runningQueries.remove(result.getStatement());
-                }
-                queryProcessor.getCurJobRunning().updateAndGet(i -> i > 0 ? i - 1 : i);
-                if (owner.getTotalQueryRunning() <= 0) {
-                    UIUtils.asyncExec(() -> {
-                        if (owner.isDisposed()) {
-                            return;
+                try {
+                    if (!result.hasError()) {
+                        SQLQuery query = result.getStatement();
+                        List<SQLObjectOperation> objectOperations = owner.recognizeObjectOperations(query);
+                        if (query.getType() == SQLQueryType.DDL || !objectOperations.isEmpty()) {
+                            metadataChanged = true;
+                            for (SQLObjectOperation objectOperation : objectOperations) {
+                                rememberMetadataRefreshTarget(
+                                    session.getProgressMonitor(),
+                                    session.getExecutionContext(),
+                                    objectOperation
+                                );
+                            }
                         }
-                        owner.setTitleImage(owner.editorImage);
-                        owner.updateDirtyFlag();
-                    });
-                }
-
-                if (owner.isDisposed()) {
-                    return;
-                }
-                UIUtils.runUIJob("Process SQL query result", monitor -> {
-                    if (owner.isDisposed()) {
-                        return;
                     }
-                    // Finish query
-                    processQueryResult(monitor, result, statistics);
-                    // Update dirty flag
-                    owner.updateDirtyFlag();
-                    owner.refreshActions();
-                });
+                } finally {
+                    synchronized (owner.runningQueries) {
+                        owner.runningQueries.remove(result.getStatement());
+                    }
+                    queryProcessor.getCurJobRunning().updateAndGet(i -> i > 0 ? i - 1 : i);
+                    if (owner.getTotalQueryRunning() <= 0) {
+                        UIUtils.asyncExec(() -> {
+                            if (owner.isDisposed()) {
+                                return;
+                            }
+                            owner.setTitleImage(owner.editorImage);
+                            owner.updateDirtyFlag();
+                        });
+                    }
+
+                    if (!owner.isDisposed()) {
+                        UIUtils.runUIJob("Process SQL query result", monitor -> {
+                            if (owner.isDisposed()) {
+                                return;
+                            }
+                            // Finish query
+                            processQueryResult(monitor, result, statistics);
+                            // Update dirty flag
+                            owner.updateDirtyFlag();
+                            owner.refreshActions();
+                        });
+                    }
+                }
             } finally {
                 if (extListener != null) {
                     extListener.onEndQuery(session, result, statistics);
@@ -4451,12 +4488,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void showMetadataRefreshNotification(@NotNull DBCExecutionContext executionContext) {
-            if (metadataRefreshTargets.isEmpty()) {
+            if (metadataRefreshTargets.isEmpty() || !getOwner().getActivePreferenceStore().getBoolean(
+                SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION
+            )) {
                 return;
             }
 
             DBPDataSource dataSource = executionContext.getDataSource();
-            Set<SQLMetadataRefreshCoordinator.RefreshTarget> refreshTargets = Set.copyOf(metadataRefreshTargets);
+            Set<SQLMetadataRefreshTargetResolver.RefreshTarget> refreshTargets = Set.copyOf(metadataRefreshTargets);
             DBeaverNotifications.showNotification(
                 NOTIFICATION_SQL_METADATA_REFRESH,
                 NLS.bind(
@@ -4477,15 +4516,9 @@ public class SQLEditor extends SQLEditorBase implements
             if (objectOperation == null) {
                 return;
             }
-            try {
-                SQLMetadataRefreshCoordinator.RefreshTarget target =
-                    SQLMetadataRefreshCoordinator.createTarget(monitor, executionContext, objectOperation);
-                if (target != null) {
-                    metadataRefreshTargets.add(target);
-                }
-            } catch (DBException e) {
-                log.debug("Error resolving metadata refresh target", e);
-            }
+            metadataRefreshTargets.add(
+                SQLMetadataRefreshTargetResolver.createTarget(monitor, executionContext, objectOperation)
+            );
         }
 
         private void processQueryResult(

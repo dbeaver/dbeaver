@@ -160,8 +160,9 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
     }
 
     /**
-     * Schedules a coordinated navigator refresh. The completion handler runs in the refresh job after at least one
-     * node was refreshed successfully and before metadata refresh events are broadcast.
+     * Schedules a coordinated navigator refresh. The completion handler runs only after at least one navigator node
+     * was refreshed successfully. SQL metadata refresh uses this hook to update execution-context defaults only after
+     * the corresponding navigator metadata has been reloaded successfully.
      */
     public static boolean refreshNavigator(
         final Collection<? extends DBNNode> refreshObjects,
