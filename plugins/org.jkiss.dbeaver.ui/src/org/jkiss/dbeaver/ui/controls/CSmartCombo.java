@@ -718,11 +718,13 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private void popupEvent(Event event) {
         switch (event.type) {
             case SWT.Paint:
-                // draw black rectangle around list
-                Rectangle listRect = this.dropDownControl.getBounds();
-                Color black = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
-                event.gc.setForeground(black);
-                event.gc.drawRectangle(0, 0, listRect.width + 1, listRect.height + 1);
+                Rectangle clientArea = this.popup.getClientArea();
+                Color border = UIUtils.getSharedTextColors().getColor(UIUtils.blend(
+                    this.dropDownControl.getForeground().getRGB(),
+                    this.popup.getBackground().getRGB(),
+                    20));
+                event.gc.setForeground(border);
+                event.gc.drawRectangle(0, 0, clientArea.width - 1, clientArea.height - 1);
                 break;
             case SWT.Close:
                 event.doit = false;
