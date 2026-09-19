@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -33,6 +32,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -125,8 +125,6 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
         private static final int MAX_VISIBLE_ITEMS = 3;
         private static final int TABLE_WIDTH_HINT = 100;
 
-        private final Font titleFont;
-
         private ConnectorViewer(Composite parent) {
             super(parent, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
             Table table = getTable();
@@ -161,11 +159,9 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
                 }
             });
 
-            titleFont = UIUtils.makeBoldFont(table.getFont());
             table.addListener(SWT.MeasureItem, this::measureItem);
             table.addListener(SWT.EraseItem, this::eraseItem);
             table.addListener(SWT.PaintItem, this::paintItem);
-            table.addDisposeListener(event -> titleFont.dispose());
         }
 
         private void setDrivers(List<DBPDriver> drivers) {
@@ -191,7 +187,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
         }
 
         private void measureItem(Event event) {
-            event.gc.setFont(titleFont);
+            event.gc.setFont(BaseThemeSettings.instance.baseFontBold);
             int titleHeight = event.gc.getFontMetrics().getHeight();
             event.gc.setFont(getTable().getFont());
             DBPDriver driver = (DBPDriver) event.item.getData();
@@ -234,7 +230,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
 
             String description = getDescription(driver, event.gc);
             int textX = HORIZONTAL_PADDING + IMAGE_AREA_WIDTH + HORIZONTAL_PADDING;
-            event.gc.setFont(titleFont);
+            event.gc.setFont(BaseThemeSettings.instance.baseFontBold);
             event.gc.setForeground(selected ?
                 table.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT) : table.getForeground());
             int titleHeight = event.gc.getFontMetrics().getHeight();
@@ -245,7 +241,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             }
             int textY = bounds.y + (bounds.height - titleHeight - descriptionHeight -
                 (description.isEmpty() ? 0 : TEXT_SPACING)) / 2;
-            event.gc.setFont(titleFont);
+            event.gc.setFont(BaseThemeSettings.instance.baseFontBold);
             event.gc.drawText(driver.getName(), textX, textY, true);
             if (!description.isEmpty()) {
                 event.gc.setFont(table.getFont());
