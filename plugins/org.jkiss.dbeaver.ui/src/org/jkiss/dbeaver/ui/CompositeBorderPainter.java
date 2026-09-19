@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Rectangle;
@@ -34,7 +33,7 @@ public class CompositeBorderPainter implements PaintListener {
     @Override
     public void paintControl(PaintEvent e) {
         Rectangle bounds = control.getBounds();
-        e.gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        e.gc.setForeground(Display.getDefault().getSystemColor(UIUtils.getShadowColor()));
         e.gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
     }
 }
