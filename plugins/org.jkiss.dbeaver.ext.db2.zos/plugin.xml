@@ -14,15 +14,15 @@
                 dataSourceType="db2"
                 parent="generic"
                 label="Db2 for z/OS data source"
-                icon="icons/db2_zos_icon.png"
+                icon="icons/db2_zos_icon.svg"
                 dialect="db2_zos">
             <drivers managable="true">
 
                 <driver
                         id="db2_zos"
                         label="Db2 for z/OS"
-                        icon="icons/db2_zos_icon.png"
-                        iconBig="icons/db2_zos_icon_big.png"
+                        icon="icons/db2_zos_icon.svg"
+                        iconBig="icons/db2_zos_icon_big.svg"
                         category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
@@ -182,7 +182,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="db2_zos" parent="generic" class="org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSSQLDialect" label="Db2 for z/OS" description="IBM Db2 z/OS SQL dialect." icon="icons/db2_zos_icon.png">
+        <dialect id="db2_zos" parent="generic" class="org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSSQLDialect" label="Db2 for z/OS" description="IBM Db2 z/OS SQL dialect." icon="icons/db2_zos_icon.svg">
         </dialect>
     </extension>
 

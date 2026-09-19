@@ -12,7 +12,7 @@
                 dataSourceType="db2"
                 parent="generic"
                 label="Db2 for IBM i data source"
-                icon="icons/db2_i_icon.png"
+                icon="icons/db2_i_icon.svg"
                 dialect="db2_i">
             <treeInjection path="generic/catalog/schema/table"
                            changeFolderType="org.jkiss.dbeaver.ext.db2.i.model.DB2ITable"/>
@@ -23,8 +23,8 @@
                 <driver
                         id="db2_iseries"
                         label="Db2 for IBM i"
-                        icon="icons/db2_i_icon.png"
-                        iconBig="icons/db2_i_icon_big.png"
+                        icon="icons/db2_i_icon.svg"
+                        iconBig="icons/db2_i_icon_big.svg"
                         category="Db2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
@@ -61,7 +61,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="db2_i" parent="generic" class="org.jkiss.dbeaver.ext.db2.i.model.DB2ISQLDialect" label="Db2 i" description="IBM Db2 for i SQL dialect." icon="icons/db2_i_icon.png">
+        <dialect id="db2_i" parent="generic" class="org.jkiss.dbeaver.ext.db2.i.model.DB2ISQLDialect" label="Db2 i" description="IBM Db2 for i SQL dialect." icon="icons/db2_i_icon.svg">
         </dialect>
     </extension>
 

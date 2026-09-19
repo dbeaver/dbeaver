@@ -9,19 +9,19 @@
             label="IBM Db2"
             description="IBM Db2 database"
             dataSourceInformation="Enterprise relational database from IBM"
-            icon="icons/db2_icon.png"
-            iconBig="icons/db2_icon_big.png"
-            logoImage="icons/db2_logo.png"/>
+            icon="icons/db2_icon.svg"
+            iconBig="icons/db2_icon_big.svg"
+            logoImage="icons/db2_logo.svg"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
                 description="Db2 connector"
-                icon="icons/db2_icon.png"
+                icon="icons/db2_icon.svg"
                 id="db2"
                 dataSourceType="db2"
                 label="Db2"
                 dialect="db2_luw">
             <tree
-                  icon="icons/db2_icon.png"
+                  icon="icons/db2_icon.svg"
                   label="Db2 data source"
                   path="db2">
                 <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Schema" label="%tree.schemas.node.name" icon="#folder_schema" description="Database schemas">
@@ -516,13 +516,13 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="db2_luw" parent="basic" class="org.jkiss.dbeaver.ext.db2.DB2SQLDialect" label="Db2 for LUW" description="IBM Db2 LUW SQL dialect." icon="icons/db2_icon.png">
+        <dialect id="db2_luw" parent="basic" class="org.jkiss.dbeaver.ext.db2.DB2SQLDialect" label="Db2 for LUW" description="IBM Db2 LUW SQL dialect." icon="icons/db2_icon.svg">
         </dialect>
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="db2" name="DB2" description="DB2 database tasks" icon="icons/db2_icon.png"/>
-        <category id="db2Tool" parent="db2" name="Tools" description="DB2 database tools" icon="icons/db2_icon.png"/>
+        <category id="db2" name="DB2" description="DB2 database tasks" icon="icons/db2_icon.svg"/>
+        <category id="db2Tool" parent="db2" name="Tools" description="DB2 database tools" icon="icons/db2_icon.svg"/>
 
         <!-- SQL tools -->
         <task id="db2ToolTableTruncate" name="%tasks.truncate.node.name" description="%tasks.truncate.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ToolTableTruncate">
