@@ -67,7 +67,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     private static final String HELP_CONNECTIONS_LINK = "Create-Connection";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
-    private Combo navigatorSettingsCombo;
+    private CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo;
     private Text connectionDefaultNamePatternText;
 
     private String connectionNamePattern;
