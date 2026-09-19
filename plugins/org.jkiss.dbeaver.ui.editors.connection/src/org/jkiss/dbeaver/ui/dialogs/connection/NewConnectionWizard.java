@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -53,7 +54,8 @@ public class NewConnectionWizard extends ConnectionWizard
     private final DBPConnectionConfiguration initialConfiguration;
     private IStructuredSelection selection;
     private final List<DBPDataSourceProviderDescriptor> availableProvides = new ArrayList<>();
-    private ConnectionPageDriver pageDrivers;
+    private ConnectionPageDataSource pageDataSource;
+    private ConnectionPageConnector pageConnector;
     private final Map<DBPDriver, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
     private DataSourceDescriptor dataSourceNew;
@@ -85,7 +87,7 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
-        DBPProject project = initialDriver == null ? pageDrivers.getConnectionProject() : DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        DBPProject project = initialDriver == null ? pageDataSource.getConnectionProject() : DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         return project == null ? null : project.getDataSourceRegistry();
     }
 
@@ -94,9 +96,9 @@ public class NewConnectionWizard extends ConnectionWizard
         return availableProvides;
     }
 
-    ConnectionPageDriver getPageDrivers()
+    ConnectionPageDataSource getPageDataSource()
     {
-        return pageDrivers;
+        return pageDataSource;
     }
 
     ConnectionPageSettings getPageSettings(DBPDriver driver)
@@ -107,18 +109,27 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public DBPDriver getSelectedDriver()
     {
-        return initialDriver != null ? initialDriver : getPageDrivers().getSelectedDriver();
+        if (initialDriver != null) {
+            return initialDriver;
+        }
+        DBPDataSourceType type = getPageDataSource().getSelectedDataSourceType();
+        DBPDriver selectedDriver = pageConnector.getDataSourceType() == type ? pageConnector.getSelectedDriver() : null;
+        if (selectedDriver != null) {
+            return selectedDriver;
+        }
+        List<? extends DBPDriver> drivers = getAvailableDrivers(type);
+        return drivers.isEmpty() ? null : drivers.get(0);
     }
 
     @Override
     DBPProject getSelectedProject() {
-        return pageDrivers.getConnectionProject();
+        return pageDataSource.getConnectionProject();
     }
 
     @Override
     @NotNull
     DBNBrowseSettings getSelectedNavigatorSettings() {
-        return pageDrivers.getNavigatorSettings();
+        return pageDataSource.getNavigatorSettings();
     }
 
     @Override
@@ -139,12 +150,14 @@ public class NewConnectionWizard extends ConnectionWizard
     {
         /*if (initialDriver == null) */{
             // We need drivers page always as it contains some settings
-            pageDrivers = new ConnectionPageDriver(this);
+            pageDataSource = new ConnectionPageDataSource(this);
             if (initialDriver != null) {
-                pageDrivers.setSelectedDriver(initialDriver);
+                pageDataSource.setSelectedDataSourceType(initialDriver.getDataSourceType());
             }
-            addPage(pageDrivers);
+            addPage(pageDataSource);
         }
+        pageConnector = new ConnectionPageConnector(this);
+        addPage(pageConnector);
 
         Map<DataSourceConfiguratorDescriptor, ConnectionPageSettings> configuratorPages = new HashMap<>();
         for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
@@ -192,6 +205,15 @@ public class NewConnectionWizard extends ConnectionWizard
         if (initialDriver != null && page instanceof ConnectionPageSettings) {
             return null;
         }
+        if (page == pageConnector) {
+            return pageDataSource;
+        }
+        if (initialDriver == null &&
+            (page instanceof ConnectionPageSettings || page instanceof ConnectionPageDeprecation || page == pageGeneral)
+        ) {
+            DBPDataSourceType type = pageDataSource.getSelectedDataSourceType();
+            return getAvailableDrivers(type).size() > 1 ? pageConnector : pageDataSource;
+        }
         return super.getPreviousPage(page);
     }
 
@@ -199,24 +221,47 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public IWizardPage getNextPage(IWizardPage page)
     {
-        if (page == pageDrivers) {
-            final DBPDriver driver = getSelectedDriver();
-            if (driver.getDriverStub() != null) {
-                final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver.getDriverStub());
-                nextPage.setWizard(this);
-                return nextPage;
+        if (page == pageDataSource) {
+            DBPDataSourceType type = pageDataSource.getSelectedDataSourceType();
+            List<? extends DBPDriver> drivers = getAvailableDrivers(type);
+            if (type != null) {
+                pageConnector.setDataSourceType(type);
             }
-            ConnectionPageSettings pageSettings = getPageSettings(driver);
-            if (pageSettings == null) {
-                return pageGeneral;
-            } else {
-                return pageSettings;
+            if (drivers.size() > 1) {
+                return pageConnector;
             }
+            return drivers.isEmpty() ? null : getNextPageForDriver(drivers.get(0));
+        } else if (page == pageConnector) {
+            return getNextPageForDriver(Objects.requireNonNull(pageConnector.getSelectedDriver()));
         } else if (page instanceof ConnectionPageSettings) {
-            return null;//pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
+            return null;
         } else {
             return null;
         }
+    }
+
+    private IWizardPage getNextPageForDriver(@NotNull DBPDriver driver) {
+        if (driver.getDriverStub() != null) {
+            final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver.getDriverStub());
+            nextPage.setWizard(this);
+            return nextPage;
+        }
+        ConnectionPageSettings pageSettings = getPageSettings(driver);
+        if (pageSettings == null) {
+            return pageGeneral;
+        } else {
+            return pageSettings;
+        }
+    }
+
+    @NotNull
+    private static List<? extends DBPDriver> getAvailableDrivers(@Nullable DBPDataSourceType type) {
+        if (type == null) {
+            return List.of();
+        }
+        return type.getEnabledDrivers().stream()
+            .filter(driver -> !DBWorkbench.isDistributed() || driver.getDefaultDriverLoader().isDriverInstalled())
+            .toList();
     }
 
     @NotNull

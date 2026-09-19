@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.snowflake.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -27,7 +26,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -66,20 +64,9 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
     private Combo warehouseText;
     private Combo schemaText;
 
-    private static final ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
-        SnowflakeUIConstants.PLUGIN_ID, "icons/snowflake_logo.png"); //$NON-NLS-1$
-
-    @Override
-    public void dispose()
-    {
-        super.dispose();
-    }
-
     @Override
     public void createControl(Composite composite)
     {
-        setImageDescriptor(logoImage);
-
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_BOTH));

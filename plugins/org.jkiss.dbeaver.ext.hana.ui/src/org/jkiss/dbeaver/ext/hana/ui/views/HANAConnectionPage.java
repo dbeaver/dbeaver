@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.hana.ui.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -70,23 +69,6 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
     private String portValue; 
     private String instanceValue;
     private String databaseValue;
-
-    private final Image logoImage;
-
-    public HANAConnectionPage() {
-        logoImage = createImage("icons/sap_hana_logo.png"); //$NON-NLS-1$
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        UIUtils.dispose(logoImage);
-    }
-
-    @Override
-    public Image getImage() {
-        return logoImage;
-    }
 
     @Override
     public void createControl(Composite composite) {
