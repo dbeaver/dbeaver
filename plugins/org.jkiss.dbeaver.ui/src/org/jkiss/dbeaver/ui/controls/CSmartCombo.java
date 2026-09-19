@@ -40,6 +40,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
     private static final int IMAGE_TEXT_SPACING = 3;
     private static final int POPUP_BORDER_WIDTH = 1;
+    private static final boolean ANIMATION_ENABLED = true;
+    private static final int POPUP_ANIMATION_DURATION = 100;
+    private static final int POPUP_ANIMATION_FRAME = 16;
 
     protected final ILabelProvider labelProvider;
     protected final List<ITEM_TYPE> items = new ArrayList<>();
@@ -50,6 +53,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private Color dropDownBackground;
     private int visibleItemCount = 10;
     private Composite popup;
+    private Composite closingPopup;
+    private int popupAnimation;
     private Label arrow;
     private boolean hasFocus;
     private boolean backgroundInitialized;
@@ -147,8 +152,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             }
         };
         this.filter = event -> {
-            Shell shell = ((Control) event.widget).getShell();
-            if (shell == CSmartCombo.this.getShell()) {
+            Control control = (Control) event.widget;
+            if (control.getShell() == CSmartCombo.this.getShell() && !isOwnControl(control)) {
                 UIUtils.asyncExec(() -> {
                     if (!isDisposed()) {
                         handleFocus(SWT.FocusOut);
@@ -187,6 +192,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 layout(true, true);
             }
         });
+    }
+
+    private boolean isOwnControl(Control control) {
+        return control == this || UIUtils.isParent(this, control) ||
+            this.popup != null && !this.popup.isDisposed() && UIUtils.isParent(this.popup, control);
     }
 
     private void setEnabled(boolean enabled, boolean force) {
@@ -489,6 +499,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     private void createPopup() {
+        if (this.closingPopup != null && !this.closingPopup.isDisposed()) {
+            this.closingPopup.dispose();
+            this.closingPopup = null;
+        }
         Composite oldPopup = this.popup;
         if (oldPopup != null) {
             oldPopup.dispose();
@@ -557,9 +571,17 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             }
         });
 
-        int[] listEvents = {SWT.MouseUp, SWT.Selection, SWT.Traverse, SWT.KeyDown, SWT.KeyUp, SWT.FocusIn, SWT.Resize};
-        for (int listEvent : listEvents) {
-            table.addListener(listEvent, this.listener);
+        updateListListeners(table, true);
+    }
+
+    private void updateListListeners(Table table, boolean add) {
+        int[] events = {SWT.MouseUp, SWT.Selection, SWT.Traverse, SWT.KeyDown, SWT.KeyUp, SWT.FocusIn, SWT.Resize};
+        for (int event : events) {
+            if (add) {
+                table.addListener(event, this.listener);
+            } else {
+                table.removeListener(event, this.listener);
+            }
         }
     }
 
@@ -610,14 +632,25 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             if (this.popup != null) {
                 boolean restoreFocus = this.dropDownControl != null && this.dropDownControl.isFocusControl();
                 final Composite toDispose = this.popup;
+                Rectangle popupBounds = toDispose.getBounds();
+                Rectangle comboBounds = getDisplay().map(getParent(), getShell(), getBounds());
+                boolean opensUpward = popupBounds.y < comboBounds.y;
+                updateListListeners(this.dropDownControl, false);
                 this.popup = null;
                 this.dropDownControl = null;
+                this.closingPopup = toDispose;
                 getDisplay().removeFilter(SWT.MouseDown, this.popupFilter);
-                toDispose.setVisible(false);
-                UIUtils.asyncExec(toDispose::dispose);
                 if (restoreFocus) {
                     setFocus();
                 }
+                animatePopup(toDispose, popupBounds, false, opensUpward, () -> {
+                    if (this.closingPopup == toDispose) {
+                        this.closingPopup = null;
+                    }
+                    if (!toDispose.isDisposed()) {
+                        toDispose.dispose();
+                    }
+                });
             }
             return;
         }
@@ -660,7 +693,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             y = parentRect.y - height;
         }
         Point popupLocation = display.map(null, shell, new Point(x, y));
-        this.popup.setBounds(popupLocation.x, popupLocation.y, width, height);
+        Rectangle popupBounds = new Rectangle(popupLocation.x, popupLocation.y, width, height);
+        this.popup.setBounds(popupBounds);
         this.popup.layout(true, true);
 
         {
@@ -675,8 +709,65 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.popup.moveAbove(null);
         this.popup.setVisible(true);
         table.setBackground(this.dropDownBackground);
-        table.setFocus();
         getDisplay().addFilter(SWT.MouseDown, this.popupFilter);
+        Composite openingPopup = this.popup;
+        animatePopup(openingPopup, popupBounds, true, y < parentRect.y, () -> {
+            if (this.popup == openingPopup && !table.isDisposed()) {
+                table.setFocus();
+            }
+        });
+    }
+
+    private void animatePopup(
+        Composite control,
+        Rectangle bounds,
+        boolean opening,
+        boolean opensUpward,
+        @Nullable Runnable completion
+    ) {
+        if (!ANIMATION_ENABLED) {
+            control.setBounds(bounds);
+            control.layout(true, true);
+            if (completion != null) {
+                completion.run();
+            }
+            return;
+        }
+        int animation = ++this.popupAnimation;
+        long startTime = System.currentTimeMillis();
+        int bottom = bounds.y + bounds.height;
+        Runnable step = new Runnable() {
+            @Override
+            public void run() {
+                if (control.isDisposed() || animation != popupAnimation) {
+                    return;
+                }
+                double progress = Math.min(
+                    1.0,
+                    (double) (System.currentTimeMillis() - startTime) / POPUP_ANIMATION_DURATION
+                );
+                double easedProgress = opening
+                    ? 1.0 - Math.pow(1.0 - progress, 3)
+                    : progress * progress;
+                int height = Math.max(1, (int) Math.round(bounds.height *
+                    (opening ? easedProgress : 1.0 - easedProgress)));
+                int y = opensUpward ? bottom - height : bounds.y;
+                control.setBounds(bounds.x, y, bounds.width, height);
+                control.layout(true, true);
+                if (progress < 1.0) {
+                    control.getDisplay().timerExec(POPUP_ANIMATION_FRAME, this);
+                } else {
+                    if (opening) {
+                        control.setBounds(bounds);
+                        control.layout(true, true);
+                    }
+                    if (completion != null) {
+                        completion.run();
+                    }
+                }
+            }
+        };
+        step.run();
     }
 
     private void listEvent(Event event) {
@@ -820,9 +911,13 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 removeListener(SWT.Dispose, listener);
                 notifyListeners(SWT.Dispose, event);
                 event.type = SWT.None;
+                this.popupAnimation++;
 
                 if (this.popup != null && !this.popup.isDisposed()) {
                     this.popup.dispose();
+                }
+                if (this.closingPopup != null && !this.closingPopup.isDisposed()) {
+                    this.closingPopup.dispose();
                 }
                 Shell shell = getShell();
                 shell.removeListener(SWT.Deactivate, this.listener);
@@ -830,6 +925,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 display.removeFilter(SWT.FocusIn, this.filter);
                 display.removeFilter(SWT.MouseDown, this.popupFilter);
                 this.popup = null;
+                this.closingPopup = null;
                 this.dropDownControl = null;
                 this.arrow = null;
                 break;
