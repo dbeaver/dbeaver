@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.*;
@@ -209,10 +210,7 @@ public class DriverEditDialog extends BaseDialog {
                 createClientHomesTab(tabFolder);
             }
 
-            final String license = driver.getLicense();
-            if (license != null) {
-                createLicenseTab(tabFolder, license);
-            }
+            loadLicense(tabFolder);
 
             tabFolder.setSelection(0);
         }
@@ -820,6 +818,19 @@ public class DriverEditDialog extends BaseDialog {
         paramsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_license);
         paramsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_tooltip_license);
         paramsTab.setControl(paramsGroup);
+    }
+
+    private void loadLicense(@NotNull CTabFolder group) {
+        new SystemJob(UIConnectionMessages.dialog_edit_driver_text_driver_license, monitor -> {
+            final String license = driver.getLicense();
+            if (license != null) {
+                UIUtils.asyncExec(() -> {
+                    if (!group.isDisposed()) {
+                        createLicenseTab(group, license);
+                    }
+                });
+            }
+        }).schedule();
     }
 
     @Override
