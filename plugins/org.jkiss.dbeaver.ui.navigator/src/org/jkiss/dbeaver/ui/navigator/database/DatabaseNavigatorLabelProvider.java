@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -27,6 +28,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -54,6 +56,8 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 
     @NotNull
     private final DatabaseNavigatorTree tree;
+    private final IPropertyChangeListener themeChangeListener;
+    private boolean themeRefreshPending;
     protected Color lockedForeground;
     private ILabelDecorator labelDecorator;
 
@@ -65,6 +69,19 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS,
             s -> setNavigatorFont(tree),
             tree);
+
+        themeChangeListener = event -> {
+            if (!themeRefreshPending) {
+                themeRefreshPending = true;
+                UIUtils.asyncExec(() -> {
+                    themeRefreshPending = false;
+                    if (!tree.isDisposed()) {
+                        tree.getViewer().refresh();
+                    }
+                });
+            }
+        };
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
 
         setNavigatorFont(tree);
     }
@@ -84,6 +101,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 
     @Override
     public void dispose() {
+        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         super.dispose();
     }
 
