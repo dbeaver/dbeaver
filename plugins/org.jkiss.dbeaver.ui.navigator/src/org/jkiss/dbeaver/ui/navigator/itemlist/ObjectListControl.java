@@ -58,7 +58,6 @@ import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.NavigatorThemeUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -209,7 +208,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 UIUtils.asyncExec(() -> {
                     themeRefreshPending = false;
                     if (!isDisposed()) {
-                        NavigatorThemeUtils.updateNativeTheme(itemsViewer.getControl());
+                        NativeThemeUtils.updateNativeTheme(itemsViewer.getControl());
                         itemsViewer.refresh();
                     }
                 });

@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.NavigatorThemeUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
@@ -77,7 +76,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 UIUtils.asyncExec(() -> {
                     themeRefreshPending = false;
                     if (!tree.isDisposed()) {
-                        NavigatorThemeUtils.updateNativeTheme(tree.getViewer().getControl());
+                        NativeThemeUtils.updateNativeTheme(tree.getViewer().getControl());
                         tree.getViewer().refresh();
                     }
                 });

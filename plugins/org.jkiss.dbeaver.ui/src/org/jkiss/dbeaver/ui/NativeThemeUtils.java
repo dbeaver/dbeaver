@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.navigator;
+package org.jkiss.dbeaver.ui;
 
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.FrameworkUtil;
 
@@ -28,8 +27,8 @@ import org.osgi.framework.FrameworkUtil;
  * It relies on Windows native controls theme update.
  * TODO: remove when it will be fixed in Eclipse SWT
  */
-public final class NavigatorThemeUtils {
-    private static final Log log = Log.getLog(NavigatorThemeUtils.class);
+public final class NativeThemeUtils {
+    private static final Log log = Log.getLog(NativeThemeUtils.class);
 
     public static void updateNativeTheme(@NotNull Control control) {
         if (!RuntimeUtils.isWindows()) {
