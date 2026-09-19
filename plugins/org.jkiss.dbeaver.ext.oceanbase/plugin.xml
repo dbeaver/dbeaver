@@ -18,19 +18,18 @@
                 <driver
                     id="alipay_oceanbase"
                     label="OceanBase"
-                    class="com.mysql.jdbc.Driver"
-                    sampleURL="jdbc:mysql://{host}:{port}[/{database}]"
+                    class="com.oceanbase.jdbc.Driver"
+                    sampleURL="jdbc:oceanbase://{host}[:{port}][/{database}]"
                     defaultPort="2881"
                     webURL="https://open.oceanbase.com"
                     icon="icons/ob_icon.png"
                     iconBig="icons/ob_icon_big.png"
-                    description="Driver for OceanBase-MySQL"
+                    description="Driver for OceanBase (MySQL tenant mode)"
                     supportedPageFields="host,port,database,server"
                     categories="sql">
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <file type="jar" path="maven:/com.oceanbase:oceanbase-client:RELEASE[2.4.18]"/>
                     <parameter name="supports-events" value="false"/>
                     <parameter name="supports-plugins" value="false"/>
                     <parameter name="supports-triggers" value="false"/>
@@ -46,8 +45,35 @@
                 </main-properties>
             </drivers>
         </datasource>
+        <datasource
+            class="org.jkiss.dbeaver.ext.oceanbase.OceanbaseOracleDataSourceProvider"
+            description="Oceanbase (Oracle mode)"
+            id="oceanbase_oracle"
+            parent="generic"
+            dialect="oracle"
+            icon="icons/ob_icon.png"
+            label="Oceanbase (Oracle)">
+            <drivers managable="true">
+                <driver
+                    id="alipay_oceanbase_oracle"
+                    label="OceanBase (Oracle)"
+                    class="com.oceanbase.jdbc.Driver"
+                    sampleURL="jdbc:oceanbase://{host}[:{port}][/{database}]"
+                    defaultPort="2881"
+                    webURL="https://open.oceanbase.com"
+                    icon="icons/ob_icon.png"
+                    iconBig="icons/ob_icon_big.png"
+                    description="Driver for OceanBase (Oracle tenant mode)"
+                    supportedPageFields="host,port,database,server"
+                    categories="sql">
+
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <file type="jar" path="maven:/com.oceanbase:oceanbase-client:RELEASE[2.4.18]"/>
+                </driver>
+            </drivers>
+        </datasource>
     </extension>
-    
+
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
             id="oceanbase_native"
@@ -57,6 +83,7 @@
             default="true">
             <replace model="native"/>
             <datasource id="oceanbase"/>
+            <datasource id="oceanbase_oracle"/>
         </authModel>
     </extension>
 

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -94,7 +95,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Nullable
     @Override
-    @Property(order = 1, password = true, required = true)
+    @Property(order = 1, password = true, hideExpr = AIConstants.AI_NON_GLOBAL_CREDENTIALS_HIDE_EXPRESSION)
     public String getToken() {
         return token;
     }
@@ -119,6 +120,13 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     public void setModel(@Nullable String model) {
         this.model = model;
+    }
+
+    @Override
+    public void selectModel(@NotNull AIModel model) {
+        setModel(model.name());
+        setContextWindowSize(model.contextWindowSize() != null ? model.contextWindowSize() :
+            OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE));
     }
 
     @Override

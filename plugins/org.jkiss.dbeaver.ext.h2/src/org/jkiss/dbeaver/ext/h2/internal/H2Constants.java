@@ -25,6 +25,9 @@ public final class H2Constants {
         // Math, nothing to worry about there
         "java.lang.Math",
 
+        // Required to open H2 1.x MVStore databases, including QMDB migration
+        "org.h2.mvstore.db.MVTableEngine",
+
         // Required for H2GIS
         "org.h2gis.functions.factory.H2GISFunctions",
         "org.locationtech.jts.geom.Geometry"

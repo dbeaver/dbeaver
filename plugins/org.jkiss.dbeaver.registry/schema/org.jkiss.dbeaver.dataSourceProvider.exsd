@@ -680,7 +680,14 @@
          <attribute name="arch" type="string">
             <annotation>
                <documentation>
-                  
+                  Target processor architecture.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="exclude" type="boolean">
+            <annotation>
+               <documentation>
+                  Excludes the platform matched by the os and arch attributes.
                </documentation>
             </annotation>
          </attribute>

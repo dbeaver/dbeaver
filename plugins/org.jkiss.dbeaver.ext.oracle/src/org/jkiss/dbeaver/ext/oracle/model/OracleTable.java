@@ -72,7 +72,8 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     
     private static final String[] supportedOptions = new String[]{
         DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS,
-        DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS
+        DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS,
+        DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES
     };
     
     private OracleDataType tableType;

@@ -67,14 +67,14 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider<OracleDataS
     @Override
     public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
-        OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
-        if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
+        String connectionType = getConnectionType(connectionInfo);
+        if (OracleConstants.ConnectionType.CUSTOM.equals(connectionType)) {
             return DatabaseURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
         }
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:oracle:thin:@"); //$NON-NLS-1$
         String databaseName = CommonUtils.notEmpty(connectionInfo.getDatabaseName());
-        if (connectionType == OracleConstants.ConnectionType.TNS) {
+        if (OracleConstants.ConnectionType.TNS.equals(connectionType)) {
             // TNS name specified
             // Try to get description from TNSNAMES
             File oraHomePath;
@@ -129,15 +129,10 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider<OracleDataS
     }
 
     @NotNull
-    private OracleConstants.ConnectionType getConnectionType(DBPConnectionConfiguration connectionInfo) {
-        OracleConstants.ConnectionType connectionType;
-        String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
-        if (conTypeProperty != null) {
-            connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
-        } else {
-            connectionType = OracleConstants.ConnectionType.BASIC;
-        }
-        return connectionType;
+    private String getConnectionType(DBPConnectionConfiguration connectionInfo) {
+        return OracleConstants.ConnectionType.fromString(
+            connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE)
+        );
     }
 
     @NotNull
@@ -226,8 +221,8 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider<OracleDataS
     public String getObjectInformation(@NotNull DBPObject object, @NotNull String infoType) {
         if (object instanceof DBPDataSourceContainer ds && infoType.equals(INFO_TARGET_ADDRESS)) {
             DBPConnectionConfiguration connectionInfo = ds.getConnectionConfiguration();
-            OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
-            if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
+            String connectionType = getConnectionType(connectionInfo);
+            if (OracleConstants.ConnectionType.CUSTOM.equals(connectionType)) {
                 try {
                     return this.getConnectionURL(ds.getDriver(), connectionInfo);
                 } catch (DBException e) {
@@ -236,7 +231,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider<OracleDataS
                 }
             }
             String databaseName = CommonUtils.notEmpty(connectionInfo.getDatabaseName());
-            if (connectionType == OracleConstants.ConnectionType.TNS) {
+            if (OracleConstants.ConnectionType.TNS.equals(connectionType)) {
                 return databaseName;
             } else {
                 String hostName = DBWUtils.getTargetTunnelHostName(ds, connectionInfo);

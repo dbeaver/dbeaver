@@ -21,14 +21,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
-import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
+import org.jkiss.dbeaver.ext.oracle.ui.OracleUIConstants;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
@@ -67,7 +69,8 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         super("SQLDeveloper");
         setTitle("SQL Developer");
         setDescription("Import Oracle SQL Developer connections");
-        setImageDescriptor(OracleUIActivator.getImageDescriptor("icons/sqldeveloper_big.png"));
+        setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(
+            OracleUIConstants.PLUGIN_ID, "icons/sqldeveloper_big.png"));
 
         oraDriver = new ImportDriverInfo(null, "Oracle", "jdbc:oracle:thin:@{host}[:{port}]/{database}", "oracle.jdbc.OracleDriver");
     }
@@ -174,7 +177,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         @SerializedName("OS_AUTHENTICATION")
         private String OsAuth;
         @SerializedName("OracleConnectionType")
-        private OracleConstants.ConnectionType connectionType;
+        private String connectionType;
 
         public String getRole() {
             return role;
@@ -240,11 +243,12 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
             this.OsAuth = OS_AUTHENTICATION;
         }
 
-        public OracleConstants.ConnectionType getConnectionType() {
+        @Nullable
+        public String getConnectionType() {
             return connectionType;
         }
 
-        public void setConnectionType(OracleConstants.ConnectionType connectionType) {
+        public void setConnectionType(@Nullable String connectionType) {
             this.connectionType = connectionType;
         }
 
@@ -266,7 +270,8 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                         continue;
                     }
 
-                    boolean isTnsConnection = info.getConnectionType() == OracleConstants.ConnectionType.TNS;
+                    String connectionType = OracleConstants.ConnectionType.fromString(info.getConnectionType());
+                    boolean isTnsConnection = OracleConstants.ConnectionType.TNS.equals(connectionType);
 
                     // for tns connection, connections file will contain network alias 
                     // in url field instead of actual url
@@ -296,7 +301,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                             connectionInfo.setProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS, info.getRole());
                         }
                     }
-                    connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, String.valueOf(info.getConnectionType()));
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType);
 
                     if (isTnsConnection) {
                         // try and set tns path property so that network alias drop down will

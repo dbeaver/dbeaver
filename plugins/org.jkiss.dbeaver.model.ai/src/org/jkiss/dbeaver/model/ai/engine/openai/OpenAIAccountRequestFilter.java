@@ -18,11 +18,12 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpRequest;
 
-public class OpenAIAccountRequestFilter implements OpenAiClientBase.HttpRequestFilter {
+public class OpenAIAccountRequestFilter implements AIHttpRequestFilter {
     private final OpenAIProperties properties;
     private final OpenAIAccountAuthenticator authenticator;
 
@@ -36,7 +37,7 @@ public class OpenAIAccountRequestFilter implements OpenAiClientBase.HttpRequestF
     public HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) throws DBException {
         HttpRequest.Builder builder = HttpRequest.newBuilder(request.uri())
             .method(request.method(), request.bodyPublisher().orElse(HttpRequest.BodyPublishers.noBody()))
-            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + properties.getValidAccessToken(authenticator))
+            .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + properties.getValidAccessToken(authenticator))
             .header("originator", "dbeaver");
         String accountId = properties.getAccountId();
         if (accountId != null) {

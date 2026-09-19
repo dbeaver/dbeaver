@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ final class SnowflakeIcons {
     static final DBIcon FLAKE_10 = new DBIcon("flake10", "misc/decorations/flake10.png");
     static final DBIcon FLAKE_11 = new DBIcon("flake11", "misc/decorations/flake11.png");
     static final DBIcon FLAKE_12 = new DBIcon("flake12", "misc/decorations/flake12.png");
+
+    static final DBIcon SNOWFLAKE = new DBIcon("snowflake", "misc/decorations/snowflake.svg");
 
     static {
         DBIcon.loadIcons(SnowflakeIcons.class);

@@ -38,10 +38,16 @@
                     description="%driver.gbase8s.description"
                     defaultUser="gbasedbt"
                     webURL="https://cdn.gbase.cn/products/27/duljCAzDVSy_SLTpy7j1l/GBase%208s%20V8.8%20JDBC%20Driver%20%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8C%87%E5%8D%97.pdf"
+                    supportedConfigurationTypes="MANUAL,URL"
                     supportedPageFields="host,port,database,server"
                     categories="sql">
                     <property name="OPT_GOAL" value="0" />
                     <property name="SQLMODE" value="oracle" />
+                    <!--
+                      driver property that can fix issue #41669,
+                      when empty, it will point to default temp folder
+                     -->
+                    <property name="JDBCTEMP" type="string" required="false" defaultValue="" />
 
                     <property name="@dbeaver-default-database.meta.client.name.disable" value="true" />
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH.mm.ss.ffffff" />

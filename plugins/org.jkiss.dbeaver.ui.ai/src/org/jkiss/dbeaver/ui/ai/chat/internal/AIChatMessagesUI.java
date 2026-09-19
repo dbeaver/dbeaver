@@ -65,6 +65,35 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_a11y_conversation_name;
     public static String ai_chat_a11y_connection_name;
     public static String ai_chat_a11y_waiting_for_response;
+    public static String ai_chat_show_profile_and_model;
+    public static String ai_chat_profile_label;
+    public static String ai_chat_model_label;
+    public static String ai_chat_profile_not_configured;
+    public static String ai_chat_model_not_configured;
+    public static String ai_chat_model_unavailable;
+    public static String ai_chat_model_loading;
+    public static String ai_chat_model_change_error;
+    public static String ai_chat_context_menu_no_active_connections;
+    public static String ai_chat_context_menu_no_connection;
+    public static String ai_chat_context_menu_no_database_connection;
+    public static String ai_chat_context_menu_select_connection;
+    public static String ai_chat_context_menu_applies_to;
+    public static String ai_chat_context_menu_this_connection;
+    public static String ai_chat_context_menu_this_conversation;
+    public static String ai_chat_context_menu_database_connecting;
+    public static String ai_chat_context_menu_database_not_connected;
+    public static String ai_chat_context_menu_metadata_sent;
+    public static String ai_chat_context_menu_active_configuration;
+    public static String ai_chat_context_menu_messages;
+    public static String ai_chat_context_menu_show_message_time;
+    public static String ai_chat_context_menu_show_time_spent;
+    public static String ai_chat_context_menu_show_tokens_spent;
+    public static String ai_chat_context_menu_chat;
+    public static String ai_chat_context_menu_show_total_tokens_spent;
+    public static String ai_chat_context_menu_no_schema_selected;
+    public static String ai_chat_context_menu_no_database_selected;
+    public static String ai_chat_context_menu_all_objects;
+    public static String ai_chat_context_menu_empty;
 
 
     static {

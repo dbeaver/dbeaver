@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,11 +70,12 @@ public class SQLQuerySelectionResultTupleSpec extends SQLQuerySelectionResultSub
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
         this.tupleReference.resolveRowSources(knownValues.getRowsSources(), statistics);
-        this.tupleReference.resolveValueRelations(knownValues, statistics);
 
-        SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
-        if (tupleSource != null) {
-            this.collectForeignColumns(tupleSource.getRowsDataContext().getColumnsList(), rowsSourceModel, resultColumns);
+        if (this.tupleReference.tryResolveValueRelations(knownValues, statistics)) {
+            SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
+            if (tupleSource != null) {
+                this.collectForeignColumns(tupleSource.getRowsDataContext().getColumnsList(), rowsSourceModel, resultColumns);
+            }
         }
     }
 
