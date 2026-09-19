@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
@@ -90,7 +91,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
-    private Combo navigatorSettingsCombo;
+    private CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo;
     private ConnectionFolderSelector folderSelector;
     private DBPDataSourceFolder curDataSourceFolder;
     private Text descriptionText;
@@ -215,12 +216,15 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         filtersGroup.layout();
     }
 
-    public static void updateNavigatorSettingsPreset(Combo navigatorSettingsCombo, DBNBrowseSettings navigatorSettings) {
+    public static void updateNavigatorSettingsPreset(
+        CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo,
+        DBNBrowseSettings navigatorSettings
+    ) {
         // Find first preset that matches current connection settings
         boolean isPreset = false;
         for (DataSourceNavigatorSettings.Preset nsEntry : DataSourceNavigatorSettings.PRESETS.values()) {
             if (navigatorSettings.equals(nsEntry.getSettings())) {
-                navigatorSettingsCombo.setText(nsEntry.getName());
+                navigatorSettingsCombo.select(nsEntry);
                 isPreset = true;
                 break;
             }
@@ -368,12 +372,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
             {
                 navigatorSettingsCombo = createNavigatorSettingsCombo(miscGroup, this, dataSourceDescriptor);
-                GridData connectionTypeLayoutData = (GridData) connectionTypeCombo.getLayoutData();
-                GridData navigatorSettingsLayoutData = (GridData) navigatorSettingsCombo.getLayoutData();
-                connectionTypeLayoutData.widthHint += navigatorSettingsCombo.computeSize(
-                    navigatorSettingsLayoutData.widthHint,
-                    SWT.DEFAULT
-                ).x - connectionTypeCombo.computeSize(connectionTypeLayoutData.widthHint, SWT.DEFAULT).x;
             }
 
             folderSelector = new ConnectionFolderSelector(miscGroup);
@@ -526,7 +524,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
     }
 
-    public static Combo createNavigatorSettingsCombo(
+    public static CSmartCombo<DataSourceNavigatorSettings.Preset> createNavigatorSettingsCombo(
         Composite composite,
         NavigatorSettingsStorage settingsStorage,
         DBPDataSourceContainer dataSourceDescriptor
@@ -534,23 +532,29 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_wizard_final_label_navigator_settings);
 
         Composite ctGroup = UIUtils.createComposite(composite, 2);
-        Combo navigatorSettingsCombo = new Combo(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo = new CSmartCombo<>(
+            ctGroup,
+            SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY,
+            new LabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return ((DataSourceNavigatorSettings.Preset) element).getName();
+                }
+            }
+        );
         final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = UIUtils.getFontHeight(navigatorSettingsCombo) * 20;
         navigatorSettingsCombo.setLayoutData(gd);
-        for (String ncPresetName : DataSourceNavigatorSettings.PRESETS.keySet()) {
-            navigatorSettingsCombo.add(ncPresetName);
+        for (DataSourceNavigatorSettings.Preset preset : DataSourceNavigatorSettings.PRESETS.values()) {
+            navigatorSettingsCombo.addItem(preset);
         }
         navigatorSettingsCombo.select(0);
         navigatorSettingsCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-            if (navigatorSettingsCombo.getSelectionIndex() == navigatorSettingsCombo.getItemCount() - 1) {
+            DataSourceNavigatorSettings.Preset preset = navigatorSettingsCombo.getSelectedItem();
+            if (preset == DataSourceNavigatorSettings.PRESET_CUSTOM) {
                 // Custom - no changes
             } else {
-                DataSourceNavigatorSettings.Preset newSettings = DataSourceNavigatorSettings.PRESETS.get(navigatorSettingsCombo.getText());
-                if (newSettings == null) {
-                    throw new IllegalStateException("Invalid preset name: " + navigatorSettingsCombo.getText());
-                }
-                settingsStorage.setNavigatorSettings(newSettings.getSettings());
+                settingsStorage.setNavigatorSettings(preset.getSettings());
             }
         }));
 
@@ -590,7 +594,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     private static DBNBrowseSettings editNavigatorSettings(
-        @NotNull Combo navigatorSettingsCombo,
+        @NotNull CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo,
         @NotNull DBNBrowseSettings navigatorSettings,
         @Nullable DBPDataSourceContainer dataSourceDescriptor) {
         EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(

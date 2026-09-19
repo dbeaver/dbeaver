@@ -46,7 +46,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private ITEM_TYPE selectedItem;
     private final Label imageLabel;
     private final Label text;
-    private Tree dropDownControl;
+    private Table dropDownControl;
+    private Color dropDownBackground;
     private int visibleItemCount = 10;
     private Shell popup;
     private long disposeTime = -1;
@@ -451,22 +452,29 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         border.setLayout(borderLayout);
 
         // create a table instead of a list.
-        Tree table = new Tree(border, listStyle);
+        Table table = new Table(border, listStyle);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.dropDownControl = table;
         CSSUtils.applyStyles(this.popup);
-        Color popupBackground = UIStyles.isDarkTheme()
+        this.dropDownBackground = UIStyles.isDarkTheme()
             ? this.popup.getBackground()
             : getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-        table.setBackground(popupBackground);
+        table.setBackground(this.dropDownBackground);
         border.addListener(SWT.Paint, event -> {
             Rectangle clientArea = border.getClientArea();
             event.gc.setForeground(UIUtils.getSharedTextColors().getColor(UIUtils.blend(
-                table.getForeground().getRGB(), popupBackground.getRGB(), 20)));
+                table.getForeground().getRGB(), this.dropDownBackground.getRGB(), 20)));
             event.gc.drawRectangle(0, 0, clientArea.width - 1, clientArea.height - 1);
         });
-        new TreeColumn(table, SWT.LEFT);
+        new TableColumn(table, SWT.LEFT);
         createTableItems(table);
+        table.addListener(SWT.EraseItem, event -> {
+            if ((event.detail & SWT.SELECTED) == 0 && event.item instanceof TableItem item) {
+                event.gc.setBackground(item.getBackground());
+                event.gc.fillRectangle(0, event.y, table.getClientArea().width, event.height);
+                event.detail &= ~SWT.BACKGROUND;
+            }
+        });
 
         int[] popupEvents = {SWT.Close, SWT.Deactivate};
         for (int popupEvent : popupEvents) {
@@ -479,13 +487,13 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     private void updateTableItems() {
-        Tree table = dropDownControl;
+        Table table = dropDownControl;
         table.removeAll();
         createTableItems(table);
         table.setFocus();
     }
 
-    private void createTableItems(Tree table) {
+    private void createTableItems(Table table) {
         for (ITEM_TYPE item : this.items) {
             String itemText = labelProvider.getText(item);
             Image itemImage = labelProvider.getImage(item);
@@ -502,7 +510,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                     itemForeground = table.getForeground();
                 }
             }
-            TreeItem newItem = new TreeItem(table, SWT.NONE);
+            TableItem newItem = new TableItem(table, SWT.NONE);
             newItem.setData(item);
             newItem.setText(itemText);
             newItem.setImage(itemImage);
@@ -540,7 +548,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         Point size = getSize();
         int itemCount = this.items.size();
         itemCount = (itemCount == 0) ? this.visibleItemCount : Math.min(this.visibleItemCount, itemCount);
-        Tree table = dropDownControl;
+        Table table = dropDownControl;
         int itemHeight = table.getItemHeight() * itemCount;
         Point listSize = table.computeSize(SWT.DEFAULT, itemHeight, false);
         listSize.y = itemHeight + (table.getBorderWidth() + POPUP_BORDER_WIDTH) * 2;
@@ -551,10 +559,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         table.setBounds(1, 1, Math.max(size.x, listSize.x) - 30, listSize.y);
 
         if (selectedItem != null) {
-            for (TreeItem item : table.getItems()) {
+            for (TableItem item : table.getItems()) {
                 if (item.getData() == selectedItem) {
                     table.showItem(item);
-                    table.setTopItem(item);
+                    table.setTopIndex(table.indexOf(item));
                     break;
                 }
             }
@@ -587,15 +595,16 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
 
         {
-            final TreeColumn column = table.getColumn(0);
+            final TableColumn column = table.getColumn(0);
             column.pack();
-            final int maxSize = table.getClientArea().width;
+            final int maxSize = table.getClientArea().width - 1;
             if (column.getWidth() < maxSize) {
                 column.setWidth(maxSize);
             }
         }
 
         this.popup.setVisible(true);
+        table.setBackground(this.dropDownBackground);
         this.dropDownControl.setFocus();
     }
 
@@ -621,12 +630,12 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 break;
             }
             case SWT.Selection: {
-                Tree table = this.dropDownControl;
-                TreeItem[] selection = table.getSelection();
+                Table table = this.dropDownControl;
+                TableItem[] selection = table.getSelection();
                 if (ArrayUtils.isEmpty(selection)) {
                     return;
                 }
-                final TreeItem tableItem = selection[0];
+                final TableItem tableItem = selection[0];
                 ITEM_TYPE item = (ITEM_TYPE) tableItem.getData();
                 select(item);
                 table.setSelection(tableItem);
