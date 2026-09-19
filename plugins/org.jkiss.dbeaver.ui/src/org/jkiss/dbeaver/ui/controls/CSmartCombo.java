@@ -38,6 +38,7 @@ import java.util.List;
  */
 public class CSmartCombo<ITEM_TYPE> extends Composite {
 
+    private static final int IMAGE_TEXT_SPACING = 3;
     private static final int POPUP_BORDER_WIDTH = 1;
 
     protected final ILabelProvider labelProvider;
@@ -301,8 +302,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             }
         }
         this.text.setText(itemText);
-        if (itemImage != null) {
+        if (this.imageLabel.getImage() != itemImage) {
             this.imageLabel.setImage(itemImage);
+            ((GridData) this.text.getLayoutData()).horizontalIndent = itemImage == null ? 0 : IMAGE_TEXT_SPACING;
             this.imageLabel.getParent().layout(true, true);
         }
         updateBackground();
@@ -313,9 +315,14 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         if (selectedItem != null && labelProvider instanceof IColorProvider cp) {
             background = cp.getBackground(selectedItem);
         }
-        setBackground(background);
         if (background == null) {
+            setBackground(null);
             CSSUtils.applyStyles(this);
+            if (!UIStyles.isDarkTheme()) {
+                setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+            }
+        } else {
+            setBackground(background);
         }
     }
 
@@ -448,7 +455,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.dropDownControl = table;
         CSSUtils.applyStyles(this.popup);
-        Color popupBackground = this.popup.getBackground();
+        Color popupBackground = UIStyles.isDarkTheme()
+            ? this.popup.getBackground()
+            : getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         table.setBackground(popupBackground);
         border.addListener(SWT.Paint, event -> {
             Rectangle clientArea = border.getClientArea();
