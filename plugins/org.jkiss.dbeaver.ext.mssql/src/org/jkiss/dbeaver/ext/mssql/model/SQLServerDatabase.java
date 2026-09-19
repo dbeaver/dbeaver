@@ -182,16 +182,10 @@ public class SQLServerDatabase
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         // sys.databases is queried on the data source context: an offline database cannot host the query itself
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read database state")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT state_desc FROM sys.databases WHERE database_id = ?"))
-            {
-                dbStat.setLong(1, databaseId);
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        setStateDesc(JDBCUtils.safeGetString(dbResult, "state_desc"));
-                    }
-                }
-            }
+            setStateDesc(JDBCUtils.queryString(
+                session,
+                "SELECT state_desc FROM sys.databases WHERE database_id = ?",
+                databaseId));
         } catch (SQLException e) {
             throw new DBCException("Error reading database state", e);
         }
