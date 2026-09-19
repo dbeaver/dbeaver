@@ -230,16 +230,17 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         @Nullable String description,
         boolean commentSet
     ) {
+        final SQLServerTableBase table = column.getTable();
         actionList.add(
             new SQLDatabasePersistAction(
                 "Set column comment",
                 "EXEC " + SQLServerUtils.getSystemTableName(
-                    column.getTable().getDatabase(),
+                    table.getDatabase(),
                     SQLServerUtils.getCommentProcedureName(description, commentSet)) +
                     " '" + SQLServerConstants.PROP_MS_DESCRIPTION + "'" +
                     SQLServerUtils.getCommentValueArgument(column.getDataSource(), description) + "," +
-                    " 'schema', " + SQLUtils.quoteString(column, column.getTable().getSchema().getName()) + "," +
-                    " 'table', " + SQLUtils.quoteString(column, column.getTable().getName()) + "," +
+                    " 'schema', " + SQLUtils.quoteString(column, table.getSchema().getName()) + "," +
+                    " '" + (table.isView() ? "view" : "table") + "', " + SQLUtils.quoteString(column, table.getName()) + "," +
                     " 'column', " + SQLUtils.quoteString(column, column.getName())));
     }
 
