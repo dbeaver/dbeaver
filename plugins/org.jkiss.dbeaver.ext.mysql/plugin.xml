@@ -250,7 +250,7 @@
                     description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.5.2]" bundle="!drivers.mariadb"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.5.10]" bundle="!drivers.mariadb"/>
                     <file type="license" path="licenses/external/lgpl-2.1.txt"/>
                     <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
 
@@ -377,10 +377,6 @@
             </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
         </handler>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.sqlCommand">
-        <command id="mysql.source" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">

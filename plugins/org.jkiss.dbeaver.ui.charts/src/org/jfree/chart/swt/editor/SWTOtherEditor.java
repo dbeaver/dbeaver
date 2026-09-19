@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@
 package org.jfree.chart.swt.editor;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
@@ -87,8 +86,7 @@ class SWTOtherEditor extends Composite {
         selectBgPaint.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false,
                 false));
         selectBgPaint.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         ColorDialog dlg = new ColorDialog(getShell());
                         dlg.setText(localizationResources.getString(
                                 "Background_paint"));
@@ -99,8 +97,7 @@ class SWTOtherEditor extends Composite {
                             SWTOtherEditor.this.backgroundPaintCanvas.setColor(
                                     new Color(getDisplay(), rgb));
                         }
-                    }
-                }
+                    })
         );
     }
 

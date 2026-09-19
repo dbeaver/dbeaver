@@ -21,8 +21,7 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -120,13 +119,10 @@ public class PrefPageSQLFormat extends TargetPrefPage {
         for (SQLFormatterDescriptor formatterDesc : formatters) {
             formatterSelector.add(DBPIdentifierCase.capitalizeCaseName(formatterDesc.getLabel()));
         }
-        formatterSelector.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        formatterSelector.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 showFormatterSettings(true);
                 performApply();
-            }
-        });
+            }));
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         formatCurrentQueryCheck = UIUtils.createCheckbox(
@@ -196,12 +192,7 @@ public class PrefPageSQLFormat extends TargetPrefPage {
                     SQLEditorMessages.pref_page_sql_format_label_bold_keywords,
                     SQLEditorMessages.pref_page_sql_format_label_bold_keywords_tip,
                     false, 2);
-                styleBoldKeywords.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        performApply();
-                    }
-                });
+                styleBoldKeywords.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> performApply()));
 
             }
         }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.BundleContext;
 
 import java.io.IOException;
@@ -48,6 +49,10 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
         return DBWorkbench.isPlatformStarted() &&
             (DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()
             || getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED));
+    }
+
+    public static boolean getCurrentTrackingEnabled() {
+        return CommonUtils.toBoolean(getDefault().getPreferences().getString(PREF_FEATURE_TRACKING_ENABLED), true);
     }
 
     public static void setTrackingEnabled(boolean enabled) {

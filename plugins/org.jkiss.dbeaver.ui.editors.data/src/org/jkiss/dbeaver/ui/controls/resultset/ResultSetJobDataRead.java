@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
@@ -56,7 +55,6 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
     ) {
         super(ResultSetMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", executionSource, executionContext);
         this.progressControl = progressControl;
-        this.setRule(new ExecutionContextSchedulingRule(executionContext.getContextId()));
     }
 
     public void setOffset(int offset)
@@ -210,15 +208,4 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
         }
     }
 
-    private record ExecutionContextSchedulingRule(long contextId) implements ISchedulingRule {
-        @Override
-        public boolean contains(@NotNull ISchedulingRule rule) {
-            return isConflicting(rule);
-        }
-
-        @Override
-        public boolean isConflicting(@NotNull ISchedulingRule rule) {
-            return rule instanceof ExecutionContextSchedulingRule(long id) && contextId == id;
-        }
-    }
 }

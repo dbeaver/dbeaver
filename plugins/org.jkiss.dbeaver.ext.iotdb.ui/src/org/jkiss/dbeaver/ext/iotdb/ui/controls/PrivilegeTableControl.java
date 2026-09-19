@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.iotdb.ui.controls;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -197,32 +196,26 @@ public class PrivilegeTableControl extends Composite {
 
     private void createCheckAllButton(Composite buttonsPanel) {
         UIUtils.createPushButton(buttonsPanel,
-                IoTDBUiMessages.controls_privilege_table_push_button_check_all, null, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+                IoTDBUiMessages.controls_privilege_table_push_button_check_all, null, SelectionListener.widgetSelectedAdapter(e -> {
                 for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                     userPrivilege.enabled = true;
                     userPrivilege.withGrantOption = true;
                     notifyPrivilegeCheck(userPrivilege.privilege, true, true, true);
                 }
                 drawColumns(currentPrivileges);
-            }
-        });
+            }));
     }
 
     private void createClearAllButton(Composite buttonsPanel) {
         UIUtils.createPushButton(buttonsPanel,
-                IoTDBUiMessages.controls_privilege_table_push_button_clear_all, null, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+                IoTDBUiMessages.controls_privilege_table_push_button_clear_all, null, SelectionListener.widgetSelectedAdapter(e -> {
                 for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                     userPrivilege.enabled = false;
                     userPrivilege.withGrantOption = false;
                     notifyPrivilegeCheck(userPrivilege.privilege, true, false, false);
                 }
                 drawColumns(currentPrivileges);
-            }
-        });
+            }));
     }
 
     /**

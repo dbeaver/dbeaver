@@ -20,8 +20,7 @@ import org.cts.crs.CoordinateReferenceSystem;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -93,13 +92,10 @@ public class SelectSRIDDialog extends BaseDialog {
         UIUtils.createEmptyLabel(crsGroup, 1, 1);
         detailsButton = UIUtils.createPushButton(crsGroup, GISMessages.panel_select_srid_dialog_button_label_details, null);
         detailsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        detailsButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        detailsButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 ShowSRIDDialog showSRIDDialog = new ShowSRIDDialog(getShell(), getSelectedSRID());
                 showSRIDDialog.open();
-            }
-        });
+            }));
 
         setSelectedSRID(selectedSRID);
 

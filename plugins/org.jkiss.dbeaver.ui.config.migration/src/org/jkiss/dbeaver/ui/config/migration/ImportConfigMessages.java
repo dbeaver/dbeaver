@@ -29,7 +29,6 @@ public class ImportConfigMessages extends NLS {
     public static String config_import_wizard_page_th_name;
     public static String config_import_wizard_page_th_url;
     public static String config_import_wizard_page_driver_unknown;
-    public static String config_import_wizard_btn_select_all;
     public static String config_import_wizard_btn_deselect_all;
     public static String config_import_wizard_btn_set_driver;
     public static String config_import_wizard_error;

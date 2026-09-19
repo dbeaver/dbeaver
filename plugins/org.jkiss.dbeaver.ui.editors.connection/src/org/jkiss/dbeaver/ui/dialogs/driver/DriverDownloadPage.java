@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
@@ -59,12 +58,7 @@ abstract class DriverDownloadPage extends WizardPage {
             Link link = UIUtils.createLink(
                 linksGroup,
                 UIConnectionMessages.dialog_driver_download_page_vendor_link,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        UIUtils.openWebBrowser(driver.getWebURL());
-                    }
-                });
+                SelectionListener.widgetSelectedAdapter(e -> UIUtils.openWebBrowser(driver.getWebURL())));
             link.setToolTipText(driver.getWebURL());
             link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING));
         } else {
@@ -74,16 +68,11 @@ abstract class DriverDownloadPage extends WizardPage {
         Link link = UIUtils.createLink(
             linksGroup,
             UIConnectionMessages.dialog_driver_download_page_download_conf_link,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    UIUtils.showPreferencesFor(
+            SelectionListener.widgetSelectedAdapter(e -> UIUtils.showPreferencesFor(
                         null,
                         null,
                         PrefPageDrivers.PAGE_ID,
-                        PrefPageDriversMaven.PAGE_ID);
-                }
-            });
+                        PrefPageDriversMaven.PAGE_ID)));
         link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
     }
 

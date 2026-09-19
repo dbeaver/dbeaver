@@ -21,8 +21,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -228,25 +226,18 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         ToolItem addItem = new ToolItem(toolBar, SWT.NONE);
         addItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_ADD));
         addItem.setToolTipText("Add user property");
-        addItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createNewProperty(getCategoryNode(USER_PROPERTIES_CATEGORY), USER_PROPERTIES_CATEGORY);
-            }
-        });
+        addItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            createNewProperty(getCategoryNode(USER_PROPERTIES_CATEGORY), USER_PROPERTIES_CATEGORY)));
 
         ToolItem removeItem = new ToolItem(toolBar, SWT.NONE);
         removeItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_DELETE));
         removeItem.setToolTipText("Remove user property");
-        removeItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        removeItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 ISelection selection = getSelection();
                 if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
                     removeProperty(((IStructuredSelection) selection).getFirstElement());
                 }
-            }
-        });
+            }));
         removeItem.setEnabled(false);
 
         ToolItem resetItem = new ToolItem(toolBar, SWT.NONE);

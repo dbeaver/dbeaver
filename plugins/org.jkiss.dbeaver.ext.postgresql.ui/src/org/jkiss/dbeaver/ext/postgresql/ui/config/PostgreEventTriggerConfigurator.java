@@ -18,8 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -77,12 +76,8 @@ public class PostgreEventTriggerConfigurator implements DBEObjectConfigurator<Po
             PostgreEventTrigger.TriggerEventTypes defaultEvent = PostgreEventTrigger.TriggerEventTypes.values()[0];
             eventCombo.setText(defaultEvent.name());
             eventType = defaultEvent;
-            eventCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    eventType = CommonUtils.valueOf(PostgreEventTrigger.TriggerEventTypes.class, eventCombo.getText());
-                }
-            });
+            eventCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                eventType = CommonUtils.valueOf(PostgreEventTrigger.TriggerEventTypes.class, eventCombo.getText())));
         }
 
         @Override

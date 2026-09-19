@@ -123,7 +123,12 @@
     <extension point="org.eclipse.ui.preferencePages">
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.oracle.general" class="org.jkiss.dbeaver.ext.oracle.ui.views.PrefPageOracle" name="Oracle">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ext.oracle.ui.keyword.pref.general"/>
         </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ext.oracle.ui.keyword.pref.general" label="%keyword.org.jkiss.dbeaver.ext.oracle.ui.keyword.pref.general.label"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
@@ -155,22 +160,8 @@
         </wizard>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.oracle.dataSourceWizardView"
-                dataSource="oracle"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.oracle.ui.views.OracleConnectionPage"
-                icon="icons/oracle_icon.png">
-        </view>
-        <view
-                id="org.jkiss.dbeaver.ext.oracle.dataSourceEditorView"
-                dataSource="oracle"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.oracle.ui.views.OracleConnectionPage">
-        </view>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="oracle" class="org.jkiss.dbeaver.ext.oracle.ui.views.OracleConnectionPage"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">

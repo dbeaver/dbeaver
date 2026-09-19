@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -97,15 +96,12 @@ public class TextWithOpen {
                 null,
                 secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text,
                 UIIcon.TEXTFIELD,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener.widgetSelectedAdapter(e -> {
                     String newText = getNewTextFromUser(secured);
                     if (newText != null) {
                         setText(newText);
                     }
-                }
-            });
+                }));
         }
         {
             {
@@ -116,12 +112,7 @@ public class TextWithOpen {
                     null,
                     UIMessages.text_with_open_dialog_browse,
                     UIIcon.OPEN,
-                    new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        openBrowser(false);
-                    }
-                });
+                    SelectionListener.widgetSelectedAdapter(e -> openBrowser(false)));
             }
             if (isMultiFileSystem()) {
                 UIUtils.createPushButton(
@@ -129,12 +120,7 @@ public class TextWithOpen {
                     null,
                     UIMessages.text_with_open_dialog_browse_remote,
                     (getPanelStyle() & SWT.OPEN) != 0 ? UIIcon.OPEN_EXTERNAL : UIIcon.SAVE_EXTERNAL,
-                    new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        openBrowser(true);
-                    }
-                });
+                    SelectionListener.widgetSelectedAdapter(e -> openBrowser(true)));
             }
         }
 
@@ -145,9 +131,7 @@ public class TextWithOpen {
                 null,
                 UIMessages.text_with_open_dialog_edit_file,
                 UIIcon.EDIT,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                SelectionListener.widgetSelectedAdapter(e -> {
                         String filePath = TextWithOpen.this.text.getText();
 
                         IFileStore store = EFS.getLocalFileSystem().getStore(Path.of(filePath).toUri());
@@ -156,8 +140,7 @@ public class TextWithOpen {
                         } catch (Exception ex) {
                             DBWorkbench.getPlatformUI().showError("File open error", null, ex);
                         }
-                    }
-                }
+                    })
             );
             TextWithOpen.this.text.addModifyListener(e -> {
                 String fileName = TextWithOpen.this.text.getText().trim();

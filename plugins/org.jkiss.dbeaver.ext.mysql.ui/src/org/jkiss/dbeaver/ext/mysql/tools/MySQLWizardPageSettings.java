@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -59,9 +58,7 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
             infoLabel.setLayoutData(gd);
             Button authButton = new Button(securityGroup, SWT.PUSH);
             authButton.setText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_button_auth);
-            authButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            authButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), MySQLUIMessages.tools_db_export_wizard_page_settings_auth_title, false, true);
                     authDialog.setUserName(wizard.getSettings().getToolUserName());
                     authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
@@ -72,30 +69,22 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
                         wizard.getSettings().setToolUserName(authDialog.getUserName());
                         wizard.getSettings().setToolUserPassword(authDialog.getUserPassword());
                     }
-                }
-            });
+                }));
 
             Button resetButton = new Button(securityGroup, SWT.PUSH);
             resetButton.setText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_button_reset);
-            resetButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            resetButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     wizard.getSettings().setToolUserName(null);
                     wizard.getSettings().setToolUserPassword(null);
-                }
-            });
+                }));
 
             if (wizard.getSettings() instanceof MySQLNativeCredentialsSettings) {
                 MySQLNativeCredentialsSettings settings = (MySQLNativeCredentialsSettings) wizard.getSettings();
 
                 Button overrideCredentials = UIUtils.createCheckbox(securityGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials, settings.isOverrideCredentials());
                 overrideCredentials.setToolTipText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials_tip);
-                overrideCredentials.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        settings.setOverrideCredentials(overrideCredentials.getSelection());
-                    }
-                });
+                overrideCredentials.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    settings.setOverrideCredentials(overrideCredentials.getSelection())));
             }
         }
     }

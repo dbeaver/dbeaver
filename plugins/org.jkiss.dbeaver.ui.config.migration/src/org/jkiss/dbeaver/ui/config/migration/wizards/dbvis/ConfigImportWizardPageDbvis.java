@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.config.migration.wizards.dbvis;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigImages;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
@@ -28,7 +29,8 @@ import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportData;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
 
@@ -42,10 +44,10 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
     }
 
     @Override
-    protected void loadConnections(ImportData importData) throws DBException {
-        File homeFolder = RuntimeUtils.getUserHomeDir();
-        File dbvisConfigHome = new File(homeFolder, DBVIS_HOME_FOLDER);
-        if (!dbvisConfigHome.exists()) {
+    protected void loadConnections(@NotNull ImportData importData) throws DBException {
+        Path homeFolder = RuntimeUtils.getUserHomePath();
+        Path dbvisConfigHome = homeFolder.resolve(DBVIS_HOME_FOLDER);
+        if (!Files.exists(dbvisConfigHome)) {
             throw new DBException(ImportConfigMessages.config_import_wizard_page_dbvis_label_installation_not_found);
         }
         DbvisConfigurationImporter configurationImporter = new DbvisConfigurationImporter();

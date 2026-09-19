@@ -43,9 +43,16 @@
                     <parameter name="supports-charsets" value="false"/>
                     <parameter name="supports-collations" value="false"/>
                     <parameter name="supportsClients" value="false"/>
+                    <parameter name="meta-model" value="doris"/>
                 </driver>
             </drivers>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="doris"
+              class="org.jkiss.dbeaver.ext.doris.model.DorisMetaModel"
+              dialect="doris"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
@@ -55,5 +62,10 @@
             <functions value="ARRAY_AGG,ARRAY_CONTAINS,ARRAY_SIZE,BITMAP_COUNT,BITMAP_UNION,HLL_UNION_AGG,NDV,PERCENTILE_APPROX,RETENTION,WINDOW_FUNNEL,APPROX_COUNT_DISTINCT,CURRENT_CATALOG"/>
             <types value="ARRAY,BITMAP,HLL,JSON,MAP,STRUCT,LARGEINT,QUANTILE_STATE"/>
         </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.doris.edit.DorisTableManager"
+            objectType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
     </extension>
 </plugin>

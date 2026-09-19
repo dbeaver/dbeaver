@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -61,15 +61,9 @@ public class DorisDataSource extends GenericDataSource {
     public DorisDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container,
-        @NotNull DorisMetaModel metaModel
+        @NotNull GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new DorisDialect());
-    }
-
-    @NotNull
-    @Override
-    public DorisMetaModel getMetaModel() {
-        return (DorisMetaModel) super.getMetaModel();
     }
 
     @Override
@@ -85,15 +79,7 @@ public class DorisDataSource extends GenericDataSource {
     ) throws DBException {
         DorisExecutionContext dorisContext = (DorisExecutionContext) context;
         if (initFrom != null) {
-            DorisExecutionContext dorisInitFrom = (DorisExecutionContext) initFrom;
-            String activeCatalog = dorisInitFrom.getActiveCatalogName();
-            String activeDatabase = dorisInitFrom.getActiveDatabaseName();
-            if (!CommonUtils.isEmpty(activeCatalog)) {
-                dorisContext.setActiveCatalogName(activeCatalog);
-            }
-            if (!CommonUtils.isEmpty(activeDatabase)) {
-                dorisContext.setActiveDatabaseName(activeDatabase);
-            }
+            dorisContext.initDefaultsFrom(monitor, (DorisExecutionContext) initFrom);
         } else {
             dorisContext.refreshDefaults(monitor, true);
         }

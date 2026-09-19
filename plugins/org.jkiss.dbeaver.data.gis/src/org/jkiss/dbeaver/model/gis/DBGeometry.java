@@ -20,7 +20,11 @@ package org.jkiss.dbeaver.model.gis;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Geometry;
@@ -33,7 +37,7 @@ import java.util.Map;
 /**
  * Geometry value (LOB).
  */
-public class DBGeometry implements DBDValue {
+public class DBGeometry implements DBDValue, DBDValueCloneable {
 
     private final Object rawValue;
     private int srid;
@@ -116,6 +120,16 @@ public class DBGeometry implements DBDValue {
         }
     }
 
+    @NotNull
+    public DBGeometry linearize() {
+        if (!WKGUtils.isCurve(rawValue)) {
+            return new DBGeometry(rawValue, srid, properties);
+        }
+        var wkgGeometry = WKGUtils.linearize((org.cugos.wkg.Geometry) rawValue);
+        var jtsGeometry = GisTransformUtils.getJtsGeometry(wkgGeometry);
+        return new DBGeometry(jtsGeometry, srid, properties);
+    }
+
     public DBGeometry flipCoordinates() throws DBException {
         Geometry jtsGeometry = getGeometry();
         if (jtsGeometry == null) {
@@ -188,6 +202,12 @@ public class DBGeometry implements DBDValue {
             }
         }
         return true;
+    }
+
+    @NotNull
+    @Override
+    public DBDValueCloneable cloneValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        return copy();
     }
 
     private static class InvertCoordinateFilter implements CoordinateFilter {

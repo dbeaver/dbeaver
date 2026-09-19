@@ -953,6 +953,20 @@ public class GenericMetaModel {
     // Indexes
 
     @NotNull
+    public JDBCStatement prepareIndexesLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException {
+        return session.getMetaData().getIndexInfo(
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
+            forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName(),
+            false,
+            true).getSourceStatement();
+    }
+
+    @NotNull
     public GenericTableIndex createIndexImpl(
         @NotNull GenericTableBase table,
         boolean nonUnique,

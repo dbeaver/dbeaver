@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -155,12 +154,10 @@ public class ErrorEditorPartEx extends EditorPart {
         buttonParent.setLayout(buttonsLayout);
 
         detailsButton = new Button(buttonParent, SWT.PUSH);
-        detailsButton.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
+        detailsButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 showingDetails = !showingDetails;
                 updateDetailsText();
-            }
-        });
+            }));
 
         detailsButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.FILL, false, false));
 

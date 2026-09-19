@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.ui.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -104,17 +103,14 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
             backupHostText.addModifyListener(textListener);
 
             useBackupHostList = UIUtils.createCheckbox(bhPlaceholder, ExasolMessages.label_use_backup_host_list, null, showBackupHosts, 1);
-            useBackupHostList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            useBackupHostList.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     backupHostLabel.setEnabled(useBackupHostList.getSelection());
                     backupHostText.setEnabled(useBackupHostList.getSelection());
 
                     //reset text if disabled
                     if (!useBackupHostList.getSelection())
                         backupHostText.setText(""); //$NON-NLS-1$
-                }
-            });
+                }));
 
             portText = UIUtils.createLabelText(addrGroup, ExasolMessages.dialog_connection_port, null, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);

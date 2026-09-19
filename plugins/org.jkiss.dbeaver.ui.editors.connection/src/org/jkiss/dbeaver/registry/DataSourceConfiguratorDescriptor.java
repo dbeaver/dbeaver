@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,64 +18,64 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
-/**
- * DataSourceViewDescriptor
- */
 public class DataSourceConfiguratorDescriptor extends AbstractDescriptor {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.dataSourceConfigurator"; //$NON-NLS-1$
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceConfigurator"; //$NON-NLS-1$
 
     private final String id;
-    private final List<DataSourcePageDescriptor> pages = new ArrayList<>();
+    private final List<String> dataSourceIds;
+    private final List<String> driverIds;
+    private final ObjectType configuratorType;
 
-    public DataSourceConfiguratorDescriptor(IConfigurationElement config) {
+    public DataSourceConfiguratorDescriptor(@NotNull IConfigurationElement config) {
         super(config.getContributor().getName());
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        for (IConfigurationElement pageCfg : config.getChildren("dataSourcePage")) {
-            pages.add(new DataSourcePageDescriptor(pageCfg));
-        }
+        this.dataSourceIds = splitIds(config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE));
+        this.driverIds = splitIds(config.getAttribute(RegistryConstants.ATTR_DRIVER));
+        this.configuratorType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        String className = configuratorType.getImplName();
+        assert className != null;
+        int divPos = className.lastIndexOf('.');
+        this.id = divPos == -1 ? className : className.substring(divPos + 1);
     }
 
+    @NotNull
+    private static List<String> splitIds(@Nullable String ids) {
+        return Stream.of(CommonUtils.split(ids, ",")).map(String::trim).toList();
+    }
+
+    @NotNull
     public String getId() {
         return id;
     }
 
-    public List<DataSourcePageDescriptor> getAllPages() {
-        return pages;
+    @NotNull
+    public List<String> getDataSources() {
+        return dataSourceIds;
     }
 
-    public List<DataSourcePageDescriptor> getRootPages(DBPDataSourceContainer dataSource) {
-        List<DataSourcePageDescriptor> roots = new ArrayList<>();
-        for (DataSourcePageDescriptor page : pages) {
-            if (CommonUtils.isEmpty(page.getParentId()) && page.appliesTo(dataSource)) {
-                roots.add(page);
-            }
-        }
-        return roots;
+    @NotNull
+    public List<String> getDrivers() {
+        return driverIds;
     }
 
-    public List<DataSourcePageDescriptor> getChildPages(DBPDataSourceContainer dataSource, String parentId) {
-        List<DataSourcePageDescriptor> children = new ArrayList<>();
-        for (DataSourcePageDescriptor page : pages) {
-            if (parentId.equals(page.getParentId()) && page.appliesTo(dataSource)) {
-                children.add(page);
-            }
+    @NotNull
+    public <T> T createConfigurator(@NotNull Class<T> implementsClass) {
+        try {
+            return configuratorType.createInstance(implementsClass);
+        } catch (Throwable ex) {
+            throw new IllegalStateException("Can't create data source configurator '" + configuratorType.getImplName() + "'", ex);
         }
-        return children;
     }
 
     @Override
     public String toString() {
         return id;
-    }
-
-    public boolean appliesTo(DBPDataSourceContainer dataSourceContainer) {
-        return true;
     }
 }

@@ -11,5 +11,7 @@
     </extension>
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl" uiClass="org.jkiss.dbeaver.ext.clickhouse.ui.ClickhouseSSLConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseAuthModelCloudSSO" uiClass="org.jkiss.dbeaver.ext.clickhouse.ui.auth.ClickhouseCloudSSOAuthConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseAuthModelOIDC" uiClass="org.jkiss.dbeaver.ext.clickhouse.ui.auth.ClickhouseOIDCAuthConfigurator"/>
     </extension>
 </plugin>

@@ -21,8 +21,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -282,16 +280,13 @@ public class EditVirtualEntityDialog extends BaseTitleDialog implements IDialogP
 
             Button btnAdd = createButton(buttonsPanel, ID_CREATE_FOREIGN_KEY,
                 ResultSetMessages.controls_resultset_virtual_foreignkey_page_add, false);
-            btnAdd.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            btnAdd.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     DBVEntityForeignKey virtualFK = EditForeignKeyPage.createVirtualForeignKey(vEntity);
                     if (virtualFK != null) {
                         createForeignKeyItem(fkTable, virtualFK);
                         structChanged = true;
                     }
-                }
-            });
+                }));
 
             Button btnRemove = createButton(
                 buttonsPanel,
@@ -299,9 +294,7 @@ public class EditVirtualEntityDialog extends BaseTitleDialog implements IDialogP
                 ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove,
                 false);
             btnRemove.setEnabled(false);
-            btnRemove.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            btnRemove.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     DBVEntityForeignKey virtualFK = (DBVEntityForeignKey) fkTable.getSelection()[0].getData();
                     if (!UIUtils.confirmAction(getShell(),
                         ResultSetMessages.controls_resultset_virtual_foreignkey_page_remove_confirmation_title,
@@ -313,17 +306,13 @@ public class EditVirtualEntityDialog extends BaseTitleDialog implements IDialogP
                     vEntity.removeForeignKey(virtualFK);
                     fkTable.remove(fkTable.getSelectionIndices());
                     structChanged = true;
-                }
-            });
+                }));
         }
 
-        fkTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        fkTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 boolean hasSelection = fkTable.getSelectionIndex() >= 0;
                 getButton(ID_REMOVE_FOREIGN_KEY).setEnabled(hasSelection);
-            }
-        });
+            }));
     }
 
     private void createForeignKeyItem(Table fkTable, DBVEntityForeignKey fk) {

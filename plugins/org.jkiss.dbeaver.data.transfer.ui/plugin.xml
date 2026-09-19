@@ -120,15 +120,13 @@
         </page>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
-        <dataSourceConfigurator>
-            <dataSourcePage
+    <extension point="org.jkiss.dbeaver.connectionPageConfigurator">
+            <page
                     id="org.jkiss.dbeaver.preferences.datatransfer"
                     after="org.jkiss.dbeaver.preferences.main.meta"
                     class="org.jkiss.dbeaver.tools.transfer.ui.prefs.PrefPageDataTransfer"
                     title="%pref.page.name.datatransfer"
                     description="%pref.page.name.datatransfer"/>
-        </dataSourceConfigurator>
     </extension>
 
     <extension point="org.eclipse.ui.keywords">

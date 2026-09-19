@@ -30,6 +30,11 @@ public interface DBPSyncUnit {
     String getId();
 
     @NotNull
+    default String getName() {
+        return getId();
+    }
+
+    @NotNull
     DBPSyncScope getScope();
 
     default boolean isEnabledByDefault() {
