@@ -65,6 +65,7 @@ public class SQLServerDatabase
         DBPSystemObject,
         DBPNamedObject2,
         DBPObjectStatistics,
+        DBPObjectWithLazyDescription,
         DBSCollationProvider {
 
     private static final Log log = Log.getLog(SQLServerDatabase.class);
@@ -150,10 +151,52 @@ public class SQLServerDatabase
         name = newName;
     }
 
+    @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
         return description;
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    public String getDescription(@NotNull DBRProgressMonitor monitor) {
+        if (description != null) {
+            return description;
+        }
+        // Database-level extended properties live in the database itself, so they cannot be read
+        // together with the database list and are not readable at all while the database is not online
+        if (isExtendedPropertiesAddressable()) {
+            try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database description")) {
+                description = JDBCUtils.queryString(
+                    session,
+                    "SELECT CAST([value] AS nvarchar(max)) FROM " + SQLServerUtils.getExtendedPropsTableName(this) +
+                        " WHERE [class] = ? AND [major_id] = 0 AND [minor_id] = 0 AND [name] = ?",
+                    SQLServerObjectClass.DATABASE.getClassId(),
+                    SQLServerConstants.PROP_MS_DESCRIPTION);
+            } catch (Exception e) {
+                log.debug("Error reading description of database " + getName(), e);
+            }
+        }
+        if (description == null) {
+            description = "";
+        }
+        return description;
+    }
+
+    /**
+     * Without cross-database queries the extended properties table cannot be qualified with a catalog name,
+     * so it resolves inside the database the connection currently uses - reading it for any other database
+     * would report that one's description instead.
+     */
+    private boolean isExtendedPropertiesAddressable() {
+        if (SQLServerUtils.supportsCrossDatabaseQueries(dataSource)) {
+            return true;
+        }
+        if (DBUtils.getDefaultContext(this, true) instanceof SQLServerExecutionContext context) {
+            return this == context.getDefaultCatalog();
+        }
+        return false;
     }
 
     public void setDescription(String description) {
@@ -196,7 +239,9 @@ public class SQLServerDatabase
         schemaCache.clearCache();
         triggerCache.clearCache();
         databaseTotalSize = null;
+        description = null;
         supportedCollations = null;
+
         return this;
     }
 
