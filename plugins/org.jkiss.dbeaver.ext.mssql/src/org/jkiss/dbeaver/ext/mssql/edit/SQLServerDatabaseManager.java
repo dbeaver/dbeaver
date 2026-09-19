@@ -111,6 +111,9 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
             return;
         }
         final SQLServerDatabase database = command.getObject();
+        if (!database.isExtendedPropertyAddressable(executionContext)) {
+            throw new DBException("Database description can only be changed from a connection that uses this database");
+        }
         final String description = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_DESCRIPTION), null);
         final boolean commentSet = SQLServerUtils.isCommentSet(
             monitor,

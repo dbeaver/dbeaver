@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -166,17 +167,19 @@ public class SQLServerDatabase
         }
         // Database-level extended properties live in the database itself, so they cannot be read
         // together with the database list and are not readable at all while the database is not online
-        if (isExtendedPropertiesAddressable()) {
-            try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database description")) {
-                description = JDBCUtils.queryString(
-                    session,
-                    "SELECT CAST([value] AS nvarchar(max)) FROM " + SQLServerUtils.getExtendedPropsTableName(this) +
-                        " WHERE [class] = ? AND [major_id] = 0 AND [minor_id] = 0 AND [name] = ?",
-                    SQLServerObjectClass.DATABASE.getClassId(),
-                    SQLServerConstants.PROP_MS_DESCRIPTION);
-            } catch (Exception e) {
-                log.debug("Error reading description of database " + getName(), e);
-            }
+        if (!isExtendedPropertyAddressable(DBUtils.getDefaultContext(this, true))) {
+            // Left uncached - the property becomes readable once the connection switches to this database
+            return "";
+        }
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database description")) {
+            description = JDBCUtils.queryString(
+                session,
+                "SELECT CAST([value] AS nvarchar(max)) FROM " + SQLServerUtils.getExtendedPropsTableName(this) +
+                    " WHERE [class] = ? AND [major_id] = 0 AND [minor_id] = 0 AND [name] = ?",
+                SQLServerObjectClass.DATABASE.getClassId(),
+                SQLServerConstants.PROP_MS_DESCRIPTION);
+        } catch (Exception e) {
+            log.debug("Error reading description of database " + getName(), e);
         }
         if (description == null) {
             description = "";
@@ -186,17 +189,14 @@ public class SQLServerDatabase
 
     /**
      * Without cross-database queries the extended properties table cannot be qualified with a catalog name,
-     * so it resolves inside the database the connection currently uses - reading it for any other database
-     * would report that one's description instead.
+     * so it resolves inside the database the connection currently uses - addressing it for any other database
+     * would read or write that one's properties instead.
      */
-    private boolean isExtendedPropertiesAddressable() {
+    public boolean isExtendedPropertyAddressable(@Nullable DBCExecutionContext executionContext) {
         if (SQLServerUtils.supportsCrossDatabaseQueries(dataSource)) {
             return true;
         }
-        if (DBUtils.getDefaultContext(this, true) instanceof SQLServerExecutionContext context) {
-            return this == context.getDefaultCatalog();
-        }
-        return false;
+        return executionContext instanceof SQLServerExecutionContext context && this == context.getDefaultCatalog();
     }
 
     public void setDescription(String description) {
