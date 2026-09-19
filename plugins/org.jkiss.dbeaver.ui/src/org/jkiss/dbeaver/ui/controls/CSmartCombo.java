@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gridLayout.horizontalSpacing = 0;
         gridLayout.verticalSpacing = 0;
         this.setLayout(gridLayout);
+        this.setBackgroundMode(SWT.INHERIT_FORCE);
 
         this.imageLabel = new Label(this, SWT.NONE);
         this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -151,13 +153,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             super.setEnabled(enabled);
             imageLabel.setEnabled(enabled);
             text.setEnabled(enabled);
-
-            if (!enabled) {
-                this.setBackground(getParent().getBackground());
-            } else {
-                if (selectedItem != null && labelProvider instanceof IColorProvider cp) {
-                    this.setBackground(cp.getBackground(selectedItem));
-                }
+            if (enabled) {
+                updateBackground();
             }
         }
     }
@@ -289,7 +286,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
         String itemText;
         Image itemImage = null;
-        Color itemBackground = null;
         if (index < 0) {
             selectedItem = null;
             itemText = "";
@@ -301,19 +297,24 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             } catch (Exception e) {
                 // No image
             }
-            if (labelProvider instanceof IColorProvider cp) {
-                itemBackground = cp.getBackground(selectedItem);
-            }
         }
         this.text.setText(itemText);
         if (itemImage != null) {
             this.imageLabel.setImage(itemImage);
             this.imageLabel.getParent().layout(true, true);
         }
-        if (itemBackground == null) {
-            itemBackground = UIStyles.getDefaultTextBackground();
+        updateBackground();
+    }
+
+    private void updateBackground() {
+        Color background = null;
+        if (selectedItem != null && labelProvider instanceof IColorProvider cp) {
+            background = cp.getBackground(selectedItem);
         }
-        this.setBackground(itemBackground);
+        setBackground(background);
+        if (background == null) {
+            CSSUtils.applyStyles(this);
+        }
     }
 
     public void select(ITEM_TYPE item) {
@@ -404,9 +405,14 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
 
         // create shell and list
-        this.popup = new Shell(getShell(), SWT.RESIZE | SWT.ON_TOP);
+        this.popup = new Shell(getShell(), SWT.RESIZE | SWT.ON_TOP | SWT.NO_TRIM);
         int style = getStyle();
-        int listStyle = SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION;
+        int listStyle = SWT.SINGLE | SWT.FULL_SELECTION;
+        if (items.size() > visibleItemCount) {
+            listStyle |= SWT.V_SCROLL;
+        } else {
+            listStyle |= SWT.NO_SCROLL;
+        }
         if ((style & SWT.FLAT) != 0) {
             listStyle |= SWT.FLAT;
         }
@@ -430,6 +436,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         Tree table = new Tree(this.popup, listStyle);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.dropDownControl = table;
+        CSSUtils.applyStyles(this.popup);
+        table.setBackground(this.popup.getBackground());
         new TreeColumn(table, SWT.LEFT);
         createTableItems(table);
 
@@ -461,6 +469,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             }
             if (itemBackground != null && itemForeground == null) {
                 itemForeground = UIStyles.getContrastColor(itemBackground);
+            } else if (itemBackground == null) {
+                itemBackground = table.getBackground();
+                if (itemForeground == null) {
+                    itemForeground = table.getForeground();
+                }
             }
             TreeItem newItem = new TreeItem(table, SWT.NONE);
             newItem.setData(item);
@@ -503,13 +516,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         Tree table = dropDownControl;
         int itemHeight = table.getItemHeight() * itemCount;
         Point listSize = table.computeSize(SWT.DEFAULT, itemHeight, false);
+        listSize.y = itemHeight + table.getBorderWidth() * 2;
         ScrollBar verticalBar = table.getVerticalBar();
         if (verticalBar != null) {
             listSize.x -= verticalBar.getSize().x;
-        }
-        ScrollBar hScrollBar = table.getHorizontalBar();
-        if (hScrollBar != null) {
-            listSize.y += hScrollBar.getSize().y;
         }
         table.setBounds(1, 1, Math.max(size.x, listSize.x) - 30, listSize.y);
 
@@ -549,7 +559,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         {
             final TreeColumn column = table.getColumn(0);
             column.pack();
-            final int maxSize = table.getSize().x;// - table.getVerticalBar().getSize().x;
+            final int maxSize = table.getClientArea().width;
             if (column.getWidth() < maxSize) {
                 column.setWidth(maxSize);
             }
