@@ -224,8 +224,10 @@ public class NewConnectionWizard extends ConnectionWizard
         if (page == pageDataSource) {
             DBPDataSourceType type = pageDataSource.getSelectedDataSourceType();
             List<? extends DBPDriver> drivers = getAvailableDrivers(type);
-            if (drivers.size() > 1) {
+            if (type != null) {
                 pageConnector.setDataSourceType(type);
+            }
+            if (drivers.size() > 1) {
                 return pageConnector;
             }
             return drivers.isEmpty() ? null : getNextPageForDriver(drivers.get(0));

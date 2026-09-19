@@ -100,7 +100,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
     }
 
     private void refreshDrivers() {
-        if (viewer == null || dataSourceType == null) {
+        if (dataSourceType == null) {
             return;
         }
         List<DBPDriver> drivers = new ArrayList<>(dataSourceType.getEnabledDrivers());
@@ -108,9 +108,13 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             drivers.removeIf(driver -> !driver.getDefaultDriverLoader().isDriverInstalled());
         }
         drivers.sort(new DriverUtils.DriverScoreComparator(DataSourceRegistry.getAllDataSources()));
+        selectedDriver = drivers.isEmpty() ? null : drivers.get(0);
+        if (viewer == null) {
+            return;
+        }
         viewer.setDrivers(drivers);
-        if (!drivers.isEmpty()) {
-            viewer.setSelection(new StructuredSelection(drivers.get(0)), true);
+        if (selectedDriver != null) {
+            viewer.setSelection(new StructuredSelection(selectedDriver), true);
         }
     }
 
