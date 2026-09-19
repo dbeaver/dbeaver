@@ -115,7 +115,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                 }
 
                 @Override
-                public void createPartControl(Composite parent) {
+                public void createPartControl(@NotNull Composite parent) {
                     super.createPartControl(parent);
                     getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES).setEnabled(false);
                 }

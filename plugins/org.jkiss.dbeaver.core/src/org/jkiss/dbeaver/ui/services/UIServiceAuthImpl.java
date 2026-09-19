@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,57 @@
  */
 package org.jkiss.dbeaver.ui.services;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.CodeAuthDialog;
+import org.jkiss.dbeaver.ui.oauth.OAuthBrowserAuthDialog;
 
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public class UIServiceAuthImpl implements UIServiceAuth {
+    @Override
+    public void showBrowserPopup(@NotNull URI browserUrl, @NotNull CompletableFuture<Void> future) {
+        showPopup(future, shell -> new OAuthBrowserAuthDialog(shell, browserUrl, future), browserUrl);
+    }
+
     @Override
     public void showCodePopup(
         @NotNull URI browserUrl,
         @NotNull String userCode,
         @NotNull CompletableFuture<Void> future
     ) {
+        showPopup(future, shell -> new CodeAuthDialog(shell, browserUrl, userCode, future), null);
+    }
+
+    private static void showPopup(
+        @NotNull CompletableFuture<Void> future,
+        @NotNull Function<Shell, Dialog> dialogFactory,
+        @Nullable URI browserUrl
+    ) {
         UIUtils.asyncExec(() -> {
+            if (future.isDone()) {
+                return;
+            }
             Shell shell = UIUtils.getActiveWorkbenchShell();
             if (shell == null) {
                 // No shell - can't show the dialog
                 future.cancel(false);
                 return;
             }
-            CodeAuthDialog dialog = new CodeAuthDialog(shell, browserUrl, userCode, future);
+            var dialog = dialogFactory.apply(shell);
             future.handle((result, exception) -> {
-                UIUtils.syncExec(dialog::close);
+                UIUtils.asyncExec(dialog::close);
                 return null;
             });
+            if (browserUrl != null) {
+                UIUtils.openWebBrowser(browserUrl.toString());
+            }
             dialog.open();
         });
     }

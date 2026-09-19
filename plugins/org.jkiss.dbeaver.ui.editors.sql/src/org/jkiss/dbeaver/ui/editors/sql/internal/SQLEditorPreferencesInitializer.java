@@ -47,6 +47,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_COMMIT_LINES, 1000);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS, true);
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM, true);
 
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.STATEMENT_TIMEOUT, 0);
@@ -65,6 +66,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA, true);
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ_CONFIRM, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE, SQLScriptBindingType.NAME.name());
 

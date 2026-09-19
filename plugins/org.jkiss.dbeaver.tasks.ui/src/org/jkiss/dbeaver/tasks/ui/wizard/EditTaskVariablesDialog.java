@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -207,9 +206,7 @@ public class EditTaskVariablesDialog extends StatusDialog {
         valueColumn.getColumn().setText(TaskUIMessages.edit_task_variabl_dialog_column_value);
 
         final ToolBar toolbar = new ToolBar(composite, SWT.FLAT | SWT.HORIZONTAL);
-        final ToolItem newButton = UIUtils.createToolItem(toolbar, null, UIIcon.ROW_ADD, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        final ToolItem newButton = UIUtils.createToolItem(toolbar, null, UIIcon.ROW_ADD, SelectionListener.widgetSelectedAdapter(e -> {
                 final TreePath path = viewer.getStructuredSelection().getPaths()[0];
                 final TaskVariableList list = (TaskVariableList) path.getFirstSegment();
 
@@ -218,11 +215,8 @@ public class EditTaskVariablesDialog extends StatusDialog {
                 viewer.refresh(list);
                 viewer.setSelection(new StructuredSelection(variable), true);
                 viewer.editElement(variable, 1);
-            }
-        });
-        final ToolItem deleteButton = UIUtils.createToolItem(toolbar, null, UIIcon.ROW_DELETE, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+            }));
+        final ToolItem deleteButton = UIUtils.createToolItem(toolbar, null, UIIcon.ROW_DELETE, SelectionListener.widgetSelectedAdapter(e -> {
                 final TreePath path = viewer.getStructuredSelection().getPaths()[0];
                 final TaskVariableList list = (TaskVariableList) path.getFirstSegment();
                 final TaskVariable variable = (TaskVariable) path.getLastSegment();
@@ -235,8 +229,7 @@ public class EditTaskVariablesDialog extends StatusDialog {
                 if (!variables.isEmpty()) {
                     viewer.setSelection(new StructuredSelection(variables.get(CommonUtils.clamp(index, 0, variables.size() - 1))));
                 }
-            }
-        });
+            }));
 
         newButton.setEnabled(false);
         deleteButton.setEnabled(false);

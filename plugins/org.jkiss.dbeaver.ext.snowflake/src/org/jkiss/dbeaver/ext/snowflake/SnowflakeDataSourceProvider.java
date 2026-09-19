@@ -54,10 +54,7 @@ public class SnowflakeDataSourceProvider extends GenericDataSourceProvider<Snowf
         }
         url.append("/?");
 
-        String warehouse = connectionInfo.getServerName();
-        if (CommonUtils.isEmpty(warehouse)) {
-            warehouse = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_WAREHOUSE);
-        }
+        String warehouse = SnowflakeUtils.getWarehouse(connectionInfo);
         String schemaName = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA);
         if (CommonUtils.isEmpty(schemaName)) {
             schemaName = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA2);

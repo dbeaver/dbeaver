@@ -21,8 +21,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -189,12 +188,8 @@ public final class NavigatorNodesDeletionConfirmations {
             false,
             2
         );
-        deleteContentsCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                deleter.setDeleteContents(deleteContentsCheck.getSelection());
-            }
-        });
+        deleteContentsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            deleter.setDeleteContents(deleteContentsCheck.getSelection())));
         UIUtils.createLabelText(ph,
             UINavigatorMessages.confirm_deleting_project_location_label,
             project.getLocation().toFile().getAbsolutePath(),
@@ -209,16 +204,13 @@ public final class NavigatorNodesDeletionConfirmations {
     ) {
         Composite placeholder = UIUtils.createPlaceholder(checkboxesComposite, 1, 5);
         Button checkbox = UIUtils.createCheckbox(placeholder, option.getLabel(), option.getTip(), false, 0);
-        checkbox.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        checkbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (checkbox.getSelection()) {
                     deleter.enableOption(option);
                 } else {
                     deleter.disableOption(option);
                 }
-            }
-        });
+            }));
     }
 
     private NavigatorNodesDeletionConfirmations() {

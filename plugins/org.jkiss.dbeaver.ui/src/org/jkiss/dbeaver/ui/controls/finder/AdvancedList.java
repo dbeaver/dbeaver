@@ -24,6 +24,7 @@ import org.eclipse.swt.accessibility.Accessible;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -92,12 +93,7 @@ public class AdvancedList extends Canvas {
 
         vScroll = getVerticalBar();
         vScroll.setVisible(true);
-        vScroll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                onVerticalScroll();
-            }
-        });
+        vScroll.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> onVerticalScroll()));
 
         GC gc = new GC(getDisplay());
         textSize = gc.stringExtent("X");

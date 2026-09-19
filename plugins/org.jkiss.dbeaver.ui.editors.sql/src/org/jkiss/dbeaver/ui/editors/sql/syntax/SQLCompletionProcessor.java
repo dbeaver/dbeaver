@@ -258,7 +258,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                     }
                 }
             }
-            this.contentAssistant.setLastCompletionOffset(actualCompletionOffset);
+            this.contentAssistant.setCompletionRegionOffset(actualCompletionOffset);
             return ArrayUtils.toArray(ICompletionProposal.class, result);
         } finally {
             document.removePosition(completionRequestPosition);
@@ -456,7 +456,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
         @Override
         public void assistSessionEnded(ContentAssistEvent event) {
             simpleMode = false;
-            contentAssistant.setLastCompletionOffset(-1);
+            contentAssistant.clearCompletionRegion();
         }
 
         @Override

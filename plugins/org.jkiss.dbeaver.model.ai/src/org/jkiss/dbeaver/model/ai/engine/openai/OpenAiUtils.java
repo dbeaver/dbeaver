@@ -81,8 +81,8 @@ public class OpenAiUtils {
                 tool.name = fd.getFullId();
                 tool.description = fd.getAiDescription();
                 tool.parameters = new OAIToolParameters();
+                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 if (fd.getParameters().length > 0) {
-                    tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                     List<String> requiredFields = new ArrayList<>();
                     for (AIFunctionParameter param : fd.getParameters()) {
                         OAIToolParameter tp = new OAIToolParameter();

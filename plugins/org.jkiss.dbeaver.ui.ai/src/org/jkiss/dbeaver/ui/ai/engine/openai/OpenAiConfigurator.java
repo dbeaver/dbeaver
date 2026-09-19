@@ -20,8 +20,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -55,7 +54,6 @@ import org.jkiss.dbeaver.ui.ai.preferences.AbstractAIEngineConfigurator;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
-import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -333,12 +331,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         tokenInfoLink = UIUtils.createLink(
             parent,
             NLS.bind(AIUIMessages.gpt_preference_page_token_info, getApiKeyURL()),
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(@NotNull SelectionEvent e) {
-                    UIUtils.openWebBrowser(getApiKeyURL());
-                }
-            }
+            SelectionListener.widgetSelectedAdapter(e -> UIUtils.openWebBrowser(getApiKeyURL()))
         );
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
@@ -607,13 +600,22 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         @NotNull AIAccountAuthenticator authenticator,
         @NotNull CompletableFuture<Void> popupCompletion
     ) throws DBException {
+        UIServiceAuth service = DBWorkbench.getService(UIServiceAuth.class);
+        if (service == null) {
+            throw new DBException("No authentication UI service is available");
+        }
         AIAccountAuthenticator.BrowserAuthorization authorization = authenticator.startBrowserAuthorization();
         popupCompletion.whenComplete((result, error) -> {
             if (popupCompletion.isCancelled()) {
                 authenticator.cancelBrowserAuthorization();
             }
         });
-        showBrowserAuthorizationPopup(authorization.authorizationUri(), popupCompletion);
+        try {
+            service.showBrowserPopup(authorization.authorizationUri(), popupCompletion);
+        } catch (UnsupportedOperationException e) {
+            authenticator.cancelBrowserAuthorization();
+            throw new DBException("Browser authentication is not supported by the current UI service", e);
+        }
         return authenticator.completeBrowserAuthorization();
     }
 
@@ -631,20 +633,4 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         return authenticator.completeDeviceAuthorization(authorization, popupCompletion);
     }
 
-    private static void showBrowserAuthorizationPopup(
-        @NotNull URI authorizationUri,
-        @NotNull CompletableFuture<Void> completion
-    ) {
-        UIUtils.asyncExec(() -> {
-            var shell = UIUtils.getActiveWorkbenchShell();
-            if (shell == null) {
-                completion.cancel(false);
-                return;
-            }
-            OpenAIAccountAuthDialog dialog = new OpenAIAccountAuthDialog(shell, authorizationUri, completion);
-            completion.whenComplete((result, error) -> UIUtils.asyncExec(dialog::close));
-            UIUtils.openWebBrowser(authorizationUri.toString());
-            dialog.open();
-        });
-    }
 }

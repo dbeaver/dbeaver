@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
@@ -78,10 +76,7 @@ public class ClientHomesSelector implements ISelectionProvider {
         gd.grabExcessHorizontalSpace = true;
         gd.widthHint = UIUtils.getFontHeight(homesCombo) * 30;
         homesCombo.setLayoutData(gd);
-        homesCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        homesCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (homesCombo.getSelectionIndex() == homesCombo.getItemCount() - 1) {
                     homesCombo.select(currentHomeIndex);
                     manageHomes();
@@ -91,8 +86,7 @@ public class ClientHomesSelector implements ISelectionProvider {
                 }
                 displayClientVersion();
                 handleHomeChange();
-            }
-        });
+            }));
         homesCombo.setEnabled(false);
 //        versionLabel = new Label(this, SWT.CENTER);
 //        gd = new GridData();
@@ -212,12 +206,8 @@ public class ClientHomesSelector implements ISelectionProvider {
 
     @Override
     public void addSelectionChangedListener(ISelectionChangedListener listener) {
-        SelectionAdapter selectionAdapter = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                listener.selectionChanged(new SelectionChangedEvent(ClientHomesSelector.this, getSelection()));
-            }
-        };
+        SelectionListener selectionAdapter = SelectionListener.widgetSelectedAdapter(e ->
+            listener.selectionChanged(new SelectionChangedEvent(ClientHomesSelector.this, getSelection())));
         homesCombo.addSelectionListener(selectionAdapter);
         listeners.put(listener, selectionAdapter);
     }

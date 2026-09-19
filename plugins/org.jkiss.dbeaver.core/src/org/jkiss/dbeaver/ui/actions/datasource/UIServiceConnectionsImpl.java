@@ -23,7 +23,6 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.osgi.framework.BundleContext;
@@ -97,8 +97,8 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
             }
             if (UIUtils.confirmAction(
                 UIUtils.getActiveWorkbenchShell(),
-                CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-                NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dataSourceContainer.getName())
+                UIConnectionMessages.dialog_connection_edit_wizard_conn_change_title,
+                NLS.bind(UIConnectionMessages.dialog_connection_edit_wizard_conn_change_question, dataSourceContainer.getName())
             )) {
                 DataSourceHandler.reconnectDataSource(null, dataSourceContainer);
             }

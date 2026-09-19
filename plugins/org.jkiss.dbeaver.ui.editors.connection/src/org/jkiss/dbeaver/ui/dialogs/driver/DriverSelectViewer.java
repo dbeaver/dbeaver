@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -260,25 +262,17 @@ public class DriverSelectViewer extends Viewer {
         ToolBar switcherToolbar = new ToolBar(parent, SWT.RIGHT | SWT.HORIZONTAL);
         ToolItem clearItem = new ToolItem(switcherToolbar, SWT.PUSH);
         clearItem.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
-        clearItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+            clearItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 clearText();
                 filterText.setFocus();
-            }
-        });
+            }));
 
         if (forceViewType == null) {
             switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
             switchItem.setText("Switch view");
             switchItem.setWidth(UIUtils.getFontHeight(switcherToolbar) * 15);
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-            switchItem.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    switchSelectorControl();
-                }
-            });
+            switchItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> switchSelectorControl()));
         }
     }
 
@@ -392,6 +386,10 @@ public class DriverSelectViewer extends Viewer {
                     if (DBWorkbench.isDistributed()) {
                         filters.add(new DriverInstalledFilter());
                     }
+                    if (!(selectorViewer instanceof DriverTabbedViewer)) {
+                        // commercial drivers are only shown in their dedicated tab
+                        filters.add(new CommercialDriverFilter());
+                    }
                     selectorViewer.setFilters(filters.toArray(new ViewerFilter[0]));
                     if (selectorViewer instanceof AbstractTreeViewer atv) {
                         atv.expandAll();
@@ -482,6 +480,13 @@ public class DriverSelectViewer extends Viewer {
                 return driver.getDefaultDriverLoader().isDriverInstalled();
             }
             return true;
+        }
+    }
+
+    private static class CommercialDriverFilter extends ViewerFilter {
+        @Override
+        public boolean select(@NotNull Viewer viewer, @NotNull Object parentElement, @NotNull Object element) {
+            return !(element instanceof DBPDriverWithLicense);
         }
     }
 

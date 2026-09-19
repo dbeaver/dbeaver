@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ public class CubridMessages extends NLS {
     public static String dialog_connection_cubrid_properties;
     public static String dialog_connection_cubrid_properties_description;
     public static String dialog_connection_cubrid_properties_shard_setting;
-    public static String dialog_connection_cubrid_properties_shard_tooltip;
     public static String dialog_connection_cubrid_properties_invalid_shard_id_title;
     public static String dialog_connection_cubrid_properties_invalid_shard_id_message;
     public static String dialog_connection_cubrid_properties_invalid_input_title;

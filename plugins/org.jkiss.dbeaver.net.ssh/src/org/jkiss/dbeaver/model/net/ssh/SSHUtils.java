@@ -301,7 +301,9 @@ public class SSHUtils {
                 }
             }
             case PASSWORD -> new SSHAuthConfiguration.Password(password, savePassword);
-            case AGENT -> new SSHAuthConfiguration.Agent();
+            case AGENT -> new SSHAuthConfiguration.Agent(
+                CommonUtils.nullIfEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_AGENT_SOCK_PATH))
+            );
         };
 
         return new SSHHostConfiguration(username, hostname, port, auth);
@@ -373,8 +375,9 @@ public class SSHUtils {
         } else if (host.auth() instanceof SSHAuthConfiguration.KeyData auth) {
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY.name());
             configuration.setSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE, auth.data());
-        } else if (host.auth() instanceof SSHAuthConfiguration.Agent) {
+        } else if (host.auth() instanceof SSHAuthConfiguration.Agent(String authSockPath)) {
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.AGENT.name());
+            configuration.setProperty(prefix + SSHConstants.PROP_AGENT_SOCK_PATH, authSockPath);
         }
 
         if (markEnabled) {

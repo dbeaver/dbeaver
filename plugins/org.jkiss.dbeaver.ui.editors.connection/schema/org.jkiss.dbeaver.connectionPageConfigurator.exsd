@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+   <annotation>
+      <appInfo>
+         <meta.schema plugin="org.jkiss.dbeaver.ui.editors.connection" id="org.jkiss.dbeaver.connectionPageConfigurator" name="Connection page configurator"/>
+      </appInfo>
+      <documentation>
+         Contributes preference pages to the connection configuration dialog.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="page" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="page">
+      <complexType>
+         <sequence>
+            <element ref="enabledWhen" minOccurs="0" maxOccurs="1"/>
+         </sequence>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="parent" type="string"/>
+         <attribute name="after" type="string"/>
+         <attribute name="title" type="string">
+            <annotation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.eclipse.jface.preference.IPreferencePage"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="enabledWhen">
+      <complexType>
+         <sequence>
+            <any minOccurs="1" maxOccurs="1" processContents="lax"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="since"/>
+      </appInfo>
+      <documentation>
+         26.2
+      </documentation>
+   </annotation>
+</schema>

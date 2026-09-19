@@ -25,6 +25,7 @@
                 <driver
                     id="timeplus_native"
                     label="Timeplus"
+                    threadSafe="false"
                     icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
                     iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"
                     class="com.timeplus.jdbc.TimeplusDriver"
@@ -73,6 +74,13 @@
 
             </drivers>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.timeplus.edit.TimeplusTableManager"
+                 objectType="org.jkiss.dbeaver.ext.timeplus.model.TimeplusTable"/>
+        <manager class="org.jkiss.dbeaver.ext.timeplus.edit.TimeplusTableColumnManager"
+                 objectType="org.jkiss.dbeaver.ext.timeplus.model.TimeplusTableColumn"/>
     </extension>
 
 </plugin>

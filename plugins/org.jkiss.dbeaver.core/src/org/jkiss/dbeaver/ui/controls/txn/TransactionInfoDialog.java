@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.txn;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -73,12 +72,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
             false,
             1
         );
-        showAllCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateTransactionFilter();
-            }
-        });
+        showAllCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateTransactionFilter()));
 
         showPreviousCheck = UIUtils.createCheckbox(
             composite,
@@ -87,12 +81,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
             false,
             1
         );
-        showPreviousCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateTransactionFilter();
-            }
-        });
+        showPreviousCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateTransactionFilter()));
 
         closeOnFocusLost(logViewer.getSearchText(), logViewer.getControl(), showAllCheck, showPreviousCheck);
     }

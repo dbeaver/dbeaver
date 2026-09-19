@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 
@@ -99,7 +100,7 @@ public class JSONTextEditor extends BaseTextEditor {
 
 
 	@Override
-	public void createPartControl(Composite parent) {
+	public void createPartControl(@NotNull Composite parent) {
 		setSourceViewerConfiguration(new JSONSourceViewerConfiguration(this));
 		super.createPartControl(parent);
 	}

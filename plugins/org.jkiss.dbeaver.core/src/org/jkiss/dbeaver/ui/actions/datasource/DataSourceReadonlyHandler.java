@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -84,7 +85,7 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
             element.setChecked(isReadonly);
         } else {
             element.setChecked(false);
-            element.setTooltip(CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly);
+            element.setTooltip(UIConnectionMessages.dialog_connection_wizard_final_checkbox_connection_readonly);
             element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TREE_UNLOCKED));
         }
     }

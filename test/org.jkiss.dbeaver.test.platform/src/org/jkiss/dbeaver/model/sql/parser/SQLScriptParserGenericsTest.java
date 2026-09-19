@@ -170,6 +170,67 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         assertParse("snowflake", query);
     }
 
+    @Test
+    public void parseBigQueryDdlStatementsContainingIf() throws DBException {
+        List<String> statements = List.of(
+            "CREATE SCHEMA IF NOT EXISTS project_id.dataset_name",
+            "CREATE CONNECTION IF NOT EXISTS `project_id.us.connection_name`",
+            "CREATE MODEL IF NOT EXISTS dataset_name.model_name OPTIONS(model_type='linear_reg') AS SELECT 1 AS label",
+            "CREATE PROPERTY GRAPH IF NOT EXISTS dataset_name.graph_name NODE TABLES (dataset_name.nodes)",
+            "CREATE FUNCTION IF NOT EXISTS dataset_name.increment(x INT64) AS (x + 1)",
+            "CREATE PROCEDURE IF NOT EXISTS dataset_name.proc_name() BEGIN SELECT 1; END",
+            "CREATE TABLE IF NOT EXISTS dataset_name.table_name (id INT64)",
+            "CREATE VIEW IF NOT EXISTS dataset_name.view_name AS SELECT 1",
+            "CREATE SEARCH INDEX IF NOT EXISTS index_name ON dataset_name.table_name(ALL COLUMNS)",
+            "CREATE ROW ACCESS POLICY IF NOT EXISTS policy_name ON dataset_name.table_name " +
+                "GRANT TO ('allAuthenticatedUsers') FILTER USING (TRUE)",
+            "CREATE DATA_POLICY IF NOT EXISTS `project_id.region-us.data_policy_name` " +
+                "OPTIONS(data_policy_type='DATA_MASKING_POLICY', masking_expression='DEFAULT_MASKING_VALUE')",
+            "ALTER TABLE dataset_name.table_name ADD COLUMN IF NOT EXISTS value STRING",
+            "ALTER TABLE dataset_name.table_name ADD CONSTRAINT IF NOT EXISTS fk FOREIGN KEY(id) " +
+                "REFERENCES dataset_name.parent_table(id) NOT ENFORCED",
+            "ALTER TABLE dataset_name.table_name DROP PRIMARY KEY IF EXISTS",
+            "DROP SCHEMA IF EXISTS project_id.dataset_name",
+            "DROP CONNECTION IF EXISTS `project_id.us.connection_name`",
+            "DROP MODEL IF EXISTS dataset_name.model_name",
+            "DROP PROPERTY GRAPH IF EXISTS dataset_name.graph_name",
+            "DROP FUNCTION IF EXISTS dataset_name.increment",
+            "DROP PROCEDURE IF EXISTS dataset_name.proc_name",
+            "DROP TABLE IF EXISTS dataset_name.table_name",
+            "DROP VIEW IF EXISTS dataset_name.view_name",
+            "DROP SEARCH INDEX IF EXISTS index_name ON dataset_name.table_name",
+            "DROP ROW ACCESS POLICY IF EXISTS policy_name ON dataset_name.table_name",
+            "DROP DATA_POLICY IF EXISTS `project_id.region-us.data_policy_name`",
+            "DROP CAPACITY IF EXISTS project_id.us.capacity_commitment_id",
+            "DROP RESERVATION IF EXISTS project_id.us.reservation_name",
+            "DROP ASSIGNMENT IF EXISTS project_id.us.reservation_name.assignment_id",
+            "UNDROP SCHEMA IF NOT EXISTS project_id.dataset_name"
+        );
+
+        for (String statement : statements) {
+            assertBigQueryStatementSeparation(statement);
+        }
+    }
+
+    @Test
+    public void parseBigQueryNonDdlStatementsContainingIf() throws DBException {
+        List<String> statements = List.of(
+            "IF TRUE THEN SELECT 1; END IF",
+            "IF NOT EXISTS (SELECT 1) THEN SELECT 1; END IF",
+            "IF TRUE THEN SELECT 1; ELSEIF FALSE THEN SELECT 2; ELSE SELECT 3; END IF",
+            "IF TRUE THEN IF FALSE THEN SELECT 1; END IF; END IF",
+            "BEGIN IF TRUE THEN SELECT 1; END IF; END",
+            "IF TRUE THEN SELECT 1; END /* comment */ IF",
+            "-- leading comment\nCREATE SCHEMA IF NOT EXISTS project_id.dataset_name",
+            "CREATE SCHEMA /* object */ IF /* condition */ NOT /* existence */ EXISTS project_id.dataset_name",
+            "BEGIN CREATE TABLE IF NOT EXISTS dataset_name.table_name (id INT64); SELECT 1; END"
+        );
+
+        for (String statement : statements) {
+            assertBigQueryStatementSeparation(statement);
+        }
+    }
+
     public void checkSmartBlankLineIsAStatementDelimiterMode() throws DBException {
         String[] query = new String[]{
             "DECLARE EXIT HANDLER FOR SQLEXCEPTION\n" +
@@ -467,6 +528,23 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
             Assertions.assertEquals(expected[index], elements.get(index).getText());
         }
         Assertions.assertEquals(expected.length, elements.size());
+    }
+
+    private void assertBigQueryStatementSeparation(String statement) throws DBException {
+        String sentinel = "SELECT 'sentinel'";
+        String script = statement + ";\n" + sentinel + ";";
+        SQLParserContext context = createParserContext(setDialect("google_bigquery"), script);
+        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+            context,
+            0,
+            context.getDocument().getLength(),
+            false,
+            false,
+            false
+        );
+        Assertions.assertEquals(2, elements.size(), statement);
+        Assertions.assertEquals(statement, elements.get(0).getText().replaceFirst(";$", ""), statement);
+        Assertions.assertEquals(sentinel, elements.get(1).getText(), statement);
     }
 
     private SQLParserContext createParserContext(SQLDialect dialect, String query) {

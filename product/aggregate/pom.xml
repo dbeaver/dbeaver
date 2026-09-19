@@ -13,6 +13,8 @@
   <modules>
     <!-- dbeaver common -->
     <module>../../../dbeaver-common</module>
+    <!-- datadam api -->
+    <module>../../../datadam-api/apis</module>
     <!-- dbeaver ce -->
     <module>../..</module>
   </modules>

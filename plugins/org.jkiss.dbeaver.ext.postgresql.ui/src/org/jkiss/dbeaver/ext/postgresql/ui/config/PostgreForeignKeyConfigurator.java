@@ -17,8 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -98,8 +97,9 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 Collections.emptyMap());
         }
 
+        @NotNull
         @Override
-        protected Composite createPageContents(Composite parent) {
+        protected Composite createPageContents(@NotNull Composite parent) {
             Composite panel = super.createPageContents(parent);
 
             final Composite defGroup = UIUtils.createComposite(panel, 2);
@@ -107,19 +107,10 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 // Cascades
                 defGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 final Button deferrableCheck = UIUtils.createCheckbox(defGroup, PostgreMessages.postgre_foreign_key_manager_checkbox_deferrable, false);
-                deferrableCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        isDeferrable = deferrableCheck.getSelection();
-                    }
-                });
+                deferrableCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    isDeferrable = deferrableCheck.getSelection()));
                 final Button deferredCheck = UIUtils.createCheckbox(defGroup, PostgreMessages.postgre_foreign_key_manager_checkbox_deferred, false);
-                deferredCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        isDeferred = deferredCheck.getSelection();
-                    }
-                });
+                deferredCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> isDeferred = deferredCheck.getSelection()));
             }
             addPhysicalKeyComponent(defGroup);
 

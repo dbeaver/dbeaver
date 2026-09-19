@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,17 +78,22 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
     }
 
     @Override
-    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    public boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.targetTable != null) {
-            this.targetTable.resolveValueRelations(context, statistics);
+            if (!this.targetTable.tryResolveValueRelations(context, statistics)) {
+                return false;
+            }
             for (SQLQueryTableAlterActionSpec alterAction : this.alterActions) {
-                alterAction.resolveRelations(
+                if (!alterAction.tryResolveRelations(
                     this.targetTable.getRowsDataContext().getRowsSources(),
                     this.targetTable.getTable() == null ? null : this.targetTable.getRowsDataContext(),
                     statistics
-                );
+                )) {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
     @Override

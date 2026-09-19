@@ -20,6 +20,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -191,9 +192,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
             "<a>" + addCommandName + "</a> to this dashboard by drag-n-drop or double-click from the <a>catalog</a> or another dashboard.\n" +
                 "You can also create new charts in the <a>Configuration</a> dialog.\n" +
                 "For further information, please refer to the <a>documentation</a>.",
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener.widgetSelectedAdapter(e -> {
                     if (CommonUtils.equalObjects(addCommandName, e.text)) {
                         ActionUtils.runCommand(DashboardUIConstants.CMD_ADD_DASHBOARD, site);
                     } else if (CommonUtils.equalObjects("catalog", e.text)) {
@@ -203,8 +202,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                     }else {
                         new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
                     }
-                }
-            });
+                }));
     }
 
     public int getListRowCount() {

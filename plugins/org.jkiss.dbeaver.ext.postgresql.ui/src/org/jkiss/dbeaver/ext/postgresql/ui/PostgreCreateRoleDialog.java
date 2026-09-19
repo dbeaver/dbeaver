@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -64,13 +63,10 @@ public class PostgreCreateRoleDialog extends BaseDialog
         passwordText.addModifyListener(e -> password = passwordText.getText());
 
         Button isUserCheck = UIUtils.createCheckbox(groupGeneral, PostgreMessages.dialog_create_role_label_user_role, null, true, 2);
-        isUserCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        isUserCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 isUser = isUserCheck.getSelection();
                 passwordText.setEnabled(isUser);
-            }
-        });
+            }));
 
         return composite;
     }

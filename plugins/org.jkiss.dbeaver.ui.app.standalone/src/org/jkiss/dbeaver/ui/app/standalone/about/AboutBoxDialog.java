@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -223,12 +222,8 @@ public class AboutBoxDialog extends InformationDialog
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);
 
-        Link siteLink = UIUtils.createLink(group, "   " + UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)) + "   ", new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                ShellUtils.launchProgram(e.text);
-            }
-        });
+        Link siteLink = UIUtils.createLink(group, "   " + UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)) + "   ", SelectionListener.widgetSelectedAdapter(e ->
+            ShellUtils.launchProgram(e.text)));
         siteLink.setBackground(background);
         gd = new GridData();
         gd.horizontalAlignment = GridData.CENTER;

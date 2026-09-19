@@ -87,7 +87,9 @@ public class OracleScriptExecuteHandler extends AbstractNativeToolHandler<Oracle
         String walletLocation = conInfo.getAuthProperty("oracle.wallet.dir");
         boolean hasWallet = walletLocation != null && !walletLocation.isEmpty();
 
-        if ("TNS".equals(conInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE))) {
+        if (OracleConstants.ConnectionType.TNS.equals(
+            conInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE)
+        )) {
             String name = conInfo.getServerName() != null
                 ? conInfo.getServerName()
                 : conInfo.getDatabaseName();

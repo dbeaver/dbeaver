@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -61,9 +60,7 @@ public class StatisticsPresentation extends AbstractPresentation {
         table.setHeaderVisible(true);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        table.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        table.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 curAttribute = null;
                 TableItem[] selection = table.getSelection();
                 Object[] elements = new Object[selection.length];
@@ -74,8 +71,7 @@ public class StatisticsPresentation extends AbstractPresentation {
                     }
                 }
                 fireSelectionChanged(new StructuredSelection(elements));
-            }
-        });
+            }));
 
         UIUtils.createTableColumn(table, SWT.LEFT, "Name");
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
