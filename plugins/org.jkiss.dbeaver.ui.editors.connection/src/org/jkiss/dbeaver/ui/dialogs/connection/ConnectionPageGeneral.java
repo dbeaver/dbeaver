@@ -339,7 +339,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 }));
 
                 Composite ctGroup = connectionTypeCombo.getParent();
-                ((GridLayout)ctGroup.getLayout()).numColumns++;
                 UIUtils.createPushButton(
                     ctGroup,
                     null,
@@ -369,6 +368,12 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
             {
                 navigatorSettingsCombo = createNavigatorSettingsCombo(miscGroup, this, dataSourceDescriptor);
+                GridData connectionTypeLayoutData = (GridData) connectionTypeCombo.getLayoutData();
+                GridData navigatorSettingsLayoutData = (GridData) navigatorSettingsCombo.getLayoutData();
+                connectionTypeLayoutData.widthHint += navigatorSettingsCombo.computeSize(
+                    navigatorSettingsLayoutData.widthHint,
+                    SWT.DEFAULT
+                ).x - connectionTypeCombo.computeSize(connectionTypeLayoutData.widthHint, SWT.DEFAULT).x;
             }
 
             folderSelector = new ConnectionFolderSelector(miscGroup);
@@ -567,7 +572,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     public static CSmartCombo<DBPConnectionType> createConnectionTypeCombo(Composite composite) {
         UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_wizard_final_label_connection_type);
 
-        Composite ctGroup = UIUtils.createComposite(composite, 1);
+        Composite ctGroup = UIUtils.createComposite(composite, 2);
 
         CSmartCombo<DBPConnectionType> connectionTypeCombo = new CSmartCombo<>(
             ctGroup,
