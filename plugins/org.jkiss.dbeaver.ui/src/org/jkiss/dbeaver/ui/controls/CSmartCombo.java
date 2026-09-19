@@ -38,6 +38,8 @@ import java.util.List;
  */
 public class CSmartCombo<ITEM_TYPE> extends Composite {
 
+    private static final int POPUP_BORDER_WIDTH = 1;
+
     protected final ILabelProvider labelProvider;
     protected final List<ITEM_TYPE> items = new ArrayList<>();
     private ITEM_TYPE selectedItem;
@@ -432,16 +434,32 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gl.horizontalSpacing = 0;
         this.popup.setLayout(gl);
 
+        Composite border = new Composite(this.popup, SWT.NONE);
+        border.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridLayout borderLayout = new GridLayout(1, true);
+        borderLayout.marginHeight = POPUP_BORDER_WIDTH;
+        borderLayout.marginWidth = POPUP_BORDER_WIDTH;
+        borderLayout.verticalSpacing = 0;
+        borderLayout.horizontalSpacing = 0;
+        border.setLayout(borderLayout);
+
         // create a table instead of a list.
-        Tree table = new Tree(this.popup, listStyle);
+        Tree table = new Tree(border, listStyle);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.dropDownControl = table;
         CSSUtils.applyStyles(this.popup);
-        table.setBackground(this.popup.getBackground());
+        Color popupBackground = this.popup.getBackground();
+        table.setBackground(popupBackground);
+        border.addListener(SWT.Paint, event -> {
+            Rectangle clientArea = border.getClientArea();
+            event.gc.setForeground(UIUtils.getSharedTextColors().getColor(UIUtils.blend(
+                table.getForeground().getRGB(), popupBackground.getRGB(), 20)));
+            event.gc.drawRectangle(0, 0, clientArea.width - 1, clientArea.height - 1);
+        });
         new TreeColumn(table, SWT.LEFT);
         createTableItems(table);
 
-        int[] popupEvents = {SWT.Close, SWT.Paint, SWT.Deactivate};
+        int[] popupEvents = {SWT.Close, SWT.Deactivate};
         for (int popupEvent : popupEvents) {
             this.popup.addListener(popupEvent, this.listener);
         }
@@ -516,7 +534,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         Tree table = dropDownControl;
         int itemHeight = table.getItemHeight() * itemCount;
         Point listSize = table.computeSize(SWT.DEFAULT, itemHeight, false);
-        listSize.y = itemHeight + table.getBorderWidth() * 2;
+        listSize.y = itemHeight + (table.getBorderWidth() + POPUP_BORDER_WIDTH) * 2;
         ScrollBar verticalBar = table.getVerticalBar();
         if (verticalBar != null) {
             listSize.x -= verticalBar.getSize().x;
@@ -549,10 +567,13 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             y = parentRect.y - height;
         }
         this.popup.setBounds(x, y, width, height);
-        this.popup.layout();
+        this.popup.layout(true, true);
 
         if (this.popup.getData("resizeListener") == null) {
-            this.popup.addListener(SWT.Resize, event -> CSmartCombo.this.sizeHint = popup.getSize());
+            this.popup.addListener(SWT.Resize, event -> {
+                popup.layout(true, true);
+                CSmartCombo.this.sizeHint = popup.getSize();
+            });
             this.popup.setData("resizeListener", Boolean.TRUE);
         }
 
@@ -717,15 +738,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
     private void popupEvent(Event event) {
         switch (event.type) {
-            case SWT.Paint:
-                Rectangle clientArea = this.popup.getClientArea();
-                Color border = UIUtils.getSharedTextColors().getColor(UIUtils.blend(
-                    this.dropDownControl.getForeground().getRGB(),
-                    this.popup.getBackground().getRGB(),
-                    20));
-                event.gc.setForeground(border);
-                event.gc.drawRectangle(0, 0, clientArea.width - 1, clientArea.height - 1);
-                break;
             case SWT.Close:
                 event.doit = false;
                 dropDown(false);
