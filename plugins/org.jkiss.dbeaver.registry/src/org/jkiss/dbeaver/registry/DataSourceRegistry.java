@@ -593,7 +593,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     @Override
     public void removeDataSourceFromList(@NotNull DBPDataSourceContainer dataSource) {
         synchronized (dataSources) {
-            this.dataSources.remove(dataSource.getId());
+            if (this.dataSources.get(dataSource.getId()) == dataSource) {
+                this.dataSources.remove(dataSource.getId());
+            }
         }
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);

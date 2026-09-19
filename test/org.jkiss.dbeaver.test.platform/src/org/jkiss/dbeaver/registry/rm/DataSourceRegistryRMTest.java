@@ -22,12 +22,14 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceFolder;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalMatchers;
 import org.mockito.Mockito;
 
-import static org.mockito.AdditionalMatchers.aryEq;
-
 public class DataSourceRegistryRMTest {
+    private static final String DATA_SOURCE_ID = "data-source";
+
     @Test
     public void testNestedFolderDeletionIsPersistedOnce() throws DBException {
         DBPProject project = Mockito.mock(DBPProject.class);
@@ -45,7 +47,28 @@ public class DataSourceRegistryRMTest {
         registry.removeFolder(root, false);
 
         Mockito.verify(rmController).deleteProjectDataSourceFolders(
-            Mockito.eq("project"), aryEq(new String[]{"root"}), Mockito.eq(false));
+            Mockito.eq("project"), AdditionalMatchers.aryEq(new String[]{"root"}), Mockito.eq(false));
         Mockito.verifyNoMoreInteractions(rmController);
+    }
+
+    @Test
+    public void testRemoveDataSourceFromListPreservesReplacementWithSameId() {
+        DBPProject project = Mockito.mock(DBPProject.class);
+        RMController rmController = Mockito.mock(RMController.class);
+        DBPPreferenceStore preferenceStore = Mockito.mock(DBPPreferenceStore.class);
+        DataSourceRegistryRM<DataSourceDescriptor> registry =
+            new DataSourceRegistryRM<>(project, rmController, preferenceStore);
+        DataSourceDescriptor original = Mockito.mock(DataSourceDescriptor.class);
+        DataSourceDescriptor replacement = Mockito.mock(DataSourceDescriptor.class);
+        Mockito.when(original.getId()).thenReturn(DATA_SOURCE_ID);
+        Mockito.when(replacement.getId()).thenReturn(DATA_SOURCE_ID);
+        registry.addDataSourceToList(original);
+        registry.addDataSourceToList(replacement);
+
+        registry.removeDataSourceFromList(original);
+
+        Assertions.assertSame(replacement, registry.getDataSource(DATA_SOURCE_ID));
+        Mockito.verify(original).dispose();
+        Mockito.verify(replacement, Mockito.never()).dispose();
     }
 }
