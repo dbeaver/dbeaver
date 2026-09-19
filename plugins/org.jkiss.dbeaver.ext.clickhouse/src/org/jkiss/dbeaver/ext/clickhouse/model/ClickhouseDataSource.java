@@ -234,6 +234,9 @@ public class ClickhouseDataSource extends GenericDataSource {
     @Nullable
     @Override
     public DBSDataType getLocalDataType(@Nullable String typeName) {
+        if (typeName != null && ClickhouseTypeParser.isJsonType(typeName)) {
+            return super.getLocalDataType(ClickhouseConstants.DATA_TYPE_JSON);
+        }
         return super.getLocalDataType(ClickhouseTypeParser.getTypeNameWithoutModifiers(typeName));
     }
 
@@ -325,9 +328,9 @@ public class ClickhouseDataSource extends GenericDataSource {
             return DBPDataKind.ARRAY;
         } else if (typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE)) {
             return DBPDataKind.STRUCT;
-        } else if (typeName.equalsIgnoreCase(ClickhouseConstants.DATA_TYPE_JSON)) {
+        } else if (ClickhouseTypeParser.isJsonType(typeName)) {
             // Render JSON columns through the JSON content viewer/editor (see ClickhouseJSONValueHandler).
-            // Exact match only: parameterized JSON(...) and Nullable(JSON)/Array(JSON)/Map(_,JSON) stay UNKNOWN.
+            // Only scalar JSON variants; collection types retain their existing handling.
             return DBPDataKind.CONTENT;
         }
         return super.resolveDataKind(typeName, valueType);

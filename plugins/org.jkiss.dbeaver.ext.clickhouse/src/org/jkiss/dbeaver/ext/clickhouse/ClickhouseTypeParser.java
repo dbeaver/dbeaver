@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,47 @@ public class ClickhouseTypeParser {
                 typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE) ||
                 typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY)
             );
+    }
+
+    /** Recognizes scalar JSON metadata, including type hints and an optional Nullable wrapper. */
+    public static boolean isJsonType(@NotNull String typeName) {
+        if (ClickhouseConstants.DATA_TYPE_JSON.equalsIgnoreCase(typeName)
+            || ClickhouseConstants.DATA_TYPE_NULLABLE_JSON.equalsIgnoreCase(typeName)
+        ) {
+            return true;
+        }
+
+        String nullablePrefix = "Nullable(";
+        boolean nullable = typeName.regionMatches(true, 0, nullablePrefix, 0, nullablePrefix.length());
+        int start = nullable ? nullablePrefix.length() : 0;
+        String jsonPrefix = ClickhouseConstants.DATA_TYPE_JSON + "(";
+        if (!typeName.regionMatches(true, start, jsonPrefix, 0, jsonPrefix.length())) {
+            return false;
+        }
+
+        // Type hints can contain nested types, quoted paths, enum labels and regular expressions.
+        int depth = 1;
+        char quote = 0;
+        for (int i = start + jsonPrefix.length(); i < typeName.length(); i++) {
+            char c = typeName.charAt(i);
+            if (quote != 0) {
+                if (c == '\\') {
+                    i++;
+                } else if (c == quote) {
+                    quote = 0;
+                }
+            } else if (c == '\'' || c == '"' || c == '`') {
+                quote = c;
+            } else if (c == '(') {
+                depth++;
+            } else if (c == ')' && --depth == 0) {
+                // JDBC v2 can omit the outer Nullable close in getColumnTypeName().
+                // Accept that metadata spelling without changing the original type name.
+                return i == typeName.length() - 1
+                    || (nullable && i == typeName.length() - 2 && typeName.charAt(i + 1) == ')');
+            }
+        }
+        return false;
     }
 
     @Nullable
