@@ -50,7 +50,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private Color dropDownBackground;
     private int visibleItemCount = 10;
     private Composite popup;
-    private long disposeTime = -1;
     private Label arrow;
     private boolean hasFocus;
     private boolean backgroundInitialized;
@@ -150,7 +149,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.filter = event -> {
             Shell shell = ((Control) event.widget).getShell();
             if (shell == CSmartCombo.this.getShell()) {
-                handleFocus(SWT.FocusOut);
+                UIUtils.asyncExec(() -> {
+                    if (!isDisposed()) {
+                        handleFocus(SWT.FocusOut);
+                    }
+                });
             }
         };
         this.popupFilter = event -> {
@@ -464,6 +467,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 if (!this.hasFocus) {
                     return;
                 }
+                if (isDropped()) {
+                    return;
+                }
                 Control focusControl = getDisplay().getFocusControl();
                 if (focusControl == this.arrow || focusControl == this.dropDownControl ||
                     focusControl == this.text || focusControl == this) {
@@ -606,7 +612,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 final Composite toDispose = this.popup;
                 this.popup = null;
                 this.dropDownControl = null;
-                disposeTime = System.currentTimeMillis();
                 getDisplay().removeFilter(SWT.MouseDown, this.popupFilter);
                 toDispose.setVisible(false);
                 UIUtils.asyncExec(toDispose::dispose);
@@ -797,10 +802,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 break;
             }
             case SWT.MouseDown: {
+                setFocus();
+                handleFocus(SWT.FocusIn);
                 if (isDropped()) {
                     dropDown(false);
-                } else if ((System.currentTimeMillis() - disposeTime) > 200) {
-                    setFocus();
+                } else {
                     dropDown(true);
                 }
                 break;
@@ -958,13 +964,14 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 if (event.button != 1) {
                     return;
                 }
+                setFocus();
+                handleFocus(SWT.FocusIn);
                 event.doit = false;
                 boolean dropped = isDropped();
                 //this.text.selectAll();
                 if (dropped) {
                     dropDown(false);
-                } else if ((System.currentTimeMillis() - disposeTime) > 200) {
-                    setFocus();
+                } else {
                     dropDown(true);
                 }
                 break;
