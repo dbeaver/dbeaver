@@ -3466,14 +3466,12 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
-        // Native toolbar items must be restyled after the datasource marker is set on macOS.
-        if (RuntimeUtils.isMacOS()) {
-            if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
-                CSSUtils.applyStyles(topBar);
-            }
-            if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
-                CSSUtils.applyStyles(bottomBar);
-            }
+        // Native toolbar items must be restyled after the datasource marker is set.
+        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+            CSSUtils.applyStyles(topBar);
+        }
+        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+            CSSUtils.applyStyles(bottomBar);
         }
 
         // Repaint the workbench editor tab folder so the custom tab renderer
