@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Image combo
@@ -194,7 +195,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         });
     }
 
-    private boolean isOwnControl(Control control) {
+    private boolean isOwnControl(@NotNull Control control) {
         return control == this || UIUtils.isParent(this, control) ||
             this.popup != null && !this.popup.isDisposed() && UIUtils.isParent(this.popup, control);
     }
@@ -216,7 +217,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     @Override
-    public void setForeground(Color foreground) {
+    public void setForeground(@Nullable Color foreground) {
         super.setForeground(foreground);
         this.imageLabel.setForeground(foreground);
         this.text.setForeground(foreground);
@@ -224,7 +225,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     @Override
-    public void setBackground(Color background) {
+    public void setBackground(@Nullable Color background) {
         if (background == getBackground()) {
             return;
         }
@@ -302,7 +303,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         return super.traverse(traversal);
     }
 
-    public String getItemText(int index) {
+    public @NotNull String getItemText(int index) {
         return labelProvider.getText(this.items.get(index));
     }
 
@@ -324,7 +325,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         return this.items.indexOf(this.selectedItem);
     }
 
-    public String getText() {
+    public @NotNull String getText() {
         return this.labelProvider.getText(this.selectedItem);
     }
 
@@ -335,7 +336,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             this.items.clear();
             this.select(-1);
         } else {
-            if (selectedItem == items.get(index)) {
+            if (Objects.equals(selectedItem, items.get(index))) {
                 if (index < items.size() - 1) {
                     selectedItem = items.get(index + 1);
                 } else if (index > 0) {
@@ -349,7 +350,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    public void remove(ITEM_TYPE item) {
+    public void remove(@Nullable ITEM_TYPE item) {
         remove(this.items.indexOf(item));
     }
 
@@ -391,6 +392,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         updateBackground();
     }
 
+    public void select(@Nullable ITEM_TYPE item) {
+        select(this.items.indexOf(item));
+    }
+
     private void updateBackground() {
         Color background = null;
         if (selectedItem != null && labelProvider instanceof IColorProvider cp) {
@@ -411,18 +416,14 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    public void select(ITEM_TYPE item) {
-        select(this.items.indexOf(item));
-    }
-
     @Override
-    public void setFont(Font font) {
+    public void setFont(@Nullable Font font) {
         checkWidget();
         super.setFont(font);
         this.text.setFont(font);
     }
 
-    public void setText(String string) {
+    public void setText(@Nullable String string) {
         checkWidget();
         if (string == null) {
             string = "";
@@ -436,7 +437,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     @Override
-    public void setToolTipText(String string) {
+    public void setToolTipText(@Nullable String string) {
         checkWidget();
         super.setToolTipText(string);
         this.arrow.setToolTipText(string);
@@ -495,6 +496,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 notifyListeners(SWT.FocusOut, e);
                 break;
             }
+            default:
+                break;
         }
     }
 
@@ -512,11 +515,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.popup = new Composite(getShell(), SWT.NO_FOCUS);
         this.popup.setVisible(false);
         int style = getStyle();
-        int listStyle = SWT.SINGLE | SWT.FULL_SELECTION;
+        int listStyle = SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL;
         if (items.size() > visibleItemCount) {
             listStyle |= SWT.V_SCROLL;
-        } else {
-            listStyle |= SWT.NO_SCROLL;
         }
         if ((style & SWT.FLAT) != 0) {
             listStyle |= SWT.FLAT;
@@ -574,7 +575,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         updateListListeners(table, true);
     }
 
-    private void updateListListeners(Table table, boolean add) {
+    private void updateListListeners(@NotNull Table table, boolean add) {
         int[] events = {SWT.MouseUp, SWT.Selection, SWT.Traverse, SWT.KeyDown, SWT.KeyUp, SWT.FocusIn, SWT.Resize};
         for (int event : events) {
             if (add) {
@@ -591,11 +592,12 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         createTableItems(table);
     }
 
-    private void createTableItems(Table table) {
+    private void createTableItems(@NotNull Table table) {
         for (ITEM_TYPE item : this.items) {
-            String itemText = labelProvider.getText(item);
-            Image itemImage = labelProvider.getImage(item);
-            Color itemBackground = null, itemForeground = null;
+            final String itemText = labelProvider.getText(item);
+            final Image itemImage = labelProvider.getImage(item);
+            Color itemBackground = null;
+            Color itemForeground = null;
             if (labelProvider instanceof IColorProvider) {
                 itemBackground = ((IColorProvider) labelProvider).getBackground(item);
                 itemForeground = ((IColorProvider) labelProvider).getForeground(item);
@@ -614,7 +616,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             newItem.setImage(itemImage);
             newItem.setBackground(itemBackground);
             newItem.setForeground(itemForeground);
-            if (item == selectedItem) {
+            if (Objects.equals(item, selectedItem)) {
                 table.setSelection(newItem);
             }
         }
@@ -630,11 +632,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
         if (!drop) {
             if (this.popup != null) {
-                boolean restoreFocus = this.dropDownControl != null && this.dropDownControl.isFocusControl();
+                final boolean restoreFocus = this.dropDownControl != null && this.dropDownControl.isFocusControl();
                 final Composite toDispose = this.popup;
                 Rectangle popupBounds = toDispose.getBounds();
                 Rectangle comboBounds = getDisplay().map(getParent(), getShell(), getBounds());
-                boolean opensUpward = popupBounds.y < comboBounds.y;
+                final boolean opensUpward = popupBounds.y < comboBounds.y;
                 updateListListeners(this.dropDownControl, false);
                 this.popup = null;
                 this.dropDownControl = null;
@@ -674,7 +676,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
         if (selectedItem != null) {
             for (TableItem item : table.getItems()) {
-                if (item.getData() == selectedItem) {
+                if (Objects.equals(item.getData(), selectedItem)) {
                     table.showItem(item);
                     break;
                 }
@@ -719,8 +721,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     private void animatePopup(
-        Composite control,
-        Rectangle bounds,
+        @NotNull Composite control,
+        @NotNull Rectangle bounds,
         boolean opening,
         boolean opensUpward,
         @Nullable Runnable completion
@@ -753,7 +755,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                     (opening ? easedProgress : 1.0 - easedProgress)));
                 int y = opensUpward ? bottom - height : bounds.y;
                 control.setBounds(bounds.x, y, bounds.width, height);
-                control.layout(true, true);
                 if (progress < 1.0) {
                     control.getDisplay().timerExec(POPUP_ANIMATION_FRAME, this);
                 } else {
@@ -770,7 +771,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         step.run();
     }
 
-    private void listEvent(Event event) {
+    private void listEvent(@NotNull Event event) {
         switch (event.type) {
             case SWT.FocusIn: {
                 handleFocus(SWT.FocusIn);
@@ -782,7 +783,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 }
                 TableItem item = this.dropDownControl.getItem(new Point(event.x, event.y));
                 ITEM_TYPE selected = item == null ? null : (ITEM_TYPE) item.getData();
-                boolean selectionChanged = item != null && selected != selectedItem;
+                boolean selectionChanged = item != null && !Objects.equals(selected, selectedItem);
                 dropDown(false);
                 if (selectionChanged) {
                     selectItem(selected, event);
@@ -811,6 +812,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                     case SWT.TRAVERSE_ARROW_PREVIOUS:
                     case SWT.TRAVERSE_ARROW_NEXT:
                         event.doit = false;
+                        break;
+                    default:
                         break;
                 }
                 Event e = new Event();
@@ -870,11 +873,13 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 //table.pack();
                 break;
             }
+            default:
+                break;
         }
     }
 
-    private void selectItem(ITEM_TYPE item, Event event) {
-        if (item == selectedItem) {
+    private void selectItem(@Nullable ITEM_TYPE item, @NotNull Event event) {
+        if (Objects.equals(item, selectedItem)) {
             return;
         }
         select(item);
@@ -886,7 +891,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         event.doit = selectionEvent.doit;
     }
 
-    private void arrowEvent(Event event) {
+    private void arrowEvent(@NotNull Event event) {
         switch (event.type) {
             case SWT.FocusIn: {
                 handleFocus(SWT.FocusIn);
@@ -902,10 +907,12 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 }
                 break;
             }
+            default:
+                break;
         }
     }
 
-    private void comboEvent(Event event) {
+    private void comboEvent(@NotNull Event event) {
         switch (event.type) {
             case SWT.Dispose:
                 removeListener(SWT.Dispose, listener);
@@ -952,10 +959,12 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                     forwardingKeyEvent = false;
                 }
                 break;
+            default:
+                break;
         }
     }
 
-    private void textEvent(Event event) {
+    private void textEvent(@NotNull Event event) {
         switch (event.type) {
             case SWT.FocusIn: {
                 handleFocus(SWT.FocusIn);
@@ -1088,6 +1097,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                         // do not use them for traversal.
                         event.doit = false;
                         break;
+                    default:
+                        break;
                 }
 
                 Event e = new Event();
@@ -1101,6 +1112,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 event.detail = e.detail;
                 break;
             }
+            default:
+                break;
         }
     }
 

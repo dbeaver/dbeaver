@@ -21,6 +21,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -40,7 +42,7 @@ public class ConnectionFolderSelector {
     private final Map<DBPDataSourceFolder, Integer> folderLevels = new IdentityHashMap<>();
     private DBPDataSourceFolder dataSourceFolder;
 
-    public ConnectionFolderSelector(Composite parent) {
+    public ConnectionFolderSelector(@NotNull Composite parent) {
         UIUtils.createControlLabel(parent, UIMessages.control_label_connection_folder);
 
         connectionFolderCombo = new CSmartCombo<>(
@@ -48,7 +50,7 @@ public class ConnectionFolderSelector {
             SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY,
             new LabelProvider() {
                 @Override
-                public String getText(Object element) {
+                public @NotNull String getText(@Nullable Object element) {
                     if (!(element instanceof DBPDataSourceFolder folder)) {
                         return "";
                     }
@@ -67,11 +69,11 @@ public class ConnectionFolderSelector {
             dataSourceFolder = connectionFolderCombo.getSelectedItem()));
     }
 
-    public DBPDataSourceFolder getFolder() {
+    public @Nullable DBPDataSourceFolder getFolder() {
         return dataSourceFolder;
     }
 
-    public void setFolder(DBPDataSourceFolder folder) {
+    public void setFolder(@Nullable DBPDataSourceFolder folder) {
         dataSourceFolder = folder;
         connectionFolderCombo.select(dataSourceFolder);
     }
@@ -80,8 +82,7 @@ public class ConnectionFolderSelector {
         return connectionFolderCombo.getItemCount() == 0;
     }
 
-    public void loadConnectionFolders(DBPProject project)
-    {
+    public void loadConnectionFolders(@Nullable DBPProject project) {
         connectionFolderCombo.removeAll();
         connectionFolderCombo.addItem(null);
         folderLevels.clear();
@@ -93,7 +94,7 @@ public class ConnectionFolderSelector {
         }
     }
 
-    private void loadConnectionFolder(DBPDataSourceFolder folder, int level) {
+    private void loadConnectionFolder(@NotNull DBPDataSourceFolder folder, int level) {
         folderLevels.put(folder, level);
         connectionFolderCombo.addItem(folder);
         for (DBPDataSourceFolder child : DBUtils.makeOrderedObjectList(folder.getChildren())) {
