@@ -1310,7 +1310,7 @@
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
                     <replace provider="generic" driver="salesforce_jdbc"/>
-                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar"/>
+                    <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/v1.19.8/Salesforce-CDP-jdbc-1.19.8-java8.jar"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="read-only-meta-data" value="true"/>
                 </driver>
@@ -1534,7 +1534,7 @@
                         categories="fulltext">
                     <replace provider="generic" driver="es_generic"/>
                     <file type="jar" path="maven:/org.elasticsearch.plugin:x-pack-sql-jdbc:8.17.1" bundle="!drivers.elasticsearch"/>
-                    <file type="license" path="https://github.com/elastic/elasticsearch/blob/main/licenses/ELASTIC-LICENSE-2.0.txt" bundle="!drivers.elasticsearch"/>
+                    <file type="license" path="https://raw.githubusercontent.com/elastic/elasticsearch/refs/heads/main/licenses/ELASTIC-LICENSE-2.0.txt" bundle="!drivers.elasticsearch"/>
                     <file type="jar" path="drivers/elasticsearch" bundle="drivers.elasticsearch"/>
                     <file type="license" path="drivers/elasticsearch/LICENSE.txt" bundle="drivers.elasticsearch"/>
                     <parameter name="supports-references" value="false"/>
