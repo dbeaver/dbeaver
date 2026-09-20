@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,9 @@ public class DefaultEventFilter implements QMEventFilter {
     @Override
     public boolean accept(QMEvent event) {
         QMMObject object = event.getObject();
-        if (object instanceof QMMStatementExecuteInfo) {
+        if (object instanceof QMMTaskInfo) {
+            return eventCriteria.hasObjectType(QMObjectType.task);
+        } else if (object instanceof QMMStatementExecuteInfo) {
             return eventCriteria.hasObjectType(QMObjectType.query) &&
                 eventCriteria.hasQueryType(((QMMStatementExecuteInfo) object).getStatement().getPurpose());
         } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {

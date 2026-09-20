@@ -177,6 +177,12 @@ public class ModelMessages extends NLS {
     public static String controls_querylog_script;
     public static String controls_querylog_shell_text;
     public static String controls_querylog_success;
+    public static String controls_querylog_tasks;
+    public static String controls_querylog_task;
+    public static String controls_querylog_task_started;
+    public static String controls_querylog_task_finished;
+    public static String controls_querylog_task_failed;
+    public static String controls_querylog_task_canceled;
     public static String controls_querylog_transaction;
 
     public static String tasks_restore_confirmation_title;

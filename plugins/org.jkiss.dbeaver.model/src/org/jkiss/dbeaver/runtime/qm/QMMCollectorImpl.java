@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
@@ -176,6 +177,29 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private static boolean isSkipMetadataQueries() {
         return DBWorkbench.getPlatform().getPreferenceStore()
             .getBoolean(QMConstants.PROP_SKIP_METADATA_QUERIES);
+    }
+
+    @Override
+    public void handleTaskBegin(@NotNull DBPProject project, @NotNull QMMTaskInfo task) {
+        fireTaskEvent(project, task, QMEventAction.BEGIN, task.getOpenTime());
+    }
+
+    @Override
+    public void handleTaskEnd(@NotNull DBPProject project, @NotNull QMMTaskInfo task) {
+        fireTaskEvent(project, task, QMEventAction.END, task.getCloseTime());
+    }
+
+    private void fireTaskEvent(
+        @NotNull DBPProject project, @NotNull QMMTaskInfo task, @NotNull QMEventAction action, long timestamp
+    ) {
+        try {
+            String sessionId = QMUtils.getQmSessionId(project);
+            synchronized (eventPool) {
+                eventPool.add(new QMMetaEvent(task, action, timestamp, sessionId));
+            }
+        } catch (DBException e) {
+            log.error("Failed to fire task event", e);
+        }
     }
 
     private static boolean isMetadataQuery(@NotNull QMMObject object) {
@@ -414,6 +438,40 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         tryFireMetaEvent(connectErrorInfo, QMEventAction.BEGIN, connectErrorInfo.getOpenTime(), dataSource);
     }
 
+    @Override
+    public synchronized void flushEvents(@NotNull DBRProgressMonitor monitor) {
+        List<QMMetaEvent> events = obtainEvents();
+        List<Long> sessionsToClose;
+        synchronized (connectionMap) {
+            sessionsToClose = new ArrayList<>(closedConnections);
+            closedConnections.clear();
+        }
+        if (!events.isEmpty()) {
+            for (QMMetaListener listener : getListeners()) {
+                try {
+                    listener.metaInfoChanged(monitor, events);
+                } catch (Throwable e) {
+                    log.error("Error notifying event listener", e);
+                }
+            }
+            synchronized (historySync) {
+                pastEvents.addAll(events);
+                int size = pastEvents.size();
+                if (size > MAX_HISTORY_EVENTS) {
+                    pastEvents = new ArrayList<>(pastEvents.subList(size - MAX_HISTORY_EVENTS, size));
+                }
+            }
+        }
+        synchronized (connectionMap) {
+            for (Long sessionId : sessionsToClose) {
+                QMMConnectionInfo session = connectionMap.get(sessionId);
+                if (session != null && session.isClosed()) {
+                    connectionMap.remove(sessionId);
+                }
+            }
+        }
+    }
+
     private class EventDispatcher extends AbstractJob {
 
         protected EventDispatcher() {
@@ -425,46 +483,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         @NotNull
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-            final List<QMMetaEvent> events;
-            List<Long> sessionsToClose;
-            synchronized (QMMCollectorImpl.this) {
-                events = obtainEvents();
-                sessionsToClose = closedConnections;
-                closedConnections.clear();
-            }
-            if (!events.isEmpty()) {
-                final List<QMMetaListener> listeners = getListeners();
-                if (!listeners.isEmpty() && !events.isEmpty()) {
-                    // Dispatch all events
-                    for (QMMetaListener listener : listeners) {
-                        try {
-                            listener.metaInfoChanged(monitor, events);
-                        } catch (Throwable e) {
-                            log.error("Error notifying event listener", e);
-                        }
-                    }
-                }
-                synchronized (historySync) {
-                    pastEvents.addAll(events);
-                    int size = pastEvents.size();
-                    if (size > MAX_HISTORY_EVENTS) {
-                        pastEvents = new ArrayList<>(pastEvents.subList(
-                            size - MAX_HISTORY_EVENTS,
-                            size));
-                    }
-                }
-            }
-            // Cleanup closed sessions
-            synchronized (connectionMap) {
-                for (Long sessionId : sessionsToClose) {
-                    final QMMConnectionInfo session = connectionMap.get(sessionId);
-                    if (session != null && !session.isClosed()) {
-                        // It is possible (rarely) that session was reopened before event dispatcher run
-                        // In that case just ignore it
-                        connectionMap.remove(sessionId);
-                    }
-                }
-            }
+            flushEvents(monitor);
             if (isRunning()) {
                 this.schedule(eventDispatchPeriod);
             }

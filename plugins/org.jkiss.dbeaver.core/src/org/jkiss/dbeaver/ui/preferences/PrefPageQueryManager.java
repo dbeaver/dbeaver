@@ -54,6 +54,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
     private Button checkObjectTypeSessions;
     private Button checkObjectTypeTxn;
     private Button checkObjectTypeQueries;
+    private Button checkObjectTypeTasks;
     private Button checkQueryTypeUser;
     private Button checkQueryTypeUserFiltered;
     private Button checkQueryTypeScript;
@@ -100,6 +101,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkObjectTypeTxn = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_transactions, false);
         //checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_scripts, false);
         checkObjectTypeQueries = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_queries, false);
+        checkObjectTypeTasks = UIUtils.createCheckbox(groupObjects, QMObjectType.task.getTitle(), false);
 
         {
             Composite viewSettings = UIUtils.createTitledComposite(
@@ -165,6 +167,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkObjectTypeSessions.setSelection(objectTypes.contains(QMObjectType.session));
         checkObjectTypeTxn.setSelection(objectTypes.contains(QMObjectType.txn));
         checkObjectTypeQueries.setSelection(objectTypes.contains(QMObjectType.query));
+        checkObjectTypeTasks.setSelection(objectTypes.contains(QMObjectType.task));
     }
 
     private void checkQueryTypes(Collection<String> queryTypes) {
@@ -178,7 +181,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
 
     @Override
     protected void performDefaults() {
-        Collection<QMObjectType> objectTypes = Arrays.asList(QMObjectType.txn, QMObjectType.query);
+        Collection<QMObjectType> objectTypes = Arrays.asList(QMObjectType.txn, QMObjectType.query, QMObjectType.task);
         Collection<String> queryTypes = Arrays.asList(
             DBCExecutionPurpose.USER.name(),
             DBCExecutionPurpose.USER_FILTERED.name(),
@@ -207,6 +210,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         if (checkObjectTypeSessions.getSelection()) objectTypes.add(QMObjectType.session);
         if (checkObjectTypeTxn.getSelection()) objectTypes.add(QMObjectType.txn);
         if (checkObjectTypeQueries.getSelection()) objectTypes.add(QMObjectType.query);
+        if (checkObjectTypeTasks.getSelection()) objectTypes.add(QMObjectType.task);
 
         if (checkQueryTypeUser.getSelection()) queryTypes.add(DBCExecutionPurpose.USER.name());
         if (checkQueryTypeUserFiltered.getSelection()) queryTypes.add(DBCExecutionPurpose.USER_FILTERED.name());

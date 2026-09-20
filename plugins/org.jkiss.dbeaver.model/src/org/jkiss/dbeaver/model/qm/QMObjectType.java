@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.meta.QMMetaObjectType;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,7 +31,8 @@ public enum QMObjectType {
 
     session("Session", List.of(QMMetaObjectType.CONNECTION_INFO)),
     txn("Transactions", List.of(QMMetaObjectType.TRANSACTION_INFO, QMMetaObjectType.TRANSACTION_SAVEPOINT_INFO)),
-    query("Queries", List.of());
+    query("Queries", List.of()),
+    task(ModelMessages.controls_querylog_tasks, List.of(QMMetaObjectType.TASK_INFO));
 
     private final String title;
     private final List<QMMetaObjectType> types;

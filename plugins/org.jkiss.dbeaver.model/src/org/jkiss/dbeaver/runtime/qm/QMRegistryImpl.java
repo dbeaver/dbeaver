@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
@@ -239,13 +240,14 @@ public class QMRegistryImpl implements QMRegistry {
             }
         }
 
-        private boolean matchesObjectType(QMMObject object, QMObjectType[] objectTypes) {
-            if (object instanceof QMMConnectionInfo)
-                return ArrayUtils.contains(objectTypes, QMObjectType.session);
-            else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo)
-                return ArrayUtils.contains(objectTypes, QMObjectType.txn);
-            else
-                return ArrayUtils.contains(objectTypes, QMObjectType.query);
+        private boolean matchesObjectType(@Nullable QMMObject object, @NotNull QMObjectType[] objectTypes) {
+            return switch (object) {
+                case QMMTaskInfo ignored -> ArrayUtils.contains(objectTypes, QMObjectType.task);
+                case QMMConnectionInfo ignored -> ArrayUtils.contains(objectTypes, QMObjectType.session);
+                case QMMTransactionInfo ignored -> ArrayUtils.contains(objectTypes, QMObjectType.txn);
+                case QMMTransactionSavepointInfo ignored -> ArrayUtils.contains(objectTypes, QMObjectType.txn);
+                case null, default -> ArrayUtils.contains(objectTypes, QMObjectType.query);
+            };
         }
     }
 }

@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.qm.QMTaskExecution;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -70,6 +71,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private Instant taskStartTime = Instant.now();
     private Duration elapsedTime = Duration.ZERO;
     private Throwable taskError;
+    private QMTaskExecution executionHistory;
     private volatile String runId;
 
     private final AtomicBoolean canceledByTimeOut = new AtomicBoolean();
@@ -85,9 +87,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     }
 
     @Override
-    public void run(boolean fork, boolean cancelable, @NotNull DBRRunnableWithProgress runnable)
-            throws InvocationTargetException, InterruptedException {
-        runnable.run(activeMonitor);
+    public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
+        if (executionHistory == null) {
+            runnable.run(activeMonitor);
+        } else {
+            executionHistory.run((f, c, operation) -> operation.run(activeMonitor), fork, cancelable, runnable);
+        }
     }
 
     @NotNull
@@ -156,8 +161,19 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     ) throws DBException, InterruptedException {
         activeMonitor = monitor;
         DBTaskUtils.confirmTaskOrThrow(task, taskLog, logWriter);
-        DBTTaskHandler taskHandler = task.getType().createHandler();
-        DBTTaskRunStatus taskStatus = taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
+        DBTTaskRunStatus taskStatus;
+        executionHistory = new QMTaskExecution(task);
+        try {
+            DBTTaskHandler taskHandler = task.getType().createHandler();
+            taskStatus = taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
+        } catch (DBException | RuntimeException | Error e) {
+            executionHistory.recordError(e);
+            throw e;
+        } finally {
+            executionHistory.recordCancellation(monitor.isCanceled());
+            executionHistory.close();
+            executionHistory = null;
+        }
         if (monitor.isCanceled()) {
             if (canceledByTimeOut.get()) {
                 taskStatus.setResultMessage("by timeout reached");
@@ -195,6 +211,9 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
         @Override
         public void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
+            if (executionHistory != null) {
+                executionHistory.recordError(error);
+            }
             parent.taskFinished(task, result, error, settings);
             elapsedTime = getElapsedTime();
             taskError = error;
