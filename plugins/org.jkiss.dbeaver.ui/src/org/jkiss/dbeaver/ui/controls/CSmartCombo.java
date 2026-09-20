@@ -44,6 +44,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private static final boolean ANIMATION_ENABLED = true;
     private static final int POPUP_ANIMATION_DURATION = 100;
     private static final int POPUP_ANIMATION_FRAME = 16;
+    private static final String POPUP_LAYOUT_DEFERRED = CSmartCombo.class.getName() + ".layoutDeferred";
 
     protected final ILabelProvider labelProvider;
     protected final List<ITEM_TYPE> items = new ArrayList<>();
@@ -735,6 +736,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             }
             return;
         }
+        if (Boolean.TRUE.equals(control.getData(POPUP_LAYOUT_DEFERRED))) {
+            control.setLayoutDeferred(false);
+        }
+        control.setData(POPUP_LAYOUT_DEFERRED, true);
+        control.setLayoutDeferred(true);
         int animation = ++this.popupAnimation;
         long startTime = System.currentTimeMillis();
         int bottom = bounds.y + bounds.height;
@@ -760,8 +766,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 } else {
                     if (opening) {
                         control.setBounds(bounds);
-                        control.layout(true, true);
                     }
+                    control.setData(POPUP_LAYOUT_DEFERRED, null);
+                    control.setLayoutDeferred(false);
                     if (completion != null) {
                         completion.run();
                     }
