@@ -92,6 +92,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_network_socket_label_username;
     public static String dialog_connection_network_socket_label_password;
     public static String dialog_connection_open_global_network_preferences_link;
+    public static String dialog_connection_network_handler_remove_confirmation_title;
+    public static String dialog_connection_network_handler_remove_confirmation_question;
 
     public static String dialog_edit_driver_button_add_file;
     public static String dialog_edit_driver_button_add_folder;
