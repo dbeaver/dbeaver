@@ -24,6 +24,11 @@ public final class SWTThemeUtils {
 
     public static void updateExplorerTheme(Control control, boolean dark) {
         OS.AllowDarkModeForWindow(control.handle, dark);
-        OS.SetWindowTheme(control.handle, Display.EXPLORER, null);
+        if (control instanceof Text && !dark) {
+            // A light EDIT control retains the dark Explorer background until its native state changes.
+            OS.SetWindowTheme(control.handle, null, null);
+        } else {
+            OS.SetWindowTheme(control.handle, Display.EXPLORER, null);
+        }
     }
 }
