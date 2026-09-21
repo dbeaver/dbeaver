@@ -131,8 +131,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -3465,6 +3465,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
+        }
+        // Native toolbar items must be restyled after the datasource marker is set.
+        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+            CSSUtils.applyStyles(topBar);
+        }
+        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+            CSSUtils.applyStyles(bottomBar);
         }
 
         // Repaint the workbench editor tab folder so the custom tab renderer
