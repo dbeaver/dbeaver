@@ -74,7 +74,10 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
     @NotNull
     public List<OAIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(CopilotSessionToken.DEFAULT_API_ENDPOINT + RESPONSES_PATH, "models"))
+            // Resolve against the "/v1/" directory explicitly, not RESPONSES_PATH ("/v1/responses"):
+            // trailing-slash normalization now appends "models" instead of replacing the last
+            // segment, so resolving against the responses path would produce "/v1/responses/models".
+            .uri(AIHttpUtils.resolve(CopilotSessionToken.DEFAULT_API_ENDPOINT + "/v1/", "models"))
             .GET()
             .timeout(timeout)
             .build();
