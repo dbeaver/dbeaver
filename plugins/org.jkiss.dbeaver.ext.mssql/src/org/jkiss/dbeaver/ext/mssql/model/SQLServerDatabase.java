@@ -180,12 +180,20 @@ public class SQLServerDatabase
 
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
-        // sys.databases is queried on the data source context: an offline database cannot host the query itself
+        // Queried on the data source context, because an offline database cannot host the query itself,
+        // and read the same way the database list reads it, so a server that does not expose the column
+        // leaves the database unmarked here as well instead of failing the refresh
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read database state")) {
-            setStateDesc(JDBCUtils.queryString(
-                session,
-                "SELECT state_desc FROM sys.databases WHERE database_id = ?",
-                databaseId));
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT db.* FROM sys.databases db WHERE db.database_id = ?"))
+            {
+                dbStat.setLong(1, databaseId);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        setStateDesc(JDBCUtils.safeGetString(dbResult, "state_desc"));
+                    }
+                }
+            }
         } catch (SQLException e) {
             throw new DBCException("Error reading database state", e);
         }
@@ -194,7 +202,7 @@ public class SQLServerDatabase
     private void setStateDesc(@Nullable String stateDesc) {
         this.stateDesc = stateDesc;
         if (stateDesc == null || SQLServerConstants.DATABASE_STATE_ONLINE.equalsIgnoreCase(stateDesc)) {
-            // Servers without state_desc (pre-2005) report no state at all - keep them unmarked
+            // A server that does not report a state leaves the database unmarked
             this.objectState = DBSObjectState.NORMAL;
         } else {
             this.objectState = new DBSObjectState(stateDesc, DBIcon.OVER_ERROR);
