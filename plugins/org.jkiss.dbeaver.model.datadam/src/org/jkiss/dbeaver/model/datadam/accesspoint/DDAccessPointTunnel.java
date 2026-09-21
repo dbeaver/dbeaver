@@ -58,6 +58,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 public class DDAccessPointTunnel implements DBWTunnel {
@@ -70,11 +72,14 @@ public class DDAccessPointTunnel implements DBWTunnel {
     // Same pref/env var as DDSyncPreferencePage (ui.datadam) - duplicated, model can't depend on ui.
     private static final String ENV_URL = "DATADAM_URL";
     private static final String PREF_SERVER_URL = "datadam.server-url";
-    private static final int GATEWAY_PORT = 9000;
+    private static final int API_PORT = 9000;
     private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
 
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration UPGRADE_TIMEOUT = Duration.ofSeconds(30);
+
     private static final HttpClient HTTP = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(5))
+        .connectTimeout(CONNECT_TIMEOUT)
         .build();
 
     private final List<Runnable> closeListeners = new ArrayList<>();
@@ -85,7 +90,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
     private volatile boolean closed;
 
     private DDSyncCredentials credentials;
-    private String gatewayUrl;
+    private String apiUrl;
     private String apId;
     private String target;
 
@@ -96,7 +101,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull DBPConnectionConfiguration info
     ) throws DBException, IOException {
-        log.info("DDAccessPointTunnel.initializeHandler called, enabled=" + configuration.isEnabled());
+        log.debug("DDAccessPointTunnel.initializeHandler called, enabled=" + configuration.isEnabled());
         apId = configuration.getStringProperty(PROP_AP_ID);
         if (CommonUtils.isEmpty(apId)) {
             throw new DBException("Access Point name is not configured");
@@ -105,16 +110,21 @@ public class DDAccessPointTunnel implements DBWTunnel {
         DDKeyBundle bundle = DDKeyStore.load();
         if (bundle == null) {
             throw new DBException(
-                "Not logged in to the DataDam Gateway - log in first (Synchronize menu), then retry the connection");
+                "Not logged in to DataDam - log in first (Synchronize menu), then retry the connection");
         }
         credentials = new DDBundleCredentials(bundle);
 
-        gatewayUrl = getGatewayUrl();
-        if (CommonUtils.isEmpty(gatewayUrl)) {
-            throw new DBException("DataDam Gateway URL is not configured");
+        apiUrl = getApiUrl();
+        if (CommonUtils.isEmpty(apiUrl)) {
+            throw new DBException("DataDam server URL is not configured");
         }
 
-        target = info.getHostName() + ":" + info.getHostPort();
+        String host = info.getHostName();
+        String port = info.getHostPort();
+        if (CommonUtils.isEmpty(host) || CommonUtils.isEmpty(port)) {
+            throw new DBException("Database host and port must be set to use the Access Point tunnel");
+        }
+        target = host + ":" + port;
 
         localServer = ServerSocketChannel.open();
         localServer.bind(new InetSocketAddress(LOCAL_HOST, 0));
@@ -125,7 +135,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
         info.setHostName(LOCAL_HOST);
         info.setHostPort(String.valueOf(localPort));
         info.setUrl(configuration.getDataSource().getDriver().getConnectionURL(info));
-        log.info("DDAccessPointTunnel: rewritten to " + info.getHostName() + ":" + info.getHostPort() + ", url=" + info.getUrl());
+        log.info("DDAccessPointTunnel: rewritten to " + info.getHostName() + ":" + info.getHostPort());
         return info;
     }
 
@@ -173,7 +183,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
     private BridgeTicket requestBridgeTicket() throws Exception {
         byte[] bodyBytes = ("{\"apId\":" + JSONUtils.GSON.toJson(apId) + ",\"target\":" + JSONUtils.GSON.toJson(target) + "}")
             .getBytes(StandardCharsets.UTF_8);
-        URI uri = URI.create(gatewayUrl + "/ap/request");
+        URI uri = URI.create(apiUrl + "/ap/request");
 
         HttpResponse<String> response = sendSignedRequest(uri, bodyBytes);
         String serverTime = response.headers().firstValue(SERVER_TIME_HEADER).orElse(null);
@@ -210,20 +220,33 @@ public class DDAccessPointTunnel implements DBWTunnel {
     @NotNull
     private Socket openBridgeSocket(@NotNull BridgeTicket ticket) throws IOException {
         boolean explicit = !CommonUtils.isEmpty(ticket.bridgeAddr());
-        String addr = explicit ? ticket.bridgeAddr() : URI.create(gatewayUrl).getHost() + ":" + ticket.port();
-        boolean tls = explicit ? addr.startsWith("https://") : gatewayUrl.startsWith("https://");
+        String addr = explicit ? ticket.bridgeAddr() : URI.create(apiUrl).getHost() + ":" + ticket.port();
+        boolean tls = explicit ? addr.startsWith("https://") : apiUrl.startsWith("https://");
         if (addr.contains("://")) {
             addr = addr.substring(addr.indexOf("://") + 3);
         }
         int sep = addr.lastIndexOf(':');
         String host = addr.substring(0, sep);
         int port = Integer.parseInt(addr.substring(sep + 1));
-        return tls ? SSLSocketFactory.getDefault().createSocket(host, port) : new Socket(host, port);
+        Socket socket = tls ? SSLSocketFactory.getDefault().createSocket() : new Socket();
+        try {
+            if (socket instanceof SSLSocket sslSocket) {
+                SSLParameters parameters = sslSocket.getSSLParameters();
+                parameters.setEndpointIdentificationAlgorithm("HTTPS");
+                sslSocket.setSSLParameters(parameters);
+            }
+            socket.connect(new InetSocketAddress(host, port), (int) CONNECT_TIMEOUT.toMillis());
+        } catch (IOException e) {
+            socket.close();
+            throw e;
+        }
+        return socket;
     }
 
     // Matches accesspoint/server/bridge.go's upgrade. A BufferedReader would over-read past the
     // headers and swallow bridged bytes, so this reads one byte at a time instead.
     private void performUpgrade(@NotNull Socket bridgeSocket, @NotNull String token) throws IOException {
+        bridgeSocket.setSoTimeout((int) UPGRADE_TIMEOUT.toMillis());
         String host = bridgeSocket.getInetAddress().getHostName();
         String request = "GET /ap/bridge?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8) + " HTTP/1.1\r\n"
             + "Host: " + host + "\r\n"
@@ -240,6 +263,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
         while ((header = readLineRaw(bridgeSocket.getInputStream())) != null && !header.isEmpty()) {
             // drain the rest of the 101 response headers before switching to raw piping
         }
+        bridgeSocket.setSoTimeout(0);
     }
 
     private void splice(@NotNull SocketChannel local, @NotNull Socket bridgeSocket) throws IOException {
@@ -292,7 +316,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
     }
 
     @NotNull
-    private static String getGatewayUrl() {
+    private static String getApiUrl() {
         String url = getServerUrl();
         if (CommonUtils.isEmpty(url)) {
             return url;
@@ -301,7 +325,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
         try {
             URI uri = URI.create(normalized);
             if (uri.getHost() != null && uri.getPort() == -1) {
-                return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), GATEWAY_PORT,
+                return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), API_PORT,
                     uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
             }
         } catch (IllegalArgumentException | URISyntaxException ignored) {
