@@ -268,7 +268,7 @@ public class VersionUpdateDialog extends Dialog {
     }
 
     public static void performUpdate(@NotNull VersionDescriptor version) {
-        performUpdate(version, null);
+        VersionUpdateHandler.startUpdate(version);
     }
 
     static boolean performUpdate(@NotNull VersionDescriptor version, @Nullable Consumer<IStatus> completion) {

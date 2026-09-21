@@ -20,6 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
@@ -56,6 +57,15 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
 
     static boolean isUpdateAvailable() {
         return newVersion != null;
+    }
+
+    static void startUpdate(@NotNull VersionDescriptor version) {
+        UIUtils.runInUIThread(() -> {
+            if (!updateStarted) {
+                newVersion = version;
+                ActionUtils.runCommand(COMMAND_UPDATE, PlatformUI.getWorkbench());
+            }
+        });
     }
 
     @Override
