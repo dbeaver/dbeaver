@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
@@ -65,16 +66,16 @@ public class DataSourceTypeViewer extends Viewer {
         private final String label;
         private final String description;
 
-        OrderBy(String label, String description) {
+        OrderBy(@NotNull String label, @NotNull String description) {
             this.label = label;
             this.description = description;
         }
 
-        public String getLabel() {
+        public @NotNull String getLabel() {
             return label;
         }
 
-        public String getDescription() {
+        public @NotNull String getDescription() {
             return description;
         }
     }
@@ -172,7 +173,7 @@ public class DataSourceTypeViewer extends Viewer {
         });
         filterText.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyPressed(KeyEvent e) {
+            public void keyPressed(@NotNull KeyEvent e) {
                 if (e.keyCode == SWT.ARROW_DOWN || e.keyCode == SWT.CR) {
                     folderComposite.setFocus();
                 }
@@ -233,7 +234,11 @@ public class DataSourceTypeViewer extends Viewer {
         if (folder instanceof TypeListFolder typeFolder && typeFolder.viewer != null) {
             typeFolder.viewer.setFilters(new ViewerFilter() {
                 @Override
-                public boolean select(Viewer viewer, Object parentElement, Object element) {
+                public boolean select(
+                    @NotNull Viewer viewer,
+                    @Nullable Object parentElement,
+                    @NotNull Object element
+                ) {
                     DBPDataSourceType type = (DBPDataSourceType) element;
                     String pattern = filter.toLowerCase(Locale.ENGLISH);
                     return CommonUtils.isEmpty(pattern) || type.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
@@ -261,23 +266,23 @@ public class DataSourceTypeViewer extends Viewer {
     }
 
     @Override
-    public Control getControl() {
+    public @NotNull Control getControl() {
         return composite;
     }
 
     @Override
-    public Object getInput() {
+    public @Nullable Object getInput() {
         ITabbedFolder folder = folderComposite.getActiveFolder(false);
         return folder instanceof TypeListFolder typeFolder && typeFolder.viewer != null ? typeFolder.viewer.getInput() : null;
     }
 
     @Override
-    public void setInput(Object input) {
+    public void setInput(@Nullable Object input) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public ISelection getSelection() {
+    public @NotNull ISelection getSelection() {
         ITabbedFolder folder = folderComposite.getActiveFolder(false);
         return folder instanceof TypeListFolder typeFolder && typeFolder.viewer != null ?
             typeFolder.viewer.getSelection() : StructuredSelection.EMPTY;
@@ -289,7 +294,7 @@ public class DataSourceTypeViewer extends Viewer {
     }
 
     @Override
-    public void setSelection(ISelection selection, boolean reveal) {
+    public void setSelection(@NotNull ISelection selection, boolean reveal) {
         ITabbedFolder folder = folderComposite.getActiveFolder();
         if (folder instanceof TypeListFolder typeFolder) {
             typeFolder.viewer.setSelection(selection, reveal);
@@ -305,17 +310,17 @@ public class DataSourceTypeViewer extends Viewer {
         }
 
         @Override
-        public void createControl(Composite parent) {
+        public void createControl(@NotNull Composite parent) {
             viewer = new AdvancedListViewer(parent, SWT.NONE);
             viewer.setContentProvider(new ListContentProvider());
             viewer.setLabelProvider(new LabelProvider() {
                 @Override
-                public Image getImage(Object element) {
+                public @NotNull Image getImage(@NotNull Object element) {
                     return DBeaverIcons.getImage(((DBPDataSourceType) element).getIconBig());
                 }
 
                 @Override
-                public String getText(Object element) {
+                public @NotNull String getText(@NotNull Object element) {
                     return ((DBPDataSourceType) element).getName();
                 }
             });

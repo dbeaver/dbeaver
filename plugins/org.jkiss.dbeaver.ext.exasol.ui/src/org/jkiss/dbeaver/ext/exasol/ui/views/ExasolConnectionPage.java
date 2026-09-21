@@ -53,7 +53,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
     private Button useLegacyEncryption;
 
     @Override
-    public void createControl(Composite composite) {
+    public void createControl(@NotNull Composite composite) {
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_BOTH));

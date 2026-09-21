@@ -81,7 +81,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private boolean activated = false;
 
     @Override
-    public void createControl(Composite composite)
+    public void createControl(@NotNull Composite composite)
     {
         controlModifyListener = new ControlsListener();
 

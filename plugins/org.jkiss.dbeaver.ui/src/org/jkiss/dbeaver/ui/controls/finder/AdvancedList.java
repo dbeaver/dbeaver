@@ -24,7 +24,6 @@ import org.eclipse.swt.accessibility.Accessible;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -250,7 +249,7 @@ public class AdvancedList extends Canvas {
         }
     }
 
-    private void onPaint(PaintEvent e) {
+    private void onPaint(@NotNull PaintEvent e) {
         paintList(e.gc, null);
     }
 
@@ -293,6 +292,7 @@ public class AdvancedList extends Canvas {
         return Math.max(1, (getClientArea().height + itemHeight - 1) / itemHeight);
     }
 
+    @NotNull
     Point getItemSize() {
         Point imageSize = getImageSize();
         int itemLength = imageSize.x + AdvancedListItem.BORDER_MARGIN * 4 + getTextSize().y;
@@ -305,7 +305,7 @@ public class AdvancedList extends Canvas {
         return Math.max(1, Math.floorDiv(clientArea.width, itemSize.x));
     }
 
-    private void navigateByKey(KeyEvent e) {
+    private void navigateByKey(@NotNull KeyEvent e) {
         if (selectedItem == null) {
             return;
         }

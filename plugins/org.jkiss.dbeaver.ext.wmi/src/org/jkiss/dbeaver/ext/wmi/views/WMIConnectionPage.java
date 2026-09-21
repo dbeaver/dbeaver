@@ -46,7 +46,7 @@ public class WMIConnectionPage extends ConnectionPageWithAuth
     private Combo localeCombo;
 
     @Override
-    public void createControl(Composite composite)
+    public void createControl(@NotNull Composite composite)
     {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));

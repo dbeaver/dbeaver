@@ -56,7 +56,7 @@ public class BQConnectionPage extends ConnectionPageWithAuth implements IDialogP
     }
 
     @Override
-    public void createControl(Composite composite)
+    public void createControl(@NotNull Composite composite)
     {
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         settingsGroup.setLayout(new GridLayout(1, false));

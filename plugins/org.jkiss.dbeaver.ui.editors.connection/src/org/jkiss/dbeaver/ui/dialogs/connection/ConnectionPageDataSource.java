@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -52,14 +53,14 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
     private ProjectSelectorPanel projectSelector;
     private Control filterIndentLabel;
 
-    ConnectionPageDataSource(NewConnectionWizard wizard) {
+    ConnectionPageDataSource(@NotNull NewConnectionWizard wizard) {
         super("newConnectionDrivers");
         setTitle(UIConnectionMessages.dialog_new_connection_wizard_start_title);
         setDescription(UIConnectionMessages.dialog_new_connection_wizard_start_description);
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         Composite placeholder = UIUtils.createComposite(parent, 1);
 
         setControl(placeholder);
@@ -117,7 +118,7 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
         UIUtils.asyncExec(() -> dataSourceTypeViewer.getControl().setFocus());
     }
 
-    public void createSorterControl(Composite controlsGroup) {
+    public void createSorterControl(@NotNull Composite controlsGroup) {
         // Sorter
         Composite orderGroup = new Composite(controlsGroup, SWT.NONE);
         orderGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -138,14 +139,16 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
         }
     }
 
+    @Nullable
     public DBPDataSourceType getSelectedDataSourceType() {
         return selectedDataSourceType;
     }
 
-    public void setSelectedDataSourceType(DBPDataSourceType selectedDataSourceType) {
+    public void setSelectedDataSourceType(@NotNull DBPDataSourceType selectedDataSourceType) {
         this.selectedDataSourceType = selectedDataSourceType;
     }
 
+    @Nullable
     public DBPProject getConnectionProject() {
         return projectSelector.getSelectedProject();
     }
@@ -170,7 +173,7 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
     }
 
     @Override
-    public void selectionChanged(SelectionChangedEvent event) {
+    public void selectionChanged(@NotNull SelectionChangedEvent event) {
         this.selectedDataSourceType = null;
         ISelection selection = event.getSelection();
         if (selection instanceof IStructuredSelection ss) {
@@ -183,7 +186,7 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
     }
 
     @Override
-    public void doubleClick(DoubleClickEvent event) {
+    public void doubleClick(@NotNull DoubleClickEvent event) {
         if (selectedDataSourceType != null && projectSelector.getSelectedProject() != null) {
             NewConnectionWizard wizard = getWizard();
             wizard.getContainer().showPage(wizard.getNextPage(this));

@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -62,7 +60,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     private boolean activated = false;
 
     @Override
-    public void createControl(Composite composite) {
+    public void createControl(@NotNull Composite composite) {
         final ModifyListener textListener = e -> {
             if (activated) {
                 this.updateUrl(urlText);

@@ -68,8 +68,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -227,6 +227,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    @Nullable
     public Image getImage() {
         DBPImage logoImage = getDriver().getLogoImage();
         if (logoImage != null) {

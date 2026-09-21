@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -64,7 +62,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     private boolean activated;
 
     @Override
-    public void createControl(Composite composite) {
+    public void createControl(@NotNull Composite composite) {
         ModifyListener textListener = e -> {
             if (activated) {
                 super.updateUrl(urlText);

@@ -25,11 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
-import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.DataSourceConfiguratorDescriptor;
@@ -86,6 +82,7 @@ public class NewConnectionWizard extends ConnectionWizard
     }
 
     @Override
+    @Nullable
     public DBPDataSourceRegistry getDataSourceRegistry() {
         DBPProject project = initialDriver == null ? pageDataSource.getConnectionProject() : DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         return project == null ? null : project.getDataSourceRegistry();
@@ -96,17 +93,20 @@ public class NewConnectionWizard extends ConnectionWizard
         return availableProvides;
     }
 
+    @NotNull
     ConnectionPageDataSource getPageDataSource()
     {
         return pageDataSource;
     }
 
-    ConnectionPageSettings getPageSettings(DBPDriver driver)
+    @Nullable
+    ConnectionPageSettings getPageSettings(@NotNull DBPDriver driver)
     {
         return this.settingsPages.get(driver);
     }
 
     @Override
+    @Nullable
     public DBPDriver getSelectedDriver()
     {
         if (initialDriver != null) {
@@ -122,6 +122,7 @@ public class NewConnectionWizard extends ConnectionWizard
     }
 
     @Override
+    @Nullable
     DBPProject getSelectedProject() {
         return pageDataSource.getConnectionProject();
     }
@@ -219,7 +220,7 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Nullable
     @Override
-    public IWizardPage getNextPage(IWizardPage page)
+    public IWizardPage getNextPage(@NotNull IWizardPage page)
     {
         if (page == pageDataSource) {
             DBPDataSourceType type = pageDataSource.getSelectedDataSourceType();
@@ -240,6 +241,7 @@ public class NewConnectionWizard extends ConnectionWizard
         }
     }
 
+    @NotNull
     private IWizardPage getNextPageForDriver(@NotNull DBPDriver driver) {
         if (driver.getDriverStub() != null) {
             final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver.getDriverStub());

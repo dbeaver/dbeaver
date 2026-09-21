@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -56,7 +54,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
     private boolean activated = false;
 
     @Override
-    public void createControl(Composite composite)
+    public void createControl(@NotNull Composite composite)
     {
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));

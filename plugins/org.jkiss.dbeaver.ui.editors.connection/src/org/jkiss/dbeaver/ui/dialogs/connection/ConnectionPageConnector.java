@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -52,14 +53,14 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
     private DBPDriver selectedDriver;
     private ConnectorViewer viewer;
 
-    ConnectionPageConnector(NewConnectionWizard wizard) {
+    ConnectionPageConnector(@NotNull NewConnectionWizard wizard) {
         super("newConnectionDriverChoice");
         setTitle(UIConnectionMessages.dialog_new_connection_wizard_driver_title);
         setDescription(UIConnectionMessages.dialog_new_connection_wizard_driver_description);
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
         GridLayout layout = (GridLayout) composite.getLayout();
         layout.marginWidth = VIEWER_MARGIN_WIDTH;
@@ -80,7 +81,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
         refreshDrivers();
     }
 
-    void setDataSourceType(DBPDataSourceType dataSourceType) {
+    void setDataSourceType(@NotNull DBPDataSourceType dataSourceType) {
         if (this.dataSourceType != dataSourceType) {
             this.dataSourceType = dataSourceType;
             this.selectedDriver = null;
@@ -129,7 +130,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
         private static final int MAX_VISIBLE_ITEMS = 3;
         private static final int TABLE_WIDTH_HINT = 100;
 
-        private ConnectorViewer(Composite parent) {
+        private ConnectorViewer(@NotNull Composite parent) {
             super(parent, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
             Table table = getTable();
             GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -150,7 +151,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             setContentProvider(ArrayContentProvider.getInstance());
             setLabelProvider(new LabelProvider() {
                 @Override
-                public String getText(Object element) {
+                public @NotNull String getText(@NotNull Object element) {
                     DBPDriver driver = (DBPDriver) element;
                     GC gc = new GC(table);
                     try {
@@ -168,7 +169,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             table.addListener(SWT.PaintItem, this::paintItem);
         }
 
-        private void setDrivers(List<DBPDriver> drivers) {
+        private void setDrivers(@NotNull List<DBPDriver> drivers) {
             setInput(drivers);
             Table table = getTable();
             WeakReference<Table> tableReference = new WeakReference<>(table);
@@ -190,7 +191,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             table.getParent().layout(true, true);
         }
 
-        private void measureItem(Event event) {
+        private void measureItem(@NotNull Event event) {
             event.gc.setFont(BaseThemeSettings.instance.baseFontBold);
             int titleHeight = event.gc.getFontMetrics().getHeight();
             event.gc.setFont(getTable().getFont());
@@ -201,11 +202,11 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
                 (description.isEmpty() ? 0 : TEXT_SPACING) + VERTICAL_PADDING * 2);
         }
 
-        private void eraseItem(Event event) {
+        private void eraseItem(@NotNull Event event) {
             event.detail &= ~(SWT.BACKGROUND | SWT.FOREGROUND | SWT.SELECTED | SWT.FOCUSED | SWT.HOT);
         }
 
-        private void paintItem(Event event) {
+        private void paintItem(@NotNull Event event) {
             if (!(event.item instanceof TableItem item) || !(item.getData() instanceof DBPDriver driver)) {
                 return;
             }
@@ -265,7 +266,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             }
         }
 
-        private String getDescription(DBPDriver driver, GC gc) {
+        private @NotNull String getDescription(@NotNull DBPDriver driver, @NotNull GC gc) {
             String description = CommonUtils.getSingleLineString(CommonUtils.notEmpty(driver.getDescription()));
             int textX = HORIZONTAL_PADDING + IMAGE_AREA_WIDTH + HORIZONTAL_PADDING;
             int availableWidth = getTable().getClientArea().width - textX - HORIZONTAL_PADDING;
