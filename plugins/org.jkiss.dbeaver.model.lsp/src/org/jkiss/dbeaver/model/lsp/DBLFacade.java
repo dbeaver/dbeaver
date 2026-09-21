@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
 import java.io.InputStream;
@@ -49,7 +48,7 @@ public final class DBLFacade {
         @NotNull InputStream in,
         @NotNull OutputStream out,
         @Nullable DBLServerSessionProvider sessionProvider
-    ) throws DBException {
+    ) {
         try {
             log.info("Launching LSP server"); //NON-NLS
             DBLServer server = new DBLServer(sessionProvider);
@@ -60,7 +59,7 @@ public final class DBLFacade {
             launcherFuture.get();
             log.info("the LSP client has closed the stream. " + client); //NON-NLS
         } catch (InterruptedException | ExecutionException e) {
-            throw new DBException("unexpected exception while running LSP server", e);
+            throw new IllegalStateException("unexpected exception while running LSP server", e);
         }
     }
 }
