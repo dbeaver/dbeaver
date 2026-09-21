@@ -304,7 +304,7 @@ public class DDAccessPointTunnel implements DBWTunnel {
                 return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), GATEWAY_PORT,
                     uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
             }
-        } catch (URISyntaxException ignored) {
+        } catch (IllegalArgumentException | URISyntaxException ignored) {
             // fall through to the un-ported URL below
         }
         return normalized;
