@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
-import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateSet;
@@ -48,8 +45,6 @@ import java.util.stream.Stream;
 public class AltibaseSQLDialect extends JDBCSQLDialect 
             implements SQLDialectDDLExtension, SQLDialectSchemaController {
 
-    private SQLTokenPredicateSet cachedDialectSkipTokenPredicates = null;
-    
     private static final String[] ALTIBASE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
             BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
             new String[]{
@@ -444,74 +439,64 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         return true;
     }
     
+    @NotNull
     @Override
-    @NotNull
-    public SQLTokenPredicateSet getSkipTokenPredicates() {
-        return cachedDialectSkipTokenPredicates == null ? super.getSkipTokenPredicates() : cachedDialectSkipTokenPredicates;
-    }
-
-    @NotNull
-    private SQLTokenPredicateSet makeDialectSkipTokenPredicates(JDBCDataSource dataSource) {
-        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
-        TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
+    protected TokenPredicateSet makeDialectSkipTokenPredicatesImpl(@NotNull JDBCDataSource dataSource, @NotNull TokenPredicateFactory tt) {
 
         TokenPredicateSet conditions = TokenPredicateSet.of(
-                /* Oracle grammar */
-                new TokenPredicatesCondition(
-                        SQLParserActionKind.BEGIN_BLOCK,
-                        tt.sequence(
-                                "CREATE",
-                                tt.optional("OR", "REPLACE"),
-                                "PACKAGE", "BODY"
-                        ),
-                        tt.sequence()
-                ),
-                new TokenPredicatesCondition(
-                        SQLParserActionKind.SKIP_SUFFIX_TERM,
-                        tt.sequence(
-                                "CREATE",
-                                tt.optional("OR", "REPLACE"),
-                                tt.alternative("FUNCTION", "PROCEDURE")
-                        ),
-                        tt.sequence(
-                                tt.alternative(
-                                        tt.sequence("RETURN", SQLTokenType.T_TYPE),
-                                        "deterministor", "pipelined", "parallel_enable", "result_cache",
-                                        ")",
-                                        tt.sequence("procedure", SQLTokenType.T_OTHER),
-                                        tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
-                                        ), ";")
-                ),
-                new TokenPredicatesCondition(
+            /* Oracle grammar */
+            new TokenPredicatesCondition(
                     SQLParserActionKind.BEGIN_BLOCK,
-                    tt.sequence(),
-                    tt.sequence(tt.not("END"), "IF", tt.not("EXISTS"))
-                ),
-                /*
-                 * Altibase only grammar
-                 * Grammar conflict between PSM and Typeset
-                 * PSM: CREATE...[AS|IS] ... BEGIN ... END
-                 * TYPESET: CREATE...[AS|IS] ... END
-                 * 
-                 * https://github.com/ALTIBASE/Documents/blob/master/Manuals/Altibase_7.3/eng/Stored%20Procedures%20Manual.md#create-typeset
-                 */
-                new TokenPredicatesCondition(
-                        SQLParserActionKind.BEGIN_BLOCK,
-                        tt.sequence(
-                                "CREATE",
-                                tt.optional("OR", "REPLACE"),
-                                "TYPESET"
-                        ),
-                        tt.sequence()
-                ),
-                new TokenPredicatesCondition(
-                        SQLParserActionKind.SKIP_SUFFIX_TERM,
-                        tt.token("END"),
-                        tt.sequence(";")
-                )
+                    tt.sequence(
+                            "CREATE",
+                            tt.optional("OR", "REPLACE"),
+                            "PACKAGE", "BODY"
+                    ),
+                    tt.sequence()
+            ),
+            new TokenPredicatesCondition(
+                    SQLParserActionKind.SKIP_SUFFIX_TERM,
+                    tt.sequence(
+                            "CREATE",
+                            tt.optional("OR", "REPLACE"),
+                            tt.alternative("FUNCTION", "PROCEDURE")
+                    ),
+                    tt.sequence(
+                            tt.alternative(
+                                    tt.sequence("RETURN", SQLTokenType.T_TYPE),
+                                    "deterministor", "pipelined", "parallel_enable", "result_cache",
+                                    ")",
+                                    tt.sequence("procedure", SQLTokenType.T_OTHER),
+                                    tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
+                                    ), ";")
+            ),
+            new TokenPredicatesCondition(
+                SQLParserActionKind.BEGIN_BLOCK,
+                tt.sequence(),
+                tt.sequence(tt.not("END"), "IF", tt.not("EXISTS"))
+            ),
+            /*
+             * Altibase only grammar
+             * Grammar conflict between PSM and Typeset
+             * PSM: CREATE...[AS|IS] ... BEGIN ... END
+             * TYPESET: CREATE...[AS|IS] ... END
+             *
+             * https://github.com/ALTIBASE/Documents/blob/master/Manuals/Altibase_7.3/eng/Stored%20Procedures%20Manual.md#create-typeset
+             */
+            new TokenPredicatesCondition(
+                    SQLParserActionKind.BEGIN_BLOCK,
+                    tt.sequence(
+                            "CREATE",
+                            tt.optional("OR", "REPLACE"),
+                            "TYPESET"
+                    ),
+                    tt.sequence()
+            ),
+            new TokenPredicatesCondition(
+                    SQLParserActionKind.SKIP_SUFFIX_TERM,
+                    tt.token("END"),
+                    tt.sequence(";")
+            )
         );
 
         return conditions;

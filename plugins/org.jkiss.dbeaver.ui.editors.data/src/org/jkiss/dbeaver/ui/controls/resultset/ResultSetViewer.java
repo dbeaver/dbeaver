@@ -63,6 +63,8 @@ import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.data.order.OrderingUtils;
+import org.jkiss.dbeaver.model.data.resultset.DBDDataUpdateListener;
+import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -125,10 +127,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
 /**
  * ResultSetViewer
  */
@@ -163,6 +166,10 @@ public class ResultSetViewer extends Viewer
 
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
     private static final String CSS_CLASS_RESULT_SET_VIEWER = "ResultSetViewer";
+
+    // Cached policy value (policy check is expensive)
+    public static final boolean DATA_EDIT_DISABLED = ApplicationPolicyProvider.getInstance().isPolicyEnabled(
+        ApplicationPolicyProvider.POLICY_DATA_EDIT);
 
     private IResultSetFilterManager filterManager;
     @NotNull
@@ -227,6 +234,7 @@ public class ResultSetViewer extends Viewer
     private HistoryStateItem curState = null;
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
+    private final ResultSetUndoRedoManager undoRedoManager = new ResultSetUndoRedoManager(this);
 
     private final AutoRefreshControl autoRefreshControl;
     private boolean actionsDisabled;
@@ -365,15 +373,12 @@ public class ResultSetViewer extends Viewer
                     }
                 });
 
-                this.panelFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                this.panelFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         CTabItem activeTab = panelFolder.getSelection();
                         if (activeTab != null) {
                             setActivePanel((String) activeTab.getData());
                         }
-                    }
-                });
+                    }));
                 this.panelFolder.addListener(SWT.Resize, event -> {
                     if (!viewerSash.isDisposed() && !isUIUpdateRunning) {
                         int[] weights = viewerSash.getWeights();
@@ -539,6 +544,8 @@ public class ResultSetViewer extends Viewer
             scheduleThemeUpdate();
         } else if (ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL.equals(property)) {
             updateFilterPanelVisibility();
+        } else if (ResultSetPreferences.RS_EDIT_UNDO_LEVEL.equals(property)) {
+            undoRedoManager.updateLimit();
         }
     }
 
@@ -947,14 +954,11 @@ public class ResultSetViewer extends Viewer
                     if (pd == activePresentationDescriptor) {
                         presentationSwitchFolder.setSelection(item);
                     }
-                    item.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    item.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                             if (e.widget != null && e.widget.getData() != null) {
                                 e.doit = switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
                             }
-                        }
-                    });
+                        }));
                 }
                 UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
                 recordModeButton = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.CHECK);
@@ -1035,14 +1039,11 @@ public class ResultSetViewer extends Viewer
                 {
                     panelsButton.setText(ResultSetMessages.controls_resultset_config_panels);
                     panelsButton.setImage(DBeaverIcons.getImage(UIIcon.PANEL_CUSTOMIZE));
-                    panelsButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    panelsButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                             showPanels(!isPanelsVisible(), true, true);
                             panelsButton.setChecked(isPanelsVisible());
                             updatePanelsButtons();
-                        }
-                    });
+                        }));
                     String toolTip = ActionUtils.findCommandDescription(IResultSetCommands.CMD_TOGGLE_PANELS, getSite(), false);
                     if (!CommonUtils.isEmpty(toolTip)) {
                         panelsButton.setToolTipText(toolTip);
@@ -1066,9 +1067,7 @@ public class ResultSetViewer extends Viewer
                         panelButton.setToolTipText(panel.getLabel() + " (" + toolTip + ")");
                     }
 
-                    panelButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    panelButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                             boolean isPanelVisible = isPanelsVisible() && isPanelVisible(panel.getId());
                             ResultSetHandlerTogglePanel.showResultsPanel(ResultSetViewer.this, panel.getId(), isPanelVisible);
                             panelButton.setChecked(!isPanelVisible);
@@ -1076,8 +1075,7 @@ public class ResultSetViewer extends Viewer
                             if (panelSwitchFolder != null) {
                                 panelSwitchFolder.redraw();
                             }
-                        }
-                    });
+                        }));
                     panelButton.setChecked(panelsVisible && isPanelVisible(panel.getId()));
                 }
 
@@ -1767,9 +1765,15 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @Nullable
+    @Override
+    public DBDAttributeBinding getDocumentAttribute() {
+        return model.getDocumentAttribute();
+    }
+
     @NotNull
     @Override
-    public DBDAttributeBinding[] getAttributes() throws DBException {
+    public DBDAttributeBinding[] getAttributes() {
         return model.getAttributes();
     }
 
@@ -1831,7 +1835,7 @@ public class ResultSetViewer extends Viewer
         @Nullable int[] rowIndexes,
         @Nullable Object value,
         boolean refreshHints) throws DBException {
-        boolean updated = model.updateCellValue(attr, row, rowIndexes, value, true);
+        boolean updated = undoRedoManager.updateCellValue(attr, row, rowIndexes, value);
         if (updated && refreshHints) {
             refreshHintCache(
                 Collections.singletonList(attr),
@@ -1847,11 +1851,29 @@ public class ResultSetViewer extends Viewer
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes
     ) {
-        model.resetCellValue(attr, row, rowIndexes);
+        if (!undoRedoManager.resetCellValue(attr, row, rowIndexes)) {
+            return;
+        }
         refreshHintCache(
             Collections.singletonList(attr),
             Collections.singletonList(row),
             rowIndexes);
+    }
+
+    public boolean canUndoCellEdit() {
+        return undoRedoManager.canUndo();
+    }
+
+    public boolean canRedoCellEdit() {
+        return undoRedoManager.canRedo();
+    }
+
+    public void undoCellEdit() {
+        undoRedoManager.undo();
+    }
+
+    public void redoCellEdit() {
+        undoRedoManager.redo();
     }
 
     @Override
@@ -2052,9 +2074,7 @@ public class ResultSetViewer extends Viewer
         }
         final IMenuService menuService = getSite().getService(IMenuService.class);
 
-        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT) &&
-            !ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)
-        ) {
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT) && !DATA_EDIT_DISABLED) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
@@ -2354,7 +2374,7 @@ public class ResultSetViewer extends Viewer
                 return status;
             }
         }
-        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+        if (DATA_EDIT_DISABLED) {
             return UIMessages.dialog_policy_data_edit_msg;
         }
         return null;
@@ -2724,6 +2744,7 @@ public class ResultSetViewer extends Viewer
      */
     void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] attributes)
     {
+        UIUtils.syncExec(undoRedoManager::clear);
         model.setMetaData(resultSet, attributes);
         activePresentation.clearMetaData();
     }
@@ -2733,6 +2754,7 @@ public class ResultSetViewer extends Viewer
         if (viewerPanel.isDisposed()) {
             return;
         }
+        UIUtils.syncExec(undoRedoManager::clear);
         this.curRow = null;
         this.model.setData(monitor, rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
@@ -2772,6 +2794,9 @@ public class ResultSetViewer extends Viewer
     }
 
     void appendData(@NotNull DBRProgressMonitor monitor, List<Object[]> rows, boolean resetOldRows) {
+        if (resetOldRows) {
+            UIUtils.syncExec(undoRedoManager::clear);
+        }
         model.appendData(monitor, rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
@@ -2851,7 +2876,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean isReadOnly() {
-        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+        if (DATA_EDIT_DISABLED) {
             return true;
         }
         if (model.isUpdateInProgress() ||
@@ -4592,6 +4617,7 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(false);
         }
+        undoRedoManager.updateActions();
     }
 
     void releaseDataReadLock() {
@@ -4601,6 +4627,7 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(false);
         }
+        undoRedoManager.updateActions();
     }
 
     boolean acquireDataReadLock() {
@@ -4610,11 +4637,17 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(true);
         }
+        undoRedoManager.updateActions();
         return true;
+    }
+
+    void clearCellEditHistory() {
+        undoRedoManager.clear();
     }
 
     public void clearData(boolean clearMetaData)
     {
+        undoRedoManager.clear();
         this.model.releaseAllData();
         this.model.clearData();
         this.curRow = null;
@@ -4661,15 +4694,19 @@ public class ResultSetViewer extends Viewer
 
     /**
      * Saves changes to database
+     *
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
-    private boolean saveChanges(@Nullable final DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings, @Nullable final ResultSetPersister.DataUpdateListener listener)
-    {
+    private boolean saveChanges(
+        @Nullable final DBRProgressMonitor monitor,
+        @NotNull ResultSetSaveSettings settings,
+        @Nullable final DBDDataUpdateListener listener
+    ) {
         UIUtils.syncExec(() -> getActivePresentation().applyChanges());
         try {
             final ResultSetPersister persister = createDataPersister(false);
-            final ResultSetPersister.DataUpdateListener applyListener = success -> {
+            final DBDDataUpdateListener applyListener = success -> {
                 if (listener != null) {
                     listener.onUpdate(success);
                 }
@@ -4683,19 +4720,49 @@ public class ResultSetViewer extends Viewer
                         log.error("Error refreshing rows after update", e);
                     }
                 }
+                if (success) {
+                    UIUtils.syncExec(undoRedoManager::clear);
+                }
                 UIUtils.syncExec(() -> autoRefreshControl.scheduleAutoRefresh(!success));
             };
 
-            return persister.applyChanges(monitor, false, settings, applyListener);
+
+            return executeChanges(monitor, settings, persister, applyListener, false);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
             return false;
         }
     }
 
+    private boolean executeChanges(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull ResultSetSaveSettings settings,
+        @NotNull ResultSetPersister persister,
+        @Nullable DBDDataUpdateListener applyListener,
+        boolean generateScript
+    ) throws DBException {
+        if (monitor == null) {
+            try {
+                UIUtils.runInProgressService(monitor1 -> {
+                    try {
+                        persister.prepareStatements(monitor1, settings);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                throw new DBException("Error preparing update statements", e.getTargetException());
+            } catch (InterruptedException e) {
+                return false;
+            }
+        } else {
+            persister.prepareStatements(monitor, settings);
+        }
+        return persister.execute(monitor, generateScript, settings, applyListener);
+    }
+
     @Override
-    public void rejectChanges()
-    {
+    public void rejectChanges() {
         if (!isDirty()) {
             return;
         }
@@ -4705,6 +4772,7 @@ public class ResultSetViewer extends Viewer
         fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
         try {
             createDataPersister(true).rejectChanges();
+            undoRedoManager.clear();
             if (model.getAllRows().isEmpty()) {
                 curRow = null;
                 selectedRecords = new int[0];
@@ -4725,12 +4793,13 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @NotNull
     @Override
     public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings) {
         try {
             ResultSetPersister persister = createDataPersister(false);
-            persister.applyChanges(monitor, true, settings, null);
-            return persister.getScript();
+            executeChanges(monitor, settings, persister, null, true);
+            return persister.getActions();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);
             return Collections.emptyList();
@@ -4892,6 +4961,67 @@ public class ResultSetViewer extends Viewer
         return curRow;
     }
 
+    @Override
+    public void preserveNewRows(int rowIndex, int rowCount) {
+        if (rowCount <= 0) {
+            return;
+        }
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            throw new IllegalStateException("Can't add rows in disconnected results");
+        }
+
+        final DBDAttributeBinding docAttribute = model.getDocumentAttribute();
+        final DBDAttributeBinding[] attributes = model.getAttributes();
+        final List<Object[]> rows = new ArrayList<>(rowCount);
+        try (DBCSession session = executionContext.openSession(
+            new VoidProgressMonitor(),
+            DBCExecutionPurpose.UTIL,
+            ResultSetMessages.controls_resultset_viewer_add_new_row_context_name
+        )) {
+            for (int row = 0; row < rowCount; row++) {
+                final Object[] cells = new Object[docAttribute == null ? attributes.length : 1];
+                if (docAttribute != null) {
+                    try {
+                        cells[0] = docAttribute.getValueHandler().createNewValueObject(session, docAttribute.getAttribute());
+                    } catch (DBCException e) {
+                        log.warn(e);
+                    }
+                } else {
+                    for (int index = 0; index < attributes.length; index++) {
+                        final DBDAttributeBinding metaAttr = attributes[index];
+                        if (!metaAttr.isPseudoAttribute() && !metaAttr.isAutoGenerated()) {
+                            try {
+                                cells[index] = metaAttr.getValueHandler().createNewValueObject(session, metaAttr.getAttribute());
+                            } catch (DBCException e) {
+                                log.warn(e);
+                            }
+                        }
+                    }
+                }
+                rows.add(cells);
+            }
+        }
+
+        List<ResultSetRow> newRows = model.preserveNewRows(rowIndex, rows);
+        this.curRow = newRows.getLast();
+        if (recordMode) {
+            this.selectedRecords = new int[]{this.curRow.getVisualNumber()};
+        } else {
+            int[] updatedSelection = Arrays.copyOf(this.selectedRecords, this.selectedRecords.length + rowCount);
+            for (int i = 0; i < this.selectedRecords.length; i++) {
+                if (updatedSelection[i] >= rowIndex) {
+                    updatedSelection[i] += rowCount;
+                }
+            }
+            for (int i = 0; i < rowCount; i++) {
+                updatedSelection[this.selectedRecords.length + i] = rowIndex + i;
+            }
+            Arrays.sort(updatedSelection);
+            this.selectedRecords = updatedSelection;
+        }
+    }
+
     private int[] selectedRowsIncludingNewRow(int newRowIndex) {
         int[] correctedSelectedRowsIndexes = Arrays.copyOf(this.selectedRecords, this.selectedRecords.length);
         for (int i = 0; i < correctedSelectedRowsIndexes.length; i++) {
@@ -5042,6 +5172,8 @@ public class ResultSetViewer extends Viewer
             return;
         }
 
+        undoRedoManager.clear();
+
         int rowsRemoved = 0;
         int lastRowNum = -1;
         for (ResultSetRow row : rowsToDelete) {
@@ -5116,6 +5248,7 @@ public class ResultSetViewer extends Viewer
     }
 
     void fireResultSetChange() {
+        undoRedoManager.updateActions();
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetChange();
         }

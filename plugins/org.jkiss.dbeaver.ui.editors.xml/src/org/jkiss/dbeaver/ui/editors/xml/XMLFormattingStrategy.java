@@ -24,7 +24,6 @@ import org.xml.sax.InputSource;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -53,7 +52,7 @@ public class XMLFormattingStrategy extends ContextBasedFormattingStrategy {
             return content;
         }
         try {
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            TransformerFactory transformerFactory = XMLUtils.newSecureTransformerFactory();
             transformerFactory.setAttribute("indent-number", 2);
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -61,12 +60,8 @@ public class XMLFormattingStrategy extends ContextBasedFormattingStrategy {
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             }
 
-            SAXParserFactory spf = SAXParserFactory.newInstance();
+            SAXParserFactory spf = XMLUtils.newSecureSAXParserFactory();
             spf.setNamespaceAware(true);
-            spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            spf.setFeature(XMLUtils.FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
-            spf.setFeature(XMLUtils.FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
-            spf.setFeature(XMLUtils.FEATURE_DISALLOW_DOCTYPE_DECL, true);
 
             Source src = new SAXSource(spf.newSAXParser().getXMLReader(), new InputSource(new StringReader(content)));
 

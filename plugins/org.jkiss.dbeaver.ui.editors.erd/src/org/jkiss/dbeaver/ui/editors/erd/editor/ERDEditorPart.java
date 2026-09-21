@@ -317,7 +317,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         ActionUtils.evaluatePropertyState(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_REDO);
 
         // Update actions
-        setDirty(getCommandStack().isDirty());
+        UIUtils.asyncExec(() -> setDirty(getCommandStack().isDirty()));
 
         super.stackChanged(event);
     }
@@ -802,6 +802,18 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             proposedFileName = String.join(" - ", parts);
         }
         saveDialog.setFileName(proposedFileName);
+        if (!CommonUtils.isEmpty(exportMruFilename)) {
+            int extensionIndex = exportMruFilename.lastIndexOf('.');
+            if (extensionIndex >= 0) {
+                String extension = exportMruFilename.substring(extensionIndex + 1);
+                for (int i = 0; i < allFormats.size(); i++) {
+                    if (allFormats.get(i).getExtension().equalsIgnoreCase(extension)) {
+                        saveDialog.setFilterIndex(i);
+                        break;
+                    }
+                }
+            }
+        }
 
         String filePath = DialogUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().isEmpty()) {

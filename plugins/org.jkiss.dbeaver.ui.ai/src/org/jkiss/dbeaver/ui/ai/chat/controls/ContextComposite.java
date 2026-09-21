@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.ai.chat.controls;
 import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
@@ -58,10 +59,9 @@ import org.jkiss.utils.CommonUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class ContextComposite extends Composite {
 
@@ -78,7 +78,6 @@ public class ContextComposite extends Composite {
     private final Label contextName;
     private final MenuManager scopeDropDown;
     private final MenuManager contextDropDown;
-    private final MenuManager settingsDropDown;
     private final MenuManager conversationDropDown;
     private final ToolBarManager toolBarManager;
     private final Composite conversationComposite;
@@ -193,10 +192,6 @@ public class ContextComposite extends Composite {
                     DBWorkbench.getPlatformUI().showError("Error filling context drop-down", "Can't fill context drop-down", e);
                 }
             });
-
-            settingsDropDown = new MenuManager();
-            settingsDropDown.setRemoveAllWhenShown(true);
-            settingsDropDown.addMenuListener(this::contributeSettingActions);
         }
 
         toolBarManager = new ToolBarManager(SWT.FLAT);
@@ -259,7 +254,6 @@ public class ContextComposite extends Composite {
         super.dispose();
         toolBarManager.dispose();
         contextDropDown.dispose();
-        settingsDropDown.dispose();
         scopeDropDown.dispose();
     }
 
@@ -299,13 +293,11 @@ public class ContextComposite extends Composite {
     }
 
     private void showContextDropDown() {
-        Control[] ccc = contextComposite.getChildren();
-        showDropDown(ccc[ccc.length - 1], 0, contextDropDown);
+        showDropDown(contextComposite, 0, contextDropDown);
     }
 
     private void showConversationDropDown() {
-        Control[] ccc = conversationComposite.getChildren();
-        showDropDown(ccc[ccc.length - 1], 0, conversationDropDown);
+        showDropDown(conversationComposite, 0, conversationDropDown);
     }
 
     public void showScopeDropDown() {
@@ -320,7 +312,7 @@ public class ContextComposite extends Composite {
         if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             AIUIUtils.showPreferences(getShell());
         } else {
-            showDropDown(toolBarManager.getControl(), toolBarManager.getControl().getSize().x / 2, settingsDropDown);
+            showScopeDropDown();
         }
     }
 
@@ -342,7 +334,7 @@ public class ContextComposite extends Composite {
             .filter(DBPDataSourceContainer::isConnected)
             .toList());
         if (containers.isEmpty()) {
-            manager.add(new EmptyAction("No active connections"));
+            manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_no_active_connections));
         }
         for (DBPDataSourceContainer container : containers) {
             manager.add(new Action(container.getName(), DBeaverIcons.getImageDescriptor(container.getDriver().getIcon())) {
@@ -362,7 +354,10 @@ public class ContextComposite extends Composite {
         }
         if (chat.getCompletionSettings() != null) {
             manager.add(new Separator());
-            manager.add(new Action("No connection", DBeaverIcons.getImageDescriptor(DBIcon.DATABASE_DEFAULT)) {
+            manager.add(new Action(
+                AIChatMessagesUI.ai_chat_context_menu_no_connection,
+                DBeaverIcons.getImageDescriptor(DBIcon.DATABASE_DEFAULT)
+            ) {
                 @Override
                 public void run() {
                     try {
@@ -410,18 +405,18 @@ public class ContextComposite extends Composite {
     private void fillScopeDropDown(@NotNull IMenuManager manager) {
         AIContextSettings settings = chat.getCompletionSettings();
         if (settings == null) {
-            manager.add(new EmptyAction("No database connection selected"));
-            manager.add(new Action("Select connection...") {
+            manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_no_database_connection));
+            manager.add(new Action(AIChatMessagesUI.ai_chat_context_menu_select_connection) {
                 @Override
                 public void run() {
                     showContextDropDown();
                 }
             });
         } else {
-            manager.add(new EmptyAction("Configure AI context"));
+            manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_settings_label));
             manager.add(new Separator());
 
-            manager.add(new EmptyAction("Applies to"));
+            manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_applies_to));
             manager.add(new ChangeContextLevelAction(true));
             manager.add(new ChangeContextLevelAction(false));
 
@@ -431,49 +426,52 @@ public class ContextComposite extends Composite {
             if (executionContext == null) {
                 manager.add(new EmptyAction(
                     dsContainer == null ?
-                        "No database connection selected" :
+                        AIChatMessagesUI.ai_chat_context_menu_no_database_connection :
                         (dsContainer.isConnecting() ?
-                            "Database is being connected..." :
-                            "Database is not connected")
+                            AIChatMessagesUI.ai_chat_context_menu_database_connecting :
+                            AIChatMessagesUI.ai_chat_context_menu_database_not_connected)
                 ));
-                return;
-            }
-
-            manager.add(new EmptyAction("Metadata sent to AI"));
-            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-            boolean showSchemas = false;
-            boolean showCatalogs = false;
-            if (contextDefaults != null) {
-                showSchemas = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
-                showCatalogs = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
-            }
-
-            for (AIDatabaseScope scope : AIDatabaseScope.values()) {
-                if ((scope == AIDatabaseScope.CURRENT_SCHEMA && !showSchemas) ||
-                    scope == AIDatabaseScope.CURRENT_DATABASE && !showCatalogs
-                ) {
-                    if (settings.getScope() == scope) {
-                        AIDatabaseScope newScope = scope == AIDatabaseScope.CURRENT_SCHEMA ?
-                            AIDatabaseScope.CURRENT_DATABASE : AIDatabaseScope.CURRENT_DATASOURCE;
-                        log.trace("AI scope fallback to " + newScope);
-                        settings.setScope(newScope);
-                    }
-                    continue;
+            } else {
+                manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_metadata_sent));
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+                boolean showSchemas = false;
+                boolean showCatalogs = false;
+                if (contextDefaults != null) {
+                    showSchemas = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                    showCatalogs = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
                 }
-                manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
+
+                for (AIDatabaseScope scope : AIDatabaseScope.values()) {
+                    if ((scope == AIDatabaseScope.CURRENT_SCHEMA && !showSchemas) ||
+                        scope == AIDatabaseScope.CURRENT_DATABASE && !showCatalogs
+                    ) {
+                        if (settings.getScope() == scope) {
+                            AIDatabaseScope newScope = scope == AIDatabaseScope.CURRENT_SCHEMA ?
+                                AIDatabaseScope.CURRENT_DATABASE : AIDatabaseScope.CURRENT_DATASOURCE;
+                            log.trace("AI scope fallback to " + newScope);
+                            settings.setScope(newScope);
+                        }
+                        continue;
+                    }
+                    manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
+                }
             }
         }
 
         manager.add(new Separator());
-        manager.add(new EmptyAction("Active configuration"));
-        for (AIConfigurationProfile profile : AISettingsManager.getInstance().getSettings().getConfigurations()) {
-            manager.add(new ChangeProfileAction(profile));
-        }
+        manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_active_configuration));
+        Stream.of(AISettingsManager.getInstance().getSettings().getConfigurations())
+            .sorted(Comparator.comparing(AIConfigurationProfile::getProfileName, String.CASE_INSENSITIVE_ORDER))
+            .map(ChangeProfileAction::new)
+            .forEach(manager::add);
+
+        manager.add(new Separator());
+        contributeSettingActions(manager);
 
         if (RuntimeUtils.isWindows()) {
             // Highlight selected item
-            manager.addMenuListener(mm -> getDisplay().asyncExec(() -> {
-                Menu swtMenu = ((MenuManager) mm).getMenu();
+            UIUtils.asyncExec(() -> {
+                Menu swtMenu = ((MenuManager) manager).getMenu();
                 if (swtMenu != null && !swtMenu.isDisposed()) {
                     for (MenuItem item : swtMenu.getItems()) {
                         if (item.getData() instanceof ActionContributionItem aci &&
@@ -485,7 +483,7 @@ public class ContextComposite extends Composite {
                         }
                     }
                 }
-            }));
+            });
         }
     }
 
@@ -508,20 +506,13 @@ public class ContextComposite extends Composite {
         setToolTipWithShortcut(changeScopeAction, AIChatController.CMD_OPEN_FILTERS);
 
         manager.add(changeScopeAction);
-        Action settingsAction = new Action(AIChatMessagesUI.ai_chat_settings_label, IAction.AS_DROP_DOWN_MENU) {
-            {
-                setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-            }
-
+        Action settingsAction = new Action(
+            AIChatMessagesUI.ai_chat_settings_label,
+            DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)
+        ) {
             @Override
             public void run() {
                 openSettings();
-            }
-
-            @NotNull
-            @Override
-            public IMenuCreator getMenuCreator() {
-                return new MenuCreator(widget -> settingsDropDown);
             }
         };
         setToolTipWithShortcut(settingsAction, AIChatController.CMD_OPEN_SETTINGS);
@@ -535,13 +526,19 @@ public class ContextComposite extends Composite {
     }
 
     private void contributeSettingActions(@NotNull IContributionManager manager) {
-        manager.add(new EmptyAction("Messages"));
-        manager.add(new SettingsToggleAction("Show message time", AIConstants.AI_CHAT_SHOW_MESSAGE_TIME));
-        manager.add(new SettingsToggleAction("Show time spent", AIConstants.AI_CHAT_SHOW_TIME_SPENT));
-        manager.add(new SettingsToggleAction("Show tokens spent", AIConstants.AI_CHAT_SHOW_TOKENS_SPENT));
+        manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_messages));
+        manager.add(new SettingsToggleAction(
+            AIChatMessagesUI.ai_chat_context_menu_show_message_time, AIConstants.AI_CHAT_SHOW_MESSAGE_TIME));
+        manager.add(new SettingsToggleAction(
+            AIChatMessagesUI.ai_chat_context_menu_show_time_spent, AIConstants.AI_CHAT_SHOW_TIME_SPENT));
+        manager.add(new SettingsToggleAction(
+            AIChatMessagesUI.ai_chat_context_menu_show_tokens_spent, AIConstants.AI_CHAT_SHOW_TOKENS_SPENT));
         manager.add(new Separator());
-        manager.add(new EmptyAction("Chat"));
-        manager.add(new SettingsToggleAction("Show total tokens spent", AIConstants.AI_CHAT_SHOW_TOTAL_TOKENS_SPENT));
+        manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_chat));
+        manager.add(new SettingsToggleAction(
+            AIChatMessagesUI.ai_chat_context_menu_show_total_tokens_spent, AIConstants.AI_CHAT_SHOW_TOTAL_TOKENS_SPENT));
+        manager.add(new SettingsToggleAction(
+            AIChatMessagesUI.ai_chat_show_profile_and_model, AIConstants.AI_CHAT_SHOW_PROFILE_AND_MODEL, true));
     }
 
     private void contributeConversationActions(@NotNull IContributionManager manager) {
@@ -554,7 +551,7 @@ public class ContextComposite extends Composite {
         setToolTipWithShortcut(addConversationAction, AIChatController.CMD_NEW_CONVERSATION);
         manager.add(addConversationAction);
         if (chat.getChatSession().getStorage().canPersist()) {
-            deleteConversationAction = new Action(AIChatMessagesUI.ai_chat_conversation_delete_label, DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
+            deleteConversationAction = new Action(AIChatMessagesUI.ai_chat_conversation_delete_label, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE)) {
                 @Override
                 public void run() {
                     chat.deleteActiveConversationWithConfirmation();
@@ -596,7 +593,12 @@ public class ContextComposite extends Composite {
         private final boolean dataSourceContext;
 
         public ChangeContextLevelAction(boolean dataSourceContext) {
-            super(dataSourceContext ? "This connection" : "This conversation", Action.AS_RADIO_BUTTON);
+            super(
+                dataSourceContext ?
+                    AIChatMessagesUI.ai_chat_context_menu_this_connection :
+                    AIChatMessagesUI.ai_chat_context_menu_this_conversation,
+                Action.AS_RADIO_BUTTON
+            );
             this.dataSourceContext = dataSourceContext;
 
             boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AIContextSettingsDataSource;
@@ -671,18 +673,20 @@ public class ContextComposite extends Composite {
                 case CURRENT_SCHEMA -> {
                     DBSSchema defaultSchema = contextDefaults == null ? null : contextDefaults.getDefaultSchema();
                     yield title + " (" + (defaultSchema == null ?
-                        "No schema selected" :
+                        AIChatMessagesUI.ai_chat_context_menu_no_schema_selected :
                         DBUtils.getObjectFullName(defaultSchema, DBPEvaluationContext.UI)) + ")";
                 }
                 case CURRENT_DATABASE -> {
                     DBSCatalog defaultDatabase = contextDefaults == null ? null : contextDefaults.getDefaultCatalog();
                     yield title + " (" + (defaultDatabase == null ?
-                        "No database selected" :
+                        AIChatMessagesUI.ai_chat_context_menu_no_database_selected :
                         DBUtils.getObjectFullName(defaultDatabase, DBPEvaluationContext.UI)) + ")";
                 }
-                case CURRENT_DATASOURCE -> "All objects (" + dsContainer.getName() + ")";
+                case CURRENT_DATASOURCE -> NLS.bind(
+                    AIChatMessagesUI.ai_chat_context_menu_all_objects, dsContainer.getName());
                 case CUSTOM -> title + " ..." + (settings.getScope() == scope ?
-                    "(" + (ArrayUtils.isEmpty(settings.getCustomObjectIds()) ? "Empty" : settings.getCustomObjectIds().length) + ")" : "");
+                    "(" + (ArrayUtils.isEmpty(settings.getCustomObjectIds()) ?
+                        AIChatMessagesUI.ai_chat_context_menu_empty : settings.getCustomObjectIds().length) + ")" : "");
                 default -> title;
             };
         }
@@ -757,7 +761,7 @@ public class ContextComposite extends Composite {
             if (!isChecked()) {
                 return;
             }
-            chat.getActiveConversation().setProfile(profile);
+            chat.setConversationProfile(chat.getActiveConversation(), profile);
         }
     }
 

@@ -46,7 +46,7 @@ public interface DBCPlanNode extends DBPObject {
     @Nullable
     DBCPlanNode getParent();
 
-    @NotNull
+    @Nullable
     Collection<? extends DBCPlanNode> getNested();
 
 }

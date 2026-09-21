@@ -128,7 +128,10 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder radioButton(@NotNull UIObservable<String> text, @NotNull Consumer<? super ButtonBuilder> handler) {
+    public UIRowBuilder radioButton(
+        @NotNull UIObservable<String> text,
+        @NotNull Consumer<? super ButtonBuilder> handler
+    ) {
         var builder = new ButtonBuilderImpl(text, null, Kind.RADIO);
         handler.accept(builder);
         controls.add(builder);

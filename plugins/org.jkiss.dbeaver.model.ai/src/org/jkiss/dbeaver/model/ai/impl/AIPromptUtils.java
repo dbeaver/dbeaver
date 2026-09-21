@@ -88,7 +88,7 @@ public class AIPromptUtils {
                 lines.add("The database connection is read-only. Data modification is restricted. Database structure cannot be changed.");
             }
         }
-        lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
+        lines.add("Current date: " + DateTimeFormatter.ISO_LOCAL_DATE.format(ZonedDateTime.now()));
 
         return lines.toArray(String[]::new);
     }
@@ -144,8 +144,13 @@ public class AIPromptUtils {
         if (identifierQuoteStrings == null || identifierQuoteStrings.length == 0) {
             return null;
         }
-
-        return "Use " + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + " to quote identifiers if needed.";
+        String baseRule = "Use " + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + " to quote identifiers";
+        if (dialect.isQuoteIdentifiersAlways()) {
+            baseRule += ". Always quote all database objects identifiers. It is better to leave aliases unquoted.";
+        } else {
+            baseRule += " if needed.";
+        }
+        return baseRule;
     }
 
     @Nullable

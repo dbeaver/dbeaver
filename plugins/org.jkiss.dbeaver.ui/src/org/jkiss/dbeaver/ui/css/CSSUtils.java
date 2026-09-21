@@ -100,41 +100,6 @@ public class CSSUtils {
         }
     }
 
-    public static void refreshConnectionTypeControls(@NotNull Control root) {
-        if (root.isDisposed()) {
-            return;
-        }
-        if (root instanceof ToolBar toolBar) {
-            refreshConnectionTypeToolbar(toolBar);
-            return;
-        }
-        if (isDatabaseColored(root) && root instanceof Composite composite) {
-            Color bgColor = getCurrentEditorConnectionColor(root);
-            Color effectiveBg = bgColor != null ? bgColor : UIStyles.getDefaultWidgetBackground();
-            composite.setBackground(effectiveBg);
-            composite.redraw();
-        }
-        if (root instanceof Composite parent) {
-            for (Control child : parent.getChildren()) {
-                refreshConnectionTypeControls(child);
-            }
-        }
-    }
-
-    public static void refreshConnectionTypeToolbar(@NotNull ToolBar toolBar) {
-        if (toolBar.isDisposed()) {
-            return;
-        }
-        Color bgColor = getCurrentEditorConnectionColor(toolBar);
-        if (bgColor == null && !isDatabaseColored(toolBar)) {
-            return;
-        }
-        markConnectionTypeColor(toolBar);
-        Color effectiveBg = bgColor != null ? bgColor : UIStyles.getDefaultWidgetBackground();
-        toolBar.setBackground(effectiveBg);
-        toolBar.redraw();
-    }
-
     public static void setWidgetDefaultBackGround(@NotNull Control widget) {
         Color bg = CSSUtils.getCurrentEditorConnectionColor(widget);
         if (bg == null && !(widget instanceof Composite)) {

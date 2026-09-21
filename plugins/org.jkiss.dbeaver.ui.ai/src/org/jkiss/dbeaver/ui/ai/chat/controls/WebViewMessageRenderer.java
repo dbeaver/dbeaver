@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.utils.DurationFormat;
 import org.jkiss.dbeaver.utils.DurationFormatter;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -53,15 +52,18 @@ final class WebViewMessageRenderer {
 
     private final Browser browser;
     private final Supplier<DBPDataSource> dataSourceSupplier;
+    private final WebCSSInitializer cssInitializer;
     private SQLSyntaxManager syntaxManager;
     private SQLRuleScanner ruleScanner;
 
     WebViewMessageRenderer(
         @NotNull Browser browser,
-        @NotNull Supplier<DBPDataSource> dataSourceSupplier
+        @NotNull Supplier<DBPDataSource> dataSourceSupplier,
+        @NotNull WebCSSInitializer cssInitializer
     ) {
         this.browser = browser;
         this.dataSourceSupplier = dataSourceSupplier;
+        this.cssInitializer = cssInitializer;
     }
 
     @Nullable
@@ -117,7 +119,7 @@ final class WebViewMessageRenderer {
         DBPImage icon = AIChatUtils.getRoleIcon(message.message());
         String iconPath = "";
         try {
-            iconPath = RuntimeUtils.getPlatformFile(icon.getLocation()).toAbsolutePath().toString();
+            iconPath = cssInitializer.getResourceUrl(icon);
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
         }
@@ -283,7 +285,7 @@ final class WebViewMessageRenderer {
                 attachmentData.put("name", file.getFileName().toString());
                 String fileIconPath = null;
                 try {
-                    fileIconPath = RuntimeUtils.getPlatformFile(attachment.getIcon(file).getLocation()).toAbsolutePath().toString();
+                    fileIconPath = cssInitializer.getResourceUrl(attachment.getIcon(file));
                 } catch (IOException e) {
                     log.error("Error getting icon path for " + file.getFileName(), e);
                 }
@@ -321,6 +323,8 @@ final class WebViewMessageRenderer {
                 "showTokensSpent", AIConstants.AI_CHAT_SHOW_TOKENS_SPENT,
                 "showTotalTokensSpent", AIConstants.AI_CHAT_SHOW_TOTAL_TOKENS_SPENT
             ),
+            "notice",
+            AIChatMessagesUI.ai_chat_ai_notice,
             "a11y",
             Map.of(
                 "transcriptLabel", AIChatMessagesUI.ai_chat_a11y_transcript_label,
@@ -355,7 +359,7 @@ final class WebViewMessageRenderer {
     private Map<String, String> getActionData(@NotNull DBIcon icon, @NotNull String tooltipMessage) {
         Map<String, String> iconData;
         try {
-            iconData = Map.of("icon", RuntimeUtils.getPlatformFile(icon.getLocation()).toString(), "tooltip", tooltipMessage);
+            iconData = Map.of("icon", cssInitializer.getResourceUrl(icon), "tooltip", tooltipMessage);
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
             iconData = Map.of("icon", "", "tooltip", tooltipMessage);

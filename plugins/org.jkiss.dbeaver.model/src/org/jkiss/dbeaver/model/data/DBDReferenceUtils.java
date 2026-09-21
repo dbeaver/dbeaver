@@ -82,6 +82,7 @@ public final class DBDReferenceUtils {
                     "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>"
                     + refAttrs.size() + ")");
         }
+        boolean useDisjunctiveNormalForm = ownAttrs.size() > 1 && rows.size() > 1;
         // Add association constraints
         for (int i = 0; i < ownAttrs.size(); i++) {
             DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
@@ -96,11 +97,13 @@ public final class DBDReferenceUtils {
                 DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, DBDAttributeConstraint.NULL_VISUAL_POSITION);
                 constraint.setVisible(true);
                 constraints.add(constraint);
-                createFilterConstraint(sourceModel, rows, ownBinding, constraint);
+                createFilterConstraint(sourceModel, rows, ownBinding, constraint, useDisjunctiveNormalForm);
             }
 
         }
-        return new DBDReferenceNavigation(targetEntity, new DBDDataFilter(constraints));
+        DBDDataFilter filter = new DBDDataFilter(constraints);
+        filter.setUseDisjunctiveNormalForm(useDisjunctiveNormalForm);
+        return new DBDReferenceNavigation(targetEntity, filter);
     }
 
     @NotNull
@@ -136,6 +139,7 @@ public final class DBDReferenceUtils {
         if (ownAttrs.isEmpty()) {
             throw new DBException("Association '" + DBUtils.getQuotedIdentifier(association) + "' has empty column list");
         }
+        boolean useDisjunctiveNormalForm = ownAttrs.size() > 1 && rows.size() > 1;
         // Add association constraints
         for (int i = 0; i < refAttrs.size(); i++) {
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
@@ -150,18 +154,21 @@ public final class DBDReferenceUtils {
                 constraint.setVisible(true);
                 constraints.add(constraint);
 
-                createFilterConstraint(sourceModel, rows, attrBinding, constraint);
+                createFilterConstraint(sourceModel, rows, attrBinding, constraint, useDisjunctiveNormalForm);
 
             }
         }
-        return new DBDReferenceNavigation(targetEntity, new DBDDataFilter(constraints));
+        DBDDataFilter filter = new DBDDataFilter(constraints);
+        filter.setUseDisjunctiveNormalForm(useDisjunctiveNormalForm);
+        return new DBDReferenceNavigation(targetEntity, filter);
     }
 
     private static void createFilterConstraint(
         @NotNull DBDResultSetModel sourceModel,
         @NotNull List<? extends DBDValueRow> rows,
         @NotNull DBDAttributeBinding attrBinding,
-        @NotNull DBDAttributeConstraint constraint
+        @NotNull DBDAttributeConstraint constraint,
+        boolean useDisjunctiveNormalForm
     ) throws DBException {
         if (rows.size() == 1) {
             Object keyValue = sourceModel.getCellValue(attrBinding, rows.getFirst());
@@ -173,7 +180,7 @@ public final class DBDReferenceUtils {
                 keyValues[k] = sourceModel.getCellValue(attrBinding, rows.get(k));
             }
             DBCLogicalOperator[] supportedOperators = attrBinding.getValueHandler().getSupportedOperators(attrBinding);
-            if (ArrayUtils.contains(supportedOperators, DBCLogicalOperator.IN)) {
+            if (useDisjunctiveNormalForm || ArrayUtils.contains(supportedOperators, DBCLogicalOperator.IN)) {
                 constraint.setOperator(DBCLogicalOperator.IN);
             } else {
                 constraint.setOperator(DBCLogicalOperator.EQUALS);

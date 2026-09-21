@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -42,13 +43,41 @@ public class AIToolboxRegistry implements AIToolboxManager {
     public static final String TOOLS_CONFIG_FILE_NAME = "ai-tools.json";
 
     private final AIToolboxInternalDescriptor internalToolbox;
-    private final Map<String, AIToolboxDescriptor> externalToolboxes = new LinkedHashMap<>();
+    protected final Map<String, AIToolboxDescriptor> externalToolboxes = new LinkedHashMap<>();
     private AIFunctionSettings functionSettings;
     private final Map<String, AIFunctionCategoryDescriptor> categoriesById = new LinkedHashMap<>();
 
     public AIToolboxRegistry() {
         internalToolbox = new AIToolboxInternalDescriptor();
         // Load function settings
+        loadFunctionSettings();
+
+        for (IConfigurationElement el : Platform.getExtensionRegistry().getConfigurationElementsFor(
+            AIFunctionInternalDescriptor.EXTENSION_ID)
+        ) {
+            if ("category".equals(el.getName())) {
+                var cd = new AIFunctionCategoryDescriptor(el);
+                categoriesById.put(cd.getId(), cd);
+            }
+        }
+        loadExternalToolboxes();
+        WorkspaceConfigEventManager.addConfigChangedListener(
+            TOOLS_CONFIG_FILE_NAME, o -> loadFunctionSettings()
+        );
+    }
+
+    protected void loadExternalToolboxes() {
+        try {
+            List<AIToolboxDescriptor> toolboxes = readExternalToolboxes();
+            for (AIToolboxDescriptor toolbox : toolboxes) {
+                externalToolboxes.put(toolbox.getToolboxId(), toolbox);
+            }
+        } catch (DBException e) {
+            log.error("Error loading MCP configuration", e);
+        }
+    }
+
+    private void loadFunctionSettings() {
         try {
             String mcpConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(TOOLS_CONFIG_FILE_NAME);
             if (!CommonUtils.isEmpty(mcpConfig)) {
@@ -63,23 +92,6 @@ public class AIToolboxRegistry implements AIToolboxManager {
         }
         if (functionSettings == null) {
             functionSettings = new AIFunctionSettings();
-        }
-
-        for (IConfigurationElement el : Platform.getExtensionRegistry().getConfigurationElementsFor(
-            AIFunctionInternalDescriptor.EXTENSION_ID)
-        ) {
-            if ("category".equals(el.getName())) {
-                var cd = new AIFunctionCategoryDescriptor(el);
-                categoriesById.put(cd.getId(), cd);
-            }
-        }
-        try {
-            List<AIToolboxDescriptor> toolboxes = readExternalToolboxes();
-            for (AIToolboxDescriptor toolbox : toolboxes) {
-                externalToolboxes.put(toolbox.getToolboxId(), toolbox);
-            }
-        } catch (DBException e) {
-            log.error("Error loading MCP configuration", e);
         }
     }
 

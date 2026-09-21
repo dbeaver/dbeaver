@@ -427,7 +427,6 @@ public class AIChatSession {
         try {
             context = settings == null ? null : createDatabaseContext(monitor, promptGenerator, settings);
         } catch (DBException e) {
-            chatListener.warning("Failed to connect to the database");
             return finishConversationWithError(conversation, chatListener, e);
         }
         if (isContextChanged(conversation.getId(), context) && !conversation.isTemporary()) {
@@ -451,6 +450,9 @@ public class AIChatSession {
             messages,
             confirmation
         );
+        if (conversation.getState() == AIChatConversation.State.CANCELED) {
+            return CompletableFuture.completedFuture(conversation);
+        }
         try {
             return getAssistant().generateTextStream(
                 monitor,

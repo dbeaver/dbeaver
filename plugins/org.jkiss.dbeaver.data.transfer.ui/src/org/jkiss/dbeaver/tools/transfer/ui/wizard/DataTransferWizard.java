@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
 import org.jkiss.dbeaver.tools.transfer.ui.DataTransferFeatures;
 import org.jkiss.dbeaver.tools.transfer.ui.dialog.DataTransferConfigurationWizardDialog;
-import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferConfiguratorRegistry;
@@ -119,9 +118,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     @NotNull
     public static IDialogSettings getWizardDialogSettings() {
-        return UIUtils.getSettingsSection(
-            DTUIActivator.getDefault().getDialogSettings(),
-            RS_EXPORT_WIZARD_DIALOG_SETTINGS);
+        return UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
     }
 
     @Override
@@ -138,7 +135,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 for (Throwable error : loadErrors) {
                     childStatuses.add(GeneralUtils.makeExceptionStatus(error));
                 }
-                MultiStatus status = new MultiStatus(DTUIActivator.PLUGIN_ID, 0, childStatuses.toArray(new IStatus[0]), "Multiple configuration errors", null);
+                MultiStatus status = new MultiStatus(
+                    DTConstants.PLUGIN_ID, 0, childStatuses.toArray(new IStatus[0]), "Multiple configuration errors", null);
                 DBWorkbench.getPlatformUI().showError(
                     "Error loading configuration",
                     status.getMessage(), status);
@@ -395,7 +393,6 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         DialogSettingsMap dialogSettings = new DialogSettingsMap(getDialogSettings());
         saveConfiguration(dialogSettings);
 
-        DTUIActivator.getDefault().saveDialogSettings();
     }
 
     @Override

@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -80,12 +79,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                 PostgreMessages.dialog_setting_connection_nondefaultDatabase_tip,
                 globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
                 2);
-            showNonDefault.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    setCheckboxesState();
-                }
-            });
+            showNonDefault.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> setCheckboxesState()));
             showTemplates = UIUtils.createCheckbox(secureGroup,
                 PostgreMessages.dialog_setting_connection_show_templates,
                 PostgreMessages.dialog_setting_connection_show_templates_tip,

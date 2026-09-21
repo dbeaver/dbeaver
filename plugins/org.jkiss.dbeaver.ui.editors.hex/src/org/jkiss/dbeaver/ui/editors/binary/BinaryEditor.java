@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -171,10 +170,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.addPropertyChangeListener(preferencesChangeListener);
       
-        manager.addLongSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        manager.addLongSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (selectionListeners == null) return;
 
                 long[] longSelection = HexEditControl.getLongSelection(e);
@@ -185,8 +181,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 for (ISelectionChangedListener selectionListener : selectionListeners) {
                     selectionListener.selectionChanged(event);
                 }
-            }
-        });
+            }));
     }
 
     private void createEditorAction(IActionBars bars, String id)
@@ -420,14 +415,14 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void menuAboutToShow(IMenuManager manager)
     {
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_COPY, BinaryEditorMessages.dialog_find_replace_copy));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, BinaryEditorMessages.dialog_find_replace_paste));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_COPY, WorkbenchMessages.Workbench_copy));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, WorkbenchMessages.Workbench_paste));
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, WorkbenchMessages.Workbench_selectAll));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, BinaryEditorMessages.dialog_find_replace_find_replace));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, WorkbenchMessages.Workbench_findReplace));
         manager.add(new EditorAction(ITextEditorActionDefinitionIds.LINE_GOTO, BinaryEditorMessages.dialog_find_replace_goto_line));
         manager.add(new Separator());
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, BinaryEditorMessages.dialog_find_replace_undo));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, BinaryEditorMessages.dialog_find_replace_redo));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, WorkbenchMessages.Workbench_undo));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, WorkbenchMessages.Workbench_redo));
     }
 
     class EditorAction extends Action {

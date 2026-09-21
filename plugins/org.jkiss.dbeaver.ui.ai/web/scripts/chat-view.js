@@ -15,6 +15,7 @@ function ensureBusyIndicator() {
 function appendChatNode(node, scrollToBottom = true) {
     chat.appendChild(node);
     ensureBusyIndicator();
+    updateAiNoticeVisibility();
     if (scrollToBottom) {
         chat.scrollTop = chat.scrollHeight;
     }
@@ -25,6 +26,11 @@ function clearChat() {
     streamingMessages.clear();
     currentStreamingMessageId = null;
     ensureBusyIndicator();
+    updateAiNoticeVisibility();
+}
+
+function updateAiNoticeVisibility() {
+    aiNotice.hidden = chat.querySelector('.message') === null;
 }
 
 function getClassName(role) {
@@ -125,10 +131,6 @@ function formatMessageMeta(meta) {
     if (settings.showTokensSpent && meta.usage)
         parts.push(meta.usage);
     return parts.join(', ');
-}
-
-function hideChatMeta() {
-    setSetting(settingKeys.showTotalTokensSpent, false);
 }
 
 function updateChatMeta(text) {

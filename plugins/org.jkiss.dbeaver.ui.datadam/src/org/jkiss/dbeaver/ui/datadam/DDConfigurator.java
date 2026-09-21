@@ -81,9 +81,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
             .withParent(composite)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withRequiredSetting(tokenText, AIUIMessages.model_selector_token_required)
-            .withModelListSupplier((monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
-                .map(AIModel::name)
-                .toList())
+            .withModelListSupplier(modelsCache::get)
             .withModifyListener(() -> {
             })
             .build();
@@ -131,7 +129,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
     public void saveSettings(@NotNull DDAIEngineProperties configuration) {
         configuration.setBaseUrl(baseUrl);
         configuration.setToken(token);
-        configuration.setModel(modelSelectorField.getSelectedModel());
+        configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
         configuration.setLoggingEnabled(logQuery);
@@ -155,7 +153,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         DDAIEngineProperties propertiesCopy = new DDAIEngineProperties();
         propertiesCopy.setBaseUrl(baseUrl);
         propertiesCopy.setToken(token);
-        propertiesCopy.setModel(modelSelectorField.getSelectedModel());
+        propertiesCopy.setModel(modelSelectorField.getSelectedModelName());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
         propertiesCopy.setLoggingEnabled(logQuery);

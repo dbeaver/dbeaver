@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ public class SQLServerConstants {
     public static final String TYPE_NVARCHAR = "nvarchar";
     public static final String TYPE_TEXT = "text";
     public static final String TYPE_NTEXT = "ntext";
+    public static final String TYPE_SYSNAME = "sysname";
     public static final String TYPE_GEOMETRY = "geometry";
     public static final String TYPE_GEOGRAPHY = "geography";
     public static final String TYPE_TIMESTAMP = "timestamp";

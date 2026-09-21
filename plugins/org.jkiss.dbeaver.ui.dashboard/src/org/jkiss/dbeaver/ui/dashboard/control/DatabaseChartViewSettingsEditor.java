@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -87,42 +86,22 @@ public class DatabaseChartViewSettingsEditor implements IObjectPropertyConfigura
                     typeCombo.add(viewType.getTitle());
                 }
                 typeCombo.setText(dashboardConfig.getViewType().getTitle());
-                typeCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setViewType(viewTypes.get(typeCombo.getSelectionIndex()));
-                    }
-                });
+                typeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    dashboardConfig.setViewType(viewTypes.get(typeCombo.getSelectionIndex()))));
             }
 
             UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_legend, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_legend_tooltip, dashboardConfig.isLegendVisible(), 2)
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setLegendVisible(((Button)e.widget).getSelection());
-                    }
-                });
+                .addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    dashboardConfig.setLegendVisible(((Button)e.widget).getSelection())));
             UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_grid, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_grid_tooltip, dashboardConfig.isGridVisible(), 2)
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setGridVisible(((Button)e.widget).getSelection());
-                    }
-                });
+                .addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    dashboardConfig.setGridVisible(((Button)e.widget).getSelection())));
             UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_domainaxis, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_domainaxis_tooltip, dashboardConfig.isDomainTicksVisible(), 2)
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setDomainTicksVisible(((Button)e.widget).getSelection());
-                    }
-                });
+                .addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    dashboardConfig.setDomainTicksVisible(((Button)e.widget).getSelection())));
             UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis_tooltip, dashboardConfig.isRangeTicksVisible(), 2)
-                .addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardConfig.setRangeTicksVisible(((Button)e.widget).getSelection());
-                    }
-                });
+                .addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    dashboardConfig.setRangeTicksVisible(((Button)e.widget).getSelection())));
 /*
             Text widthRatioText = UIUtils.createLabelText(viewGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             widthRatioText.addModifyListener(e -> {

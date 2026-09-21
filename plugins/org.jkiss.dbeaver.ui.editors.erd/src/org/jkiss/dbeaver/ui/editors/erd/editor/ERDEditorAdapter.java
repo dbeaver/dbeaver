@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,13 +49,15 @@ public class ERDEditorAdapter implements IAdapterFactory {
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adapterType == ERDEditorPart.class) {
-            if (adaptableObject instanceof Control) {
-                return adapterType.cast(getEditor((Control) adaptableObject));
-            } else if (adaptableObject instanceof MultiPageAbstractEditor) {
-                IEditorPart activeEditor = ((MultiPageAbstractEditor) adaptableObject).getActiveEditor();
+            if (adaptableObject instanceof Control ctrl) {
+                return adapterType.cast(getEditor(ctrl));
+            } else if (adaptableObject instanceof MultiPageAbstractEditor mpe) {
+                IEditorPart activeEditor = mpe.getActiveEditor();
                 if (activeEditor instanceof ERDEditorPart) {
                     return adapterType.cast(activeEditor);
                 }
+            } else if (adaptableObject instanceof ERDEditorPart) {
+                return adapterType.cast(adaptableObject);
             }
         }
         return null;

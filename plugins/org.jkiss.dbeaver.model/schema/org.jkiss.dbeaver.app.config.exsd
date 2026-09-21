@@ -87,6 +87,16 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="availabilityTester" type="string">
+            <annotation>
+               <documentation>
+
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.jkiss.dbeaver.model.config.ProductConfigFeatureAvailabilityTester:"/>
+               </appInfo>
+            </annotation>
+         </attribute>
 
       </complexType>
    </element>

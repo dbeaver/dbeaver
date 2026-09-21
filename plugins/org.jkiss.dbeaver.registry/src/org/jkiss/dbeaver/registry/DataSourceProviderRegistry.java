@@ -62,6 +62,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         return instance != null;
     }
 
+    @NotNull
     public static synchronized DataSourceProviderRegistry getInstance() {
         if (instance == null) {
             instance = new DataSourceProviderRegistry();
@@ -71,10 +72,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
-    private final Map<String, DataSourceProviderDescriptor> dataSourceProvidersMap = new HashMap<>();
+    private final Map<String, DataSourceProviderDescriptor> dataSourceProvidersMap = new LinkedHashMap<>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final List<DataSourceHandlerDescriptor> dataSourceHandlers = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
+    private final Object connectionTypesReloadLock = new Object();
     private final Map<String, ExternalResourceDescriptor> resourceContributions = new LinkedHashMap<>();
 
     private final List<EditorContributionDescriptor> editorContributors = new ArrayList<>();
@@ -87,7 +89,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
     private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
-
 
     private DataSourceProviderRegistry() {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
@@ -111,11 +112,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         );
         WorkspaceConfigEventManager.addConfigChangedListener(
             RegistryConstants.CONNECTION_TYPES_FILE_NAME,
-            o -> {
-                connectionTypes.clear();
-                loadConnectionTypes();
-            }
-
+            o -> reloadConnectionTypes()
         );
     }
 
@@ -223,10 +220,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
         // Load connection types
         {
-            for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
-                connectionTypes.put(ct.getId(), ct);
-            }
-            loadConnectionTypes();
+            reloadConnectionTypes();
         }
 
         // Load external resources information
@@ -428,7 +422,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     @Nullable
     @Override
     public DBPDriver findDriver(@NotNull CompositeObjectId ref) {
-        return findDriver(ref.shortId());
+        DataSourceProviderDescriptor dsProvider = getDataSourceProvider(ref.primaryId());
+        if (dsProvider != null) {
+            return dsProvider.getDriver(ref.secondaryId());
+        }
+        return null;
     }
 
     @Nullable
@@ -512,7 +510,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Persistence
 
-    private void loadDrivers(String configFileName, boolean provided) {
+    private void loadDrivers(@NotNull String configFileName, boolean provided) {
         try {
             String driversConfig;
             if (provided) {
@@ -540,11 +538,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         saveDrivers(DBWorkbench.getPlatform().getConfigurationController());
     }
 
-    public void saveDrivers(DBConfigurationController configurationController) throws DBException {
+    public void saveDrivers(@NotNull DBConfigurationController configurationController) throws DBException {
         saveDriversConfigFile(configurationController);
     }
 
-    public void saveDriversConfigFile(DBConfigurationController configurationController) throws DBException {
+    public void saveDriversConfigFile(@NotNull DBConfigurationController configurationController) throws DBException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new DriverDescriptorSerializerLegacy().serializeDrivers(baos, this.dataSourceProviders);
@@ -579,18 +577,45 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    private void loadConnectionTypes() {
+    private void reloadConnectionTypes() {
+        synchronized (connectionTypesReloadLock) {
+            Map<String, DBPConnectionType> reloadedConnectionTypes = getSystemConnectionTypes();
+            boolean loaded = loadConnectionTypes(reloadedConnectionTypes);
+            synchronized (connectionTypes) {
+                if (loaded) {
+                    connectionTypes.clear();
+                    connectionTypes.putAll(reloadedConnectionTypes);
+                } else if (connectionTypes.isEmpty()) {
+                    connectionTypes.putAll(getSystemConnectionTypes());
+                }
+            }
+        }
+    }
+
+    @NotNull
+    private static Map<String, DBPConnectionType> getSystemConnectionTypes() {
+        Map<String, DBPConnectionType> systemConnectionTypes = new LinkedHashMap<>();
+        for (DBPConnectionType connectionType : DBPConnectionType.SYSTEM_TYPES) {
+            systemConnectionTypes.put(connectionType.getId(), connectionType);
+        }
+        return systemConnectionTypes;
+    }
+
+    private boolean loadConnectionTypes(@NotNull Map<String, DBPConnectionType> target) {
         try {
             String ctConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
             if (!CommonUtils.isEmpty(ctConfig)) {
                 try (Reader is = new StringReader(ctConfig)) {
-                    new SAXReader(is).parse(new ConnectionTypeParser());
+                    new SAXReader(is).parse(new ConnectionTypeParser(target));
                 } catch (XMLException ex) {
                     log.warn("Can't load connection types config from " + RegistryConstants.CONNECTION_TYPES_FILE_NAME, ex);
+                    return false;
                 }
             }
+            return true;
         } catch (Exception ex) {
             log.warn("Error parsing connection types", ex);
+            return false;
         }
     }
 
@@ -598,39 +623,55 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     // Connection types
 
     public Collection<DBPConnectionType> getConnectionTypes() {
-        return connectionTypes.values();
+        synchronized (connectionTypes) {
+            return List.copyOf(connectionTypes.values());
+        }
     }
 
     @Nullable
     public DBPConnectionType getConnectionType(@NotNull String id, @Nullable DBPConnectionType defaultType) {
-        DBPConnectionType connectionType = connectionTypes.get(id);
-        return connectionType == null ? defaultType : connectionType;
+        synchronized (connectionTypes) {
+            DBPConnectionType connectionType = connectionTypes.get(id);
+            return connectionType == null ? defaultType : connectionType;
+        }
     }
 
     public void addConnectionType(@NotNull DBPConnectionType connectionType) {
-        if (this.connectionTypes.containsKey(connectionType.getId())) {
-            log.warn("Duplicate connection type id: " + connectionType.getId());
-            return;
+        synchronized (connectionTypesReloadLock) {
+            synchronized (connectionTypes) {
+                if (this.connectionTypes.containsKey(connectionType.getId())) {
+                    log.warn("Duplicate connection type id: " + connectionType.getId());
+                    return;
+                }
+                this.connectionTypes.put(connectionType.getId(), connectionType);
+            }
         }
-        this.connectionTypes.put(connectionType.getId(), connectionType);
     }
 
     public void removeConnectionType(@NotNull DBPConnectionType connectionType) {
-        if (!this.connectionTypes.containsKey(connectionType.getId())) {
-            log.warn("Connection type doesn't exist: " + connectionType.getId());
-            return;
+        synchronized (connectionTypesReloadLock) {
+            synchronized (connectionTypes) {
+                if (!this.connectionTypes.containsKey(connectionType.getId())) {
+                    log.warn("Connection type doesn't exist: " + connectionType.getId());
+                    return;
+                }
+                this.connectionTypes.remove(connectionType.getId());
+            }
         }
-        this.connectionTypes.remove(connectionType.getId());
     }
 
     @Override
     public void saveConnectionTypes() {
         try {
+            List<DBPConnectionType> connectionTypesSnapshot;
+            synchronized (connectionTypes) {
+                connectionTypesSnapshot = List.copyOf(connectionTypes.values());
+            }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
             xml.setBeautify(true);
             try (var ignored = xml.startElement(RegistryConstants.TAG_TYPES)) {
-                for (DBPConnectionType connectionType : connectionTypes.values()) {
+                for (DBPConnectionType connectionType : connectionTypesSnapshot) {
                     try (var ignored2 = xml.startElement(RegistryConstants.TAG_TYPE)) {
                         xml.addAttribute(RegistryConstants.ATTR_ID, connectionType.getId());
                         xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(connectionType.getName()));
@@ -687,6 +728,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Handlers
 
+    @NotNull
     public List<DataSourceHandlerDescriptor> getDataSourceHandlers() {
         return dataSourceHandlers;
     }
@@ -754,7 +796,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     void fireRegistryChange(@NotNull DataSourceRegistry<?> registry, boolean load) {
-
         forEachRegistryListener(l -> {
             if (load) {
                 l.handleRegistryLoad(registry);
@@ -778,7 +819,13 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    class ConnectionTypeParser implements SAXListener {
+    static class ConnectionTypeParser implements SAXListener {
+        private final Map<String, DBPConnectionType> connectionTypes;
+
+        ConnectionTypeParser(@NotNull Map<String, DBPConnectionType> connectionTypes) {
+            this.connectionTypes = connectionTypes;
+        }
+
         @Override
         public void saxStartElement(
             @NotNull SAXReader reader,

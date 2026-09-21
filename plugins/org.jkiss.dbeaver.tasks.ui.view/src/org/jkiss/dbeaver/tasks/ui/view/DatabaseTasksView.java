@@ -239,7 +239,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     ActionUtils.makeCommandContribution(
                         getSite(),
                         IWorkbenchCommandConstants.EDIT_DELETE,
-                        TaskUIViewMessages.db_tasks_view_context_menu_command_delete_task,
+                        WorkbenchMessages.Workbench_delete,
                         null));
                 manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_TASK_CMD_ID));
                 manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_RENAME_CMD_ID));

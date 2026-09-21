@@ -17,15 +17,15 @@
 package org.jkiss.dbeaver.model.ai.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISqlJoinRule;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class AIPreferenceInitializer extends AbstractPreferenceInitializer {
     @Override
     public void initializeDefaultPreferences() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        DBPPreferenceStore store = ModelPreferences.getPreferences();
         store.setDefault(AIConstants.AI_USE_STREAM_MODE, true);
         store.setDefault(AIConstants.AI_SEND_CONSTRAINTS, false);
         store.setDefault(AIConstants.AI_SEND_FOREIGN_KEYS, false);

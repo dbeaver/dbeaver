@@ -37,7 +37,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
         "jdbc:clickhouse://{host}:{port}[/{database}]",
         "jdbc:CUBRID:{host}:{port}:{database}:::",
         "jdbc:dm://{host}[:{port}]",
-        "jdbc:databend://{username}:{password}@{host}:{port}[/{database}]",
+        "jdbc:databend://{host}:{port}[/{database}]",
         "jdbc:databricks://{host}[:{port}][/{database}]",
         "jdbc:db2://{host}[:{port}]/{database}",
         "jdbc:as400://{host};[libraries={database};]",
@@ -133,6 +133,18 @@ public class StringTemplateTest extends DBeaverUnitTest {
                 DBConstants.PROP_DATABASE, "dbname"
             )
         );
+    }
+
+    @Test
+    public void testGetMissingOptionalParamValue() throws StringTemplate.StringTemplateException {
+        StringTemplate template = StringTemplate.parseTemplate(DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS);
+        StringTemplate.ParamEntries parameters = template.extractAllParametersTree("jdbc:as400://myhost");
+
+        Assertions.assertNotNull(parameters);
+        Assertions.assertEquals("myhost", parameters.getFirstParamValue(DBConstants.PROP_HOST));
+        Assertions.assertNull(parameters.getFirstParamValue(DBConstants.PROP_PORT));
+        Assertions.assertNull(parameters.getFirstParamValue(DBConstants.PROP_DATABASE));
+        Assertions.assertNull(parameters.getFirstParamValue("unknown"));
     }
 
     @Test

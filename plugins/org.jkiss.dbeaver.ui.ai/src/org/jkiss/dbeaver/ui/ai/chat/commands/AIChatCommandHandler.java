@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.ui.ai.chat.AIChatView;
 import org.jkiss.dbeaver.ui.ai.chat.controls.AIChatControl;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 
-import java.io.File;
-import java.util.Arrays;
+import java.nio.file.Path;
+import java.util.List;
 
 public class AIChatCommandHandler extends AbstractHandler {
 
@@ -63,9 +63,9 @@ public class AIChatCommandHandler extends AbstractHandler {
     }
 
     private static void attachFiles(@NotNull AIChatControl chat) {
-        File[] files = DialogUtils.openFileList(chat.getShell(), "Attach files", null);
+        Path[] files = DialogUtils.openFileList(chat.getShell(), "Attach files", null);
         if (files != null && files.length > 0) {
-            chat.attachFiles(Arrays.stream(files).map(File::toPath).toList());
+            chat.attachFiles(List.of(files));
         }
     }
 }

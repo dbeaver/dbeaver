@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.model.impl.config;
 
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 public final class ProductConfigUtils {
+    public static final String PRODUCT_CONFIG_DISABLE = "product.config.disable";
     private ProductConfigUtils() {
     }
 
@@ -37,5 +39,9 @@ public final class ProductConfigUtils {
      */
     private static boolean isProductApplicable() {
         return BaseApplicationImpl.getInstance().isStandalone() && !DBWorkbench.isDistributed();
+    }
+
+    public static boolean isProductConfigSuppressed() {
+        return CommonUtils.toBoolean(System.getProperty(PRODUCT_CONFIG_DISABLE));
     }
 }

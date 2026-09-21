@@ -164,6 +164,12 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     }
 
     @Override
+    public void setCurrentCellLocation(@NotNull ResultSetCellLocation cellLocation) {
+        controller.setCurrentRow(cellLocation.getRow());
+        setCurrentAttribute(cellLocation.getAttribute());
+    }
+
+    @Override
     public void showAttribute(@NotNull DBDAttributeBinding attribute) {
         // do nothing
     }

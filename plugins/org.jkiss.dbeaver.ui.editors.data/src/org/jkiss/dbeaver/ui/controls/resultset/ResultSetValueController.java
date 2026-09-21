@@ -119,15 +119,21 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public DBSTypedObject getValueType() {
         if (cellLocation.getValuePath() != null) {
             for (ResultSetValuePath.PathItem pathItem : cellLocation.getValuePath().pathItems().reversed()) {
-                if (pathItem instanceof ResultSetValuePath.PathAttributeItem attrItem) {
-                    DBSAttributeBase typedAttr = attrItem.attribute();
-                    if (typedAttr.getDataKind() == DBPDataKind.ARRAY) {
-                        DBSDataType componentType = getComponentType(typedAttr);
+                if (pathItem instanceof ResultSetValuePath.PathAttributeItem(DBSAttributeBase item)) {
+                    if (item.getDataKind() == DBPDataKind.ARRAY) {
+                        DBSDataType componentType = getComponentType(item);
                         if (componentType != null) {
                             return componentType;
                         }
                     } else {
-                        return typedAttr;
+                        if (item instanceof DBDAttributeBinding binding) {
+                            var valueType = binding.getPresentationAttribute();
+                            if (valueType != null) {
+                                return valueType;
+                            }
+                            return binding.getAttribute();
+                        }
+                        return item;
                     }
                 }
             }

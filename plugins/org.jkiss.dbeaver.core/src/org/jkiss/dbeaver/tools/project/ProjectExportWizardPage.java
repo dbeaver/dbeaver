@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -116,13 +115,7 @@ class ProjectExportWizardPage extends WizardPage {
         projectsTable = new Table(placeholder, SWT.MULTI | SWT.CHECK | SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_BOTH);
         projectsTable.setLayoutData(gd);
-        projectsTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                updateState();
-            }
-        });
+        projectsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateState()));
 
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             final TableItem item = new TableItem(projectsTable, SWT.NONE);
@@ -166,10 +159,7 @@ class ProjectExportWizardPage extends WizardPage {
 
             Button openFolder = new Button(generalSettings, SWT.PUSH);
             openFolder.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
-            openFolder.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            openFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
                     dialog.setMessage(CoreMessages.dialog_project_export_wizard_start_dialog_directory_message);
                     dialog.setText(CoreMessages.dialog_project_export_wizard_start_dialog_directory_text);
@@ -181,8 +171,7 @@ class ProjectExportWizardPage extends WizardPage {
                     if (directory != null) {
                         directoryText.setText(directory);
                     }
-                }
-            });
+                }));
         }
         exportDriverCheck = UIUtils.createCheckbox(placeholder, CoreMessages.dialog_project_export_wizard_start_checkbox_libraries, false);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);

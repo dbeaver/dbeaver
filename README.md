@@ -8,10 +8,10 @@
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
 
-* Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI integration, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
+* Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI chat, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
 * Out of the box supports more than <a href="#supported-databases">100 database drivers</a>.
 * Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
-* Supports smart AI completion and code generation with OpenAI or Copilot
+* Integrates AI tools for work with data, SQL and database structure
 
 <a href="https://dbeaver.io/product/dbeaver-sql-editor.png"><img src="https://dbeaver.io/product/dbeaver-sql-editor.png" width="400"/></a>
 <a href="https://dbeaver.io/product/dbeaver-gis-viewer.png"><img src="https://dbeaver.io/product/dbeaver-gis-viewer.png" width="400"/></a>
@@ -53,15 +53,28 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 
 ### Community version
 
-Out of the box DBeaver supports following database drivers: 
-MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill, Presto, Trino, Phoenix, Exasol, Informix, Teradata, Vertica, Netezza, Firebird, Derby, H2, H2GIS, WMI, Snowflake, Greenplum, Redshift, Athena, SAP HANA, MaxDB, NuoDB, MS Access, SQLite, CSV, DBF, Firebird, TimescaleDB, Yellowbrick, CockroachDB, OrientDB, MonetDB, Google BigQuery, Google Spanner, Apache Hive/Impala/Spark, Apache Ignite, MapD, Azure SQL, CrateDB, Elasticsearch, Ocient, Ingres, OmniSci, Yugabyte, IRIS, Data Virtuality, Denodo, Virtuoso, Machbase, DuckDB, Babelfish, OceanBase, Salesforce, EnterpriseDB, Apache Druid, Apache Kylin, Databricks, OpenSearch, TiDB, TDEngine, Materialize, JDBCX, Dameng, Altibase, StarRocks, CUBRID, GaussDB, DolphinDB, LibSQL, GBase 8s, Databend, Cloudberry, Teiid, Kingbase, GreptimeDB.
+Out of the box DBeaver supports following database drivers:
+- Altibase, Apache Calcite Avatica, Apache Doris, Apache Druid, Apache Hive, Apache Hive/Impala/Spark, Apache Ignite, Apache IoTDB, Apache Kylin, Apache Kyuubi, Apache Solr, Athena, Azure SQL, Babelfish, ClickHouse, Cloudberry, CockroachDB, CrateDB, CSV, CUBRID, Dameng, Data Virtuality, Databend, Databricks, DB2, DBF, Denodo, Derby, DolphinDB, Dremio, Drill, DuckDB, Elasticsearch, EnterpriseDB, Exasol, Firebird, Firebird, GaussDB, GBase 8s, GemFire XD, GizmoSQL, Google BigQuery, Google Cloud SQL for PostgreSQL, Google Spanner, Greengage, Greenplum, GreptimeDB, H2, H2GIS, HSQLDB, Informix, Ingres, InterSystems Caché, IRIS, JDBCX, Jennifer, Kingbase, LibSQL, Machbase, Manticore Search, MapD, MariaDB, Materialize, MaxDB, Mimer SQL, MonetDB, MS Access, MySQL, NDB Cluster, Netezza, NuoDB, OceanBase, Ocient, OmniSci, Open Distro Elasticsearch, OpenEdge, OpenSearch, Oracle, OrientDB, Pervasive SQL, Phoenix, PostgreSQL, Presto, Redshift, RisingWave, Salesforce, Salesforce Data 360, SAP HANA, SnappyData, Snowflake, SQL Server, SQLite, SQream DB, StarRocks, Sybase, TDEngine, Teiid, Teradata, TiDB, TiDBLake, TimechoDB, Timeplus, Timeplus Proton, TimescaleDB, Trino, Vertica, Virtuoso, WMI, Yellowbrick, Yugabyte.
 
 ### PRO versions
 
-<a href="https://dbeaver.com/download/">Commercial versions</a> extends functionality of many popular drivers and also support non-JDBC datasources such as:
-ODBC, MongoDB, Cassandra, Couchbase, CouchDB, Redis, InfluxDB, Firestore, BigTable, DynamoDB, Kafka KSQL, Neo4j, AWS Neptune, AWS Timestream, Azure CosmosDB, Yugabyte, Salesforce, etc.  
-Also, we support flat files as databases: CSV, XLSX, Json, XML, Parquet.  
+<a href="https://dbeaver.com/download/">Commercial versions</a> extends functionality of community drivers, supports NoSQL databases and many more:
+- Amazon Aurora DSQL, Apache Arrow, AWS DocumentDB, AWS Keyspaces, AWS Neptune, AWS Timestream, Azure CosmosDB, BigTable, Cassandra, Couchbase, CouchDB, DynamoDB, etcd, FerretDB, Firestore, Fujitsu Enterprise Postgres, Google AlloyDB, Google Cloud SQL, InfluxDB, Kafka KSQL, Microsoft Fabric, MongoDB, Neo4j, NetSuite, ODBC, Raima, Redis, Salesforce, ScyllaDB, SingleStore, SQLite Crypt, Valkey, Yugabyte.
+- Files as databases: CSV, DDL, JSON, Parquet, XLSX, and XML.
+- Federated (multi-source) database based on Apache Calcite.
+
 You can find the list of all databases supported in commercial versions <a href="https://dbeaver.com/databases/">here</a>.
+
+## AI integration
+
+- All DBeaver products contain AI Chat view similar to classic LLM chats. 
+- You can generate/analyse/optimize your SQL queries, work with database structure or even work with databases with a very little knowledge of SQL.
+- We use smart chat context which provides LLMs details about database structure, SQL dialect, etc. 
+- LLM integration uses context-dependent dynamic tools and is very efficient from token consumption point of view.
+- AI providers in Community version:
+  - OpenAI (allows to configure most of existing LLMs with custom endpoint)
+  - Copilot
+- Pro versions provide additional AI tools + native support of Anthropic/Grok/Azure/Bedrock/Gemini/Ollama providers.
 
 ## Feedback
 
@@ -87,8 +100,7 @@ Thank you!
 
 ---------
 
-Our other open-source products:
+## Our other open-source products:
 
 - <a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> - web-based database management tool built on the DBeaver platform.<br/>Runs as server (docker) and provides rich web interface (SPA).  
 - <a href="https://github.com/dbeaver/dbvr">dbvr</a> - CLI database management tool. Useful in CI/CD pipelines and all sort of automations. 
-

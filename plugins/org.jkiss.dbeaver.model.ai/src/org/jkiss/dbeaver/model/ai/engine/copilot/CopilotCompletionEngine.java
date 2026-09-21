@@ -69,7 +69,13 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         boolean isPremium = models.stream().anyMatch(CopilotModel::modelPickerEnabled);
         return models.stream()
             .filter(model -> isModelOffered(model, isPremium))
-            .map(model -> new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT)))
+            .map(model -> new AIModel(
+                model.id(),
+                model.capabilities() != null && model.capabilities().limits() != null ?
+                    model.capabilities().limits().contextWindowTokens() :
+                    null,
+                Set.of(AIModelFeature.CHAT)
+            ))
             .toList();
     }
 

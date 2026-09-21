@@ -183,6 +183,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return propType != null && BeanUtils.isNumericType(propType);
     }
 
+    @Nullable
+    public PropertyConstraints getConstraints() {
+        return PropertyConstraints.from(propInfo);
+    }
+
     public boolean isDateTime() {
         Class<?> propType = getGetter().getReturnType();
         return propType != null && Date.class.isAssignableFrom(propType);
@@ -540,6 +545,17 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                         // Make list from object
                         value = List.of(value);
                     }
+                }
+            }
+            PropertyConstraints constraints = getConstraints();
+            if (value instanceof Number number && constraints != null) {
+                if (constraints.min() != null && number.doubleValue() < constraints.min()) {
+                    throw new IllegalArgumentException(
+                        "Property '" + getDisplayName() + "' value must be at least " + constraints.min());
+                }
+                if (constraints.max() != null && number.doubleValue() > constraints.max()) {
+                    throw new IllegalArgumentException(
+                        "Property '" + getDisplayName() + "' value must be at most " + constraints.max());
                 }
             }
             setter.invoke(object, value);

@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.timeplus.model.jdbc.TimeplusJdbcFactory;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 public class TimeplusDataSource extends GenericDataSource {
@@ -38,7 +38,15 @@ public class TimeplusDataSource extends GenericDataSource {
         @NotNull DBPDataSourceContainer container,
         @NotNull GenericMetaModel metaModel
     ) throws DBException {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new TimeplusSQLDialect());
+    }
+
+    public TimeplusDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull TimeplusMetaModel metaModel,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
+        super(monitor, metaModel, container, new TimeplusSQLDialect());
     }
 
     @NotNull
@@ -60,6 +68,12 @@ public class TimeplusDataSource extends GenericDataSource {
     @Override
     public JDBCFactory getJdbcFactory() {
         return new TimeplusJdbcFactory();
+    }
+
+    @NotNull
+    @Override
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
+        return TimeplusTable.class;
     }
 
     @Nullable

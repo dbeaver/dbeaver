@@ -576,4 +576,11 @@ public interface SQLDialect {
         return true;
     }
 
+    /**
+     * Quotes ALL database identifiers by default.
+     */
+    default boolean isQuoteIdentifiersAlways() {
+        return false;
+    }
+
 }

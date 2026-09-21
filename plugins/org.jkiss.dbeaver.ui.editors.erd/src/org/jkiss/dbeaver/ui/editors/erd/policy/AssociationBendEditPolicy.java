@@ -20,10 +20,12 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.BendpointEditPolicy;
 import org.eclipse.gef.requests.BendpointRequest;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.erd.command.BendpointCreateCommand;
 import org.jkiss.dbeaver.ui.editors.erd.command.BendpointDeleteCommand;
 import org.jkiss.dbeaver.ui.editors.erd.command.BendpointMoveCommand;
 import org.jkiss.dbeaver.ui.editors.erd.part.AssociationPart;
+import org.jkiss.dbeaver.ui.editors.erd.router.shortpath.ShortPathRouting;
 
 /**
  * EditPolicy to handle deletion of relationships
@@ -52,6 +54,30 @@ public class AssociationBendEditPolicy extends BendpointEditPolicy
             (AssociationPart) getHost(),
             getRelativeLocation(request),
             request.getIndex());
+    }
+
+    @Override
+    protected void showCreateBendpointFeedback(@NotNull BendpointRequest request) {
+        if (getConnection().getConnectionRouter() instanceof ShortPathRouting router) {
+            router.setBendpointFeedbackActive(true);
+        }
+        super.showCreateBendpointFeedback(request);
+    }
+
+    @Override
+    protected void showMoveBendpointFeedback(@NotNull BendpointRequest request) {
+        if (getConnection().getConnectionRouter() instanceof ShortPathRouting router) {
+            router.setBendpointFeedbackActive(true);
+        }
+        super.showMoveBendpointFeedback(request);
+    }
+
+    @Override
+    protected void eraseConnectionFeedback(@NotNull BendpointRequest request) {
+        if (getConnection().getConnectionRouter() instanceof ShortPathRouting router) {
+            router.setBendpointFeedbackActive(false);
+        }
+        super.eraseConnectionFeedback(request);
     }
 
     private Point getRelativeLocation(BendpointRequest request)

@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -124,12 +125,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
         containerNameCombo.setText("");
         UIUtils.addEmptyTextHint(containerNameCombo, text ->
             containerHintOverride != null ? containerHintOverride : containerHint);
-        containerNameCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                handleContainerChange();
-            }
-        });
+        containerNameCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> handleContainerChange()));
 
         browseButton = UIUtils.createPushButton(
             this,

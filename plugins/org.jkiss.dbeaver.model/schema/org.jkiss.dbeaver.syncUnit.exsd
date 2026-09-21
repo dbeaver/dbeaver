@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.syncUnit" name="Synchronization unit"/>
+      </appInfo>
+      <documentation>
+         Declares a configuration component which can be synchronized.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="unit"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Component implementation. It reports its own identifier, scope and resources.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.sync.DBPSyncUnit"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+</schema>

@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import com.google.gson.FormattingStyle;
-import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,24 +28,20 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
@@ -54,7 +50,6 @@ import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.registry.settings.GlobalSettings;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.*;
@@ -62,10 +57,10 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -81,6 +76,9 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
+    private static final String TEMP_SESSION_PREFIX = "session-"; //$NON-NLS-1$
+    private static final String TEMP_SESSION_LOCK = ".lock"; //$NON-NLS-1$
+    private static final long TEMP_SESSION_CREATION_GRACE_PERIOD = 60_000;
     private static final String SETTINGS_FOLDER = "settings";
 
     public static final String CONFIG_FOLDER = ".config";
@@ -104,9 +102,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private DBPPlatformLanguage platformLanguage;
 
     protected Path tempFolder;
+    private Path tempRootFolder;
+    private FileMutex tempFolderLock;
 
     public BasePlatformImpl() {
-        this.networkProfileManager = new GlobalNetworkProfileManager();
+        this.networkProfileManager = new GlobalNetworkProfileManager(this);
     }
 
     protected void initialize() throws DBException {
@@ -180,10 +180,28 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
         // Remove temp folder
         if (tempFolder != null) {
+            if (tempFolderLock != null) {
+                try {
+                    tempFolderLock.close();
+                } catch (IOException e) {
+                    log.warn("Error releasing temp folder lock", e);
+                }
+                tempFolderLock = null;
+            }
             if (!ContentUtils.deleteFileRecursive(tempFolder)) {
                 log.warn("Can not delete temp folder '" + tempFolder + "'");
             }
             tempFolder = null;
+            if (tempRootFolder != null) {
+                try {
+                    Files.deleteIfExists(tempRootFolder);
+                } catch (DirectoryNotEmptyException ignored) {
+                    // Another DBeaver instance is using the shared root.
+                } catch (IOException e) {
+                    log.debug("Can not delete temp root folder '" + tempRootFolder + "'", e);
+                }
+                tempRootFolder = null;
+            }
         }
         // Dispose navigator model first
         // It is a part of UI
@@ -441,138 +459,101 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     @NotNull
-    public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
+    public synchronized Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws IOException {
         if (tempFolder == null) {
-            // Make temp folder
-            try {
-                String tempFolderPath = System.getProperty("dbeaver.io.tmpdir");
-                if (!CommonUtils.isEmpty(tempFolderPath)) {
-                    tempFolderPath = GeneralUtils.replaceVariables(tempFolderPath, new SystemVariablesResolver());
-
-                    File dbTempFolder = new File(tempFolderPath);
-                    if (!dbTempFolder.mkdirs()) {
-                        throw new IOException("Can't create temp directory '" + dbTempFolder.getAbsolutePath() + "'");
-                    }
-                } else {
-                    tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
-                }
-                monitor.subTask("Create temp folder '" + tempFolderPath + "'");
-                Path tmpFolder = Paths.get(tempFolderPath);
-                if (!Files.exists(tmpFolder)) {
-                    log.debug("Create global temp folder '" + tmpFolder + "'");
-                    Files.createDirectories(tmpFolder);
-                }
-                tempFolder = Files.createTempDirectory(tmpFolder, TEMP_PROJECT_NAME);
-            } catch (IOException e) {
-                final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
-                if (!CommonUtils.isEmpty(sysTempFolder)) {
-                    tempFolder = Path.of(sysTempFolder).resolve(TEMP_PROJECT_NAME);
-                    if (!Files.exists(tempFolder)) {
-                        try {
-                            Files.createDirectories(tempFolder);
-                        } catch (IOException ex) {
-                            final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
-                            if (!CommonUtils.isEmpty(sysUserFolder)) {
-                                tempFolder = Path.of(sysUserFolder).resolve(TEMP_PROJECT_NAME);
-                                if (!Files.exists(tempFolder)) {
-                                    try {
-                                        Files.createDirectories(tempFolder);
-                                    } catch (IOException exc) {
-                                        tempFolder = Path.of(TEMP_PROJECT_NAME);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            initializeTempFolder();
         }
         Path localTemp = tempFolder.resolve(name);
-        if (!Files.exists(localTemp)) {
-            try {
-                Files.createDirectories(localTemp);
-            } catch (IOException e) {
-                log.error("Can't create temp directory " + localTemp, e);
-            }
-        }
+        Files.createDirectories(localTemp);
         return localTemp;
     }
 
-    private class GlobalNetworkProfileManager extends DBWNetworkProfileManager {
-        public static final String CONFIG_FILE_NAME = "network-profiles.json";
-
-        public GlobalNetworkProfileManager() {
-            super();
-            WorkspaceConfigEventManager.addConfigChangedListener(
-                CONFIG_FILE_NAME, o -> {
-                    reloadProfiles();
-                }
-            );
+    private void initializeTempFolder() throws IOException {
+        var candidates = new LinkedHashSet<Path>();
+        String configuredPath = System.getProperty("dbeaver.io.tmpdir");
+        if (!CommonUtils.isEmpty(configuredPath)) {
+            candidates.add(Paths.get(GeneralUtils.replaceVariables(configuredPath, new SystemVariablesResolver())));
         }
+        String systemTempPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
+        if (!CommonUtils.isEmpty(systemTempPath)) {
+            candidates.add(Paths.get(systemTempPath));
+        }
+        String userHomePath = System.getProperty(StandardConstants.ENV_USER_HOME);
+        if (!CommonUtils.isEmpty(userHomePath)) {
+            candidates.add(Paths.get(userHomePath));
+        }
+        candidates.add(Path.of("."));
 
-        @NotNull
-        @Override
-        protected List<DBWNetworkProfile> loadProfiles() {
+        IOException failure = null;
+        for (Path candidate : candidates) {
             try {
-                String npConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
-                if (!CommonUtils.isEmpty(npConfig)) {
-                    Map<String, Object> json = JSONUtils.GSON.fromJson(npConfig, JSONUtils.MAP_TYPE_TOKEN);
-                    return DataSourceParser.parseProfiles(
-                        new DataSourceParser.ContextParameters(
-                            null,
-                            DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
-                            Map.of()
-                        ),
-                        json);
+                Path root = candidate.resolve(TEMP_PROJECT_NAME).toAbsolutePath().normalize();
+                Files.createDirectories(root);
+
+                Path session = Files.createTempDirectory(root, TEMP_SESSION_PREFIX);
+                try {
+                    tempFolderLock = FileMutex.tryLock(session.resolve(TEMP_SESSION_LOCK));
+                } catch (IOException e) {
+                    ContentUtils.deleteFileRecursive(session);
+                    throw e;
                 }
-            } catch (DBException e) {
-                log.error("Error loading global network profiles", e);
+                tempRootFolder = root;
+                tempFolder = session;
+                scheduleAbandonedTempFoldersCleanup(root, session);
+                return;
+            } catch (IOException e) {
+                if (failure == null) {
+                    failure = e;
+                } else {
+                    failure.addSuppressed(e);
+                }
             }
-            return super.loadProfiles();
         }
+        throw new IOException("Can't create DBeaver temp folder", failure);
+    }
 
-        @Override
-        public void saveSettings() {
-            try {
-                List<DBWNetworkProfile> profiles = getProfiles();
-                DataSourceParser.ContextParameters contextParameters = new DataSourceParser.ContextParameters(
-                    null,
-                    DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
-                    new LinkedHashMap<>()
-                );
-                StringWriter strWriter = new StringWriter();
-                JsonWriter jsonWriter = new JsonWriter(strWriter);
-                jsonWriter.setFormattingStyle(FormattingStyle.PRETTY);
-                jsonWriter.setIndent("\t");
-                jsonWriter.beginObject();
-                DataSourceParser.saveNetworkProfiles(
-                    contextParameters,
-                    jsonWriter,
-                    profiles);
-                jsonWriter.endObject();
-                jsonWriter.flush();
-                String cfg = strWriter.toString();
-                DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(CONFIG_FILE_NAME, cfg);
-                if (!DBWorkbench.isMultiuserOrDistributed()) {
-                    for (DBWNetworkProfile profile : profiles) {
-                        profile.persistSecrets(DBSSecretController.getGlobalSecretController());
+    private static void scheduleAbandonedTempFoldersCleanup(@NotNull Path root, @NotNull Path currentSession) {
+        var cleanupJob = new AbstractJob("Clean abandoned DBeaver temp folders") {
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                cleanupAbandonedTempFolders(root, currentSession);
+                return Status.OK_STATUS;
+            }
+        };
+        cleanupJob.setSystem(true);
+        cleanupJob.schedule();
+    }
+
+    private static void cleanupAbandonedTempFolders(@NotNull Path root, @NotNull Path currentSession) {
+        try (var children = Files.list(root)) {
+            children.filter(child -> Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS) &&
+                !child.equals(currentSession) &&
+                child.getFileName().toString().startsWith(TEMP_SESSION_PREFIX)
+            ).forEach(child -> {
+                Path lockFile = child.resolve(TEMP_SESSION_LOCK);
+                if (Files.exists(lockFile)) {
+                    try (FileMutex ignored = FileMutex.tryLock(lockFile)) {
+                        // The lock is available, so the process that owned this session is no longer running.
+                    } catch (IOException e) {
+                        return;
+                    }
+                } else {
+                    try {
+                        if (Files.getLastModifiedTime(child).toMillis() + TEMP_SESSION_CREATION_GRACE_PERIOD >=
+                            System.currentTimeMillis()) {
+                            return;
+                        }
+                    } catch (IOException e) {
+                        return;
                     }
                 }
-             } catch (IOException | DBException e) {
-                log.error("Error loading global network profiles", e);
-            }
-        }
-
-        @NotNull
-        @Override
-        protected DBSSecretController getSecretController() throws DBException {
-            return DBSSecretController.getGlobalSecretController();
-        }
-
-        @Nullable
-        @Override
-        protected DBWNetworkProfileProvider getProfileProvider() {
-            return RuntimeUtils.getObjectAdapter(BasePlatformImpl.this, DBWNetworkProfileProvider.class);
+                if (!ContentUtils.deleteFileRecursive(child)) {
+                    log.warn("Can not delete abandoned temp folder '" + child + "'");
+                }
+            });
+        } catch (IOException e) {
+            log.warn("Error cleaning abandoned temp folders in '" + root + "'", e);
         }
     }
+
 }

@@ -88,7 +88,8 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
         if (sqlQueriesOnly) {
             addInstructions(
                 "Your main goal is to return at least one SQL query",
-                "You shouldn't return any comments or descriptions, only SQL code blocks."
+                "You shouldn't return any abstract comments or descriptions, only SQL code blocks.",
+                "Do not insert empty lines inside generated queries"
             );
         }
         addSqlGenerateInstructions(() -> context == null ? null : context.getDataSource(), this);

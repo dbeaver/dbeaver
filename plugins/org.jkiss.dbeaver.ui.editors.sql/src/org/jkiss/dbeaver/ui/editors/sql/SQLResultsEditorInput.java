@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,48 +20,43 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
-import org.jkiss.utils.CommonUtils;
 
 public class SQLResultsEditorInput implements IEditorInput {
     private final IResultSetContainer container;
+    private final String name;
+    private final String description;
 
-    public SQLResultsEditorInput(@NotNull IResultSetContainer container) {
+    public SQLResultsEditorInput(@NotNull IResultSetContainer container, @NotNull String name, @Nullable String description) {
         this.container = container;
+        this.name = name;
+        this.description = description;
     }
 
+    @NotNull
     @Override
     public ImageDescriptor getImageDescriptor() {
         return DBeaverIcons.getImageDescriptor(UIIcon.RS_GRID);
     }
 
+    @NotNull
     @Override
     public String getName() {
-        final DBSDataContainer dataContainer = container.getDataContainer();
-
-        if (dataContainer == null) {
-            return "Data";
-        } else {
-            return CommonUtils.getSingleLineString(dataContainer.getName());
-        }
+        return name;
     }
 
+    @Nullable
     @Override
     public String getToolTipText() {
-        final DBSDataContainer dataContainer = container.getDataContainer();
-
-        if (dataContainer == null) {
-            return "Data";
-        } else {
-            return dataContainer.getDescription();
-        }
+        return description;
     }
 
+    @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter.isInstance(container)) {
             return adapter.cast(container);
         } else {
@@ -69,6 +64,7 @@ public class SQLResultsEditorInput implements IEditorInput {
         }
     }
 
+    @Nullable
     @Override
     public IPersistableElement getPersistable() {
         return null;

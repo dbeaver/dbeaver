@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -247,9 +248,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             Composite buttonsPanel = UIUtils.createComposite(group, 3);
             CSSUtils.markConnectionTypeColor(buttonsPanel);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            Button btnAdd = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+            Button btnAdd = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, SelectionListener.widgetSelectedAdapter(e -> {
                         DBVEntityConstraint newConstraint = new DBVEntityConstraint(vEntity, DBSEntityConstraintType.VIRTUAL_KEY, vEntity.getName() + "_uk");
                         EditConstraintPage editPage = new EditConstraintPage(DataEditorsMessages.virtual_structure_editor_constraint_page_edit_key, newConstraint);
                         if (editPage.edit()) {
@@ -266,12 +265,9 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                                 vEntity.persistConfiguration();
                             }
                         }
-                    }
-            });
+                    }));
 
-            SelectionAdapter ukEditListener = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener ukEditListener = SelectionListener.widgetSelectedAdapter(e -> {
                     TableItem ukItem = ukTable.getSelection()[0];
                     DBVEntityConstraint virtualUK = (DBVEntityConstraint) ukItem.getData();
                     EditConstraintPage editPage = new EditConstraintPage(DataEditorsMessages.virtual_structure_editor_constraint_page_edit_key, virtualUK);
@@ -281,14 +277,11 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                         ukItem.setText(1, getConstraintAttrNames(virtualUK));
                         vEntity.persistConfiguration();
                     }
-                }
-            };
+                });
             Button btnEdit = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_edit, ukEditListener);
             btnEdit.setEnabled(false);
 
-            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_remove, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_remove, SelectionListener.widgetSelectedAdapter(e -> {
                     DBVEntityConstraint virtualUK = (DBVEntityConstraint) ukTable.getSelection()[0].getData();
                     if (!UIUtils.confirmAction(parent.getShell(),
                     		DataEditorsMessages.virtual_structure_editor_confirm_action_delete_key,
@@ -298,8 +291,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                     vEntity.removeConstraint(virtualUK);
                     ukTable.remove(ukTable.getSelectionIndices());
                     vEntity.persistConfiguration();
-                }
-            });
+                }));
             btnRemove.setEnabled(false);
 
             ukTable.addSelectionListener(new SelectionAdapter() {
@@ -358,20 +350,15 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             CSSUtils.markConnectionTypeColor(buttonsPanel);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, SelectionListener.widgetSelectedAdapter(e -> {
                     DBVEntityForeignKey virtualFK = EditForeignKeyPage.createVirtualForeignKey(vEntity);
                     if (virtualFK != null) {
                         createForeignKeyItem(fkTable, virtualFK, true);
                         vEntity.persistConfiguration();
                     }
-                }
-            });
+                }));
 
-            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_remove, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            Button btnRemove = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_remove, SelectionListener.widgetSelectedAdapter(e -> {
                     DBVEntityForeignKey virtualFK = (DBVEntityForeignKey) fkTable.getSelection()[0].getData();
                     if (!UIUtils.confirmAction(parent.getShell(),
                     		DataEditorsMessages.virtual_structure_editor_confirm_action_delete_fk,
@@ -382,16 +369,11 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                     fkTable.remove(fkTable.getSelectionIndices());
                     ((Button)e.widget).setEnabled(false);
                     vEntity.persistConfiguration();
-                }
-            });
+                }));
             btnRemove.setEnabled(false);
 
-            fkTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    btnRemove.setEnabled(fkTable.getSelectionIndex() >= 0);
-                }
-            });
+            fkTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                btnRemove.setEnabled(fkTable.getSelectionIndex() >= 0)));
         }
     }
 
@@ -414,11 +396,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             CSSUtils.markConnectionTypeColor(buttonsPanel);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_refresh, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                }
-            }).setEnabled(false);
+            UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_refresh, SelectionListener.widgetSelectedAdapter(e -> {
+                })).setEnabled(false);
         }
     }
 

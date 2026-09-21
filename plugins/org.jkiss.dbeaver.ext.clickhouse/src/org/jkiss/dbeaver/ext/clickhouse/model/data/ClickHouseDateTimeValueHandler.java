@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 
@@ -43,7 +44,12 @@ public class ClickHouseDateTimeValueHandler extends JDBCDateTimeValueHandler {
     @Nullable
     @Override
     protected Format getNativeValueFormat(DBSTypedObject type) {
-        return DEFAULT_DATETIME_FORMAT;
+        return switch (type.getTypeID()) {
+            case Types.TIMESTAMP -> DEFAULT_DATETIME_FORMAT;
+            case Types.TIME -> DEFAULT_TIME_FORMAT;
+            case Types.DATE -> DEFAULT_DATE_FORMAT;
+            default -> null;
+        };
     }
 
     @Override

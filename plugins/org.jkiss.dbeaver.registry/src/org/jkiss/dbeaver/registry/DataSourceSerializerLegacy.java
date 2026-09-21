@@ -183,6 +183,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                         // Clean settings - they have to be loaded later by parser
                         curDataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
                         curDataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
+                        curDataSource.getConnectionConfiguration().getBootstrap().reset();
                         curDataSource.clearFilters();
                     }
                     curDataSource.setName(name);

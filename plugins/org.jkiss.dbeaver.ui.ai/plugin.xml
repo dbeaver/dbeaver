@@ -29,10 +29,12 @@
         <page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.main.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="dbeaver.ai.pref"/>
+            <keywordReference id="dbeaver.ai.main"/>
         </page>
         <page id="org.jkiss.dbeaver.preferences.ai.engines" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines" name="%pref.page.ai.engines.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="dbeaver.ai.pref"/>
+            <keywordReference id="dbeaver.ai.engines"/>
         </page>
         <page id="org.jkiss.dbeaver.preferences.ai.config" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration" name="%pref.page.ai.config.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
@@ -42,6 +44,7 @@
         <page id="org.jkiss.dbeaver.preferences.ai.chat" category="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageChat" name="%pref.page.ai.chat.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="dbeaver.ai.pref"/>
+            <keywordReference id="dbeaver.ai.chat"/>
         </page>
         <page id="org.jkiss.dbeaver.preferences.ai.prompts" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePagePrompts" name="%pref.page.ai.prompts.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
@@ -193,7 +196,10 @@
 
     <extension point="org.eclipse.ui.keywords">
         <keyword id="dbeaver.ai.pref" label="%keyword.org.jkiss.dbeaver.ai.pref"/>
+        <keyword id="dbeaver.ai.main" label="%keyword.org.jkiss.dbeaver.ai.main"/>
+        <keyword id="dbeaver.ai.engines" label="%keyword.org.jkiss.dbeaver.ai.engines"/>
         <keyword id="dbeaver.ai.config" label="%keyword.org.jkiss.dbeaver.ai.config"/>
+        <keyword id="dbeaver.ai.chat" label="%keyword.org.jkiss.dbeaver.ai.chat"/>
         <keyword id="dbeaver.ai.prompts" label="%keyword.org.jkiss.dbeaver.ai.prompts"/>
     </extension>
     <extension point="org.jkiss.dbeaver.workbenchHandler">
@@ -248,6 +254,10 @@
             <view id="com.dbeaver.ai.chat" relative="org.eclipse.ui.views.ContentOutline" relationship="stack" visible="false" minimized="true"/>
             <viewShortcut id="com.dbeaver.ai.chat"/>
         </perspectiveExtension>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="ai.model.load" name="AI models loaded"/>
     </extension>
 
 </plugin>

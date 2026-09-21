@@ -1083,21 +1083,34 @@ public class EntityEditor extends MultiPageDatabaseEditor
         composite.setLayout(GridLayoutFactory.fillDefaults().create());
 
         NodeBreadcrumbViewer viewer = new NodeBreadcrumbViewer(composite, SWT.TOP);
+        viewer.setContextMenuSite(getSite());
+        viewer.setSelectionSiteSupplier(() -> {
+            IEditorPart editor = getActiveEditor();
+            return editor != null ? editor.getSite() : getSite();
+        });
         viewer.setInput(getEditorInput().getNavigatorNode());
 
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         DBPPreferenceListener listener = event -> {
             if (event.getProperty().equals(DatabaseEditorPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS)) {
-                composite.setVisible(BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_EDITORS);
+                this.applyBreadcrumbsVisibility(store, composite);
                 updateTopRightControl();
             }
         };
 
         store.addPropertyChangeListener(listener);
         composite.addDisposeListener(e -> store.removePropertyChangeListener(listener));
-        composite.setVisible(BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_EDITORS);
+        this.applyBreadcrumbsVisibility(store, composite);
 
         return composite;
+    }
+
+    private void applyBreadcrumbsVisibility(@NotNull DBPPreferenceStore store, @NotNull Composite composite) {
+        if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
+            composite.setVisible(BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_EDITORS);
+        } else {
+            composite.setVisible(BreadcrumbLocation.get(store) != BreadcrumbLocation.HIDDEN);
+        }
     }
 
     @Override

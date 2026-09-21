@@ -24,11 +24,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.spanner.auth.SpannerAuthModel;
-import org.jkiss.dbeaver.ext.spanner.ui.SpannerActivator;
+import org.jkiss.dbeaver.ext.spanner.ui.SpannerUIConstants;
 import org.jkiss.dbeaver.ext.spanner.ui.internal.SpannerMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -49,7 +50,8 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text instanceText;
     private Text databaseText;
 
-    private static ImageDescriptor logoImage = SpannerActivator.getImageDescriptor("icons/spanner_logo.png"); //$NON-NLS-1$
+    private static ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
+        SpannerUIConstants.PLUGIN_ID, "icons/spanner_logo.png"); //$NON-NLS-1$
     private DriverPropertiesDialogPage driverPropsPage;
 
     public SpannerConnectionPage() {

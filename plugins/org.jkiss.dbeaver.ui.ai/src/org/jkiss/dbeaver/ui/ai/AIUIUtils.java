@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration;
 import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines;
 
 
@@ -62,17 +61,13 @@ public class AIUIUtils {
     }
 
     public static void showPreferences(@NotNull Shell shell) {
-        showPreferences(shell, false);
-    }
-
-    public static void showPreferences(@NotNull Shell shell, boolean engines) {
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             return;
         }
         UIUtils.showPreferencesFor(
             shell,
             AISettingsManager.getInstance().getSettings(),
-            engines ? AIPreferencePageEngines.PAGE_ID : AIPreferencePageConfiguration.PAGE_ID
+            AIPreferencePageEngines.PAGE_ID
         );
     }
 }

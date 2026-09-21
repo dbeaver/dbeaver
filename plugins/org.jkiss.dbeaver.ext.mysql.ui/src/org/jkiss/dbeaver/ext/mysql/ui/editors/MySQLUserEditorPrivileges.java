@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.ui.editors;
 
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
@@ -88,9 +87,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             catalogsTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
             catalogsTable.setLayoutData(gd);
-            catalogsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            catalogsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     int selIndex = catalogsTable.getSelectionIndex();
                     if (selIndex <= 0) {
                         selectedCatalog = null;
@@ -99,8 +96,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     }
                     showCatalogTables();
                     showGrants();
-                }
-            });
+                }));
             UIUtils.createTableColumn(catalogsTable, SWT.LEFT, MySQLUIMessages.editors_user_editor_privileges_column_catalog);
             {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
@@ -128,9 +124,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             tablesTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
             tablesTable.setLayoutData(gd);
-            tablesTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            tablesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     int selIndex = tablesTable.getSelectionIndex();
                     if (selIndex <= 0) {
                         selectedTable = null;
@@ -138,8 +132,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         selectedTable = (MySQLTableBase) tablesTable.getItem(selIndex).getData();
                     }
                     showGrants();
-                }
-            });
+                }));
             UIUtils.createTableColumn(tablesTable, SWT.LEFT, MySQLUIMessages.editors_user_editor_privileges_column_table);
             UIUtils.packColumns(tablesTable);
         }

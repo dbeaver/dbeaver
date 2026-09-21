@@ -24,8 +24,7 @@ import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.junit.jupiter.api.extension.*;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -154,13 +153,33 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         return osgiInstanceMap.computeIfAbsent(
             ideaTarget, k -> {
                 try {
-                    Class<?> osgiClass = osgiLoader.loadClass(k.getClass().getName());
-                    return osgiClass.getConstructor().newInstance();
+                    return createOsgiInstance(k, osgiLoader);
                 } catch (Exception e) {
                     throw new IllegalStateException("Failed to create OSGi test instance for " + k.getClass(), e);
                 }
             }
         );
+    }
+
+    @NotNull
+    private Object createOsgiInstance(@NotNull Object ideaTarget, @NotNull ClassLoader osgiLoader) throws Exception {
+        Class<?> ideaClass = ideaTarget.getClass();
+        Class<?> osgiClass = osgiLoader.loadClass(ideaClass.getName());
+
+        if (ideaClass.getEnclosingClass() != null && !Modifier.isStatic(ideaClass.getModifiers())) {
+            Field enclosingInstanceField = ideaClass.getDeclaredField("this$0");
+            enclosingInstanceField.setAccessible(true);
+            Object ideaEnclosingInstance = enclosingInstanceField.get(ideaTarget);
+            Object osgiEnclosingInstance = resolveOsgiInstance(ideaEnclosingInstance, osgiLoader);
+
+            Constructor<?> constructor = osgiClass.getDeclaredConstructor(osgiEnclosingInstance.getClass());
+            constructor.setAccessible(true);
+            return constructor.newInstance(osgiEnclosingInstance);
+        }
+
+        Constructor<?> constructor = osgiClass.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        return constructor.newInstance();
     }
 
     @NotNull

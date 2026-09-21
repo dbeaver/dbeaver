@@ -98,7 +98,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     }
 
     @NotNull
-    private DBWNetworkProfileManager getProfilesRegistry() {
+    protected DBWNetworkProfileManager getProfilesRegistry() {
         if (projectMeta == null) {
             return DBWorkbench.getPlatform().getNetworkProfiles();
         } else {
@@ -125,38 +125,79 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     @Override
     protected boolean deleteProfile(@NotNull DBWNetworkProfile selectedProfile) {
         List<? extends DBPDataSourceContainer> usedBy = connectionsUsingProfile(selectedProfile);
-        if (!usedBy.isEmpty()) {
-                UIUtils.showMessageBox(
-                    getShell(),
-                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
-                    NLS.bind(
-                        UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info, new Object[] {
-                            selectedProfile.getProfileName(),
-                            usedBy.size(),
-                            usedBy.stream()
-                                .sorted(Comparator.comparing(DBPNamedObject::getName))
-                                .map(x -> " - " + x.getName())
-                                .collect(Collectors.joining("\n"))
-                        }
-                    ),
-                    SWT.ICON_ERROR
-                );
-                return false;
-            }
-        if (UIUtils.confirmAction(
+        String usedByNames = formatConnectionsUsingProfile(usedBy);
+        if (!selectedProfile.isGlobal() && !usedBy.isEmpty()) {
+            UIUtils.showMessageBox(
+                getShell(),
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info,
+                    selectedProfile.getProfileName(), usedBy.size(), usedByNames
+                ),
+                SWT.ICON_ERROR
+            );
+            return false;
+        }
+        if (!UIUtils.confirmAction(
+            getShell(),
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
+            getDeleteConfirmationQuestion(selectedProfile)
+        )) {
+            return false;
+        }
+        if (!usedBy.isEmpty() && !UIUtils.confirmAction(
             getShell(),
             UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
             NLS.bind(
-                UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_question,
-                selectedProfile.getProfileName()
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_used_confirmation_question,
+                selectedProfile.getProfileName(),
+                usedBy.size(),
+                usedByNames
             )
         )) {
-            DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
-            profilesRegistry.removeProfile(selectedProfile);
-            profilesRegistry.saveSettings();
-            return true;
+            return false;
         }
-        return false;
+        try {
+            removeProfile(selectedProfile, usedBy);
+            return true;
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_message,
+                    selectedProfile.getProfileName()
+                ),
+                e
+            );
+            return false;
+        }
+    }
+
+    @NotNull
+    protected String getDeleteConfirmationQuestion(@NotNull DBWNetworkProfile profile) {
+        return NLS.bind(
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_question,
+            profile.getProfileName()
+        );
+    }
+
+    @NotNull
+    protected String formatConnectionsUsingProfile(@NotNull List<? extends DBPDataSourceContainer> dataSources) {
+        return dataSources.stream()
+            .sorted(Comparator.comparing(DBPNamedObject::getName))
+            .map(dataSource -> " - " + dataSource.getName())
+            .collect(Collectors.joining("\n"));
+    }
+
+    protected void removeProfile(
+        @NotNull DBWNetworkProfile profile,
+        @NotNull List<? extends DBPDataSourceContainer> usedBy
+    ) throws DBException {
+        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
+        profilesRegistry.removeProfile(profile);
+        if (!DBWorkbench.isDistributed()) {
+            profilesRegistry.saveSettings();
+        }
     }
 
     @NotNull
@@ -197,7 +238,9 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         newProfile.setProfileName(profileName);
 
         profilesRegistry.addOrUpdateProfile(newProfile);
-        profilesRegistry.saveSettings();
+        if (!DBWorkbench.isDistributed()) {
+            profilesRegistry.saveSettings();
+        }
 
         return newProfile;
     }

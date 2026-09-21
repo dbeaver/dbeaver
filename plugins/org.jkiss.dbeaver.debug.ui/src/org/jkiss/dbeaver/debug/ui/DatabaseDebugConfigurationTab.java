@@ -22,8 +22,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -143,16 +142,13 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
                     }
                     typeSelector.setData(panel);
                     if (panel.isValid()) {
-                        typeSelector.addSelectionListener(new SelectionAdapter() {
-                            @Override
-                            public void widgetSelected(SelectionEvent e) {
+                        typeSelector.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                                 if (typeSelector.getSelection()) {
                                     setDirty(true);
                                     setDebugType(connectionCombo.getSelectedItem(), (DebugConfigurationPanelDescriptor) typeSelector.getData());
                                     typesGroup.getParent().layout(true, true);
                                 }
-                            }
-                        });
+                            }));
                     } else {
                         typeSelector.setEnabled(false);
                     }
