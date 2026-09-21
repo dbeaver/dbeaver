@@ -291,6 +291,46 @@
                 </client>
             </nativeClients>
         </datasource>
+        <datasource
+                class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
+                description="Amazon Aurora MySQL provider"
+                id="aurora-mysql"
+                parent="mysql"
+                label="Amazon Aurora MySQL"
+                icon="icons/aurora_icon.svg"
+                dialect="mysql"
+                inheritAuthModels="false"
+                inheritClients="true"
+                inheritProviderProperties="true">
+            <drivers managable="true">
+                <driver
+                        id="aurora-mysql"
+                        label="Amazon Aurora MySQL"
+                        icon="icons/aurora_icon.svg"
+                        iconBig="icons/aurora_icon_big.svg"
+                        class="com.mysql.cj.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        useURL="false"
+                        defaultPort="3306"
+                        defaultUser="root"
+                        webURL="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraMySQL.html"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html"
+                        description="Amazon Aurora MySQL JDBC driver"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        promoted="1"
+                        categories="sql,cloud,aws">
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
+                    <file type="license" path="licenses/external/gnu3.txt"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <property name="rewriteBatchedStatements" value="true"/>
+                    <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
+                </driver>
+            </drivers>
+        </datasource>
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
