@@ -1243,8 +1243,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://www.cubrid.org/"
                         categories="sql">
-                    <!-- At the moment HTTPS link doesn't work. But we can't keep HTTP anyway. -->
-                    <file type="jar" path="https://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                    <file type="jar" path="maven:/org.cubrid:cubrid-jdbc:RELEASE"/>
                 </driver>
 
                 <!-- Solr -->
