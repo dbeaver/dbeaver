@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.ext.postgresql" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.ext.postgresql" id="org.jkiss.dbeaver.postgresql.fdw.config" name="FDW Config"/></appInfo></annotation>
+   <annotation><appinfo><meta.schema plugin="org.jkiss.dbeaver.ext.postgresql" id="org.jkiss.dbeaver.postgresql.fdw.config" name="FDW Config"/></appinfo></annotation>
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence><element ref="fdw" minOccurs="0" maxOccurs="unbounded"/></sequence>
          <attribute name="point" type="string" use="required"/>
@@ -13,23 +14,23 @@
    <element name="fdw">
       <complexType>
          <sequence><element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/></sequence>
-         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
          <attribute name="fdwId" type="string" use="required"/>
          <attribute name="databases" type="string" use="required"/>
-         <attribute name="label" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="name" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="label" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="name" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
          <attribute name="docURL" type="string"/>
       </complexType>
    </element>
    <element name="propertyGroup">
-      <complexType><sequence><element ref="property" minOccurs="0" maxOccurs="unbounded"/></sequence><attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute></complexType>
+      <complexType><sequence><element ref="property" minOccurs="0" maxOccurs="unbounded"/></sequence><attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute></complexType>
    </element>
    <element name="property">
       <complexType>
          <attribute name="id" type="string" use="required"/>
-         <attribute name="label" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="label" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
          <attribute name="type" type="string"/>
          <attribute name="required" type="boolean"/>
          <attribute name="defaultValue" type="string"/>

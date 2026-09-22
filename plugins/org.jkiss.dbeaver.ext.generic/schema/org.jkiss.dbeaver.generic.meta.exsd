@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.ext.generic" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.ext.generic" id="org.jkiss.dbeaver.generic.meta" name="Generic meta model retrieval"/></appInfo></annotation>
+   <annotation><appinfo><meta.schema plugin="org.jkiss.dbeaver.ext.generic" id="org.jkiss.dbeaver.generic.meta" name="Generic meta model retrieval"/></appinfo></annotation>
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence><element ref="meta" minOccurs="0" maxOccurs="unbounded"/></sequence>
          <attribute name="point" type="string" use="required"/>
@@ -16,9 +17,9 @@
             <element ref="object"/>
             <element ref="replace"/>
          </choice>
-         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
          <attribute name="driverClass" type="string"/>
-         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel:"/></appInfo></annotation></attribute>
+         <attribute name="class" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel:"/></appinfo></annotation></attribute>
          <attribute name="dialect" type="string"/>
       </complexType>
    </element>

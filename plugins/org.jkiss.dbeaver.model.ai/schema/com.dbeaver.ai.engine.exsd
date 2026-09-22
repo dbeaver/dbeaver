@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.engine" name="AI engines"/>
-      </appInfo>
+      </appinfo>
       <documentation>AI engines</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="completionEngine" minOccurs="0" maxOccurs="unbounded"/>
@@ -20,18 +21,18 @@
       <complexType>
          <attribute name="id" type="string" use="required"/>
          <attribute name="label" type="string" use="required">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="icon" type="string"/>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.engine.AIEngine"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="properties" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.engine.AIEngineProperties"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.engine.AIEngineProperties"/></appinfo></annotation>
          </attribute>
          <attribute name="promoted" type="boolean">
              <annotation>

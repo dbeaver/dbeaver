@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.assistant" name="AI assistants"/>
-      </appInfo>
+      </appinfo>
       <documentation>AI assistants</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="assistant" minOccurs="0" maxOccurs="unbounded"/>
@@ -21,13 +22,13 @@
          <attribute name="id" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIAssistant"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="sqlFormatter" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AISqlFormatter"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AISqlFormatter"/></appinfo></annotation>
          </attribute>
          <attribute name="priority" type="integer"/>
       </complexType>

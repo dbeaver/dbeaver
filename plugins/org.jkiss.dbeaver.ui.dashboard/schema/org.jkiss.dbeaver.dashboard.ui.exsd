@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.ui.dashboard" xmlns="http://www.w3.org/2001/XMLSchema">
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.ui.dashboard" id="org.jkiss.dbeaver.dashboard.ui" name="Dashboards UI"/>
-      </appInfo>
+      </appinfo>
       <documentation>DBeaver dashboard UI renderers</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="dashboardView" minOccurs="0" maxOccurs="unbounded"/>
@@ -22,27 +23,27 @@
    <element name="dashboardView">
       <complexType>
          <attribute name="id" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation>
          </attribute>
          <attribute name="label" type="string" use="required">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="description" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="icon" type="string">
-            <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation>
          </attribute>
          <attribute name="dataTypes" type="string" use="required"/>
          <attribute name="native" type="boolean" use="default" value="false"/>
          <attribute name="renderer" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.dashboard.model.DashboardItemRenderer"/></appinfo></annotation>
          </attribute>
          <attribute name="configurationEditor" type="string">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IObjectPropertyConfigurator"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IObjectPropertyConfigurator"/></appinfo></annotation>
          </attribute>
          <attribute name="viewSettingsEditor" type="string">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IObjectPropertyConfigurator"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IObjectPropertyConfigurator"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>

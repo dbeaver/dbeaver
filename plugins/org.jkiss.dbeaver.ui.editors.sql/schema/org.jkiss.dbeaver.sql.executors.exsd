@@ -8,6 +8,7 @@
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="executor" minOccurs="0" maxOccurs="unbounded"/>

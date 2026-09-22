@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.dataHintProvider" name="Data hint provider"/>
-      </appInfo>
+      </appinfo>
       <documentation>DBeaver custom hint provider</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="hintProvider" minOccurs="0" maxOccurs="unbounded"/>
@@ -17,9 +18,9 @@
          <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -33,16 +34,16 @@
          <attribute name="id" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="label" type="string" use="required">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="description" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="for" type="string"/>
          <attribute name="visibleByDefault" type="boolean"/>

@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.task" name="Tasks"/>
-      </appInfo>
+      </appinfo>
       <documentation>Tasks</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="category"/>
@@ -19,9 +20,9 @@
          <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -39,7 +40,7 @@
          <attribute name="name" type="string" use="required"/>
          <attribute name="description" type="string"/>
          <attribute name="icon" type="string"/>
-         <attribute name="handler" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.task.DBTTaskHandler"/></appInfo></annotation></attribute>
+         <attribute name="handler" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.task.DBTTaskHandler"/></appinfo></annotation></attribute>
          <attribute name="supportsVariables" type="boolean"/>
          <attribute name="supportsDistributedMode" type="boolean"/>
          <attribute name="standalone" type="boolean"/>
@@ -67,7 +68,7 @@
          </choice>
          <attribute name="name" type="string" use="required"/>
          <attribute name="description" type="string"/>
-         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.task.DBTScheduler"/></appInfo></annotation></attribute>
+         <attribute name="class" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.task.DBTScheduler"/></appinfo></annotation></attribute>
       </complexType>
    </element>
 
@@ -81,7 +82,7 @@
 
    <element name="objectType">
       <complexType>
-         <attribute name="name" type="string" use="required"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
+         <attribute name="name" type="string" use="required"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute>
          <attribute name="if" type="string"/>
          <attribute name="forceCheck" type="boolean"/>
       </complexType>

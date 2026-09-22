@@ -2,12 +2,13 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.app.config" name="%extension-point.org.jkiss.dbeaver.app.config.name"/>
-      </appInfo>
+      </appinfo>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="feature"/>
@@ -16,9 +17,9 @@
          <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -32,16 +33,16 @@
          <attribute name="enabledByDefault" type="string" use="required"/>
          <attribute name="enablementTester" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn="org.jkiss.dbeaver.model.config.ProductConfigFeatureTester:"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="availabilityTester" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn="org.jkiss.dbeaver.model.config.ProductConfigFeatureAvailabilityTester:"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
 

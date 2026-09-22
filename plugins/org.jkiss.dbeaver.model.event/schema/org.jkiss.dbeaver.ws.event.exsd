@@ -1,13 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <schema targetNamespace="org.jkiss.dbeaver.model.event" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.event" id="org.jkiss.dbeaver.ws.event" name="WebSocket event"/>
-      </appInfo>
+      </appinfo>
       <documentation>WebSocket events</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="event"/>
@@ -24,7 +25,7 @@
          <attribute name="id" type="string" use="required"/>
          <attribute name="topicId" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.websocket.event.WSEvent"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.websocket.event.WSEvent"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>
@@ -33,10 +34,10 @@
       <complexType>
          <attribute name="id" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.websocket.event.WSClientEvent"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.websocket.event.WSClientEvent"/></appinfo></annotation>
          </attribute>
          <attribute name="handler" type="string">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.websocket.event.WSClientEventHandler"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.websocket.event.WSClientEventHandler"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>

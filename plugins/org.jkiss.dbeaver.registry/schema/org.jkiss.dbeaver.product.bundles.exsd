@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
     <annotation>
-        <appInfo>
+        <appinfo>
             <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.product.bundles" name="Product bundles"/>
-        </appInfo>
+        </appinfo>
         <documentation>Tools</documentation>
     </annotation>
 
     <element name="extension">
+       <annotation><appinfo><meta.element/></appinfo></annotation>
         <complexType>
             <sequence>
                 <element ref="bundle" minOccurs="0" maxOccurs="unbounded"/>
@@ -21,9 +22,9 @@
             </attribute>
             <attribute name="name" type="string">
                 <annotation>
-                    <appInfo>
+                    <appinfo>
                         <meta.attribute translatable="true"/>
-                    </appInfo>
+                    </appinfo>
                 </annotation>
             </attribute>
         </complexType>
@@ -45,17 +46,17 @@
             <attribute name="label" type="string">
                 <annotation>
                     <documentation>Bundle name</documentation>
-                    <appInfo>
+                    <appinfo>
                         <meta.attribute translatable="true"/>
-                    </appInfo>
+                    </appinfo>
                 </annotation>
             </attribute>
             <attribute name="description" type="string">
                 <annotation>
                     <documentation>Bundle description</documentation>
-                    <appInfo>
+                    <appinfo>
                         <meta.attribute translatable="true"/>
-                    </appInfo>
+                    </appinfo>
                 </annotation>
             </attribute>
         </complexType>

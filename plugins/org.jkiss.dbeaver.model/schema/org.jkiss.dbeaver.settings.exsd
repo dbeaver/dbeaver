@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.settings" name="Settings"/>
-      </appInfo>
+      </appinfo>
       <documentation>Plugin Settings</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
@@ -27,7 +28,7 @@
          </choice>
          <attribute name="id" type="string" use="required"/>
          <attribute name="label" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>
@@ -36,13 +37,13 @@
       <complexType>
          <attribute name="id" type="string" use="required"/>
          <attribute name="label" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="description" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="hint" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="type" type="string"/>
          <attribute name="required" type="boolean"/>

@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.function" name="AI functions"/>
-      </appInfo>
+      </appinfo>
       <documentation>AI functions for assistant functionality</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="category" minOccurs="0" maxOccurs="unbounded"/>
@@ -55,9 +56,9 @@
          <attribute name="class" type="string">
             <annotation>
                <documentation>Class implementing the AIFunction interface</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunction"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
@@ -137,9 +138,9 @@
          <attribute name="icon" type="string">
             <annotation>
                <documentation>Optional icon path for this function</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="resource"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -180,17 +181,17 @@
          <attribute name="validValuesProvider" type="string">
             <annotation>
                <documentation>Optional class implementing AIFunctionParameterValueProvider used to provide valid values dynamically</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterValueProvider"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="transformer" type="string">
             <annotation>
                <documentation>Optional class implementing AIFunctionParameterTransformer used to transform the raw parameter value before passing it to the function</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="targetSuffix" type="string">

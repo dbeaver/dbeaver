@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.data.transfer.ui" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.data.transfer.ui" id="org.jkiss.dbeaver.dataTransferConfigurator" name="Data Transfer UI Configurators"/></appInfo></annotation>
+   <annotation><appinfo><meta.schema plugin="org.jkiss.dbeaver.data.transfer.ui" id="org.jkiss.dbeaver.dataTransferConfigurator" name="Data Transfer UI Configurators"/></appinfo></annotation>
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence><element ref="configPages" minOccurs="0" maxOccurs="unbounded"/></sequence>
          <attribute name="point" type="string" use="required"/>
@@ -19,9 +20,9 @@
    </element>
    <element name="page">
       <complexType>
-         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
          <attribute name="replaces" type="string"/>
-         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.eclipse.jface.wizard.IWizardPage"/></appInfo></annotation></attribute>
+         <attribute name="class" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.eclipse.jface.wizard.IWizardPage"/></appinfo></annotation></attribute>
          <attribute name="producerSelector" type="boolean" use="default" value="false"/>
          <attribute name="consumerSelector" type="boolean" use="default" value="false"/>
          <attribute name="producerType" type="string"/>

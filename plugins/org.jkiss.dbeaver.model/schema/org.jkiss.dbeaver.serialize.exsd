@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.serialize" name="Object serializers"/>
-      </appInfo>
+      </appinfo>
       <documentation>Headless database utilities</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="serializer" minOccurs="0" maxOccurs="unbounded"/>
@@ -17,9 +18,9 @@
          <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -30,9 +31,9 @@
          <attribute name="id" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="supportsDistributedMode" type="boolean"/>

@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.prompt" name="AI prompts"/>
-      </appInfo>
+      </appinfo>
       <documentation>AI prompt generators</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="prompt" minOccurs="0" maxOccurs="unbounded"/>
@@ -34,9 +35,9 @@
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>Class implementing the AIPromptGenerator interface</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIPromptGenerator"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
@@ -47,9 +48,9 @@
          <attribute name="icon" type="string">
             <annotation>
                <documentation>Optional icon path for this prompt</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="resource"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="uiFunctions" type="string">

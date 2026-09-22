@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.ext.postgresql" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.ext.postgresql" id="org.jkiss.dbeaver.postgresql.serverType" name="PostgreSQL Server Type"/></appInfo></annotation>
+   <annotation><appinfo><meta.schema plugin="org.jkiss.dbeaver.ext.postgresql" id="org.jkiss.dbeaver.postgresql.serverType" name="PostgreSQL Server Type"/></appinfo></annotation>
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence><element ref="serverType" minOccurs="0" maxOccurs="unbounded"/></sequence>
          <attribute name="point" type="string" use="required"/>
@@ -12,10 +13,10 @@
    </element>
    <element name="serverType">
       <complexType>
-         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
-         <attribute name="name" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension"/></appInfo></annotation></attribute>
-         <attribute name="logo" type="string" use="required"><annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
+         <attribute name="name" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="class" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension"/></appinfo></annotation></attribute>
+         <attribute name="logo" type="string" use="required"><annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation></attribute>
          <attribute name="customURL" type="boolean" use="default" value="false"/>
          <attribute name="cloudServer" type="boolean" use="default" value="false"/>
          <attribute name="supportsClient" type="boolean" use="default" value="true"/>

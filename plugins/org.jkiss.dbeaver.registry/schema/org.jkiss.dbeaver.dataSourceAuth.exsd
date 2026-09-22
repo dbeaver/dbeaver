@@ -1,13 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.dataSourceAuth" name="Datasource authentication model"/>
-      </appInfo>
+      </appinfo>
       <documentation>DBeaver data source provider</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="authModel" minOccurs="0" maxOccurs="unbounded"/>
@@ -20,9 +21,9 @@
          </attribute>
          <attribute name="name" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -43,7 +44,7 @@
          </choice>
          <attribute name="id" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.access.DBAAuthModel"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.access.DBAAuthModel"/></appinfo></annotation>
          </attribute>
          <attribute name="label" type="string" use="required"/>
          <attribute name="description" type="string"/>
@@ -66,7 +67,7 @@
 
    <element name="objectType">
       <complexType>
-         <attribute name="name" type="string" use="required"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
+         <attribute name="name" type="string" use="required"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute>
          <attribute name="if" type="string"/>
          <attribute name="forceCheck" type="boolean"/>
       </complexType>

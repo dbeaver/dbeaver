@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model.jdbc" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.jdbc" id="org.jkiss.dbeaver.sqlBackup" name="Backup"/>
-      </appInfo>
+      </appinfo>
       <documentation>Backup</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <sequence>
             <element ref="backup" minOccurs="0" maxOccurs="unbounded"/>
@@ -23,14 +24,14 @@
       <complexType>
          <attribute name="id" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler"/></appinfo></annotation>
          </attribute>
          <attribute name="dialect" type="string" use="required"/>
          <attribute name="label" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="description" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>

@@ -2,13 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appInfo>
+      <appinfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.dataSourceProvider" name="Datasource provider"/>
-      </appInfo>
+      </appinfo>
       <documentation>DBeaver data source provider</documentation>
    </annotation>
 
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="dataSourceType"/>
@@ -27,9 +28,9 @@
          </attribute>
          <attribute name="name" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -38,25 +39,25 @@
    <element name="dataSourceType">
       <complexType>
          <attribute name="id" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation>
          </attribute>
          <attribute name="label" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="description" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="dataSourceInformation" type="string">
-            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
          </attribute>
          <attribute name="icon" type="string">
-            <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation>
          </attribute>
          <attribute name="iconBig" type="string">
-            <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation>
          </attribute>
          <attribute name="logoImage" type="string">
-            <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>
@@ -72,6 +73,7 @@
             <element ref="driver-properties"/>
             <element ref="drivers"/>
             <element ref="nativeClients"/>
+            <element ref="templates"/>
          </choice>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -81,33 +83,33 @@
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>Datasource provider implementation</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceProvider"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="label" type="string">
             <annotation>
                <documentation>Data source name</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
                <documentation>Provider description</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
             <annotation>
                <documentation>Datasource icon</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="resource"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="parent" type="string"/>
@@ -140,9 +142,9 @@
          <attribute name="icon" type="string">
             <annotation>
                <documentation>Root element icon</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="resource"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="label" type="string">
@@ -172,17 +174,17 @@
          <attribute name="label" type="string">
             <annotation>
                <documentation>Optional item label</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="itemLabel" type="string">
             <annotation>
                <documentation>Optional item label</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
@@ -258,9 +260,9 @@
          <attribute name="label" type="string">
             <annotation>
                <documentation>Folder label</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
@@ -271,9 +273,9 @@
          <attribute name="description" type="string">
             <annotation>
                <documentation>Folder description</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="navigable" type="boolean"/>
@@ -323,17 +325,17 @@
          <attribute name="label" type="string">
             <annotation>
                <documentation>Driver name</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
                <documentation>Driver description</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
@@ -395,17 +397,17 @@
       <complexType>
          <attribute name="path" type="string" use="required">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="resource"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
                <documentation>Library description</documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -418,9 +420,9 @@
          </sequence>
          <attribute name="label" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -429,22 +431,22 @@
    <element name="property">
       <complexType>
          <attribute name="id" type="string">
-            <annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation>
          </attribute>
          <attribute name="name" type="string"/>
          <attribute name="value" type="string"/>
          <attribute name="label" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="type" type="string"/>
@@ -493,23 +495,23 @@
          <attribute name="type" type="string"/>
          <attribute name="label" type="string" use="required">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="editor" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.ui.part.EditorPart:"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string"/>
@@ -568,9 +570,9 @@
       <complexType>
          <attribute name="name" type="string" use="required">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="if" type="string"/>
@@ -591,16 +593,16 @@
          <attribute name="type" type="string" use="required"/>
          <attribute name="class" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -619,7 +621,7 @@
       <complexType>
          <attribute name="provider" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceProvider"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceProvider"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>
@@ -629,7 +631,7 @@
          <attribute name="id" type="string" use="required"/>
          <attribute name="label" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceOriginProvider"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceOriginProvider"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>
@@ -646,7 +648,7 @@
          <attribute name="description" type="string"/>
          <attribute name="icon" type="string"/>
           <attribute name="visibleIf" type="string"/>
-          <attribute name="objectType" type="string"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
+          <attribute name="objectType" type="string"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute>
        </complexType>
    </element>
 
@@ -664,7 +666,7 @@
          <attribute name="provider" type="string" use="required"/>
          <attribute name="driver" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
-            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.connection.DBPDriverSubstitution"/></appInfo></annotation>
+            <annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.connection.DBPDriverSubstitution"/></appinfo></annotation>
          </attribute>
       </complexType>
    </element>
@@ -763,9 +765,9 @@
    </element>
 
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.section type="since"/>
-      </appInfo>
+      </appinfo>
       <documentation>1.0</documentation>
    </annotation>
 

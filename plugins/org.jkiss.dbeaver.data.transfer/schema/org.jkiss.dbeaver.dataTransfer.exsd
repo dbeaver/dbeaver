@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.data.transfer" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.data.transfer" id="org.jkiss.dbeaver.dataTransfer" name="Data Transfer Provider"/></appInfo></annotation>
+   <annotation><appinfo><meta.schema plugin="org.jkiss.dbeaver.data.transfer" id="org.jkiss.dbeaver.dataTransfer" name="Data Transfer Provider"/></appinfo></annotation>
    <element name="extension">
+      <annotation><appinfo><meta.element/></appinfo></annotation>
       <complexType>
          <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="node"/>
@@ -21,13 +22,13 @@
             <element ref="processor"/>
          </choice>
          <attribute name="ref" type="string"/>
-         <attribute name="id" type="string"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="id" type="string"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
          <attribute name="type" type="string"/>
-         <attribute name="class" type="string"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferNode"/></appInfo></annotation></attribute>
-         <attribute name="settings" type="string"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferSettings"/></appInfo></annotation></attribute>
-         <attribute name="label" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="icon" type="string"><annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation></attribute>
+         <attribute name="class" type="string"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferNode"/></appinfo></annotation></attribute>
+         <attribute name="settings" type="string"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferSettings"/></appinfo></annotation></attribute>
+         <attribute name="label" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="icon" type="string"><annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation></attribute>
          <attribute name="advanced" type="boolean" use="default" value="false"/>
       </complexType>
    </element>
@@ -37,53 +38,53 @@
             <element ref="sourceType"/>
             <element ref="propertyGroup"/>
          </choice>
-         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
          <attribute name="shortId" type="string"/>
          <attribute name="aiFormatId" type="string"/>
-         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor"/></appInfo></annotation></attribute>
-         <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="icon" type="string"><annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation></attribute>
+         <attribute name="class" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor"/></appinfo></annotation></attribute>
+         <attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="icon" type="string"><annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation></attribute>
          <attribute name="binary" type="boolean" use="default" value="false"/>
          <attribute name="html" type="boolean" use="default" value="false"/>
          <attribute name="contentType" type="string"/>
          <attribute name="appFileExtension" type="string"/>
-         <attribute name="appName" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="appName" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
          <attribute name="order" type="int"/>
       </complexType>
    </element>
    <element name="transformer">
       <complexType>
          <sequence><element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/></sequence>
-         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
-         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferAttributeTransformer"/></appInfo></annotation></attribute>
-         <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="icon" type="string"><annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
+         <attribute name="class" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferAttributeTransformer"/></appinfo></annotation></attribute>
+         <attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="icon" type="string"><annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation></attribute>
       </complexType>
    </element>
    <element name="eventProcessor">
       <complexType>
-         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
-         <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor"/></appInfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
+         <attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="class" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor"/></appinfo></annotation></attribute>
          <attribute name="nodes" type="string" use="required"/>
          <attribute name="order" type="int"/>
       </complexType>
    </element>
-   <element name="sourceType"><complexType><attribute name="type" type="string" use="required"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute></complexType></element>
+   <element name="sourceType"><complexType><attribute name="type" type="string" use="required"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute></complexType></element>
    <element name="propertyGroup">
       <complexType>
          <sequence><element ref="property" minOccurs="0" maxOccurs="unbounded"/></sequence>
-         <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
       </complexType>
    </element>
    <element name="property">
       <complexType>
          <attribute name="id" type="string" use="required"/>
-         <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
          <attribute name="type" type="string"/>
          <attribute name="required" type="boolean"/>
          <attribute name="defaultValue" type="string"/>
