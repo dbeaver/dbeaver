@@ -36,11 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Matcher;
 
 /**
  * MySQLUser
@@ -107,8 +103,13 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         this.userName = userName;
     }
 
+    /**
+     * The account as a quoted SQL identifier ({@code 'user'@'host'}) for use in GRANT/REVOKE and
+     * other statements. Single quotes in the user or host are doubled so crafted names stay valid.
+     */
+    @NotNull
     public String getFullName() {
-        return "'" + userName + "'@'" + host + "'";
+        return "'" + userName.replace("'", "''") + "'@'" + host.replace("'", "''") + "'";
     }
 
     @Nullable
@@ -175,102 +176,12 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLGrant> grants = new ArrayList<>();
                     while (dbResult.next()) {
-                        List<MySQLPrivilege> privileges = new ArrayList<>();
-                        boolean allPrivilegesFlag = false;
-                        boolean grantOption = false;
-                        String catalog = null;
-                        String table = null;
-
-                        // Keep the original case: object names are needed verbatim for generated REVOKE statements
-                        String grantString = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1)).trim();
-                        if (grantString.toUpperCase(Locale.ENGLISH).endsWith(" WITH GRANT OPTION")) {
-                            grantOption = true;
+                        String grantString = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1));
+                        MySQLGrant grant = MySQLGrant.parseGrant(
+                            this, grantString, privName -> getDataSource().getPrivilege(monitor, privName));
+                        if (grant != null) {
+                            grants.add(grant);
                         }
-                        String privString;
-                        MySQLGrant.ObjectType objectType = MySQLGrant.ObjectType.TABLE;
-                        Matcher matcher = MySQLGrant.PROCEDURE_GRANT_PATTERN.matcher(grantString);
-                        if (matcher.find()) {
-                            privString = matcher.group(1);
-                            objectType = "FUNCTION".equalsIgnoreCase(matcher.group(2)) ?
-                                MySQLGrant.ObjectType.FUNCTION : MySQLGrant.ObjectType.PROCEDURE;
-                            catalog = matcher.group(3);
-                            table = matcher.group(4);
-                        } else if ((matcher = MySQLGrant.TABLE_GRANT_PATTERN.matcher(grantString)).find()) {
-                            privString = matcher.group(1);
-                            catalog = matcher.group(2);
-                            table = matcher.group(3);
-                        } else {
-                            matcher = MySQLGrant.GLOBAL_GRANT_PATTERN.matcher(grantString);
-                            if (matcher.find()) {
-                                privString = matcher.group(1);
-                            } else {
-                                log.warn("Can't parse GRANT string: " + grantString);
-                                continue;
-                            }
-                        }
-                        // Split privileges by top-level commas: column lists like "SELECT (COL1, COL2)"
-                        // contain commas inside parentheses
-                        Map<MySQLPrivilege, List<String>> columnPrivs = new LinkedHashMap<>();
-                        List<String> privTokens = new ArrayList<>();
-                        int depth = 0;
-                        int start = 0;
-                        for (int i = 0; i < privString.length(); i++) {
-                            char c = privString.charAt(i);
-                            if (c == '(') {
-                                depth++;
-                            } else if (c == ')') {
-                                depth--;
-                            } else if (c == ',' && depth == 0) {
-                                privTokens.add(privString.substring(start, i));
-                                start = i + 1;
-                            }
-                        }
-                        privTokens.add(privString.substring(start));
-                        for (String privName : privTokens) {
-                            privName = privName.trim();
-                            if (privName.isEmpty()) {
-                                continue;
-                            }
-                            String columnsPart = null;
-                            int parenIdx = privName.indexOf('(');
-                            if (parenIdx >= 0 && privName.endsWith(")")) {
-                                columnsPart = privName.substring(parenIdx + 1, privName.length() - 1);
-                                privName = privName.substring(0, parenIdx).trim();
-                            }
-                            if (privName.equalsIgnoreCase(MySQLPrivilege.ALL_PRIVILEGES)) {
-                                allPrivilegesFlag = true;
-                                continue;
-                            }
-                            MySQLPrivilege priv = getDataSource().getPrivilege(monitor, privName);
-                            if (priv == null) {
-                                log.warn("Can't find privilege '" + privName + "'");
-                            } else if (columnsPart == null) {
-                                privileges.add(priv);
-                            } else {
-                                List<String> columns = columnPrivs.computeIfAbsent(priv, p -> new ArrayList<>());
-                                for (String column : columnsPart.split(",")) {
-                                    column = column.replace("`", "").trim();
-                                    if (!column.isEmpty()) {
-                                        columns.add(column);
-                                    }
-                                }
-                            }
-                        }
-
-                        MySQLGrant grant = new MySQLGrant(
-                            this,
-                            privileges,
-                            catalog,
-                            table,
-                            allPrivilegesFlag,
-                            grantOption,
-                            objectType);
-                        for (Map.Entry<MySQLPrivilege, List<String>> entry : columnPrivs.entrySet()) {
-                            for (String column : entry.getValue()) {
-                                grant.addColumnPrivilege(entry.getKey(), column);
-                            }
-                        }
-                        grants.add(grant);
                     }
                     this.grants = grants;
                     return this.grants;
@@ -291,9 +202,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     public List<String> getGrantScript(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<String> script = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read user grants")) {
-            // Escape the account name: single quotes in user/host must be doubled
-            String accountName = "'" + userName.replace("'", "''") + "'@'" + host.replace("'", "''") + "'";
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + accountName)) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + getFullName())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String grant = JDBCUtils.safeGetString(dbResult, 1);
@@ -315,32 +224,35 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         return sslType;
     }
 
-    void setSslType(String sslType) {
+    void setSslType(@Nullable String sslType) {
         this.sslType = sslType;
     }
 
     @Property(viewable = true, order = 21)
+    @Nullable
     public byte[] getSslCipher() {
         return sslCipher;
     }
 
-    void setSslCipher(byte[] sslCipher) {
+    void setSslCipher(@Nullable byte[] sslCipher) {
         this.sslCipher = sslCipher;
     }
 
+    @Nullable
     public byte[] getX509Issuer() {
         return x509Issuer;
     }
 
-    void setX509Issuer(byte[] x509Issuer) {
+    void setX509Issuer(@Nullable byte[] x509Issuer) {
         this.x509Issuer = x509Issuer;
     }
 
+    @Nullable
     public byte[] getX509Subject() {
         return x509Subject;
     }
 
-    void setX509Subject(byte[] x509Subject) {
+    void setX509Subject(@Nullable byte[] x509Subject) {
         this.x509Subject = x509Subject;
     }
 

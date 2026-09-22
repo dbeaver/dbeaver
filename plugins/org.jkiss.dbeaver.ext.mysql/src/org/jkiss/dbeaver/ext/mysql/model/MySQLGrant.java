@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeGrant;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -29,17 +30,31 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * User privilege grant
  */
 public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
+
+    private static final Log log = Log.getLog(MySQLGrant.class);
+
+    /**
+     * Resolves a privilege name (as it appears in a SHOW GRANTS statement) to a model privilege.
+     */
+    @FunctionalInterface
+    public interface PrivilegeResolver {
+        @Nullable
+        MySQLPrivilege resolve(@NotNull String privilegeName) throws DBException;
+    }
 
     public static final Pattern TABLE_GRANT_PATTERN = Pattern.compile(
         "GRANT\\s+(.+)\\s+ON\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
@@ -310,7 +325,148 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
                 return true;
             }
         }
+        // Column-only grants (GRANT SELECT (col) ON ...) keep their privileges in the column map,
+        // so they must be counted here or the grant would be treated as empty and dropped.
+        for (MySQLPrivilege priv : columnPrivileges.keySet()) {
+            if (priv.getKind() != MySQLPrivilege.Kind.ADMIN) {
+                return true;
+            }
+        }
         return false;
+    }
+
+    /**
+     * Parses a single {@code SHOW GRANTS} line into a grant for the given user.
+     *
+     * @return the parsed grant, or {@code null} if the line is not a recognizable GRANT statement.
+     */
+    @Nullable
+    public static MySQLGrant parseGrant(
+        @NotNull MySQLUser user,
+        @NotNull String rawGrant,
+        @NotNull PrivilegeResolver resolver
+    ) throws DBException {
+        // Keep the original case: object/column names are needed verbatim for generated REVOKE statements
+        String grantString = rawGrant.trim();
+        boolean grantOption = grantString.toUpperCase(Locale.ENGLISH).endsWith(" WITH GRANT OPTION");
+
+        String privString;
+        String catalog = null;
+        String table = null;
+        ObjectType objectType = ObjectType.TABLE;
+        Matcher matcher = PROCEDURE_GRANT_PATTERN.matcher(grantString);
+        if (matcher.find()) {
+            privString = matcher.group(1);
+            objectType = "FUNCTION".equalsIgnoreCase(matcher.group(2)) ? ObjectType.FUNCTION : ObjectType.PROCEDURE;
+            catalog = matcher.group(3);
+            table = matcher.group(4);
+        } else if ((matcher = TABLE_GRANT_PATTERN.matcher(grantString)).find()) {
+            privString = matcher.group(1);
+            catalog = matcher.group(2);
+            table = matcher.group(3);
+        } else if ((matcher = GLOBAL_GRANT_PATTERN.matcher(grantString)).find()) {
+            privString = matcher.group(1);
+        } else {
+            log.warn("Can't parse GRANT string: " + grantString);
+            return null;
+        }
+
+        List<MySQLPrivilege> privileges = new ArrayList<>();
+        Map<MySQLPrivilege, List<String>> columnPrivs = new LinkedHashMap<>();
+        boolean allPrivilegesFlag = false;
+        for (String token : splitPrivileges(privString)) {
+            String privName = token.trim();
+            if (privName.isEmpty()) {
+                continue;
+            }
+            String columnsPart = null;
+            int parenIdx = privName.indexOf('(');
+            if (parenIdx >= 0 && privName.endsWith(")")) {
+                columnsPart = privName.substring(parenIdx + 1, privName.length() - 1);
+                privName = privName.substring(0, parenIdx).trim();
+            }
+            if (privName.equalsIgnoreCase(MySQLPrivilege.ALL_PRIVILEGES)) {
+                allPrivilegesFlag = true;
+                continue;
+            }
+            MySQLPrivilege priv = resolver.resolve(privName);
+            if (priv == null) {
+                log.warn("Can't find privilege '" + privName + "'");
+            } else if (columnsPart == null) {
+                privileges.add(priv);
+            } else {
+                columnPrivs.computeIfAbsent(priv, p -> new ArrayList<>()).addAll(parseColumnList(columnsPart));
+            }
+        }
+
+        MySQLGrant grant = new MySQLGrant(user, privileges, catalog, table, allPrivilegesFlag, grantOption, objectType);
+        for (Map.Entry<MySQLPrivilege, List<String>> entry : columnPrivs.entrySet()) {
+            for (String column : entry.getValue()) {
+                grant.addColumnPrivilege(entry.getKey(), column);
+            }
+        }
+        return grant;
+    }
+
+    /**
+     * Splits a privilege list on top-level commas, keeping column lists such as
+     * {@code SELECT (col1, col2)} intact (commas inside parentheses are not separators).
+     */
+    @NotNull
+    static List<String> splitPrivileges(@NotNull String privString) {
+        List<String> tokens = new ArrayList<>();
+        int depth = 0;
+        int start = 0;
+        for (int i = 0; i < privString.length(); i++) {
+            char c = privString.charAt(i);
+            if (c == '(') {
+                depth++;
+            } else if (c == ')') {
+                depth--;
+            } else if (c == ',' && depth == 0) {
+                tokens.add(privString.substring(start, i));
+                start = i + 1;
+            }
+        }
+        tokens.add(privString.substring(start));
+        return tokens;
+    }
+
+    /**
+     * Parses a column list such as {@code `col1`, `col2`} from a column-level grant. Handles
+     * back-tick quoting: commas inside quotes are not separators, and a doubled back-tick inside a
+     * quoted identifier ({@code ``}) is an escaped back-tick.
+     */
+    @NotNull
+    static List<String> parseColumnList(@NotNull String columnsPart) {
+        List<String> columns = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean quoted = false;
+        for (int i = 0; i < columnsPart.length(); i++) {
+            char c = columnsPart.charAt(i);
+            if (c == '`') {
+                if (quoted && i + 1 < columnsPart.length() && columnsPart.charAt(i + 1) == '`') {
+                    current.append('`');
+                    i++;
+                } else {
+                    quoted = !quoted;
+                }
+            } else if (c == ',' && !quoted) {
+                addColumn(columns, current);
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
+        }
+        addColumn(columns, current);
+        return columns;
+    }
+
+    private static void addColumn(@NotNull List<String> columns, @NotNull StringBuilder value) {
+        String column = value.toString().trim();
+        if (!column.isEmpty()) {
+            columns.add(column);
+        }
     }
 
     public boolean isStatic() {
