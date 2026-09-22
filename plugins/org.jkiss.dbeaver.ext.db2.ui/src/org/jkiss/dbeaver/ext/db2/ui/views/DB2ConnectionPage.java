@@ -20,10 +20,7 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -54,28 +51,10 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
     private Text portText;
     private Text dbText;
 
-    private Image logoImage;
-
     private boolean activated = false;
 
-    public DB2ConnectionPage() {
-        logoImage = createImage("icons/db2_logo.png"); //$NON-NLS-1$
-    }
-
     @Override
-    public void dispose()
-    {
-        super.dispose();
-        UIUtils.dispose(logoImage);
-    }
-
-    @Override
-    public Image getImage() {
-        return logoImage;
-    }
-
-    @Override
-    public void createControl(Composite composite)
+    public void createControl(@NotNull Composite composite)
     {
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
