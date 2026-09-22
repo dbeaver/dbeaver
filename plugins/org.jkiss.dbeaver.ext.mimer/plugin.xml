@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="mimer"
+              class="org.jkiss.dbeaver.ext.mimer.model.MimerMetaModel"
+              driverClass="com.mimer.jdbc.Driver"
+              dialect="mimer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.mimer.MimerDataSourceProvider"
+                description="%datasource.mimer.description"
+                id="mimer"
+                parent="generic"
+                label="%datasource.mimer.name"
+                icon="icons/mimer_icon.png"
+                dialect="mimer">
+
+            <tree path="mimer" label="%datasource.mimer.tree.name" supportsEntityMerge="true">
+                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="%tree.database_schemas.node.tip">
+                    <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                            <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.table_columns.node.tip">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerColumnPrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.column_restricted_insert_update_references.node.tip">
+                                            <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this.node.tip">
+                                            <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_column_depends_on.node.tip">
+                                            <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="%tree.table_constraints.node.tip"
+                                        visibleIf="object.dataSource.info.supportsReferentialIntegrity() || object.dataSource.metaModel.supportsUniqueKeys()">
+                                    <items label="%tree.constraint.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                        <items label="%tree.constraint_column.node.name" itemLabel="Column" path="column" property="attributeReferences" navigable="false" inline="true"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-key" description="%tree.table_foreign_keys.node.tip"
+                                        visibleIf="object.dataSource.info.supportsReferentialIntegrity()">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_column.node.name" itemLabel="Column" path="column" property="attributeReferences" inline="true"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerTableIndex" label="%tree.indexes.node.name" icon="#index" description="%tree.table_indexes.node.tip"
+                                        visibleIf="object.dataSource.info.supportsIndexes()">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_column.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerAccessPath" label="%tree.access_paths.node.name" icon="#index" description="%tree.access_paths_the_optimizer_can.node.tip">
+                                    <items label="%tree.access_path.node.name" path="accessPath" property="accessPaths" icon="#index">
+                                        <items label="%tree.access_path_column.node.name" path="column" property="columns" icon="#column" inline="true"/>
+                                    </items>
+                                </folder>
+                                <folder label="%tree.references.node.name" icon="#reference" description="%tree.table_references.node.tip" virtual="true"
+                                        visibleIf="object.dataSource.info.supportsReferentialIntegrity()">
+                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                        <items label="%tree.reference_column.node.name" itemLabel="Column" path="column" property="attributeReferences" inline="true" virtual="true"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerTableTrigger" label="%tree.triggers.node.name" icon="#trigger" description="%tree.table_triggers.node.tip"
+                                        visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_trigger_depends_on.node.tip">
+                                            <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.select_insert_update_delete_grants.node.tip">
+                                    <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_table.node.tip">
+                                    <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_table_depends_on.node.tip">
+                                    <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerView" label="%tree.views.node.name" icon="#folder_view" description="%tree.views.node.tip"
+                                visibleIf="object.dataSource.metaModel.supportsViews(object.dataSource)">
+                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.view_columns.node.tip">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerColumnPrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.column_restricted_insert_update_references.node.tip">
+                                            <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this.node.tip">
+                                            <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_column_depends_on.node.tip">
+                                            <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerTableTrigger" label="%tree.triggers.node.name" icon="#trigger" description="%tree.instead_of_triggers.node.tip"
+                                        visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_trigger_depends_on.node.tip">
+                                            <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.select_insert_update_delete_grants.node.tip">
+                                    <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_view.node.tip">
+                                    <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_view_depends_on.node.tip">
+                                    <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerProcedure" label="%tree.procedures.node.name" icon="#procedure" description="%tree.procedures.node.tip"
+                                visibleIf="object.dataSource.info.supportsStoredCode()">
+                            <items label="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
+                                <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.procedure_parameters.node.tip">
+                                    <items label="%tree.parameter.node.name" path="column" property="parameters"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerRoutinePrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.execute_grants.node.tip">
+                                    <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_procedure.node.tip">
+                                    <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_procedure_depends_on.node.tip">
+                                    <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerProcedure" label="%tree.functions.node.name" icon="#function" description="%tree.functions.node.tip"
+                                visibleIf="object.dataSource.info.supportsStoredCode() &amp;&amp; object.dataSource.splitProceduresAndFunctions()">
+                            <items label="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                                <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.function_parameters.node.tip">
+                                    <items label="%tree.parameter.node.name" path="column" property="parameters"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerRoutinePrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.execute_grants.node.tip">
+                                    <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_function.node.tip">
+                                    <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_function_depends_on.node.tip">
+                                    <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerModule" label="%tree.modules.node.name" icon="#package" description="%tree.sql_modules.node.tip">
+                            <items label="%tree.module.node.name" path="module" property="modules" icon="#package">
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerModuleRoutine" label="%tree.procedures.node.name" icon="#procedure" description="%tree.procedures_declared_in_this_module.node.tip">
+                                    <items label="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
+                                        <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.procedure_parameters.node.tip">
+                                            <items label="%tree.parameter.node.name" path="column" property="parameters"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_procedure.node.tip">
+                                            <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_procedure_depends_on.node.tip">
+                                            <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerModuleRoutine" label="%tree.functions.node.name" icon="#function" description="%tree.functions_declared_in_this_module.node.tip"
+                                        visibleIf="object.dataSource.splitProceduresAndFunctions()">
+                                    <items label="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                                        <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.function_parameters.node.tip">
+                                            <items label="%tree.parameter.node.name" path="column" property="parameters"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_function.node.tip">
+                                            <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_function_depends_on.node.tip">
+                                            <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSequence" label="%tree.sequences.node.name" icon="#sequence" description="%tree.sequences.node.tip"
+                                visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
+                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence">
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSequencePrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.usage_grants.node.tip">
+                                    <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_sequence.node.tip">
+                                    <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_sequence_depends_on.node.tip">
+                                    <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerDomain" label="%tree.domains.node.name" icon="#data_type" description="%tree.sql_domains.node.tip">
+                            <items label="%tree.domain.node.name" path="domain" property="domains" icon="#data_type">
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerDomainPrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.usage_grants.node.tip">
+                                    <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_domain.node.tip">
+                                    <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_domain_depends_on.node.tip">
+                                    <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerCollation" label="%tree.collations.node.name" icon="#sql_text" description="%tree.collations.node.tip">
+                            <items label="%tree.collation.node.name" path="collation" property="collations" icon="#sql_text">
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_collation.node.tip">
+                                    <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_collation_depends_on.node.tip">
+                                    <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSynonym" label="%tree.synonyms.node.name" icon="#synonym" description="%tree.synonyms.node.tip">
+                            <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSchemaIndex" label="%tree.indexes.node.name" icon="#index" description="%tree.every_index_in_the_schema.node.tip">
+                            <items label="%tree.index.node.name" path="schemaIndex" property="allIndexes" icon="#index">
+                                <folder label="%tree.columns.node.name" icon="#column" description="%tree.index_columns.node.tip">
+                                    <items label="%tree.column.node.name" path="column" property="columns" icon="#column"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerStatement" label="%tree.statements.node.name" icon="#sql_text" description="%tree.precompiled_stored_sql_statements.node.tip">
+                            <items label="%tree.statement.node.name" path="statement" property="statements" icon="#sql_text">
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerStatementPrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.execute_grants.node.tip">
+                                    <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_statement_depends_on.node.tip">
+                                    <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                </folder>
+                            </items>
+                        </folder>
+
+                        <folder id="mimerSchemaTriggers" type="org.jkiss.dbeaver.ext.generic.model.GenericContainerTrigger" label="%tree.triggers.node.name" icon="#trigger" description="%tree.schema_triggers.node.tip"
+                                visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                        </folder>
+
+                        <folder id="mimerUserDefinedTypes" type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.user_defined_types.node.name" icon="#data_type" description="%tree.user_defined_types.node.tip">
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedType" label="%tree.distinct_types.node.name" icon="#data_type" description="%tree.distinct_user_defined_types.node.tip">
+                                <items label="%tree.distinct_type.node.name" path="distinctType" property="distinctTypes" icon="#data_type">
+                                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethodSpec" label="%tree.instance_methods.node.name" icon="#function" description="%tree.instance_methods.node.tip">
+                                        <items label="%tree.method.node.name" path="method" property="instanceMethodsAndSpecs" icon="#function">
+                                            <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.method_parameters.node.tip">
+                                                <items label="%tree.parameter.node.name" path="column" property="parameters" icon="#column"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_method.node.tip">
+                                                <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_method_depends_on.node.tip">
+                                                <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                            </folder>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethodSpec" label="%tree.static_methods.node.name" icon="#function" description="%tree.static_methods.node.tip">
+                                        <items label="%tree.method.node.name" path="method" property="staticMethodsAndSpecs" icon="#function">
+                                            <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.method_parameters.node.tip">
+                                                <items label="%tree.parameter.node.name" path="column" property="parameters" icon="#column"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_method.node.tip">
+                                                <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_method_depends_on.node.tip">
+                                                <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                            </folder>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedTypePrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.usage_grants.node.tip">
+                                        <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedType" label="%tree.structured_types.node.name" icon="#data_type" description="%tree.structured_user_defined_types.node.tip">
+                                <items label="%tree.structured_type.node.name" path="structuredType" property="structuredTypes" icon="#data_type">
+                                    <folder label="%tree.attributes.node.name" icon="#columns" description="%tree.type_attributes.node.tip">
+                                        <items label="%tree.attribute.node.name" path="attribute" property="attributes" icon="#column"/>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethodSpec" label="%tree.constructor_methods.node.name" icon="#function" description="%tree.constructor_methods.node.tip">
+                                        <items label="%tree.method.node.name" path="method" property="constructorMethodsAndSpecs" icon="#function">
+                                            <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.method_parameters.node.tip">
+                                                <items label="%tree.parameter.node.name" path="column" property="parameters" icon="#column"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_method.node.tip">
+                                                <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_method_depends_on.node.tip">
+                                                <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                            </folder>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethodSpec" label="%tree.instance_methods.node.name" icon="#function" description="%tree.instance_methods.node.tip">
+                                        <items label="%tree.method.node.name" path="method" property="instanceMethodsAndSpecs" icon="#function">
+                                            <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.method_parameters.node.tip">
+                                                <items label="%tree.parameter.node.name" path="column" property="parameters" icon="#column"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_method.node.tip">
+                                                <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_method_depends_on.node.tip">
+                                                <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                            </folder>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethodSpec" label="%tree.static_methods.node.name" icon="#function" description="%tree.static_methods.node.tip">
+                                        <items label="%tree.method.node.name" path="method" property="staticMethodsAndSpecs" icon="#function">
+                                            <folder label="%tree.parameters.node.name" icon="#columns" description="%tree.method_parameters.node.tip">
+                                                <items label="%tree.parameter.node.name" path="column" property="parameters" icon="#column"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_method.node.tip">
+                                                <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                                            </folder>
+                                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses" label="%tree.uses.node.name" icon="#link" description="%tree.objects_this_method_depends_on.node.tip">
+                                                <items label="%tree.object.node.name" path="uses" property="uses" icon="#link"/>
+                                            </folder>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedTypePrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.usage_grants.node.tip">
+                                        <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                                    </folder>
+                                </items>
+                            </folder>
+                        </folder>
+                    </items>
+                </folder>
+
+                <folder id="mimerDBA" type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.dba_views.node.name" icon="#folder_admin" description="%tree.server_wide_administration_objects.node.tip">
+                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUser" label="%tree.users.node.name" icon="#user" description="%tree.users_and_os_users.node.tip">
+                        <items label="%tree.user.node.name" path="user" property="users" icon="#user">
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerUserAuthorization" label="%tree.authorizations.node.name" icon="#user" description="%tree.login_authorizations_os_users.node.tip">
+                                <items label="%tree.authorization.node.name" path="authorization" property="authorizations" icon="#user"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSchema" label="%tree.owned_schemas.node.name" icon="#folder_schema" description="%tree.schemas_owned_by_this_user.node.tip">
+                                <items label="%tree.schema.node.name" path="ownedSchema" property="ownedSchemas" icon="#folder_schema"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentTablePrivilege" label="%tree.access_rights.node.name" icon="#permissions" description="%tree.table_view_privileges_granted_to.node.tip">
+                                <items label="%tree.privilege.node.name" path="tablePrivilege" property="tablePrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentColumnPrivilege" label="%tree.column_privileges.node.name" icon="#permissions" description="%tree.column_restricted_privileges_granted_to.node.tip">
+                                <items label="%tree.privilege.node.name" path="columnPrivilege" property="columnPrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentObjectPrivilege" label="%tree.object_privileges.node.name" icon="#permissions" description="%tree.execute_sequence_table_usage_privileges.node.tip">
+                                <items label="%tree.privilege.node.name" path="objectPrivilege" property="objectPrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder id="mimerUserGroupMemberships" type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentGroupMembership" label="%tree.group_memberships.node.name" icon="#user_group" description="%tree.groups_this_user_belongs_to.node.tip">
+                                <items label="%tree.membership.node.name" path="groupMembership" property="groupMemberships" icon="#user_group"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSystemPrivilege" label="%tree.system_privileges.node.name" icon="#permissions" description="%tree.system_level_privileges_granted_to.node.tip">
+                                <items label="%tree.privilege.node.name" path="systemPrivilege" property="systemPrivileges" icon="#permissions"/>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerGroup" label="%tree.groups.node.name" icon="#user_group" description="%tree.groups.node.tip">
+                        <items label="%tree.group.node.name" path="group" property="groups" icon="#user_group">
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerGroupMember" label="%tree.members.node.name" icon="#folder_user" description="%tree.group_members.node.tip">
+                                <items label="%tree.member.node.name" path="member" property="members" icon="#user"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentTablePrivilege" label="%tree.access_rights.node.name" icon="#permissions" description="%tree.table_view_privileges_granted_to_this.node.tip">
+                                <items label="%tree.privilege.node.name" path="tablePrivilege" property="tablePrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentColumnPrivilege" label="%tree.column_privileges.node.name" icon="#permissions" description="%tree.column_restricted_privileges_granted_to_this.node.tip">
+                                <items label="%tree.privilege.node.name" path="columnPrivilege" property="columnPrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentObjectPrivilege" label="%tree.object_privileges.node.name" icon="#permissions" description="%tree.execute_sequence_table_usage_privileges_granted.node.tip">
+                                <items label="%tree.privilege.node.name" path="objectPrivilege" property="objectPrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder id="mimerGroupGroupMemberships" type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentGroupMembership" label="%tree.group_memberships.node.name" icon="#user_group" description="%tree.groups_this_group_belongs_to.node.tip">
+                                <items label="%tree.membership.node.name" path="groupMembership" property="groupMemberships" icon="#user_group"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSystemPrivilege" label="%tree.system_privileges.node.name" icon="#permissions" description="%tree.system_level_privileges_granted_to_this.node.tip">
+                                <items label="%tree.privilege.node.name" path="systemPrivilege" property="systemPrivileges" icon="#permissions"/>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerProgram" label="%tree.programs.node.name" icon="#user" description="%tree.program_idents_enter_using_security.node.tip">
+                        <items label="%tree.program.node.name" path="program" property="programs" icon="#user">
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerProgramPrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.execute_grants.node.tip">
+                                <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSchema" label="%tree.owned_schemas.node.name" icon="#folder_schema" description="%tree.schemas_owned_by_this_program.node.tip">
+                                <items label="%tree.schema.node.name" path="ownedSchema" property="ownedSchemas" icon="#folder_schema"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentTablePrivilege" label="%tree.access_rights.node.name" icon="#permissions" description="%tree.table_view_privileges_granted_to_this_program.node.tip">
+                                <items label="%tree.privilege.node.name" path="tablePrivilege" property="tablePrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentColumnPrivilege" label="%tree.column_privileges.node.name" icon="#permissions" description="%tree.column_restricted_privileges_granted_to_this_program.node.tip">
+                                <items label="%tree.privilege.node.name" path="columnPrivilege" property="columnPrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentObjectPrivilege" label="%tree.object_privileges.node.name" icon="#permissions" description="%tree.execute_sequence_table_usage_privileges_granted_to.node.tip">
+                                <items label="%tree.privilege.node.name" path="objectPrivilege" property="objectPrivileges" icon="#permissions"/>
+                            </folder>
+                            <folder id="mimerProgramGroupMemberships" type="org.jkiss.dbeaver.ext.mimer.model.MimerIdentGroupMembership" label="%tree.group_memberships.node.name" icon="#user_group" description="%tree.groups_this_program_belongs_to.node.tip">
+                                <items label="%tree.membership.node.name" path="groupMembership" property="groupMemberships" icon="#user_group"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSystemPrivilege" label="%tree.system_privileges.node.name" icon="#permissions" description="%tree.system_level_privileges_granted_to_this_program.node.tip">
+                                <items label="%tree.privilege.node.name" path="systemPrivilege" property="systemPrivileges" icon="#permissions"/>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerDatabank" label="%tree.databanks.node.name" icon="#tablespace" description="%tree.databanks_physical_storage.node.tip">
+                        <items label="%tree.databank.node.name" path="databank" property="databanks" icon="#tablespace">
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankFile" label="%tree.files.node.name" icon="#folder" description="%tree.databank_files.node.tip">
+                                <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow" label="%tree.shadows.node.name" icon="#link" description="%tree.shadows_of_this_databank_online.node.tip">
+                                <items label="%tree.shadow.node.name" path="shadow" property="shadows" icon="#link">
+                                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerShadowFile" label="%tree.files.node.name" icon="#folder" description="%tree.files_backing_this_shadow.node.tip">
+                                        <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.objects_that_depend_on_this_databank.node.tip">
+                                <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankPrivilege" label="%tree.privileges.node.name" icon="#permissions" description="%tree.grant_table_sequence_on_databank.node.tip"
+                                    visibleIf="!object.isSystemDatabank()">
+                                <items label="%tree.privilege.node.name" path="privilege" property="privileges" icon="#permissions"/>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerShadow" label="%tree.shadows.node.name" icon="#link" description="%tree.databank_shadows_online_backup_replicas.node.tip">
+                        <items label="%tree.shadow.node.name" path="shadow" property="shadows" icon="#link"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerLibrary" label="%tree.libraries.node.name" icon="#library" description="%tree.external_clr_net_libraries_a.node.tip"
+                            visibleIf="object.dataSource.supportsExternalLibraries()">
+                        <items label="%tree.library.node.name" path="library" property="libraries" icon="#library">
+                            <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy" label="%tree.used_by.node.name" icon="#link" description="%tree.procedures_functions_implemented_in_this.node.tip">
+                                <items label="%tree.object.node.name" path="usedBy" property="usedBy" icon="#link"/>
+                            </folder>
+                        </items>
+                    </folder>
+                </folder>
+
+                <folder id="mimerServerInfo" type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.server_info.node.name" icon="#folder_info" description="%tree.read_only_server_reference_information.node.tip">
+                    <folder id="mimerServerAndDriver" type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.server_driver.node.name" icon="#info" description="%tree.connected_server_and_loaded_jdbc.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerInfoRow" label="%tree.server.node.name" icon="#info" description="%tree.connected_mimer_sql_server_s.node.tip">
+                            <items label="%tree.property.node.name" path="serverInfo" property="serverInfoRows" icon="#info"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerInfoRow" label="%tree.driver.node.name" icon="#info" description="%tree.loaded_jdbc_driver_s_name.node.tip">
+                            <items label="%tree.property.node.name" path="driverInfo" property="driverInfoRows" icon="#info"/>
+                        </folder>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.data_types.node.name" icon="#data_type" description="%tree.built_in_data_types.node.tip">
+                        <items label="%tree.data_type.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                    </folder>
+
+                    <folder id="mimerSqlStandards" type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.sql_standards.node.name" icon="#info" description="%tree.sql_1999_2003_standard_conformance.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSqlStandardRow" label="%tree.features.node.name" icon="#info" description="%tree.sql_features_which_sql_standard.node.tip">
+                            <items label="%tree.feature.node.name" path="feature" property="sqlFeatures" icon="#info"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSqlStandardRow" label="%tree.sizing.node.name" icon="#info" description="%tree.sql_sizing_implementation_defined_size.node.tip">
+                            <items label="%tree.sizing.node.name" path="sizing" property="sqlSizing" icon="#info"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mimer.model.MimerSqlStandardRow" label="%tree.languages.node.name" icon="#info" description="%tree.sql_languages_supported_host_language.node.tip">
+                            <items label="%tree.language.node.name" path="language" property="sqlLanguages" icon="#info"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </tree>
+
+            <drivers managable="true">
+                <driver
+                        id="mimer"
+                        label="%driver.mimer.name"
+                        icon="icons/mimer_icon.png"
+                        iconBig="icons/mimer_icon_big.png"
+                        class="com.mimer.jdbc.Driver"
+                        sampleURL="jdbc:mimer://{host}:{port}/{database}"
+                        defaultPort="1360"
+                        webURL="https://developer.mimer.com/"
+                        propertiesURL="https://developer.mimer.com/documentation/"
+                        description="%driver.mimer.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        threadSafe="false"
+                        categories="sql,embedded">
+                    <replace provider="generic" driver="mimer"/>
+                    <!-- Was repo:/drivers/mimer/mimjdbc3.jar - DBeaver's own hosted copy, an
+                         orphaned, long-stale build (driver 3.28) that predates BUILTIN.UUID
+                         support (added in driver 3.39) and is what caused UUID columns to
+                         render as raw binary. com.mimer.jdbc:mimjdbc is
+                         genuinely published on Maven Central (search.maven.org's own search
+                         index lags behind the real repository content and wrongly suggests it
+                         isn't - resolve directly via `mvn dependency:resolve`, not the search
+                         UI) - RELEASE picks up new Mimer SQL driver releases automatically; the
+                         bracketed value is only DBeaver's fallback if RELEASE resolution itself
+                         fails. -->
+                    <file type="jar" path="maven:/com.mimer.jdbc:mimjdbc:RELEASE[11.0.4]"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
+                    <!-- Schemas are a separate, in-tree-browsed concept, never picked at
+                         connect time, so the field is just "Database" - not generic's
+                         default "Database/Schema" fallback label. -->
+                    <parameter name="term-database" value="Database"/>
+                    <!-- The plain JDBC Connection#getSchema()/#setSchema() API the curren mimjdbc3 exposes
+                         is Mimer SQL 11.1+ only - pre-11.1 it throws an exception.
+                         Without this parameter, GenericExecutionContext
+                         falls back to that unsupported API for "Execute -> Set Active Schema",
+                         which failed silently (no schema change, subsequent queries still ran
+                         against the old schema) rather than erroring and
+                         confirmed the plain SQL statement works instead. -->
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                </driver>
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="mimer"
+                 parent="generic"
+                 class="org.jkiss.dbeaver.ext.mimer.model.MimerSQLDialect"
+                 label="%dialect.mimer.name"
+                 description="%dialect.mimer.description"
+                 icon="icons/mimer_icon.png"/>
+    </extension>
+
+    <!-- Mimer SQL's four GIS types - see MimerGisPointValueHandler/MimerGisScalarValueHandler
+         for why these reconstruct the value through Mimer's own accessor methods (a small side
+         query, batched per fetched page rather than one round trip per cell - see MimerGisUtils)
+         rather than decoding the raw binary bytes, whose layout isn't documented. All four
+         confirmed working live against ../dbeaver-work-files/gis.sql's example tables. Scoped to
+         the exact type name and the mimer datasource only, so none can ever affect any other
+         driver's binary columns. All four are custom="false" applyByDefault="true" - core applies
+         each automatically with no "View as..." step (see MimerGisLocationTransformer for exactly
+         why that flag combination is what does it) - each gated by its own separate global
+         preference (Preferences -> Mimer SQL -> GIS display), so any of the four can be turned
+         off independently. -->
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <transformer
+            class="org.jkiss.dbeaver.ext.mimer.model.gis.MimerGisLocationTransformer"
+            id="MimerGisLocationTransformer"
+            name="%transformer.gis_location.name"
+            description="%transformer.gis_location.description"
+            applyByDefault="true"
+            custom="false">
+            <type name="BUILTIN.GIS_LOCATION"/>
+            <datasource id="mimer"/>
+        </transformer>
+        <transformer
+            class="org.jkiss.dbeaver.ext.mimer.model.gis.MimerGisCoordinateTransformer"
+            id="MimerGisCoordinateTransformer"
+            name="%transformer.gis_coordinate.name"
+            description="%transformer.gis_coordinate.description"
+            applyByDefault="true"
+            custom="false">
+            <type name="BUILTIN.GIS_COORDINATE"/>
+            <datasource id="mimer"/>
+        </transformer>
+        <transformer
+            class="org.jkiss.dbeaver.ext.mimer.model.gis.MimerGisLatitudeTransformer"
+            id="MimerGisLatitudeTransformer"
+            name="%transformer.gis_latitude.name"
+            description="%transformer.gis_latitude.description"
+            applyByDefault="true"
+            custom="false">
+            <type name="BUILTIN.GIS_LATITUDE"/>
+            <datasource id="mimer"/>
+        </transformer>
+        <transformer
+            class="org.jkiss.dbeaver.ext.mimer.model.gis.MimerGisLongitudeTransformer"
+            id="MimerGisLongitudeTransformer"
+            name="%transformer.gis_longitude.name"
+            description="%transformer.gis_longitude.description"
+            applyByDefault="true"
+            custom="false">
+            <type name="BUILTIN.GIS_LONGITUDE"/>
+            <datasource id="mimer"/>
+        </transformer>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerSchemaManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerTableManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerViewManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerView"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerTableColumnManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerSequenceManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerDomainManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerDomain"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerCollationManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerCollation"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerLibraryManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerLibrary"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerSynonymManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerSynonym"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerProcedureManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerModuleManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerModule"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerTableTriggerManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerTableTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerIndexManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerTableIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerDatabankManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerDatabank"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerDatabankFileManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankFile"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerDatabankShadowManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerUserManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerUser"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerUserAuthorizationManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerUserAuthorization"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerGroupManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerGroup"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerProgramManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerProgram"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerProgramPrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerProgramPrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerStatementManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerStatement"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerStatementPrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerStatementPrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerGroupMemberManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerGroupMember"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerSystemPrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerSystemPrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerSequencePrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerSequencePrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerDatabankPrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankPrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerDomainPrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerDomainPrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerColumnPrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerColumnPrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerIdentGroupMembershipManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerIdentGroupMembership"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerObjectPrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerRoutinePrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerRoutinePrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerUserDefinedTypeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedType"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerUserDefinedTypePrivilegeManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedTypePrivilege"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerUdtMethodSpecManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethodSpec"/>
+        <manager class="org.jkiss.dbeaver.ext.mimer.edit.MimerUdtMethodManager"
+                 objectType="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethod"/>
+    </extension>
+
+</plugin>

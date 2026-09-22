@@ -23,6 +23,7 @@
    <plugin id="org.jkiss.dbeaver.ext.tidblake" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.derby" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.dameng" version="0.0.0"  />
+   <plugin id="org.jkiss.dbeaver.ext.mimer" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.duckdb" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.exasol" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.firebird" version="0.0.0" />

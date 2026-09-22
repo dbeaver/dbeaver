@@ -651,19 +651,6 @@
                     <parameter name="supports-multi-insert" value="true"/>
                 </driver>
                 <driver
-                    id="mimer"
-                    dataSourceType="mimer_sql"
-                    label="Mimer SQL"
-                    class="com.mimer.jdbc.Driver"
-                    sampleURL="jdbc:mimer:tcp://{host}:{port}/{database}"
-                    defaultPort="1360"
-                    webURL="http://developer.mimer.com/"
-                    description="Mimer SQL TCP/IP driver"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    categories="sql,embedded">
-                    <file type="jar" path="repo:/drivers/mimer/mimjdbc3.jar"/>
-                </driver>
-                <driver
                     id="hsqldb_server"
                     dataSourceType="hsqldb"
                     label="HSQL Server"
@@ -1717,6 +1704,7 @@
                 <driver id="h2_server" dataSourceType="h2"/>
                 <driver id="h2_embedded" dataSourceType="h2"/>
                 <driver id="h2_embedded_v2" dataSourceType="h2"/>
+                <driver id="mimer" dataSourceType="mimer_sql"/>
                 <driver id="mssql" dataSourceType="mssql"/>
                 <driver id="mssql_ms" dataSourceType="mssql"/>
                 <driver id="postgresql" dataSourceType="postgresql"/>

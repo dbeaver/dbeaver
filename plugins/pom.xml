@@ -48,6 +48,7 @@
         <module>org.jkiss.dbeaver.ext.db2.i</module>
         <module>org.jkiss.dbeaver.ext.derby</module>
         <module>org.jkiss.dbeaver.ext.dameng</module>
+        <module>org.jkiss.dbeaver.ext.mimer</module>
         <module>org.jkiss.dbeaver.ext.duckdb</module>
         <module>org.jkiss.dbeaver.ext.exasol</module>
         <module>org.jkiss.dbeaver.ext.firebird</module>
@@ -134,6 +135,7 @@
                 <module>org.jkiss.dbeaver.ext.tidblake.ui</module>
                 <module>org.jkiss.dbeaver.ext.mssql.ui</module>
                 <module>org.jkiss.dbeaver.ext.mysql.ui</module>
+                <module>org.jkiss.dbeaver.ext.mimer.ui</module>
                 <module>org.jkiss.dbeaver.ext.oceanbase.ui</module>
                 <module>org.jkiss.dbeaver.ext.oracle.ui</module>
 
