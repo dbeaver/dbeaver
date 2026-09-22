@@ -5,40 +5,20 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.task" name="Tasks"/>
       </appInfo>
-      <documentation>
-         Tasks
-      </documentation>
+      <documentation>Tasks</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
       <complexType>
-         <sequence>
-            <element ref="task" minOccurs="0" maxOccurs="unbounded"/>
-         </sequence>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="category"/>
+            <element ref="task"/>
+            <element ref="scheduler"/>
+         </choice>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -49,51 +29,98 @@
 
    <element name="task">
       <complexType>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="datasource"/>
+            <element ref="objectType"/>
+            <element ref="propertyGroup"/>
+         </choice>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="type" type="string" use="required"/>
+         <attribute name="name" type="string" use="required"/>
+         <attribute name="description" type="string"/>
+         <attribute name="icon" type="string"/>
+         <attribute name="handler" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.task.DBTTaskHandler"/></appInfo></annotation></attribute>
+         <attribute name="supportsVariables" type="boolean"/>
+         <attribute name="supportsDistributedMode" type="boolean"/>
+         <attribute name="standalone" type="boolean"/>
+         <attribute name="requiresMutability" type="boolean"/>
+         <attribute name="requiresExportPrivileges" type="boolean"/>
+         <attribute name="confirmationMessage" type="string"/>
       </complexType>
    </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="since"/>
-      </appInfo>
-      <documentation>
-         [Enter the first release in which this extension point appears.]
-      </documentation>
-   </annotation>
+   <element name="category">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="parent" type="string"/>
+         <attribute name="name" type="string" use="required"/>
+         <attribute name="description" type="string"/>
+         <attribute name="icon" type="string"/>
+      </complexType>
+   </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="examples"/>
-      </appInfo>
-      <documentation>
-         [Enter extension point usage example here.]
-      </documentation>
-   </annotation>
+   <element name="scheduler">
+      <complexType>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="propertyGroup"/>
+            <element ref="enabledWhen"/>
+         </choice>
+         <attribute name="name" type="string" use="required"/>
+         <attribute name="description" type="string"/>
+         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.task.DBTScheduler"/></appInfo></annotation></attribute>
+      </complexType>
+   </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
+   <element name="datasource">
+      <complexType>
+         <attribute name="id" type="string"/>
+         <attribute name="driver" type="string"/>
+         <attribute name="if" type="string"/>
+      </complexType>
+   </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
+   <element name="objectType">
+      <complexType>
+         <attribute name="name" type="string" use="required"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
+         <attribute name="if" type="string"/>
+         <attribute name="forceCheck" type="boolean"/>
+      </complexType>
+   </element>
+
+   <element name="enabledWhen">
+      <complexType><sequence><any minOccurs="1" maxOccurs="1" processContents="lax"/></sequence></complexType>
+   </element>
+
+   <element name="propertyGroup">
+      <complexType>
+         <sequence><element ref="property" minOccurs="0" maxOccurs="unbounded"/></sequence>
+         <attribute name="label" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="property">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="label" type="string"/>
+         <attribute name="description" type="string"/>
+         <attribute name="hint" type="string"/>
+         <attribute name="type" type="string"/>
+         <attribute name="required" type="boolean"/>
+         <attribute name="defaultValue" type="string"/>
+         <attribute name="validValues" type="string"/>
+         <attribute name="allowCustomValues" type="boolean"/>
+         <attribute name="features" type="string"/>
+         <attribute name="length" type="string"/>
+         <attribute name="desktop" type="boolean"/>
+         <attribute name="hidden" type="boolean"/>
+         <attribute name="hideExpr" type="string"/>
+         <attribute name="readOnlyExpr" type="string"/>
+      </complexType>
+   </element>
+
+
+
+
 
 
 </schema>

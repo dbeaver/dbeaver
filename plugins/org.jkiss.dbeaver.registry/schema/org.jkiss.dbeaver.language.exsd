@@ -5,88 +5,35 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.language" name="Language description"/>
       </appInfo>
-      <documentation>
-         Plugin Service
-      </documentation>
+      <documentation>Plugin Service</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
       <complexType>
          <sequence>
             <element ref="language" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="class" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="point" type="string" use="required"/>
       </complexType>
    </element>
 
    <element name="language">
       <complexType>
-         <attribute name="class" type="string">
+         <attribute name="code" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.runtime.IPluginService"/>
+                  <meta.attribute kind="identifier"/>
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="label" type="string" use="required"/>
+         <attribute name="description" type="string"/>
       </complexType>
    </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="since"/>
-      </appInfo>
-      <documentation>
-         [Enter the first release in which this extension point appears.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="examples"/>
-      </appInfo>
-      <documentation>
-         [Enter extension point usage example here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
 
 
 </schema>

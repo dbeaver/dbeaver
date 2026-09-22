@@ -5,17 +5,10 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.prompt" name="AI prompts"/>
       </appInfo>
-      <documentation>
-         AI prompt generators
-      </documentation>
+      <documentation>AI prompt generators</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
       <complexType>
          <sequence>
             <element ref="prompt" minOccurs="0" maxOccurs="unbounded"/>
@@ -30,23 +23,17 @@
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
-               <documentation>
-                  Unique prompt identifier
-               </documentation>
+               <documentation>Unique prompt identifier</documentation>
             </annotation>
          </attribute>
          <attribute name="label" type="string" use="required">
             <annotation>
-               <documentation>
-                  Human-readable prompt label shown in UI
-               </documentation>
+               <documentation>Human-readable prompt label shown in UI</documentation>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <documentation>
-                  Class implementing the AIPromptGenerator interface
-               </documentation>
+               <documentation>Class implementing the AIPromptGenerator interface</documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIPromptGenerator"/>
                </appInfo>
@@ -54,16 +41,12 @@
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <documentation>
-                  Optional human-readable description of what this prompt does
-               </documentation>
+               <documentation>Optional human-readable description of what this prompt does</documentation>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
             <annotation>
-               <documentation>
-                  Optional icon path for this prompt
-               </documentation>
+               <documentation>Optional icon path for this prompt</documentation>
                <appInfo>
                   <meta.attribute kind="resource"/>
                </appInfo>
@@ -90,16 +73,12 @@
       <complexType>
          <attribute name="function" type="string" use="required">
             <annotation>
-               <documentation>
-                  ID of the AI function that this prompt uses
-               </documentation>
+               <documentation>ID of the AI function that this prompt uses</documentation>
             </annotation>
          </attribute>
          <attribute name="instructions" type="string" use="required">
             <annotation>
-               <documentation>
-                  Instructions for the AI on when and how to call this function
-               </documentation>
+               <documentation>Instructions for the AI on when and how to call this function</documentation>
             </annotation>
          </attribute>
       </complexType>

@@ -3,36 +3,43 @@
 <schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.dataSourcehandler" name="Datasource handler"/>
+         <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.dataSourceHandler" name="Datasource handler"/>
       </appInfo>
-      <documentation>
-         DBeaver data source handler
-      </documentation>
+      <documentation>DBeaver data source handler</documentation>
    </annotation>
 
    <element name="extension">
+      <complexType>
+         <sequence>
+            <element ref="handler" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+      </complexType>
+   </element>
+
+   <element name="handler">
       <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
+         <documentation>Data source handler description</documentation>
       </annotation>
       <complexType>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="objectType"/>
+         </choice>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
+            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceHandler"/></appInfo></annotation>
          </attribute>
       </complexType>
    </element>
 
-   <element name="model">
-      <annotation>
-         <documentation>
-            Data source auth model description
-         </documentation>
-      </annotation>
+   <element name="objectType">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation>
+         </attribute>
+         <attribute name="if" type="string"/>
+         <attribute name="forceCheck" type="boolean"/>
+      </complexType>
    </element>
 
 

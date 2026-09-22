@@ -5,8 +5,57 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.settings" name="Settings"/>
       </appInfo>
-      <documentation>
-         Plugin Settings
-      </documentation>
-</annotation>
+      <documentation>Plugin Settings</documentation>
+   </annotation>
+
+   <element name="extension">
+      <complexType>
+         <sequence>
+            <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
+         <attribute name="name" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="propertyGroup">
+      <complexType>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="propertyGroup"/>
+            <element ref="property"/>
+         </choice>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="label" type="string">
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="property">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="label" type="string">
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+         </attribute>
+         <attribute name="hint" type="string">
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+         </attribute>
+         <attribute name="type" type="string"/>
+         <attribute name="required" type="boolean"/>
+         <attribute name="defaultValue" type="string"/>
+         <attribute name="validValues" type="string"/>
+         <attribute name="allowCustomValues" type="boolean"/>
+         <attribute name="features" type="string"/>
+         <attribute name="length" type="string"/>
+         <attribute name="desktop" type="boolean"/>
+         <attribute name="hidden" type="boolean"/>
+         <attribute name="hideExpr" type="string"/>
+         <attribute name="readOnlyExpr" type="string"/>
+         <attribute name="scopes" type="string"/>
+      </complexType>
+   </element>
 </schema>

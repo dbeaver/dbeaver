@@ -1,43 +1,25 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.dataSourceAuth" name="Datasource authentication model"/>
       </appInfo>
-      <documentation>
-         DBeaver data source provider
-      </documentation>
+      <documentation>DBeaver data source provider</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
       <complexType>
          <sequence>
-            <element ref="model"/>
+            <element ref="authModel" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="point" type="string" use="required"/>
          <attribute name="id" type="string">
             <annotation>
-               <documentation>
-                  Storage ID
-               </documentation>
+               <documentation>Storage ID</documentation>
             </annotation>
          </attribute>
          <attribute name="name" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -46,31 +28,104 @@
       </complexType>
    </element>
 
-   <element name="model">
+   <element name="authModel">
       <annotation>
-         <documentation>
-            Data source auth model description
-         </documentation>
+         <documentation>Data source auth model description</documentation>
       </annotation>
+      <complexType>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="datasource"/>
+            <element ref="objectType"/>
+            <element ref="propertyGroup"/>
+            <element ref="replace"/>
+            <element ref="file"/>
+            <element ref="enabledWhen"/>
+         </choice>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
+            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.access.DBAAuthModel"/></appInfo></annotation>
+         </attribute>
+         <attribute name="label" type="string" use="required"/>
+         <attribute name="description" type="string"/>
+         <attribute name="icon" type="string"/>
+         <attribute name="default" type="boolean"/>
+         <attribute name="desktop" type="boolean"/>
+         <attribute name="requiresServerApplication" type="boolean"/>
+         <attribute name="requiresLocalConfiguration" type="boolean"/>
+         <attribute name="requiredAuthProvider" type="string"/>
+      </complexType>
    </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
+   <element name="datasource">
+      <complexType>
+         <attribute name="id" type="string"/>
+         <attribute name="driver" type="string"/>
+         <attribute name="if" type="string"/>
+      </complexType>
+   </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
+   <element name="objectType">
+      <complexType>
+         <attribute name="name" type="string" use="required"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
+         <attribute name="if" type="string"/>
+         <attribute name="forceCheck" type="boolean"/>
+      </complexType>
+   </element>
+
+   <element name="replace">
+      <complexType>
+         <attribute name="model" type="string" use="required"/>
+         <attribute name="for" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="file">
+      <complexType>
+         <attribute name="type" type="string" use="required"/>
+         <attribute name="path" type="string" use="required"/>
+         <attribute name="os" type="string"/>
+         <attribute name="arch" type="string"/>
+         <attribute name="exclude" type="boolean"/>
+         <attribute name="embedded" type="boolean"/>
+         <attribute name="optional" type="boolean"/>
+         <attribute name="bundle" type="string"/>
+         <attribute name="ignore-dependencies" type="boolean"/>
+         <attribute name="load-optional-dependencies" type="boolean"/>
+      </complexType>
+   </element>
+
+   <element name="enabledWhen">
+      <complexType><sequence><any minOccurs="1" maxOccurs="1" processContents="lax"/></sequence></complexType>
+   </element>
+
+   <element name="propertyGroup">
+      <complexType>
+         <sequence><element ref="property" minOccurs="0" maxOccurs="unbounded"/></sequence>
+         <attribute name="label" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="property">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="label" type="string"/>
+         <attribute name="description" type="string"/>
+         <attribute name="hint" type="string"/>
+         <attribute name="type" type="string"/>
+         <attribute name="required" type="boolean"/>
+         <attribute name="defaultValue" type="string"/>
+         <attribute name="validValues" type="string"/>
+         <attribute name="allowCustomValues" type="boolean"/>
+         <attribute name="features" type="string"/>
+         <attribute name="length" type="string"/>
+         <attribute name="desktop" type="boolean"/>
+         <attribute name="hidden" type="boolean"/>
+         <attribute name="hideExpr" type="string"/>
+         <attribute name="readOnlyExpr" type="string"/>
+      </complexType>
+   </element>
+
+
 
 
 </schema>

@@ -1,47 +1,36 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.driverManager" name="Driver related decorations"/>
+         <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.driverManager" name="Driver related decorations"/>
       </appInfo>
-      <documentation>
-         Plugin Service
-      </documentation>
+      <documentation>Plugin Service</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
       <complexType>
          <sequence>
-            <element ref="driverCategory" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="category" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="point" type="string" use="required"/>
       </complexType>
    </element>
 
-   <element name="driverCategory">
+   <element name="category">
       <complexType>
-         <attribute name="label" type="string">
+         <attribute name="id" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.runtime.IPluginService"/>
+                  <meta.attribute kind="identifier"/>
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="name" type="string" use="required"/>
+         <attribute name="description" type="string"/>
+         <attribute name="icon" type="string"/>
+         <attribute name="promoted" type="boolean"/>
+         <attribute name="rank" type="integer"/>
       </complexType>
    </element>
 

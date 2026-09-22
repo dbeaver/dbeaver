@@ -5,17 +5,10 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.assistant" name="AI assistants"/>
       </appInfo>
-      <documentation>
-         AI assistants
-      </documentation>
+      <documentation>AI assistants</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
       <complexType>
          <sequence>
             <element ref="assistant" minOccurs="0" maxOccurs="unbounded"/>
@@ -25,12 +18,18 @@
 
    <element name="assistant">
       <complexType>
-         <attribute name="class" type="string">
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
             <annotation>
-               <documentation>
-               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIAssistant"/>
+               </appInfo>
             </annotation>
          </attribute>
+         <attribute name="sqlFormatter" type="string" use="required">
+            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AISqlFormatter"/></appInfo></annotation>
+         </attribute>
+         <attribute name="priority" type="integer"/>
       </complexType>
    </element>
 </schema>

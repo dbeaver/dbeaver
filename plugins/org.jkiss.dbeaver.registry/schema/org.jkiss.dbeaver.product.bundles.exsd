@@ -5,40 +5,22 @@
         <appInfo>
             <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.product.bundles" name="Product bundles"/>
         </appInfo>
-        <documentation>
-            Tools
-        </documentation>
+        <documentation>Tools</documentation>
     </annotation>
 
     <element name="extension">
-        <annotation>
-            <appInfo>
-                <meta.element/>
-            </appInfo>
-        </annotation>
         <complexType>
             <sequence>
-                <element ref="bundle"/>
+                <element ref="bundle" minOccurs="0" maxOccurs="unbounded"/>
             </sequence>
-            <attribute name="point" type="string" use="required">
-                <annotation>
-                    <documentation>
-
-                    </documentation>
-                </annotation>
-            </attribute>
+            <attribute name="point" type="string" use="required"/>
             <attribute name="id" type="string">
                 <annotation>
-                    <documentation>
-                        Extension ID
-                    </documentation>
+                    <documentation>Extension ID</documentation>
                 </annotation>
             </attribute>
             <attribute name="name" type="string">
                 <annotation>
-                    <documentation>
-
-                    </documentation>
                     <appInfo>
                         <meta.attribute translatable="true"/>
                     </appInfo>
@@ -49,23 +31,20 @@
 
     <element name="bundle">
         <annotation>
-            <documentation>
-                Bundle
-            </documentation>
+            <documentation>Bundle</documentation>
         </annotation>
         <complexType>
+            <sequence>
+                <element ref="os" minOccurs="0" maxOccurs="unbounded"/>
+            </sequence>
             <attribute name="id" type="string" use="required">
                 <annotation>
-                    <documentation>
-                        Bundle ID
-                    </documentation>
+                    <documentation>Bundle ID</documentation>
                 </annotation>
             </attribute>
             <attribute name="label" type="string">
                 <annotation>
-                    <documentation>
-                        Bundle name
-                    </documentation>
+                    <documentation>Bundle name</documentation>
                     <appInfo>
                         <meta.attribute translatable="true"/>
                     </appInfo>
@@ -73,14 +52,20 @@
             </attribute>
             <attribute name="description" type="string">
                 <annotation>
-                    <documentation>
-                        Bundle description
-                    </documentation>
+                    <documentation>Bundle description</documentation>
                     <appInfo>
                         <meta.attribute translatable="true"/>
                     </appInfo>
                 </annotation>
             </attribute>
+        </complexType>
+    </element>
+
+    <element name="os">
+        <complexType>
+            <attribute name="name" type="string" use="required"/>
+            <attribute name="arch" type="string"/>
+            <attribute name="exclude" type="boolean"/>
         </complexType>
     </element>
 
