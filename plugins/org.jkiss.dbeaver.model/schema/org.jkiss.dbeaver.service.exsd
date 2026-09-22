@@ -2,14 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.service" name="Service"/>
-      </appinfo>
+      </appInfo>
       <documentation>Plugin Service</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="service" minOccurs="0" maxOccurs="unbounded"/>
@@ -22,16 +22,16 @@
       <complexType>
          <attribute name="name" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="headless" type="boolean"/>

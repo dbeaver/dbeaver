@@ -2,13 +2,13 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.sqlFormatter" name="SQL Formatter"/>
-      </appinfo>
+      </appInfo>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="formatter" minOccurs="0" maxOccurs="unbounded"/>
@@ -17,9 +17,9 @@
          <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
@@ -30,30 +30,30 @@
          <sequence minOccurs="0" maxOccurs="unbounded"/>
          <attribute name="id" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="identifier"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.sql.format.SQLFormatter"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="label" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>

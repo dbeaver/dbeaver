@@ -2,13 +2,13 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.ui" id="org.jkiss.dbeaver.notifications" name="UI notifications"/>
-      </appinfo>
+      </appInfo>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="notification" minOccurs="0" maxOccurs="unbounded"/>
@@ -17,9 +17,9 @@
          <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
@@ -29,23 +29,23 @@
       <complexType>
          <attribute name="id" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="identifier"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="name" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
           <attribute name="soundEnabled" type="boolean" use="default" value="true"/>
@@ -57,16 +57,16 @@
       <complexType>
          <attribute name="id" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="identifier"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="name" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>

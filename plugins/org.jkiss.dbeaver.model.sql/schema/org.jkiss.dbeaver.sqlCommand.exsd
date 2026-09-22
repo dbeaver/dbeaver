@@ -2,13 +2,13 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.sqlCommand" name="SQL script commands"/>
-      </appinfo>
+      </appInfo>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="command" minOccurs="0" maxOccurs="unbounded"/>
@@ -18,9 +18,9 @@
          <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
@@ -34,30 +34,30 @@
          </choice>
          <attribute name="id" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="identifier"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.sql.SQLControlCommandHandler"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="label" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string"/>
@@ -69,16 +69,16 @@
       <complexType>
          <attribute name="id" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="identifier"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.sql.SQLPragmaHandler"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>

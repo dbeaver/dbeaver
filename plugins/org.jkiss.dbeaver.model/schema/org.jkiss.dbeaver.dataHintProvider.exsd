@@ -2,14 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.dataHintProvider" name="Data hint provider"/>
-      </appinfo>
+      </appInfo>
       <documentation>DBeaver custom hint provider</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="hintProvider" minOccurs="0" maxOccurs="unbounded"/>
@@ -18,9 +18,9 @@
          <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
@@ -34,16 +34,16 @@
          <attribute name="id" type="string" use="required"/>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="label" type="string" use="required">
-            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
          </attribute>
          <attribute name="description" type="string">
-            <annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation>
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
          </attribute>
          <attribute name="for" type="string"/>
          <attribute name="visibleByDefault" type="boolean"/>

@@ -2,14 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.mavenRepository" name="Maven Repository"/>
-      </appinfo>
+      </appInfo>
       <documentation>Plugin Service</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="repository"/>

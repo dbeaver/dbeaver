@@ -2,14 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model.cli" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.cli" id="org.jkiss.dbeaver.commandLine" name="Command line parameters extension"/>
-      </appinfo>
+      </appInfo>
       <documentation>Plugin Service</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="parameter"/>
@@ -29,14 +29,14 @@
           <attribute name="exclusiveMode" type="boolean"/>
           <attribute name="forceNewInstance" type="boolean"/>
           <attribute name="replace" type="string">
-             <annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation>
+             <annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation>
           </attribute>
 
           <attribute name="handler" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
@@ -45,10 +45,10 @@
    <element name="transformer">
       <complexType>
          <attribute name="transformer" type="string" use="required">
-            <annotation><appinfo><meta.attribute kind="java" basedOn=":picocli.CommandLine$IModelTransformer"/></appinfo></annotation>
+            <annotation><appInfo><meta.attribute kind="java" basedOn=":picocli.CommandLine$IModelTransformer"/></appInfo></annotation>
          </attribute>
          <attribute name="command" type="string">
-            <annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation>
+            <annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation>
          </attribute>
       </complexType>
    </element>

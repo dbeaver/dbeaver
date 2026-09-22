@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.debug.ui" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation><appinfo><meta.schema plugin="org.jkiss.dbeaver.debug.ui" id="org.jkiss.dbeaver.debug.ui.configurationPanels" name="Debug configuration panels"/></appinfo></annotation>
+   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.debug.ui" id="org.jkiss.dbeaver.debug.ui.configurationPanels" name="Debug configuration panels"/></appInfo></annotation>
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence><element ref="panel" minOccurs="0" maxOccurs="unbounded"/></sequence>
          <attribute name="point" type="string" use="required"/>
@@ -17,13 +17,13 @@
              <element ref="datasource"/>
              <element ref="objectType"/>
           </choice>
-         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
-         <attribute name="name" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
-          <attribute name="class" type="string"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel"/></appinfo></annotation></attribute>
-          <attribute name="objectType" type="string"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="name" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+          <attribute name="class" type="string"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel"/></appInfo></annotation></attribute>
+          <attribute name="objectType" type="string"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
       </complexType>
    </element>
-    <element name="datasource"><complexType><attribute name="id" type="string"/><attribute name="class" type="string"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute></complexType></element>
-    <element name="objectType"><complexType><attribute name="name" type="string" use="required"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute><attribute name="if" type="string"/><attribute name="forceCheck" type="boolean"/></complexType></element>
+    <element name="datasource"><complexType><attribute name="id" type="string"/><attribute name="class" type="string"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute></complexType></element>
+    <element name="objectType"><complexType><attribute name="name" type="string" use="required"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute><attribute name="if" type="string"/><attribute name="forceCheck" type="boolean"/></complexType></element>
 </schema>

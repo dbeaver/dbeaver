@@ -2,14 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.fileSystem" name="File system description"/>
-      </appinfo>
+      </appInfo>
       <documentation>Plugin Service</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="fileSystemProvider" minOccurs="1" maxOccurs="unbounded"/>
@@ -24,18 +24,18 @@
          <attribute name="label" type="string" use="required"/>
          <attribute name="description" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string"/>
          <attribute name="schema" type="string"/>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.fs.DBFFileSystemProvider"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="requiredAuth" type="string"/>

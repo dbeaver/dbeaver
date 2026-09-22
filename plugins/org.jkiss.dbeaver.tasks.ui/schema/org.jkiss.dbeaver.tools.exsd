@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.tasks.ui" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation><appinfo><meta.schema plugin="org.jkiss.dbeaver.tasks.ui" id="org.jkiss.dbeaver.tools" name="Tools"/></appinfo><documentation>Deprecated database tools extension point</documentation></annotation>
+   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.tasks.ui" id="org.jkiss.dbeaver.tools" name="Tools"/></appInfo><documentation>Deprecated database tools extension point</documentation></annotation>
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence><element ref="tools" minOccurs="0" maxOccurs="unbounded"/></sequence>
          <attribute name="point" type="string" use="required"/>
@@ -22,10 +22,10 @@
    <element name="toolGroup">
       <complexType>
          <sequence><element ref="objectType" minOccurs="0" maxOccurs="unbounded"/></sequence>
-         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
-         <attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
-         <attribute name="icon" type="string"><annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="icon" type="string"><annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation></attribute>
          <attribute name="parent" type="string"/>
       </complexType>
    </element>
@@ -35,10 +35,10 @@
             <element ref="task"/>
             <element ref="command"/>
          </choice>
-         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
-         <attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
-         <attribute name="description" type="string"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
-         <attribute name="icon" type="string"><annotation><appinfo><meta.attribute kind="resource"/></appinfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="icon" type="string"><annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation></attribute>
          <attribute name="singleton" type="boolean" use="default" value="false"/>
          <attribute name="group" type="string"/>
       </complexType>
@@ -48,8 +48,8 @@
       <complexType>
          <sequence><element ref="objectType" minOccurs="0" maxOccurs="unbounded"/></sequence>
          <attribute name="id" type="string" use="required"/>
-         <attribute name="objectType" type="string"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute>
+         <attribute name="objectType" type="string"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
       </complexType>
    </element>
-   <element name="objectType"><complexType><attribute name="name" type="string" use="required"><annotation><appinfo><meta.attribute kind="java"/></appinfo></annotation></attribute><attribute name="if" type="string"/><attribute name="forceCheck" type="boolean"/></complexType></element>
+   <element name="objectType"><complexType><attribute name="name" type="string" use="required"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute><attribute name="if" type="string"/><attribute name="forceCheck" type="boolean"/></complexType></element>
 </schema>

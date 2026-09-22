@@ -2,14 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.application" name="Applications"/>
-      </appinfo>
+      </appInfo>
       <documentation>Application meta info</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
              <element ref="application" minOccurs="0" maxOccurs="unbounded"/>
@@ -25,16 +25,16 @@
          <attribute name="licenseProductId" type="string"/>
          <attribute name="name" type="string" use="required">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute translatable="true"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="parent" type="string"/>
@@ -43,9 +43,9 @@
          <attribute name="hidden" type="boolean"/>
          <attribute name="class" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.app.DBPApplication"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>

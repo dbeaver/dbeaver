@@ -2,14 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
    <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.function" name="AI functions"/>
-      </appinfo>
+      </appInfo>
       <documentation>AI functions for assistant functionality</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="category" minOccurs="0" maxOccurs="unbounded"/>
@@ -56,9 +56,9 @@
          <attribute name="class" type="string">
             <annotation>
                <documentation>Class implementing the AIFunction interface</documentation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunction"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
@@ -138,9 +138,9 @@
          <attribute name="icon" type="string">
             <annotation>
                <documentation>Optional icon path for this function</documentation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="resource"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
@@ -181,17 +181,17 @@
          <attribute name="validValuesProvider" type="string">
             <annotation>
                <documentation>Optional class implementing AIFunctionParameterValueProvider used to provide valid values dynamically</documentation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterValueProvider"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="transformer" type="string">
             <annotation>
                <documentation>Optional class implementing AIFunctionParameterTransformer used to transform the raw parameter value before passing it to the function</documentation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
          <attribute name="targetSuffix" type="string">

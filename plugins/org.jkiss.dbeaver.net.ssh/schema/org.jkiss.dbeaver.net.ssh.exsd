@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.net.ssh" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation><appinfo><meta.schema plugin="org.jkiss.dbeaver.net.ssh" id="org.jkiss.dbeaver.net.ssh" name="SSH implementations"/></appinfo></annotation>
+   <annotation><appInfo><meta.schema plugin="org.jkiss.dbeaver.net.ssh" id="org.jkiss.dbeaver.net.ssh" name="SSH implementations"/></appInfo></annotation>
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence><element ref="implementation" minOccurs="0" maxOccurs="unbounded"/></sequence>
          <attribute name="point" type="string" use="required"/>
@@ -13,9 +13,9 @@
    </element>
    <element name="implementation">
       <complexType>
-         <attribute name="id" type="string" use="required"><annotation><appinfo><meta.attribute kind="identifier"/></appinfo></annotation></attribute>
-         <attribute name="label" type="string" use="required"><annotation><appinfo><meta.attribute translatable="true"/></appinfo></annotation></attribute>
-         <attribute name="class" type="string" use="required"><annotation><appinfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.net.ssh.SSHSessionController"/></appinfo></annotation></attribute>
+         <attribute name="id" type="string" use="required"><annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation></attribute>
+         <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
+         <attribute name="class" type="string" use="required"><annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.net.ssh.SSHSessionController"/></appInfo></annotation></attribute>
       </complexType>
    </element>
 </schema>

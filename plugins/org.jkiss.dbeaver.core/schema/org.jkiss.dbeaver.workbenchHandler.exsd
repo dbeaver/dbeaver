@@ -2,14 +2,14 @@
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
-      <appinfo>
+      <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.workbenchHandler" name="Workbench handlers"/>
-      </appinfo>
+      </appInfo>
       <documentation>Plugin Service</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation><appinfo><meta.element/></appinfo></annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="service" minOccurs="0" maxOccurs="unbounded"/>
@@ -23,9 +23,9 @@
       <complexType>
          <attribute name="class" type="string">
             <annotation>
-               <appinfo>
+               <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.runtime.IPluginService"/>
-               </appinfo>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
