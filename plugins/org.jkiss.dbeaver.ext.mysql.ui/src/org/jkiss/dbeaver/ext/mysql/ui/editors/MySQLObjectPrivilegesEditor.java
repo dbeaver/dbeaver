@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -859,15 +860,33 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable MySQLTableColumn column
     ) {
         List<MySQLGrant> grants = userGrants.computeIfAbsent(user, u -> new ArrayList<>());
+        // Prefer the grant that actually holds the toggled privilege/column, so a revoke updates
+        // the right row even when the server returned separate table-level and column-level rows
+        // for the same object; otherwise fall back to the first grant matching the object.
         MySQLGrant target = null;
+        MySQLGrant fallback = null;
         for (MySQLGrant grant : grants) {
             boolean sameObject = procedure != null
                 ? grant.matchesProcedure(procedure)
                 : (table == null ? grant.isAllTables() && grant.getObjectType() == MySQLGrant.ObjectType.TABLE : grant.matches(table));
-            if (grant.matches(catalog) && sameObject) {
+            if (!grant.matches(catalog) || !sameObject) {
+                continue;
+            }
+            boolean holdsPrivilege = privilege.isGrantOption()
+                ? grant.isGrantOption()
+                : (column != null
+                    ? grant.hasColumnPrivilege(privilege, column.getName())
+                    : ArrayUtils.contains(grant.getPrivileges(), privilege));
+            if (holdsPrivilege) {
                 target = grant;
                 break;
             }
+            if (fallback == null) {
+                fallback = grant;
+            }
+        }
+        if (target == null) {
+            target = fallback;
         }
         if (target == null) {
             MySQLGrant.ObjectType type = procedure != null

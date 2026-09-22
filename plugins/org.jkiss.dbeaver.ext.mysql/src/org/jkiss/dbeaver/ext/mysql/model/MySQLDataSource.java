@@ -651,8 +651,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     "SELECT DISTINCT GRANTEE FROM information_schema.TABLE_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
                 collectGrantees(session, keys,
                     "SELECT DISTINCT GRANTEE FROM information_schema.COLUMN_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
-                collectGrantees(session, keys,
-                    "SELECT DISTINCT GRANTEE FROM information_schema.USER_PRIVILEGES WHERE PRIVILEGE_TYPE <> 'USAGE'", null);
+                // Global (*.*) grantees are intentionally not collected here: the object editor keeps
+                // only grants matching the catalog, so global grants are managed at the user level.
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DISTINCT User, Host FROM mysql.procs_priv WHERE Db = ?")) {

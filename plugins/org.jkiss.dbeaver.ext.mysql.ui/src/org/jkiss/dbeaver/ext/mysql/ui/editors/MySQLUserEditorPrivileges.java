@@ -56,6 +56,7 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * MySQLUserEditorPrivileges
@@ -548,6 +549,31 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         return false;
     }
 
+    /**
+     * Picks the local grant row to update for a toggled privilege. Prefers a grant that already
+     * holds the privilege (so a revoke updates the row that actually carries it, even when the
+     * server returned separate table-level and column-level rows for the same object); otherwise
+     * falls back to the first grant matching the object.
+     */
+    @Nullable
+    private MySQLGrant selectGrantToUpdate(
+        @NotNull Predicate<MySQLGrant> matchesObject,
+        @NotNull Predicate<MySQLGrant> holdsPrivilege
+    ) {
+        MySQLGrant fallback = null;
+        for (MySQLGrant grant : grants) {
+            if (matchesObject.test(grant)) {
+                if (holdsPrivilege.test(grant)) {
+                    return grant;
+                }
+                if (fallback == null) {
+                    fallback = grant;
+                }
+            }
+        }
+        return fallback;
+    }
+
     private void updateLocalColumnData(
         @NotNull MySQLPrivilege privilege,
         boolean isGrant,
@@ -557,21 +583,18 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         @NotNull MySQLTableColumn curColumn
     ) {
         getDatabaseObject().clearGrantsCache();
-        boolean found = false;
-        for (MySQLGrant grant : grants) {
-            if (grant.matches(curCatalog) && grant.matches(curTable)) {
-                if (privilege.isGrantOption()) {
-                    grant.setGrantOption(withGrantOption);
-                } else if (isGrant) {
-                    grant.addColumnPrivilege(privilege, curColumn.getName());
-                } else {
-                    grant.removeColumnPrivilege(privilege, curColumn.getName());
-                }
-                found = true;
-                break;
+        MySQLGrant target = selectGrantToUpdate(
+            grant -> grant.matches(curCatalog) && grant.matches(curTable),
+            grant -> privilege.isGrantOption() ? grant.isGrantOption() : grant.hasColumnPrivilege(privilege, curColumn.getName()));
+        if (target != null) {
+            if (privilege.isGrantOption()) {
+                target.setGrantOption(withGrantOption);
+            } else if (isGrant) {
+                target.addColumnPrivilege(privilege, curColumn.getName());
+            } else {
+                target.removeColumnPrivilege(privilege, curColumn.getName());
             }
-        }
-        if (!found) {
+        } else {
             MySQLGrant grant = new MySQLGrant(
                 getDatabaseObject(),
                 new ArrayList<>(),
@@ -644,23 +667,20 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         @NotNull MySQLProcedure curProcedure
     ) {
         getDatabaseObject().clearGrantsCache();
-        boolean found = false;
-        for (MySQLGrant grant : grants) {
-            if (grant.matches(curCatalog) && grant.matchesProcedure(curProcedure)) {
-                if (privilege.isGrantOption()) {
-                    grant.setGrantOption(withGrantOption);
-                } else if (isGrant) {
-                    if (!ArrayUtils.contains(grant.getPrivileges(), privilege)) {
-                        grant.addPrivilege(privilege);
-                    }
-                } else {
-                    grant.removePrivilege(privilege);
+        MySQLGrant target = selectGrantToUpdate(
+            grant -> grant.matches(curCatalog) && grant.matchesProcedure(curProcedure),
+            grant -> privilege.isGrantOption() ? grant.isGrantOption() : ArrayUtils.contains(grant.getPrivileges(), privilege));
+        if (target != null) {
+            if (privilege.isGrantOption()) {
+                target.setGrantOption(withGrantOption);
+            } else if (isGrant) {
+                if (!ArrayUtils.contains(target.getPrivileges(), privilege)) {
+                    target.addPrivilege(privilege);
                 }
-                found = true;
-                break;
+            } else {
+                target.removePrivilege(privilege);
             }
-        }
-        if (!found) {
+        } else {
             List<MySQLPrivilege> privileges = new ArrayList<>();
             if (!privilege.isGrantOption()) {
                 privileges.add(privilege);
@@ -689,23 +709,20 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     ) {
         // Modify local grants (and clear grants cache in user objects)
         getDatabaseObject().clearGrantsCache();
-        boolean found = false;
-        for (MySQLGrant grant : grants) {
-            if (grant.matches(curCatalog) && grant.matches(curTable)) {
-                if (privilege.isGrantOption()) {
-                    grant.setGrantOption(withGrantOption);
-                } else if (isGrant) {
-                    if (!ArrayUtils.contains(grant.getPrivileges(), privilege)) {
-                        grant.addPrivilege(privilege);
-                    }
-                } else {
-                    grant.removePrivilege(privilege);
+        MySQLGrant target = selectGrantToUpdate(
+            grant -> grant.matches(curCatalog) && grant.matches(curTable),
+            grant -> privilege.isGrantOption() ? grant.isGrantOption() : ArrayUtils.contains(grant.getPrivileges(), privilege));
+        if (target != null) {
+            if (privilege.isGrantOption()) {
+                target.setGrantOption(withGrantOption);
+            } else if (isGrant) {
+                if (!ArrayUtils.contains(target.getPrivileges(), privilege)) {
+                    target.addPrivilege(privilege);
                 }
-                found = true;
-                break;
+            } else {
+                target.removePrivilege(privilege);
             }
-        }
-        if (!found) {
+        } else {
             List<MySQLPrivilege> privileges = new ArrayList<>();
             if (!privilege.isGrantOption()) {
                 privileges.add(privilege);
@@ -1514,22 +1531,24 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void showTableColumns() {
+        // Capture the requested table so a result arriving after the user switched tables is discarded
+        final MySQLTableBase requestedTable = selectedTable;
         LoadingJob.createService(
                 new DatabaseLoadService<>(MySQLUIMessages.editors_user_editor_privileges_service_load_columns, getExecutionContext()) {
                     @Override
                     public @Nullable Collection<MySQLTableColumn> evaluate(@NotNull DBRProgressMonitor monitor) {
-                        if (selectedTable == null) {
+                        if (requestedTable == null) {
                             return Collections.emptyList();
                         }
                         try {
-                            return selectedTable.getAttributes(monitor);
+                            return requestedTable.getAttributes(monitor);
                         } catch (DBException e) {
                             log.error(e);
                         }
                         return null;
                     }
                 },
-            pageControl.createColumnsLoadVisualizer())
+            pageControl.createColumnsLoadVisualizer(requestedTable))
             .schedule();
     }
 
@@ -1878,12 +1897,18 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             };
         }
 
-        public @NotNull ProgressVisualizer<Collection<MySQLTableColumn>> createColumnsLoadVisualizer() {
+        public @NotNull ProgressVisualizer<Collection<MySQLTableColumn>> createColumnsLoadVisualizer(
+            @Nullable MySQLTableBase requestedTable
+        ) {
             return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable Collection<MySQLTableColumn> columns) {
                     super.completeLoading(columns);
                     if (columnsTable.isDisposed()) {
+                        return;
+                    }
+                    // Discard a stale result: the user switched tables while this load was running
+                    if (selectedTable != requestedTable) {
                         return;
                     }
                     tableColumns = columns == null ? null : new ArrayList<>(columns);
