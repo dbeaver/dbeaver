@@ -13,12 +13,6 @@
         </dialect>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="cubrid-maven-repo" name="Cubrid Repository" url="https://maven.cubrid.org">
-            <scope group="cubrid"/>
-        </repository>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <dataSourceType
             id="cubrid"
@@ -206,7 +200,7 @@
                     webURL="https://www.cubrid.org/manual/en/11.2/api/jdbc.html#configuration-connection"
                     categories="sql">
 
-                    <file type="jar" path="maven:/cubrid:cubrid-jdbc:RELEASE" bundle="!drivers.cubrid"/>
+                    <file type="jar" path="maven:/org.cubrid:cubrid-jdbc:RELEASE" bundle="!drivers.cubrid"/>
                     <file type="jar" path="drivers/cubrid" bundle="drivers.cubrid"/>
                     <replace provider="generic" driver="cubrid_jdbc"/>
                     <parameter name="stored-unquoted-case" value="UPPER"/>
