@@ -17,9 +17,10 @@
          </appInfo>
       </annotation>
       <complexType>
-         <sequence>
-            <element ref="datasource"/>
-         </sequence>
+          <choice minOccurs="0" maxOccurs="unbounded">
+             <element ref="dataSourceType"/>
+             <element ref="datasource"/>
+          </choice>
          <attribute name="point" type="string" use="required">
             <annotation>
                <documentation>
@@ -43,6 +44,36 @@
                   <meta.attribute translatable="true"/>
                </appInfo>
             </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="dataSourceType">
+      <annotation>
+         <documentation>A database or another kind of data source supported by one or more drivers.</documentation>
+      </annotation>
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="label" type="string" use="required">
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+         </attribute>
+          <attribute name="description" type="string" use="required">
+             <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+          </attribute>
+          <attribute name="dataSourceInformation" type="string" use="required">
+             <annotation>
+                <documentation>Brief information about the data source technology.</documentation>
+                <appInfo><meta.attribute translatable="true"/></appInfo>
+             </annotation>
+          </attribute>
+         <attribute name="icon" type="string">
+            <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
+         </attribute>
+         <attribute name="iconBig" type="string">
+            <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
+         </attribute>
+         <attribute name="logoImage" type="string">
+            <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
          </attribute>
       </complexType>
    </element>
@@ -97,7 +128,7 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="icon" type="string">
+          <attribute name="icon" type="string">
             <annotation>
                <documentation>
                   Datasource icon
@@ -106,7 +137,10 @@
                   <meta.attribute kind="resource"/>
                </appInfo>
             </annotation>
-         </attribute>
+          </attribute>
+          <attribute name="dataSourceType" type="string">
+             <annotation><documentation>Default data source type inherited by the provider drivers.</documentation></annotation>
+          </attribute>
       </complexType>
    </element>
 
@@ -393,6 +427,16 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="logoImage" type="string">
+             <annotation>
+                <documentation>
+                   Driver logo image. Overrides the data source type logo image.
+                </documentation>
+                <appInfo>
+                   <meta.attribute kind="resource"/>
+                </appInfo>
+             </annotation>
+         </attribute>
          <attribute name="class" type="string">
             <annotation>
                <documentation>
@@ -428,13 +472,16 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="category" type="string">
+          <attribute name="category" type="string">
             <annotation>
                <documentation>
                   
                </documentation>
             </annotation>
-         </attribute>
+          </attribute>
+          <attribute name="dataSourceType" type="string">
+             <annotation><documentation>Data source type. Overrides the provider default.</documentation></annotation>
+          </attribute>
          <attribute name="anonymous" type="boolean">
             <annotation>
                <documentation>
