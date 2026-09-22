@@ -68,8 +68,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -214,7 +214,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         control.update();
         activateCurrentItem();
         handlersToolbar.setVisible(!getDriver().isEmbedded());
-        //getContainer().updateTitleBar();
         UIUtils.asyncExec(() -> connectionEditor.activateEditor());
     }
 
@@ -228,9 +227,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    @Nullable
     public Image getImage() {
-        if (this.connectionEditor != null) {
-            Image image = this.connectionEditor.getImage();
+        DBPImage logoImage = getDriver().getLogoImage();
+        if (logoImage != null) {
+            return DBeaverIcons.getImage(logoImage);
+        }
+        if (connectionEditor != null) {
+            Image image = connectionEditor.getImage();
             if (image != null) {
                 return image;
             }
