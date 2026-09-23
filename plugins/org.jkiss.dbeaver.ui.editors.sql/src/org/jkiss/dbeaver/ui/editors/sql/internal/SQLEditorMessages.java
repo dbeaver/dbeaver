@@ -41,6 +41,9 @@ public class SQLEditorMessages extends NLS {
     public static String dialog_macros_edit_label_shortcut;
     public static String dialog_macros_edit_label_query;
     public static String dialog_macros_edit_label_action;
+    public static String dialog_macros_edit_shortcut_hint;
+    public static String dialog_macros_shortcut_conflict_title;
+    public static String dialog_macros_shortcut_conflict_message;
     public static String dialog_macros_action_insert;
     public static String dialog_macros_action_insert_execute;
     public static String dialog_macros_action_execute;

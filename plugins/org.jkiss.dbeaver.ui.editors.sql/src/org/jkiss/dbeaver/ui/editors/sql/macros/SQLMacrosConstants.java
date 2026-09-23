@@ -16,10 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.macros;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributions;
 
 /**
  * SQL editor macros constants.
+ * <p>
+ * There is a single apply-macro command
+ * ({@link #APPLY_MACRO_COMMAND_ID}) whose {@link #MACRO_ID_PARAMETER} parameter identifies the
+ * macro to apply, so the number of macros is not limited by the number of commands or shortcuts.
+ * A macro either keeps the custom key combination assigned by the user in the edit dialog or has
+ * no key at all and is applied from the Macros menu only.
  */
 public final class SQLMacrosConstants {
 
@@ -31,20 +37,26 @@ public final class SQLMacrosConstants {
     public static final String SELECTION_PLACEHOLDER = "$SELECTION$"; //$NON-NLS-1$
 
     /**
-     * Prefix of the apply macro command ids. Each command corresponds to one shortcut slot (Ctrl+Alt+F1..Ctrl+Alt+F12).
+     * Id of the apply macro command. The macro to apply is specified by the {@link #MACRO_ID_PARAMETER}
+     * command parameter, so there is no limit on the number of macros.
      */
-    public static final String APPLY_MACRO_COMMAND_PREFIX = "org.jkiss.dbeaver.ui.editors.sql.macro.apply."; //$NON-NLS-1$
-
-    public static final int MACRO_KEY_COUNT = 12;
-
-    private SQLMacrosConstants() {
-    }
+    public static final String APPLY_MACRO_COMMAND_ID = "org.jkiss.dbeaver.ui.editors.sql.macro.apply"; //$NON-NLS-1$
 
     /**
-     * Returns the human-readable shortcut label for the macro slot with the specified index (0-based).
+     * Name of the command parameter which contains the id of the macro to apply.
      */
-    @NotNull
-    public static String getShortcutLabel(int index) {
-        return "Ctrl+Alt+F" + (index + 1); //$NON-NLS-1$
+    public static final String MACRO_ID_PARAMETER = "macroId"; //$NON-NLS-1$
+
+    /**
+     * Scheme used by the user-defined macro key bindings.
+     */
+    public static final String DEFAULT_SCHEME_ID = "org.eclipse.ui.defaultAcceleratorConfiguration"; //$NON-NLS-1$
+
+    /**
+     * Key binding context of the focused SQL script editor. User-defined macro bindings are registered in this context.
+     */
+    public static final String SQL_EDITOR_SCRIPT_FOCUSED_CONTEXT_ID = SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT;
+
+    private SQLMacrosConstants() {
     }
 }

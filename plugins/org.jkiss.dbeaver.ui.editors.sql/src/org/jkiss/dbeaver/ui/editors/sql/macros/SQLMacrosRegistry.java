@@ -50,7 +50,7 @@ public class SQLMacrosRegistry {
     private static final String MACRO_ELEMENT = "macro"; //$NON-NLS-1$
     private static final String ATTR_ID = "id"; //$NON-NLS-1$
     private static final String ATTR_NAME = "name"; //$NON-NLS-1$
-    private static final String ATTR_INDEX = "shortcut"; //$NON-NLS-1$
+    private static final String ATTR_BINDING = "binding"; //$NON-NLS-1$
     private static final String ATTR_ACTION = "action"; //$NON-NLS-1$
     private static final String ATTR_EXECUTE = "execute"; //$NON-NLS-1$
     private static final String QUERY_ELEMENT = "query"; //$NON-NLS-1$
@@ -80,33 +80,17 @@ public class SQLMacrosRegistry {
     }
 
     /**
-     * Returns the macro assigned to the specified shortcut slot or null if no macro is assigned to it.
+     * Returns the macro with the specified id or null if no such macro exists.
      */
     @Nullable
-    public synchronized SQLMacro getMacroByShortcutIndex(int shortcutIndex) {
+    public synchronized SQLMacro getMacroById(@NotNull String id) {
         ensureLoaded();
         for (SQLMacro macro : macros) {
-            if (macro.getShortcutIndex() == shortcutIndex) {
+            if (CommonUtils.equalObjects(macro.getId(), id)) {
                 return macro;
             }
         }
         return null;
-    }
-
-    /**
-     * Returns the macro assigned to the apply-macro command with the specified id or null if it doesn't match any macro.
-     */
-    @Nullable
-    public synchronized SQLMacro getMacroByCommandId(@NotNull String commandId) {
-        if (!commandId.startsWith(SQLMacrosConstants.APPLY_MACRO_COMMAND_PREFIX)) {
-            return null;
-        }
-        String number = commandId.substring(SQLMacrosConstants.APPLY_MACRO_COMMAND_PREFIX.length());
-        int index = CommonUtils.toInt(number, -1) - 1;
-        if (index < 0 || index >= SQLMacrosConstants.MACRO_KEY_COUNT) {
-            return null;
-        }
-        return getMacroByShortcutIndex(index);
     }
 
     /**
@@ -116,24 +100,22 @@ public class SQLMacrosRegistry {
     public synchronized SQLMacro createMacro(
             @NotNull String name,
             @NotNull String query,
-            int shortcutIndex,
             @NotNull MacroAction action
     ) {
-        SQLMacro macro = new SQLMacro(UUID.randomUUID().toString(), name, query, shortcutIndex, action);
+        SQLMacro macro = new SQLMacro(UUID.randomUUID().toString(), name, query, action);
         updateMacro(macro);
         return macro;
     }
 
     /**
-     * Stores the given macro. If another macro already uses the same shortcut slot, that macro is replaced.
+     * Stores the given macro, replacing the existing macro with the same id if any.
      */
     public synchronized void updateMacro(@NotNull SQLMacro macro) {
         ensureLoaded();
         Iterator<SQLMacro> iterator = macros.iterator();
         while (iterator.hasNext()) {
             SQLMacro existing = iterator.next();
-            if (CommonUtils.equalObjects(existing.getId(), macro.getId())
-                || existing.getShortcutIndex() == macro.getShortcutIndex()) {
+            if (CommonUtils.equalObjects(existing.getId(), macro.getId())) {
                 iterator.remove();
             }
         }
@@ -173,6 +155,8 @@ public class SQLMacrosRegistry {
             }
         } catch (Throwable ex) {
             log.warn("Can't load SQL macros configuration from " + SQLMacrosConstants.MACROS_CONFIG_FILE, ex);
+        } finally {
+            SQLMacrosBindingUtils.refreshMacroBindings(List.copyOf(macros));
         }
     }
 
@@ -190,8 +174,10 @@ public class SQLMacrosRegistry {
                 xml.startElement(MACRO_ELEMENT);
                 xml.addAttribute(ATTR_ID, macro.getId());
                 xml.addAttribute(ATTR_NAME, macro.getName());
-                xml.addAttribute(ATTR_INDEX, macro.getShortcutIndex());
                 xml.addAttribute(ATTR_ACTION, macro.getAction().getId());
+                if (CommonUtils.isNotEmpty(macro.getShortcut())) {
+                    xml.addAttribute(ATTR_BINDING, macro.getShortcut());
+                }
                 xml.startElement(QUERY_ELEMENT);
                 xml.addText(macro.getQuery());
                 xml.endElement();
@@ -203,6 +189,7 @@ public class SQLMacrosRegistry {
 
             DBWorkbench.getPlatform().getProductConfigurationController()
                     .saveConfigurationFile(SQLMacrosConstants.MACROS_CONFIG_FILE, out.getBuffer().toString());
+            SQLMacrosBindingUtils.refreshMacroBindings(List.copyOf(macros));
         } catch (Throwable ex) {
             log.warn("Failed to save SQL macros configuration to " + SQLMacrosConstants.MACROS_CONFIG_FILE, ex);
         }
@@ -212,7 +199,7 @@ public class SQLMacrosRegistry {
 
         private String macroId;
         private String macroName;
-        private int macroIndex;
+        private String macroShortcut;
         private MacroAction macroAction;
         private String macroQuery;
         private StringBuilder queryBuilder;
@@ -223,7 +210,7 @@ public class SQLMacrosRegistry {
             if (MACRO_ELEMENT.equals(localName)) {
                 macroId = attributes.getValue(ATTR_ID);
                 macroName = attributes.getValue(ATTR_NAME);
-                macroIndex = CommonUtils.toInt(attributes.getValue(ATTR_INDEX), 0);
+                macroShortcut = attributes.getValue(ATTR_BINDING);
                 macroAction = MacroAction.byId(
                         attributes.getValue(ATTR_ACTION),
                         CommonUtils.toBoolean(attributes.getValue(ATTR_EXECUTE), false));
@@ -251,12 +238,12 @@ public class SQLMacrosRegistry {
                             macroId,
                             macroName,
                             CommonUtils.notNull(macroQuery, ""), //$NON-NLS-1$
-                            macroIndex,
+                            macroShortcut,
                             macroAction));
                 }
                 macroId = null;
                 macroName = null;
-                macroIndex = 0;
+                macroShortcut = null;
                 macroAction = MacroAction.INSERT;
                 macroQuery = null;
             }

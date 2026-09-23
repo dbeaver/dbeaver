@@ -42,9 +42,10 @@ import java.util.List;
 /**
  * Applies a macro in the active SQL editor.
  * <p>
- * This handler is registered for every apply-macro command
- * ({@link SQLMacrosConstants#APPLY_MACRO_COMMAND_PREFIX}&lt;N&gt;).
- * Each command id corresponds to a shortcut slot (Ctrl+Alt+F1..Ctrl+Alt+F12).
+ * This handler is registered for the single apply-macro command
+ * ({@link SQLMacrosConstants#APPLY_MACRO_COMMAND_ID}). The macro to apply is specified by the
+ * {@link SQLMacrosConstants#MACRO_ID_PARAMETER} command parameter, so any number of macros can be
+ * bound to arbitrary key combinations via parameterized commands.
  */
 public class SQLMacrosApplyHandler extends AbstractHandler {
 
@@ -52,8 +53,13 @@ public class SQLMacrosApplyHandler extends AbstractHandler {
 
     @Override
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
-        SQLMacro macro = SQLMacrosRegistry.getInstance().getMacroByCommandId(event.getCommand().getId());
+        String macroId = event.getParameter(SQLMacrosConstants.MACRO_ID_PARAMETER);
+        if (CommonUtils.isEmpty(macroId)) {
+            return null;
+        }
+        SQLMacro macro = SQLMacrosRegistry.getInstance().getMacroById(macroId);
         if (macro == null) {
+            // The macro has been removed since the binding was registered
             return null;
         }
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);

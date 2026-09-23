@@ -155,6 +155,10 @@
         <factory id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
     </extension>
 
+    <extension point="org.eclipse.ui.startup">
+        <startup class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosStartup"/>
+    </extension>
+
     <extension point="org.eclipse.ui.contexts">
         <context
                 id="org.jkiss.dbeaver.ui.editors.sql"
@@ -298,18 +302,9 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings" name="%command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings.name" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings" name="%command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings.name" categoryId="org.jkiss.dbeaver.core.sql"/>
 
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.1" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.1.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.2" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.2.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.3" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.3.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.4" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.4.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.5" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.5.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.6" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.6.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.7" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.7.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.8" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.8.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.9" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.9.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.10" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.10.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.11" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.11.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply.12" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.12.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.macro.apply" name="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.macro.apply.description" categoryId="org.jkiss.dbeaver.core.sql">
+            <commandParameter id="macroId" name="Macro id" optional="false"/>
+        </command>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -788,40 +783,7 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.1" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.2" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.3" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.4" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.5" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.6" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.7" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.8" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.9" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.10" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.11" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.12" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply" class="org.jkiss.dbeaver.ui.editors.sql.macros.SQLMacrosApplyHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
 
@@ -884,18 +846,6 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+["/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.selectToMatchingBracket" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+]"/>
 
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.1" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F1"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.2" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F2"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.3" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F3"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.4" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F4"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.5" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F5"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.6" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F6"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.7" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F7"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.8" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F8"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.9" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F9"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.10" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F10"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.11" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F11"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.macro.apply.12" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F12"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">

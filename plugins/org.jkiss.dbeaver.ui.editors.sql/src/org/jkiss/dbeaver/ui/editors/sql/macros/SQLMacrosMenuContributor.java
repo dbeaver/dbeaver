@@ -70,7 +70,9 @@ public class SQLMacrosMenuContributor extends CompoundContributionItem {
         private final SQLMacro macro;
 
         ApplyMacroAction(@NotNull SQLMacro macro) {
-            super(macro.getName() + " (" + macro.getShortcutLabel() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+            super(macro.getName() + (macro.hasShortcut()
+                    ? " (" + macro.getShortcutLabel() + ")" //$NON-NLS-1$ //$NON-NLS-2$
+                    : "")); //$NON-NLS-1$
             this.macro = macro;
             setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.SQL_TEXT));
         }
@@ -101,7 +103,10 @@ public class SQLMacrosMenuContributor extends CompoundContributionItem {
             String selectionText = selection instanceof ITextSelection textSelection ? textSelection.getText() : ""; //$NON-NLS-1$
             SQLMacro initialMacro = null;
             if (!selectionText.isBlank()) {
-                initialMacro = new SQLMacro(UUID.randomUUID().toString(), "Macro", selectionText, nextFreeSlot()); //$NON-NLS-1$
+                initialMacro = new SQLMacro(
+                        UUID.randomUUID().toString(),
+                        "Macro", //$NON-NLS-1$
+                        selectionText);
             }
             SQLMacrosEditDialog dialog = new SQLMacrosEditDialog(UIUtils.getActiveWorkbenchShell(), initialMacro);
             if (dialog.open() == IDialogConstants.OK_ID) {
@@ -135,15 +140,6 @@ public class SQLMacrosMenuContributor extends CompoundContributionItem {
             SQLMacrosDialog dialog = new SQLMacrosDialog(UIUtils.getActiveWorkbenchShell());
             dialog.open();
         }
-    }
-
-    private int nextFreeSlot() {
-        for (int i = 0; i < SQLMacrosConstants.MACRO_KEY_COUNT; i++) {
-            if (SQLMacrosRegistry.getInstance().getMacroByShortcutIndex(i) == null) {
-                return i;
-            }
-        }
-        return 0;
     }
 
     @Nullable

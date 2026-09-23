@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.macros;
 
+import org.eclipse.jface.bindings.keys.KeySequence;
+import org.eclipse.jface.bindings.keys.KeySequenceText;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -41,10 +43,14 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.text.MessageFormat;
 import java.util.UUID;
 
 /**
  * Create/edit single SQL macro dialog.
+ * <p>
+ * The shortcut field captures a custom key combination. If the chosen combination is already
+ * assigned to another macro or workbench command, the user is warned and the previous value is restored.
  */
 public class SQLMacrosEditDialog extends BaseDialog {
 
@@ -52,17 +58,24 @@ public class SQLMacrosEditDialog extends BaseDialog {
 
     private SQLMacro macro;
     private Text nameText;
-    private Combo shortcutCombo;
     private SQLEditorBase sqlEditor;
     @Nullable
     private Text queryText;
     private Combo actionCombo;
+
+    private SQLMacro editingMacro;
+    private KeySequenceText shortcutSequenceText;
+    @Nullable
+    private KeySequence lastShortcutSequence;
 
     public SQLMacrosEditDialog(@NotNull Shell parentShell, @Nullable SQLMacro macro) {
         super(parentShell, macro == null
                 ? SQLEditorMessages.dialog_macros_edit_new_title
                 : SQLEditorMessages.dialog_macros_edit_edit_title, null);
         this.macro = macro;
+        this.editingMacro = macro == null
+                ? new SQLMacro("", "", "") //$NON-NLS-1$
+                : macro;
     }
 
     /**
@@ -81,14 +94,7 @@ public class SQLMacrosEditDialog extends BaseDialog {
                 macro == null ? "" : macro.getName()); //$NON-NLS-1$
         nameText.addModifyListener(textModifyListener());
 
-        shortcutCombo = UIUtils.createLabelCombo(composite, SQLEditorMessages.dialog_macros_edit_label_shortcut, SWT.READ_ONLY);
-        for (int i = 0; i < SQLMacrosConstants.MACRO_KEY_COUNT; i++) {
-            shortcutCombo.add(SQLMacrosConstants.getShortcutLabel(i));
-        }
-        shortcutCombo.select(macro == null
-                ? 0
-                : Math.clamp(macro.getShortcutIndex(), 0, SQLMacrosConstants.MACRO_KEY_COUNT - 1));
-        shortcutCombo.addModifyListener(textModifyListener());
+        createShortcutCapture(composite);
 
         SQLEditorBase queryViewer = createQueryEditor(composite);
         if (queryViewer == null) {
@@ -113,6 +119,55 @@ public class SQLMacrosEditDialog extends BaseDialog {
         });
 
         return composite;
+    }
+
+    /**
+     * Creates the shortcut capture field. Typing a key combination updates the effective sequence;
+     * if the combination is already assigned elsewhere, the user is warned and the previous value is restored.
+     * Clearing the field (Backspace) removes the shortcut completely; such a macro is then applicable
+     * from the Macros menu only.
+     */
+    private void createShortcutCapture(@NotNull Composite composite) {
+        UIUtils.createControlLabel(composite, SQLEditorMessages.dialog_macros_edit_label_shortcut);
+        Text shortcutText = new Text(composite, SWT.BORDER);
+        shortcutText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        shortcutText.setToolTipText(SQLEditorMessages.dialog_macros_edit_shortcut_hint);
+
+        shortcutSequenceText = new KeySequenceText(shortcutText);
+        shortcutSequenceText.setKeyStrokeLimit(1);
+
+        KeySequence initialSequence = editingMacro.getShortcutKeySequence();
+        this.lastShortcutSequence = initialSequence == null ? KeySequence.getInstance() : initialSequence;
+        shortcutSequenceText.setKeySequence(lastShortcutSequence);
+        shortcutSequenceText.addPropertyChangeListener(event -> {
+            if (KeySequenceText.P_KEY_SEQUENCE.equals(event.getProperty())) {
+                handleShortcutCaptured();
+            }
+        });
+
+        UIUtils.createInfoLabel(composite, SQLEditorMessages.dialog_macros_edit_shortcut_hint, SWT.WRAP, 1);
+    }
+
+    private void handleShortcutCaptured() {
+        KeySequence newSequence = shortcutSequenceText.getKeySequence();
+        if (newSequence == null || newSequence.equals(lastShortcutSequence)) {
+            return;
+        }
+        if (newSequence.getTriggers().length > 0) {
+            String conflict = SQLMacrosBindingUtils.findShortcutConflict(
+                    SQLMacrosRegistry.getInstance().getMacros(), editingMacro, newSequence);
+            if (conflict != null) {
+                UIUtils.showMessageBox(
+                        getShell(),
+                        SQLEditorMessages.dialog_macros_shortcut_conflict_title,
+                        MessageFormat.format(SQLEditorMessages.dialog_macros_shortcut_conflict_message,
+                                newSequence.format(), conflict),
+                        SWT.ICON_WARNING);
+                shortcutSequenceText.setKeySequence(lastShortcutSequence);
+                return;
+            }
+        }
+        this.lastShortcutSequence = newSequence;
     }
 
     @NotNull
@@ -228,11 +283,13 @@ public class SQLMacrosEditDialog extends BaseDialog {
     @Override
     protected void okPressed() {
         String id = macro != null ? macro.getId() : UUID.randomUUID().toString();
+        KeySequence sequence = lastShortcutSequence;
+        String shortcut = sequence != null && sequence.getTriggers().length > 0 ? sequence.format() : null;
         macro = new SQLMacro(
                 id,
                 nameText.getText().trim(),
                 getQueryText().trim(),
-                shortcutCombo.getSelectionIndex(),
+                shortcut,
                 MacroAction.values()[actionCombo.getSelectionIndex()]);
         super.okPressed();
     }
