@@ -34,8 +34,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 
@@ -152,7 +152,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
         Color oldForeground = gc.getForeground();
         int oldLineWidth = gc.getLineWidth();
-        Color separatorColor = UIUtils.getColorRegistry().get(UIThemeConstants.INACTIVE_TAB_OUTLINE_COLOR);
+        Color separatorColor = UIUtils.getColorRegistry().get(UIColors.INACTIVE_TAB_OUTLINE_COLOR);
         gc.setForeground(separatorColor != null
             ? separatorColor
             : gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
