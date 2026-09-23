@@ -56,13 +56,14 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
     }
 
     static boolean isUpdateAvailable() {
-        return newVersion != null;
+        return currentVersion != null && newVersion != null;
     }
 
-    static void startUpdate(@NotNull VersionDescriptor version) {
+    static void startUpdate(@NotNull Version current, @NotNull VersionDescriptor available) {
         UIUtils.runInUIThread(() -> {
             if (!updateStarted) {
-                newVersion = version;
+                currentVersion = current;
+                newVersion = available;
                 ActionUtils.runCommand(COMMAND_UPDATE, PlatformUI.getWorkbench());
             }
         });
@@ -76,12 +77,13 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
     @Override
     @Nullable
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
+        Version current = currentVersion;
         VersionDescriptor available = newVersion;
-        if (available == null) {
+        if (current == null || available == null) {
             return null;
         }
         if (COMMAND_RELEASE_NOTES.equals(event.getCommand().getId())) {
-            DBeaverApplication.getInstance().notifyVersionUpgrade(currentVersion, available, true);
+            DBeaverApplication.getInstance().notifyVersionUpgrade(current, available, true);
             if (DBeaverVersionChecker.isSuppressed(available)) {
                 newVersion = null;
                 currentVersion = null;
