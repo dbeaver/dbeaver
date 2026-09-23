@@ -8,10 +8,20 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
+        <dataSourceType
+            id="databricks"
+            label="Databricks"
+            description="Databricks lakehouse platform"
+            dataSourceInformation="Cloud lakehouse for analytics and engineering"
+            icon="icons/databricks_icon.svg"
+            iconBig="icons/databricks_icon_big.svg"
+            logoImage="icons/databricks_logo.svg"/>
+
         <datasource
                 class="org.jkiss.dbeaver.ext.databricks.DatabricksDataSourceProvider"
                 description="Databricks Connector"
                 id="databricks"
+                dataSourceType="databricks"
                 parent="generic"
                 label="Databricks"
                 icon="icons/databricks_icon.svg"
@@ -24,9 +34,6 @@
                 <driver
                     id="databricks-oss"
                     label="Databricks"
-                    icon="icons/databricks_icon.svg"
-                    iconBig="icons/databricks_icon_big.svg"
-                    logoImage="icons/databricks_logo.svg"
                     class="com.databricks.client.jdbc.Driver"
                     sampleURL="jdbc:databricks://{host}[:{port}][/{database}]"
                     webURL="https://docs.databricks.com/aws/en/integrations/jdbc-oss.html"
