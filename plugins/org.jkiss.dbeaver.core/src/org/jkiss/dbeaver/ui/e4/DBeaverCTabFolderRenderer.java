@@ -35,6 +35,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 
@@ -42,7 +43,6 @@ import java.lang.reflect.Field;
 
 public final class DBeaverCTabFolderRenderer extends CTabRendering implements ICTabRendering {
     private static final Log log = Log.getLog(DBeaverCTabFolderRenderer.class);
-    private static final String INACTIVE_TAB_OUTLINE_COLOR = "org.eclipse.ui.workbench.INACTIVE_TAB_OUTLINE_COLOR";
 
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
 
@@ -152,7 +152,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
         Color oldForeground = gc.getForeground();
         int oldLineWidth = gc.getLineWidth();
-        Color separatorColor = UIUtils.getColorRegistry().get(INACTIVE_TAB_OUTLINE_COLOR);
+        Color separatorColor = UIUtils.getColorRegistry().get(UIThemeConstants.INACTIVE_TAB_OUTLINE_COLOR);
         gc.setForeground(separatorColor != null
             ? separatorColor
             : gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
