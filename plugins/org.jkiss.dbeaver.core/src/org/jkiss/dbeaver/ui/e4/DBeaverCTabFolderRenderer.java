@@ -28,12 +28,15 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.Field;
 
@@ -48,6 +51,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final FieldReflection<CTabRendering, Color> hotUnselectedTabsColorBackgroundField;
     private static final FieldReflection<CTabItem, Integer> closeImageStateField;
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
+    private static final FieldReflection<CTabFolder, ToolBar> minMaxToolBarField;
 
     static {
         tabOutlineColorField = FieldReflection.of(CTabRendering.class, "tabOutlineColor");
@@ -56,6 +60,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
         hotUnselectedTabsColorBackgroundField = FieldReflection.of(CTabRendering.class, "hotUnselectedTabsColorBackground");
         closeImageStateField = FieldReflection.of(CTabItem.class, "closeImageState");
         closeRectField = FieldReflection.of(CTabItem.class, "closeRect");
+        minMaxToolBarField = FieldReflection.of(CTabFolder.class, "minMaxTb");
     }
 
     public DBeaverCTabFolderRenderer(@NotNull CTabFolder parent) {
@@ -64,6 +69,8 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     @Override
     protected void draw(int part, int state, Rectangle bounds, GC gc) {
+        updateMinMaxToolBarBackground();
+
         if (part >= 0 && part < parent.getItemCount()) {
             CTabItem item = parent.getItem(part);
             Color color = getConnectionColor(item);
@@ -134,6 +141,27 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
         }
 
         super.draw(part, state, bounds, gc);
+    }
+
+    private void updateMinMaxToolBarBackground() {
+        if (!RuntimeUtils.isWindows() || !UIStyles.isDarkTheme()) {
+            return;
+        }
+
+        ToolBar toolBar = minMaxToolBarField.get(parent);
+        if (toolBar == null || toolBar.isDisposed()) {
+            return;
+        }
+
+        Color background = parent.getBackground();
+        if (!background.equals(toolBar.getBackground())) {
+            toolBar.setBackground(background);
+        }
+        for (ToolItem item : toolBar.getItems()) {
+            if (!background.equals(item.getBackground())) {
+                item.setBackground(background);
+            }
+        }
     }
 
     @Override
