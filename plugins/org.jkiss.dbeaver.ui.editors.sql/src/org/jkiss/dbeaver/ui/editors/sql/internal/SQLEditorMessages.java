@@ -26,6 +26,31 @@ public class SQLEditorMessages extends NLS {
     public static String dialog_view_sql_save_to_file_failure_title;
     public static String dialog_view_sql_save_to_file_failure_message;
 
+    public static String dialog_macros_manage_title;
+    public static String dialog_macros_manage_column_name;
+    public static String dialog_macros_manage_column_shortcut;
+    public static String dialog_macros_manage_column_query;
+    public static String dialog_macros_manage_button_new;
+    public static String dialog_macros_manage_button_edit;
+    public static String dialog_macros_manage_button_delete;
+    public static String dialog_macros_manage_delete_confirm_title;
+    public static String dialog_macros_manage_delete_confirm_message;
+    public static String dialog_macros_edit_new_title;
+    public static String dialog_macros_edit_edit_title;
+    public static String dialog_macros_edit_label_name;
+    public static String dialog_macros_edit_label_shortcut;
+    public static String dialog_macros_edit_label_query;
+    public static String dialog_macros_edit_label_action;
+    public static String dialog_macros_action_insert;
+    public static String dialog_macros_action_insert_execute;
+    public static String dialog_macros_action_execute;
+    public static String dialog_macros_no_selection_title;
+    public static String dialog_macros_no_selection_message;
+    public static String dialog_macros_selection_placeholder_hint;
+    public static String menu_macros_save_selection;
+    public static String menu_macros_manage;
+    public static String menu_macros_empty;
+
     public static String dialog_sql_param_title;
     public static String dialog_sql_param_column_name;
     public static String dialog_sql_param_column_value;
