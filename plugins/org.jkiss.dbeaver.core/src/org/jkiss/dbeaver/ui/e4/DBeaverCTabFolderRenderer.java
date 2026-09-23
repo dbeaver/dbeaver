@@ -145,13 +145,13 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     private void drawTabSeparator(int state, @NotNull Rectangle bounds, @NotNull GC gc, @Nullable Color color) {
         if ((!isEditorStack() && !CSSUtils.isDatabaseColored(parent)) ||
-            (state & SWT.SELECTED) != 0 || bounds.width <= 0 || bounds.height <= 0 || color == null) {
+            (state & SWT.SELECTED) != 0 || bounds.width <= 0 || bounds.height <= 0) {
             return;
         }
 
         Color oldForeground = gc.getForeground();
         int oldLineWidth = gc.getLineWidth();
-        gc.setForeground(color);
+        gc.setForeground(color != null ? color : gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
         gc.setLineWidth(1);
         boolean onBottom = parent.getTabPosition() == SWT.BOTTOM;
         int x = bounds.x + bounds.width - 1;
