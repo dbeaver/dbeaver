@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ui.e4;
 
 import org.eclipse.e4.ui.internal.css.swt.ICTabRendering;
+import org.eclipse.e4.ui.internal.workbench.PartStackUtil;
 import org.eclipse.e4.ui.internal.workbench.swt.AbstractPartRenderer;
+import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering;
 import org.eclipse.swt.SWT;
@@ -34,6 +36,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 import java.lang.reflect.Field;
 
@@ -110,6 +113,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                     }
 
                     super.draw(part, state | SWT.HOT, bounds, gc);
+                    drawTabSeparator(state, bounds, gc, oldTabOutlineColor);
                 } finally {
                     // Restore whatever we have changed back to original values
                     closeRectField.set(item, oldCloseRect);
@@ -134,6 +138,31 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
         }
 
         super.draw(part, state, bounds, gc);
+        if (part >= 0 && part < parent.getItemCount()) {
+            drawTabSeparator(state, bounds, gc, tabOutlineColorField.get(this));
+        }
+    }
+
+    private void drawTabSeparator(int state, @NotNull Rectangle bounds, @NotNull GC gc, @Nullable Color color) {
+        if ((!isEditorStack() && !CSSUtils.isDatabaseColored(parent)) ||
+            (state & SWT.SELECTED) != 0 || bounds.width <= 0 || bounds.height <= 0) {
+            return;
+        }
+
+        Color oldForeground = gc.getForeground();
+        int oldLineWidth = gc.getLineWidth();
+        gc.setForeground(color != null ? color : gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        gc.setLineWidth(1);
+        boolean onBottom = parent.getTabPosition() == SWT.BOTTOM;
+        int x = bounds.x + bounds.width - 1;
+        gc.drawLine(x, bounds.y - (onBottom ? 1 : 0), x, bounds.y + bounds.height - (onBottom ? 1 : 0));
+        gc.setLineWidth(oldLineWidth);
+        gc.setForeground(oldForeground);
+    }
+
+    private boolean isEditorStack() {
+        return parent.getData(AbstractPartRenderer.OWNING_ME) instanceof MUIElement element &&
+            PartStackUtil.isEditorStack(element);
     }
 
     @Override
