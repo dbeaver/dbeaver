@@ -19,16 +19,11 @@ package org.jkiss.dbeaver.model.lsm.test;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzer;
-import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
-import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
-import org.jkiss.dbeaver.model.sql.SQLObjectOperation;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLObjectOperation;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.semantics.SQLObjectOperationRecognizer;
-import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
-import org.jkiss.dbeaver.model.stm.STMSource;
-import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -113,26 +108,125 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
-    void ignoresMalformedAndMultipleQueries() {
+    void ignoresMalformedQueries() {
         Assertions.assertNull(parse("CREATE DATABASE"));
         Assertions.assertNull(parse("CREATE DATABASE \"unterminated"));
-        Assertions.assertNull(parse("CREATE DATABASE first; DROP DATABASE second"));
     }
 
     @Test
-    void treeOverloadRequiresOneValidQuery() {
-        Assertions.assertEquals(
+    void recognizesOperationsInSubmittedBatch() {
+        List<SQLObjectOperation> expected = List.of(
             new SQLObjectOperation(
                 SQLObjectOperation.Operation.CREATE,
                 SQLObjectOperation.ObjectKind.DATABASE,
-                List.of("db")
+                List.of("first")
             ),
-            SQLObjectOperationRecognizer.recognize(parseTree("CREATE DATABASE db;"))
+            new SQLObjectOperation(
+                SQLObjectOperation.Operation.DROP,
+                SQLObjectOperation.ObjectKind.DATABASE,
+                List.of("second")
+            )
         );
-        Assertions.assertNull(SQLObjectOperationRecognizer.recognize(parseTree("CREATE DATABASE")));
-        Assertions.assertNull(SQLObjectOperationRecognizer.recognize(
-            parseTree("CREATE DATABASE first; DROP DATABASE second")
+
+        String sql = "CREATE DATABASE first; DROP DATABASE second";
+        Assertions.assertEquals(expected, recognizeAll(BasicSQLDialect.INSTANCE, sql));
+        Assertions.assertEquals(expected.getFirst(), recognize(BasicSQLDialect.INSTANCE, sql));
+    }
+
+    @Test
+    void tracksOneStatementRepresentationAcrossCopiesAndReset() {
+        SQLQuery query = new SQLQuery(null, "CREATE DATABASE first; DROP DATABASE second");
+        Assertions.assertFalse(query.representsOneStatement());
+
+        query.setEndsWithDelimiter(false);
+        Assertions.assertTrue(query.representsOneStatement());
+        Assertions.assertTrue(new SQLQuery(null, query.getText(), query).representsOneStatement());
+
+        query.setOriginalText("CREATE DATABASE original; DROP DATABASE second", false);
+        query.setText("CREATE DATABASE transformed", true);
+        Assertions.assertTrue(query.representsOneStatement());
+        query.reset();
+        Assertions.assertFalse(query.representsOneStatement());
+        Assertions.assertEquals("CREATE DATABASE original; DROP DATABASE second", query.getText());
+    }
+
+    @Test
+    void queryOverloadSeparatesOnlyUnknownText() {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(BasicSQLDialect.INSTANCE, syntaxManager.getPreferenceStore());
+        SQLQuery batch = new SQLQuery(null, "CREATE DATABASE first; DROP DATABASE second");
+        List<SQLObjectOperation> expected = List.of(
+            new SQLObjectOperation(
+                SQLObjectOperation.Operation.CREATE,
+                SQLObjectOperation.ObjectKind.DATABASE,
+                List.of("first")
+            ),
+            new SQLObjectOperation(
+                SQLObjectOperation.Operation.DROP,
+                SQLObjectOperation.ObjectKind.DATABASE,
+                List.of("second")
+            )
+        );
+
+        Assertions.assertEquals(expected, SQLObjectOperationRecognizer.recognizeAll(
+            null,
+            BasicSQLDialect.INSTANCE,
+            syntaxManager,
+            batch
         ));
+
+        SQLQuery statement = new SQLQuery(null, "CREATE DATABASE first; DROP DATABASE second");
+        statement.setEndsWithDelimiter(false);
+        Assertions.assertEquals(List.of(), SQLObjectOperationRecognizer.recognizeAll(
+            null,
+            BasicSQLDialect.INSTANCE,
+            syntaxManager,
+            statement
+        ));
+    }
+
+    @Test
+    void unsupportedStatementDoesNotHideFollowingOperations() {
+        List<SQLObjectOperation> expected = List.of(
+            new SQLObjectOperation(
+                SQLObjectOperation.Operation.CREATE,
+                SQLObjectOperation.ObjectKind.DATABASE,
+                List.of("first")
+            ),
+            new SQLObjectOperation(
+                SQLObjectOperation.Operation.DROP,
+                SQLObjectOperation.ObjectKind.DATABASE,
+                List.of("second")
+            )
+        );
+
+        String sql = "CREATE DATABASE first; VACUUM unsupported; DROP DATABASE second";
+        Assertions.assertEquals(expected, recognizeAll(BasicSQLDialect.INSTANCE, sql));
+    }
+
+    @Test
+    void recognizesOperationsSeparatedByDialectDelimiter() {
+        SQLDialect dialect = new BasicSQLDialect() {
+            @Override
+            public String[] getScriptDelimiters() {
+                return new String[]{"GO"};
+            }
+        };
+        List<SQLObjectOperation> expected = List.of(
+            new SQLObjectOperation(
+                SQLObjectOperation.Operation.CREATE,
+                SQLObjectOperation.ObjectKind.DATABASE,
+                List.of("first")
+            ),
+            new SQLObjectOperation(
+                SQLObjectOperation.Operation.DROP,
+                SQLObjectOperation.ObjectKind.DATABASE,
+                List.of("second")
+            )
+        );
+
+        String sql = "CREATE DATABASE first\nGO\nDROP DATABASE second";
+        Assertions.assertEquals(expected, recognizeAll(dialect, sql));
     }
 
     @Test
@@ -185,13 +279,13 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     ) {
         Assertions.assertEquals(
             new SQLObjectOperation(operation, objectKind, List.of(nameParts)),
-            SQLObjectOperationRecognizer.recognize(dialect, sql),
+            recognize(dialect, sql),
             sql
         );
     }
 
     private static SQLObjectOperation parse(@NotNull String sql) {
-        return SQLObjectOperationRecognizer.recognize(BasicSQLDialect.INSTANCE, sql);
+        return recognize(BasicSQLDialect.INSTANCE, sql);
     }
 
     private static void assertMultipleDropTargets(
@@ -202,21 +296,20 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
             new SQLObjectOperation(SQLObjectOperation.Operation.DROP, objectKind, List.of("schema1", "a")),
             new SQLObjectOperation(SQLObjectOperation.Operation.DROP, objectKind, List.of("schema2", "b"))
         );
-        Assertions.assertEquals(expected, SQLObjectOperationRecognizer.recognizeAll(BasicSQLDialect.INSTANCE, sql));
-        Assertions.assertEquals(expected, SQLObjectOperationRecognizer.recognizeAll(parseTree(sql)));
-        Assertions.assertEquals(expected.getFirst(), SQLObjectOperationRecognizer.recognize(BasicSQLDialect.INSTANCE, sql));
-        Assertions.assertEquals(expected.getFirst(), SQLObjectOperationRecognizer.recognize(parseTree(sql)));
+        Assertions.assertEquals(expected, recognizeAll(BasicSQLDialect.INSTANCE, sql));
+        Assertions.assertEquals(expected.getFirst(), recognize(BasicSQLDialect.INSTANCE, sql));
     }
 
     @NotNull
-    private static STMTreeNode parseTree(@NotNull String sql) {
+    private static List<SQLObjectOperation> recognizeAll(@NotNull SQLDialect dialect, @NotNull String sql) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(BasicSQLDialect.INSTANCE, syntaxManager.getPreferenceStore());
-        LSMAnalyzer analyzer = LSMDialectRegistry.getInstance().getAnalyzerFactoryForDialect(BasicSQLDialect.INSTANCE)
-            .createAnalyzer(LSMAnalyzerParameters.forDialect(BasicSQLDialect.INSTANCE, syntaxManager));
-        STMTreeNode tree = analyzer.parseSqlQueriesTree(STMSource.fromString(sql), new STMSkippingErrorListener());
-        Assertions.assertNotNull(tree);
-        return tree;
+        syntaxManager.init(dialect, syntaxManager.getPreferenceStore());
+        return SQLObjectOperationRecognizer.recognizeAll(null, dialect, syntaxManager, new SQLQuery(null, sql));
+    }
+
+    @Nullable
+    private static SQLObjectOperation recognize(@NotNull SQLDialect dialect, @NotNull String sql) {
+        return recognizeAll(dialect, sql).stream().findFirst().orElse(null);
     }
 
     @NotNull

@@ -27,14 +27,4 @@ public interface LSMAnalyzer {
     @Nullable
     STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener);
 
-    /**
-     * Parses the source through the grammar entry point that consumes a query sequence.
-     * This makes trailing or additional queries visible to callers that require exactly one complete query.
-     */
-    @Nullable
-    STMTreeRuleNode parseSqlQueriesTree(
-        @NotNull STMSource source,
-        @Nullable STMErrorListener errorListener
-    );
-
 }

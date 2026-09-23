@@ -59,10 +59,4 @@ public class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLSt
         }
         return root;
     }
-
-    @NotNull
-    @Override
-    protected STMTreeRuleNode parseSqlQueriesImpl(@NotNull SQLStandardParser parser) {
-        return parser.sqlQueries();
-    }
 }

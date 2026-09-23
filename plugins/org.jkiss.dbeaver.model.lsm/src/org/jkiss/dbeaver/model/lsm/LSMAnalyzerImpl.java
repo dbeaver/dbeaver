@@ -46,10 +46,6 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
     @NotNull
     protected abstract STMTreeRuleNode parseSqlQueryImpl(@NotNull TParser parser);
 
-    /** Invokes the dialect grammar entry point that consumes a query sequence. */
-    @NotNull
-    protected abstract STMTreeRuleNode parseSqlQueriesImpl(@NotNull TParser parser);
-
     @NotNull
     protected TParser prepareParser(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         Pair<TLexer, TParser> pair = this.createParser(source, this.parameters);
@@ -71,24 +67,9 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
     @Nullable
     @Override
     public STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        return parseTree(source, errorListener, false);
-    }
-
-    @Nullable
-    @Override
-    public STMTreeRuleNode parseSqlQueriesTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
-        return parseTree(source, errorListener, true);
-    }
-
-    @Nullable
-    private STMTreeRuleNode parseTree(
-        @NotNull STMSource source,
-        @Nullable STMErrorListener errorListener,
-        boolean parseQueries
-    ) {
         try {
             TParser parser = prepareParser(source, errorListener);
-            STMTreeRuleNode result = parseQueries ? parseSqlQueriesImpl(parser) : parseSqlQueryImpl(parser);
+            STMTreeRuleNode result = parseSqlQueryImpl(parser);
             result.fixup(parser);
             return result;
         } catch (RecognitionException e) {
@@ -96,5 +77,4 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
             return null;
         }
     }
-
 }

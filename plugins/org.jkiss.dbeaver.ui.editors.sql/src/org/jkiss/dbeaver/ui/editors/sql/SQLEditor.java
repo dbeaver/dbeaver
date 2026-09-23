@@ -3297,9 +3297,10 @@ public class SQLEditor extends SQLEditorBase implements
     private List<SQLObjectOperation> recognizeObjectOperations(@NotNull SQLQuery query) {
         SQLSyntaxManager syntaxManager = getSyntaxManager();
         List<SQLObjectOperation> operations = SQLObjectOperationRecognizer.recognizeAll(
+            getDataSource(),
             syntaxManager.getDialect(),
             syntaxManager,
-            query.getText()
+            query
         );
         if (!operations.isEmpty()) {
             return operations;

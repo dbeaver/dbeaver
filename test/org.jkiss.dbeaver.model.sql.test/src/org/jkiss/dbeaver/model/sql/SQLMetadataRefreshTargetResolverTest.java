@@ -102,6 +102,16 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
     }
 
     @Test
+    void escapedQuotesAreUnescapedInRefreshTargetNames() {
+        assertTarget(
+            SQLObjectOperation.Operation.CREATE,
+            SQLObjectOperation.ObjectKind.TABLE,
+            List.of("\"cat\"\"alog\"", "\"sche\"\"ma\"", "\"table\""),
+            target(RefreshLevel.SCHEMA, "cat\"alog", "sche\"ma")
+        );
+    }
+
+    @Test
     void unqualifiedOrdinaryObjectUsesRefreshedDefaults() {
         DBSCatalog defaultCatalog = Mockito.mock(DBSCatalog.class);
         DBSSchema defaultSchema = Mockito.mock(DBSSchema.class);

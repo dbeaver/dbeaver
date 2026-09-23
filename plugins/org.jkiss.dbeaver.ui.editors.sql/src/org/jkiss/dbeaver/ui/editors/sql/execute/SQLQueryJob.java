@@ -864,7 +864,8 @@ public class SQLQueryJob extends DataSourceJob {
         if (isShowExecutionResult()) { // Single statement with some stats
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
-                query.setText(queries.get(0).getText());
+                SQLScriptElement source = queries.getFirst();
+                query.setText(source.getText(), source instanceof SQLQuery sqlQuery && sqlQuery.representsOneStatement());
             }
             query.setData(STATS_RESULTS); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);

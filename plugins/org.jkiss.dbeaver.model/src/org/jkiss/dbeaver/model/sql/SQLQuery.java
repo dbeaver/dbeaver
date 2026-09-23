@@ -73,10 +73,12 @@ public class SQLQuery implements SQLScriptElement {
     private final DBPDataSource dataSource;
     @NotNull
     private String originalText;
+    private boolean originalRepresentsOneStatement;
 
     private Boolean isEndsWithDelimiter = null;
     @NotNull
     private String text;
+    private boolean representsOneStatement;
     private int offset;
     private int length;
     private Object data;
@@ -103,7 +105,9 @@ public class SQLQuery implements SQLScriptElement {
 
     /**
      * Copy constructor.
-     * Copies query state but sets new query string.
+     * Copies query state but sets a new query string that represents a boundary-preserving derivation of the source
+     * query. The {@code preserveOriginal} parameter only controls which text and statement-cardinality state are
+     * restored by {@link #reset()}.
      */
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, @NotNull SQLQuery sourceQuery) {
         this(dataSource, text, sourceQuery, true);
@@ -113,7 +117,11 @@ public class SQLQuery implements SQLScriptElement {
         this(dataSource, text, sourceQuery.offset, sourceQuery.length);
         if (preserveOriginal) {
             this.originalText = sourceQuery.originalText;
+            this.originalRepresentsOneStatement = sourceQuery.originalRepresentsOneStatement;
+        } else {
+            this.originalRepresentsOneStatement = sourceQuery.representsOneStatement;
         }
+        this.representsOneStatement = sourceQuery.representsOneStatement;
         this.parameters = sourceQuery.parameters;
         this.data = sourceQuery.data;
     }
@@ -556,13 +564,34 @@ public class SQLQuery implements SQLScriptElement {
         return allSelectEntitiesNames;
     }
 
+    /**
+     * Returns the baseline query text that {@link #reset()} restores as the current text.
+     */
     @NotNull
     public String getOriginalText() {
         return originalText;
     }
 
+    /**
+     * Sets the baseline query text that subsequent calls to {@link #reset()} restore, while preserving the baseline's
+     * existing statement-cardinality state.
+     * <p>
+     * Use {@link #setOriginalText(String, boolean)} when the replacement establishes or changes whether the original
+     * text is known to represent one logical statement.
+     */
     public void setOriginalText(@NotNull String originalText) {
+        setOriginalText(originalText, originalRepresentsOneStatement);
+    }
+
+    /**
+     * Sets the baseline query text and statement-cardinality state that subsequent calls to {@link #reset()} restore.
+     *
+     * @param representsOneStatement {@code true} when the replacement is known to represent one logical statement;
+     *     {@code false} when its statement cardinality is unknown
+     */
+    public void setOriginalText(@NotNull String originalText, boolean representsOneStatement) {
         this.originalText = originalText;
+        this.originalRepresentsOneStatement = representsOneStatement;
     }
 
     @NotNull
@@ -570,8 +599,25 @@ public class SQLQuery implements SQLScriptElement {
         return text;
     }
 
+    /**
+     * Replaces the current query text while preserving its existing statement-cardinality state.
+     * <p>
+     * Use {@link #setText(String, boolean)} when the replacement establishes or changes whether the text is known to
+     * represent one logical statement.
+     */
     public void setText(@NotNull String text) {
+        setText(text, representsOneStatement);
+    }
+
+    /**
+     * Replaces the current query text and explicitly records its statement-cardinality state.
+     *
+     * @param representsOneStatement {@code true} when the replacement is known to represent one logical statement;
+     *     {@code false} when its statement cardinality is unknown
+     */
+    public void setText(@NotNull String text, boolean representsOneStatement) {
         this.text = text;
+        this.representsOneStatement = representsOneStatement;
         this.queryTitle = extractQueryTitle(text);
         resetParsedState();
     }
@@ -628,8 +674,31 @@ public class SQLQuery implements SQLScriptElement {
         return this.isEndsWithDelimiter;
     }
 
+    /**
+     * Returns whether the current query text represents one logical execution statement.
+     * <p>
+     * A statement may be compound, such as a procedure, function, package, or anonymous block, and may contain
+     * internal statement delimiters. Therefore, this property does not indicate that the text contains no delimiters.
+     * <p>
+     * A {@code true} value means that the query was extracted as one statement by the SQL script parser or was produced
+     * by a transformation known to preserve one-statement cardinality. A {@code false} value means that one-statement
+     * cardinality is not known; it does not necessarily mean that the text contains multiple statements.
+     * <p>
+     * Processing that requires individual statements may use the query directly when this method returns {@code true}.
+     * Otherwise it must first apply statement separation according to the active SQL syntax settings.
+     */
+    public boolean representsOneStatement() {
+        return representsOneStatement;
+    }
+
+    /**
+     * Records whether the SQL script parser found a delimiter at the end of this query. Calling this method also marks
+     * the query text and its original text as representing one logical statement, regardless of the supplied value.
+     */
     public void setEndsWithDelimiter(boolean value) {
         this.isEndsWithDelimiter = value;
+        this.representsOneStatement = true;
+        this.originalRepresentsOneStatement = true;
     }
 
     @NotNull
@@ -653,8 +722,14 @@ public class SQLQuery implements SQLScriptElement {
         this.parameters = parameters;
     }
 
+    /**
+     * Restores the current query text and statement-cardinality state from the baseline configured through
+     * {@link #setOriginalText(String)} or {@link #setOriginalText(String, boolean)}, and clears parsed state derived
+     * from the replaced current text.
+     */
     public void reset() {
         this.text = this.originalText;
+        this.representsOneStatement = this.originalRepresentsOneStatement;
         this.queryTitle = extractQueryTitle(originalText);
         resetParsedState();
         if (this.parameters != null) {
