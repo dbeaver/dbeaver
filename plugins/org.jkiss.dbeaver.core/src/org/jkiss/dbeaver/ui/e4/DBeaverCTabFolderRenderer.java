@@ -42,6 +42,7 @@ import java.lang.reflect.Field;
 
 public final class DBeaverCTabFolderRenderer extends CTabRendering implements ICTabRendering {
     private static final Log log = Log.getLog(DBeaverCTabFolderRenderer.class);
+    private static final String INACTIVE_TAB_OUTLINE_COLOR = "org.eclipse.ui.workbench.INACTIVE_TAB_OUTLINE_COLOR";
 
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
 
@@ -113,7 +114,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                     }
 
                     super.draw(part, state | SWT.HOT, bounds, gc);
-                    drawTabSeparator(state, bounds, gc, oldTabOutlineColor);
+                    drawTabSeparator(state, bounds, gc);
                 } finally {
                     // Restore whatever we have changed back to original values
                     closeRectField.set(item, oldCloseRect);
@@ -139,11 +140,11 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
         super.draw(part, state, bounds, gc);
         if (part >= 0 && part < parent.getItemCount()) {
-            drawTabSeparator(state, bounds, gc, tabOutlineColorField.get(this));
+            drawTabSeparator(state, bounds, gc);
         }
     }
 
-    private void drawTabSeparator(int state, @NotNull Rectangle bounds, @NotNull GC gc, @Nullable Color color) {
+    private void drawTabSeparator(int state, @NotNull Rectangle bounds, @NotNull GC gc) {
         if ((!isEditorStack() && !CSSUtils.isDatabaseColored(parent)) ||
             (state & SWT.SELECTED) != 0 || bounds.width <= 0 || bounds.height <= 0) {
             return;
@@ -151,7 +152,10 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
         Color oldForeground = gc.getForeground();
         int oldLineWidth = gc.getLineWidth();
-        gc.setForeground(color != null ? color : gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        Color separatorColor = UIUtils.getColorRegistry().get(INACTIVE_TAB_OUTLINE_COLOR);
+        gc.setForeground(separatorColor != null
+            ? separatorColor
+            : gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
         gc.setLineWidth(1);
         boolean onBottom = parent.getTabPosition() == SWT.BOTTOM;
         int x = bounds.x + bounds.width - 1;
