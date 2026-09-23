@@ -13,7 +13,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.keywords">
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.h2.general" label="h2 hydrogen class allow"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.h2.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.h2.general.label"/>
     </extension>
 
 </plugin>

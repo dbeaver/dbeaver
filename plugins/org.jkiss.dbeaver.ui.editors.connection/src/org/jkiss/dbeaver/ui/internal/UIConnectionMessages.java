@@ -92,6 +92,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_network_socket_label_username;
     public static String dialog_connection_network_socket_label_password;
     public static String dialog_connection_open_global_network_preferences_link;
+    public static String dialog_connection_network_handler_remove_confirmation_title;
+    public static String dialog_connection_network_handler_remove_confirmation_question;
 
     public static String dialog_edit_driver_button_add_file;
     public static String dialog_edit_driver_button_add_folder;
@@ -470,6 +472,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_migrate_wizard_window_title;
     public static String dialog_new_connection_wizard_start_description;
     public static String dialog_new_connection_wizard_start_title;
+    public static String dialog_new_connection_wizard_driver_description;
+    public static String dialog_new_connection_wizard_driver_title;
     public static String dialog_new_connection_wizard_title;
     public static String dialog_password_change_new_password;
     public static String dialog_password_change_old_password;
