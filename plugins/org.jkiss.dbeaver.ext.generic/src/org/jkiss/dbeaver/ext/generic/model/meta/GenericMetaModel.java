@@ -88,6 +88,9 @@ public class GenericMetaModel {
     //////////////////////////////////////////////////////
     // Datasource
 
+    public void initializeNewConnection(@NotNull DBPDataSourceContainer container) {
+    }
+
     @NotNull
     public GenericDataSource createDataSourceImpl(
         @NotNull DBRProgressMonitor monitor,
