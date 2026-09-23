@@ -53,6 +53,9 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
     private static final FieldReflection<CTabFolder, ToolBar> minMaxToolBarField;
 
+    @Nullable
+    private ToolBar minMaxToolBarWithOverriddenBackground;
+
     static {
         tabOutlineColorField = FieldReflection.of(CTabRendering.class, "tabOutlineColor");
         selectedTabHighlightColorField = FieldReflection.of(CTabRendering.class, "selectedTabHighlightColor");
@@ -144,15 +147,29 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     }
 
     private void updateMinMaxToolBarBackground() {
-        if (!RuntimeUtils.isWindows() || !UIStyles.isDarkTheme()) {
+        if (!RuntimeUtils.isWindows()) {
             return;
         }
 
         ToolBar toolBar = minMaxToolBarField.get(parent);
         if (toolBar == null || toolBar.isDisposed()) {
+            minMaxToolBarWithOverriddenBackground = null;
             return;
         }
 
+        if (!UIStyles.isDarkTheme()) {
+            // Restore SWT defaults when switching from dark to light theme.
+            if (toolBar == minMaxToolBarWithOverriddenBackground) {
+                toolBar.setBackground(null);
+                for (ToolItem item : toolBar.getItems()) {
+                    item.setBackground(null);
+                }
+            }
+            minMaxToolBarWithOverriddenBackground = null;
+            return;
+        }
+
+        // Fix the light hover background of CTabFolder minimize/maximize buttons in dark theme.
         Color background = parent.getBackground();
         if (!background.equals(toolBar.getBackground())) {
             toolBar.setBackground(background);
@@ -162,6 +179,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                 item.setBackground(background);
             }
         }
+        minMaxToolBarWithOverriddenBackground = toolBar;
     }
 
     @Override
