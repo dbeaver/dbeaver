@@ -146,6 +146,15 @@ public final class SQLObjectOperationRecognizer {
                 STMKnownRuleNames.tableName
             );
         }
+        if (statement.getNodeName().equals(STMKnownRuleNames.renameNamedObjectStatement)) {
+            STMTreeNode kindNode = findDescendant(statement, STMKnownRuleNames.renameObjectKind);
+            return kindNode == null ? List.of() : createOperations(
+                statement,
+                SQLObjectOperation.Operation.RENAME,
+                getObjectKind(kindNode),
+                STMKnownRuleNames.qualifiedName
+            );
+        }
         SQLObjectOperation operation = recognizeSingle(statement);
         return operation == null ? List.of() : List.of(operation);
     }
@@ -246,13 +255,6 @@ public final class SQLObjectOperationRecognizer {
             SQLObjectOperation.Operation operation = findDescendant(statement, STMKnownRuleNames.renameContainerAction) == null ?
                 SQLObjectOperation.Operation.ALTER : SQLObjectOperation.Operation.RENAME;
             return createContainerOperation(statement, operation);
-        }
-        if (statement.getNodeName().equals(STMKnownRuleNames.renameNamedObjectStatement)) {
-            return createNamedOperation(
-                statement,
-                SQLObjectOperation.Operation.RENAME,
-                STMKnownRuleNames.renameObjectKind
-            );
         }
         return null;
     }

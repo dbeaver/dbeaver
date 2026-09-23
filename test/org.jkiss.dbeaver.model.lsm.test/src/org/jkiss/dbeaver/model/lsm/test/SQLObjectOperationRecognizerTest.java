@@ -103,6 +103,25 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    void recognizesRenameSourceAndDestinationInOrder() {
+        Assertions.assertEquals(
+            List.of(
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.RENAME,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("db1", "source")
+                ),
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.RENAME,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("db2", "destination")
+                )
+            ),
+            recognizeAll(BasicSQLDialect.INSTANCE, "RENAME TABLE db1.source TO db2.destination")
+        );
+    }
+
+    @Test
     void ignoresNonDdl() {
         Assertions.assertNull(parse("SELECT * FROM example"));
     }
