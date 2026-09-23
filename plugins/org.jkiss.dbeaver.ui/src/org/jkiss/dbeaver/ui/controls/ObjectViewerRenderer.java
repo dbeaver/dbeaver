@@ -378,8 +378,8 @@ public abstract class ObjectViewerRenderer {
                     resetCursor();
                 } else {
                     //tip = getCellString(cellValue);
-                    boolean ctrlPressed = (stateMask & SWT.CTRL) != 0 || (stateMask & SWT.ALT) != 0;
-                    boolean isHyperlink = cellValue instanceof Boolean || (ctrlPressed && isHyperlink(element, cellValue));
+                    boolean isHyperlink = cellValue instanceof Boolean
+                        || (isHyperlinkActivation(cellValue, stateMask) && isHyperlink(element, cellValue));
                     if (isHyperlink && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(x, y)) {
                         getItemsViewer().getControl().setCursor(linkCursor);
                     } else {
@@ -391,10 +391,10 @@ public abstract class ObjectViewerRenderer {
 
         @Override
         public void keyPressed(KeyEvent e) {
-            if (e.keyCode == SWT.CTRL || e.keyCode == SWT.ALT) {
+            if ((e.keyCode & SWT.MODIFIER_MASK) != 0) {
                 Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
                 mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
-                updateCursor(mousePoint.x, mousePoint.y, e.keyCode);
+                updateCursor(mousePoint.x, mousePoint.y, e.stateMask | e.keyCode);
             } else {
                 // Reset selected column to the first one (seems to be cursor navigation)
                 selectedColumn = 0;
@@ -403,10 +403,10 @@ public abstract class ObjectViewerRenderer {
 
         @Override
         public void keyReleased(KeyEvent e) {
-            if (e.keyCode == SWT.CTRL || e.keyCode == SWT.ALT) {
+            if ((e.keyCode & SWT.MODIFIER_MASK) != 0) {
                 Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
                 mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
-                updateCursor(mousePoint.x, mousePoint.y, SWT.NONE);
+                updateCursor(mousePoint.x, mousePoint.y, e.stateMask & ~e.keyCode);
             }
         }
     }
@@ -458,20 +458,23 @@ public abstract class ObjectViewerRenderer {
                 hoverItem = detectTableItem(e.x, e.y);
             }
             lastClickItem = hoverItem;
-            if ((e.stateMask & SWT.CTRL) == 0 && (e.stateMask & SWT.ALT) == 0) {
-                // Navigate only if CTRL pressed
-                return;
-            }
             if (hoverItem != null && selectedColumn >= 0 && e.button == 1) {
                 Object element = hoverItem.getData();
                 int checkColumn = selectedColumn;
                 Object cellValue = getCellValue(element, checkColumn);
-                if (isHyperlink(element, cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
+                if (isHyperlinkActivation(cellValue, e.stateMask)
+                    && isHyperlink(element, cellValue)
+                    && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)
+                ) {
                     navigateHyperlink(cellValue);
                 }
             }
         }
 
+    }
+
+    protected boolean isHyperlinkActivation(@Nullable Object cellValue, int stateMask) {
+        return (stateMask & (SWT.CTRL | SWT.ALT)) != 0;
     }
 
     public boolean isHyperlink(Object element, @Nullable Object cellValue)
