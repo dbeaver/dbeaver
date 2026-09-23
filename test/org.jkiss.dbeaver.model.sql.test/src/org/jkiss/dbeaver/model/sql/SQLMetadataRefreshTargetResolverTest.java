@@ -83,6 +83,26 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
     }
 
     @Test
+    void unqualifiedSchemaUsesRefreshedDefaultCatalog() {
+        DBSCatalog staleCatalog = Mockito.mock(DBSCatalog.class);
+        DBSCatalog currentCatalog = Mockito.mock(DBSCatalog.class);
+        Mockito.when(staleCatalog.getName()).thenReturn("stale_catalog");
+        Mockito.when(currentCatalog.getName()).thenReturn("current_catalog");
+        Mockito.when(defaults.supportsCatalogChange()).thenReturn(true);
+        Mockito.doReturn(staleCatalog, currentCatalog).when(defaults).getDefaultCatalog();
+
+        RefreshTarget actual = SQLMetadataRefreshTargetResolver.createTarget(
+            monitor,
+            executionContext,
+            operation(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.SCHEMA, List.of("schema")),
+            (progressMonitor, contextDefaults, context) -> {
+            }
+        );
+
+        Assertions.assertEquals(target(RefreshLevel.CATALOG, "current_catalog", null), actual);
+    }
+
+    @Test
     void schemaAuthorizationWithoutNameUsesConservativeTargets() {
         DBSCatalog defaultCatalog = Mockito.mock(DBSCatalog.class);
         Mockito.when(defaultCatalog.getName()).thenReturn("default_catalog");
@@ -99,6 +119,20 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
     void qualifiedOrdinaryObjectRefreshesContainingSchema(SQLObjectOperation.Operation operation) {
         assertTarget(operation, SQLObjectOperation.ObjectKind.TABLE, List.of("catalog", "schema", "table"),
             target(RefreshLevel.SCHEMA, "CATALOG", "SCHEMA"));
+    }
+
+    @Test
+    void unknownObjectKindRefreshesDataSource() {
+        DBSSchema defaultSchema = Mockito.mock(DBSSchema.class);
+        Mockito.when(defaultSchema.getName()).thenReturn("default_schema");
+        Mockito.doReturn(defaultSchema).when(defaults).getDefaultSchema();
+
+        assertTarget(
+            SQLObjectOperation.Operation.DROP,
+            SQLObjectOperation.ObjectKind.OTHER,
+            List.of("role_name"),
+            target(RefreshLevel.DATA_SOURCE, null, null)
+        );
     }
 
     @Test

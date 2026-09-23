@@ -84,6 +84,10 @@ public final class SQLMetadataRefreshTargetResolver {
                 new RefreshTarget(RefreshLevel.CATALOG, nameParts.getLast(), null);
         }
         if (operation.objectKind() == SQLObjectOperation.ObjectKind.SCHEMA) {
+            if (nameParts.size() < 2 && defaults != null && defaults.supportsCatalogChange()) {
+                defaultsRefresher.refresh(monitor, defaults, executionContext);
+                defaultCatalog = defaults.getDefaultCatalog();
+            }
             String catalogName = nameParts.size() > 1 ? nameParts.get(nameParts.size() - 2) :
                 defaultCatalog == null ? null : defaultCatalog.getName();
             if (operation.operation() != SQLObjectOperation.Operation.ALTER) {
@@ -95,6 +99,9 @@ public final class SQLMetadataRefreshTargetResolver {
             }
             return nameParts.isEmpty() ? new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null) :
                 new RefreshTarget(RefreshLevel.SCHEMA, catalogName, nameParts.getLast());
+        }
+        if (operation.objectKind() == SQLObjectOperation.ObjectKind.OTHER) {
+            return new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null);
         }
 
         String catalogName = null;
