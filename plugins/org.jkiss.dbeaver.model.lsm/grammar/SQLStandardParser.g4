@@ -358,7 +358,7 @@ createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (I
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition) anyUnexpected??;
-createTableTail: anyUnexpected??;
+createTableTail: ddlStatementTail?;
 //                 createTableTailForValues? createTableTailOther*
 //                 createTableTailPartition? createTableTailOther*
 //                 createTableTailOnCommit? createTableTailOther*;
@@ -472,8 +472,9 @@ functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((
 functionCallTargetName: qualifiedName|IF;
 functionCallOperand: anyValue;
 
-aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
+aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? separatorClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|LIMIT|SEPARATOR|OFFSET|Comma|rowValueConstructor;
+separatorClause: SEPARATOR valueExpression;
 
 /*
 All the logical boundary terms between query construct levels should be explicitly mentioned here for the anyUnexpected to NOT cross them
