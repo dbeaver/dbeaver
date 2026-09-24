@@ -328,6 +328,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_no_profile_error_information;
     public static String pref_page_network_profiles_global_project_label;
     public static String pref_page_network_profiles_global_project_hint;
+    public static String pref_page_network_profiles_project_global_hint;
     public static String pref_page_network_profiles_global_project_name_used_in_local_label;
     public static String pref_page_network_profiles_global_project_name_used_in_local_question;
     public static String pref_page_network_profiles_local_name_used_in_global_label;
