@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.engine.AIAccountProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -31,18 +32,18 @@ import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
+public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties, AIAccountProperties {
     protected static final String GPT_BASE_URL = "gpt.base_url";
     protected static final String GPT_TOKEN = "gpt.token";
     protected static final String GPT_MODEL = "gpt.model";
     protected static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     public static final String AUTHENTICATION_API_TOKEN = "apiToken";
     public static final String AUTHENTICATION_CHATGPT_ACCOUNT = "chatgptAccount";
-    public static final String ACCOUNT_ACCESS_TOKEN_PROPERTY = "accessToken";
-    public static final String ACCOUNT_REFRESH_TOKEN_PROPERTY = "refreshToken";
-    public static final String ACCOUNT_ID_PROPERTY = "accountId";
-    public static final String ACCOUNT_EMAIL_PROPERTY = "accountEmail";
-    public static final String ACCOUNT_EXPIRES_AT_PROPERTY = "expiresAt";
+    public static final String ACCOUNT_ACCESS_TOKEN_PROPERTY = AIAccountProperties.ACCOUNT_ACCESS_TOKEN_PROPERTY;
+    public static final String ACCOUNT_REFRESH_TOKEN_PROPERTY = AIAccountProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY;
+    public static final String ACCOUNT_ID_PROPERTY = AIAccountProperties.ACCOUNT_ID_PROPERTY;
+    public static final String ACCOUNT_EMAIL_PROPERTY = AIAccountProperties.ACCOUNT_EMAIL_PROPERTY;
+    public static final String ACCOUNT_EXPIRES_AT_PROPERTY = AIAccountProperties.ACCOUNT_EXPIRES_AT_PROPERTY;
     public static final int DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE = 272_000;
     private static final String ACCESS_TOKEN = "openai.account.accessToken";
     private static final String REFRESH_TOKEN = "openai.account.refreshToken";
@@ -81,9 +82,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     private String accountEmail;
     private transient AIConfigurationProfile profile;
     private transient volatile OpenAIProperties accountCredentialsSource;
-    private transient AccountTokenPersistence accountTokenPersistence;
-    private transient AccountTokenValidator accountTokenValidator;
-    private transient AccountTokenRefreshHandler accountTokenRefreshHandler;
+    private transient AIAccountProperties.AccountTokenPersistence accountTokenPersistence;
+    private transient AIAccountProperties.AccountTokenValidator accountTokenValidator;
+    private transient AIAccountProperties.AccountTokenRefreshHandler accountTokenRefreshHandler;
 
     public OpenAIProperties() {
     }
@@ -191,6 +192,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         return AUTHENTICATION_CHATGPT_ACCOUNT.equals(getAuthentication());
     }
 
+    @Override
     public boolean isAccountAuthentication() {
         return isChatGptAccountAuthentication();
     }
@@ -204,10 +206,12 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Nullable
     @Property(id = ACCOUNT_ACCESS_TOKEN_PROPERTY, hidden = true, password = true)
     @AuthProperty
+    @Override
     public String getAccessToken() {
         return accessToken;
     }
 
+    @Override
     public void setAccessToken(@Nullable String accessToken) {
         this.accessToken = accessToken;
         accountId = OpenAIAccountAuthenticator.extractAccountId(accessToken);
@@ -218,10 +222,12 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Nullable
     @Property(id = ACCOUNT_REFRESH_TOKEN_PROPERTY, hidden = true, password = true)
     @AuthProperty
+    @Override
     public String getRefreshToken() {
         return refreshToken;
     }
 
+    @Override
     public void setRefreshToken(@Nullable String refreshToken) {
         this.refreshToken = refreshToken;
     }
@@ -233,6 +239,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         return accountId;
     }
 
+    @Override
     public void setStoredAccountId(@Nullable String accountId) {
         this.accountId = accountId;
     }
@@ -244,16 +251,19 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         return accountEmail;
     }
 
+    @Override
     public void setStoredAccountEmail(@Nullable String accountEmail) {
         this.accountEmail = accountEmail;
     }
 
     @Property(id = ACCOUNT_EXPIRES_AT_PROPERTY, hidden = true)
     @AuthProperty
+    @Override
     public long getStoredExpiresAt() {
         return expiresAt;
     }
 
+    @Override
     public void setStoredExpiresAt(long expiresAt) {
         this.expiresAt = expiresAt;
     }
@@ -262,6 +272,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         return isAccountConnected();
     }
 
+    @Override
     public boolean isAccountConnected() {
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
@@ -277,6 +288,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @Nullable
+    @Override
     public String getAccountId() {
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
@@ -285,6 +297,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @Nullable
+    @Override
     public String getAccountEmail() {
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
@@ -292,6 +305,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         }
     }
 
+    @Override
     public synchronized void setAccountTokens(@NotNull AIAccountAuthenticator.Tokens tokens) {
         accessToken = tokens.accessToken();
         refreshToken = tokens.refreshToken();
@@ -304,6 +318,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         expiresAt = System.currentTimeMillis() + tokens.expiresInSeconds() * 1000;
     }
 
+    @Override
     public void clearAccountTokens() {
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
@@ -330,19 +345,47 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         accountCredentialsSource = source.getAccountCredentialsOwner();
     }
 
-    public void setAccountTokenPersistence(@Nullable AccountTokenPersistence accountTokenPersistence) {
+    @Override
+    public void useAccountCredentialsFrom(@NotNull AIAccountProperties source) {
+        if (!(source instanceof OpenAIProperties openAIProperties)) {
+            throw new IllegalArgumentException("Incompatible AI account properties: " + source.getClass().getName());
+        }
+        useAccountCredentialsFrom(openAIProperties);
+    }
+
+    @Override
+    public void setAccountTokenPersistence(
+        @Nullable AIAccountProperties.AccountTokenPersistence accountTokenPersistence
+    ) {
         getAccountCredentialsOwner().accountTokenPersistence = accountTokenPersistence;
     }
 
-    public void setAccountTokenValidator(@Nullable AccountTokenValidator accountTokenValidator) {
+    public void setAccountTokenPersistence(@Nullable AccountTokenPersistence accountTokenPersistence) {
+        setAccountTokenPersistence((AIAccountProperties.AccountTokenPersistence) accountTokenPersistence);
+    }
+
+    @Override
+    public void setAccountTokenValidator(@Nullable AIAccountProperties.AccountTokenValidator accountTokenValidator) {
         getAccountCredentialsOwner().accountTokenValidator = accountTokenValidator;
     }
 
-    public void setAccountTokenRefreshHandler(@Nullable AccountTokenRefreshHandler accountTokenRefreshHandler) {
+    public void setAccountTokenValidator(@Nullable AccountTokenValidator accountTokenValidator) {
+        setAccountTokenValidator((AIAccountProperties.AccountTokenValidator) accountTokenValidator);
+    }
+
+    @Override
+    public void setAccountTokenRefreshHandler(
+        @Nullable AIAccountProperties.AccountTokenRefreshHandler accountTokenRefreshHandler
+    ) {
         getAccountCredentialsOwner().accountTokenRefreshHandler = accountTokenRefreshHandler;
     }
 
+    public void setAccountTokenRefreshHandler(@Nullable AccountTokenRefreshHandler accountTokenRefreshHandler) {
+        setAccountTokenRefreshHandler((AIAccountProperties.AccountTokenRefreshHandler) accountTokenRefreshHandler);
+    }
+
     @NotNull
+    @Override
     public String getValidAccessToken(@NotNull AIAccountAuthenticator authenticator) throws DBException {
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
@@ -378,6 +421,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         }
     }
 
+    @Override
     public void saveAccountTokens() throws DBException {
         OpenAIProperties credentials = getAccountCredentialsOwner();
         synchronized (credentials) {
@@ -439,6 +483,21 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @NotNull
+    @Override
+    public String getAccountAuthenticationProviderName() {
+        return getAccountProviderName();
+    }
+
+    @NotNull
+    @Override
+    public AIAccountAuthenticator createAccountAuthenticator() throws DBException {
+        if (!isChatGptAccountAuthentication()) {
+            throw new DBException("Account authenticator is not configured for " + getAccountProviderName());
+        }
+        return new OpenAIAccountAuthenticator(getTimeout());
+    }
+
+    @NotNull
     protected String getAccessTokenSecretId() {
         return ACCESS_TOKEN;
     }
@@ -467,21 +526,15 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     }
 
     @FunctionalInterface
-    public interface AccountTokenPersistence {
-        void save(@Nullable String previousRefreshToken, @NotNull AIAccountAuthenticator.Tokens tokens) throws DBException;
+    public interface AccountTokenPersistence extends AIAccountProperties.AccountTokenPersistence {
     }
 
     @FunctionalInterface
-    public interface AccountTokenValidator {
-        void validate(@Nullable String refreshToken) throws DBException;
+    public interface AccountTokenValidator extends AIAccountProperties.AccountTokenValidator {
     }
 
     @FunctionalInterface
-    public interface AccountTokenRefreshHandler {
-        @NotNull
-        AIAccountAuthenticator.Tokens refresh(
-            @NotNull AIAccountAuthenticator authenticator,
-            @NotNull String refreshToken
-        ) throws DBException;
+    public interface AccountTokenRefreshHandler extends AIAccountProperties.AccountTokenRefreshHandler {
     }
+
 }

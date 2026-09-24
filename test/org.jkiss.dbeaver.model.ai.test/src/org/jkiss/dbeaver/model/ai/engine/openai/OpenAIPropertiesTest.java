@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.engine.AIAccountProperties;
 import org.jkiss.dbeaver.runtime.properties.ObjectAttributeDescriptor;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class OpenAIPropertiesTest extends DBeaverUnitTest {
 
@@ -77,6 +80,32 @@ public class OpenAIPropertiesTest extends DBeaverUnitTest {
         Assertions.assertEquals(2, hiddenCredentials.size());
         Assertions.assertNotNull(propertySource.getProperty(AIConstants.AI_GLOBAL_PROPERTY));
         Assertions.assertNotNull(propertySource.getProperty("authentication"));
+    }
+
+    @Test
+    public void exposesAccountAuthenticationCapability() throws DBException {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setAuthentication(OpenAIProperties.AUTHENTICATION_CHATGPT_ACCOUNT);
+
+        Assertions.assertInstanceOf(AIAccountProperties.class, properties);
+        Assertions.assertInstanceOf(OpenAIAccountAuthenticator.class, properties.createAccountAuthenticator());
+        Assertions.assertEquals(
+            AIAccountProperties.ACCOUNT_CREDENTIAL_PROPERTY_IDS,
+            Set.of(
+                OpenAIProperties.ACCOUNT_ACCESS_TOKEN_PROPERTY,
+                OpenAIProperties.ACCOUNT_REFRESH_TOKEN_PROPERTY,
+                OpenAIProperties.ACCOUNT_ID_PROPERTY,
+                OpenAIProperties.ACCOUNT_EMAIL_PROPERTY,
+                OpenAIProperties.ACCOUNT_EXPIRES_AT_PROPERTY
+            )
+        );
+    }
+
+    @Test
+    public void accountAuthenticatorRequiresProviderAccountAuthentication() {
+        OpenAIProperties properties = new OpenAIProperties();
+
+        Assertions.assertThrows(DBException.class, properties::createAccountAuthenticator);
     }
 
 }
