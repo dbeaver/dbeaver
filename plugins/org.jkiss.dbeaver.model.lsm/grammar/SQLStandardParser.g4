@@ -381,7 +381,7 @@ levelsClause: (CASCADED|LOCAL);
 // schema ddl
 createIndexStatement: CREATE (OR REPLACE)? UNIQUE? INDEX (IF NOT EXISTS)? qualifiedName ON tableName ddlStatementTail?;
 createNamedObjectStatement: CREATE (OR REPLACE)? createObjectKind (IF NOT EXISTS)? qualifiedName ddlStatementTail?;
-createObjectKind: FUNCTION|PROCEDURE|SEQUENCE|SYNONYM;
+createObjectKind: FUNCTION|PROCEDURE|SEQUENCE|SYNONYM|ROLE;
 alterNamedObjectStatement: ALTER alterObjectKind ifExistsSpec? qualifiedName ddlStatementTail;
 alterObjectKind: VIEW|MATERIALIZED VIEW|INDEX|FUNCTION|PROCEDURE|SEQUENCE|SYNONYM;
 dropIndexStatement: DROP INDEX ifExistsSpec? qualifiedName (ON tableName)? ddlStatementTail?;
@@ -402,7 +402,8 @@ containerStatementTail: (~Semicolon)+;
 dropSchemaStatement: DROP SCHEMA ifExistsSpec? schemaName dropBehaviour?;
 dropBehaviour: (CASCADE|RESTRICT);
 alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? ONLY? (tableName (alterTableAction (Comma alterTableAction)*)?)?;
-alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|anyWordsWithProperty;
+alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|setTableSchemaAction|anyWordsWithProperty;
+setTableSchemaAction: SET SCHEMA schemaName;
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
 renameColumnDefinition: RENAME (COLUMN)? columnName TO identifier;
 alterColumnDefinition: ALTER (COLUMN)? columnName alterColumnAction;

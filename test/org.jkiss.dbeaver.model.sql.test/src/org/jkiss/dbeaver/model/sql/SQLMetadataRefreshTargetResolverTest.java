@@ -123,14 +123,15 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
             target(RefreshLevel.SCHEMA, "CATALOG", "SCHEMA"));
     }
 
-    @Test
-    void unknownObjectKindRefreshesDataSource() {
+    @ParameterizedTest
+    @EnumSource(SQLObjectOperation.Operation.class)
+    void unknownObjectKindRefreshesDataSource(SQLObjectOperation.Operation operation) {
         DBSSchema defaultSchema = Mockito.mock(DBSSchema.class);
         Mockito.when(defaultSchema.getName()).thenReturn("default_schema");
         Mockito.doReturn(defaultSchema).when(defaults).getDefaultSchema();
 
         assertTarget(
-            SQLObjectOperation.Operation.DROP,
+            operation,
             SQLObjectOperation.ObjectKind.OTHER,
             List.of("role_name"),
             target(RefreshLevel.DATA_SOURCE, null, null)

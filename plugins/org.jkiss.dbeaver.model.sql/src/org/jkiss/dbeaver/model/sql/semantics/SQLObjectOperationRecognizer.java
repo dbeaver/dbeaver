@@ -155,6 +155,9 @@ public final class SQLObjectOperationRecognizer {
                 STMKnownRuleNames.qualifiedName
             );
         }
+        if (statement.getNodeName().equals(STMKnownRuleNames.alterTableStatement)) {
+            return createAlterTableOperations(statement);
+        }
         SQLObjectOperation operation = recognizeSingle(statement);
         return operation == null ? List.of() : List.of(operation);
     }
@@ -195,13 +198,6 @@ public final class SQLObjectOperationRecognizer {
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.createCatalogDatabaseStatement)) {
             return createContainerOperation(statement, SQLObjectOperation.Operation.CREATE);
-        }
-        if (statement.getNodeName().equals(STMKnownRuleNames.alterTableStatement)) {
-            return createOperation(
-                SQLObjectOperation.Operation.ALTER,
-                SQLObjectOperation.ObjectKind.TABLE,
-                findDescendant(statement, STMKnownRuleNames.tableName)
-            );
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.alterNamedObjectStatement)) {
             return createNamedOperation(
@@ -257,6 +253,37 @@ public final class SQLObjectOperationRecognizer {
             return createContainerOperation(statement, operation);
         }
         return null;
+    }
+
+    @NotNull
+    private static List<SQLObjectOperation> createAlterTableOperations(@NotNull STMTreeNode statement) {
+        List<String> sourceName = getNameParts(findDescendant(statement, STMKnownRuleNames.tableName));
+        if (sourceName.isEmpty()) {
+            return List.of();
+        }
+
+        SQLObjectOperation source = new SQLObjectOperation(
+            SQLObjectOperation.Operation.ALTER,
+            SQLObjectOperation.ObjectKind.TABLE,
+            sourceName
+        );
+        STMTreeNode setSchemaAction = findDescendant(statement, STMKnownRuleNames.setTableSchemaAction);
+        List<String> destinationSchema = getNameParts(setSchemaAction);
+        if (destinationSchema.isEmpty()) {
+            return List.of(source);
+        }
+
+        List<String> destinationName = new ArrayList<>();
+        if (destinationSchema.size() == 1 && sourceName.size() > 2) {
+            destinationName.addAll(sourceName.subList(0, sourceName.size() - 2));
+        }
+        destinationName.addAll(destinationSchema);
+        destinationName.add(sourceName.getLast());
+        return List.of(source, new SQLObjectOperation(
+            SQLObjectOperation.Operation.ALTER,
+            SQLObjectOperation.ObjectKind.TABLE,
+            destinationName
+        ));
     }
 
     @Nullable

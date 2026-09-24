@@ -310,6 +310,7 @@ public class STMKnownRuleNames {
     public static final String dropBehaviour = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dropBehaviour];
     public static final String alterTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterTableStatement];
     public static final String alterTableAction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterTableAction];
+    public static final String setTableSchemaAction = SQLStandardParser.ruleNames[SQLStandardParser.RULE_setTableSchemaAction];
     public static final String addColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_addColumnDefinition];
     public static final String alterColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_alterColumnDefinition];
     public static final String renameColumnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_renameColumnDefinition];

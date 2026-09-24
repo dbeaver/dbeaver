@@ -86,6 +86,7 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
         assertOperation("ALTER CATALOG old_name RENAME TO new_name", SQLObjectOperation.Operation.RENAME, SQLObjectOperation.ObjectKind.CATALOG, "old_name");
         assertOperation("ALTER CATALOG main SET OWNER admin", SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.CATALOG, "main");
 
+        assertOperation("CREATE ROLE role_name", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.OTHER, "role_name");
         assertOperation("DROP ROLE role_name", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.OTHER, "role_name");
         assertOperation("CREATE SCHEMA AUTHORIZATION user_name", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.SCHEMA);
     }
@@ -118,6 +119,40 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
                 )
             ),
             recognizeAll(BasicSQLDialect.INSTANCE, "RENAME TABLE db1.source TO db2.destination")
+        );
+    }
+
+    @Test
+    void recognizesTableSetSchemaSourceAndDestinationInOrder() {
+        Assertions.assertEquals(
+            List.of(
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.ALTER,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("old_schema", "table_name")
+                ),
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.ALTER,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("new_schema", "table_name")
+                )
+            ),
+            recognizeAll(BasicSQLDialect.INSTANCE, "ALTER TABLE old_schema.table_name SET SCHEMA new_schema")
+        );
+        Assertions.assertEquals(
+            List.of(
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.ALTER,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("catalog", "old_schema", "table_name")
+                ),
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.ALTER,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("catalog", "new_schema", "table_name")
+                )
+            ),
+            recognizeAll(BasicSQLDialect.INSTANCE, "ALTER TABLE catalog.old_schema.table_name SET SCHEMA new_schema")
         );
     }
 
