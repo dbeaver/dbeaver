@@ -5,88 +5,52 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.mavenRepository" name="Maven Repository"/>
       </appInfo>
-      <documentation>
-         Plugin Service
-      </documentation>
+      <documentation>Plugin Service</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
+      <complexType>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="repository"/>
+            <element ref="ignoreArtifactVersion"/>
+         </choice>
+         <attribute name="point" type="string" use="required"/>
+      </complexType>
+   </element>
+
+   <element name="repository">
       <complexType>
          <sequence>
-            <element ref="service" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="scope" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="class" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="name" type="string"/>
+         <attribute name="url" type="string" use="required"/>
+         <attribute name="order" type="integer"/>
+         <attribute name="snapshot" type="boolean"/>
       </complexType>
    </element>
 
-   <element name="service">
+   <element name="scope">
       <complexType>
-         <attribute name="class" type="string">
+         <attribute name="group" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.runtime.IPluginService"/>
-               </appInfo>
+               <documentation>Maven group prefix handled by this repository.</documentation>
             </annotation>
          </attribute>
       </complexType>
    </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="since"/>
-      </appInfo>
-      <documentation>
-         [Enter the first release in which this extension point appears.]
-      </documentation>
-   </annotation>
+   <element name="ignoreArtifactVersion">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+      </complexType>
+   </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="examples"/>
-      </appInfo>
-      <documentation>
-         [Enter extension point usage example here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
+
 
 
 </schema>
