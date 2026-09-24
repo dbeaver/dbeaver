@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -74,6 +73,7 @@ public class TabbedFolderList extends ConComposite {
     private final TopNavigationElement topNavigationElement;
     private final BottomNavigationElement bottomNavigationElement;
     private final IPropertyChangeListener themeChangeListener;
+    private boolean themeRefreshPending;
 
     private int widestLabelIndex = NONE;
     private int tabsThatFitInComposite = NONE;
@@ -473,9 +473,17 @@ public class TabbedFolderList extends ConComposite {
         initColours();
 
         themeChangeListener = event -> {
-            if (IThemeManager.CHANGE_CURRENT_THEME.equals(event.getProperty())) {
-                initColours();
-                redraw();
+            if (!themeRefreshPending) {
+                themeRefreshPending = true;
+                UIUtils.asyncExec(() -> {
+                    themeRefreshPending = false;
+                    if (!isDisposed()) {
+                        CSSUtils.applyStyles(this);
+                        initColours();
+                        Rectangle area = getParent().getClientArea();
+                        getParent().redraw(area.x, area.y, area.width, area.height, true);
+                    }
+                });
             }
         };
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
