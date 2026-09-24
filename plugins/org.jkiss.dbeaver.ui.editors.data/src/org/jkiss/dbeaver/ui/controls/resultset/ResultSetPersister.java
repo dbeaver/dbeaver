@@ -405,7 +405,8 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
 
         viewer.redrawData(false, rowsChanged);
         viewer.updateEditControls();
-        viewer.updatePanelsContent(false);
+        // Refresh panels (e.g. value panel) so they don't show stale pending changes highlighting
+        viewer.updatePanelsContent(true);
         viewer.getActivePresentation().updateValueView();
     }
 
@@ -570,6 +571,8 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                 viewer.redrawData(false, rowsChanged);
                 viewer.updateEditControls();
                 if (error == null) {
+                    // Refresh panels (e.g. value panel) so they stop showing stale pending changes highlighting
+                    viewer.updatePanelsContent(true);
                     viewer.setStatus(
                         NLS.bind(
                             ResultSetMessages.controls_resultset_viewer_status_inserted_,
