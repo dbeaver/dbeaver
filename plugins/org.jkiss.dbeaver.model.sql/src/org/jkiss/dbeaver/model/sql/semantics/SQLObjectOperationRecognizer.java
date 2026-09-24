@@ -155,6 +155,15 @@ public final class SQLObjectOperationRecognizer {
                 STMKnownRuleNames.qualifiedName
             );
         }
+        if (statement.getNodeName().equals(STMKnownRuleNames.dropNamedObjectStatement)) {
+            STMTreeNode kindNode = findDescendant(statement, STMKnownRuleNames.dropObjectKind);
+            return kindNode == null ? List.of() : createOperations(
+                statement,
+                SQLObjectOperation.Operation.DROP,
+                getObjectKind(kindNode),
+                STMKnownRuleNames.qualifiedName
+            );
+        }
         if (statement.getNodeName().equals(STMKnownRuleNames.alterTableStatement)) {
             return createAlterTableOperations(statement);
         }
@@ -239,13 +248,6 @@ public final class SQLObjectOperationRecognizer {
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.dropIndexStatement)) {
             return createIndexOperation(statement, SQLObjectOperation.Operation.DROP);
-        }
-        if (statement.getNodeName().equals(STMKnownRuleNames.dropNamedObjectStatement)) {
-            return createNamedOperation(
-                statement,
-                SQLObjectOperation.Operation.DROP,
-                STMKnownRuleNames.dropObjectKind
-            );
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.alterContainerStatement)) {
             SQLObjectOperation.Operation operation = findDescendant(statement, STMKnownRuleNames.renameContainerAction) == null ?

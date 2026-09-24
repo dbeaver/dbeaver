@@ -101,6 +101,10 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
             "DROP VIEW schema1.a, schema2.b",
             SQLObjectOperation.ObjectKind.VIEW
         );
+        assertMultipleDropTargets(
+            "DROP MATERIALIZED VIEW schema1.a, schema2.b",
+            SQLObjectOperation.ObjectKind.VIEW
+        );
     }
 
     @Test
@@ -119,6 +123,34 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
                 )
             ),
             recognizeAll(BasicSQLDialect.INSTANCE, "RENAME TABLE db1.source TO db2.destination")
+        );
+        Assertions.assertEquals(
+            List.of(
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.RENAME,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("db1", "source1")
+                ),
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.RENAME,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("db1", "destination1")
+                ),
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.RENAME,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("db2", "source2")
+                ),
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.RENAME,
+                    SQLObjectOperation.ObjectKind.TABLE,
+                    List.of("db2", "destination2")
+                )
+            ),
+            recognizeAll(
+                BasicSQLDialect.INSTANCE,
+                "RENAME TABLE db1.source1 TO db1.destination1, db2.source2 TO db2.destination2"
+            )
         );
     }
 
