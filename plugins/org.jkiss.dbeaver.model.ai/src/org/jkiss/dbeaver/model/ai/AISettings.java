@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -237,26 +238,36 @@ public class AISettings implements DBPAdaptable {
 
     // Patches configuration to support legacy configuration format
     public void finishSettingsLoading() {
-        // Def engine
-        if (activeEngine == null || getConfigurationOrNull(activeEngine) == null) {
-            activeEngine = OpenAIConstants.OPENAI_ENGINE;
-        }
-
-        if (configurations.isEmpty() && !engineConfigurations.isEmpty()) {
+        boolean migrateLegacyConfigurations = configurations.isEmpty() && !engineConfigurations.isEmpty();
+        if (migrateLegacyConfigurations) {
             // Profiles from engine settings
             for (Map.Entry<String, AIEngineProperties> ep : engineConfigurations.entrySet()) {
                 String engineId = ep.getKey();
                 AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
                 if (engineDescriptor != null) {
+                    AIEngineProperties engineProperties = ep.getValue();
+                    // An empty OpenAI model resolved to gpt-4o before profiles were introduced
+                    if (engineProperties instanceof OpenAIProperties openAIProperties &&
+                        CommonUtils.isEmpty(openAIProperties.getModel())) {
+                        openAIProperties.setModel(OpenAIConstants.LEGACY_DEFAULT_MODEL);
+                    }
                     AIConfigurationProfile cp = new AIConfigurationProfile();
                     cp.setMigrated(true);
                     cp.setProfileId(engineId);
                     cp.setProfileName(engineDescriptor.getId());
                     cp.setEngineId(engineId);
-                    cp.setConfiguration(ep.getValue());
+                    cp.setConfiguration(engineProperties);
                     configurations.put(ep.getKey(), cp);
                 }
             }
+        }
+
+        // Validate the legacy active engine only after its profile has been created
+        if (activeEngine == null || getConfigurationOrNull(activeEngine) == null) {
+            activeEngine = OpenAIConstants.OPENAI_ENGINE;
+        }
+
+        if (migrateLegacyConfigurations) {
             defaultConfiguration = activeEngine;
         } else if (!configurations.isEmpty()) {
             // Set profile IDs
