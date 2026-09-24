@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,10 @@ import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.dialogs.ComplexObjectEditor;
 
@@ -42,7 +45,7 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        editor.setModel(controller.getExecutionContext(), value);
+        editor.setModel(controller.getExecutionContext(), value, getOriginalValue(), isChangeHighlighted());
     }
 
     @Override
@@ -51,7 +54,7 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
         final boolean isDialog = valueController.getEditType() == IValueController.EditType.EDITOR;
         editor = new ComplexObjectEditor(controller, this, isDialog ? SWT.BORDER : SWT.NONE);
 
-        editor.setModel(controller.getExecutionContext(), controller.getValue());
+        editor.setModel(controller.getExecutionContext(), controller.getValue(), getOriginalValue(), isChangeHighlighted());
         return editor.getTree();
     }
 
@@ -59,6 +62,52 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     public Object extractEditorValue()
     {
         return editor.extractValue();
+    }
+
+    /**
+     * Returns the original (committed) value of the edited cell.
+     * It is used to highlight pending changes in the structure editor while the value is not committed.
+     */
+    @Nullable
+    private Object getOriginalValue() {
+        ResultSetValueController valueController = getRowValueController();
+        if (valueController == null) {
+            return null;
+        }
+        ResultSetRow row = valueController.getCurRow();
+        if (row == null) {
+            return null;
+        }
+        final DBDAttributeBinding topAttribute = valueController.getBinding().getTopParent();
+        if (!row.isChanged(topAttribute)) {
+            return null;
+        }
+        return row.getChange(topAttribute);
+    }
+
+    /**
+     * Returns true if pending changes highlighting should be shown in the structure editor
+     * because the edited value differs from the committed one.
+     */
+    private boolean isChangeHighlighted() {
+        ResultSetValueController valueController = getRowValueController();
+        if (valueController == null) {
+            return false;
+        }
+        ResultSetRow row = valueController.getCurRow();
+        return row != null && row.isChanged(valueController.getBinding().getTopParent());
+    }
+
+    /**
+     * Returns the row value controller if the value can be compared with the committed one
+     * (i.e. it is a whole cell value, not a nested value path).
+     */
+    @Nullable
+    private ResultSetValueController getRowValueController() {
+        if (controller instanceof ResultSetValueController valueController && valueController.getValuePath() == null) {
+            return valueController;
+        }
+        return null;
     }
 
     @Override

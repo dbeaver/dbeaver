@@ -233,15 +233,152 @@ public class ComplexObjectEditor extends TreeViewer {
 
     public void setModel(DBCExecutionContext executionContext, final Object value)
     {
+        setModel(executionContext, value, null, false);
+    }
+
+    public void setModel(
+        DBCExecutionContext executionContext,
+        final Object value,
+        @Nullable Object originalValue,
+        boolean highlightChanges
+    ) {
         getTree().setRedraw(false);
         try {
             this.executionContext = executionContext;
             this.cache.clear();
             setInput(wrap(null, value));
             expandAll();
+            if (highlightChanges) {
+                if (!markChanges(getInput(), originalValue)) {
+                    // No diff found though the value was changed and not committed yet.
+                    // Mark the whole structure as modified to keep pending changes highlighting
+                    // even if the value can't be compared with the original one (e.g. no DBDComposite support).
+                    markAllModified(getInput());
+                }
+            }
             updateActions();
         } finally {
             getTree().setRedraw(true);
+        }
+    }
+
+    /**
+     * Marks elements of the structure editor which differ from the original (committed) value.
+     * Pending changes highlighting stays until the value is committed or rejected.
+     *
+     * @return true if the node content differs from the original value
+     */
+    private boolean markChanges(@Nullable Object node, @Nullable Object originalValue) {
+        if (node instanceof CollectionRootElement rootElement) {
+            // The root element wraps the whole edited value in a single item
+            return markChanges(rootElement.items.getFirst(), originalValue);
+        }
+        if (node instanceof ComplexElementItem item) {
+            if (item.created || item.modified) {
+                return true;
+            }
+            final boolean changed = markChanges(item.value, originalValue);
+            if (changed) {
+                item.modified = true;
+            }
+            return changed;
+        }
+        if (node instanceof CollectionElement collection) {
+            boolean changed = false;
+            if (originalValue instanceof Collection<?> originalCollection) {
+                final Object[] originalItems = originalCollection.toArray();
+                final int originalSize = originalItems.length;
+                final int size = collection.items.size();
+                for (int i = 0; i < size; i++) {
+                    if (i < originalSize) {
+                        if (markChanges(collection.items.get(i), originalItems[i])) {
+                            changed = true;
+                        }
+                    } else {
+                        // Element doesn't exist in the original value
+                        markAdded(collection.items.get(i));
+                        changed = true;
+                    }
+                }
+            } else {
+                // The whole collection was added
+                for (ComplexElementItem child : collection.items) {
+                    markAdded(child);
+                }
+                changed = !collection.items.isEmpty();
+            }
+            return changed;
+        }
+        if (node instanceof CompositeElement composite) {
+            final DBDComposite originalComposite = originalValue instanceof DBDComposite compositeValue ? compositeValue : null;
+            if (originalComposite == null) {
+                // The whole composite value was added
+                for (ComplexElementItem child : composite.getChildren()) {
+                    markAdded(child);
+                }
+                return composite.getChildren().length > 0;
+            }
+            boolean changed = false;
+            for (ComplexElementItem child : composite.getChildren()) {
+                Object originalAttributeValue = null;
+                if (child instanceof CompositeElement.Item compoundItem) {
+                    try {
+                        originalAttributeValue = originalComposite.getAttributeValue(compoundItem.attribute);
+                    } catch (DBCException e) {
+                        log.error("Error reading original attribute value", e);
+                    }
+                }
+                if (markChanges(child, originalAttributeValue)) {
+                    changed = true;
+                }
+            }
+            return changed;
+        }
+        if (node instanceof ReferenceElement) {
+            // References are read-only, do not mark them as modified
+            return false;
+        }
+        // Leaf value
+        return !CommonUtils.equalObjects(originalValue, node);
+    }
+
+    /**
+     * Marks the given element subtree as added (doesn't exist in the original value).
+     */
+    private void markAdded(@Nullable Object node) {
+        if (node instanceof ComplexElementItem item) {
+            item.modified = false;
+            item.created = true;
+            markAdded(item.value);
+        } else if (node instanceof CollectionElement collection) {
+            for (ComplexElementItem child : collection.items) {
+                markAdded(child);
+            }
+        } else if (node instanceof CompositeElement composite) {
+            for (ComplexElementItem child : composite.getChildren()) {
+                markAdded(child);
+            }
+        }
+    }
+
+    /**
+     * Marks the given element subtree as modified.
+     */
+    private void markAllModified(@Nullable Object node) {
+        if (node instanceof ComplexElementItem item) {
+            if (item.created || item.modified) {
+                return;
+            }
+            item.modified = true;
+            markAllModified(item.value);
+        } else if (node instanceof CollectionElement collection) {
+            for (ComplexElementItem child : collection.items) {
+                markAllModified(child);
+            }
+        } else if (node instanceof CompositeElement composite) {
+            for (ComplexElementItem child : composite.getChildren()) {
+                markAllModified(child);
+            }
         }
     }
 
