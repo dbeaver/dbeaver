@@ -28,12 +28,15 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.Field;
 
@@ -48,6 +51,10 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final FieldReflection<CTabRendering, Color> hotUnselectedTabsColorBackgroundField;
     private static final FieldReflection<CTabItem, Integer> closeImageStateField;
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
+    private static final FieldReflection<CTabFolder, ToolBar> minMaxToolBarField;
+
+    @Nullable
+    private ToolBar minMaxToolBarWithOverriddenBackground;
 
     static {
         tabOutlineColorField = FieldReflection.of(CTabRendering.class, "tabOutlineColor");
@@ -56,6 +63,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
         hotUnselectedTabsColorBackgroundField = FieldReflection.of(CTabRendering.class, "hotUnselectedTabsColorBackground");
         closeImageStateField = FieldReflection.of(CTabItem.class, "closeImageState");
         closeRectField = FieldReflection.of(CTabItem.class, "closeRect");
+        minMaxToolBarField = FieldReflection.of(CTabFolder.class, "minMaxTb");
     }
 
     public DBeaverCTabFolderRenderer(@NotNull CTabFolder parent) {
@@ -64,6 +72,8 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     @Override
     protected void draw(int part, int state, Rectangle bounds, GC gc) {
+        updateMinMaxToolBarBackground();
+
         if (part >= 0 && part < parent.getItemCount()) {
             CTabItem item = parent.getItem(part);
             Color color = getConnectionColor(item);
@@ -94,7 +104,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                         ? oldSelectedTabFillColors[0]
                         : parent.getSelectionBackground();
                     highlightColor = isDarkTheme ? UIStyles.lighten(color, 0.2f) : UIStyles.darken(color, 0.2f);
-                    unselectedColor = UIStyles.mix(highlightColor, fillColor, 0.15f); ///0.5?
+                    unselectedColor = UIStyles.mix(highlightColor, fillColor, isDarkTheme ? 0.3f : 0.2f);
                     hotColor = isDarkTheme
                         ? UIStyles.darken(unselectedColor, 0.05f)
                         : UIStyles.lighten(unselectedColor, 0.05f);
@@ -134,6 +144,42 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
         }
 
         super.draw(part, state, bounds, gc);
+    }
+
+    private void updateMinMaxToolBarBackground() {
+        if (!RuntimeUtils.isWindows()) {
+            return;
+        }
+
+        ToolBar toolBar = minMaxToolBarField.get(parent);
+        if (toolBar == null || toolBar.isDisposed()) {
+            minMaxToolBarWithOverriddenBackground = null;
+            return;
+        }
+
+        if (!UIStyles.isDarkTheme()) {
+            // Restore SWT defaults when switching from dark to light theme.
+            if (toolBar == minMaxToolBarWithOverriddenBackground) {
+                toolBar.setBackground(null);
+                for (ToolItem item : toolBar.getItems()) {
+                    item.setBackground(null);
+                }
+            }
+            minMaxToolBarWithOverriddenBackground = null;
+            return;
+        }
+
+        // Fix the light hover background of CTabFolder minimize/maximize buttons in dark theme.
+        Color background = parent.getBackground();
+        if (!background.equals(toolBar.getBackground())) {
+            toolBar.setBackground(background);
+        }
+        for (ToolItem item : toolBar.getItems()) {
+            if (!background.equals(item.getBackground())) {
+                item.setBackground(background);
+            }
+        }
+        minMaxToolBarWithOverriddenBackground = toolBar;
     }
 
     @Override

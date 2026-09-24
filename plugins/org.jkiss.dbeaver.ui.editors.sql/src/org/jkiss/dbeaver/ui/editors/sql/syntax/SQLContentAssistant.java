@@ -20,10 +20,15 @@ import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.custom.VerifyKeyListener;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -41,6 +46,9 @@ public class SQLContentAssistant extends ContentAssistant {
     private ISelectionProvider completionSelectionProvider;
     private int completionRegionStart = -1;
     private int completionRegionEnd = -1;
+    private ITextViewer installedTextViewer;
+
+    private final VerifyKeyListener proposalActivationKeyListener;
 
     private final IDocumentListener completionDocumentListener = new IDocumentListener() {
         @Override
@@ -72,10 +80,51 @@ public class SQLContentAssistant extends ContentAssistant {
         }
     };
 
-    public SQLContentAssistant(SQLEditorBase editor) {
+    public SQLContentAssistant(@NotNull SQLEditorBase editor) {
         super(); // Sync. Maybe we should make it async
         this.editor = editor;
+        this.proposalActivationKeyListener = event -> {
+            if (!isProposalPopupActive()) {
+                return;
+            }
+            var activationKey = ProposalActivationKey.fromPreferences(editor.getActivePreferenceStore());
+            boolean tabPressed = event.character == '\t' || event.keyCode == '\t';
+            boolean enterPressed = !tabPressed && (event.character == '\r' || event.character == '\n');
+            if (enterPressed && !activationKey.acceptsEnter() || tabPressed && !activationKey.acceptsTab()) {
+                hide();
+            }
+        };
         enableColoredLabels(true);
+    }
+
+    @Override
+    public void install(@NotNull ITextViewer textViewer) {
+        super.install(textViewer);
+        installedTextViewer = textViewer;
+        promoteProposalActivationKeyListener();
+    }
+
+    private void promoteProposalActivationKeyListener() {
+        if (installedTextViewer instanceof ITextViewerExtension textViewerExtension) {
+            textViewerExtension.removeVerifyKeyListener(proposalActivationKeyListener);
+            textViewerExtension.prependVerifyKeyListener(proposalActivationKeyListener);
+        }
+    }
+
+    public void assistSessionStarted(@NotNull ContentAssistEvent event) {
+        promoteProposalActivationKeyListener();
+        if (this.sorter != null) {
+            this.sorter.refreshSettings();
+        }
+    }
+
+    @Override
+    public void uninstall() {
+        if (installedTextViewer instanceof ITextViewerExtension textViewerExtension) {
+            textViewerExtension.removeVerifyKeyListener(proposalActivationKeyListener);
+        }
+        installedTextViewer = null;
+        super.uninstall();
     }
 
     public void setCompletionRegionOffset(int offset) {
@@ -115,13 +164,8 @@ public class SQLContentAssistant extends ContentAssistant {
         super.setSorter(sorter);
     }
 
-    public void assistSessionStarted(ContentAssistEvent event) {
-        if (this.sorter != null) {
-            this.sorter.refreshSettings();
-        }
-    }
-
     @Override
+    @NotNull
     protected AutoAssistListener createAutoAssistListener() {
         return new SQLAutoAssistListener();
     }
