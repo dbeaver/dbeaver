@@ -4428,7 +4428,9 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 SQLEditor owner = getOwner();
                 try {
-                    if (!result.hasError()) {
+                    if (!result.hasError() && owner.getActivePreferenceStore().getBoolean(
+                        SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION
+                    )) {
                         SQLQuery query = result.getStatement();
                         List<SQLObjectOperation> objectOperations = owner.recognizeObjectOperations(query);
                         if (query.getType() == SQLQueryType.DDL || !objectOperations.isEmpty()) {
