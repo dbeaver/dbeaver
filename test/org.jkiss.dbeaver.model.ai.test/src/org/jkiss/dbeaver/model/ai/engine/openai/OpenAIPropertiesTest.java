@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.runtime.properties.ObjectAttributeDescriptor;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -58,12 +59,24 @@ public class OpenAIPropertiesTest extends DBeaverUnitTest {
             .toList();
 
         Assertions.assertEquals(1, credentials.size());
-        Assertions.assertFalse(credentials.getFirst().isRequired());
+        ObjectPropertyDescriptor apiToken = credentials.getFirst();
+        Assertions.assertFalse(apiToken.isRequired());
         Assertions.assertEquals(
             AIConstants.AI_NON_GLOBAL_CREDENTIALS_HIDE_EXPRESSION,
-            credentials.getFirst().getHideExpression()
+            apiToken.getHideExpression()
         );
+        List<ObjectPropertyDescriptor> hiddenCredentials = ObjectAttributeDescriptor.extractAnnotations(
+                null,
+                OpenAIProperties.class,
+                null,
+                null
+            ).stream()
+            .filter(ObjectPropertyDescriptor::isPassword)
+            .filter(ObjectPropertyDescriptor::isHidden)
+            .toList();
+        Assertions.assertEquals(2, hiddenCredentials.size());
         Assertions.assertNotNull(propertySource.getProperty(AIConstants.AI_GLOBAL_PROPERTY));
+        Assertions.assertNotNull(propertySource.getProperty("authentication"));
     }
 
 }
