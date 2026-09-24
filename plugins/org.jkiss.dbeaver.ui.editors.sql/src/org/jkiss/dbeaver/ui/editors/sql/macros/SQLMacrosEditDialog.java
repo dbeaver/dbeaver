@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
@@ -111,7 +112,7 @@ public class SQLMacrosEditDialog extends BaseDialog {
         actionCombo.select(initialAction.ordinal());
         actionCombo.addModifyListener(textModifyListener());
 
-        UIUtils.createInfoLabel(composite, SQLEditorMessages.dialog_macros_selection_placeholder_hint, SWT.WRAP, 1);
+        createHintLabel(composite, SQLEditorMessages.dialog_macros_selection_placeholder_hint);
 
         UIUtils.asyncExec(() -> {
             nameText.setFocus();
@@ -145,7 +146,13 @@ public class SQLMacrosEditDialog extends BaseDialog {
             }
         });
 
-        UIUtils.createInfoLabel(composite, SQLEditorMessages.dialog_macros_edit_shortcut_hint, SWT.WRAP, 1);
+        createHintLabel(composite, SQLEditorMessages.dialog_macros_edit_shortcut_hint);
+    }
+
+    private static void createHintLabel(@NotNull Composite composite, @NotNull String text) {
+        Label hintLabel = new Label(composite, SWT.WRAP);
+        hintLabel.setText(text);
+        hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
 
     private void handleShortcutCaptured() {
