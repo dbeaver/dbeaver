@@ -42,9 +42,29 @@ public class OpenAiAPIStreamConsumerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void ignoresDoneMarkerWithoutSpaceAfterColon() {
+        // Per the SSE spec, the space after "data:" is optional - some OpenAI-compatible
+        // providers (e.g. Alibaba DashScope) omit it.
+        consumer.accept("data:[DONE]");
+
+        Mockito.verifyNoInteractions(listener);
+    }
+
+    @Test
     public void preservesTextBeforeDoneMarker() {
         consumer.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":\"There are 25 tables.\"}");
         consumer.accept("data: [DONE]");
+
+        ArgumentCaptor<AIEngineResponseChunk> chunk = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
+        Mockito.verify(listener).nextChunk(chunk.capture());
+        Assertions.assertEquals(List.of("There are 25 tables."), chunk.getValue().getChoices());
+        Mockito.verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void preservesTextFromDataEventWithoutSpaceAfterColon() {
+        consumer.accept("data:{\"type\":\"response.output_text.delta\",\"delta\":\"There are 25 tables.\"}");
+        consumer.accept("data:[DONE]");
 
         ArgumentCaptor<AIEngineResponseChunk> chunk = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
         Mockito.verify(listener).nextChunk(chunk.capture());
