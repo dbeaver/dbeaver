@@ -173,24 +173,6 @@ public final class DBUtils {
         return str;
     }
 
-    /**
-     * Returns an unquoted identifier normalized according to the dialect, optionally unescaping quote characters
-     * inside a quoted identifier.
-     */
-    @NotNull
-    public static String getUnQuotedNormalizedIdentifier(
-        @NotNull SQLDialect dialect,
-        @NotNull String str,
-        boolean unescapeQuotesInsideIdentifier
-    ) {
-        if (dialect.isQuotedIdentifier(str)) {
-            str = dialect.getUnquotedIdentifier(str, unescapeQuotesInsideIdentifier);
-        } else {
-            str = dialect.storesUnquotedCase().transform(str);
-        }
-        return str;
-    }
-
     @NotNull
     public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
         return dataSource.getSQLDialect().getUnquotedIdentifier(str);

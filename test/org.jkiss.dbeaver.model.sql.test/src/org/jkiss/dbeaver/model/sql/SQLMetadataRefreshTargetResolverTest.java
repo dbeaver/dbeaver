@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -142,6 +144,31 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
             SQLObjectOperation.ObjectKind.TABLE,
             List.of("\"cat\"\"alog\"", "\"sche\"\"ma\"", "\"table\""),
             target(RefreshLevel.SCHEMA, "cat\"alog", "sche\"ma")
+        );
+    }
+
+    @Test
+    void quotedIdentifierUsesDialectQuotedStorageCase() {
+        DBPDataSource dataSource = executionContext.getDataSource();
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public DBPIdentifierCase storesUnquotedCase() {
+                return DBPIdentifierCase.LOWER;
+            }
+
+            @NotNull
+            @Override
+            public DBPIdentifierCase storesQuotedCase() {
+                return DBPIdentifierCase.LOWER;
+            }
+        });
+
+        assertTarget(
+            SQLObjectOperation.Operation.CREATE,
+            SQLObjectOperation.ObjectKind.TABLE,
+            List.of("\"MySchema\"", "table"),
+            target(RefreshLevel.SCHEMA, null, "myschema")
         );
     }
 

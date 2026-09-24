@@ -92,41 +92,6 @@ public class DBUtilsTest extends DBeaverUnitTest {
     private JDBCExecutionContext executionContextTable;
     private JDBCExecutionContext executionContextCatalogSchema;
 
-    @Test
-    public void getUnQuotedNormalizedIdentifierPreservesLegacyQuoteEscaping() {
-        Assertions.assertEquals("Mixed\"\"Case", DBUtils.getUnQuotedNormalizedIdentifier(sqlDialect, "\"Mixed\"\"Case\""));
-        Assertions.assertEquals(
-            "Mixed\"Case",
-            DBUtils.getUnQuotedNormalizedIdentifier(sqlDialect, "\"Mixed\"\"Case\"", true)
-        );
-        Assertions.assertEquals("unquoted", DBUtils.getUnQuotedNormalizedIdentifier(sqlDialect, "UNQUOTED"));
-    }
-
-    @Test
-    public void legacyIdentifierNormalizationUsesDialectOverride() {
-        BasicSQLDialect dialect = new BasicSQLDialect() {
-            @Override
-            public String getUnquotedIdentifier(String identifier) {
-                return "overridden";
-            }
-        };
-
-        Assertions.assertEquals("overridden", DBUtils.getUnQuotedNormalizedIdentifier(dialect, "\"identifier\""));
-    }
-
-    @Test
-    public void getUnQuotedNormalizedIdentifierUnescapesAsymmetricClosingQuote() {
-        BasicSQLDialect dialect = new BasicSQLDialect() {
-            @NotNull
-            @Override
-            public String[][] getIdentifierQuoteStrings() {
-                return new String[][]{{"[", "]"}};
-            }
-        };
-
-        Assertions.assertEquals("a]b", DBUtils.getUnQuotedNormalizedIdentifier(dialect, "[a]]b]", true));
-    }
-
     @BeforeEach
     public void setUp() throws Exception {
         DBPDataSourceContainer dataSourceContainer = configureTestContainer("sqlite_jdbc");

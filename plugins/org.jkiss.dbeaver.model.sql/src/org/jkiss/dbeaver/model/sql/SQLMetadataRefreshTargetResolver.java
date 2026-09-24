@@ -69,7 +69,7 @@ public final class SQLMetadataRefreshTargetResolver {
     ) throws DBException {
         SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
         List<String> nameParts = operation.qualifiedNameParts().stream()
-            .map(name -> DBUtils.getUnQuotedNormalizedIdentifier(dialect, name, true))
+            .map(name -> SQLUtils.identifierToCanonicalForm(dialect, name, true, false))
             .toList();
         DBCExecutionContextDefaults<?, ?> defaults = executionContext.getContextDefaults();
         DBSCatalog defaultCatalog = defaults == null ? null : defaults.getDefaultCatalog();
