@@ -289,6 +289,8 @@ public class ComplexObjectEditor extends TreeViewer {
                 final Object[] originalItems = originalCollection.toArray();
                 final int originalSize = originalItems.length;
                 final int size = collection.items.size();
+                // Size difference means that some elements were added or removed
+                changed = size != originalSize;
                 for (int i = 0; i < size; i++) {
                     if (i < originalSize) {
                         if (markChanges(collection.items.get(i), originalItems[i])) {
@@ -318,8 +320,10 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
                 return composite.getChildren().length > 0;
             }
-            boolean changed = false;
-            for (ComplexElementItem child : composite.getChildren()) {
+            final ComplexElementItem[] children = composite.getChildren();
+            // Attribute count difference means that some attributes were added or removed
+            boolean changed = children.length != originalComposite.getAttributeCount();
+            for (ComplexElementItem child : children) {
                 Object originalAttributeValue = null;
                 if (child instanceof CompositeElement.Item compoundItem) {
                     try {

@@ -570,9 +570,11 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                 //releaseStatements();
                 viewer.redrawData(false, rowsChanged);
                 viewer.updateEditControls();
+                // Refresh panels (e.g. value panel) so they stop showing stale pending changes highlighting.
+                // In auto-commit mode reflectChanges() advances the baseline for successfully executed statements
+                // even if a later statement of the same batch failed, so refresh is needed regardless of the error.
+                viewer.updatePanelsContent(true);
                 if (error == null) {
-                    // Refresh panels (e.g. value panel) so they stop showing stale pending changes highlighting
-                    viewer.updatePanelsContent(true);
                     viewer.setStatus(
                         NLS.bind(
                             ResultSetMessages.controls_resultset_viewer_status_inserted_,

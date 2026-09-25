@@ -99,12 +99,16 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     }
 
     /**
-     * Returns the row value controller if the value can be compared with the committed one
-     * (i.e. it is a whole cell value, not a nested value path).
+     * Returns the row value controller if the value can be compared with the committed one.
+     * Only a whole cell value can be compared: a nested value (a value path element or a composite/collection
+     * element addressed by row indexes) has no corresponding element in the committed top-level value.
      */
     @Nullable
     private ResultSetValueController getRowValueController() {
-        if (controller instanceof ResultSetValueController valueController && valueController.getValuePath() == null) {
+        if (controller instanceof ResultSetValueController valueController
+            && valueController.getValuePath() == null
+            && valueController.getRowIndexes() == null
+        ) {
             return valueController;
         }
         return null;
