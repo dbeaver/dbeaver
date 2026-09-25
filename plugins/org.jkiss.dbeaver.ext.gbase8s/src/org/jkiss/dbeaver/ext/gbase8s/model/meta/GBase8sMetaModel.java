@@ -58,6 +58,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
     private static final String[] VALID_TABLE_TYPES = { "T", "V" };
     // TABLE_TYPE: String {@code =>} table type. ('SYNONYM')
     private static final String[] VALID_SYNONYM_TYPES = { "S" };
+    private Boolean readDefaultStrAvailable;
 
     public GBase8sMetaModel() {
         super();
@@ -392,6 +393,9 @@ public class GBase8sMetaModel extends GenericMetaModel {
                 : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
         String ownerPattern = "%s%s".formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String expressionDefault = hasReadDefaultStr(session)
+                ? "read_defaultstr(c.tabid, c.colno, c.coltype, c.collength, c.extended_id)::VARCHAR(32731)"
+                : "null::VARCHAR(32731)";
         String sql = """
                 SELECT
                     t.tabname::VARCHAR(128) AS TABLE_NAME,
@@ -404,7 +408,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
                     schema_numprecradix(c.coltype)::INTEGER AS NUM_PREC_RADIX,
                     CASE d.type
                         WHEN 'L' THEN get_default_value(c.coltype, c.extended_id, c.collength, d.default::lvarchar(256))::VARCHAR(254)
-                        WHEN 'E' THEN read_defaultstr(c.tabid, c.colno, c.coltype, c.collength, c.extended_id)::VARCHAR(32731)
+                        WHEN 'E' THEN %s
                         WHEN 'C' THEN 'current' || replace(get_colname(c.coltype, c.collength, c.extended_id, 1), schema_coltypename(c.coltype, c.extended_id), '')::VARCHAR(254)
                         WHEN 'S' THEN 'dbservername'::VARCHAR(254)
                         WHEN 'U' THEN 'user'::VARCHAR(254)
@@ -437,10 +441,30 @@ public class GBase8sMetaModel extends GenericMetaModel {
                     AND c.colno = cc.colno
                     AND t.tabname = ?
                 """
-                .formatted(ownerPattern, ownerPattern, ownerPattern, ownerPattern);
+                .formatted(expressionDefault, ownerPattern, ownerPattern, ownerPattern, ownerPattern);
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, tableName);
         return dbStat;
+    }
+
+    private synchronized boolean hasReadDefaultStr(@NotNull JDBCSession session) {
+        if (this.readDefaultStrAvailable == null) {
+            try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("""
+                        SELECT FIRST 1 1
+                        FROM sysprocedures
+                        WHERE LOWER(procname) = 'read_defaultstr'
+                          AND isproc = 'f'
+                        """);
+                     JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    this.readDefaultStrAvailable = dbResult.next();
+                }
+            } catch (SQLException e) {
+                this.readDefaultStrAvailable = false;
+                log.debug("Can't detect read_defaultstr availability", e);
+            }
+        }
+        return Boolean.TRUE.equals(this.readDefaultStrAvailable);
     }
 
     @NotNull
