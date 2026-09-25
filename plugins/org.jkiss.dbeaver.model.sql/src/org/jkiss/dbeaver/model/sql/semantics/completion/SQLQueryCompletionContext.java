@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.model.stm.STMTreeTermErrorNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -312,6 +314,9 @@ public abstract class SQLQueryCompletionContext {
                 int position = this.getRequestOffset() - this.getOffset();
                 
                 SQLQueryWordEntry currentWord = this.obtainCurrentWord(currentTerm, position);
+                if (currentWord == null) {
+                    currentWord = this.obtainCurrentWordFromDocument(request);
+                }
                 List<SQLQueryWordEntry> parts = this.obtainIdentifierParts(position);
 
                 List<SQLQueryCompletionSet> completionSets = new LinkedList<>();
@@ -322,13 +327,15 @@ public abstract class SQLQueryCompletionContext {
                     this.tryApplyOriginContext();
                     this.prepareInspectedIdentifierCompletions(monitor, request, parts, completionSets);
                 } else if (context.symbolsOrigin() != null) {
-                    this.accomplishFromKnownOrigin(monitor, request, context.symbolsOrigin(), null, completionSets);
+                    // Use the current word as a filter to replace the typed part of the identifier
+                    // instead of inserting the proposal at the cursor position (dbeaver/dbeaver#20261)
+                    this.accomplishFromKnownOrigin(monitor, request, context.symbolsOrigin(), currentWord, completionSets);
                 } else if (syntaxInspectionResult.expectingIdentifier()) {
                     this.tryApplyOriginContext();
                     this.prepareInspectedIdentifierCompletions(monitor, request, parts, completionSets);
                 } else {
                     this.tryApplyOriginContext();
-                    this.prepareInspectedFreeCompletions(monitor, request, completionSets);
+                    this.prepareInspectedFreeCompletions(monitor, request, currentWord, completionSets);
                 }
 
                 boolean keywordsAllowed = (lexicalItem == null || (lexicalItem.getOrigin() != null && !lexicalItem.getOrigin().isChained()) || (lexicalItem.getSymbolClass() != null && potentialKeywordPartClassification.contains(lexicalItem.getSymbolClass()))) && !hasPeriod;
@@ -344,15 +351,17 @@ public abstract class SQLQueryCompletionContext {
             private void prepareInspectedFreeCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
+                @Nullable SQLQueryWordEntry currentWord,
                 @NotNull List<SQLQueryCompletionSet> completionSets
             ) {
                 if ((syntaxInspectionResult.expectingColumnName() || syntaxInspectionResult.expectingColumnReference())
                     && nameNodes.length == 0
                 ) {
-                    this.prepareNonPrefixedColumnCompletions(monitor, request, this.deepestContext, null, completionSets);
+                    this.prepareNonPrefixedColumnCompletions(monitor, request, this.deepestContext, currentWord, completionSets);
                 }
                 if (syntaxInspectionResult.expectingTableReference() && nameNodes.length == 0) {
-                    this.prepareTableCompletions(monitor, request, this.deepestContext.getKnownSources(), null, completionSets);
+                    // Replace the typed part of the identifier instead of inserting at the cursor position (dbeaver/dbeaver#20261)
+                    this.prepareTableCompletions(monitor, request, this.deepestContext.getKnownSources(), currentWord, completionSets);
                 }
             }
 
@@ -371,6 +380,23 @@ public abstract class SQLQueryCompletionContext {
                 } else {
                     return null;
                 }
+            }
+
+            @Nullable
+            private SQLQueryWordEntry obtainCurrentWordFromDocument(@NotNull SQLCompletionRequest request) {
+                // The semantic model may be out of sync with the document state (e.g. while its script item awaits reparse),
+                // so fall back to plain word detection to replace the typed part of the identifier anyway (dbeaver/dbeaver#20261)
+                SQLWordPartDetector wordDetector = new SQLWordPartDetector(
+                    request.getDocument(),
+                    request.getContext().getSyntaxManager(),
+                    this.getRequestOffset()
+                );
+                String wordPart = wordDetector.getWordPart();
+                int startOffset = wordDetector.getStartOffset();
+                if (CommonUtils.isEmpty(wordPart) || startOffset < this.getOffset()) {
+                    return null;
+                }
+                return new SQLQueryWordEntry(startOffset - this.getOffset(), wordPart);
             }
 
             private void prepareInspectedIdentifierCompletions(@NotNull DBRProgressMonitor monitor,
@@ -475,6 +501,8 @@ public abstract class SQLQueryCompletionContext {
                             filterOrNull,
                             items
                         );
+                        // Routines are not among the container children, so collect them separately (dbeaver/dbeaver#20261)
+                        this.collectProcedures(monitor, request, List.of(container), prefixInfo, filterOrNull, items);
                     } catch (DBException e) {
                         log.error(e);
                     }
@@ -978,7 +1006,7 @@ public abstract class SQLQueryCompletionContext {
                     public void visitSyntaxBasedFromRowsData(SQLQuerySymbolOrigin.SyntaxBasedFromRowsData origin) {
                         SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsDataContext());
                         setContextInfo(contextInfo);
-                        prepareInspectedFreeCompletions(monitor, request, results);
+                        prepareInspectedFreeCompletions(monitor, request, filterOrNull, results);
                     }
 
                 });
@@ -1288,8 +1316,8 @@ public abstract class SQLQueryCompletionContext {
                     try {
                         Collection<DBSObjectContainer> containers = this.obtainDefaultContext(monitor, request);
                         this.collectTables(monitor, knownSources, containers, null, filterOrNull, completions);
-                        // usually we don't want procedures in FROM
-                        //this.collectProcedures(monitor, request, containers, null, filterOrNull, completions);
+                        // Routines may serve as a row source (e.g. table functions), so propose them as well (dbeaver/dbeaver#20261)
+                        this.collectProcedures(monitor, request, containers, null, filterOrNull, completions);
                         this.collectPackages(monitor, request, knownSources, this.exposedContexts,  null, filterOrNull, completions);
                     } catch (DBException e) {
                         log.error(e);

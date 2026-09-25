@@ -47,6 +47,7 @@ import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,9 +58,16 @@ import static org.mockito.Mockito.when;
 
 public class RequestResult {
     private final DBPDataSource dataSource;
+    private boolean searchProcedures = false;
 
     public RequestResult(@NotNull DBPDataSource dataSource) {
         this.dataSource = dataSource;
+    }
+
+    @NotNull
+    public RequestResult setSearchProcedures(boolean searchProcedures) {
+        this.searchProcedures = searchProcedures;
+        return this;
     }
 
     @NotNull
@@ -82,6 +90,14 @@ public class RequestResult {
      */
     public Set<String> requestNewStrings(@NotNull String sql) throws DBException {
         return this.requestNewStrings(sql, true);
+    }
+
+    /**
+     * Returns raw proposals of the semantic autocompletion engine for the provided text in simple mode
+     */
+    @NotNull
+    public List<SQLQueryCompletionProposal> requestNewProposals(@NotNull String sql) throws DBException {
+        return new ArrayList<>(this.requestNewInternal(sql, true).getSecond());
     }
 
     /**
@@ -185,7 +201,8 @@ public class RequestResult {
             dataSource,
             syntaxManager,
             ruleManager,
-            executionContext
+            executionContext,
+            searchProcedures
         );
 
         final SQLCompletionRequest request = new SQLCompletionRequest(
@@ -212,12 +229,14 @@ public class RequestResult {
         private final SQLSyntaxManager syntaxManager;
         private final SQLRuleManager ruleManager;
         private final DBCExecutionContext executionContext;
+        private final boolean searchProcedures;
 
-        private CompletionContext(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLRuleManager ruleManager, DBCExecutionContext executionContext) {
+        private CompletionContext(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLRuleManager ruleManager, DBCExecutionContext executionContext, boolean searchProcedures) {
             this.dataSource = dataSource;
             this.syntaxManager = syntaxManager;
             this.ruleManager = ruleManager;
             this.executionContext = executionContext;
+            this.searchProcedures = searchProcedures;
         }
 
         @Override
@@ -267,7 +286,7 @@ public class RequestResult {
 
         @Override
         public boolean isSearchProcedures() {
-            return false;
+            return searchProcedures;
         }
 
         @Override

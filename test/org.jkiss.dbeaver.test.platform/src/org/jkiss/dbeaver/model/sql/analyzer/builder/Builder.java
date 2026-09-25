@@ -20,14 +20,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class Builder<T, C> {
     protected final DBPDataSource dataSource;
     protected final DBSObject parent;
     protected final List<C> children;
+    protected final List<DBSProcedure> procedures = new ArrayList<>();
 
     protected Builder(@NotNull DBPDataSource dataSource, @NotNull DBSObject parent) {
         this.dataSource = dataSource;
@@ -41,6 +48,23 @@ public abstract class Builder<T, C> {
     @NotNull
     public List<C> getChildren() {
         return children;
+    }
+
+    @NotNull
+    protected DBSProcedure createProcedure(@NotNull String name) {
+        final DBSProcedure procedure = mock(DBSProcedure.class);
+        when(procedure.getDataSource()).thenReturn(dataSource);
+        when(procedure.getParentObject()).thenReturn(parent);
+        when(procedure.getName()).thenReturn(name);
+        when(procedure.getFullyQualifiedName(any())).thenReturn(name);
+        when(procedure.getProcedureType()).thenReturn(DBSProcedureType.FUNCTION);
+        procedures.add(procedure);
+        return procedure;
+    }
+
+    @NotNull
+    public List<DBSProcedure> getProcedures() {
+        return procedures;
     }
 
     public interface Consumer<T extends Builder<?, ?>> {
