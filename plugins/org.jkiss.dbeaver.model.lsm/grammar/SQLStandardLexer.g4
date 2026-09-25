@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ lexer grammar SQLStandardLexer;
 @header {
     /*
      * DBeaver - Universal Database Manager
-     * Copyright (C) 2010-2024 DBeaver Corp and others
+     * Copyright (C) 2010-2026 DBeaver Corp and others
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
      * you may not use this file except in compliance with the License.
@@ -278,6 +278,7 @@ CREATE: C R E A T E ;
 CROSS: C R O S S ;
 CURRENT_USER: C U R R E N T '_' U S E R ;
 DATE: D A T E ;
+DATABASE: D A T A B A S E ;
 DAY: D A Y ;
 DEFAULT: D E F A U L T ;
 DEFERRABLE: D E F E R R A B L E ;
@@ -312,6 +313,7 @@ IN: I N ;
 INDICATOR: I N D I C A T O R ;
 INITIALLY: I N I T I A L L Y ;
 INNER: I N N E R ;
+INDEX: I N D E X ;
 INSERT: I N S E R T ;
 INTERSECT: I N T E R S E C T ;
 INTERVAL: I N T E R V A L ;
@@ -327,6 +329,7 @@ LIKE: L I K E ;
 LIMIT: L I M I T ;
 LOCAL: L O C A L ;
 MATCH: M A T C H ;
+MATERIALIZED: M A T E R I A L I Z E D ;
 MINUTE: M I N U T E ;
 MONTH: M O N T H ;
 NAMES: N A M E S ;
@@ -361,18 +364,21 @@ REPEATABLE: R E P E A T A B L E ;
 REPLACE: R E P L A C E ;
 RESTRICT: R E S T R I C T ;
 RIGHT: R I G H T ;
+ROLE: R O L E ;
 ROLLBACK: R O L L B A C K ;
 ROWS: R O W S ;
 SCHEMA: S C H E M A ;
 SECOND: S E C O N D ;
 SELECT: S E L E C T ;
 SEPARATOR: S E P A R A T O R ;
+SEQUENCE: S E Q U E N C E ;
 SERIALIZABLE: S E R I A L I Z A B L E ;
 SESSION: S E S S I O N ;
 SESSION_USER: S E S S I O N '_'U S E R ;
 SET: S E T ;
 SOME: S O M E ;
 STRAIGHT_JOIN: S T R A I G H T '_' J O I N ;
+SYNONYM: S Y N O N Y M ;
 SYSTEM_USER: S Y S T E M '_'U S E R ;
 TABLE: T A B L E ;
 TEMP: T E M P ;

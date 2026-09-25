@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -477,7 +477,7 @@ public class LSMInspections {
                     if (item.kind == TermNodeKind.IDENTIFIER) {
                         nameNodes.addFirst(item.term);
                         i--;
-                        if (i < 0 || allTerms.get(i).kind == TermNodeKind.PERIOD) {
+                        if (i < 0 || allTerms.get(i).kind != TermNodeKind.PERIOD) {
                             break; // not followed by an identifier separator part
                         }
                     } else {
