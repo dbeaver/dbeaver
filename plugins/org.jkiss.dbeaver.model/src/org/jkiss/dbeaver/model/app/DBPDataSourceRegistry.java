@@ -166,6 +166,16 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     void setAuthProfiles(@NotNull Collection<DBAAuthProfile> profiles);
 
     void flushConfig();
+
+    /**
+     * Persists configuration before returning. Implementations supporting this operation
+     * serialize persistence and reload on the registry monitor, allowing callers to hold
+     * that monitor across a file snapshot or replacement and reload.
+     */
+    default void flushConfigSync() throws DBException {
+        throw new DBException("Synchronous configuration persistence is not supported");
+    }
+
     void refreshConfig();
 
     /**

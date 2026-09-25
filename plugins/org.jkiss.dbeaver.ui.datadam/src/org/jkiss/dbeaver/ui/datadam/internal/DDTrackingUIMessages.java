@@ -31,6 +31,14 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_log_out_confirm_title;
     public static String sync_preference_page_log_out_confirm_message;
     public static String sync_preference_page_configuration_group;
+    public static String share_projects_title;
+    public static String share_project_upload;
+    public static String share_project_download;
+    public static String share_select_local_project;
+    public static String share_select_remote_project;
+    public static String share_replace_local_project;
+    public static String share_project_complete;
+    public static String share_project_failed;
     public static String sync_preference_page_bound_to_label;
     public static String sync_preference_page_upload_button;
     public static String sync_preference_page_download_button;

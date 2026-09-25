@@ -644,7 +644,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void flushConfig() {
+    public synchronized void flushConfig() {
         if (project.isInMemory()) {
             // Do not save in-memory projects.
             return;
@@ -657,13 +657,19 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void refreshConfig() {
+    public synchronized void flushConfigSync() throws DBException {
+        saveDataSources(new VoidProgressMonitor());
+        checkForErrors();
+    }
+
+    @Override
+    public synchronized void refreshConfig() {
         if (!saveInProgress) {
             this.loadDataSources(true);
         }
     }
 
-    public void refreshConfig(@Nullable Collection<String> dataSourceIds) {
+    public synchronized void refreshConfig(@Nullable Collection<String> dataSourceIds) {
         if (saveInProgress) {
             return;
         }
@@ -803,7 +809,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @Nullable
     @Override
-    public DataSourceParseResults loadDataSources(
+    public synchronized DataSourceParseResults loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
         @Nullable Collection<String> dataSourceIds,
@@ -922,7 +928,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         saveDataSources(new VoidProgressMonitor());
     }
 
-    protected void saveDataSources(@NotNull DBRProgressMonitor monitor) {
+    protected synchronized void saveDataSources(@NotNull DBRProgressMonitor monitor) {
         if (project.isInMemory()) {
             return;
         }
