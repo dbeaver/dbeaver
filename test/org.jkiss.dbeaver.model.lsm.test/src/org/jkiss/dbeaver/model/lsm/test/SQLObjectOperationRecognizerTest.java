@@ -52,6 +52,7 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
 
         assertOperation("CREATE INDEX idx ON cat.sch.tab(id)", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.INDEX, "cat", "sch", "idx");
         assertOperation("DROP INDEX cat.sch.idx", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.INDEX, "cat", "sch", "idx");
+        assertOperation("DROP INDEX CONCURRENTLY IF EXISTS cat.sch.idx", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.INDEX, "cat", "sch", "idx");
         assertOperation("DROP INDEX idx ON cat.sch.tab", SQLObjectOperation.Operation.DROP, SQLObjectOperation.ObjectKind.INDEX, "cat", "sch", "idx");
 
         assertOperation("CREATE FUNCTION sch.func() RETURNS INT RETURN 1", SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.FUNCTION, "sch", "func");

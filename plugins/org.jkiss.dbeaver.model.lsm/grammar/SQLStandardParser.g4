@@ -384,7 +384,7 @@ createNamedObjectStatement: CREATE (OR REPLACE)? createObjectKind (IF NOT EXISTS
 createObjectKind: FUNCTION|PROCEDURE|SEQUENCE|SYNONYM|ROLE;
 alterNamedObjectStatement: ALTER alterObjectKind ifExistsSpec? qualifiedName routineSignature? setTableSchemaAction? ddlStatementTail?;
 alterObjectKind: VIEW|MATERIALIZED VIEW|INDEX|FUNCTION|PROCEDURE|SEQUENCE|SYNONYM;
-dropIndexStatement: DROP INDEX ifExistsSpec? qualifiedName (ON tableName)? ddlStatementTail?;
+dropIndexStatement: DROP INDEX CONCURRENTLY? ifExistsSpec? qualifiedName (ON tableName)? ddlStatementTail?;
 dropNamedObjectStatement: DROP dropObjectKind ifExistsSpec? qualifiedName routineSignature? (Comma qualifiedName routineSignature?)* ddlStatementTail?;
 dropObjectKind: FUNCTION|SEQUENCE|SYNONYM|ROLE|MATERIALIZED VIEW|identifier;
 renameNamedObjectStatement: RENAME renameObjectKind qualifiedName TO qualifiedName (Comma qualifiedName TO qualifiedName)* ddlStatementTail?;
@@ -492,7 +492,7 @@ tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
 nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE | RIGHT | LEFT |
     DATE | DATABASE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
-    ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
+    ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT | CONCURRENTLY |
     CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
     EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
