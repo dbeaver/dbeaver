@@ -78,6 +78,8 @@ public class DataTransferSettings implements DBTTaskSettings {
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
     private transient boolean nodeSettingsLoaded = false;
+    // preserve edited settings when switching formats, but load newly selected nodes
+    private final Set<DataTransferNodeDescriptor> loadedNodeSettings = new HashSet<>();
 
     private transient int curPipeNum = 0;
 
@@ -426,11 +428,13 @@ public class DataTransferSettings implements DBTTaskSettings {
     }
 
     public boolean isNodeSettingsLoaded() {
-        return nodeSettingsLoaded;
+        return nodeSettingsLoaded &&
+            (producer == null || loadedNodeSettings.contains(producer)) &&
+            (consumer == null || loadedNodeSettings.contains(consumer));
     }
 
     public void loadNodeSettings(@NotNull DBRProgressMonitor monitor) {
-        if (nodeSettingsLoaded) {
+        if (isNodeSettingsLoaded()) {
             return;
         }
 
@@ -454,7 +458,7 @@ public class DataTransferSettings implements DBTTaskSettings {
     }
 
     private void loadNodeSettings(@NotNull MonitorRunnableContext runnableContext, @Nullable DataTransferNodeDescriptor node) {
-        if (node == null) {
+        if (node == null || loadedNodeSettings.contains(node)) {
             return;
         }
 
@@ -464,6 +468,7 @@ public class DataTransferSettings implements DBTTaskSettings {
         if (settings != null && rawSettings != null) {
             settings.loadSettings(runnableContext, this, rawSettings);
         }
+        loadedNodeSettings.add(node);
     }
 
     public boolean isConsumerOptional() {
@@ -660,6 +665,7 @@ public class DataTransferSettings implements DBTTaskSettings {
         @Nullable DataTransferProcessorDescriptor processor,
         boolean rewrite
     ) {
+        nodeSettingsLoaded = false;
         this.consumer = consumer;
         this.processor = processor;
         if (consumer != null && processor != null) {
@@ -687,6 +693,7 @@ public class DataTransferSettings implements DBTTaskSettings {
     }
 
     public void selectProducer(DataTransferNodeDescriptor producer, DataTransferProcessorDescriptor processor, boolean rewrite) {
+        nodeSettingsLoaded = false;
         this.producer = producer;
         this.processor = processor;
         if (producer != null && processor != null) {

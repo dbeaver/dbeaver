@@ -334,6 +334,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             DTMessages.data_transfer_wizard_settings_group_preview_columns,
             DBIcon.TREE_COLUMNS,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                getWizard().loadNodeSettings();
                 final List<StreamMappingContainer> mappings = new ArrayList<>();
 
                 StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
@@ -425,7 +426,13 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
     @Override
     public void activatePage() {
-        getWizard().loadNodeSettings();
+        DataTransferWizard wizard = getWizard();
+        DataTransferNodeDescriptor consumer = wizard.getSettings().getConsumer();
+        // resolve the last export database on the mapping page, which handles auto reconnect
+        if (wizard.isTaskEditor() || isDataImport() || consumer == null ||
+            !DatabaseTransferConsumer.class.isAssignableFrom(consumer.getNodeClass())) {
+            wizard.loadNodeSettings();
+        }
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
         if (!activated) {
