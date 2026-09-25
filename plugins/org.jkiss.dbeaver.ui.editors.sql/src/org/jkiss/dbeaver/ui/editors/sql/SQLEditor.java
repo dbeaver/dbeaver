@@ -91,6 +91,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -1249,9 +1250,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         StyledText textWidget = getViewer().getTextWidget();
         textWidget.addVerifyKeyListener(e -> {
-            if ((e.keyCode == SWT.ARROW_RIGHT || e.keyCode == SWT.TAB || e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR)
-                && suggestionTextPainter.hasContentToShow()
-            ) {
+            ProposalActivationKey activationKey = ProposalActivationKey.fromPreferences(getActivePreferenceStore());
+            boolean acceptsSuggestion = e.keyCode == SWT.ARROW_RIGHT
+                || e.keyCode == SWT.TAB && activationKey.acceptsTab()
+                || (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) && activationKey.acceptsEnter();
+            if (acceptsSuggestion && suggestionTextPainter.hasContentToShow()) {
                 e.doit = false;
                 suggestionTextPainter.applyHint();
             }

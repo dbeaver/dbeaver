@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.RGB;
  * ERD constants
  */
 public class UIColors {
+    public static final String INACTIVE_TAB_OUTLINE_COLOR = "org.eclipse.ui.workbench.INACTIVE_TAB_OUTLINE_COLOR";
 
     public static final RGB[] EXTRA_DS_COLORS = new RGB[] {
         new RGB(119, 206, 130),
