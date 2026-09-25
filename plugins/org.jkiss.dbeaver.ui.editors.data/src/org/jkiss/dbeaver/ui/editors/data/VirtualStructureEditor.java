@@ -178,7 +178,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         GridLayout gl = (GridLayout) keysComposite.getLayout();
         gl.makeColumnsEqualWidth = true;
         gl.marginHeight = 1;
-        gl.marginWidth = 5;
+        gl.marginWidth = 0;
         keysComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         createColumnsPage(keysComposite);
         createUniqueKeysPage(keysComposite);
