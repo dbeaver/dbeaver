@@ -44,6 +44,10 @@ public abstract class AbstractHttpAIClient implements AutoCloseable {
         );
     }
 
+    protected AbstractHttpAIClient(@NotNull MonitoredHttpClient client) {
+        this.client = client;
+    }
+
     public void setTimeout(int timeoutSeconds) {
         if (timeoutSeconds > 0) {
             this.timeout = Duration.ofSeconds(timeoutSeconds);
