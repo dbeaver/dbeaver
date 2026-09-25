@@ -113,6 +113,14 @@ public class FormsDialog extends TrayDialog {
                     .align(UIAlignX.FILL)
                     .row(rb1 -> rb1.label("An expandable panel label"))))
             .row(rb -> rb
+                .expandablePanel("A collapsed panel with shell resizing", false, control -> {
+                    Shell shell = control.getShell();
+                    UIUtils.resizeShell(shell);
+                    shell.layout(true, true);
+                }, pb1 -> pb1
+                    .align(UIAlignX.FILL)
+                    .row(rb1 -> rb1.label(lb -> lb.text("Expand and collapse without resizing the window").hint(400, 200)))))
+            .row(rb -> rb
                 .titledPanel("A scrolled panel", pb1 -> pb1
                     .row(rb1 -> rb1.scrolledPanel(true, true, pb2 -> pb2
                         .hint(50, 50)

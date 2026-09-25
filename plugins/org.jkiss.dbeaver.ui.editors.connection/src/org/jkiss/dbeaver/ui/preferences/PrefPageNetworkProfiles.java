@@ -434,6 +434,8 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                 profilesTable.select(profileIndex);
             }
 
+            // Do not save stale controls into the reloaded profile when notifying the selection listener.
+            selectedProfile = null;
             profilesTable.notifyListeners(SWT.Selection, new Event());
         }
     }
