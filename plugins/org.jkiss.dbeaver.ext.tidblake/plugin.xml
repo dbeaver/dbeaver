@@ -24,6 +24,9 @@
                 <driver
                     id="tidblake"
                     label="TiDBLake"
+                    icon="icons/tidb-small.svg"
+                    iconBig="icons/tidb-big.svg"
+                    logoImage="icons/tidb_logo.png"
                     class="com.tidbcloud.jdbc.LakeDriver"
                     sampleURL="jdbc:lake://{host}:{port}[/{database}]"
                     defaultPort="443"

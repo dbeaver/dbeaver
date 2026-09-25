@@ -1,45 +1,33 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.dataSourceProvider" name="Datasource provider"/>
+         <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.dataSourceProvider" name="Datasource provider"/>
       </appInfo>
-      <documentation>
-         DBeaver data source provider
-      </documentation>
+      <documentation>DBeaver data source provider</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
-          <choice minOccurs="0" maxOccurs="unbounded">
-             <element ref="dataSourceType"/>
-             <element ref="datasource"/>
-          </choice>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="dataSourceType"/>
+            <element ref="datasource"/>
+            <element ref="datasourcePatch"/>
+            <element ref="datasourceReplace"/>
+            <element ref="datasourceOrigin"/>
+            <element ref="editorContribution"/>
+            <element ref="driverSubstitution"/>
+         </choice>
+         <attribute name="point" type="string" use="required"/>
          <attribute name="id" type="string">
             <annotation>
-               <documentation>
-                  Extension ID
-               </documentation>
+               <documentation>Extension ID</documentation>
             </annotation>
          </attribute>
          <attribute name="name" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -49,23 +37,19 @@
    </element>
 
    <element name="dataSourceType">
-      <annotation>
-         <documentation>A database or another kind of data source supported by one or more drivers.</documentation>
-      </annotation>
       <complexType>
-         <attribute name="id" type="string" use="required"/>
-         <attribute name="label" type="string" use="required">
+         <attribute name="id" type="string" use="required">
+            <annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation>
+         </attribute>
+         <attribute name="label" type="string">
             <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
          </attribute>
-          <attribute name="description" type="string" use="required">
-             <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
-          </attribute>
-          <attribute name="dataSourceInformation" type="string" use="required">
-             <annotation>
-                <documentation>Brief information about the data source technology.</documentation>
-                <appInfo><meta.attribute translatable="true"/></appInfo>
-             </annotation>
-          </attribute>
+         <attribute name="description" type="string">
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+         </attribute>
+         <attribute name="dataSourceInformation" type="string">
+            <annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation>
+         </attribute>
          <attribute name="icon" type="string">
             <annotation><appInfo><meta.attribute kind="resource"/></appInfo></annotation>
          </attribute>
@@ -80,29 +64,25 @@
 
    <element name="datasource">
       <annotation>
-         <documentation>
-            Data source provider implementation binding
-         </documentation>
+         <documentation>Data source provider implementation binding</documentation>
       </annotation>
       <complexType>
-         <sequence>
-            <element ref="tree" minOccurs="0" maxOccurs="1"/>
-            <element ref="drivers" minOccurs="0" maxOccurs="1"/>
-            <element ref="tools" minOccurs="0" maxOccurs="1"/>
-            <element ref="templates" minOccurs="0" maxOccurs="1"/>
-         </sequence>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="tree"/>
+            <element ref="treeInjection"/>
+            <element ref="driver-properties"/>
+            <element ref="drivers"/>
+            <element ref="nativeClients"/>
+            <element ref="templates"/>
+         </choice>
          <attribute name="id" type="string" use="required">
             <annotation>
-               <documentation>
-                  Data source ID
-               </documentation>
+               <documentation>Data source ID</documentation>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <documentation>
-                  Datasource provider implementation
-               </documentation>
+               <documentation>Datasource provider implementation</documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceProvider"/>
                </appInfo>
@@ -110,9 +90,7 @@
          </attribute>
          <attribute name="label" type="string">
             <annotation>
-               <documentation>
-                  Data source name
-               </documentation>
+               <documentation>Data source name</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -120,55 +98,50 @@
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <documentation>
-                  Provider description
-               </documentation>
+               <documentation>Provider description</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
             </annotation>
          </attribute>
-          <attribute name="icon" type="string">
+         <attribute name="icon" type="string">
             <annotation>
-               <documentation>
-                  Datasource icon
-               </documentation>
+               <documentation>Datasource icon</documentation>
                <appInfo>
                   <meta.attribute kind="resource"/>
                </appInfo>
             </annotation>
-          </attribute>
-          <attribute name="dataSourceType" type="string">
-             <annotation><documentation>Default data source type inherited by the provider drivers.</documentation></annotation>
-          </attribute>
+         </attribute>
+         <attribute name="parent" type="string"/>
+         <attribute name="dataSourceType" type="string"/>
+         <attribute name="dialect" type="string"/>
+         <attribute name="supports-migration" type="boolean"/>
+         <attribute name="inheritAuthModels" type="boolean"/>
+         <attribute name="driverProvider" type="boolean"/>
+         <attribute name="inheritClients" type="boolean"/>
+         <attribute name="inheritProviderProperties" type="boolean"/>
       </complexType>
    </element>
 
    <element name="tree">
       <annotation>
-         <documentation>
-            Tree structure
-         </documentation>
+         <documentation>Tree structure</documentation>
       </annotation>
       <complexType>
-         <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
-         </sequence>
+         <choice minOccurs="0" maxOccurs="unbounded">
+             <element ref="items"/>
+             <element ref="folder"/>
+            <element ref="object"/>
+            <element ref="icon"/>
+         </choice>
          <attribute name="path" type="string" use="required">
             <annotation>
-               <documentation>
-                  Root element path
-               </documentation>
+               <documentation>Root element path</documentation>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
             <annotation>
-               <documentation>
-                  Root element icon
-               </documentation>
+               <documentation>Root element icon</documentation>
                <appInfo>
                   <meta.attribute kind="resource"/>
                </appInfo>
@@ -176,34 +149,31 @@
          </attribute>
          <attribute name="label" type="string">
             <annotation>
-               <documentation>
-                  Optiona tree label
-               </documentation>
+               <documentation>Optiona tree label</documentation>
             </annotation>
          </attribute>
+         <attribute name="supportsEntityMerge" type="boolean"/>
+         <attribute name="visibleIf" type="string"/>
       </complexType>
    </element>
 
    <element name="items">
       <complexType>
-         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
-         </sequence>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="folder"/>
+            <element ref="items"/>
+            <element ref="object"/>
+            <element ref="icon"/>
+            <element ref="handler"/>
+         </choice>
          <attribute name="property" type="string">
             <annotation>
-               <documentation>
-                  Item collection reading property
-               </documentation>
+               <documentation>Item collection reading property</documentation>
             </annotation>
          </attribute>
          <attribute name="label" type="string">
             <annotation>
-               <documentation>
-                  Optional item label
-               </documentation>
+               <documentation>Optional item label</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -211,9 +181,7 @@
          </attribute>
          <attribute name="itemLabel" type="string">
             <annotation>
-               <documentation>
-                  Optional item label
-               </documentation>
+               <documentation>Optional item label</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -221,23 +189,17 @@
          </attribute>
          <attribute name="icon" type="string">
             <annotation>
-               <documentation>
-                  Item icon
-               </documentation>
+               <documentation>Item icon</documentation>
             </annotation>
          </attribute>
          <attribute name="path" type="string">
             <annotation>
-               <documentation>
-                  Items path element
-               </documentation>
+               <documentation>Items path element</documentation>
             </annotation>
          </attribute>
          <attribute name="optional" type="boolean">
             <annotation>
-               <documentation>
-                  Optional items collection flag
-               </documentation>
+               <documentation>Optional items collection flag</documentation>
             </annotation>
          </attribute>
          <attribute name="recursive" type="string">
@@ -272,50 +234,32 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="ref" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="visibleIf" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="ref" type="string"/>
+         <attribute name="id" type="string"/>
+         <attribute name="visibleIf" type="string"/>
+         <attribute name="standalone" type="boolean"/>
       </complexType>
    </element>
 
    <element name="folder">
       <complexType>
-         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
-         </sequence>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="items"/>
+            <element ref="itemType"/>
+            <element ref="folder"/>
+            <element ref="object"/>
+            <element ref="icon"/>
+            <element ref="treeContribution"/>
+            <element ref="handler"/>
+         </choice>
          <attribute name="type" type="string">
             <annotation>
-               <documentation>
-                  Folder type
-               </documentation>
+               <documentation>Folder type</documentation>
             </annotation>
          </attribute>
-         <attribute name="label" type="string" use="required">
+         <attribute name="label" type="string">
             <annotation>
-               <documentation>
-                  Folder label
-               </documentation>
+               <documentation>Folder label</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -323,88 +267,64 @@
          </attribute>
          <attribute name="icon" type="string">
             <annotation>
-               <documentation>
-                  Folder icon
-               </documentation>
+               <documentation>Folder icon</documentation>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <documentation>
-                  Folder description
-               </documentation>
+               <documentation>Folder description</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="navigable" type="boolean">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="virtual" type="boolean">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="visibleIf" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
+         <attribute name="navigable" type="boolean"/>
+         <attribute name="id" type="string"/>
+         <attribute name="virtual" type="boolean"/>
+         <attribute name="visibleIf" type="string"/>
+          <attribute name="adminFolder" type="boolean"/>
+          <attribute name="optionalItem" type="string"/>
+       </complexType>
+    </element>
+
+    <element name="itemType">
+       <complexType>
+          <attribute name="type" type="string" use="required"/>
+          <attribute name="label" type="string"/>
+          <attribute name="icon" type="string"/>
+       </complexType>
+    </element>
 
    <element name="drivers">
       <annotation>
-         <documentation>
-            Data source supported drivers
-         </documentation>
+         <documentation>Data source supported drivers</documentation>
       </annotation>
       <complexType>
          <sequence>
             <element ref="driver" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="main-properties" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="provider-properties" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="managable" type="boolean">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="managable" type="boolean"/>
       </complexType>
    </element>
 
    <element name="driver">
       <complexType>
-         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element ref="library" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="query" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="file" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="os" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="replace" minOccurs="0" maxOccurs="unbounded"/>
-         </sequence>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="file"/>
+            <element ref="fileSource"/>
+            <element ref="main-properties"/>
+            <element ref="provider-properties"/>
+            <element ref="parameter"/>
+            <element ref="property"/>
+            <element ref="os"/>
+            <element ref="replace"/>
+            <element ref="notAvailableDriver"/>
+         </choice>
          <attribute name="label" type="string">
             <annotation>
-               <documentation>
-                  Driver name
-               </documentation>
+               <documentation>Driver name</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -412,9 +332,7 @@
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <documentation>
-                  Driver description
-               </documentation>
+               <documentation>Driver description</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -422,94 +340,56 @@
          </attribute>
          <attribute name="icon" type="string">
             <annotation>
-               <documentation>
-                  Driver icon
-               </documentation>
+               <documentation>Driver icon</documentation>
             </annotation>
-         </attribute>
-         <attribute name="logoImage" type="string">
-             <annotation>
-                <documentation>
-                   Driver logo image. Overrides the data source type logo image.
-                </documentation>
-                <appInfo>
-                   <meta.attribute kind="resource"/>
-                </appInfo>
-             </annotation>
          </attribute>
          <attribute name="class" type="string">
             <annotation>
-               <documentation>
-                  Driver implementation class
-               </documentation>
+               <documentation>Driver implementation class</documentation>
             </annotation>
          </attribute>
-         <attribute name="sampleURL" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="webURL" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="sampleURL" type="string"/>
+         <attribute name="webURL" type="string"/>
          <attribute name="defaultPort" type="string">
             <annotation>
-               <documentation>
-                  Driver default port
-               </documentation>
+               <documentation>Driver default port</documentation>
             </annotation>
          </attribute>
          <attribute name="id" type="string" use="required">
             <annotation>
-               <documentation>
-                  Driver ID
-               </documentation>
+               <documentation>Driver ID</documentation>
             </annotation>
          </attribute>
-          <attribute name="category" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-          </attribute>
-          <attribute name="dataSourceType" type="string">
-             <annotation><documentation>Data source type. Overrides the provider default.</documentation></annotation>
-          </attribute>
-         <attribute name="anonymous" type="boolean">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="os" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="clientRequired" type="boolean">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="customDriverLoader" type="boolean">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="category" type="string"/>
+         <attribute name="anonymous" type="boolean"/>
+         <attribute name="os" type="string"/>
+         <attribute name="clientRequired" type="boolean"/>
+         <attribute name="customDriverLoader" type="boolean"/>
+         <attribute name="categories" type="string"/>
+         <attribute name="dataSourceType" type="string"/>
+         <attribute name="defaultHost" type="string"/>
+         <attribute name="defaultDatabase" type="string"/>
+         <attribute name="defaultServer" type="string"/>
+         <attribute name="defaultUser" type="string"/>
+         <attribute name="dialect" type="string"/>
+         <attribute name="propertiesURL" type="string"/>
+         <attribute name="databaseDocumentationSuffixURL" type="string"/>
+         <attribute name="supportsDriverProperties" type="boolean"/>
+         <attribute name="useURL" type="boolean"/>
+         <attribute name="customEndpoint" type="boolean"/>
+         <attribute name="promoted" type="integer"/>
+         <attribute name="instantiable" type="boolean"/>
+         <attribute name="embedded" type="boolean"/>
+         <attribute name="singleConnection" type="boolean"/>
+         <attribute name="threadSafe" type="boolean"/>
+         <attribute name="allowsEmptyPassword" type="boolean"/>
+         <attribute name="propagateDriverProperties" type="boolean"/>
+         <attribute name="licenseRequired" type="boolean"/>
+         <attribute name="supportsDistributedMode" type="boolean"/>
+         <attribute name="supportedConfigurationTypes" type="string"/>
+         <attribute name="supportedPageFields" type="string"/>
+         <attribute name="iconBig" type="string"/>
+         <attribute name="logoImage" type="string"/>
       </complexType>
    </element>
 
@@ -517,9 +397,6 @@
       <complexType>
          <attribute name="path" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute kind="resource"/>
                </appInfo>
@@ -527,9 +404,7 @@
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <documentation>
-                  Library description
-               </documentation>
+               <documentation>Library description</documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -540,14 +415,11 @@
 
    <element name="propertyGroup">
       <complexType>
-         <sequence minOccurs="0" maxOccurs="unbounded">
-            <element ref="property"/>
+         <sequence>
+            <element ref="property" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="label" type="string" use="required">
+         <attribute name="label" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -558,11 +430,13 @@
 
    <element name="property">
       <complexType>
-         <attribute name="label" type="string" use="required">
+         <attribute name="id" type="string">
+            <annotation><appInfo><meta.attribute kind="identifier"/></appInfo></annotation>
+         </attribute>
+         <attribute name="name" type="string"/>
+         <attribute name="value" type="string"/>
+         <attribute name="label" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -570,95 +444,57 @@
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="type" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="type" type="string"/>
+         <attribute name="hint" type="string"/>
+         <attribute name="required" type="boolean"/>
+         <attribute name="defaultValue" type="string"/>
+         <attribute name="validValues" type="string"/>
+         <attribute name="allowCustomValues" type="boolean"/>
+         <attribute name="features" type="string"/>
+         <attribute name="length" type="string"/>
+         <attribute name="desktop" type="boolean"/>
+         <attribute name="hidden" type="boolean"/>
+         <attribute name="hideExpr" type="string"/>
+         <attribute name="readOnlyExpr" type="string"/>
+         <attribute name="supportedConfigurationTypes" type="string"/>
       </complexType>
    </element>
 
    <element name="icon">
       <complexType>
-         <attribute name="icon" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="if" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="default" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="icon" type="string"/>
+         <attribute name="if" type="string"/>
+         <attribute name="default" type="boolean"/>
       </complexType>
    </element>
 
    <element name="query">
       <complexType>
-         <attribute name="label" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="label" type="string" use="required"/>
       </complexType>
    </element>
 
    <element name="parameter">
       <complexType>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="value" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="name" type="string" use="required"/>
+         <attribute name="value" type="string" use="required"/>
       </complexType>
    </element>
 
    <element name="object">
       <complexType>
-         <attribute name="type" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="icon"/>
+            <element ref="handler"/>
+         </choice>
+         <attribute name="type" type="string"/>
          <attribute name="label" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -666,116 +502,67 @@
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="editor" type="string" use="required">
+         <attribute name="editor" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.ui.part.EditorPart:"/>
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="icon" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="icon" type="string"/>
       </complexType>
    </element>
 
    <element name="file">
       <complexType>
-         <attribute name="type" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="path" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="url" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="os" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="type" type="string" use="required"/>
+         <attribute name="path" type="string"/>
+         <attribute name="name" type="string"/>
+         <attribute name="description" type="string"/>
+         <attribute name="url" type="string"/>
+         <attribute name="os" type="string"/>
          <attribute name="arch" type="string">
             <annotation>
-               <documentation>
-                  Target processor architecture.
-               </documentation>
+               <documentation>Target processor architecture.</documentation>
             </annotation>
          </attribute>
          <attribute name="exclude" type="boolean">
             <annotation>
-               <documentation>
-                  Excludes the platform matched by the os and arch attributes.
-               </documentation>
+               <documentation>Excludes the platform matched by the os and arch attributes.</documentation>
             </annotation>
          </attribute>
+         <attribute name="embedded" type="boolean"/>
+         <attribute name="optional" type="boolean"/>
+         <attribute name="bundle" type="string"/>
+         <attribute name="custom" type="boolean"/>
+         <attribute name="if" type="string"/>
+         <attribute name="ignore-dependencies" type="boolean"/>
+         <attribute name="load-optional-dependencies" type="boolean"/>
       </complexType>
    </element>
 
    <element name="os">
       <complexType>
-         <attribute name="name" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="name" type="string" use="required"/>
+         <attribute name="arch" type="string"/>
       </complexType>
    </element>
 
    <element name="replace">
       <complexType>
-         <attribute name="provider" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="driver" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="provider" type="string" use="required"/>
+         <attribute name="driver" type="string" use="required"/>
       </complexType>
    </element>
 
    <element name="tools">
       <complexType>
-         <sequence>
-         </sequence>
+         <sequence/>
       </complexType>
    </element>
 
@@ -783,14 +570,13 @@
       <complexType>
          <attribute name="name" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute kind="java"/>
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="if" type="string"/>
+         <attribute name="forceCheck" type="boolean"/>
       </complexType>
    </element>
 
@@ -804,18 +590,9 @@
 
    <element name="resolver">
       <complexType>
-         <attribute name="type" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="type" type="string" use="required"/>
          <attribute name="class" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute kind="java"/>
                </appInfo>
@@ -823,9 +600,6 @@
          </attribute>
          <attribute name="description" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -834,41 +608,171 @@
       </complexType>
    </element>
 
+   <element name="datasourcePatch">
+      <complexType>
+         <sequence>
+            <element ref="treeInjection" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="id" type="string" use="required"/>
+      </complexType>
+   </element>
+
+   <element name="datasourceReplace">
+      <complexType>
+         <attribute name="provider" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
+            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceProvider"/></appInfo></annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="datasourceOrigin">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="label" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
+            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceOriginProvider"/></appInfo></annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="editorContribution">
+      <complexType>
+          <choice minOccurs="0" maxOccurs="unbounded">
+             <element ref="supports"/>
+             <element ref="objectType"/>
+          </choice>
+         <attribute name="editorId" type="string" use="required"/>
+         <attribute name="category" type="string" use="required"/>
+         <attribute name="label" type="string"/>
+         <attribute name="description" type="string"/>
+         <attribute name="icon" type="string"/>
+          <attribute name="visibleIf" type="string"/>
+          <attribute name="objectType" type="string"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
+       </complexType>
+   </element>
+
+   <element name="supports">
+      <complexType>
+         <attribute name="dataSource" type="string"/>
+         <attribute name="driver" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="driverSubstitution">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="name" type="string" use="required"/>
+         <attribute name="provider" type="string" use="required"/>
+         <attribute name="driver" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
+            <annotation><appInfo><meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.connection.DBPDriverSubstitution"/></appInfo></annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="treeInjection">
+      <complexType>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="items"/>
+            <element ref="folder"/>
+            <element ref="object"/>
+            <element ref="icon"/>
+         </choice>
+         <attribute name="path" type="string" use="required"/>
+         <attribute name="after" type="string"/>
+         <attribute name="sibling" type="string"/>
+         <attribute name="replaceChildren" type="boolean"/>
+         <attribute name="remove" type="boolean"/>
+         <attribute name="changeFolderType" type="string"/>
+         <attribute name="changeFolderLabel" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="treeContribution">
+      <complexType><attribute name="category" type="string" use="required"/></complexType>
+   </element>
+
+   <element name="handler">
+      <complexType>
+         <attribute name="action" type="string" use="required"/>
+         <attribute name="perform" type="string"/>
+         <attribute name="command" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="driver-properties">
+      <complexType><sequence><element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/></sequence></complexType>
+   </element>
+
+   <element name="main-properties">
+      <complexType>
+         <sequence><element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/></sequence>
+         <attribute name="drivers" type="string"/>
+         <attribute name="copyFrom" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="provider-properties">
+      <complexType>
+         <sequence><element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/></sequence>
+         <attribute name="drivers" type="string"/>
+         <attribute name="copyFrom" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="fileSource">
+      <complexType>
+         <sequence><element ref="file" minOccurs="0" maxOccurs="unbounded"/></sequence>
+         <attribute name="url" type="string" use="required"/>
+         <attribute name="name" type="string"/>
+         <attribute name="instructions" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="notAvailableDriver">
+      <complexType>
+         <attribute name="message" type="string" use="required"/>
+         <attribute name="title" type="string"/>
+         <attribute name="description" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="nativeClients">
+      <complexType><sequence><element ref="client" minOccurs="0" maxOccurs="unbounded"/></sequence></complexType>
+   </element>
+
+   <element name="client">
+      <complexType>
+         <sequence><element ref="dist" minOccurs="0" maxOccurs="unbounded"/></sequence>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="label" type="string"/>
+      </complexType>
+   </element>
+
+   <element name="dist">
+      <complexType>
+         <choice minOccurs="0" maxOccurs="unbounded">
+            <element ref="file"/>
+            <element ref="driver"/>
+         </choice>
+         <attribute name="os" type="string" use="required"/>
+         <attribute name="arch" type="string"/>
+         <attribute name="targetPath" type="string"/>
+         <attribute name="remotePath" type="string"/>
+         <attribute name="resourcePath" type="string"/>
+      </complexType>
+   </element>
+
    <annotation>
       <appInfo>
          <meta.section type="since"/>
       </appInfo>
-      <documentation>
-         1.0
-      </documentation>
+      <documentation>1.0</documentation>
    </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="examples"/>
-      </appInfo>
-      <documentation>
-         [Enter extension point usage example here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
 
 
 </schema>

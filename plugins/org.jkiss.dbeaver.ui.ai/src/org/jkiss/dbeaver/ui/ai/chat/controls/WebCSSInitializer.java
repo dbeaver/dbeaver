@@ -52,7 +52,8 @@ public class WebCSSInitializer implements AutoCloseable {
 
     private final LocalResourceHttpServer.Handle server;
     private final Map<String, String> resourceUrls = new HashMap<>();
-    private final Map<String, String> cssValues;
+    private volatile Map<String, String> cssValues;
+    private long themeRevision;
 
     public WebCSSInitializer() throws IOException {
         cssValues = fillValues();
@@ -102,6 +103,16 @@ public class WebCSSInitializer implements AutoCloseable {
     @NotNull
     public String getWebPath() {
         return server.getBaseUrl();
+    }
+
+    public void refreshTheme() {
+        cssValues = fillValues();
+        themeRevision++;
+    }
+
+    @NotNull
+    public String getThemeStylesheetPath() {
+        return server.getUrl(WEB_CSS_PATH) + "?theme=" + themeRevision;
     }
 
     @NotNull

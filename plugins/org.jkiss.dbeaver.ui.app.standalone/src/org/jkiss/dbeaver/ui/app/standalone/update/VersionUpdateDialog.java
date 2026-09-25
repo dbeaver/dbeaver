@@ -250,7 +250,7 @@ public class VersionUpdateDialog extends Dialog {
         if (buttonId == INFO_ID) {
             ShellUtils.launchProgram(newVersion.getBaseURL());
         } else if (buttonId == UPGRADE_ID) {
-            performUpdate(newVersion);
+            performUpdate(currentVersion, newVersion);
         } else if (buttonId == CHECK_EA_ID) {
             if (!CommonUtils.isEmpty(earlyAccessURL)) {
                 ShellUtils.launchProgram(earlyAccessURL);
@@ -268,7 +268,11 @@ public class VersionUpdateDialog extends Dialog {
     }
 
     public static void performUpdate(@NotNull VersionDescriptor version) {
-        performUpdate(version, null);
+        performUpdate(GeneralUtils.getProductVersion(), version);
+    }
+
+    static void performUpdate(@NotNull Version currentVersion, @NotNull VersionDescriptor newVersion) {
+        VersionUpdateHandler.startUpdate(currentVersion, newVersion);
     }
 
     static boolean performUpdate(@NotNull VersionDescriptor version, @Nullable Consumer<IStatus> completion) {
