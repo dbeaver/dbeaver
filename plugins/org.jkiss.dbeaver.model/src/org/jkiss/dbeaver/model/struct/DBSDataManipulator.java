@@ -40,6 +40,8 @@ public interface DBSDataManipulator extends DBSDataContainer {
     String FEATURE_DATA_UPDATE = "data.update";
     String FEATURE_DATA_DELETE = "data.delete";
     String FEATURE_DATA_TRUNCATE = "data.truncate";
+    /** Saving a row can change other rows (for example, spreadsheet formulas). Reload the full result after saving. */
+    String FEATURE_DATA_REFRESH_AFTER_UPDATE = "data.refresh.after.update";
 
     String INSERT_NONE_METHOD = "<None>";
 
