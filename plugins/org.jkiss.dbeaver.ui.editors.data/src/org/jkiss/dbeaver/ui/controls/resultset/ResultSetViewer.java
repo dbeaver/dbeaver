@@ -3690,7 +3690,10 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void handleDataSourceEvent(@NotNull DBPEvent event) {
-        if (event.getObject() instanceof DBVEntity &&
+        if (event.getData() == DBCStatistics.QUERY_TEXT_CHANGED &&
+            getExecutionContext() != null && event.getObject() == getExecutionContext().getDataSource()) {
+            UIUtils.asyncExec(() -> updateFiltersText(false));
+        } else if (event.getObject() instanceof DBVEntity &&
             event.getObject() == model.getVirtualEntity(false) &&
             event.getData() != null) {
 
@@ -4512,6 +4515,12 @@ public class ResultSetViewer extends Viewer
             queryText = DEFAULT_QUERY_TEXT;
         }
         return queryText;
+    }
+
+    @Nullable
+    public String getActiveQueryTextLabel() {
+        DBCStatistics statistics = getModel().getStatistics();
+        return statistics == null ? null : statistics.getQueryTextLabel();
     }
 
     @Nullable
