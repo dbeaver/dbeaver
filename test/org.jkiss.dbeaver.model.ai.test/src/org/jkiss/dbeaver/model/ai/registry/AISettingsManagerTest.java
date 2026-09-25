@@ -62,6 +62,48 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void migratesLegacyDefaultEngineAndOpenAIModel() throws Exception {
+        String config = """
+            {
+              "activeEngine": "copilot",
+              "engineConfigurations": {
+                "openai": {
+                  "properties": {
+                    "gpt.token": "openai-token"
+                  }
+                },
+                "copilot": {
+                  "properties": {
+                    "copilot.access.token": "copilot-token",
+                    "gpt.model": "gpt-4o"
+                  }
+                }
+              }
+            }
+            """;
+
+        AISettings settings = AISettingsManager.READ_PROPS_GSON.fromJson(config, AISettings.class);
+        settings.finishSettingsLoading();
+
+        Assertions.assertEquals("copilot", settings.getDefaultConfiguration().getProfileId());
+        Assertions.assertEquals("copilot", settings.getDefaultConfiguration().getEngineId());
+        Assertions.assertEquals(
+            OpenAIConstants.LEGACY_DEFAULT_MODEL,
+            settings.getConfiguration(OpenAIConstants.OPENAI_ENGINE).getConfiguration().getModel()
+        );
+        Assertions.assertEquals(
+            OpenAIConstants.LEGACY_DEFAULT_MODEL,
+            JsonParser.parseString(AISettingsManager.SAVE_PROPS_GSON.toJson(settings))
+                .getAsJsonObject()
+                .getAsJsonObject("configurations")
+                .getAsJsonObject(OpenAIConstants.OPENAI_ENGINE)
+                .getAsJsonObject("configuration")
+                .get(OpenAIConstants.GPT_MODEL)
+                .getAsString()
+        );
+    }
+
+    @Test
     public void skipsUnknownLegacyEngineConfiguration() throws Exception {
         String config = """
             {

@@ -796,6 +796,7 @@ public abstract class LightGrid extends Canvas {
         return getColumn(col).getBounds();
     }
 
+    @Nullable
     public IGridRow getRowByElement(int fromIndex, Object element) {
         for (int i = fromIndex; i < gridRows.length; i++) {
             if (gridRows[i].getElement() == element) {

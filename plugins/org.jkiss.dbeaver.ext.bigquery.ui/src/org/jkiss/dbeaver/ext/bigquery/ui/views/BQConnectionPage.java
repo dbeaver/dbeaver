@@ -17,19 +17,16 @@
 package org.jkiss.dbeaver.ext.bigquery.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.bigquery.auth.BQAuthModel;
 import org.jkiss.dbeaver.ext.bigquery.model.BQConstants;
-import org.jkiss.dbeaver.ext.bigquery.ui.BigQueryUIConstants;
 import org.jkiss.dbeaver.ext.bigquery.ui.internal.BigQueryMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -52,8 +49,6 @@ public class BQConnectionPage extends ConnectionPageWithAuth implements IDialogP
     private Text hostText;
     private Text portText;
 
-    private static final ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
-        BigQueryUIConstants.PLUGIN_ID, "icons/bigquery_logo.png"); //$NON-NLS-1$
     private final DriverPropertiesDialogPage driverPropsPage;
 
     public BQConnectionPage() {
@@ -61,16 +56,8 @@ public class BQConnectionPage extends ConnectionPageWithAuth implements IDialogP
     }
 
     @Override
-    public void dispose()
+    public void createControl(@NotNull Composite composite)
     {
-        super.dispose();
-    }
-
-    @Override
-    public void createControl(Composite composite)
-    {
-        setImageDescriptor(logoImage);
-
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         settingsGroup.setLayout(new GridLayout(1, false));
         settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
