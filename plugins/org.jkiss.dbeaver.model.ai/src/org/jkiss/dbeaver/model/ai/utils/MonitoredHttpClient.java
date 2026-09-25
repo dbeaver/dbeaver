@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.HttpConstants;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -174,12 +176,34 @@ public class MonitoredHttpClient implements AutoCloseable {
                     "Received HTTP " + response.statusCode() + " redirect"
                         + response.headers().firstValue("Location")
                             .filter(location -> !location.isBlank())
+                            .map(MonitoredHttpClient::sanitizeRedirectLocation)
                             .map(location -> " to " + location)
                             .orElse(" without a Location header")
                         + ". Set the API base URL to the final endpoint; redirects are not followed automatically."
                 );
             default -> null;
         };
+    }
+
+    @NotNull
+    private static String sanitizeRedirectLocation(@NotNull String location) {
+        try {
+            URI uri = new URI(location);
+            StringBuilder result = new StringBuilder();
+            if (uri.getScheme() != null) {
+                result.append(uri.getScheme()).append(':');
+            }
+            if (uri.getRawAuthority() != null) {
+                String authority = uri.getRawAuthority();
+                result.append("//").append(authority.substring(authority.lastIndexOf('@') + 1));
+            }
+            if (uri.getRawPath() != null) {
+                result.append(uri.getRawPath());
+            }
+            return result.isEmpty() ? "<redacted redirect target>" : result.toString();
+        } catch (URISyntaxException e) {
+            return "<invalid redirect target>";
+        }
     }
 
     @Override
