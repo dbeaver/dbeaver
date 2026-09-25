@@ -15,5 +15,8 @@ Export-Package: org.jkiss.dbeaver.tools.transfer.ui,
 Require-Bundle: org.jkiss.dbeaver.tasks.ui;visibility:=reexport,
  org.jkiss.dbeaver.data.transfer;visibility:=reexport,
  org.jkiss.dbeaver.ui.forms,
- org.jkiss.dbeaver.ui.editors.connection
+ org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.editors.connection,
+ org.eclipse.ui.console
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer.ui

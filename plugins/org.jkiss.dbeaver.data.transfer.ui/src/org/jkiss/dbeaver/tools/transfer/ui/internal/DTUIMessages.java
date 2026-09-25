@@ -148,6 +148,8 @@ public class DTUIMessages extends NLS {
     public static String sql_script_task_configuration_wizard_default_window_title;
     public static String sql_script_task_data_source_selection_dialog_column_description_script;
     public static String sql_script_task_data_source_selection_dialog_column_description_script_data_source;
+    public static String sql_script_task_page_log_title;
+    public static String sql_script_task_page_log_description;
     public static String sql_script_task_page_settings_tool_item_text_add_script;
     public static String sql_script_task_page_settings_tool_item_text_remove_script;
     public static String sql_script_task_page_settings_tool_item_text_move_script_up;
