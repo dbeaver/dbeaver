@@ -221,7 +221,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         ConComposite group = new ConComposite(parent);
         group.setGridLayout(1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
-        UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_columns_group_virtual);
+        createTableTitle(group, DataEditorsMessages.virtual_structure_editor_columns_group_virtual);
 
         columnsPage = new EditVirtualColumnsPage(null, vEntity);
         columnsPage.createControl(group);
@@ -235,7 +235,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         ConComposite group = new ConComposite(parent);
         group.setGridLayout(1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
-        UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_columns_group_unique_keys);
+        createTableTitle(group, DataEditorsMessages.virtual_structure_editor_columns_group_unique_keys);
 
         ukTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         ukTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -335,7 +335,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         ConComposite group = new ConComposite(parent);
         group.setGridLayout(1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
-        UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_control_group_label_foreign_key);
+        createTableTitle(group, DataEditorsMessages.virtual_structure_editor_control_group_label_foreign_key);
 
         fkTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         fkTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -381,7 +381,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         ConComposite group = new ConComposite(parent);
         group.setGridLayout(1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
-        UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_control_group_references);
+        createTableTitle(group, DataEditorsMessages.virtual_structure_editor_control_group_references);
 
         refTable = new Table(group, SWT.FULL_SELECTION | SWT.BORDER);
         refTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -399,6 +399,13 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_refresh, SelectionListener.widgetSelectedAdapter(e -> {
                 })).setEnabled(false);
         }
+    }
+
+    private static void createTableTitle(Composite parent, String text) {
+        Label label = UIUtils.createControlLabel(parent, text);
+        var boldFont = UIUtils.makeBoldFont(label.getFont());
+        label.setFont(boldFont);
+        label.addDisposeListener(e -> boldFont.dispose());
     }
 
     private void createForeignKeyItem(Table fkTable, DBVEntityForeignKey fk, boolean ref) {
