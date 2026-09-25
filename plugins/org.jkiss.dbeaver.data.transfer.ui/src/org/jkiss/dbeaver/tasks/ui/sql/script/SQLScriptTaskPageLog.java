@@ -28,6 +28,7 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 
 import java.io.PrintStream;
@@ -43,8 +44,8 @@ class SQLScriptTaskPageLog extends WizardPage implements IWizardPageNavigable {
 
     SQLScriptTaskPageLog() {
         super("sqlScriptExecuteLog");
-        setTitle("Execution log");
-        setDescription("SQL script execution progress");
+        setTitle(DTUIMessages.sql_script_task_page_log_title);
+        setDescription(DTUIMessages.sql_script_task_page_log_description);
     }
 
     @Override

@@ -62,8 +62,8 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        Shell activeShell = HandlerUtil.getActiveShell(event);
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        Shell activeShell = HandlerUtil.getActiveShellChecked(event);
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         List<IFile> scripts = getSelectedScripts(HandlerUtil.getCurrentSelection(event));
         for (IFile script : scripts) {
             executeScriptFile(activeShell, workbenchWindow, script);
@@ -118,7 +118,6 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
         SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
         settings.setScriptFiles(List.of(rcpProject.getResourcePath(script)));
         settings.setDataSources(List.of(dataSourceContainer));
-        settings.setAutoCommit(true);
         settings.setIgnoreErrors(false);
 
         Map<String, Object> config = new LinkedHashMap<>();
