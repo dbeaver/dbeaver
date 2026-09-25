@@ -214,23 +214,64 @@ public final class SQLUtils {
         return result.toString();
     }
 
+    /**
+     * Finds the position of the first single-line comment marker.
+     * Markers inside a string literal or a quoted identifier are ignored.
+     *
+     * @param dialect the dialect providing the comment marker and the quoting rules
+     * @param sql     the SQL to scan
+     * @param start   the index to start scanning from
+     * @return the position of the comment marker, or -1 if there is none
+     */
+    public static int findLineCommentPos(@NotNull SQLDialect dialect, @NotNull CharSequence sql, int start) {
+        String[] slComments = dialect.getSingleLineComments();
+        if (ArrayUtils.isEmpty(slComments) || CommonUtils.isEmpty(slComments[0])) {
+            return -1;
+        }
+        String slComment = slComments[0];
+        String[][] stringQuotes = dialect.getStringQuoteStrings();
+        String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
+        char escapeChar = dialect.getStringEscapeCharacter();
+        int pos = start;
+        while (pos < sql.length()) {
+            String[] stringQuote = quoteStartingAt(sql, pos, stringQuotes);
+            if (stringQuote != null) {
+                pos = skipQuoted(sql, pos, stringQuote, escapeChar);
+                continue;
+            }
+            String[] identifierQuote = identifierQuotes == null
+                ? null
+                : quoteStartingAt(sql, pos, identifierQuotes);
+            if (identifierQuote != null) {
+                // Identifiers escape a quote by doubling it, so escapeChar must not consume the closing quote
+                pos = skipQuoted(sql, pos, identifierQuote, (char) 0);
+                continue;
+            }
+            if (startsWith(sql, slComment, pos)) {
+                return pos;
+            }
+            pos++;
+        }
+        return -1;
+    }
+
     @Nullable
-    private static String[] quoteStartingAt(@NotNull String sql, int pos, @NotNull String[][] quotes) {
+    private static String[] quoteStartingAt(@NotNull CharSequence sql, int pos, @NotNull String[][] quotes) {
         for (String[] quote : quotes) {
-            if (sql.startsWith(quote[0], pos)) {
+            if (startsWith(sql, quote[0], pos)) {
                 return quote;
             }
         }
         return null;
     }
 
-    private static int skipQuoted(@NotNull String sql, int openPos, @NotNull String[] quote, char escapeChar) {
+    private static int skipQuoted(@NotNull CharSequence sql, int openPos, @NotNull String[] quote, char escapeChar) {
         String close = quote[1];
         int pos = openPos + quote[0].length();
         while (pos < sql.length()) {
             if (escapeChar != 0 && sql.charAt(pos) == escapeChar) {
                 pos += 2;
-            } else if (sql.startsWith(close, pos)) {
+            } else if (startsWith(sql, close, pos)) {
                 return pos + close.length();
             } else {
                 pos++;
@@ -246,6 +287,18 @@ public final class SQLUtils {
             }
         }
         return false;
+    }
+
+    private static boolean startsWith(@NotNull CharSequence sql, @NotNull String prefix, int offset) {
+        if (offset < 0 || offset > sql.length() - prefix.length()) {
+            return false;
+        }
+        for (int i = 0; i < prefix.length(); i++) {
+            if (sql.charAt(offset + i) != prefix.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int getLineEnd(@NotNull String sql, int pos) {
