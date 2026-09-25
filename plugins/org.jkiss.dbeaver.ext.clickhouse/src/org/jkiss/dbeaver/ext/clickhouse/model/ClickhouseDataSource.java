@@ -65,8 +65,6 @@ public class ClickhouseDataSource extends GenericDataSource {
     private final TableEnginesCache engineCache = new TableEnginesCache();
     // output_format_binary_write_json_as_string was introduced in ClickHouse 24.10.
     private static final Version JSON_AS_STRING_MIN_VERSION = new Version(24, 10, 0);
-    // readonly=1 forbids any setting change; readonly=2 still allows them.
-    private static final int READONLY_NO_SETTINGS = 1;
     // Driver methods used to enable JSON-as-string serialization. Resolved once (the driver class does not
     // change during a data source's lifetime) and reused, so we don't re-resolve on every connection.
     private Method getDefaultQuerySettingsMethod;
@@ -452,8 +450,8 @@ public class ClickhouseDataSource extends GenericDataSource {
      */
     private boolean isReadOnlySession(@NotNull Connection connection) {
         try (Statement stmt = connection.createStatement()) {
-            try (ResultSet rs = stmt.executeQuery("SELECT getSetting('readonly')")) { //$NON-NLS-1$
-                return rs.next() && rs.getInt(1) == READONLY_NO_SETTINGS;
+            try (ResultSet rs = stmt.executeQuery("SELECT getSetting('readonly') = 1")) { //$NON-NLS-1$
+                return rs.next() && rs.getBoolean(1);
             }
         } catch (Throwable e) {
             log.debug("Can't determine ClickHouse readonly mode", e);
