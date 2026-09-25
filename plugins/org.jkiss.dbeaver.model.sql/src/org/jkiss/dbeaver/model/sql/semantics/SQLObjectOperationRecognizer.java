@@ -164,8 +164,20 @@ public final class SQLObjectOperationRecognizer {
                 STMKnownRuleNames.qualifiedName
             );
         }
+        if (statement.getNodeName().equals(STMKnownRuleNames.alterNamedObjectStatement)) {
+            STMTreeNode kindNode = findDescendant(statement, STMKnownRuleNames.alterObjectKind);
+            return kindNode == null ? List.of() : createAlterOperations(
+                statement,
+                getObjectKind(kindNode),
+                STMKnownRuleNames.qualifiedName
+            );
+        }
         if (statement.getNodeName().equals(STMKnownRuleNames.alterTableStatement)) {
-            return createAlterTableOperations(statement);
+            return createAlterOperations(
+                statement,
+                SQLObjectOperation.ObjectKind.TABLE,
+                STMKnownRuleNames.tableName
+            );
         }
         SQLObjectOperation operation = recognizeSingle(statement);
         return operation == null ? List.of() : List.of(operation);
@@ -207,13 +219,6 @@ public final class SQLObjectOperationRecognizer {
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.createCatalogDatabaseStatement)) {
             return createContainerOperation(statement, SQLObjectOperation.Operation.CREATE);
-        }
-        if (statement.getNodeName().equals(STMKnownRuleNames.alterNamedObjectStatement)) {
-            return createNamedOperation(
-                statement,
-                SQLObjectOperation.Operation.ALTER,
-                STMKnownRuleNames.alterObjectKind
-            );
         }
         if (statement.getNodeName().equals(STMKnownRuleNames.dropSchemaStatement)) {
             return createOperation(
@@ -258,15 +263,19 @@ public final class SQLObjectOperationRecognizer {
     }
 
     @NotNull
-    private static List<SQLObjectOperation> createAlterTableOperations(@NotNull STMTreeNode statement) {
-        List<String> sourceName = getNameParts(findDescendant(statement, STMKnownRuleNames.tableName));
+    private static List<SQLObjectOperation> createAlterOperations(
+        @NotNull STMTreeNode statement,
+        @NotNull SQLObjectOperation.ObjectKind objectKind,
+        @NotNull String nameNodeName
+    ) {
+        List<String> sourceName = getNameParts(findDescendant(statement, nameNodeName));
         if (sourceName.isEmpty()) {
             return List.of();
         }
 
         SQLObjectOperation source = new SQLObjectOperation(
             SQLObjectOperation.Operation.ALTER,
-            SQLObjectOperation.ObjectKind.TABLE,
+            objectKind,
             sourceName
         );
         STMTreeNode setSchemaAction = findDescendant(statement, STMKnownRuleNames.setTableSchemaAction);
@@ -283,7 +292,7 @@ public final class SQLObjectOperationRecognizer {
         destinationName.add(sourceName.getLast());
         return List.of(source, new SQLObjectOperation(
             SQLObjectOperation.Operation.ALTER,
-            SQLObjectOperation.ObjectKind.TABLE,
+            objectKind,
             destinationName
         ));
     }

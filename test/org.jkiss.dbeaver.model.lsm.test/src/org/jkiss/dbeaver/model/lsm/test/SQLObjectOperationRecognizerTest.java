@@ -105,6 +105,10 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
             "DROP MATERIALIZED VIEW schema1.a, schema2.b",
             SQLObjectOperation.ObjectKind.VIEW
         );
+        assertMultipleDropTargets(
+            "DROP FUNCTION schema1.a(INT), schema2.b(TEXT)",
+            SQLObjectOperation.ObjectKind.FUNCTION
+        );
     }
 
     @Test
@@ -185,6 +189,20 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
                 )
             ),
             recognizeAll(BasicSQLDialect.INSTANCE, "ALTER TABLE catalog.old_schema.table_name SET SCHEMA new_schema")
+        );
+    }
+
+    @Test
+    void recognizesNamedObjectSetSchemaSourceAndDestinationInOrder() {
+        assertSetSchemaTargets(
+            "ALTER SEQUENCE old_schema.seq SET SCHEMA new_schema",
+            SQLObjectOperation.ObjectKind.SEQUENCE,
+            "seq"
+        );
+        assertSetSchemaTargets(
+            "ALTER FUNCTION old_schema.func(IN value INT) SET SCHEMA new_schema",
+            SQLObjectOperation.ObjectKind.FUNCTION,
+            "func"
         );
     }
 
@@ -384,6 +402,28 @@ public class SQLObjectOperationRecognizerTest extends DBeaverUnitTest {
         );
         Assertions.assertEquals(expected, recognizeAll(BasicSQLDialect.INSTANCE, sql));
         Assertions.assertEquals(expected.getFirst(), recognize(BasicSQLDialect.INSTANCE, sql));
+    }
+
+    private static void assertSetSchemaTargets(
+        @NotNull String sql,
+        @NotNull SQLObjectOperation.ObjectKind objectKind,
+        @NotNull String objectName
+    ) {
+        Assertions.assertEquals(
+            List.of(
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.ALTER,
+                    objectKind,
+                    List.of("old_schema", objectName)
+                ),
+                new SQLObjectOperation(
+                    SQLObjectOperation.Operation.ALTER,
+                    objectKind,
+                    List.of("new_schema", objectName)
+                )
+            ),
+            recognizeAll(BasicSQLDialect.INSTANCE, sql)
+        );
     }
 
     @NotNull
