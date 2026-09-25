@@ -633,6 +633,86 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return getCollation(defaultCollation);
     }
 
+    /**
+     * Collects the accounts that hold any privilege on objects of the given catalog.
+     *
+     * <p>Returned keys are in {@code user@host} form (unquoted), matching
+     * {@code MySQLUser.getUserName() + "@" + MySQLUser.getHost()}.
+     */
+    @NotNull
+    public Set<String> getObjectGrantees(@NotNull DBRProgressMonitor monitor, @NotNull MySQLCatalog catalog) throws DBException {
+        Set<String> keys = new HashSet<>();
+        String catalogName = catalog.getName();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Find users with grants on object")) {
+            if (supportsInformationSchema()) {
+                collectGrantees(session, keys,
+                    "SELECT DISTINCT GRANTEE FROM information_schema.SCHEMA_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
+                collectGrantees(session, keys,
+                    "SELECT DISTINCT GRANTEE FROM information_schema.TABLE_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
+                collectGrantees(session, keys,
+                    "SELECT DISTINCT GRANTEE FROM information_schema.COLUMN_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
+                // Global (*.*) grantees are intentionally not collected here: the object editor keeps
+                // only grants matching the catalog, so global grants are managed at the user level.
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT DISTINCT User, Host FROM mysql.procs_priv WHERE Db = ?")) {
+                dbStat.setString(1, catalogName);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        keys.add(
+                            JDBCUtils.safeGetString(dbResult, "User") + "@" + JDBCUtils.safeGetString(dbResult, "Host"));
+                    }
+                }
+            } catch (SQLException e) {
+                log.debug("Can't query mysql.procs_priv: " + e.getMessage());
+            }
+        }
+        return keys;
+    }
+
+    private static void collectGrantees(
+        @NotNull JDBCSession session, @NotNull Set<String> keys, @NotNull String sql, @Nullable String param) {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (param != null) {
+                dbStat.setString(1, param);
+            }
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    String key = granteeToKey(JDBCUtils.safeGetString(dbResult, "GRANTEE"));
+                    if (key != null) {
+                        keys.add(key);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Can't query privileges view: " + e.getMessage());
+        }
+    }
+
+    @Nullable
+    private static String granteeToKey(@Nullable String grantee) {
+        if (grantee == null) {
+            return null;
+        }
+        int at = grantee.lastIndexOf("@");
+        if (at < 0) {
+            return null;
+        }
+        return unquoteAccountPart(grantee.substring(0, at)) + "@" + unquoteAccountPart(grantee.substring(at + 1));
+    }
+
+    @NotNull
+    private static String unquoteAccountPart(@NotNull String value) {
+        String trimmed = value.trim();
+        if (trimmed.length() >= 2) {
+            char q = trimmed.charAt(0);
+            if ((q == '\'' || q == '`' || q == '"') && trimmed.charAt(trimmed.length() - 1) == q) {
+                return trimmed.substring(1, trimmed.length() - 1).replace("''", "'");
+            }
+        }
+        return trimmed;
+    }
+
     @NotNull
     public Collection<MySQLPlugin> getPlugins() {
         return plugins;

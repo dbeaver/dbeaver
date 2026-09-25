@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
 
 /**
  * MySQLUser
@@ -106,8 +103,13 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         this.userName = userName;
     }
 
+    /**
+     * The account as a quoted SQL identifier ({@code 'user'@'host'}) for use in GRANT/REVOKE and
+     * other statements. Single quotes in the user or host are doubled so crafted names stay valid.
+     */
+    @NotNull
     public String getFullName() {
-        return "'" + userName + "'@'" + host + "'";
+        return "'" + userName.replace("'", "''") + "'@'" + host.replace("'", "''") + "'";
     }
 
     @Nullable
@@ -174,54 +176,12 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLGrant> grants = new ArrayList<>();
                     while (dbResult.next()) {
-                        List<MySQLPrivilege> privileges = new ArrayList<>();
-                        boolean allPrivilegesFlag = false;
-                        boolean grantOption = false;
-                        String catalog = null;
-                        String table = null;
-
-                        String grantString = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1)).trim().toUpperCase(Locale.ENGLISH);
-                        if (grantString.endsWith(" WITH GRANT OPTION")) {
-                            grantOption = true;//privileges.add(getDataSource().getPrivilege(monitor, MySQLPrivilege.GRANT_PRIVILEGE));
+                        String grantString = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1));
+                        MySQLGrant grant = MySQLGrant.parseGrant(
+                            this, grantString, privName -> getDataSource().getPrivilege(monitor, privName));
+                        if (grant != null) {
+                            grants.add(grant);
                         }
-                        String privString;
-                        Matcher matcher = MySQLGrant.TABLE_GRANT_PATTERN.matcher(grantString);
-                        if (matcher.find()) {
-                            privString = matcher.group(1);
-                            catalog = matcher.group(2);
-                            table = matcher.group(3);
-                        } else {
-                            matcher = MySQLGrant.GLOBAL_GRANT_PATTERN.matcher(grantString);
-                            if (matcher.find()) {
-                                privString = matcher.group(1);
-                            } else {
-                                log.warn("Can't parse GRANT string: " + grantString);
-                                continue;
-                            }
-                        }
-                        StringTokenizer st = new StringTokenizer(privString, ",");
-                        while (st.hasMoreTokens()) {
-                            String privName = st.nextToken().trim();
-                            if (privName.equalsIgnoreCase(MySQLPrivilege.ALL_PRIVILEGES)) {
-                                allPrivilegesFlag = true;
-                                continue;
-                            }
-                            MySQLPrivilege priv = getDataSource().getPrivilege(monitor, privName);
-                            if (priv == null) {
-                                log.warn("Can't find privilege '" + privName + "'");
-                            } else {
-                                privileges.add(priv);
-                            }
-                        }
-
-                        grants.add(
-                            new MySQLGrant(
-                                this,
-                                privileges,
-                                catalog,
-                                table,
-                                allPrivilegesFlag,
-                                grantOption));
                     }
                     this.grants = grants;
                     return this.grants;
@@ -232,37 +192,67 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         }
     }
 
+    /**
+     * Reads the raw grant statements for this user (SHOW GRANTS) as returned by the server.
+     *
+     * <p>Unlike {@link #getGrants(DBRProgressMonitor)}, statements are returned verbatim,
+     * suitable for displaying as a script.
+     */
+    @NotNull
+    public List<String> getGrantScript(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<String> script = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read user grants")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + getFullName())) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String grant = JDBCUtils.safeGetString(dbResult, 1);
+                        if (!CommonUtils.isEmpty(grant)) {
+                            script.add(grant);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return script;
+    }
+
     @Property(viewable = true, order = 20)
+    @Nullable
     public String getSslType() {
         return sslType;
     }
 
-    void setSslType(String sslType) {
+    void setSslType(@Nullable String sslType) {
         this.sslType = sslType;
     }
 
     @Property(viewable = true, order = 21)
+    @Nullable
     public byte[] getSslCipher() {
         return sslCipher;
     }
 
-    void setSslCipher(byte[] sslCipher) {
+    void setSslCipher(@Nullable byte[] sslCipher) {
         this.sslCipher = sslCipher;
     }
 
+    @Nullable
     public byte[] getX509Issuer() {
         return x509Issuer;
     }
 
-    void setX509Issuer(byte[] x509Issuer) {
+    void setX509Issuer(@Nullable byte[] x509Issuer) {
         this.x509Issuer = x509Issuer;
     }
 
+    @Nullable
     public byte[] getX509Subject() {
         return x509Subject;
     }
 
-    void setX509Subject(byte[] x509Subject) {
+    void setX509Subject(@Nullable byte[] x509Subject) {
         this.x509Subject = x509Subject;
     }
 
