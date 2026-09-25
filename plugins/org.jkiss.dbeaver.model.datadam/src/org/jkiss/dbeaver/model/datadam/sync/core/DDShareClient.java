@@ -17,31 +17,17 @@
 package org.jkiss.dbeaver.model.datadam.sync.core;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
+import com.dbeaver.datadam.share.api.model.*;
 import com.dbeaver.datadam.share.api.model.DDConfiguration;
 import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
-import com.dbeaver.datadam.share.api.model.DDCreateConfigurationRequest;
-import com.dbeaver.datadam.share.api.model.DDSharedProject;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectConfiguration;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectFile;
-import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
-import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
-import com.dbeaver.datadam.share.api.utils.DDFingerprintUtils;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
 import com.dbeaver.rest.client.interceptor.HttpResponseWrapper;
 import com.dbeaver.rest.client.interceptor.InterceptorChain;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -49,6 +35,7 @@ import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.HttpConstants;
+import org.jkiss.utils.Pair;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -58,13 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import javax.crypto.SecretKey;
 
 public class DDShareClient extends AbstractRestClient implements DDSyncTransport, DDSharedProjectService {
@@ -246,43 +227,73 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
 
     @NotNull
     @Override
-    public DDSharedProjectConfiguration pullProjectConfiguration(@NotNull UUID projectId) throws DDShareException {
+    public DDSharedProjectRevision getCurrentProjectRevision(@NotNull UUID projectId) throws DDShareException {
+        try {
+            JsonObject data = call(
+                """
+                    query($projectId: ID!) {
+                        currentProjectRevision(projectId: $projectId) {
+                            id: revisionId
+                            userId
+                            updateTime
+                            configurationFingerprint
+                        }
+                    }""", Map.of("projectId", projectId.toString())
+            );
+            JsonElement result = data.get("currentProjectRevision");
+            if (result == null || result.isJsonNull()) {
+                throw new DDShareException("Project not found or has no current revision: " + projectId);
+            }
+            return gson.fromJson(result, DDSharedProjectRevision.class);
+        } catch (DBException e) {
+            throw new DDShareException("Failed to get current project revision", e);
+        }
+    }
+
+    @NotNull
+    @Override
+    public DDSharedProjectPullResponse pullProjectConfiguration(@NotNull UUID projectId) throws DDShareException {
         try {
             JsonObject data = call("""
                 query($projectId: ID!) {
                     pullProjectConfiguration(projectId: $projectId) {
-                        configurationFingerprint
                         files {
                             fileName
                             encryptedContents
                             fingerprint
                         }
+                        currentRevision {
+                            id: revisionId
+                            userId
+                            updateTime
+                            configurationFingerprint
+                        }
                     }
                 }""", Map.of("projectId", projectId.toString()));
             JsonElement result = data.get("pullProjectConfiguration");
             if (result == null || result.isJsonNull()) {
-                throw new DDShareException("Project not found: " + projectId);
+                throw new DDShareException("Project not found or has no current revision: " + projectId);
             }
-            return gson.fromJson(result, DDSharedProjectConfiguration.class);
+            return gson.fromJson(result, DDSharedProjectPullResponse.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to pull project configuration", e);
         }
     }
 
     /**
-     * Convenience wrapper over pullProjectConfiguration that also decrypts each file's contents.
+     * Pulls a consistent project revision and decrypts its files.
      */
     @NotNull
     public DDSharedProjectPullResult pullFiles(@NotNull UUID projectId) throws DDShareException {
-        DDSharedProjectConfiguration remote = pullProjectConfiguration(projectId);
         try {
+            DDSharedProjectPullResponse response = pullProjectConfiguration(projectId);
             Map<String, byte[]> files = new LinkedHashMap<>();
-            for (DDSharedProjectFile file : remote.files()) {
+            for (DDSharedProjectFile file : response.files()) {
                 files.put(file.fileName(), decryptBytes(projectId.toString(), file.fileName(), file.encryptedContents()));
             }
-            return new DDSharedProjectPullResult(remote.configurationFingerprint(), files);
+            return new DDSharedProjectPullResult(files, response.currentRevision());
         } catch (DBException e) {
-            throw new DDShareException("Failed to decrypt project files", e);
+            throw new DDShareException("Failed to pull project files", e);
         }
     }
 
@@ -322,26 +333,26 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     }
 
     /**
-     * Convenience wrapper over pushProjectConfiguration that also encrypts each file's contents
-     * and computes the fingerprints.
+     * Convenience wrapper over pushProjectConfiguration that encrypts prepared project files.
      */
     @NotNull
     public DDSharedProjectRevision pushFiles(
         @NotNull UUID projectId,
-        @NotNull Map<String, byte[]> files,
+        @NotNull PreparedFiles preparedFiles,
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
-            for (Map.Entry<String, byte[]> file : files.entrySet()) {
-                String fingerprint = DDFingerprintUtils.calculateFileFingerprint(projectId, file.getKey(), file.getValue());
+            for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
+                Pair<String, byte[]> preparedFile = file.getValue();
                 projectFiles.add(new DDSharedProjectFile(
-                    file.getKey(), encryptBytes(projectId.toString(), file.getKey(), file.getValue()), fingerprint));
+                    file.getKey(),
+                    encryptBytes(projectId.toString(), file.getKey(), preparedFile.getSecond()),
+                    preparedFile.getFirst()));
             }
-            String configurationFingerprint = DDFingerprintUtils.calculateConfigurationFingerprint(projectId, projectFiles);
             return pushProjectConfiguration(
                 projectId,
-                new DDSharedProjectConfiguration(configurationFingerprint, projectFiles),
+                new DDSharedProjectConfiguration(preparedFiles.configurationFingerprint(), projectFiles),
                 lastKnownConfigurationFingerprint);
         } catch (DBException e) {
             throw new DDShareException("Failed to encrypt project files", e);

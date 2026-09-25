@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.model.datadam.sync.core;
 
-import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.Pair;
 
 import java.util.Map;
 
-public record DDSharedProjectPullResult(
-    @NotNull Map<String, byte[]> files,
-    @NotNull DDSharedProjectRevision currentRevision
+/**
+ * Plain project files prepared for encrypted upload.
+ */
+public record PreparedFiles(
+    @NotNull Map<String, Pair<String, byte[]>> files,
+    @NotNull String configurationFingerprint
 ) {
 }

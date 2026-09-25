@@ -14,15 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync.core;
+package org.jkiss.dbeaver.model.datadam.sync.project;
 
 import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
 
-import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
-public record DDSharedProjectPullResult(
-    @NotNull Map<String, byte[]> files,
-    @NotNull DDSharedProjectRevision currentRevision
+/**
+ * Local association between a DBeaver project and its DataDam project.
+ */
+public record DDProjectSyncLocalBinding(
+    @NotNull UUID remoteProjectId,
+    @NotNull UUID accountId,
+    @NotNull DDSharedProjectRevision lastSyncedRevision,
+    @NotNull Set<String> unitIds
 ) {
+    public DDProjectSyncLocalBinding {
+        unitIds = Set.copyOf(unitIds);
+    }
 }

@@ -14,15 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync.core;
+package org.jkiss.dbeaver.model.datadam.sync.project;
 
 import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
+import org.jkiss.dbeaver.model.datadam.sync.core.PreparedFiles;
 
-import java.util.Map;
-
-public record DDSharedProjectPullResult(
-    @NotNull Map<String, byte[]> files,
-    @NotNull DDSharedProjectRevision currentRevision
+/**
+ * Consistent local and server state used by a project synchronization operation. Used to avoid recalculating fingerprints, since it's an expensive operation.
+ */
+public record DDProjectSyncSnapshot(
+    @NotNull DDProjectSyncLocalBinding binding,
+    @NotNull DDSharedProjectRevision serverRevision,
+    @NotNull PreparedFiles preparedFiles,
+    @NotNull DDSyncChange change
 ) {
 }
