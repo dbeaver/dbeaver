@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -35,6 +36,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -83,6 +85,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private boolean isTree;
 
     private ColumnViewer itemsViewer;
+    private final IPropertyChangeListener themeChangeListener;
+    private boolean themeRefreshPending;
     //private ColumnViewerEditor itemsEditor;
     private IDoubleClickListener doubleClickHandler;
     private PropertySourceAbstract listPropertySource;
@@ -198,6 +202,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         //PropertiesContributor.getInstance().addLazyListener(this);
         new DefaultViewerToolTipSupport(itemsViewer);
 
+        themeChangeListener = event -> {
+            if (!themeRefreshPending) {
+                themeRefreshPending = true;
+                UIUtils.asyncExec(() -> {
+                    themeRefreshPending = false;
+                    if (!isDisposed()) {
+                        NativeThemeUtils.updateNativeTheme(itemsViewer.getControl());
+                        itemsViewer.refresh();
+                    }
+                });
+            }
+        };
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+
         // Add selection listener
         itemsViewer.addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -303,6 +321,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     @Override
     public void disposeControl() {
+        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         synchronized (this) {
             if (loadingJob != null) {
                 // Cancel running job

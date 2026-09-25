@@ -4,10 +4,18 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="duckdb"
+            label="DuckDB"
+            description="DuckDB database"
+            dataSourceInformation="Lightweight embedded relational database"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.duckdb.model.DuckDBDataSourceProvider"
                 description="DuckDB JDBC connector"
                 id="duckdb"
+                dataSourceType="duckdb"
                 parent="generic"
                 inheritProviderProperties="true"
                 label="DuckDB"
@@ -17,8 +25,6 @@
                 <driver
                         id="duckdb_jdbc"
                         label="DuckDB"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon_big.png"
                         class="org.duckdb.DuckDBDriver"
                         sampleURL="jdbc:duckdb:{file}"
                         defaultPort=""

@@ -57,7 +57,6 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
@@ -69,8 +68,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -215,7 +214,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         control.update();
         activateCurrentItem();
         handlersToolbar.setVisible(!getDriver().isEmbedded());
-        //getContainer().updateTitleBar();
         UIUtils.asyncExec(() -> connectionEditor.activateEditor());
     }
 
@@ -229,9 +227,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    @Nullable
     public Image getImage() {
-        if (this.connectionEditor != null) {
-            Image image = this.connectionEditor.getImage();
+        DBPImage logoImage = getDriver().getLogoImage();
+        if (logoImage != null) {
+            return DBeaverIcons.getImage(logoImage);
+        }
+        if (connectionEditor != null) {
+            Image image = connectionEditor.getImage();
             if (image != null) {
                 return image;
             }
@@ -747,18 +750,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     private boolean confirmTabClose(@NotNull CTabItem item) {
         if (item.getData() instanceof ConnectionPageNetworkHandler page) {
-            final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
-
-            final int decision = ConfirmationDialog.confirmAction(
+            return UIUtils.confirmAction(
                 getShell(),
-                ConfirmationDialog.INFORMATION,
-                ConnectionPreferences.CONFIRM_DISABLE_NETWORK_HANDLER,
-                ConfirmationDialog.CONFIRM,
-                descriptor.getCodeName(),
-                descriptor.getCodeName()
+                UIConnectionMessages.dialog_connection_network_handler_remove_confirmation_title,
+                NLS.bind(
+                    UIConnectionMessages.dialog_connection_network_handler_remove_confirmation_question,
+                    page.getHandlerDescriptor().getCodeName()
+                )
             );
-
-            return decision == IDialogConstants.OK_ID;
         }
 
         return false;

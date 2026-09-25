@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLTableAliasInsertMode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLAutocompletionMode;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLCompletionObjectNameFormKind;
@@ -48,7 +49,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
     private Spinner csAutoActivationDelaySpinner;
     private Button csAutoActivateOnKeystroke;
     private Button csAutoInsertCheck;
-    private Button csTabChoice;
+    private Combo csCompletionProposalActivationKey;
     private Combo csInsertCase;
     private Button csReplaceWordAfter;
     private Button csHideDuplicates;
@@ -81,6 +82,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
             store.contains(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY) ||
             store.contains(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION) ||
             store.contains(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO) ||
+            store.contains(SQLPreferenceConstants.COMPLETION_PROPOSAL_ACTIVATION_KEY) ||
             store.contains(SQLPreferenceConstants.TAB_AUTOCOMPLETION) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_INSERT_CASE) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD) ||
@@ -166,13 +168,19 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
                 false,
                 2
             );
-            csTabChoice = UIUtils.createCheckbox(
+            csCompletionProposalActivationKey = UIUtils.createLabelCombo(
                 assistGroup,
-                SQLEditorMessages.pref_page_sql_completion_label_autocomplete_by_tab,
-                SQLEditorMessages.pref_page_sql_completion_label_autocomplete_by_tab_tip,
-                false,
-                2
+                SQLEditorMessages.pref_page_sql_completion_label_activation_key,
+                SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            for (ProposalActivationKey activationKey : ProposalActivationKey.values()) {
+                csCompletionProposalActivationKey.add(switch (activationKey) {
+                    case ENTER -> SQLEditorMessages.pref_page_sql_completion_label_activation_key_enter;
+                    case TAB -> SQLEditorMessages.pref_page_sql_completion_label_activation_key_tab;
+                    case BOTH -> SQLEditorMessages.pref_page_sql_completion_label_activation_key_both;
+                    case NONE -> SQLEditorMessages.pref_page_sql_completion_label_activation_key_none;
+                });
+            }
             
             UIUtils.createControlLabel(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_insert_case);
             csInsertCase = new Combo(assistGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -233,7 +241,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoActivateOnKeystroke.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
-            csTabChoice.setSelection(store.getBoolean(SQLPreferenceConstants.TAB_AUTOCOMPLETION));
+            csCompletionProposalActivationKey.select(ProposalActivationKey.fromPreferences(store).ordinal());
             csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
 
             csReplaceWordAfter.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD));
@@ -265,7 +273,11 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
             store.setValue(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION, csAutoActivateOnKeystroke.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.TAB_AUTOCOMPLETION, csTabChoice.getSelection());
+            store.setValue(
+                SQLPreferenceConstants.COMPLETION_PROPOSAL_ACTIVATION_KEY,
+                ProposalActivationKey.values()[csCompletionProposalActivationKey.getSelectionIndex()].name()
+            );
+            store.setToDefault(SQLPreferenceConstants.TAB_AUTOCOMPLETION);
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
             store.setValue(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD, csReplaceWordAfter.getSelection());
             store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
@@ -293,6 +305,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY);
         store.setToDefault(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION);
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
+        store.setToDefault(SQLPreferenceConstants.COMPLETION_PROPOSAL_ACTIVATION_KEY);
         store.setToDefault(SQLPreferenceConstants.TAB_AUTOCOMPLETION);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
         store.setToDefault(SQLPreferenceConstants.ENABLE_HIPPIE);
@@ -320,7 +333,9 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
         csAutoActivationDelaySpinner.setSelection(store.getDefaultInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
         csAutoActivateOnKeystroke.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION));
         csAutoInsertCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
-        csTabChoice.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.TAB_AUTOCOMPLETION));
+        csCompletionProposalActivationKey.select(
+            ProposalActivationKey.defaultFromPreferences(store).ordinal()
+        );
         csInsertCase.select(store.getDefaultInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
         csReplaceWordAfter.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD));
         csHideDuplicates.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS));

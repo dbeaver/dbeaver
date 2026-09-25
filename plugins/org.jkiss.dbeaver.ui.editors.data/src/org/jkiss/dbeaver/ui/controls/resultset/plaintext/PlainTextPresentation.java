@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.NativeThemeUtils;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -149,6 +150,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
 
     @Override
     protected void applyThemeSettings(@NotNull ITheme currentTheme) {
+        NativeThemeUtils.updateNativeTheme(text);
         text.setFont(BaseThemeSettings.instance.monospaceFont);
         if (UIStyles.isDarkHighContrastTheme()) {
             text.setBackground(UIStyles.getDefaultWidgetBackground());

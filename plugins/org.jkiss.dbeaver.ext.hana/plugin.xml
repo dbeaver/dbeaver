@@ -8,10 +8,19 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+       <dataSourceType
+           id="hana"
+           label="HANA"
+           description="HANA database"
+           dataSourceInformation="Relational database management system"
+           icon="icons/sap_hana_icon.png"
+           iconBig="icons/sap_hana_icon_big.png"
+           logoImage="icons/sap_hana_logo.png"/>
        <datasource
              class="org.jkiss.dbeaver.ext.hana.HANADataSourceProvider"
              description="%datasource.hana.description"
              id="hana"
+             dataSourceType="hana"
              parent="generic"
              label="HANA"
              dialect="sap_hana">
@@ -117,8 +126,6 @@
                     id="sap_hana"
                     category="SAP"
                     label="HANA"
-                    icon="icons/sap_hana_icon.png"
-                    iconBig="icons/sap_hana_icon_big.png"
                     class="com.sap.db.jdbc.Driver"
                     sampleURL="jdbc:sap://{host}[:{port}]"
                     defaultPort="30015"
