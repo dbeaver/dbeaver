@@ -100,6 +100,26 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+        super.loadProcedures(monitor, container);
+        String sql = "SELECT RDB$PROCEDURE_NAME, RDB$PROCEDURE_TYPE FROM " + FireBirdConstants.TABLE_PROCEDURES;
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedure types");
+             JDBCStatement dbStat = session.createStatement();
+             JDBCResultSet dbResult = dbStat.executeQuery(sql)) {
+            while (dbResult.next()) {
+                String name = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$PROCEDURE_NAME");
+                int type = JDBCUtils.safeGetInt(dbResult, "RDB$PROCEDURE_TYPE");
+                GenericProcedure procedure = container.getProcedure(monitor, name);
+                if (procedure instanceof FireBirdProcedure fireBirdProcedure) {
+                    fireBirdProcedure.setFireBirdProcedureType(FireBirdProcedureType.getByType(type));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, container.getDataSource());
+        }
+    }
+
+    @Override
     public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }
