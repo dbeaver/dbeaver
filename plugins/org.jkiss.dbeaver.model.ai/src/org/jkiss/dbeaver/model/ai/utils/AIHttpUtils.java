@@ -45,8 +45,23 @@ public final class AIHttpUtils {
     public static URI resolve(String base, String... paths) throws DBException {
         try {
             URI uri = new URI(base);
-            for (String path : paths) {
-                uri = uri.resolve(path);
+            if (paths.length > 0) {
+                String path = uri.getPath();
+                if (path == null || path.isEmpty()) {
+                    path = "/";
+                } else if (!path.endsWith("/")) {
+                    path = path + "/";
+                }
+                uri = new URI(
+                    uri.getScheme(),
+                    uri.getAuthority(),
+                    path,
+                    uri.getQuery(),
+                    uri.getFragment()
+                );
+            }
+            for (String p : paths) {
+                uri = uri.resolve(p);
             }
             return uri;
         } catch (URISyntaxException e) {

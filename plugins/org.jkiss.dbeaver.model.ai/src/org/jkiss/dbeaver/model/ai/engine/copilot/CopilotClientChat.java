@@ -36,7 +36,10 @@ import java.util.function.Consumer;
 
 public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, CopilotChatResponseLegacy> {
     private static final Log log = Log.getLog(CopilotClientChat.class);
-    private static final String DATA_EVENT = "data: ";
+    // Per the SSE spec (https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation),
+    // the single space after the colon is optional ("data:{json}" is as valid as "data: {json}").
+    // The trailing .trim() call below already strips it when present.
+    private static final String DATA_EVENT = "data:";
     private static final String DONE_EVENT = "[DONE]";
 
     private static final String CHAT_COMPLETIONS_PATH = "/chat/completions";
