@@ -213,6 +213,9 @@ public class ModelMessages extends NLS {
     public static String duration_formatter_seconds;
     public static String duration_formatter_milliseconds;
 
+    public static String auth_shell_command_context_project;
+    public static String auth_shell_command_context_connection;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
