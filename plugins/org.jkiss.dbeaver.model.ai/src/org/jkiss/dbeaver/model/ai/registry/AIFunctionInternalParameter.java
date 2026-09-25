@@ -36,15 +36,32 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     private AIFunctionParameterValueProvider validValuesProvider;
 
     public AIFunctionInternalParameter(@NotNull IConfigurationElement config) {
+        this(config, null);
+    }
+
+    AIFunctionInternalParameter(
+        @NotNull IConfigurationElement config,
+        @Nullable AIFunctionImplementationDescriptor implementation
+    ) {
         super(config);
         this.config = config;
-        String transformerClass = this.config.getAttribute("transformer");
-        if (!CommonUtils.isEmpty(transformerClass)) {
+        String parameterName = config.getAttribute("name");
+        if (implementation != null && implementation.getTransformedParameters().contains(parameterName)) {
             try {
-                transformer = new ObjectType(transformerClass).createInstance(AIFunctionParameterTransformer.class);
-                targetSuffix = this.config.getAttribute("targetSuffix");
+                transformer = implementation.createParameterTransformer(parameterName);
+                targetSuffix = implementation.getParameterTransformerSuffix(parameterName);
             } catch (DBException e) {
-                log.error("Error creating transformer");
+                log.error("Error creating runtime transformer for parameter '" + parameterName + "'", e);
+            }
+        } else {
+            String transformerClass = this.config.getAttribute("transformer");
+            if (!CommonUtils.isEmpty(transformerClass)) {
+                try {
+                    transformer = new ObjectType(transformerClass).createInstance(AIFunctionParameterTransformer.class);
+                    targetSuffix = this.config.getAttribute("targetSuffix");
+                } catch (DBException e) {
+                    log.error("Error creating transformer for parameter '" + parameterName + "'", e);
+                }
             }
         }
         String validValuesProviderClass = this.config.getAttribute("validValuesProvider");

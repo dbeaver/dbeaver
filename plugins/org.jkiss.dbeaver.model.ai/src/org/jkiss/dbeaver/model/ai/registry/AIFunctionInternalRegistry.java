@@ -21,33 +21,109 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * AI function registry
  */
 public class AIFunctionInternalRegistry {
+    private static final Log log = Log.getLog(AIFunctionInternalRegistry.class);
 
     private final Map<String, AIFunctionDescriptor> functionsById = new LinkedHashMap<>();
+    private final Map<String, AIFunctionDescriptor> functionsByLegacyId = new LinkedHashMap<>();
 
     public AIFunctionInternalRegistry(@NotNull AIToolboxInternalDescriptor toolbox) {
+        boolean headless = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
+        Map<String, AIFunctionImplementationDescriptor> implementations = loadImplementations(headless);
         IConfigurationElement[] extElements = Platform.getExtensionRegistry()
             .getConfigurationElementsFor(AIFunctionInternalDescriptor.EXTENSION_ID);
+        Set<String> definitionIds = new HashSet<>();
+        List<AIFunctionInternalDescriptor> descriptors = new ArrayList<>();
         for (IConfigurationElement ext : extElements) {
             if ("function".equals(ext.getName())) {
-                AIFunctionInternalDescriptor fd = new AIFunctionInternalDescriptor(toolbox, ext);
-                functionsById.put(fd.getId(), fd);
+                String functionId = ext.getAttribute("id");
+                definitionIds.add(functionId);
+                AIFunctionInternalDescriptor fd = new AIFunctionInternalDescriptor(
+                    toolbox,
+                    ext,
+                    implementations.get(functionId)
+                );
+                if (!fd.hasImplementation()) {
+                    continue;
+                }
+                descriptors.add(fd);
+            }
+        }
+        registerValidDescriptors(descriptors);
+        for (String functionId : implementations.keySet()) {
+            if (!definitionIds.contains(functionId)) {
+                log.error("AI function implementation references an unknown function: " + functionId);
             }
         }
     }
 
+    private void registerValidDescriptors(@NotNull List<AIFunctionInternalDescriptor> descriptors) {
+        Map<String, Integer> identityCounts = new HashMap<>();
+        for (AIFunctionInternalDescriptor descriptor : descriptors) {
+            identityCounts.merge(descriptor.getId(), 1, Integer::sum);
+            String legacyId = descriptor.getLegacyId();
+            if (legacyId != null) {
+                identityCounts.merge(legacyId, 1, Integer::sum);
+            }
+        }
+        for (AIFunctionInternalDescriptor descriptor : descriptors) {
+            Set<String> identities = new LinkedHashSet<>();
+            identities.add(descriptor.getId());
+            String legacyId = descriptor.getLegacyId();
+            if (legacyId != null) {
+                identities.add(legacyId);
+            }
+            if (identities.stream().anyMatch(id -> identityCounts.get(id) > 1)) {
+                log.error("Conflicting AI function identifiers: " + identities);
+                continue;
+            }
+            functionsById.put(descriptor.getId(), descriptor);
+            if (legacyId != null) {
+                functionsByLegacyId.put(legacyId, descriptor);
+            }
+        }
+    }
+
+    @NotNull
+    private static Map<String, AIFunctionImplementationDescriptor> loadImplementations(boolean headless) {
+        Map<String, AIFunctionImplementationDescriptor> implementations = new LinkedHashMap<>();
+        Set<String> conflictingImplementations = new HashSet<>();
+        for (IConfigurationElement ext : Platform.getExtensionRegistry().getConfigurationElementsFor(
+            AIFunctionImplementationDescriptor.EXTENSION_ID)
+        ) {
+            if (!"implementation".equals(ext.getName())) {
+                continue;
+            }
+            AIFunctionImplementationDescriptor implementation = new AIFunctionImplementationDescriptor(ext);
+            if (implementation.isHeadless() != headless) {
+                continue;
+            }
+            String functionId = implementation.getFunctionId();
+            if (conflictingImplementations.contains(functionId)) {
+                continue;
+            }
+            if (implementations.putIfAbsent(functionId, implementation) != null) {
+                log.error("Duplicate AI function implementation: " + implementation.getFunctionId());
+                implementations.remove(functionId);
+                conflictingImplementations.add(functionId);
+            }
+        }
+        return implementations;
+    }
+
     @Nullable
     public AIFunctionDescriptor getFunction(@NotNull String id) {
-        return functionsById.get(id);
+        AIFunctionDescriptor function = functionsById.get(id);
+        return function != null ? function : functionsByLegacyId.get(id);
     }
 
     @NotNull
