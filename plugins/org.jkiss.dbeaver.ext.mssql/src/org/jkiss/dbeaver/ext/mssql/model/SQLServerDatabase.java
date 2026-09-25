@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.struct.DBSCollationProvider;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -65,6 +67,7 @@ public class SQLServerDatabase
         DBPSystemObject,
         DBPNamedObject2,
         DBPObjectStatistics,
+        DBPStatefulObject,
         DBSCollationProvider {
 
     private static final Log log = Log.getLog(SQLServerDatabase.class);
@@ -90,6 +93,8 @@ public class SQLServerDatabase
     private boolean persisted;
     private String name;
     private String description;
+    private String stateDesc;
+    private DBSObjectState objectState = DBSObjectState.NORMAL;
     private String collationName;
     private volatile NavigableSet<String> supportedCollations;
     private DataTypeCache typesCache = new DataTypeCache();
@@ -110,6 +115,7 @@ public class SQLServerDatabase
         this.isTempDatabase = name.equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE);
         this.collationName = JDBCUtils.safeGetString(resultSet, "collation_name");
         //this.description = JDBCUtils.safeGetString(resultSet, "description");
+        setStateDesc(JDBCUtils.safeGetString(resultSet, "state_desc"));
 
         this.persisted = true;
 
@@ -160,6 +166,49 @@ public class SQLServerDatabase
         this.description = description;
     }
 
+    @Nullable
+    @Property(viewable = true, order = 5)
+    public String getState() {
+        return stateDesc;
+    }
+
+    @NotNull
+    @Override
+    public DBSObjectState getObjectState() {
+        return objectState;
+    }
+
+    @Override
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        // Queried on the data source context, because an offline database cannot host the query itself,
+        // and read the same way the database list reads it, so a server that does not expose the column
+        // leaves the database unmarked here as well instead of failing the refresh
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read database state")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT db.* FROM sys.databases db WHERE db.database_id = ?"))
+            {
+                dbStat.setLong(1, databaseId);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        setStateDesc(JDBCUtils.safeGetString(dbResult, "state_desc"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading database state", e);
+        }
+    }
+
+    private void setStateDesc(@Nullable String stateDesc) {
+        this.stateDesc = stateDesc;
+        if (stateDesc == null || SQLServerConstants.DATABASE_STATE_ONLINE.equalsIgnoreCase(stateDesc)) {
+            // A server that does not report a state leaves the database unmarked
+            this.objectState = DBSObjectState.NORMAL;
+        } else {
+            this.objectState = new DBSObjectState(stateDesc, DBIcon.OVER_ERROR);
+        }
+    }
+
     public long getDatabaseId() {
         return databaseId;
     }
@@ -197,6 +246,11 @@ public class SQLServerDatabase
         triggerCache.clearCache();
         databaseTotalSize = null;
         supportedCollations = null;
+        try {
+            refreshObjectState(monitor);
+        } catch (DBCException e) {
+            log.debug("Error refreshing database state", e);
+        }
         return this;
     }
 
