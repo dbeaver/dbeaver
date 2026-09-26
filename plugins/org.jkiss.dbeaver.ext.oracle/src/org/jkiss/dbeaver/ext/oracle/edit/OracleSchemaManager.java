@@ -60,7 +60,12 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
-        return new OracleSchema((OracleDataSource) container, -1, "NEW_SCHEMA");
+        return createSchema((OracleDataSource) container);
+    }
+
+    @NotNull
+    protected OracleSchema createSchema(@NotNull OracleDataSource dataSource) {
+        return new OracleSchema(dataSource, -1, "NEW_SCHEMA");
     }
 
     @Override

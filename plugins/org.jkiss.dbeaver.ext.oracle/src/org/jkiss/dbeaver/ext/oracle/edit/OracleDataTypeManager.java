@@ -44,7 +44,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleDataType> getObjectsCache(@NotNull OracleDataType object) {
-        return object.getSchema().dataTypeCache;
+        return object.getSchema().getDataTypeCache();
     }
 
     @Override
@@ -61,14 +61,19 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         @NotNull Map<String, Object> options
     ) {
         OracleSchema schema = (OracleSchema) container;
-        OracleDataType dataType = new OracleDataType(
-            schema,
-            "DataType",
-            false);
+        OracleDataType dataType = createDataType(schema);
         dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
             "(\n" + //$NON-NLS-1$
             ")"); //$NON-NLS-1$
         return dataType;
+    }
+
+    @NotNull
+    protected OracleDataType createDataType(@NotNull OracleSchema schema) {
+        return new OracleDataType(
+            schema,
+            "DataType",
+            false);
     }
 
     @Override
@@ -99,7 +104,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private void createOrReplaceProcedureQuery(
+    protected void createOrReplaceProcedureQuery(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actionList,
