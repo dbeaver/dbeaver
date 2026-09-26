@@ -137,7 +137,8 @@ public class DataSourceSyncUnit implements DBPSyncUnit {
         if (project == null) {
             return;
         }
-        Map<String, Object> settings = JSONUtils.GSON.fromJson(new String(content, StandardCharsets.UTF_8), Map.class);
+        Map<String, Object> settings = JSONUtils.GSON.fromJson(
+            new String(content, StandardCharsets.UTF_8), JSONUtils.MAP_TYPE_TOKEN);
         if (settings != null) {
             project.setProjectProperties(settings);
         }
