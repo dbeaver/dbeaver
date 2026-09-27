@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -85,7 +86,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         String objectName = "", roleName;
         String roleType = null;
         if (object instanceof PostgreRole role) {
-            roleName = DBUtils.getQuotedIdentifier(object);
+            roleName = getGranteeName(object, role.getName());
             if (privilegeOwner instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
             } else if (privilege instanceof PostgreRolePrivilege) {
@@ -95,7 +96,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         } else {
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.privilege;
             if (permission.getGrantee() != null) {
-                roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee().getRoleName());
+                roleName = getGranteeName(object, permission.getGrantee().getRoleName());
                 roleType = permission.getGrantee().getRoleType();
             } else {
                 roleName = "";
@@ -220,5 +221,19 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     @NotNull
     private String makeUniqueName(@NotNull String name) {
         return name + "#" + privilege.hashCode() + "#" + privilegeOwner.hashCode();
+    }
+
+    /**
+     * Returns the grantee name for the generated DDL.
+     * The PUBLIC pseudo-role is a PostgreSQL keyword and must never be quoted:
+     * {@code GRANT SELECT ON TABLE mytab TO "PUBLIC"} is invalid,
+     * the only correct form is {@code GRANT SELECT ON TABLE mytab TO PUBLIC}.
+     */
+    @NotNull
+    private static String getGranteeName(@NotNull PostgrePrivilegeOwner object, @Nullable String roleName) {
+        if (PostgreConstants.PUBLIC_ROLE_NAME.equalsIgnoreCase(roleName)) {
+            return PostgreConstants.PUBLIC_ROLE_NAME.toUpperCase();
+        }
+        return DBUtils.getQuotedIdentifier(object.getDataSource(), roleName);
     }
 }
