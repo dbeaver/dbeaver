@@ -37,9 +37,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-/**
- * Signs requests and encrypts data with the keys of the account bundle.
- */
 public class DDBundleCredentials implements DDSyncCredentials {
 
     private static final String KEY_ALGORITHM = "RSA";

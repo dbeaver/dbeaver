@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -314,6 +314,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob job = createJob((TaskImpl) task, listener);
+        log.debug("Submitting " + job.getExecutionDescription() + " for direct execution");
         if (serviceJob == null) {
             serviceJob = new ServiceJob();
             serviceJob.schedule();
@@ -337,6 +338,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
+        log.debug("Submitting " + runJob.getExecutionDescription() + " for background execution");
         runJob.schedule();
         if (serviceJob == null) {
             serviceJob = new ServiceJob();

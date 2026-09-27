@@ -129,8 +129,6 @@
 
     </extension>
 
-    <extension point="org.jkiss.dbeaver.syncUnit">
-        <unit class="org.jkiss.dbeaver.model.ai.registry.AISyncUnit"/>
-    </extension>
+    <!-- AISyncUnit sync is disabled for now, see pro#9577. Class kept, just not registered. -->
 
 </plugin>

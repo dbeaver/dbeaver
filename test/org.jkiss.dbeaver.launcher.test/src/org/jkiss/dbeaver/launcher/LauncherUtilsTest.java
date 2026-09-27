@@ -58,6 +58,14 @@ public class LauncherUtilsTest {
     }
 
     @Test
+    public void toFileUrlDecodesEncodedSpaces() {
+        assertEquals(
+            new File("/home/john smith/DBeaverData").getPath(),
+            LauncherUtils.toFileURL("file:/home/john%20smith/DBeaverData").getPath()
+        );
+    }
+
+    @Test
     public void toFileReconstructsUncFromLegacyAuthorityUrl() throws Exception {
         URL legacy = new URL("file://" + UNC_SERVER + "/private/joe/AppData2022");
         File decoded = LauncherUtils.toFile(legacy);

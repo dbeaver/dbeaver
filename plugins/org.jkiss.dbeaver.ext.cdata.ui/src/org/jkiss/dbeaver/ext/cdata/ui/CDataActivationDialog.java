@@ -137,9 +137,9 @@ final class CDataActivationDialog extends TitleAreaDialog {
         GridData linksData = new GridData(GridData.FILL_HORIZONTAL);
         linksData.horizontalSpan = 2;
         links.setLayoutData(linksData);
-        Link buyLink = new Link(links, SWT.NONE);
-        buyLink.setText(CDataUIMessages.activation_buy_link);
-        buyLink.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(driver.getDriverPurchaseURL()));
+        Button buyButton = new Button(links, SWT.PUSH);
+        buyButton.setText(CDataUIMessages.activation_buy_button);
+        buyButton.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(driver.getDriverPurchaseURL()));
         Link supportLink = new Link(links, SWT.NONE);
         supportLink.setText(CDataUIMessages.activation_support_link);
         supportLink.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(SUPPORT_URL));

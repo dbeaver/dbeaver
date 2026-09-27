@@ -53,7 +53,6 @@ import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
@@ -722,8 +721,7 @@ public class UIUtils {
         host.setLayoutData(gd);
 
         var client = new Composite(host, SWT.NONE);
-        GridLayoutFactory.fillDefaults()
-            .margins(0, 5)
+        GridLayoutFactory.swtDefaults()
             .numColumns(columns)
             .applyTo(client);
 

@@ -159,7 +159,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     public void run(
         boolean fork,
         boolean cancelable,
-        DBRRunnableWithProgress runnable
+        @NotNull DBRRunnableWithProgress runnable
     ) throws InvocationTargetException, InterruptedException {
         staticContext.run(fork, cancelable, runnable);
     }

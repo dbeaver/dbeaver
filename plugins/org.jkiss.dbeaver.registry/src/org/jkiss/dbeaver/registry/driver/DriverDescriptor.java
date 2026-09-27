@@ -86,6 +86,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
+    private DBPDataSourceType dataSourceType;
     private String category;
     private final List<String> categories;
     private String name;
@@ -115,7 +116,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage iconBig;
     private DBPImage logoImage;
     private boolean embedded, origEmbedded;
-    private boolean supportsDistributedMode;
+    private boolean supportsDistributedMode, origSupportsDistributedMode;
     private boolean notAvailableDriver;
     private boolean singleConnection;
     private boolean origThreadSafe, threadSafe;
@@ -124,8 +125,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean anonymousAccess, origAnonymousAccess;
     private boolean allowsEmptyPassword, origAllowsEmptyPassword;
     private boolean licenseRequired;
-    private boolean customDriverLoader;
-    private boolean useURLTemplate;
+    private boolean customDriverLoader, origCustomDriverLoader;
+    private boolean useURLTemplate, origUseURLTemplate;
     private boolean customEndpointInformation;
     private boolean instantiable, origInstantiable;
     private boolean custom;
@@ -224,6 +225,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (copyFrom != null) {
             // Copy props from source
             applyFrom(copyFrom);
+            this.dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType(DBPDataSourceType.CUSTOM_ID, this);
         } else {
             this.name = "";
         }
@@ -291,6 +293,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_ID));
         this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
+
+        String dataSourceTypeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
+        if (CommonUtils.isEmpty(dataSourceTypeId)) {
+            dataSourceTypeId = providerDescriptor.getDataSourceTypeId();
+        }
+
         if (CommonUtils.isEmpty(name)) {
             // Driver with no name is just a stub from old deprecated and replaced driver
             categories = List.of();
@@ -298,10 +306,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             origClassName = null;
             origDefaultHost = origDefaultPort = origDefaultDatabase = origDefaultServer = origDefaultUser = null;;
             origSampleURL = null;;
+            iconPlain = DBIcon.DATABASE_DEFAULT;
+            iconBig = DBIcon.DATABASE_BIG_DEFAULT;
+            dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType(dataSourceTypeId, this);
+            makeIconExtensions();
             return;
         }
         this.category = config.getAttribute(RegistryConstants.ATTR_CATEGORY);
-        this.categories = Arrays.asList(CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_CATEGORIES), ","));
+        this.categories = new ArrayList<>(Arrays.asList(CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_CATEGORIES), ",")));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
         this.origDefaultHost = this.driverDefaultHost = config.getAttribute(RegistryConstants.ATTR_DEFAULT_HOST);
@@ -315,8 +327,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.databaseDocumentationSuffixURL = config.getAttribute(RegistryConstants.ATTR_DATABASE_DOCUMENTATION_SUFFIX_URL);
         this.propertiesWebURL = config.getAttribute(RegistryConstants.ATTR_PROPERTIES_WEB_URL);
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
-        this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
-        this.useURLTemplate = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
+        this.origCustomDriverLoader = this.customDriverLoader =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
+        this.origUseURLTemplate = this.useURLTemplate =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
         this.customEndpointInformation = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_ENDPOINT), false);
         this.promoted = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_PROMOTED), 0);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
@@ -329,7 +343,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origPropagateDriverProperties = this.propagateDriverProperties =
             CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES));
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
-        this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
+        this.origSupportsDistributedMode = this.supportsDistributedMode =
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
         this.custom = false;
 
         for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE)) {
@@ -357,18 +372,24 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.fileSources.add(new DriverFileSource(lib));
         }
 
+        this.dataSourceType = CommonUtils.isEmpty(dataSourceTypeId) ? null :
+            providerDescriptor.getRegistry().getDataSourceType(dataSourceTypeId);
+
         this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.iconPlain == null) {
-            this.iconPlain = providerDescriptor.getIcon();
+            this.iconPlain = dataSourceType == null ? providerDescriptor.getIcon() : dataSourceType.getIcon();
         }
-        this.iconBig = this.iconPlain;
+        this.iconBig = dataSourceType == null ? this.iconPlain : dataSourceType.getIconBig();
         if (config.getAttribute(RegistryConstants.ATTR_ICON_BIG) != null) {
             this.iconBig = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG));
         }
         String logoImageAttr = config.getAttribute("logoImage");
         if (!CommonUtils.isEmpty(logoImageAttr)) {
             this.logoImage = iconToImage(logoImageAttr);
+        } else if (dataSourceType != null) {
+            this.logoImage = dataSourceType.getLogoImage();
         }
+        this.dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType(dataSourceTypeId, this);
         makeIconExtensions();
 
         {
@@ -542,6 +563,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public DataSourceProviderDescriptor getProviderDescriptor() {
         return providerDescriptor;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceType getDataSourceType() {
+        if (dataSourceType == null) {
+            dataSourceType = providerDescriptor.getRegistry().resolveDataSourceType(
+                isCustom() ? DBPDataSourceType.CUSTOM_ID : providerDescriptor.getDataSourceTypeId(), this);
+        }
+        return dataSourceType;
     }
 
     @NotNull
@@ -1015,6 +1046,49 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.libraries.clear();
         this.libraries.addAll(deletedLibs);
         this.libraries.addAll(libs);
+    }
+
+    public void resetToDefaults() {
+        if (this.origName == null) {
+            throw new IllegalStateException("Driver '" + this.id + "' has no default configuration");
+        }
+        this.name = this.origName;
+        this.description = this.origDescription;
+        this.driverClassName = this.origClassName;
+        this.driverDefaultHost = this.origDefaultHost;
+        this.driverDefaultPort = this.origDefaultPort;
+        this.driverDefaultDatabase = this.origDefaultDatabase;
+        this.driverDefaultServer = this.origDefaultServer;
+        this.driverDefaultUser = this.origDefaultUser;
+        this.sampleURL = this.origSampleURL;
+        this.dialectId = this.origDialectId;
+        this.embedded = this.origEmbedded;
+        this.propagateDriverProperties = this.origPropagateDriverProperties;
+        this.threadSafe = this.origThreadSafe;
+        this.anonymousAccess = this.origAnonymousAccess;
+        this.allowsEmptyPassword = this.origAllowsEmptyPassword;
+        this.instantiable = this.origInstantiable;
+        this.customDriverLoader = this.origCustomDriverLoader;
+        this.useURLTemplate = this.origUseURLTemplate;
+        this.supportsDistributedMode = this.origSupportsDistributedMode;
+
+        this.customParameters.clear();
+        this.customParameters.putAll(this.defaultParameters);
+        this.customConnectionProperties.clear();
+        this.customConnectionProperties.putAll(this.originalConnectionProperties);
+        this.nativeClientHomes.clear();
+
+        for (DBPDriverLibrary library : this.origLibraries) {
+            library.setDisabled(false);
+            if (library instanceof DriverLibraryMavenArtifact mavenArtifact) {
+                mavenArtifact.resetToDefaults();
+            }
+        }
+        this.libraries.clear();
+        this.libraries.addAll(this.origLibraries);
+
+        resetDriverInstance();
+        setModified(false);
     }
 
     @NotNull
