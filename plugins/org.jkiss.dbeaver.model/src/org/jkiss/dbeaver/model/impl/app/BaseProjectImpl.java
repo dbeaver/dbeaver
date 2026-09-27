@@ -289,7 +289,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Nullable
     @Override
     public Object getProjectProperty(String propName) {
-        synchronized (this) {
+        synchronized (metadataSync) {
             loadProperties();
             return properties.get(propName);
         }

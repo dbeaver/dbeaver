@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,25 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
 
 public class CompositeBorderPainter implements PaintListener {
     private final Control control;
 
-    public CompositeBorderPainter(Control control) {
+    public CompositeBorderPainter(@NotNull Control control) {
         this.control = control;
         this.control.addPaintListener(this);
     }
 
     @Override
-    public void paintControl(PaintEvent e) {
+    public void paintControl(@NotNull PaintEvent e) {
         Rectangle bounds = control.getBounds();
-        e.gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        e.gc.setForeground(Display.getDefault().getSystemColor(UIUtils.getShadowColor()));
         e.gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
     }
 }

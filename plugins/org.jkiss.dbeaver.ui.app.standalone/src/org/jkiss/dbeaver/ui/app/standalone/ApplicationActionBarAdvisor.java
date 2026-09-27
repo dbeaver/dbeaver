@@ -54,7 +54,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
-import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
+import org.jkiss.dbeaver.ui.preferences.PrefPageGeneral;
 import org.jkiss.dbeaver.ui.services.ApplicationPolicyService;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -374,7 +374,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             tzItem.setDoubleClickListener(() -> {
                 PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
                     UIUtils.getActiveWorkbenchShell(),
-                    PrefPageDatabaseUserInterface.PAGE_ID,
+                    PrefPageGeneral.PAGE_ID,
                     null,
                     null);
                 if (preferenceDialog != null) {
@@ -400,7 +400,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             localeItem.setDoubleClickListener(() -> {
                 PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
                     UIUtils.getActiveWorkbenchShell(),
-                    PrefPageDatabaseUserInterface.PAGE_ID,
+                    PrefPageGeneral.PAGE_ID,
                     null,
                     null);
                 if (preferenceDialog != null) {

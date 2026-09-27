@@ -25,6 +25,10 @@ public interface AIEngineProperties {
 
     int DEFAULT_TIMEOUT = 30;
 
+    boolean isGlobal();
+
+    void setGlobal(boolean global);
+
     @Nullable
     String getModel();
 

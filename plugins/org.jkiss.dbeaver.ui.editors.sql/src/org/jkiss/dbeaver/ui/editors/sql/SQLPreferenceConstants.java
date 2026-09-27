@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -153,7 +154,9 @@ public class SQLPreferenceConstants {
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
     public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";
-    public static final String TAB_AUTOCOMPLETION                      = "SQLEditor.ContentAssistant.autocompletion.tab";
+    public static final String COMPLETION_PROPOSAL_ACTIVATION_KEY      = ContentAssistUtils.PROPOSAL_ACTIVATION_KEY;
+    @Deprecated
+    public static final String TAB_AUTOCOMPLETION                      = ContentAssistUtils.LEGACY_TAB_AUTOCOMPLETION;
     public static final String PROPOSAL_REPLACE_WORD                   = "SQLEditor.ContentAssistant.replace.word";
     public static final String PROPOSAL_SORT_ALPHABETICALLY            = "SQLEditor.ContentAssistant.proposals.sort.alphabetically";
     public static final String HIDE_DUPLICATE_PROPOSALS                = "SQLEditor.ContentAssistant.hide.duplicates";
@@ -242,6 +245,7 @@ public class SQLPreferenceConstants {
     public static final String SCRIPT_COMMIT_LINES                      = "script.commit.lines"; //$NON-NLS-1$
     public static final String SCRIPT_ERROR_HANDLING                    = "script.error.handling"; //$NON-NLS-1$
     public static final String SCRIPT_FETCH_RESULT_SETS                 = "script.fetch.resultset"; //$NON-NLS-1$
+    public static final String SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM       = "script.bigScript.noFetch.confirm"; //$NON-NLS-1$
     public static final String NEW_SCRIPT_TEMPLATE_ENABLED              = "new.script.template.enabled"; //$NON-NLS-1$
     public static final String NEW_SCRIPT_TEMPLATE                      = "new.script.template"; //$NON-NLS-1$
     public static final String STATEMENT_INVALIDATE_BEFORE_EXECUTE      = "statement.invalidate.before.execute"; //$NON-NLS-1$
