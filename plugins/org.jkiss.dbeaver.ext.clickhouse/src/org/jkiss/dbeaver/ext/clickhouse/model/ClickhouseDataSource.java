@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
@@ -404,7 +405,7 @@ public class ClickhouseDataSource extends GenericDataSource {
      * applied when the server actually exposes it, so connecting to servers that predate it is unaffected.
      */
     private void enableJsonStringSerialization(@NotNull Connection connection) {
-        if (!isJsonStringSerializationSupported(connection)) {
+        if (!isJsonStringSerializationSupported(connection) || isReadOnlySession(connection)) {
             return;
         }
         try {
@@ -439,6 +440,21 @@ public class ClickhouseDataSource extends GenericDataSource {
             return new Version(serverVersion).compareTo(JSON_AS_STRING_MIN_VERSION) >= 0;
         } catch (Throwable e) {
             log.debug("Can't determine ClickHouse server version for JSON rendering", e);
+            return false;
+        }
+    }
+
+    /**
+     * With {@code readonly=1} the server rejects any setting change, so forcing
+     * {@code output_format_binary_write_json_as_string} would fail every query.
+     */
+    private boolean isReadOnlySession(@NotNull Connection connection) {
+        try (Statement stmt = connection.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery("SELECT getSetting('readonly') = 1")) { //$NON-NLS-1$
+                return rs.next() && rs.getBoolean(1);
+            }
+        } catch (Throwable e) {
+            log.debug("Can't determine ClickHouse readonly mode", e);
             return false;
         }
     }
