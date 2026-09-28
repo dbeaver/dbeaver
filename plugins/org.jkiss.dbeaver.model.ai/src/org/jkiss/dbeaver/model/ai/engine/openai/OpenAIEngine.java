@@ -29,8 +29,10 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Set;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
@@ -67,12 +69,15 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
                 ))
                 .toList();
         }
+        String baseUrl = properties.getBaseUrl();
+        boolean defaultEndpoint = CommonUtils.isEmpty(baseUrl)
+            || OpenAIClientResponses.OPENAI_ENDPOINT.equals(baseUrl.endsWith("/") ? baseUrl : baseUrl + "/");
         return openAiService.getInstance().getModels(monitor)
             .stream()
-            .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
+            .map(model -> defaultEndpoint ? OpenAIModels.KNOWN_MODELS.getOrDefault(
                 model.id(),
                 new AIModel(model.id(), null, OpenAIModels.detectModelFeatures(model.id()))
-            ))
+            ) : new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)))
             .toList();
     }
 

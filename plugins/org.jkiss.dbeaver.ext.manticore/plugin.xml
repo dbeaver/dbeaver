@@ -8,10 +8,18 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="manticore_search"
+            label="Manticore Search"
+            description="Manticore Search search data store"
+            dataSourceInformation="Search and analytics data platform"
+            icon="icons/manticore_icon.svg"
+            iconBig="icons/manticore_icon_big.svg"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.manticore.ManticoreDataSourceProvider"
                 description="Manticore Search datasource"
                 id="manticore"
+                dataSourceType="manticore_search"
                 parent="generic"
                 label="Manticore Search"
                 icon="icons/manticore_icon.svg"
@@ -22,8 +30,6 @@
                         id="manticore"
                         label="Manticore Search"
                         class="com.mysql.cj.jdbc.Driver"
-                        icon="icons/manticore_icon.svg"
-                        iconBig="icons/manticore_icon_big.svg"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="9306"
                         description="Manticore Search"

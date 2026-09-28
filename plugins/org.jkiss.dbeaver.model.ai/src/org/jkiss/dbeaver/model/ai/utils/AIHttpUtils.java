@@ -44,7 +44,17 @@ public final class AIHttpUtils {
      */
     public static URI resolve(String base, String... paths) throws DBException {
         try {
-            URI uri = new URI(base);
+            // RFC 3986 relative-reference resolution treats the segment after the last "/" in
+            // the base as a file name, not a directory, so resolving a relative path against a
+            // base without a trailing slash replaces that last segment instead of appending to
+            // it - e.g. "http://host/v1".resolve("models") -> "http://host/models", silently
+            // dropping "/v1". Self-hosted OpenAI-compatible endpoints (Ollama, vLLM, LM Studio,
+            // ...) are commonly configured without the trailing slash, which turns every request
+            // into a 404. Only normalize when there is a relative path to resolve against -
+            // callers that pass an already-complete URL as `base` with no extra `paths` rely on
+            // it being used exactly as given.
+            String normalizedBase = (paths.length > 0 && !base.endsWith("/")) ? base + "/" : base;
+            URI uri = new URI(normalizedBase);
             for (String path : paths) {
                 uri = uri.resolve(path);
             }

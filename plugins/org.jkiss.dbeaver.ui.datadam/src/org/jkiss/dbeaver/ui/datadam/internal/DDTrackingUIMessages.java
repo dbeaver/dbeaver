@@ -59,6 +59,33 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_conflict_resolved_label;
     public static String sync_preference_page_conflict_resolve_failed;
 
+    public static String project_sync_title;
+    public static String project_sync_share_job;
+    public static String project_sync_share_success;
+    public static String project_sync_share_failed;
+    public static String project_sync_update_job;
+    public static String project_sync_update_unchanged;
+    public static String project_sync_update_conflict;
+    public static String project_sync_update_failed;
+    public static String project_sync_push_success;
+    public static String project_sync_push_failed;
+    public static String project_sync_pull_success;
+    public static String project_sync_pull_failed;
+    public static String project_sync_unbind_confirm_title;
+    public static String project_sync_unbind_confirm_message;
+    public static String project_sync_unbind_job;
+    public static String project_sync_unbind_success;
+    public static String project_sync_unbind_failed;
+    public static String project_sync_import_list_job;
+    public static String project_sync_import_dialog_title;
+    public static String project_sync_import_dialog_message;
+    public static String project_sync_import_button;
+    public static String project_sync_import_no_projects;
+    public static String project_sync_import_list_failed;
+    public static String project_sync_import_job;
+    public static String project_sync_import_success;
+    public static String project_sync_import_failed;
+
     public static String create_configuration_dialog_title;
     public static String create_configuration_dialog_name_label;
     public static String create_configuration_dialog_include_label;
