@@ -30,6 +30,8 @@ public class SnowflakeConstants
 
     public static final String PROP_AUTH_ROLE = "role";
     public static final String PROP_AUTHENTICATOR = "authenticator";
+    public static final String AUTHENTICATOR_SNOWFLAKE = "snowflake";
+    public static final String AUTHENTICATOR_USERNAME_PASSWORD_MFA = "username_password_mfa";
 
     public static final String DEFAULT_HOST_PREFIX = ".snowflakecomputing.com";
     public static final String DEFAULT_DB_NAME = "TEST_DB";

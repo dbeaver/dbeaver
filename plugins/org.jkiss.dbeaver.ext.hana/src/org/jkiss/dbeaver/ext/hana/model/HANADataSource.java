@@ -30,10 +30,12 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCConnectException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -45,6 +47,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -151,17 +154,33 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         return props;
     }
 
+    @NotNull
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+        if (JDBCUtils.matchesSQLException(
+            error,
+            exception -> exception.getErrorCode() == HANAConstants.ERR_SQL_ALTER_PASSWORD_NEEDED
+        )) {
+            return ErrorType.PASSWORD_EXPIRED;
+        }
+        return super.discoverErrorType(error);
+    }
+
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context,
                                         @NotNull String purpose) throws DBCException {
         Connection connection = super.openConnection(monitor, context, purpose);
-        try {
-            Statement statement = connection.createStatement();
+        try (Statement statement = connection.createStatement()) {
             statement.execute("SELECT * FROM SYS.M_MONITOR_COLUMNS");
         } catch (SQLException e) {
             if (e.getErrorCode() == HANAConstants.ERR_SQL_ALTER_PASSWORD_NEEDED) {
-                if (changeExpiredPassword(monitor, context, purpose)) {
-                    return openConnection(monitor, context, purpose);
+                try {
+                    if (changeExpiredPassword(monitor, context, purpose)) {
+                        return openConnection(monitor, context, purpose);
+                    }
+                    throw new DBCConnectException("Password has expired", e, this);
+                } finally {
+                    closeConnection(connection);
                 }
             } else if (e.getErrorCode() == HANAConstants.ERR_SQL_ALTER_LICENSE_NEEDED) {
                 if (changeLicense(monitor, context, purpose)) {
@@ -185,10 +204,22 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         return connection;
     }    
 
-    private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
+    private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) throws DBCException {
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
-        DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
-                HANAMessages.dialog_user_expired_password_change_label, connectionInfo.getUserName(), connectionInfo.getUserPassword(), false, false);
+        DBAPasswordChangeInfo passwordInfo = DBAuthUtils.getPendingPasswordChange(connectionInfo);
+        boolean interactive = passwordInfo == null;
+        if (interactive) {
+            if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                return false;
+            }
+            passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
+                HANAMessages.dialog_user_expired_password_change_label,
+                connectionInfo.getUserName(),
+                connectionInfo.getUserPassword(),
+                false,
+                false
+            );
+        }
         if (passwordInfo == null) {
             return false;
         }
@@ -196,18 +227,33 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
             if (passwordInfo.getNewPassword() == null) {
                 throw new DBException(HANAMessages.dialog_user_expired_password_empty_input);
             }
-            Connection connection = super.openConnection(monitor, context, purpose);
-            Statement statement = connection.createStatement();
-            statement.execute("ALTER USER " + connectionInfo.getUserName() + " PASSWORD " + DBUtils.getQuotedIdentifier(this, passwordInfo.getNewPassword()));
+            try (Connection connection = super.openConnection(monitor, context, purpose);
+                 Statement statement = connection.createStatement()) {
+                statement.execute("ALTER USER " + connectionInfo.getUserName() + " PASSWORD " + DBUtils.getQuotedIdentifier(this, passwordInfo.getNewPassword()));
+            }
             
             connectionInfo.setUserPassword(passwordInfo.getNewPassword());
             getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
-            getContainer().persistConfiguration();
+            DBAuthUtils.clearPendingPasswordChange(connectionInfo);
+            if (interactive) {
+                getContainer().persistConfiguration();
+            }
         } catch (Exception e) {
+            if (!interactive) {
+                throw new DBCException("Error changing expired password", e);
+            }
             DBWorkbench.getPlatformUI().showError(HANAMessages.dialog_user_expired_password_error_title, HANAMessages.dialog_user_expired_password_error_message, e);
             return false;
         }
         return true;
+    }
+
+    private static void closeConnection(@NotNull Connection connection) {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            log.debug("Error closing connection", e);
+        }
     }
 
     private boolean changeLicense(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
