@@ -1553,10 +1553,12 @@
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.resources" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLResources" name="%pref.page.name.sql.resources">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.resources"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLTemplates" name="%pref.page.name.sql.templates">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.templates"/>
         </page>
     </extension>
 
@@ -1566,6 +1568,8 @@
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.codeeditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.codeeditor.label"/>
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqlexecute" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqlexecute.label"/>
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqleditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqleditor.label"/>
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.resources" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.resources.label"/>
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.templates" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.templates.label"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.connectionPageConfigurator">
@@ -1664,5 +1668,4 @@
     </extension>
 
 </plugin>
-
 

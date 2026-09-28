@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
-        isImport = CommonUtils.getBoolean(preferenceStore.getString(PREFERENCE_IS_IMPORT), isImport);
+        // The wizard or task type determines the operation, not the previously saved settings.
         logLevel = CommonUtils.valueOf(LogLevel.class, preferenceStore.getString(PREFERENCE_LOG_LEVEL), LogLevel.Normal);
         noBeep = CommonUtils.toBoolean(preferenceStore.getString(PREFERENCE_NO_BEEP));
         isForeignKeyCheckDisabled = CommonUtils.toBoolean(preferenceStore.getString(PREFERENCE_DISABLE_FOREIGN_KEY));

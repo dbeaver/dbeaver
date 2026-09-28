@@ -86,18 +86,23 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
         Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Label description = UIUtils.createLabel(composite, CDataUIMessages.preference_description);
-        description.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Label description = new Label(composite, SWT.WRAP);
+        description.setText(CDataUIMessages.preference_description);
+        GridData descriptionData = new GridData(GridData.FILL_HORIZONTAL);
+        descriptionData.widthHint = 0;
+        description.setLayoutData(descriptionData);
 
         Composite tableComposite = UIUtils.createComposite(composite, 1);
-        tableComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        tableComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         licenseViewer = new TableViewer(tableComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
         licenseViewer.setContentProvider(ArrayContentProvider.getInstance());
         Table table = licenseViewer.getTable();
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
-        GridData tableData = new GridData(GridData.FILL_HORIZONTAL);
+        GridData tableData = new GridData(GridData.FILL_BOTH);
+        // the preference dialog uses the preferred page width as its scrolling minimum
+        tableData.widthHint = 0;
         tableData.heightHint = table.getItemHeight() * 8;
         table.setLayoutData(tableData);
         createColumns();
@@ -155,12 +160,13 @@ public class CDataPreferencePage extends AbstractPrefPage implements IWorkbenchP
         }
         int[] weights = {30, 14, 14, 24, 18};
         int used = 0;
-        for (int i = 0; i < table.getColumnCount() - 1; i++) {
-            int columnWidth = width * weights[i] / 100;
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            int minimumWidth = UIUtils.getTextSize(table, table.getColumn(i).getText()).x + UIUtils.getFontHeight(table);
+            int columnWidth = Math.max(minimumWidth,
+                i == table.getColumnCount() - 1 ? width - used : width * weights[i] / 100);
             table.getColumn(i).setWidth(columnWidth);
             used += columnWidth;
         }
-        table.getColumn(table.getColumnCount() - 1).setWidth(Math.max(0, width - used));
     }
 
     private void createColumn(@NotNull String title, int width, @NotNull Function<LicenseEntry, String> textProvider) {

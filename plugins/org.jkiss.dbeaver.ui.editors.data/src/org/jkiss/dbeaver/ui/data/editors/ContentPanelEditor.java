@@ -52,14 +52,15 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.managers.ContentValueManager;
 import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
 * ControlPanelEditor
@@ -218,9 +219,14 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             } else if (streamEditor == null) {
                 log.warn("NULL content editor.");
             } else {
+                DBDContent editedContent = ContentValueManager.copyContentForEdit(new VoidProgressMonitor(), (DBDContent) content);
                 try {
-                    streamEditor.extractEditorValue(new VoidProgressMonitor(), control, (DBDContent) content);
+                    streamEditor.extractEditorValue(new VoidProgressMonitor(), control, editedContent);
+                    return editedContent;
                 } catch (Throwable e) {
+                    if (editedContent != content) {
+                        editedContent.release();
+                    }
                     log.debug(e);
                     valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
                 }

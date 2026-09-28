@@ -16,31 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.doris;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.doris.model.DorisDataSource;
-import org.jkiss.dbeaver.ext.doris.model.DorisMetaModel;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
 /**
  * Doris DataSource Provider - creates DorisDataSource instances.
  */
 public class DorisDataSourceProvider extends GenericDataSourceProvider<DorisDataSource> {
 
-    private static final DorisMetaModel META_MODEL = new DorisMetaModel();
-
     public DorisDataSourceProvider() {
         super(DorisDataSource.class);
-    }
-
-    @NotNull
-    @Override
-    public DorisDataSource openDataSource(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container
-    ) throws DBException {
-        return new DorisDataSource(monitor, container, META_MODEL);
     }
 }

@@ -413,6 +413,10 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
+        <page id="org.jkiss.dbeaver.preferences.general" class="org.jkiss.dbeaver.ui.preferences.PrefPageGeneral" name="%pref.page.name.general">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.general"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
         <page id="org.jkiss.dbeaver.preferences.main" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface" name="%pref.page.name.db.configuration">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.general"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
@@ -420,9 +424,11 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.main.errorHandle" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle" name="%pref.page.name.errorHandle">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.errors"/>
         </page>
         <page category="org.eclipse.ui.preferencePages.Workbench" id="org.jkiss.dbeaver.preferences.main.errorLogs" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorLogs" name="%pref.page.name.errorLogs">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.error.logs"/>
         </page>
         <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral" name="%pref.page.name.connections">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
@@ -431,10 +437,12 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.client.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient" name="%pref.page.name.client.connections">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.client"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.main.transactions" class="org.jkiss.dbeaver.ui.preferences.PrefPageTransactions" name="%pref.page.name.transactions">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.transactions"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="%pref.page.name.meta">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.main.meta"/>
@@ -457,17 +465,21 @@
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.drivers.maven" class="org.jkiss.dbeaver.ui.preferences.PrefPageDriversMaven" name="%pref.page.name.drivers.maven">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.maven"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.drivers.classpath" class="org.jkiss.dbeaver.ui.preferences.PrefPageDriversClasspath" name="%pref.page.name.drivers.classpath">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.classpath"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.connectionTypes" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" name="%pref.page.name.connectionTypes">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.connection.types"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.navigator" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator" name="%pref.page.name.navigator">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.navigator.keyword.pref.navigator"/>
         </page>
         <page id="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors" name="%pref.page.name.editors">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.entity"/>
@@ -475,10 +487,11 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.confirmations"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.notifications" class="org.jkiss.dbeaver.ui.preferences.PrefPageNotifications" name="%pref.page.name.notifications">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.misc" class="org.jkiss.dbeaver.ui.preferences.PrefPageMiscellaneous" name="%pref.page.name.miscellaneous">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
@@ -487,11 +500,6 @@
         <page category="org.eclipse.ui.net.NetPreferences" id="org.jkiss.dbeaver.preferences.network.expert" class="org.jkiss.dbeaver.ui.preferences.PrefPageNetworkExpert" name="%pref.page.name.network.expert">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.network.expert"/>
         </page>
-    </extension>
-
-    <extension point="org.eclipse.ui.keywords">
-        <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="checkbox bool boolean holiday decoration christmas snow"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="ip ipv4 ipv6 protocol ssl tls net debug"/>
     </extension>
 
     <extension point="org.eclipse.ui.splashHandlers">
