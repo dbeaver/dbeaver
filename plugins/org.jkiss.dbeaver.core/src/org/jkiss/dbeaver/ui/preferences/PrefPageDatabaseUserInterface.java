@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionListener;
@@ -32,6 +34,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.themes.ColorsAndFontsPreferencePage;
 import org.eclipse.ui.internal.themes.FontDefinition;
 import org.eclipse.ui.internal.themes.ThemeElementCategory;
@@ -56,6 +59,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.service.event.EventHandler;
@@ -79,6 +83,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
 
     private final boolean isStandalone = DesktopPlatform.isStandalone();
+    @Nullable
+    private IThemeEngine themeEngine;
+    @Nullable
+    private org.eclipse.e4.ui.css.swt.theme.ITheme originalTheme;
+    @Nullable
+    private org.eclipse.e4.ui.css.swt.theme.ITheme selectedTheme;
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
 
@@ -108,58 +118,23 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         if (isStandalone) {
-            Composite groupObjects = UIUtils.createTitledComposite(
-                composite,
-                CoreMessages.pref_page_ui_general_group_browser,
-                2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
-            );
-            if (RuntimeUtils.isWindows()) {
-                browserCombo = UIUtils.createLabelCombo(
-                    groupObjects,
-                    CoreMessages.pref_page_ui_general_combo_browser,
-                    SWT.READ_ONLY
+            themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+            if (themeEngine != null) {
+                originalTheme = themeEngine.getActiveTheme();
+                selectedTheme = originalTheme;
+                Composite themes = UIUtils.createTitledComposite(
+                    composite, CoreMessages.pref_page_ui_general_group_theme, 1,
+                    GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
                 );
-                browserCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
-                    browserCombo.add(value.getFullName(), value.ordinal());
+                for (org.eclipse.e4.ui.css.swt.theme.ITheme theme : themeEngine.getThemes()) {
+                    Button button = UIUtils.createRadioButton(themes, theme.getLabel(), theme, SelectionListener.widgetSelectedAdapter(e -> {
+                        if (((Button) e.widget).getSelection()) {
+                            selectedTheme = theme;
+                            themeEngine.setTheme(theme, false);
+                        }
+                    }));
+                    button.setSelection(theme.getId().equals(originalTheme.getId()));
                 }
-                Control tipLabel =
-                    UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
-                tipLabel.setLayoutData(new GridData(
-                    GridData.HORIZONTAL_ALIGN_BEGINNING,
-                    GridData.VERTICAL_ALIGN_BEGINNING,
-                    false,
-                    false,
-                    2,
-                    1
-                ));
-            }
-
-            useEmbeddedBrowserAuth = UIUtils.createCheckbox(
-                groupObjects,
-                CoreMessages.pref_page_ui_general_check_browser_auth,
-                CoreMessages.pref_page_ui_general_check_browser_auth_tip,
-                false,
-                2
-            );
-            useEmbeddedBrowserAuth.setLayoutData(new GridData(
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                false,
-                false,
-                2,
-                1
-            ));
-            if (browserCombo != null) {
-                browserCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                    if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
-                        useEmbeddedBrowserAuth.setEnabled(false);
-                        useEmbeddedBrowserAuth.setSelection(false);
-                    } else {
-                        useEmbeddedBrowserAuth.setEnabled(true);
-                    }
-                }));
             }
 
             this.fontsController = this.prepareFontsController(composite, QUICK_FONT_IDS);
@@ -215,6 +190,62 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 true,
                 2
             );
+        }
+
+        if (isStandalone) {
+            Composite groupObjects = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_ui_general_group_browser,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
+            if (RuntimeUtils.isWindows()) {
+                browserCombo = UIUtils.createLabelCombo(
+                    groupObjects,
+                    CoreMessages.pref_page_ui_general_combo_browser,
+                    SWT.READ_ONLY
+                );
+                browserCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
+                    browserCombo.add(value.getFullName(), value.ordinal());
+                }
+                Control tipLabel =
+                    UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
+                tipLabel.setLayoutData(new GridData(
+                    GridData.HORIZONTAL_ALIGN_BEGINNING,
+                    GridData.VERTICAL_ALIGN_BEGINNING,
+                    false,
+                    false,
+                    2,
+                    1
+                ));
+            }
+
+            useEmbeddedBrowserAuth = UIUtils.createCheckbox(
+                groupObjects,
+                CoreMessages.pref_page_ui_general_check_browser_auth,
+                CoreMessages.pref_page_ui_general_check_browser_auth_tip,
+                false,
+                2
+            );
+            useEmbeddedBrowserAuth.setLayoutData(new GridData(
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                false,
+                false,
+                2,
+                1
+            ));
+            if (browserCombo != null) {
+                browserCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
+                        useEmbeddedBrowserAuth.setEnabled(false);
+                        useEmbeddedBrowserAuth.setSelection(false);
+                    } else {
+                        useEmbeddedBrowserAuth.setEnabled(true);
+                    }
+                }));
+            }
         }
 
         setSettings();
@@ -322,6 +353,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         }
     }
 
+    @Override
+    public boolean performCancel() {
+        if (themeEngine != null && originalTheme != null && selectedTheme != null &&
+            !originalTheme.getId().equals(selectedTheme.getId())) {
+            themeEngine.setTheme(originalTheme, false);
+        }
+        return super.performCancel();
+    }
+
     private boolean isWindowsDesktopClient() {
         return isStandalone && RuntimeUtils.isWindows();
     }
@@ -335,6 +375,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     public boolean performOk()
     {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        boolean themeChanged = themeEngine != null && originalTheme != null && selectedTheme != null &&
+            !originalTheme.getId().equals(selectedTheme.getId());
+        if (themeChanged) {
+            themeEngine.setTheme(selectedTheme, true);
+            originalTheme = selectedTheme;
+        }
 
         if (isStandalone) {
             store.setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
@@ -368,6 +415,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (this.fontsController != null) {
             this.fontsController.apply();
+        }
+
+        if (themeChanged && UIUtils.confirmAction(
+            getShell(),
+            NLS.bind(CoreMessages.pref_page_ui_theme_restart_title, GeneralUtils.getProductName()),
+            NLS.bind(CoreMessages.pref_page_ui_theme_restart_message, GeneralUtils.getProductName())
+        )) {
+            restartWorkbenchOnPrefChange();
         }
 
         return true;
