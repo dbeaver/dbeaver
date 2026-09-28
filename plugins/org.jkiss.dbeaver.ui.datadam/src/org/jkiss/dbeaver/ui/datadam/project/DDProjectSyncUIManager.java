@@ -20,15 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDSyncPreferencePage;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.UUID;
 
@@ -77,10 +76,7 @@ public final class DDProjectSyncUIManager {
 
     @Nullable
     private static ServiceContext getCurrentContext() {
-        String url = DDSyncPreferencePage.getGatewayUrl();
-        if (CommonUtils.isEmpty(url)) {
-            return null;
-        }
+        String url = DDEndpoints.getStorageBaseUrl();
         DDKeyBundle bundle = DDKeyStore.load();
         UUID accountId = getAccountId(bundle);
         return accountId == null ? null : new ServiceContext(

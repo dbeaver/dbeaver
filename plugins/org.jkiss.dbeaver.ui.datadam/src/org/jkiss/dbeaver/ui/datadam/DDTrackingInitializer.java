@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDClientInfo;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.DDTracking;
 import org.jkiss.dbeaver.model.datadam.DDTrackingClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.IOException;
@@ -82,11 +82,8 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             || !DESKTOP_LOGIN_STARTED.compareAndSet(false, true)) {
             return;
         }
-        String accountUrl = DDSyncPreferencePage.getAccountUrl();
-        String storageUrl = DDSyncPreferencePage.getGatewayUrl();
-        if (CommonUtils.isEmpty(accountUrl) || CommonUtils.isEmpty(storageUrl)) {
-            return;
-        }
+        String accountUrl = DDEndpoints.getAccountBaseUrl();
+        String storageUrl = DDEndpoints.getStorageBaseUrl();
         AbstractJob loginJob = new AbstractJob(DDTrackingUIMessages.sync_preference_page_desktop_sign_in) {
             @NotNull
             @Override
@@ -120,11 +117,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             log.debug("DataDam tracking disabled (encryption keys are not imported)");
             return;
         }
-        String url = DDSyncPreferencePage.getGatewayUrl();
-        if (CommonUtils.isEmpty(url)) {
-            log.debug("DataDam tracking disabled (no server URL)");
-            return;
-        }
+        String url = DDEndpoints.getStorageBaseUrl();
         DDAutoSyncCoordinator.start();
         DDSyncCredentials credentials = new DDBundleCredentials(bundle);
         DDTrackingClient client = new DDTrackingClient(url);

@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * Remote DataDam endpoints used for login, project synchronization and tracking.
  */
 public final class DDEndpoints {
-    private static final String STAGE_PROPERTY = "dbeaver.datadam.stage";
+    private static final String STAGE_ARGUMENT = "-dbeaver.datadam.stage";
 
     private static final String STAGE_ACCOUNT_URL = "https://account.datadam.beavers.team";
     private static final String STAGE_STORAGE_URL = "https://gateway.datadam.beavers.team";
@@ -30,7 +32,7 @@ public final class DDEndpoints {
     private static final String PROD_ACCOUNT_URL = "https://account.prod.datadam.invalid";
     private static final String PROD_STORAGE_URL = "https://storage.prod.datadam.invalid";
 
-    private static final boolean STAGE = System.getProperties().containsKey(STAGE_PROPERTY);
+    private static final boolean STAGE = ArrayUtils.contains(Platform.getApplicationArgs(), STAGE_ARGUMENT);
 
     private DDEndpoints() {
     }

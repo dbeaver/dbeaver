@@ -405,7 +405,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_import_keys_first, true);
             return null;
         }
-        String url = getGatewayUrl();
+        String url = DDEndpoints.getStorageBaseUrl();
         return new DDSyncService(
             url,
             new DDBundleCredentials(bundle),
@@ -420,18 +420,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return gd;
     }
 
-    @NotNull
-    public static String getGatewayUrl() {
-        return DDEndpoints.getStorageBaseUrl();
-    }
-
-    @NotNull
-    public static String getAccountUrl() {
-        return DDEndpoints.getAccountBaseUrl();
-    }
-
     private void importKeys() {
-        String siteUrl = getAccountUrl();
+        String siteUrl = DDEndpoints.getAccountBaseUrl();
         DDCryptoState state;
         try {
             state = runInProgress(monitor -> new DDAccountClient(URI.create(siteUrl)).getCryptoState());
@@ -487,8 +477,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void logIn() {
-        String account = getAccountUrl();
-        String storage = getGatewayUrl();
+        String account = DDEndpoints.getAccountBaseUrl();
+        String storage = DDEndpoints.getStorageBaseUrl();
         try {
             Boolean signedIn = runInProgress(monitor -> {
                 try {
@@ -595,7 +585,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         if (bundle == null) {
             return null;
         }
-        String url = getGatewayUrl();
+        String url = DDEndpoints.getStorageBaseUrl();
         return new DDSyncService(
             url,
             new DDBundleCredentials(bundle),
