@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -174,13 +175,20 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     @Nullable
     @Override
     public Path getRunLog(@NotNull DBTTaskRun run) {
+        if (run instanceof DBTTaskRunRecord record && !record.hasLog()) {
+            return null;
+        }
         return getTaskStatsFolder(false).resolve(TaskUtils.buildRunLogFileName(run.getId()));
     }
 
     @NotNull
     @Override
     public InputStream getRunLogInputStream(@NotNull DBTTaskRun run) throws DBException, IOException {
-        return Files.newInputStream(Objects.requireNonNull(getRunLog(run)));
+        Path logFile = getRunLog(run);
+        if (logFile == null) {
+            throw new DBException("This task run has no log file");
+        }
+        return Files.newInputStream(logFile);
     }
 
     @Override
@@ -188,9 +196,10 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         synchronized (this) {
             loadRunsIfNeeded();
 
-            if (!runs.remove(taskRun)) {
+            if (!deleteStoredRuns(taskRun.getId())) {
                 return;
             }
+            runs.removeIf(run -> run.getId().equals(taskRun.getId()));
 
             Path runLog = getRunLog(taskRun);
 
@@ -202,7 +211,18 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
                 }
             }
 
-            flushRunStatistics(runs);
+            if (getRunStorage() == null) {
+                flushRunStatistics(runs);
+            } else {
+                // Keep legacy history readable without importing it or writing new runs into it.
+                Path metaFile = getTaskStatsFolder(false).resolve(META_FILE_NAME);
+                if (Files.exists(metaFile)) {
+                    List<TaskRunImpl> legacy = new ArrayList<>(TaskUtils.loadRunStatistics(metaFile, gson));
+                    if (legacy.removeIf(run -> run.getId().equals(taskRun.getId()))) {
+                        writeRunStatistics(legacy);
+                    }
+                }
+            }
         }
 
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
@@ -210,6 +230,9 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @Override
     public void cleanRunStatistics() {
+        if (!deleteStoredRuns(null)) {
+            return;
+        }
         Path statsFolder = getTaskStatsFolder(false);
         if (Files.exists(statsFolder)) {
             try (Stream<Path> list = Files.list(statsFolder)) {
@@ -274,6 +297,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         synchronized (this) {
             loadRunsIfNeeded();
 
+            runs.removeIf(run -> run.getId().equals(taskRun.getId()));
             runs.add(taskRun);
 
             while (runs.size() > MAX_RUNS_IN_STATS) {
@@ -310,10 +334,35 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @NotNull
     protected List<? extends DBTTaskRun> loadRunStatistics() {
-        return TaskUtils.loadRunStatistics(getTaskStatsFolder(false).resolve(META_FILE_NAME), gson);
+        List<DBTTaskRun> result = new ArrayList<>(
+            TaskUtils.loadRunStatistics(getTaskStatsFolder(false).resolve(META_FILE_NAME), gson));
+        DBTTaskRunStorage storage = getRunStorage();
+        if (storage != null) {
+            try {
+                var filter = new DBTTaskRunStorage.Filter(project.getId(), id, null, null, null, null, null,
+                    DBTTaskRunStorage.Order.START_TIME, true);
+                Map<String, DBTTaskRun> byId = new LinkedHashMap<>();
+                result.forEach(run -> byId.put(run.getId(), run));
+                storage.findRuns(new VoidProgressMonitor(), filter, 0, MAX_RUNS_IN_STATS)
+                    .forEach(run -> byId.put(run.getId(), run));
+                result = new ArrayList<>(byId.values());
+            } catch (DBException e) {
+                log.error("Error reading task run history", e);
+            }
+        }
+        result.sort(Comparator.comparing(DBTTaskRun::getStartTime).thenComparing(DBTTaskRun::getId));
+        return result;
     }
 
     protected void flushRunStatistics(@NotNull List<? extends DBTTaskRun> runs) {
+        // The execution recorder persists individual snapshots. Never rewrite the entire QMDB
+        // history from this bounded UI cache, or fall back to metadata files during an outage.
+        if (getRunStorage() == null) {
+            writeRunStatistics(runs);
+        }
+    }
+
+    private void writeRunStatistics(@NotNull List<? extends DBTTaskRun> runs) {
         Path metaFile = getTaskStatsFolder(true).resolve(META_FILE_NAME);
         try (Writer writer = Files.newBufferedWriter(metaFile)) {
             final List<TaskRunImpl> filteredRuns = runs.stream()
@@ -324,6 +373,24 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         } catch (IOException e) {
             log.error("Error writing task run statistics", e);
         }
+    }
+
+    @Nullable
+    protected DBTTaskRunStorage getRunStorage() {
+        return DBTTaskRunStorage.getInstance();
+    }
+
+    private boolean deleteStoredRuns(@Nullable String runId) {
+        DBTTaskRunStorage storage = getRunStorage();
+        if (storage != null) {
+            try {
+                storage.deleteRuns(project.getId(), id, runId);
+            } catch (DBException e) {
+                log.error("Error deleting task run history", e);
+                return false;
+            }
+        }
+        return true;
     }
 
     private void loadRunsIfNeeded() {

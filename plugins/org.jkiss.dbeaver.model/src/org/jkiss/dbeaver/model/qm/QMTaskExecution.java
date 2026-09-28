@@ -20,12 +20,15 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMProjectInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTaskInfo;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskRun;
+import org.jkiss.dbeaver.model.task.DBTTaskRunRecord;
+import org.jkiss.dbeaver.model.task.DBTTaskRunStorage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
@@ -35,49 +38,70 @@ import java.util.function.Consumer;
 public final class QMTaskExecution implements AutoCloseable {
     private static final Log log = Log.getLog(QMTaskExecution.class);
 
-    private final QMMTaskInfo started;
-    private final Consumer<QMMTaskInfo> publisher;
+    private final DBTTaskRunRecord started;
+    private final Consumer<DBTTaskRunRecord> publisher;
     private boolean failed;
     private boolean canceled;
     private boolean finished;
 
     public QMTaskExecution(@NotNull DBTTask task) {
-        this(createSnapshot(task), event -> {
-            if (event.isClosed()) {
-                QMUtils.getDefaultHandler().handleTaskEnd(task.getProject(), event);
-            } else {
-                QMUtils.getDefaultHandler().handleTaskBegin(task.getProject(), event);
-            }
-        });
+        this(task, null);
     }
 
-    QMTaskExecution(@NotNull QMMTaskInfo started, @NotNull Consumer<QMMTaskInfo> publisher) {
+    /** Reuses a managed run's identity so history and its file-based log remain associated. */
+    public QMTaskExecution(@NotNull DBTTask task, @Nullable DBTTaskRun run) {
+        this(createSnapshot(task, run), createPublisher());
+    }
+
+    private QMTaskExecution(@NotNull DBTTaskRunRecord started, @NotNull Consumer<DBTTaskRunRecord> publisher) {
         this.started = started;
         this.publisher = publisher;
         publish(started);
     }
 
     @NotNull
-    private static QMMTaskInfo createSnapshot(@NotNull DBTTask task) {
-        long now = System.currentTimeMillis();
-        QMMProjectInfo project = new QMMProjectInfo(task.getProject());
-        // Task lifetime is independent of any physical database connection.
-        QMMConnectionInfo connection = QMMConnectionInfo.builder()
-            .setProjectInfo(project)
-            .setContainerId(QMMTaskInfo.TASK_DATASOURCE_PREFIX + project.getUuid())
-            .setContainerName("Task execution")
-            .setDriverId("")
-            .setInstanceId("")
-            .setContextName("tasks")
-            .setOpenTime(now)
-            .build();
-        return new QMMTaskInfo(
-            UUID.randomUUID().toString(), task.getName(), task.getType().getId(), task.getType().getName(),
-            connection, now, 0, QMMTaskInfo.Status.STARTED);
+    private static DBTTaskRunRecord createSnapshot(@NotNull DBTTask task, @Nullable DBTTaskRun run) {
+        String id = run == null ? UUID.randomUUID().toString() : run.getId();
+        return new DBTTaskRunRecord(
+            id, task.getId(), task.getName(), task.getType().getId(), task.getType().getName(),
+            task.getProject().getId(), task.getProject().getName(),
+            run == null ? System.currentTimeMillis() : run.getStartTime().getTime(), 0,
+            run == null ? System.getProperty(StandardConstants.ENV_USER_NAME, "") : run.getStartUser(),
+            run == null ? GeneralUtils.getProductTitle() : run.getStartedBy(), DBTTaskRunRecord.Status.RUNNING, run != null);
+    }
+
+    @NotNull
+    private static Consumer<DBTTaskRunRecord> createPublisher() {
+        try {
+            DBTTaskRunStorage storage = DBTTaskRunStorage.getInstance();
+            return run -> {
+                if (storage != null) {
+                    try {
+                        storage.saveRun(run);
+                    } catch (Exception e) {
+                        log.error("Error saving task execution " + run.id(), e);
+                    }
+                }
+            };
+        } catch (Exception e) {
+            // History must not prevent a task from running if its storage cannot be initialized.
+            log.error("Error initializing task history", e);
+            return run -> { };
+        }
     }
 
     public synchronized void recordError(@Nullable Throwable error) {
-        failed |= error != null;
+        if (error == null) {
+            return;
+        }
+        // Completion callbacks may report cancellation without a canceled progress monitor.
+        if (CommonUtils.getCauseOfType(error, InterruptedException.class) != null
+            || CommonUtils.getCauseOfType(error, OperationCanceledException.class) != null
+        ) {
+            canceled = true;
+        } else {
+            failed = true;
+        }
     }
 
     public synchronized void recordCancellation(boolean canceled) {
@@ -115,16 +139,16 @@ public final class QMTaskExecution implements AutoCloseable {
     public synchronized void close() {
         if (!finished) {
             finished = true;
-            publish(started.finished(System.currentTimeMillis(), canceled ? QMMTaskInfo.Status.CANCELED :
-                failed ? QMMTaskInfo.Status.FAILED : QMMTaskInfo.Status.SUCCESS));
+            publish(started.finished(System.currentTimeMillis(), canceled ? DBTTaskRunRecord.Status.CANCELED :
+                failed ? DBTTaskRunRecord.Status.FAILED : DBTTaskRunRecord.Status.SUCCESS));
         }
     }
 
-    private void publish(@NotNull QMMTaskInfo event) {
+    private void publish(@NotNull DBTTaskRunRecord event) {
         try {
             publisher.accept(event);
         } catch (Exception e) {
-            log.debug("Error recording task execution", e);
+            log.error("Error recording task execution", e);
         }
     }
 }
