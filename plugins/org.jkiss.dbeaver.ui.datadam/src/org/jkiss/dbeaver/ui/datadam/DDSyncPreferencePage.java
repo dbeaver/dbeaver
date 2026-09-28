@@ -32,6 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.*;
 import org.jkiss.dbeaver.model.datadam.sync.*;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationNotFoundException;
@@ -47,7 +48,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -59,15 +59,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
 
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
-    private static final String ENV_URL = "DATADAM_URL";
-    private static final String PREF_SERVER_URL = "datadam.server-url";
     static final String PREF_DESKTOP_SSO_ENABLED = "datadam.desktop.sso.auto-login";
-    private static final int GATEWAY_PORT = 9000;
-    private static final int ACCOUNT_PORT = 9001;
 
     private Text accountText;
     private Text statusText;
-    private Text urlText;
     private Text configurationText;
     private Button loginButton;
     private Button logoutButton;
@@ -81,21 +76,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Button takeRemoteButton;
     private Button keepLocalButton;
 
-    private String savedUrl = "";
     private List<DDSyncConflict> conflicts = List.of();
     private long conflictRefreshId;
 
     @Override
     public void init(@NotNull IWorkbench workbench) {
         //empty
-    }
-
-    @NotNull
-    @Override
-    protected Control createContents(@NotNull Composite parent) {
-        Control contents = super.createContents(parent);
-        updateApplyState();
-        return contents;
     }
 
     @NotNull
@@ -108,21 +94,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             2,
             GridData.FILL_HORIZONTAL,
             SWT.DEFAULT);
-        UIUtils.createControlLabel(group, DDTrackingUIMessages.sync_preference_page_server_url_label);
-        Composite urlPanel = UIUtils.createComposite(group, 2);
-        urlPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        urlText = new Text(urlPanel, SWT.BORDER);
-        urlText.setLayoutData(idFieldLayout());
-        urlText.addModifyListener(e -> updateApplyState());
-        UIUtils.createPushButton(
-            urlPanel,
-            DDTrackingUIMessages.sync_preference_page_default_button,
-            null,
-            SelectionListener.widgetSelectedAdapter(e -> {
-                urlText.setText(CommonUtils.notEmpty(System.getenv(ENV_URL)));
-                updateApplyState();
-            }));
-
         statusText = UIUtils.createLabelText(
             group, DDTrackingUIMessages.sync_preference_page_status_label, "", SWT.READ_ONLY, idFieldLayout());
 
@@ -435,11 +406,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return null;
         }
         String url = getGatewayUrl();
-        if (CommonUtils.isEmpty(url)) {
-            DBWorkbench.getPlatformUI().showMessageBox(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_url_not_configured, true);
-            return null;
-        }
         return new DDSyncService(
             url,
             new DDBundleCredentials(bundle),
@@ -455,81 +421,17 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     @NotNull
-    public static String getServerUrl() {
-        String url = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SERVER_URL);
-        return CommonUtils.isEmpty(url) ? CommonUtils.notEmpty(System.getenv(ENV_URL)) : url;
-    }
-
-    @NotNull
     public static String getGatewayUrl() {
-        return withPort(getServerUrl(), GATEWAY_PORT);
+        return DDEndpoints.getStorageBaseUrl();
     }
 
     @NotNull
     public static String getAccountUrl() {
-        return withPort(getServerUrl(), ACCOUNT_PORT);
-    }
-
-    @NotNull
-    private static String withPort(@NotNull String url, int port) {
-        if (CommonUtils.isEmpty(url)) {
-            return url;
-        }
-        String normalized = CommonUtils.removeTrailingSlash(url);
-        try {
-            java.net.URI uri = java.net.URI.create(normalized);
-            if (uri.getHost() != null) {
-                if (uri.getPort() != -1) {
-                    return normalized;
-                }
-                return new java.net.URI(
-                    uri.getScheme(),
-                    uri.getUserInfo(),
-                    uri.getHost(),
-                    port,
-                    uri.getPath(),
-                    uri.getQuery(),
-                    uri.getFragment()
-                ).toString();
-            }
-        } catch (IllegalArgumentException | URISyntaxException e) {
-            // ignore and fall back
-        }
-        return normalized + ":" + port;
-    }
-
-    private void updateApplyState() {
-        Button applyButton = getApplyButton();
-        if (applyButton != null && !applyButton.isDisposed()) {
-            applyButton.setEnabled(!savedUrl.equals(urlText.getText().trim()));
-        }
-    }
-
-    @Override
-    protected void performApply() {
-        String url = urlText.getText().trim();
-        boolean changed = !savedUrl.equals(url);
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SERVER_URL, url);
-        savedUrl = url;
-        if (changed) {
-            DDProjectSyncUIManager.getInstance().refresh();
-        }
-        updateApplyState();
-    }
-
-    @Override
-    public boolean performOk() {
-        performApply();
-        return super.performOk();
+        return DDEndpoints.getAccountBaseUrl();
     }
 
     private void importKeys() {
         String siteUrl = getAccountUrl();
-        if (CommonUtils.isEmpty(siteUrl)) {
-            DBWorkbench.getPlatformUI().showMessageBox(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_url_not_configured, true);
-            return;
-        }
         DDCryptoState state;
         try {
             state = runInProgress(monitor -> new DDAccountClient(URI.create(siteUrl)).getCryptoState());
@@ -587,11 +489,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private void logIn() {
         String account = getAccountUrl();
         String storage = getGatewayUrl();
-        if (CommonUtils.isEmpty(account) || CommonUtils.isEmpty(storage)) {
-            DBWorkbench.getPlatformUI().showMessageBox(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_url_not_configured, true);
-            return;
-        }
         try {
             Boolean signedIn = runInProgress(monitor -> {
                 try {
@@ -647,14 +544,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         autoSyncButton.setEnabled(signedIn && present);
         autoSyncButton.setSelection(DDAutoSyncCoordinator.isEnabled());
 
-        savedUrl = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SERVER_URL);
-        if (savedUrl == null) {
-            savedUrl = "";
-        }
-        urlText.setText(CommonUtils.isEmpty(savedUrl)
-            ? CommonUtils.notEmpty(System.getenv(ENV_URL))
-            : savedUrl);
-
         refreshConflicts(signedIn && present && boundToCurrentAccount);
     }
 
@@ -707,9 +596,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             return null;
         }
         String url = getGatewayUrl();
-        if (CommonUtils.isEmpty(url)) {
-            return null;
-        }
         return new DDSyncService(
             url,
             new DDBundleCredentials(bundle),
