@@ -24,14 +24,8 @@ import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AISettings;
@@ -155,12 +149,6 @@ public class AIProfileCreateDialog extends BaseDialog {
         });
         engineSelector.addFocusListener(FocusListener.focusGainedAdapter(e -> engineSelector.redraw()));
         engineSelector.addFocusListener(FocusListener.focusLostAdapter(e -> engineSelector.redraw()));
-        engineSelector.addPaintListener(e -> {
-            if (engineSelector.isFocusControl()) {
-                Rectangle bounds = engineSelector.getBounds();
-                e.gc.drawFocus(1, 1, bounds.width - 2, bounds.height - 2);
-            }
-        });
         engineSelector.getAccessible().addAccessibleListener(new AccessibleAdapter() {
             @Override
             public void getName(@NotNull AccessibleEvent e) {
