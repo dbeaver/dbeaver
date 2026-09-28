@@ -233,14 +233,21 @@ public class ComplexObjectEditor extends TreeViewer {
 
     public void setModel(DBCExecutionContext executionContext, final Object value)
     {
-        setModel(executionContext, value, null, false);
+        setModel(executionContext, value, null);
     }
 
+    /**
+     * Sets the value to edit and highlights the elements which differ from the original (committed) value.
+     *
+     * @param executionContext execution context
+     * @param value            value to edit
+     * @param originalValue    original (committed) value used to restore pending changes highlighting,
+     *                         or {@code null} if the value has no pending changes
+     */
     public void setModel(
         DBCExecutionContext executionContext,
         final Object value,
-        @Nullable Object originalValue,
-        boolean highlightChanges
+        @Nullable Object originalValue
     ) {
         getTree().setRedraw(false);
         try {
@@ -248,18 +255,18 @@ public class ComplexObjectEditor extends TreeViewer {
             this.cache.clear();
             setInput(wrap(null, value));
             expandAll();
-            if (highlightChanges) {
-                if (!markChanges(getInput(), originalValue)) {
-                    // No diff found though the value was changed and not committed yet.
-                    // Mark the whole structure as modified to keep pending changes highlighting
-                    // even if the value can't be compared with the original one (e.g. no DBDComposite support).
-                    markAllModified(getInput());
-                }
+            if (originalValue != null) {
+                // The editor is recreated on every focus change, so the highlighting flags of the element
+                // items are lost and must be restored from the value stored in the row change history
+                markChanges(getInput(), originalValue);
             }
             updateActions();
         } finally {
             getTree().setRedraw(true);
         }
+        // Highlighting flags are set after the input is populated, so repaint the tree explicitly:
+        // the label provider reads the flags of the element items at paint time
+        refresh();
     }
 
     /**
@@ -361,27 +368,6 @@ public class ComplexObjectEditor extends TreeViewer {
         } else if (node instanceof CompositeElement composite) {
             for (ComplexElementItem child : composite.getChildren()) {
                 markAdded(child);
-            }
-        }
-    }
-
-    /**
-     * Marks the given element subtree as modified.
-     */
-    private void markAllModified(@Nullable Object node) {
-        if (node instanceof ComplexElementItem item) {
-            if (item.created || item.modified) {
-                return;
-            }
-            item.modified = true;
-            markAllModified(item.value);
-        } else if (node instanceof CollectionElement collection) {
-            for (ComplexElementItem child : collection.items) {
-                markAllModified(child);
-            }
-        } else if (node instanceof CompositeElement composite) {
-            for (ComplexElementItem child : composite.getChildren()) {
-                markAllModified(child);
             }
         }
     }

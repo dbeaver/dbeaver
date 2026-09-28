@@ -237,6 +237,33 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The whole cell value is edited here, so the original value is the value stored in the row
+     * change history. Nested values (addressed by a value path or by collection row indexes) have
+     * no counterpart in the committed top-level value and therefore cannot be compared.
+     */
+    @Override
+    @Nullable
+    public Object getOriginalValue() {
+        DBDAttributeBinding attribute = cellLocation.getAttribute();
+        DBDAttributeBinding topAttribute = attribute.getTopParent();
+        if (attribute != topAttribute) {
+            // Editor is opened for a nested attribute
+            return null;
+        }
+        if (cellLocation.getValuePath() != null || cellLocation.getRowIndexes() != null) {
+            // Editor is opened for a subvalue of the top-level attribute
+            return null;
+        }
+        ResultSetRow row = cellLocation.getRow();
+        if (row == null || !row.isChanged(topAttribute)) {
+            return null;
+        }
+        return row.getChange(topAttribute);
+    }
+
     @Override
     public void updateValue(@Nullable Object value, boolean updatePresentation) {
         boolean updated;
