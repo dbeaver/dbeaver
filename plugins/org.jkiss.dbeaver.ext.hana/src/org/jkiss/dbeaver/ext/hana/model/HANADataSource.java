@@ -229,7 +229,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
             }
             try (Connection connection = super.openConnection(monitor, context, purpose);
                  Statement statement = connection.createStatement()) {
-                statement.execute("ALTER USER " + connectionInfo.getUserName() + " PASSWORD " + DBUtils.getQuotedIdentifier(this, passwordInfo.getNewPassword()));
+                statement.execute("ALTER USER " + passwordInfo.getUserName() + " PASSWORD " + DBUtils.getQuotedIdentifier(this, passwordInfo.getNewPassword()));
             }
             
             connectionInfo.setUserPassword(passwordInfo.getNewPassword());
