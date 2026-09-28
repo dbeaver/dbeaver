@@ -158,7 +158,8 @@ public class AIProfileCreateDialog extends BaseDialog {
         engineSelector.addPaintListener(e -> {
             if (engineSelector.isFocusControl()) {
                 Rectangle bounds = engineSelector.getBounds();
-                e.gc.drawFocus(1, 1, bounds.width - 2, bounds.height - 2);
+                e.gc.setForeground(engineSelector.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
+                e.gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
             }
         });
         engineSelector.getAccessible().addAccessibleListener(new AccessibleAdapter() {
