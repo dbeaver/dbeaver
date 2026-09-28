@@ -178,7 +178,13 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         if (run instanceof DBTTaskRunRecord record && !record.hasLog()) {
             return null;
         }
-        return getTaskStatsFolder(false).resolve(TaskUtils.buildRunLogFileName(run.getId()));
+        return getTaskStatsFolder(false).resolve(TaskUtils.buildRunLogFileName(getRunFileId(run)));
+    }
+
+    @NotNull
+    private static String getRunFileId(@NotNull DBTTaskRun run) {
+        // Imported records use a collision-safe database ID, but their existing log files are not renamed.
+        return run instanceof DBTTaskRunRecord record && record.legacyRunId() != null ? record.legacyRunId() : run.getId();
     }
 
     @NotNull
@@ -199,7 +205,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
             if (!deleteStoredRuns(taskRun.getId())) {
                 return;
             }
-            runs.removeIf(run -> run.getId().equals(taskRun.getId()));
+            runs.removeIf(run -> getRunFileId(run).equals(getRunFileId(taskRun)));
 
             Path runLog = getRunLog(taskRun);
 
@@ -214,11 +220,11 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
             if (getRunStorage() == null) {
                 flushRunStatistics(runs);
             } else {
-                // Keep legacy history readable without importing it or writing new runs into it.
+                // A failed migration or metadata deletion may have left the original file behind.
                 Path metaFile = getTaskStatsFolder(false).resolve(META_FILE_NAME);
                 if (Files.exists(metaFile)) {
                     List<TaskRunImpl> legacy = new ArrayList<>(TaskUtils.loadRunStatistics(metaFile, gson));
-                    if (legacy.removeIf(run -> run.getId().equals(taskRun.getId()))) {
+                    if (legacy.removeIf(run -> run.getId().equals(getRunFileId(taskRun)))) {
                         writeRunStatistics(legacy);
                     }
                 }
@@ -334,22 +340,24 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @NotNull
     protected List<? extends DBTTaskRun> loadRunStatistics() {
-        List<DBTTaskRun> result = new ArrayList<>(
-            TaskUtils.loadRunStatistics(getTaskStatsFolder(false).resolve(META_FILE_NAME), gson));
+        List<DBTTaskRunRecord> storedRuns = List.of();
         DBTTaskRunStorage storage = getRunStorage();
         if (storage != null) {
             try {
                 var filter = new DBTTaskRunStorage.Filter(project.getId(), id, null, null, null, null, null,
                     DBTTaskRunStorage.Order.START_TIME, true);
-                Map<String, DBTTaskRun> byId = new LinkedHashMap<>();
-                result.forEach(run -> byId.put(run.getId(), run));
-                storage.findRuns(new VoidProgressMonitor(), filter, 0, MAX_RUNS_IN_STATS)
-                    .forEach(run -> byId.put(run.getId(), run));
-                result = new ArrayList<>(byId.values());
+                storedRuns = storage.findRuns(new VoidProgressMonitor(), filter, 0, MAX_RUNS_IN_STATS);
             } catch (DBException e) {
                 log.error("Error reading task run history", e);
             }
         }
+        // Querying storage can migrate and remove the metadata file. Read only what remains,
+        // and deduplicate retries whose database commit succeeded but file deletion failed.
+        Map<String, DBTTaskRun> byId = new LinkedHashMap<>();
+        TaskUtils.loadRunStatistics(getTaskStatsFolder(false).resolve(META_FILE_NAME), gson)
+            .forEach(run -> byId.put(run.getId(), run));
+        storedRuns.forEach(run -> byId.put(getRunFileId(run), run));
+        List<DBTTaskRun> result = new ArrayList<>(byId.values());
         result.sort(Comparator.comparing(DBTTaskRun::getStartTime).thenComparing(DBTTaskRun::getId));
         return result;
     }

@@ -38,7 +38,6 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class TaskRunStorageTest extends DBeaverUnitTest {
@@ -326,6 +325,67 @@ public class TaskRunStorageTest extends DBeaverUnitTest {
     @NotNull
     private StorageTask task(@Nullable DBTTaskRunStorage runStorage) {
         return new StorageTask(project, taskType, runStorage);
+    }
+
+    @Test
+    public void importedRunKeepsOriginalLogNameAfterCompletion() throws Exception {
+        TaskImpl task = task(storage);
+        Path log = writeLog("202001010000_1");
+        DBTTaskRunRecord imported = importedRecord("202001010000_1");
+
+        assertEquals(log, task.getRunLog(imported));
+        assertEquals(log, task.getRunLog(imported.finished(START_TIME + 5, DBTTaskRunRecord.Status.SUCCESS)));
+        try (var input = task.getRunLogInputStream(imported)) {
+            assertEquals("existing log", new String(input.readAllBytes(), StandardCharsets.UTF_8));
+        }
+        assertFalse(Files.exists(log.resolveSibling(TaskUtils.buildRunLogFileName(imported.id()))));
+    }
+
+    @Test
+    public void importedRunReplacesLegacyEntryWhenMetadataDeletionIsPending() throws Exception {
+        byte[] original = writeLegacyHistory();
+        DBTTaskRunRecord imported = importedRecord("legacy-run");
+        when(storage.findRuns(any(), any(), anyInt(), anyInt())).thenReturn(List.of(imported));
+
+        TaskImpl task = task(storage);
+
+        assertArrayEquals(new DBTTaskRun[] {imported}, task.getAllRuns());
+        assertArrayEquals(original, Files.readAllBytes(metadataFile()));
+    }
+
+    @Test
+    public void metadataRemovedDuringStorageReadIsNotKeptInTheTaskCache() throws Exception {
+        writeLegacyHistory();
+        when(storage.findRuns(any(), any(), anyInt(), anyInt())).thenAnswer(call -> {
+            Files.delete(metadataFile());
+            // A bounded query need not return old runs that were just migrated.
+            return List.of(record("latest-run", START_TIME, true));
+        });
+
+        assertEquals(List.of("latest-run"), runIds(task(storage)));
+        assertFalse(Files.exists(metadataFile()));
+    }
+
+    @Test
+    public void deletingImportedRunRemovesItsOriginalLogAndAnyRemainingLegacyEntry() throws Exception {
+        writeLegacyHistory();
+        Path log = writeLog("legacy-run");
+        DBTTaskRunRecord imported = importedRecord("legacy-run");
+        when(storage.findRuns(any(), any(), anyInt(), anyInt())).thenReturn(List.of(imported));
+        TaskImpl task = task(storage);
+
+        task.removeRun(imported);
+
+        verify(storage).deleteRuns(PROJECT_ID, TASK_ID, imported.id());
+        assertFalse(Files.exists(log));
+        assertEquals(0, task.getAllRuns().length);
+        assertEquals(0, task(null).getAllRuns().length);
+    }
+
+    @NotNull
+    private DBTTaskRunRecord importedRecord(@NotNull String legacyId) {
+        return new DBTTaskRunRecord("migrated-id", TASK_ID, "Task", "type", "Type", PROJECT_ID, "Project",
+            START_TIME, 0, "user", "Test application", DBTTaskRunRecord.Status.RUNNING, true, legacyId);
     }
 
     @NotNull

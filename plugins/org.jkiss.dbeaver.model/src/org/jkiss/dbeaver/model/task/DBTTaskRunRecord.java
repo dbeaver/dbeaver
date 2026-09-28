@@ -35,16 +35,36 @@ public record DBTTaskRunRecord(
     @NotNull String startUser,
     @NotNull String startedBy,
     @NotNull Status status,
-    boolean hasLog
+    boolean hasLog,
+    @Nullable String legacyRunId
 ) implements DBTTaskRun {
     public enum Status {
         RUNNING, SUCCESS, FAILED, CANCELED
     }
 
+    public DBTTaskRunRecord(
+        @NotNull String id,
+        @NotNull String taskId,
+        @NotNull String taskName,
+        @NotNull String taskTypeId,
+        @NotNull String taskTypeName,
+        @NotNull String projectId,
+        @NotNull String projectName,
+        long startTime,
+        long finishTime,
+        @NotNull String startUser,
+        @NotNull String startedBy,
+        @NotNull Status status,
+        boolean hasLog
+    ) {
+        this(id, taskId, taskName, taskTypeId, taskTypeName, projectId, projectName,
+            startTime, finishTime, startUser, startedBy, status, hasLog, null);
+    }
+
     @NotNull
     public DBTTaskRunRecord finished(long time, @NotNull Status outcome) {
         return new DBTTaskRunRecord(id, taskId, taskName, taskTypeId, taskTypeName, projectId, projectName,
-            startTime, time, startUser, startedBy, outcome, hasLog);
+            startTime, time, startUser, startedBy, outcome, hasLog, legacyRunId);
     }
 
     @NotNull
