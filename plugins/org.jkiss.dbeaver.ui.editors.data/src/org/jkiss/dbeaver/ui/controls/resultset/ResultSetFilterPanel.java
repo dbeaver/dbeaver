@@ -301,10 +301,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
             ResultSetFilterContentAdapter contentAdapter = new ResultSetFilterContentAdapter(viewer);
-            filtersProposalAdapter = ContentAssistUtils.installContentProposal(
+            filtersProposalAdapter = ContentAssistUtils.installContentProposalWithPreferences(
                 filtersText,
                 contentAdapter,
-                this);
+                this,
+                viewer::getPreferenceStore);
         }
 
         // Handle all shortcuts by filters editor, not by host editor

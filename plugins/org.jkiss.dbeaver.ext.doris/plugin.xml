@@ -2,21 +2,30 @@
 <?eclipse version="3.2"?>
 <plugin>
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="apache_doris"
+            label="Apache Doris"
+            description="Apache Doris database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/doris_icon.svg"
+            iconBig="icons/doris_icon_big.svg"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.doris.DorisDataSourceProvider"
                 description="Apache Doris Database"
                 id="doris"
+                dataSourceType="apache_doris"
                 parent="generic"
                 dialect="doris"
                 label="Apache Doris"
                 icon="icons/doris_icon.svg">
 
+            <treeInjection path="generic/catalog/schema/table"
+                changeFolderType="org.jkiss.dbeaver.ext.doris.model.DorisTable"/>
+
             <drivers managable="true">
                 <driver
                         id="doris"
                         label="Apache Doris"
-                        icon="icons/doris_icon.svg"
-                        iconBig="icons/doris_icon_big.svg"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="9030"
