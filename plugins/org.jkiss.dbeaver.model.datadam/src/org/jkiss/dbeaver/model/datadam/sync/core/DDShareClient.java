@@ -232,7 +232,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
             JsonObject data = call(
                 """
                     query($projectId: ID!) {
-                        currentProjectRevision(projectId: $projectId) {
+                        projectCurrentRevision(projectId: $projectId) {
                             id: revisionId
                             userId
                             updateTime
@@ -240,7 +240,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
                         }
                     }""", Map.of("projectId", projectId.toString())
             );
-            JsonElement result = data.get("currentProjectRevision");
+            JsonElement result = data.get("projectCurrentRevision");
             if (result == null || result.isJsonNull()) {
                 throw new DDShareException("Project not found or has no current revision: " + projectId);
             }
@@ -256,7 +256,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         try {
             JsonObject data = call("""
                 query($projectId: ID!) {
-                    pullProjectConfiguration(projectId: $projectId) {
+                    projectPullConfiguration(projectId: $projectId) {
                         files {
                             fileName
                             encryptedContents
@@ -270,7 +270,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
                         }
                     }
                 }""", Map.of("projectId", projectId.toString()));
-            JsonElement result = data.get("pullProjectConfiguration");
+            JsonElement result = data.get("projectPullConfiguration");
             if (result == null || result.isJsonNull()) {
                 throw new DDShareException("Project not found or has no current revision: " + projectId);
             }
