@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.ui.UIFontPreferenceManager;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.BreadcrumbTrim;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -95,6 +96,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private Button statusBarShowBreadcrumbsCheck;
     private Button statusBarShowStatusCheck;
     private Combo statusBarBreadcrumbPositionCombo;
+    @Nullable
+    private String appliedBreadcrumbLocation;
+    private boolean appliedBreadcrumbLocationIsDefault;
+    private boolean appliedStatusLineVisible;
+    private boolean appliedStatusLineVisibleIsDefault;
+    private boolean statusBarPreviewed;
     private Button zoomRestartPromptCheck;
 
     @Nullable
@@ -129,6 +136,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 for (org.eclipse.e4.ui.css.swt.theme.ITheme theme : themeEngine.getThemes()) {
                     Button button = UIUtils.createRadioButton(themes, theme.getLabel(), theme, SelectionListener.widgetSelectedAdapter(e -> {
                         if (((Button) e.widget).getSelection()) {
+                            if (fontsController != null) {
+                                fontsController.rollback();
+                            }
                             selectedTheme = theme;
                             themeEngine.setTheme(theme, false);
                         }
@@ -153,16 +163,19 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             true,
             1
         );
-        if (isStandalone) {
-            statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
-                statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection())));
-        }
+        statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            if (isStandalone) {
+                statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
+            }
+            previewStatusBar();
+        }));
 
         statusBarBreadcrumbPositionCombo = new Combo(breadcrumbs, SWT.READ_ONLY | SWT.DROP_DOWN);
         statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_status_bar_label);
         statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_editors_label);
         if (isStandalone) {
             statusBarBreadcrumbPositionCombo.select(0);
+            statusBarBreadcrumbPositionCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> previewStatusBar()));
         } else {
             statusBarBreadcrumbPositionCombo.select(1);
             statusBarBreadcrumbPositionCombo.setEnabled(false);
@@ -175,6 +188,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             true,
             2
         );
+        statusBarShowStatusCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> previewStatusBar()));
 
         if (RuntimeUtils.isLinux()) {
             Composite displayGroup = UIUtils.createTitledComposite(
@@ -309,6 +323,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        rememberAppliedStatusBar(store);
         if (isWindowsDesktopClient()) {
             browserCombo.select(SWTBrowserRegistry.getActiveBrowser().ordinal());
             useEmbeddedBrowserAuth.setEnabled(
@@ -344,6 +359,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
         }
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
+        if (isStandalone) {
+            statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
+        }
+        previewStatusBar();
         if (RuntimeUtils.isLinux()) {
             zoomRestartPromptCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
         }
@@ -355,6 +374,25 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Override
     public boolean performCancel() {
+        if (fontsController != null) {
+            fontsController.rollback();
+        }
+        if (statusBarPreviewed) {
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            if (appliedBreadcrumbLocationIsDefault) {
+                store.setToDefault(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS);
+            } else {
+                store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, appliedBreadcrumbLocation);
+            }
+            if (appliedStatusLineVisibleIsDefault) {
+                store.setToDefault(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE);
+            } else {
+                store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, appliedStatusLineVisible);
+            }
+            if (isStandalone) {
+                BreadcrumbTrim.refreshStatusBar();
+            }
+        }
         if (themeEngine != null && originalTheme != null && selectedTheme != null &&
             !originalTheme.getId().equals(selectedTheme.getId())) {
             themeEngine.setTheme(originalTheme, false);
@@ -364,6 +402,35 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     private boolean isWindowsDesktopClient() {
         return isStandalone && RuntimeUtils.isWindows();
+    }
+
+    private void rememberAppliedStatusBar(@NotNull DBPPreferenceStore store) {
+        appliedBreadcrumbLocation = store.getString(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS);
+        appliedBreadcrumbLocationIsDefault = store.isDefault(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS);
+        appliedStatusLineVisible = store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE);
+        appliedStatusLineVisibleIsDefault = store.isDefault(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE);
+        statusBarPreviewed = false;
+    }
+
+    private void previewStatusBar() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, getSelectedBreadcrumbLocation().name());
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
+        if (isStandalone) {
+            BreadcrumbTrim.refreshStatusBar();
+        }
+        statusBarPreviewed = true;
+    }
+
+    @NotNull
+    private BreadcrumbLocation getSelectedBreadcrumbLocation() {
+        if (!statusBarShowBreadcrumbsCheck.getSelection()) {
+            return BreadcrumbLocation.HIDDEN;
+        }
+        if (isStandalone && statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0) {
+            return BreadcrumbLocation.IN_STATUS_BAR;
+        }
+        return BreadcrumbLocation.IN_EDITORS;
     }
 
     @Override
@@ -389,25 +456,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 SWTBrowserRegistry.setActiveBrowser(
                     SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
             }
-            PrefUtils.savePreferenceStore(store);
         }
 
-        BreadcrumbLocation breadcrumbLocation;
-        if (!statusBarShowBreadcrumbsCheck.getSelection()) {
-            breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN;
-        } else {
-            if (isStandalone) {
-                if (statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0) {
-                    breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_STATUS_BAR;
-                } else {
-                    breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
-                }
-            } else {
-                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
-            }
-        }
-
-        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, getSelectedBreadcrumbLocation().name());
         store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
         if (RuntimeUtils.isLinux()) {
             store.setValue(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, zoomRestartPromptCheck.getSelection());
@@ -416,6 +467,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (this.fontsController != null) {
             this.fontsController.apply();
         }
+        if (isStandalone) {
+            PrefUtils.savePreferenceStore(store);
+        }
+        rememberAppliedStatusBar(store);
 
         if (themeChanged && UIUtils.confirmAction(
             getShell(),
@@ -449,9 +504,11 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             private final Text example;
 
             @Nullable
-            private Font currentFont = null;
+            private FontRegistry previewRegistry;
             @Nullable
-            private Font customFont = null;
+            private FontData[] originalFontData;
+            @Nullable
+            private FontData[] pendingFontData;
 
             public FontEntry(@NotNull Composite container, @NotNull FontDefinition fontDef) {
                 this.definition = fontDef;
@@ -486,23 +543,24 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
 
             private void setFont(@NotNull FontData[] fontData) {
-                final Font oldFont = this.customFont;
-                this.customFont = new Font(this.example.getFont().getDevice(), fontData);
-                this.example.setFont(this.customFont);
-                this.example.setText(this.prepareFontDescription(this.customFont));
-                if (oldFont != null) {
-                    oldFont.dispose();
+                FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
+                if (this.previewRegistry != null && this.previewRegistry != fonts) {
+                    this.rollback();
                 }
+                if (this.previewRegistry == null) {
+                    this.previewRegistry = fonts;
+                    this.originalFontData = fonts.getFontData(this.definition.getId());
+                }
+                this.pendingFontData = fontData;
+                fonts.put(this.definition.getId(), fontData);
+                eventBroker.send(WorkbenchThemeManager.Events.THEME_REGISTRY_MODIFIED, null);
                 updateLayout(this.example, null);
             }
 
             public void refresh(@NotNull FontRegistry fonts) {
-                this.currentFont = fonts.get(this.definition.getId());
-                this.example.setFont(this.currentFont);
-                if (this.currentFont != null) {
-                    this.example.setText(this.prepareFontDescription(this.currentFont));
-                }
-                this.releaseCustomFontIfExists();
+                Font font = fonts.get(this.definition.getId());
+                this.example.setFont(font);
+                this.example.setText(this.prepareFontDescription(font));
             }
 
             public void resetToDefault() {
@@ -510,8 +568,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
 
             public boolean apply() {
-                if (this.customFont != null) {
-                    setFontPreference(this.definition, this.customFont.getFontData());
+                if (this.pendingFontData != null) {
+                    FontData[] fontData = this.pendingFontData;
+                    this.rollback();
+                    setFontPreference(this.definition, fontData);
                     return true;
                 } else {
                     return false;
@@ -542,11 +602,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 return tmp.toString();
             }
 
-            public void releaseCustomFontIfExists() {
-                if (this.customFont != null) {
-                    this.customFont.dispose();
-                    this.customFont = null;
+            public boolean rollback() {
+                if (this.previewRegistry != null && this.originalFontData != null) {
+                    this.previewRegistry.put(this.definition.getId(), this.originalFontData);
+                    this.previewRegistry = null;
+                    this.originalFontData = null;
+                    this.pendingFontData = null;
+                    return true;
                 }
+                return false;
             }
         }
 
@@ -567,9 +631,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         @NotNull
         private final IPropertyChangeListener currentThemeListener = event -> {
             if (event.getSource() instanceof FontRegistry) {
-                String fontId = event.getProperty();
-                FontData[] fontData = (FontData[]) event.getNewValue();
-                this.refreshFont(fontId, fontData);
+                this.refreshFont(event.getProperty());
             }
         };
 
@@ -595,7 +657,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             this.fontEntriesById.put(fontDef.getId(), new FontEntry(catContainer, fontDef));
         }
 
-        private void refreshFont(@NotNull String fontId, @NotNull FontData[] fontData) {
+        private void refreshFont(@NotNull String fontId) {
             FontEntry entry = this.fontEntriesById.get(fontId);
             if (entry != null) {
                 FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
@@ -633,6 +695,16 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             this.updateLayout(this.container, null);
         }
 
+        public void rollback() {
+            boolean changesMade = false;
+            for (FontEntry entry : this.fontEntriesById.values()) {
+                changesMade |= entry.rollback();
+            }
+            if (changesMade) {
+                eventBroker.send(WorkbenchThemeManager.Events.THEME_REGISTRY_MODIFIED, null);
+            }
+        }
+
         public void apply() {
             boolean changesMade = false;
             for (FontEntry entry : this.fontEntriesById.values()) {
@@ -664,6 +736,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             org.eclipse.e4.ui.css.swt.theme.ITheme actualCssTheme = this.getCurrentCssTheme();
             boolean changed = this.currentTheme != actualTheme || this.currentCssTheme != actualCssTheme;
             if (changed) {
+                this.rollback();
                 this.currentTheme.removePropertyChangeListener(this.currentThemeListener);
                 this.currentTheme = actualTheme;
                 this.currentCssTheme = actualCssTheme;
@@ -676,7 +749,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             this.currentTheme.removePropertyChangeListener(this.currentThemeListener);
             this.eventBroker.unsubscribe(themeRegistryRestyledHandler);
             this.workbench.getThemeManager().removePropertyChangeListener(themeChangeListener);
-            this.fontEntriesById.values().forEach(FontEntry::releaseCustomFontIfExists);
+            this.rollback();
             this.fontEntriesById.clear();
         }
     }
