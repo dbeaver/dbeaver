@@ -158,6 +158,9 @@ public class NewConnectionWizard extends ConnectionWizard
             addPage(pageDataSource);
         }
         pageConnector = new ConnectionPageConnector(this);
+        if (initialDriver != null) {
+            pageConnector.setDataSourceType(initialDriver.getDataSourceType());
+        }
         addPage(pageConnector);
 
         Map<DataSourceConfiguratorDescriptor, ConnectionPageSettings> configuratorPages = new HashMap<>();
