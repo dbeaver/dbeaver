@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -116,8 +115,8 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
         UIServiceShellCommands shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
         if (shellCommandsService != null) {
             Map<String, String> approvalContext = new LinkedHashMap<>();
-            approvalContext.put(ModelMessages.auth_shell_command_context_project, container.getProject().getName());
-            approvalContext.put(ModelMessages.auth_shell_command_context_connection, container.getName());
+            approvalContext.put("Project", container.getProject().getName());
+            approvalContext.put("Connection", container.getName());
             shellCommandsService.validateByUser(command, approvalContext);
         }
         DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, container.getVariablesResolver(true));

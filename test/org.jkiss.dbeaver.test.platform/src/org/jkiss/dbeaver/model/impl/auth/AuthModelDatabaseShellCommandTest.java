@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.runtime.ServiceRegistry;
 import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -118,8 +117,8 @@ public class AuthModelDatabaseShellCommandTest extends DBeaverUnitTest {
                 && workingDirectory.toString().equals(shellCommand.getWorkingDirectory())
                 && shellCommand.isEnabled()
                 && shellCommand.isWaitProcessFinish()), eq(Map.of(
-                    ModelMessages.auth_shell_command_context_project, "Test project",
-                    ModelMessages.auth_shell_command_context_connection, "Test connection"
+                    "Project", "Test project",
+                    "Connection", "Test connection"
                 )));
         assertEquals("test-password", credentials.getUserPassword());
         assertEquals("test-password", connectionProperties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD));
