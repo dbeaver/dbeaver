@@ -86,7 +86,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
@@ -156,7 +155,7 @@ public class SQLEditor extends SQLEditorBase implements
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
-    private static final String NOTIFICATION_SQL_METADATA_REFRESH = "sql.metadata.refresh";
+    static final String NOTIFICATION_SQL_METADATA_REFRESH = "sql.metadata.refresh";
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
@@ -4342,7 +4341,7 @@ public class SQLEditor extends SQLEditorBase implements
         private int topOffset, visibleLength;
         private final boolean closeTabOnError;
         private boolean metadataChanged;
-        private final Set<SQLMetadataRefreshTargetResolver.RefreshTarget> metadataRefreshTargets = new LinkedHashSet<>();
+        private SQLMetadataRefreshTransactionCoordinator.Handling metadataRefreshHandling;
         private SQLQueryListener extListener;
 
         SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
@@ -4435,6 +4434,13 @@ public class SQLEditor extends SQLEditorBase implements
                         List<SQLObjectOperation> objectOperations = owner.recognizeObjectOperations(query);
                         if (query.getType() == SQLQueryType.DDL || !objectOperations.isEmpty()) {
                             metadataChanged = true;
+                            if (metadataRefreshHandling == null || !metadataRefreshHandling.acceptsTargets()) {
+                                metadataRefreshHandling = SQLMetadataRefreshTransactionCoordinator.begin(
+                                    owner,
+                                    session.getExecutionContext(),
+                                    session
+                                );
+                            }
                             for (SQLObjectOperation objectOperation : objectOperations) {
                                 rememberMetadataRefreshTarget(
                                     session.getProgressMonitor(),
@@ -4500,27 +4506,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        private void showMetadataRefreshNotification(@NotNull DBCExecutionContext executionContext) {
-            if (metadataRefreshTargets.isEmpty() || !getOwner().getActivePreferenceStore().getBoolean(
-                SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION
-            )) {
-                return;
-            }
-
-            DBPDataSource dataSource = executionContext.getDataSource();
-            Set<SQLMetadataRefreshTargetResolver.RefreshTarget> refreshTargets = Set.copyOf(metadataRefreshTargets);
-            DBeaverNotifications.showNotification(
-                NOTIFICATION_SQL_METADATA_REFRESH,
-                NLS.bind(
-                    SQLEditorMessages.sql_editor_metadata_refresh_notification_title,
-                    dataSource.getContainer().getName()
-                ),
-                SQLEditorMessages.sql_editor_metadata_refresh_notification,
-                DBPMessageType.WARNING,
-                () -> SQLMetadataRefreshCoordinator.refresh(getOwner(), dataSource.getContainer(), refreshTargets)
-            );
-        }
-
         private void rememberMetadataRefreshTarget(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext executionContext,
@@ -4529,9 +4514,9 @@ public class SQLEditor extends SQLEditorBase implements
             if (objectOperation == null) {
                 return;
             }
-            metadataRefreshTargets.add(
-                SQLMetadataRefreshTargetResolver.createTarget(monitor, executionContext, objectOperation)
-            );
+            SQLMetadataRefreshTargetResolver.RefreshTarget target =
+                SQLMetadataRefreshTargetResolver.createTarget(monitor, executionContext, objectOperation);
+            metadataRefreshHandling.add(target);
         }
 
         private void processQueryResult(
@@ -4692,8 +4677,8 @@ public class SQLEditor extends SQLEditorBase implements
         public void onEndSqlJob(@NotNull DBCSession session, @NotNull SqlJobResult result) {
             if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
                 refreshContextDefaults(session);
-                if (metadataChanged) {
-                    showMetadataRefreshNotification(session.getExecutionContext());
+                if (metadataChanged && metadataRefreshHandling != null) {
+                    metadataRefreshHandling.finish();
                 }
             }
             if (extListener != null) {

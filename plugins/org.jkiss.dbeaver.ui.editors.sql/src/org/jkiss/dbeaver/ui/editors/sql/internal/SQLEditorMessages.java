@@ -391,7 +391,12 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_title_tooltip_database;
     public static String sql_editor_title_tooltip_schema;
     public static String sql_editor_metadata_refresh_notification_title;
+    public static String sql_editor_metadata_refresh_information_title;
     public static String sql_editor_metadata_refresh_notification;
+    public static String sql_editor_metadata_refresh_pending_notification;
+    public static String sql_editor_metadata_refresh_committed_notification;
+    public static String sql_editor_metadata_refresh_rolled_back_notification;
+    public static String sql_editor_metadata_refresh_ignored_notification;
     public static String sql_editor_metadata_refresh_error_title;
     public static String sql_editor_metadata_refresh_error_message;
 

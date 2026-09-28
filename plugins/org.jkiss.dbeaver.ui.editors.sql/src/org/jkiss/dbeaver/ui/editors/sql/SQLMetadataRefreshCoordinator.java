@@ -44,8 +44,12 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 final class SQLMetadataRefreshCoordinator {
     private static final Log log = Log.getLog(SQLMetadataRefreshCoordinator.class);
@@ -54,22 +58,19 @@ final class SQLMetadataRefreshCoordinator {
     }
 
     static void refresh(
-        @NotNull SQLEditor editor,
-        @NotNull DBPDataSourceContainer dataSourceContainer,
-        @NotNull Set<RefreshTarget> refreshTargets
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Set<RefreshTarget> refreshTargets,
+        @Nullable Consumer<Set<RefreshTarget>> completionHandler
     ) {
-        if (editor.isDisposed() || editor.getProject() == null || !editor.getProject().isOpen()) {
-            return;
-        }
-        DBCExecutionContext executionContext = editor.getExecutionContext();
-        if (executionContext == null || executionContext.getDataSource().getContainer() != dataSourceContainer ||
-            !dataSourceContainer.isConnected()) {
+        DBPDataSourceContainer dataSourceContainer = executionContext.getDataSource().getContainer();
+        if (!executionContext.isConnected() || !dataSourceContainer.isConnected()) {
             return;
         }
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    List<DBNDatabaseNode> nodes = new ArrayList<>();
+                    Map<DBNDatabaseNode, Set<RefreshTarget>> nodeTargets = new LinkedHashMap<>();
+                    Set<RefreshTarget> directlyRefreshedTargets = new LinkedHashSet<>();
                     boolean directlyRefreshed = false;
                     for (RefreshTarget target : refreshTargets) {
                         DBSObject refreshTarget = resolveTarget(monitor, executionContext, target);
@@ -81,16 +82,28 @@ final class SQLMetadataRefreshCoordinator {
                             if (refreshTarget instanceof DBPRefreshableObject refreshableObject) {
                                 refreshableObject.refreshObject(monitor);
                                 directlyRefreshed = true;
+                                directlyRefreshedTargets.add(target);
                             }
                         } else {
-                            nodes.add(node);
+                            nodeTargets.computeIfAbsent(node, key -> new LinkedHashSet<>()).add(target);
                         }
                     }
+                    notifyRefreshed(completionHandler, directlyRefreshedTargets);
+                    List<DBNDatabaseNode> nodes = new ArrayList<>(nodeTargets.keySet());
                     nodes.sort(Comparator.comparingInt(SQLMetadataRefreshCoordinator::getNodeDepth));
                     if (!nodes.isEmpty()) {
                         NavigatorHandlerRefresh.refreshNavigator(nodes, (refreshMonitor, refreshedNodes) -> {
-                            if (editor.isDisposed() || !dataSourceContainer.isConnected() ||
-                                executionContext.getDataSource().getContainer() != dataSourceContainer) {
+                            Set<RefreshTarget> successfullyRefreshedTargets = new LinkedHashSet<>();
+                            for (Map.Entry<DBNDatabaseNode, Set<RefreshTarget>> entry : nodeTargets.entrySet()) {
+                                for (DBNNode refreshedNode : refreshedNodes) {
+                                    if (entry.getKey() == refreshedNode || entry.getKey().isChildOf(refreshedNode)) {
+                                        successfullyRefreshedTargets.addAll(entry.getValue());
+                                        break;
+                                    }
+                                }
+                            }
+                            notifyRefreshed(completionHandler, successfullyRefreshedTargets);
+                            if (!executionContext.isConnected() || !dataSourceContainer.isConnected()) {
                                 return;
                             }
                             try {
@@ -118,6 +131,15 @@ final class SQLMetadataRefreshCoordinator {
                 SQLEditorMessages.sql_editor_metadata_refresh_error_message,
                 e.getTargetException()
             );
+        }
+    }
+
+    private static void notifyRefreshed(
+        @Nullable Consumer<Set<RefreshTarget>> completionHandler,
+        @NotNull Set<RefreshTarget> refreshTargets
+    ) {
+        if (completionHandler != null && !refreshTargets.isEmpty()) {
+            completionHandler.accept(Set.copyOf(refreshTargets));
         }
     }
 

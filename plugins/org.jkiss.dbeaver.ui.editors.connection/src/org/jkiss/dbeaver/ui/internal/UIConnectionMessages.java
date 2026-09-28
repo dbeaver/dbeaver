@@ -547,6 +547,8 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_transactions_notifications_show_check_description;
     public static String pref_page_transactions_notifications_show_check_label;
     public static String pref_page_transactions_notify_name_group_label;
+    public static String pref_page_transactions_ddl_behavior_label;
+    public static String pref_page_transactions_ddl_behavior_tip;
     public static String pref_page_ui_general_group_general;
 
     static {
