@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.meta.QMMetaObjectType;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,8 +30,7 @@ public enum QMObjectType {
 
     session("Session", List.of(QMMetaObjectType.CONNECTION_INFO)),
     txn("Transactions", List.of(QMMetaObjectType.TRANSACTION_INFO, QMMetaObjectType.TRANSACTION_SAVEPOINT_INFO)),
-    query("Queries", List.of()),
-    task(ModelMessages.controls_querylog_tasks, List.of(QMMetaObjectType.TASK_INFO));
+    query("Queries", List.of());
 
     private final String title;
     private final List<QMMetaObjectType> types;

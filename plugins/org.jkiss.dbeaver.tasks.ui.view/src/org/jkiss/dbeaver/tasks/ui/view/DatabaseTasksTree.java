@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
-import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.SQLEditorThemeSettings;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -746,7 +746,7 @@ public class DatabaseTasksTree {
         public Color getForeground(@NotNull Object element) {
             DBTTaskRun lastRun = element instanceof DBTTask task ? task.getLastRun() : null;
             return lastRun != null && lastRun.isFinished() && !lastRun.isRunSuccess()
-                ? UIStyles.getErrorTextForeground() : null;
+                ? SQLEditorThemeSettings.instance.editorSemanticErrorColor : null;
         }
 
         @Nullable

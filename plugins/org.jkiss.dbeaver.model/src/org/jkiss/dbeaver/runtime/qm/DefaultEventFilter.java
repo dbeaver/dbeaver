@@ -45,9 +45,7 @@ public class DefaultEventFilter implements QMEventFilter {
     @Override
     public boolean accept(QMEvent event) {
         QMMObject object = event.getObject();
-        if (object instanceof QMMTaskInfo) {
-            return eventCriteria.hasObjectType(QMObjectType.task);
-        } else if (object instanceof QMMStatementExecuteInfo) {
+        if (object instanceof QMMStatementExecuteInfo) {
             return eventCriteria.hasObjectType(QMObjectType.query) &&
                 eventCriteria.hasQueryType(((QMMStatementExecuteInfo) object).getStatement().getPurpose());
         } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {

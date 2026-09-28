@@ -16,10 +16,8 @@
  */
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Query manager execution handler implementation
@@ -27,8 +25,4 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface QMMCollector extends QMExecutionHandler {
 
     QMMConnectionInfo getConnectionInfo(DBCExecutionContext context);
-
-    /** Delivers pending events before a short-lived task process or a persistence listener stops. */
-    default void flushEvents(@NotNull DBRProgressMonitor monitor) {
-    }
 }

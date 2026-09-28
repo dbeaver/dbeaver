@@ -21,9 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.qm.meta.QMMTaskInfo;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 import java.util.Map;
@@ -37,12 +35,6 @@ public interface QMExecutionHandler {
 
     @NotNull
     String getHandlerName();
-
-    default void handleTaskBegin(@NotNull DBPProject project, @NotNull QMMTaskInfo task) {
-    }
-
-    default void handleTaskEnd(@NotNull DBPProject project, @NotNull QMMTaskInfo task) {
-    }
 
     void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional);
 

@@ -140,10 +140,6 @@ public class UIStyles {
         return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(defSWT) : UIUtils.getSharedColor(fgRGB);
     }
 
-    public static Color getErrorTextForeground() {
-        return getDefaultTextColor("AbstractTextEditor.Error.Color.Foreground", SWT.COLOR_RED);
-    }
-
 
     /**
      * Calculate the Contrast color based on Luma(brightness)

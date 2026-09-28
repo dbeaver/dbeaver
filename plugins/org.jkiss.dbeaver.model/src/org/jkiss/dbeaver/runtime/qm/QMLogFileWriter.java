@@ -167,11 +167,8 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
         QMMObject object = event.getObject();
         QMEventAction action = event.getAction();
         // Filter
-        if (object instanceof QMMTaskInfo ||
-            object instanceof QMMStatementInfo ||
-            object instanceof QMMTransactionSavepointInfo ||
-            object instanceof QMMStatementExecuteInfo && action != QMEventAction.END
-        ) {
+        if (object instanceof QMMStatementInfo || object instanceof QMMTransactionSavepointInfo ||
+            (object instanceof QMMStatementExecuteInfo && action != QMEventAction.END)) {
             return;
         }
 
