@@ -541,12 +541,12 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private abstract class TaskRunLabelProvider extends ColumnLabelProvider {
         @Override
-        public final void update(ViewerCell cell) {
+        public final void update(@NotNull ViewerCell cell) {
             DBTTaskRun taskRun = (DBTTaskRun) cell.getElement();
-            if (taskRun != null && !taskRun.isRunSuccess()) {
-                cell.setBackground(tasksTree.getColorError());
+            if (taskRun != null && taskRun.isFinished() && !taskRun.isRunSuccess()) {
+                cell.setForeground(UIStyles.getErrorTextForeground());
             } else {
-                cell.setBackground(null);
+                cell.setForeground(null);
             }
             update(cell, taskRun);
         }
