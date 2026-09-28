@@ -136,8 +136,6 @@ public class PolarDBXProcedure extends MySQLProcedure {
                         }
                     }
                 } catch (SQLException e) {
-                    String errorMsg = e.getMessage();
-                    super.setDeclaration(errorMsg);
                     throw new DBDatabaseException(e, getDataSource());
                 }
             }

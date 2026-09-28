@@ -164,12 +164,12 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
                                        @NotNull String purpose) throws DBCException {
         Connection connection = super.openConnection(monitor, context, purpose);
 
-        // Only set COMPATIBLE_CHARSET_VARIABLES on PolarDB-X Enterprise Edition (regular edition).
+        // Only set COMPATIBLE_CHARSET_VARIABLES for PolarDB-X Enterprise Edition (regular edition).
         // The Standard Edition does not support this variable and will skip it.
         if (!isPolarDBXStandardEdition()) {
             try {
                 try (Statement stmt = connection.createStatement()) {
-                    stmt.execute("SET GLOBAL COMPATIBLE_CHARSET_VARIABLES = true");
+                    stmt.execute("SET COMPATIBLE_CHARSET_VARIABLES = true");
                 }
             } catch (SQLException e) {
                 // ignore: COMPATIBLE_CHARSET_VARIABLES not supported on this edition

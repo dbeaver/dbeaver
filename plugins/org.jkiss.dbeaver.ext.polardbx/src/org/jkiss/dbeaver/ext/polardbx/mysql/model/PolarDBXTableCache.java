@@ -113,7 +113,9 @@ public class PolarDBXTableCache extends MySQLCatalog.TableCache {
 
                     // Use the type information returned by DESCRIBE directly, converted to lower case.
                     if (typeInfo != null) {
-                        col.setFullTypeName(typeInfo.toLowerCase(Locale.ROOT));
+                        String fullTypeName = typeInfo.toLowerCase(Locale.ROOT);
+                        col.setFullTypeName(fullTypeName);
+                        col.setTypeName(fullTypeName.split("[\\s(]", 2)[0]);
                     }
 
                     // Set the default value.

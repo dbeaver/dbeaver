@@ -68,12 +68,6 @@ public class PolarDBXDialect extends MySQLDialect implements SQLDialectDDLExtens
         );
     }
 
-    @NotNull
-    @Override
-    public String[] getExecuteKeywords() {
-        return new String[] {};
-    }
-
     @Override
     public boolean supportsAlterHasColumn() {
         // In PolarDB-X ALTER syntax, in scenarios like ADD GLOBAL INDEX the GLOBAL that follows should not be parsed as a column name.
