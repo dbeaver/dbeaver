@@ -164,7 +164,8 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
                 });
                  if (!UIUtils.isInDialog(inlineControl)) {
-                     if (inlineControl instanceof Composite) {
+                     // StyledText is a Composite, but its own focus loss must save the edited value.
+                     if (inlineControl instanceof Composite && !(inlineControl instanceof StyledText)) {
                          for (Control childControl : ((Composite) inlineControl).getChildren()) {
                              if (!childControl.isDisposed()) {
                                  addAutoSaveSupport(childControl);

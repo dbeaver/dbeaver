@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -284,7 +285,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                         control instanceof Combo ||
                             control instanceof CCombo ||
                             control instanceof Button ||
-                            (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
+                            ((control instanceof Text || control instanceof StyledText) && (control.getStyle() & SWT.MULTI) == 0);
                     UIUtils.addFocusTracker(controller.getSite(), VALUE_VIEW_CONTROL_ID, control);
                     controller.lockActionsByFocus(control);
 
