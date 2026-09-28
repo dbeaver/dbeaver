@@ -180,7 +180,8 @@ final class SQLMetadataRefreshCoordinator {
         }
         DBSObjectContainer schemaContainer = catalog instanceof DBSObjectContainer objectContainer ?
             objectContainer : dataSourceContainer;
-        return schemaContainer == null ? null : schemaContainer.getChild(monitor, schemaName);
+        DBSObject schema = schemaContainer == null ? null : schemaContainer.getChild(monitor, schemaName);
+        return schema != null ? schema : catalog != null ? catalog : dataSourceContainer;
     }
 
     private static void refreshContextDefaults(
