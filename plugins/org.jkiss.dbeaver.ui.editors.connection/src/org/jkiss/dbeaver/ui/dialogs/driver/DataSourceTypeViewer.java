@@ -324,17 +324,7 @@ public class DataSourceTypeViewer extends Viewer {
         public void createControl(@NotNull Composite parent) {
             viewer = new AdvancedListViewer(parent, SWT.NONE);
             viewer.setContentProvider(new ListContentProvider());
-            viewer.setLabelProvider(new LabelProvider() {
-                @Override
-                public @NotNull Image getImage(@NotNull Object element) {
-                    return DBeaverIcons.getImage(((DBPDataSourceType) element).getIconBig());
-                }
-
-                @Override
-                public @NotNull String getText(@NotNull Object element) {
-                    return ((DBPDataSourceType) element).getName();
-                }
-            });
+            viewer.setLabelProvider(new TypeLabelProvider());
             viewer.addSelectionChangedListener(event -> {
                 if (site instanceof ISelectionChangedListener listener) {
                     listener.selectionChanged(event);
@@ -372,6 +362,28 @@ public class DataSourceTypeViewer extends Viewer {
 
         @Override
         public void dispose() {
+        }
+    }
+
+    private static class TypeLabelProvider extends LabelProvider implements IToolTipProvider {
+        @Override
+        public @NotNull Image getImage(@NotNull Object element) {
+            return DBeaverIcons.getImage(((DBPDataSourceType) element).getIconBig());
+        }
+
+        @Override
+        public @NotNull String getText(@NotNull Object element) {
+            return ((DBPDataSourceType) element).getName();
+        }
+
+        @Override
+        public @Nullable String getToolTipText(@NotNull Object element) {
+            DBPDataSourceType type = (DBPDataSourceType) element;
+            List<? extends DBPDriver> drivers = type.getEnabledDrivers();
+            if (drivers.size() == 1 && !CommonUtils.isEmpty(drivers.getFirst().getDescription())) {
+                return drivers.getFirst().getDescription();
+            }
+            return type.getDescription();
         }
     }
 }

@@ -190,17 +190,14 @@ public class AdvancedList extends Canvas {
             return;
         }
         hoverItem = item;
-        if (item == null) {
-            toolTipHandler.updateToolTipText(null);
-        } else {
+        String toolTipText = null;
+        if (item != null) {
             ILabelProvider labelProvider = item.getLabelProvider();
-            if (labelProvider instanceof IToolTipProvider) {
-                String toolTipText = ((IToolTipProvider) labelProvider).getToolTipText(item.getData());
-                if (!CommonUtils.isEmpty(toolTipText)) {
-                    toolTipHandler.updateToolTipText(toolTipText);
-                }
+            if (labelProvider instanceof IToolTipProvider toolTipProvider) {
+                toolTipText = toolTipProvider.getToolTipText(item.getData());
             }
         }
+        toolTipHandler.updateToolTipText(CommonUtils.isEmpty(toolTipText) ? null : toolTipText);
         redraw();
     }
 

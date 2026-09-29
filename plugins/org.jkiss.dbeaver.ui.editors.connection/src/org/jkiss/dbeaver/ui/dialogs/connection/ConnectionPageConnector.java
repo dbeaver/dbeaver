@@ -155,7 +155,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
                 }
             });
             setContentProvider(ArrayContentProvider.getInstance());
-            setLabelProvider(new LabelProvider() {
+            setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public @NotNull String getText(@NotNull Object element) {
                     DBPDriver driver = (DBPDriver) element;
@@ -168,7 +168,13 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
                         gc.dispose();
                     }
                 }
+
+                @Override
+                public @Nullable String getToolTipText(@NotNull Object element) {
+                    return ((DBPDriver) element).getDescription();
+                }
             });
+            ColumnViewerToolTipSupport.enableFor(this);
 
             table.addListener(SWT.MeasureItem, this::measureItem);
             table.addListener(SWT.EraseItem, this::eraseItem);
