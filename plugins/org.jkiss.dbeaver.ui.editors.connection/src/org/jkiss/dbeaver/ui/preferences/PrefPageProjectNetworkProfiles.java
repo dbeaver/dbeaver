@@ -23,6 +23,9 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -69,6 +72,28 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     private DBPProject projectMeta;
 
     public PrefPageProjectNetworkProfiles() {
+    }
+
+    @NotNull
+    @Override
+    protected Control createPreferenceContent(@NotNull Composite parent) {
+        // Embedded editors in global preferences have no preference container.
+        if (getContainer() == null || projectMeta == null) {
+            return super.createPreferenceContent(parent);
+        }
+
+        Composite composite = UIUtils.createComposite(parent, 1);
+        Control content = super.createPreferenceContent(composite);
+        content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        UIUtils.createInfoLink(
+            composite,
+            UIConnectionMessages.pref_page_network_profiles_project_global_hint,
+            () -> {
+                UIUtils.showPreferencesFor(getShell(), null, PrefPageGlobalProjectNetworkProfiles.PAGE_ID);
+                loadSettings();
+            }
+        );
+        return composite;
     }
 
     @Override
