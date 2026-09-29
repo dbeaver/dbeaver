@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -114,11 +115,17 @@ public class DataSourceTypeViewer extends Viewer {
         createExtraFilterControlsAfter(filterGroup);
 
         Set<DBPDataSourceProviderDescriptor> availableProviders = new HashSet<>(providers);
-        List<DBPDataSourceType> types = DataSourceProviderRegistry.getInstance().getDataSourceTypes().stream()
-            .filter(type -> type.getEnabledDrivers().stream()
-                .anyMatch(driver -> availableProviders.contains(driver.getProviderDescriptor()) && isDriverAvailable(driver)))
-            .map(type -> (DBPDataSourceType) type)
-            .toList();
+        List<DBPDataSourceType> types = new ArrayList<>();
+        for (DBPDataSourceType type : DataSourceProviderRegistry.getInstance().getDataSourceTypes()) {
+            List<? extends DBPDriver> availableDrivers = type.getEnabledDrivers().stream()
+                .filter(driver -> availableProviders.contains(driver.getProviderDescriptor()) && isDriverAvailable(driver))
+                .toList();
+            if (DBPDataSourceType.CUSTOM_ID.equals(type.getId())) {
+                availableDrivers.stream().map(CustomDriverType::new).forEach(types::add);
+            } else if (!availableDrivers.isEmpty()) {
+                types.add(type);
+            }
+        }
         setOrderBy(getDefaultOrderBy());
 
         folderComposite = new TabbedFolderComposite(composite, SWT.NONE) {
@@ -169,6 +176,9 @@ public class DataSourceTypeViewer extends Viewer {
 
         filterText.addModifyListener(e -> {
             filter = filterText.getText();
+            if (!filter.isEmpty() && folderComposite.getActiveFolder() != folders.getFirst()) {
+                folderComposite.switchFolder("all", false);
+            }
             applyFilter();
         });
         filterText.addKeyListener(new KeyAdapter() {
@@ -240,21 +250,29 @@ public class DataSourceTypeViewer extends Viewer {
                     @NotNull Object element
                 ) {
                     DBPDataSourceType type = (DBPDataSourceType) element;
-                    String pattern = filter.toLowerCase(Locale.ENGLISH);
-                    return CommonUtils.isEmpty(pattern) || type.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                        CommonUtils.toString(type.getDescription()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                        type.getDataSourceInformation().toLowerCase(Locale.ENGLISH).contains(pattern) ||
+                    String pattern = normalizeSearchText(filter);
+                    return CommonUtils.isEmpty(pattern) || matchesSearch(type.getName(), pattern) ||
+                        matchesSearch(type.getDescription(), pattern) ||
+                        matchesSearch(type.getDataSourceInformation(), pattern) ||
                         type.getEnabledDrivers().stream().anyMatch(driver ->
-                            driver.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            driver.getFullName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            driver.getId().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            CommonUtils.toString(driver.getDescription()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            CommonUtils.toString(driver.getCategory()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
+                            matchesSearch(driver.getName(), pattern) ||
+                            matchesSearch(driver.getFullName(), pattern) ||
+                            matchesSearch(driver.getId(), pattern) ||
+                            matchesSearch(driver.getDescription(), pattern) ||
+                            matchesSearch(driver.getCategory(), pattern) ||
                             driver.getCategories().stream().anyMatch(category ->
-                                category.toLowerCase(Locale.ENGLISH).contains(pattern)));
+                                matchesSearch(category, pattern)));
                 }
             });
         }
+    }
+
+    private static boolean matchesSearch(@Nullable String value, @NotNull String pattern) {
+        return normalizeSearchText(CommonUtils.toString(value)).contains(pattern);
+    }
+
+    private static @NotNull String normalizeSearchText(@NotNull String text) {
+        return text.toLowerCase(Locale.ENGLISH).replaceAll("\\s+", "");
     }
 
     private static boolean isDriverAvailable(@NotNull DBPDriver driver) {
@@ -313,17 +331,7 @@ public class DataSourceTypeViewer extends Viewer {
         public void createControl(@NotNull Composite parent) {
             viewer = new AdvancedListViewer(parent, SWT.NONE);
             viewer.setContentProvider(new ListContentProvider());
-            viewer.setLabelProvider(new LabelProvider() {
-                @Override
-                public @NotNull Image getImage(@NotNull Object element) {
-                    return DBeaverIcons.getImage(((DBPDataSourceType) element).getIconBig());
-                }
-
-                @Override
-                public @NotNull String getText(@NotNull Object element) {
-                    return ((DBPDataSourceType) element).getName();
-                }
-            });
+            viewer.setLabelProvider(new TypeLabelProvider());
             viewer.addSelectionChangedListener(event -> {
                 if (site instanceof ISelectionChangedListener listener) {
                     listener.selectionChanged(event);
@@ -361,6 +369,75 @@ public class DataSourceTypeViewer extends Viewer {
 
         @Override
         public void dispose() {
+        }
+    }
+
+    private static class TypeLabelProvider extends LabelProvider implements IToolTipProvider {
+        @Override
+        public @NotNull Image getImage(@NotNull Object element) {
+            return DBeaverIcons.getImage(((DBPDataSourceType) element).getIconBig());
+        }
+
+        @Override
+        public @NotNull String getText(@NotNull Object element) {
+            return ((DBPDataSourceType) element).getName();
+        }
+
+        @Override
+        public @Nullable String getToolTipText(@NotNull Object element) {
+            DBPDataSourceType type = (DBPDataSourceType) element;
+            List<? extends DBPDriver> drivers = type.getEnabledDrivers();
+            if (drivers.size() == 1 && !CommonUtils.isEmpty(drivers.getFirst().getDescription())) {
+                return drivers.getFirst().getDescription();
+            }
+            return type.getDescription();
+        }
+    }
+
+    private record CustomDriverType(DBPDriver driver) implements DBPDataSourceType {
+        @Override
+        public @NotNull String getId() {
+            return driver.getProviderId() + ":" + driver.getId();
+        }
+
+        @Override
+        public @NotNull String getName() {
+            return driver.getName();
+        }
+
+        @Override
+        public @Nullable String getDescription() {
+            return driver.getDescription();
+        }
+
+        @Override
+        public @NotNull DBPImage getIcon() {
+            return driver.getPlainIcon();
+        }
+
+        @Override
+        public @NotNull DBPImage getIconBig() {
+            return driver.getIconBig();
+        }
+
+        @Override
+        public @Nullable DBPImage getLogoImage() {
+            return driver.getLogoImage();
+        }
+
+        @Override
+        public @NotNull List<? extends DBPDriver> getDrivers() {
+            return List.of(driver);
+        }
+
+        @Override
+        public @NotNull List<? extends DBPDriver> getEnabledDrivers() {
+            return getDrivers();
+        }
+
+        @Override
+        public int getPromotedScore() {
+            return driver.getPromotedScore();
         }
     }
 }
