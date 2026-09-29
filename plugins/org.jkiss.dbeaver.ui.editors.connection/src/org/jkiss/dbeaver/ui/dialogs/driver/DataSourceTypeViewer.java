@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -114,11 +115,17 @@ public class DataSourceTypeViewer extends Viewer {
         createExtraFilterControlsAfter(filterGroup);
 
         Set<DBPDataSourceProviderDescriptor> availableProviders = new HashSet<>(providers);
-        List<DBPDataSourceType> types = DataSourceProviderRegistry.getInstance().getDataSourceTypes().stream()
-            .filter(type -> type.getEnabledDrivers().stream()
-                .anyMatch(driver -> availableProviders.contains(driver.getProviderDescriptor()) && isDriverAvailable(driver)))
-            .map(type -> (DBPDataSourceType) type)
-            .toList();
+        List<DBPDataSourceType> types = new ArrayList<>();
+        for (DBPDataSourceType type : DataSourceProviderRegistry.getInstance().getDataSourceTypes()) {
+            List<? extends DBPDriver> availableDrivers = type.getEnabledDrivers().stream()
+                .filter(driver -> availableProviders.contains(driver.getProviderDescriptor()) && isDriverAvailable(driver))
+                .toList();
+            if (DBPDataSourceType.CUSTOM_ID.equals(type.getId())) {
+                availableDrivers.stream().map(CustomDriverType::new).forEach(types::add);
+            } else if (!availableDrivers.isEmpty()) {
+                types.add(type);
+            }
+        }
         setOrderBy(getDefaultOrderBy());
 
         folderComposite = new TabbedFolderComposite(composite, SWT.NONE) {
@@ -384,6 +391,53 @@ public class DataSourceTypeViewer extends Viewer {
                 return drivers.getFirst().getDescription();
             }
             return type.getDescription();
+        }
+    }
+
+    private record CustomDriverType(DBPDriver driver) implements DBPDataSourceType {
+        @Override
+        public @NotNull String getId() {
+            return driver.getProviderId() + ":" + driver.getId();
+        }
+
+        @Override
+        public @NotNull String getName() {
+            return driver.getName();
+        }
+
+        @Override
+        public @Nullable String getDescription() {
+            return driver.getDescription();
+        }
+
+        @Override
+        public @NotNull DBPImage getIcon() {
+            return driver.getPlainIcon();
+        }
+
+        @Override
+        public @NotNull DBPImage getIconBig() {
+            return driver.getIconBig();
+        }
+
+        @Override
+        public @Nullable DBPImage getLogoImage() {
+            return driver.getLogoImage();
+        }
+
+        @Override
+        public @NotNull List<? extends DBPDriver> getDrivers() {
+            return List.of(driver);
+        }
+
+        @Override
+        public @NotNull List<? extends DBPDriver> getEnabledDrivers() {
+            return getDrivers();
+        }
+
+        @Override
+        public int getPromotedScore() {
+            return driver.getPromotedScore();
         }
     }
 }
