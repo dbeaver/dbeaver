@@ -61,8 +61,10 @@ import org.jkiss.dbeaver.model.impl.data.ResultSetHintContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.*;
@@ -3032,6 +3034,102 @@ public class SpreadsheetPresentation extends AbstractPresentation
         public void resetColors() {
             backgroundDefault = null;
             foregroundDefault = null;
+        }
+
+        @Nullable
+        @Override
+        public String getCellSelectionDragText(@NotNull List<GridCell> selectedCells) {
+            if (!canStartCellSelectionDrag(selectedCells) || selectedCells.isEmpty()) {
+                return null;
+            }
+
+            if (isSingleColumnSelection(selectedCells)) {
+                return formatCellSelectionAsSqlLiterals(selectedCells);
+            }
+            // Match existing row-header TextTransfer capacity and format.
+            return formatCellSelectionAsDisplayJoin(selectedCells);
+        }
+
+        @Override
+        public boolean canStartCellSelectionDrag(@NotNull List<GridCell> selectedCells) {
+            if (controller.isRecordMode()
+                || ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)
+                || selectedCells.isEmpty()
+            ) {
+                return false;
+            }
+            if (!isSingleColumnSelection(selectedCells)) {
+                return true;
+            }
+            // Single-column path emits SQL literals — refuse LOB/content and unresolved attributes.
+            return isSingleColumnSqlLiteralDragAllowed(selectedCells);
+        }
+
+        private static boolean isSingleColumnSelection(@NotNull List<GridCell> selectedCells) {
+            IGridColumn firstColumn = selectedCells.getFirst().col;
+            for (GridCell cell : selectedCells) {
+                if (!Objects.equals(cell.col, firstColumn)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Fail closed: every cell must resolve to an attribute and must not be {@link DBDContent}.
+         */
+        private boolean isSingleColumnSqlLiteralDragAllowed(@NotNull List<GridCell> selectedCells) {
+            for (GridCell cell : selectedCells) {
+                if (getAttributeFromGrid(cell.col, cell.row) == null) {
+                    return false;
+                }
+                if (getCellValue(cell.col, cell.row, false) instanceof DBDContent) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Nullable
+        private String formatCellSelectionAsSqlLiterals(@NotNull List<GridCell> selectedCells) {
+            if (!isSingleColumnSqlLiteralDragAllowed(selectedCells)) {
+                return null;
+            }
+            List<String> literals = new ArrayList<>(selectedCells.size());
+            DBSDataContainer dataContainer = controller.getDataContainer();
+            DBPDataSource dataSource = dataContainer != null ? dataContainer.getDataSource() : null;
+            for (GridCell cell : selectedCells) {
+                DBDAttributeBinding attribute = getAttributeFromGrid(cell.col, cell.row);
+                Object value = getCellValue(cell.col, cell.row, false);
+                String sqlValue;
+                if (dataSource != null && attribute != null) {
+                    sqlValue = SQLUtils.convertValueToSQL(dataSource, attribute, value);
+                } else {
+                    sqlValue = String.valueOf(getCellValue(cell.col, cell.row, true));
+                }
+                literals.add(sqlValue);
+            }
+            return ResultSetCellDragText.joinSqlLiterals(literals);
+        }
+
+        /**
+         * Same separators and display values as LightGrid row-header TextTransfer.
+         */
+        @NotNull
+        private String formatCellSelectionAsDisplayJoin(@NotNull List<GridCell> selectedCells) {
+            List<List<String>> rows = new ArrayList<>();
+            IGridRow currentRow = null;
+            List<String> currentValues = null;
+            for (GridCell cell : selectedCells) {
+                if (currentValues == null || !Objects.equals(cell.row, currentRow)) {
+                    currentValues = new ArrayList<>();
+                    rows.add(currentValues);
+                    currentRow = cell.row;
+                }
+                // String.valueOf matches StringBuilder.append(Object) used by row-header drag.
+                currentValues.add(String.valueOf(getCellValue(cell.col, cell.row, true)));
+            }
+            return ResultSetCellDragText.joinDisplayRows(rows);
         }
     }
 
