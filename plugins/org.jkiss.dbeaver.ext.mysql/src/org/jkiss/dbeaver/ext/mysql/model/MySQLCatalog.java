@@ -322,9 +322,18 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getIndexes(monitor, null);
+    }
+
+    @NotNull
+    public Collection<MySQLTableIndex> getIndexes(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable MySQLTable table
+    ) throws DBException {
         return getDataSource().supportsInformationSchema() ?
-                indexCache.getObjects(monitor, this, null) :
+                indexCache.getObjects(monitor, this, table) :
                 Collections.emptyList();
     }
 

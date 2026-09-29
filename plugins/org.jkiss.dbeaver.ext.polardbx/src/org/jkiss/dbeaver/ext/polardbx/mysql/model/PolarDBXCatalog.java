@@ -146,13 +146,13 @@ public class PolarDBXCatalog extends MySQLCatalog {
         return polarProceduresCache;
     }
 
-    // Override the parent method to directly return our smart index cache.
-    // Note: we cannot override getIndexCache() directly here because the return type does not match,
-    // so we provide the smart cache functionality by overriding the getIndexes() method instead.
     @NotNull
     @Override
-    public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return polarIndexCache.getAllObjects(monitor, this);
+    public Collection<MySQLTableIndex> getIndexes(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable MySQLTable table
+    ) throws DBException {
+        return polarIndexCache.getObjects(monitor, this, table);
     }
 
 
@@ -340,7 +340,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
                     "ORDER BY ORDINAL_POSITION";
 
                 JDBCPreparedStatement stmt = session.prepareStatement(sql);
-                stmt.setString(1, "mysql." + procedure.getName());
+                stmt.setString(1, procedure.getName());
 
                 // Parsed parameter information is cached for fetchChild(), which supplies missing lengths.
                 return stmt;

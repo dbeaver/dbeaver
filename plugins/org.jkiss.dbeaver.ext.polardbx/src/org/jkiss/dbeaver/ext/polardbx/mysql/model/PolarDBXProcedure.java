@@ -112,9 +112,10 @@ public class PolarDBXProcedure extends MySQLProcedure {
                     // For SHOW CREATE FUNCTION, do not use a database name prefix; for SHOW CREATE PROCEDURE, use the full path.
                     String showCreateTarget;
                     if (getProcedureType() == DBSProcedureType.FUNCTION) {
-                        showCreateTarget = "`" + procedureName + "`";  // functions have no database name prefix
+                        showCreateTarget = DBUtils.getQuotedIdentifier(getDataSource(), procedureName);
                     } else {
-                        showCreateTarget = "`" + schemaName + "`.`" + procedureName + "`";  // stored procedures have a database name prefix
+                        showCreateTarget = DBUtils.getQuotedIdentifier(getDataSource(), schemaName) + "." +
+                            DBUtils.getQuotedIdentifier(getDataSource(), procedureName);
                     }
 
                     try (JDBCPreparedStatement dbStat = session.prepareStatement(

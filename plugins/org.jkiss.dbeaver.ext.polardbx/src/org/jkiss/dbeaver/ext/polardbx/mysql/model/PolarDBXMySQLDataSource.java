@@ -55,7 +55,7 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
 
     // Regular expression for recognizing the PolarDB-X Standard Edition version.
     private static final Pattern POLARDBX_STANDARD_VERSION_PATTERN = Pattern.compile(
-        "^\\d+\\.\\d+\\.\\d+-(AliSQL-)?X-Cluster-(\\d+\\.\\d+\\.\\d+(?:\\.\\d+)?)-.*"
+        "^\\d+\\.\\d+\\.\\d+-(?:AliSQL-)?X-Cluster-(?<clusterVersion>\\d+\\.\\d+\\.\\d+(?:\\.\\d+)?)-.*"
     );
     private static final Pattern POLARDBX_ENTERPRISE_VERSION_PATTERN = Pattern.compile(
         "^\\d+\\.\\d+\\.\\d+-(?i:TDDL)-(\\d+\\.\\d+\\.\\d+)(?:-.*)?$"
@@ -111,7 +111,7 @@ public class PolarDBXMySQLDataSource extends MySQLDataSource {
     private static Version parseDatabaseVersion(@NotNull String version) {
         Matcher standardMatcher = POLARDBX_STANDARD_VERSION_PATTERN.matcher(version);
         if (standardMatcher.matches()) {
-            String[] versionParts = standardMatcher.group(2).split("\\.");
+            String[] versionParts = standardMatcher.group("clusterVersion").split("\\.");
             return new Version(
                 Integer.parseInt(versionParts[0]),
                 Integer.parseInt(versionParts[1]),
