@@ -27,12 +27,15 @@ import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshTarge
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
 final class SQLMetadataRefreshTransactionCoordinator {
     private static final String STATE_ATTRIBUTE = SQLMetadataRefreshTransactionCoordinator.class.getName();
+    private static final RefreshRequest UNTRACKED_REFRESH = new RefreshRequest(null);
 
     private SQLMetadataRefreshTransactionCoordinator() {
     }
@@ -135,8 +138,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_notification,
                     lateTargets,
-                    () -> true,
-                    null
+                    () -> UNTRACKED_REFRESH
                 );
             }
             switch (behavior) {
@@ -145,8 +147,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_notification,
                     targets,
-                    () -> true,
-                    null
+                    () -> UNTRACKED_REFRESH
                 );
                 case IGNORED -> showInformation(
                     context,
@@ -161,8 +162,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
                             context,
                             SQLEditorMessages.sql_editor_metadata_refresh_pending_notification,
                             targets,
-                            () -> state.claimPreCommitRefresh(targets),
-                            state::recordPreCommitRefresh
+                            () -> state.claimPreCommitRefresh(targets)
                         );
                     } else {
                         showInformation(
@@ -181,6 +181,9 @@ final class SQLMetadataRefreshTransactionCoordinator {
         private final boolean sameNavigatorContext;
         private final Set<RefreshTarget> targets = new LinkedHashSet<>();
         private final Set<RefreshTarget> refreshedTargets = new LinkedHashSet<>();
+        private final Set<RefreshTarget> rollbackRefreshTargets = new LinkedHashSet<>();
+        private final Map<RefreshTarget, Long> targetGenerations = new LinkedHashMap<>();
+        private long generation;
         private Outcome outcome = Outcome.ACTIVE;
 
         private State(
@@ -196,6 +199,8 @@ final class SQLMetadataRefreshTransactionCoordinator {
         private synchronized boolean add(@NotNull RefreshTarget target) {
             if (outcome == Outcome.ACTIVE) {
                 targets.add(target);
+                targetGenerations.put(target, ++generation);
+                refreshedTargets.remove(target);
                 return true;
             }
             return false;
@@ -205,25 +210,44 @@ final class SQLMetadataRefreshTransactionCoordinator {
             return outcome == Outcome.ACTIVE;
         }
 
-        private synchronized boolean claimPreCommitRefresh(@NotNull Set<RefreshTarget> requestedTargets) {
+        @Nullable
+        private synchronized RefreshRequest claimPreCommitRefresh(@NotNull Set<RefreshTarget> requestedTargets) {
             if (outcome == Outcome.ROLLED_BACK || outcome == Outcome.CLOSED) {
-                return false;
+                return null;
             }
             Set<RefreshTarget> newTargets = new LinkedHashSet<>(requestedTargets);
             newTargets.retainAll(targets);
             if (newTargets.isEmpty()) {
-                return false;
+                return null;
             }
-            return true;
+            if (outcome != Outcome.ACTIVE) {
+                return UNTRACKED_REFRESH;
+            }
+            Map<RefreshTarget, Long> claimedGenerations = new LinkedHashMap<>();
+            for (RefreshTarget target : newTargets) {
+                claimedGenerations.put(target, targetGenerations.get(target));
+            }
+            return new RefreshRequest(
+                successfulTargets -> recordPreCommitRefresh(successfulTargets, claimedGenerations)
+            );
         }
 
-        private void recordPreCommitRefresh(@NotNull Set<RefreshTarget> successfulTargets) {
+        private void recordPreCommitRefresh(
+            @NotNull Set<RefreshTarget> successfulTargets,
+            @NotNull Map<RefreshTarget, Long> claimedGenerations
+        ) {
             Set<RefreshTarget> compensationTargets = Set.of();
             synchronized (this) {
                 Set<RefreshTarget> trackedTargets = new LinkedHashSet<>(successfulTargets);
                 trackedTargets.retainAll(targets);
                 if (outcome == Outcome.ACTIVE) {
-                    refreshedTargets.addAll(trackedTargets);
+                    rollbackRefreshTargets.addAll(trackedTargets);
+                    for (RefreshTarget target : trackedTargets) {
+                        Long claimedGeneration = claimedGenerations.get(target);
+                        if (claimedGeneration != null && claimedGeneration.equals(targetGenerations.get(target))) {
+                            refreshedTargets.add(target);
+                        }
+                    }
                 } else if (outcome == Outcome.ROLLED_BACK) {
                     compensationTargets = trackedTargets;
                 }
@@ -234,17 +258,17 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_rolled_back_notification,
                     refreshTargets,
-                    () -> claimCompensation(refreshTargets),
-                    null
+                    () -> claimCompensation(refreshTargets)
                 );
             }
         }
 
-        private synchronized boolean claimCompensation(@NotNull Set<RefreshTarget> requestedTargets) {
+        @Nullable
+        private synchronized RefreshRequest claimCompensation(@NotNull Set<RefreshTarget> requestedTargets) {
             if (outcome != Outcome.ACTIVE && outcome != Outcome.ROLLED_BACK) {
-                return false;
+                return null;
             }
-            return !requestedTargets.isEmpty();
+            return requestedTargets.isEmpty() ? null : UNTRACKED_REFRESH;
         }
 
         @Override
@@ -274,6 +298,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
                 outcome = Outcome.CLOSED;
                 targets.clear();
                 refreshedTargets.clear();
+                rollbackRefreshTargets.clear();
             }
             detach();
         }
@@ -294,8 +319,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_committed_notification,
                     refreshTargets,
-                    () -> claimPreCommitRefresh(refreshTargets),
-                    null
+                    () -> claimPreCommitRefresh(refreshTargets)
                 );
             }
         }
@@ -307,7 +331,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     return;
                 }
                 outcome = Outcome.ROLLED_BACK;
-                refreshTargets = sameNavigatorContext ? Set.copyOf(refreshedTargets) : Set.of();
+                refreshTargets = sameNavigatorContext ? Set.copyOf(rollbackRefreshTargets) : Set.of();
             }
             detach();
             if (!refreshTargets.isEmpty()) {
@@ -315,8 +339,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_rolled_back_notification,
                     refreshTargets,
-                    () -> claimCompensation(refreshTargets),
-                    null
+                    () -> claimCompensation(refreshTargets)
                 );
             }
         }
@@ -327,15 +350,14 @@ final class SQLMetadataRefreshTransactionCoordinator {
                 if (outcome != Outcome.ACTIVE || !sameNavigatorContext) {
                     return;
                 }
-                refreshTargets = Set.copyOf(refreshedTargets);
+                refreshTargets = Set.copyOf(rollbackRefreshTargets);
             }
             if (!refreshTargets.isEmpty()) {
                 showRefreshNotification(
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_rolled_back_notification,
                     refreshTargets,
-                    () -> claimCompensation(refreshTargets),
-                    null
+                    () -> claimCompensation(refreshTargets)
                 );
             }
         }
@@ -367,8 +389,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
         @NotNull DBCExecutionContext context,
         @NotNull String message,
         @NotNull Set<RefreshTarget> targets,
-        @NotNull RefreshClaim claim,
-        @Nullable Consumer<Set<RefreshTarget>> completionHandler
+        @NotNull RefreshClaim claim
     ) {
         Set<RefreshTarget> refreshTargets = Set.copyOf(targets);
         DBeaverNotifications.showNotification(
@@ -380,8 +401,9 @@ final class SQLMetadataRefreshTransactionCoordinator {
             message,
             DBPMessageType.WARNING,
             () -> {
-                if (claim.claim()) {
-                    SQLMetadataRefreshCoordinator.refresh(context, refreshTargets, completionHandler);
+                RefreshRequest request = claim.claim();
+                if (request != null) {
+                    SQLMetadataRefreshCoordinator.refresh(context, refreshTargets, request.completionHandler());
                 }
             }
         );
@@ -394,8 +416,12 @@ final class SQLMetadataRefreshTransactionCoordinator {
         CLOSED
     }
 
+    private record RefreshRequest(@Nullable Consumer<Set<RefreshTarget>> completionHandler) {
+    }
+
     @FunctionalInterface
     private interface RefreshClaim {
-        boolean claim();
+        @Nullable
+        RefreshRequest claim();
     }
 }
