@@ -52,8 +52,6 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
 
     private static final int TIMEOUT_MS = 30000;
     private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
-    private static final String FIELD_NAME = "name";
-    private static final String FIELD_DESCRIPTION = "description";
 
     static final String PROJECT_FIELDS = """
         id: projectId
@@ -150,11 +148,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
                 %s
                     }
                 }""".formatted(PROJECT_FIELDS.indent(8)), Map.of());
-            List<DDSharedProject> result = new ArrayList<>();
-            for (DDSharedProject project : gson.fromJson(data.get("projects"), DDSharedProject[].class)) {
-                result.add(decryptProject(project));
-            }
-            return result;
+            return List.of(gson.fromJson(data.get("projects"), DDSharedProject[].class));
         } catch (DBException e) {
             throw new DDShareException("Failed to list projects", e);
         }
@@ -168,17 +162,15 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("projectId", projectId.toString());
-            variables.put("name", encryptText(projectId.toString(), FIELD_NAME, name));
-            variables.put(
-                "description",
-                description == null ? null : encryptText(projectId.toString(), FIELD_DESCRIPTION, description));
+            variables.put("name", name);
+            variables.put("description", description);
             JsonObject data = call("""
                 mutation($projectId: ID!, $name: String!, $description: String) {
                     createProject(projectId: $projectId, name: $name, description: $description) {
                 %s
                     }
                 }""".formatted(PROJECT_FIELDS.indent(8)), variables);
-            return decryptProject(gson.fromJson(data.get("createProject"), DDSharedProject.class));
+            return gson.fromJson(data.get("createProject"), DDSharedProject.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to create project", e);
         }
@@ -192,10 +184,8 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("projectId", projectId.toString());
-            variables.put("name", encryptText(projectId.toString(), FIELD_NAME, name));
-            variables.put(
-                "description",
-                description == null ? null : encryptText(projectId.toString(), FIELD_DESCRIPTION, description));
+            variables.put("name", name);
+            variables.put("description", description);
             JsonObject data = call("""
                 mutation($projectId: ID!, $name: String!, $description: String) {
                     updateProject(projectId: $projectId, name: $name, description: $description) {
@@ -206,7 +196,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
             if (result == null || result.isJsonNull()) {
                 throw new DDShareException("Project not found: " + projectId);
             }
-            return decryptProject(gson.fromJson(result, DDSharedProject.class));
+            return gson.fromJson(result, DDSharedProject.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to update project", e);
         }
@@ -382,29 +372,6 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         } catch (DBException e) {
             throw new DDShareException("Failed to get project revisions", e);
         }
-    }
-
-    @NotNull
-    private DDSharedProject decryptProject(@NotNull DDSharedProject project) throws DBException {
-        String projectId = project.id().toString();
-        return new DDSharedProject(
-            project.id(),
-            decryptText(projectId, FIELD_NAME, project.name()),
-            project.description() == null ? null : decryptText(projectId, FIELD_DESCRIPTION, project.description()),
-            project.createTime(),
-            project.updateTime(),
-            project.projectOwner());
-    }
-
-    @NotNull
-    private String encryptText(@NotNull String projectId, @NotNull String field, @NotNull String plaintext) throws DBException {
-        return Base64.getEncoder().encodeToString(
-            DDCrypto.encrypt(getDataKey(), plaintext.getBytes(StandardCharsets.UTF_8), aad(projectId, field)));
-    }
-
-    @NotNull
-    private String decryptText(@NotNull String projectId, @NotNull String field, @NotNull String ciphertext) throws DBException {
-        return new String(decryptBytes(projectId, field, ciphertext), StandardCharsets.UTF_8);
     }
 
     @NotNull
