@@ -71,7 +71,7 @@ public class AIFunctionInternalRegistry {
         for (AIFunctionInternalDescriptor descriptor : descriptors) {
             identityCounts.merge(descriptor.getId(), 1, Integer::sum);
             String legacyId = descriptor.getLegacyId();
-            if (legacyId != null) {
+            if (legacyId != null && !legacyId.equals(descriptor.getId())) {
                 identityCounts.merge(legacyId, 1, Integer::sum);
             }
         }
@@ -79,7 +79,7 @@ public class AIFunctionInternalRegistry {
             Set<String> identities = new LinkedHashSet<>();
             identities.add(descriptor.getId());
             String legacyId = descriptor.getLegacyId();
-            if (legacyId != null) {
+            if (legacyId != null && !legacyId.equals(descriptor.getId())) {
                 identities.add(legacyId);
             }
             if (identities.stream().anyMatch(id -> identityCounts.get(id) > 1)) {
@@ -87,7 +87,7 @@ public class AIFunctionInternalRegistry {
                 continue;
             }
             functionsById.put(descriptor.getId(), descriptor);
-            if (legacyId != null) {
+            if (legacyId != null && !legacyId.equals(descriptor.getId())) {
                 functionsByLegacyId.put(legacyId, descriptor);
             }
         }
