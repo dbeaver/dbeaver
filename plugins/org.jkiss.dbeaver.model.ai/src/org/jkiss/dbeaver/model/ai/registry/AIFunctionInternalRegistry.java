@@ -95,8 +95,7 @@ public class AIFunctionInternalRegistry {
 
     @NotNull
     private static Map<String, AIFunctionImplementationDescriptor> loadImplementations(boolean headless) {
-        Map<String, AIFunctionImplementationDescriptor> implementations = new LinkedHashMap<>();
-        Set<String> conflictingImplementations = new HashSet<>();
+        Map<String, List<AIFunctionImplementationDescriptor>> candidates = new LinkedHashMap<>();
         for (IConfigurationElement ext : Platform.getExtensionRegistry().getConfigurationElementsFor(
             AIFunctionImplementationDescriptor.EXTENSION_ID)
         ) {
@@ -104,17 +103,21 @@ public class AIFunctionInternalRegistry {
                 continue;
             }
             AIFunctionImplementationDescriptor implementation = new AIFunctionImplementationDescriptor(ext);
-            if (implementation.isHeadless() != headless) {
+            if (implementation.isHeadless() && !headless) {
                 continue;
             }
-            String functionId = implementation.getFunctionId();
-            if (conflictingImplementations.contains(functionId)) {
-                continue;
+            candidates.computeIfAbsent(implementation.getFunctionId(), id -> new ArrayList<>()).add(implementation);
+        }
+        Map<String, AIFunctionImplementationDescriptor> implementations = new LinkedHashMap<>();
+        for (Map.Entry<String, List<AIFunctionImplementationDescriptor>> entry : candidates.entrySet()) {
+            List<AIFunctionImplementationDescriptor> applicable = entry.getValue();
+            if (headless && applicable.stream().anyMatch(AIFunctionImplementationDescriptor::isHeadless)) {
+                applicable = applicable.stream().filter(AIFunctionImplementationDescriptor::isHeadless).toList();
             }
-            if (implementations.putIfAbsent(functionId, implementation) != null) {
-                log.error("Duplicate AI function implementation: " + implementation.getFunctionId());
-                implementations.remove(functionId);
-                conflictingImplementations.add(functionId);
+            if (applicable.size() == 1) {
+                implementations.put(entry.getKey(), applicable.getFirst());
+            } else {
+                log.error("Duplicate AI function implementation: " + entry.getKey());
             }
         }
         return implementations;

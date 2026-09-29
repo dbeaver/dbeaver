@@ -64,13 +64,11 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
                 }
             }
         }
-        String validValuesProviderClass = this.config.getAttribute("validValuesProvider");
-        if (!CommonUtils.isEmpty(validValuesProviderClass)) {
+        if (implementation != null && implementation.getParametersWithValueProvider().contains(parameterName)) {
             try {
-                validValuesProvider = new ObjectType(validValuesProviderClass)
-                    .createInstance(AIFunctionParameterValueProvider.class);
+                validValuesProvider = implementation.createParameterValueProvider(parameterName);
             } catch (DBException e) {
-                log.error("Error creating valid values provider", e);
+                log.error("Error creating runtime valid values provider for parameter '" + parameterName + "'", e);
             }
         }
     }

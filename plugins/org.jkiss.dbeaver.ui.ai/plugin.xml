@@ -260,4 +260,10 @@
         <notification id="ai.model.load" name="AI models loaded"/>
     </extension>
 
+    <extension point="com.dbeaver.ai.functionImplementation">
+        <implementation functionId="listSchemaNames" class="org.jkiss.dbeaver.model.ai.functions.ListSchemaNamesFunction"/>
+        <implementation functionId="listTableNames" class="org.jkiss.dbeaver.model.ai.functions.ListTableNamesFunction"/>
+        <implementation functionId="getTableDetails" class="org.jkiss.dbeaver.model.ai.functions.GetTableDetailsFunction"/>
+    </extension>
+
 </plugin>

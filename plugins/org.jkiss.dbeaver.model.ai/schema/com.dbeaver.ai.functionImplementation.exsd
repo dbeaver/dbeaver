@@ -22,6 +22,7 @@
       <complexType>
          <sequence>
             <element ref="parameterTransformer" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="parameterValueProvider" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="functionId" type="string" use="required">
             <annotation>
@@ -43,7 +44,7 @@
          <attribute name="headless" type="boolean">
             <annotation>
                <documentation>
-                  Whether this implementation is used in headless applications. Defaults to false
+                  Whether this is a client-side implementation used only in headless applications. Such implementations may omit the class attribute. Defaults to false
                </documentation>
             </annotation>
          </attribute>
@@ -74,6 +75,28 @@
                <documentation>
                   Suffix appended to the parameter name when storing the transformed value
                </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="parameterValueProvider">
+      <complexType>
+         <attribute name="parameter" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Name of a parameter declared by the referenced function
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Runtime-specific class providing valid values for the parameter
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterValueProvider"/>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>

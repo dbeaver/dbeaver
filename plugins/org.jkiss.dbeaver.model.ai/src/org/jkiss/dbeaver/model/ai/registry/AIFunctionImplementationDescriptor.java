@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIFunction;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer;
+import org.jkiss.dbeaver.model.ai.AIFunctionParameterValueProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -39,6 +40,7 @@ final class AIFunctionImplementationDescriptor extends AbstractDescriptor {
     private final boolean headless;
     private final ObjectType objectType;
     private final Map<String, ParameterTransformerDescriptor> parameterTransformers = new LinkedHashMap<>();
+    private final Map<String, ParameterValueProviderDescriptor> parameterValueProviders = new LinkedHashMap<>();
 
     AIFunctionImplementationDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -49,6 +51,12 @@ final class AIFunctionImplementationDescriptor extends AbstractDescriptor {
             String parameterName = child.getAttribute("parameter");
             if (parameterTransformers.putIfAbsent(parameterName, new ParameterTransformerDescriptor(child)) != null) {
                 log.error("Duplicate parameter transformer for AI function '" + functionId + "': " + parameterName);
+            }
+        }
+        for (IConfigurationElement child : config.getChildren("parameterValueProvider")) {
+            String parameterName = child.getAttribute("parameter");
+            if (parameterValueProviders.putIfAbsent(parameterName, new ParameterValueProviderDescriptor(child)) != null) {
+                log.error("Duplicate parameter value provider for AI function '" + functionId + "': " + parameterName);
             }
         }
     }
@@ -76,6 +84,11 @@ final class AIFunctionImplementationDescriptor extends AbstractDescriptor {
         return parameterTransformers.keySet();
     }
 
+    @NotNull
+    Set<String> getParametersWithValueProvider() {
+        return parameterValueProviders.keySet();
+    }
+
     @Nullable
     AIFunctionParameterTransformer createParameterTransformer(@NotNull String parameterName) throws DBException {
         ParameterTransformerDescriptor descriptor = parameterTransformers.get(parameterName);
@@ -88,6 +101,12 @@ final class AIFunctionImplementationDescriptor extends AbstractDescriptor {
         return descriptor == null ? null : descriptor.targetSuffix;
     }
 
+    @Nullable
+    AIFunctionParameterValueProvider createParameterValueProvider(@NotNull String parameterName) throws DBException {
+        ParameterValueProviderDescriptor descriptor = parameterValueProviders.get(parameterName);
+        return descriptor == null ? null : descriptor.objectType.createInstance(AIFunctionParameterValueProvider.class);
+    }
+
     private final class ParameterTransformerDescriptor {
         private final ObjectType objectType;
         private final String targetSuffix;
@@ -95,6 +114,14 @@ final class AIFunctionImplementationDescriptor extends AbstractDescriptor {
         private ParameterTransformerDescriptor(@NotNull IConfigurationElement config) {
             this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
             this.targetSuffix = config.getAttribute("targetSuffix");
+        }
+    }
+
+    private final class ParameterValueProviderDescriptor {
+        private final ObjectType objectType;
+
+        private ParameterValueProviderDescriptor(@NotNull IConfigurationElement config) {
+            this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         }
     }
 }

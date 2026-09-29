@@ -60,14 +60,6 @@
                <documentation>Function name used by AI assistant</documentation>
             </annotation>
          </attribute>
-         <attribute name="class" type="string">
-            <annotation>
-               <documentation>Class implementing the AIFunction interface</documentation>
-               <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunction"/>
-               </appInfo>
-            </annotation>
-         </attribute>
          <attribute name="description" type="string">
             <annotation>
                <documentation>Detailed AI-facing function description used by the assistant to understand the function behavior and when to call it</documentation>
@@ -183,14 +175,6 @@
          <attribute name="validValues" type="string">
             <annotation>
                <documentation>Comma-separated list of valid values for this parameter</documentation>
-            </annotation>
-         </attribute>
-         <attribute name="validValuesProvider" type="string">
-            <annotation>
-               <documentation>Optional class implementing AIFunctionParameterValueProvider used to provide valid values dynamically</documentation>
-               <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterValueProvider"/>
-               </appInfo>
             </annotation>
          </attribute>
          <attribute name="transformer" type="string">
