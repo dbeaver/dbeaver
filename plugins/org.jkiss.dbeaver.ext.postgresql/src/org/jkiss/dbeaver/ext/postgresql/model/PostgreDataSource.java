@@ -519,7 +519,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
-        final DBPConnectionConfiguration conConfig = getContainer().getActualConnectionConfiguration();
+        return openConnection(monitor, context, new DBPConnectionConfiguration(getContainer().getActualConnectionConfiguration()), purpose);
+    }
+
+    @Override
+    protected boolean isUserPasswordAuthentication(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return super.isUserPasswordAuthentication(connectionInfo)
+            || AuthModelPgPass.ID.equals(connectionInfo.getAuthModelId());
+    }
+
+    @Override
+    protected Connection openConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull DBPConnectionConfiguration conConfig,
+        @NotNull String purpose
+    ) throws DBCException {
 
         JDBCRemoteInstance instance = context == null ? null : context.getOwnerInstance();
         Connection pgConnection;
@@ -573,7 +588,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 }
                 pgConnection = super.openConnection(monitor, context, newConfig, purpose);
             } else {
-                pgConnection = super.openConnection(monitor, context, purpose);
+                pgConnection = super.openConnection(monitor, context, conConfig, purpose);
             }
         } catch (DBCException e) {
             final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
@@ -585,7 +600,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                         // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
                         // It will still be deleted during shutdown.
 
-                        return this.openConnection(monitor, context, purpose);
+                        return this.openConnection(monitor, context, conConfig, purpose);
                     }
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
