@@ -107,6 +107,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     protected volatile Map<String, Map<String, String>> resourceProperties;
     private UUID projectID;
 
+    private final Object propertiesSync = new Object();
     protected final Object metadataSync = new Object();
     protected final Object resourcesSync = new Object();
     private ProjectSyncJob metadataSyncJob;
@@ -289,7 +290,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Nullable
     @Override
     public Object getProjectProperty(String propName) {
-        synchronized (this) {
+        synchronized (propertiesSync) {
             loadProperties();
             return properties.get(propName);
         }
@@ -297,7 +298,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     @Override
     public void setProjectProperty(@NotNull String propName, @Nullable Object propValue) {
-        synchronized (metadataSync) {
+        synchronized (propertiesSync) {
             loadProperties();
             if (propValue == null) {
                 properties.remove(propName);
@@ -309,7 +310,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     }
 
     public void setProjectProperties(@NotNull Map<String, Object> properties) {
-        synchronized (metadataSync) {
+        synchronized (propertiesSync) {
             loadProperties();
             this.properties.putAll(properties);
             saveProperties();
@@ -325,7 +326,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             return;
         }
 
-        synchronized (metadataSync) {
+        synchronized (propertiesSync) {
             Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
 
             if (fileExistsAndNonEmpty(settingsFile)) {
@@ -478,7 +479,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     @Override
     public void refreshProject() {
-        synchronized (metadataSync) {
+        synchronized (propertiesSync) {
             properties = null;
         }
     }
