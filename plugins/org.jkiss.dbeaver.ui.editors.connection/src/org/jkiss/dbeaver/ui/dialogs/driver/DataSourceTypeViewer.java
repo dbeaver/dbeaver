@@ -169,6 +169,9 @@ public class DataSourceTypeViewer extends Viewer {
 
         filterText.addModifyListener(e -> {
             filter = filterText.getText();
+            if (!filter.isEmpty() && folderComposite.getActiveFolder() != folders.getFirst()) {
+                folderComposite.switchFolder("all", false);
+            }
             applyFilter();
         });
         filterText.addKeyListener(new KeyAdapter() {
@@ -240,21 +243,29 @@ public class DataSourceTypeViewer extends Viewer {
                     @NotNull Object element
                 ) {
                     DBPDataSourceType type = (DBPDataSourceType) element;
-                    String pattern = filter.toLowerCase(Locale.ENGLISH);
-                    return CommonUtils.isEmpty(pattern) || type.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                        CommonUtils.toString(type.getDescription()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                        type.getDataSourceInformation().toLowerCase(Locale.ENGLISH).contains(pattern) ||
+                    String pattern = normalizeSearchText(filter);
+                    return CommonUtils.isEmpty(pattern) || matchesSearch(type.getName(), pattern) ||
+                        matchesSearch(type.getDescription(), pattern) ||
+                        matchesSearch(type.getDataSourceInformation(), pattern) ||
                         type.getEnabledDrivers().stream().anyMatch(driver ->
-                            driver.getName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            driver.getFullName().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            driver.getId().toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            CommonUtils.toString(driver.getDescription()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
-                            CommonUtils.toString(driver.getCategory()).toLowerCase(Locale.ENGLISH).contains(pattern) ||
+                            matchesSearch(driver.getName(), pattern) ||
+                            matchesSearch(driver.getFullName(), pattern) ||
+                            matchesSearch(driver.getId(), pattern) ||
+                            matchesSearch(driver.getDescription(), pattern) ||
+                            matchesSearch(driver.getCategory(), pattern) ||
                             driver.getCategories().stream().anyMatch(category ->
-                                category.toLowerCase(Locale.ENGLISH).contains(pattern)));
+                                matchesSearch(category, pattern)));
                 }
             });
         }
+    }
+
+    private static boolean matchesSearch(@Nullable String value, @NotNull String pattern) {
+        return normalizeSearchText(CommonUtils.toString(value)).contains(pattern);
+    }
+
+    private static @NotNull String normalizeSearchText(@NotNull String text) {
+        return text.toLowerCase(Locale.ENGLISH).replaceAll("\\s+", "");
     }
 
     private static boolean isDriverAvailable(@NotNull DBPDriver driver) {
