@@ -134,10 +134,6 @@ public class AdvancedList extends Canvas {
             public void mouseExit(MouseEvent e) {
                 updateHover(null);
             }
-
-            @Override
-            public void mouseHover(MouseEvent e) {
-            }
         });
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -339,12 +335,12 @@ public class AdvancedList extends Canvas {
                 break;
             case SWT.HOME:
                 if (!items.isEmpty()) {
-                    setSelection(items.get(0));
+                    setSelection(items.getFirst());
                 }
                 break;
             case SWT.END:
                 if (!items.isEmpty()) {
-                    setSelection(items.get(items.size() - 1));
+                    setSelection(items.getLast());
                 }
                 break;
             case SWT.CR:
@@ -374,7 +370,7 @@ public class AdvancedList extends Canvas {
         RGB background = getBackground().getRGB();
         return UIUtils.getSharedTextColors().getColor(UIUtils.isDark(background)
             ? UIUtils.blend(selectionBackgroundColor.getRGB(), background, 25)
-            : UIUtils.blend(selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 70));
+            : UIUtils.blend(selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 25));
     }
 
     Point getTextSize() {
