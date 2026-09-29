@@ -43,9 +43,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -54,6 +53,7 @@ import java.util.stream.Collectors;
 public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.globalNetworkProfiles";
 
+    private final ProfileUsageCache profileUsageCache = new ProfileUsageCache();
     private PrefPageManagedNetworkProfiles networkProfilesPage;
     private Composite networkProfilesPageHolder;
     private int lastProjectIndex = -1;
@@ -116,6 +116,8 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         networkProfilesPageHolder.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).span(3, 1).create());
         networkProfilesPageHolder.setLayout(new FillLayout());
 
+        profileUsageCache.load(projects);
+
         // Populate and select active project
         projectCombo.add("<Global>");
         for (DBPProject project : projects) {
@@ -156,6 +158,8 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             );
             return false;
         }
+
+        profileUsageCache.selectProject(project);
 
         // It's easier to recreate the whole page... not ideal
         if (networkProfilesPage != null) {
@@ -234,8 +238,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 );
                 return false;
             }
-            List<String> projectsWithSameProfileName = getProjects().stream()
-                .filter(proj -> proj.getDataSourceRegistry().getNetworkProfiles().getProfile(null, profileName) != null)
+            List<String> projectsWithSameProfileName = profileUsageCache.getProjectsWithLocalProfile(profileName).stream()
                 .map(DBPProject::getName)
                 .map(name -> " - " + name)
                 .toList();
@@ -259,9 +262,8 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         @NotNull
         @Override
         protected GlobalNetworkProfileManager getProfilesRegistry() {
-            var profilesRegistry = DBWorkbench.getPlatform().getNetworkProfiles();
-            if (profilesRegistry instanceof GlobalNetworkProfileManager globalProfilesRegistry) {
-                return globalProfilesRegistry;
+            if (DBWorkbench.getPlatform().getNetworkProfiles() instanceof GlobalNetworkProfileManager manager) {
+                return manager;
             }
             throw new IllegalStateException("Global network profile manager expected");
         }
@@ -269,16 +271,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         @NotNull
         @Override
         protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
-            Predicate<DBPProject> projectUsingProfileAsGlobal = proj -> {
-                DBWNetworkProfile profile = proj.getDataSourceRegistry().getNetworkProfiles()
-                    .getProfile(null, selectedProfile.getProfileName());
-                return profile != null && profile.isGlobal();
-            };
-            return getProjects()
-                .stream()
-                .filter(projectUsingProfileAsGlobal)
-                .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
-                .toList();
+            return profileUsageCache.getConnectionsUsingGlobalProfile(selectedProfile.getProfileName());
         }
 
         @NotNull
@@ -318,8 +311,70 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             @NotNull DBWNetworkProfile profile,
             @NotNull List<? extends DBPDataSourceContainer> usedBy
         ) throws DBException {
-            getProfilesRegistry().detachProfile(profile, usedBy);
+            try {
+                getProfilesRegistry().detachProfile(profile, usedBy);
+            } finally {
+                usedBy.stream()
+                    .map(DBPDataSourceContainer::getProject)
+                    .distinct()
+                    .forEach(profileUsageCache::refreshProject);
+            }
             super.removeProfile(profile, usedBy);
+        }
+    }
+
+    private static class ProfileUsageCache {
+        private final Map<String, List<DBPProject>> projectsByLocalProfileName = new HashMap<>();
+        private final Map<String, List<DBPDataSourceContainer>> connectionsByGlobalProfileName = new HashMap<>();
+        private DBPProject activeProject;
+
+        void load(@NotNull List<? extends DBPProject> projects) {
+            projectsByLocalProfileName.clear();
+            connectionsByGlobalProfileName.clear();
+            projects.forEach(this::addProject);
+        }
+
+        void selectProject(@Nullable DBPProject project) {
+            if (activeProject != null) {
+                refreshProject(activeProject);
+            }
+            activeProject = project;
+        }
+
+        void refreshProject(@NotNull DBPProject project) {
+            projectsByLocalProfileName.values().forEach(projects -> projects.remove(project));
+            projectsByLocalProfileName.values().removeIf(List::isEmpty);
+            connectionsByGlobalProfileName.values().forEach(connections ->
+                connections.removeIf(connection -> connection.getProject() == project));
+            connectionsByGlobalProfileName.values().removeIf(List::isEmpty);
+            addProject(project);
+        }
+
+        @NotNull
+        List<DBPProject> getProjectsWithLocalProfile(@NotNull String profileName) {
+            return projectsByLocalProfileName.getOrDefault(profileName, List.of());
+        }
+
+        @NotNull
+        List<DBPDataSourceContainer> getConnectionsUsingGlobalProfile(@NotNull String profileName) {
+            return connectionsByGlobalProfileName.getOrDefault(profileName, List.of());
+        }
+
+        private void addProject(@NotNull DBPProject project) {
+            var registry = project.getDataSourceRegistry();
+            Set<String> localProfileNames = new HashSet<>();
+            for (DBWNetworkProfile profile : registry.getNetworkProfiles().getProfiles()) {
+                localProfileNames.add(profile.getProfileName());
+                projectsByLocalProfileName.computeIfAbsent(profile.getProfileName(), name -> new ArrayList<>()).add(project);
+            }
+            for (DBPDataSourceContainer connection : registry.getDataSources()) {
+                var configuration = connection.getConnectionConfiguration();
+                String profileName = configuration.getConfigProfileName();
+                if (configuration.getConfigProfileSource() == null && profileName != null &&
+                    !localProfileNames.contains(profileName)) {
+                    connectionsByGlobalProfileName.computeIfAbsent(profileName, name -> new ArrayList<>()).add(connection);
+                }
+            }
         }
     }
 }
