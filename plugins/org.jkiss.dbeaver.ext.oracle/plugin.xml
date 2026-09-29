@@ -4,11 +4,20 @@
 
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="oracle"
+            label="Oracle Database"
+            description="Oracle Database"
+            dataSourceInformation="Enterprise relational database management system"
+            icon="icons/oracle_icon.png"
+            iconBig="icons/oracle_icon_big.png"
+            logoImage="icons/oracle_logo.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
             description="Oracle connector"
             icon="icons/oracle_icon.png"
             id="oracle"
+            dataSourceType="oracle"
             label="Oracle"
             dialect="oracle">
             <tree
@@ -347,8 +356,6 @@
                     defaultUser="system"
                     customEndpoint="true"
                     webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
-                    icon="icons/oracle_icon.png"
-                    iconBig="icons/oracle_icon_big.png"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
                     databaseDocumentationSuffixURL="Oracle"
                     description="%driver.oracle.description"

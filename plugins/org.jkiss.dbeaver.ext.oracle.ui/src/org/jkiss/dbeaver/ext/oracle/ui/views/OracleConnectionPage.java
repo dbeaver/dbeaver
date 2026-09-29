@@ -24,7 +24,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -80,26 +79,9 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private TextWithOpenFolder tnsPathText;
 
     private boolean activated = false;
-    private final Image logoImage;
-
-    public OracleConnectionPage() {
-        logoImage = createImage("icons/oracle_logo.png"); //$NON-NLS-1
-    }
 
     @Override
-    public void dispose()
-    {
-        super.dispose();
-        UIUtils.dispose(logoImage);
-    }
-
-    @Override
-    public Image getImage() {
-        return logoImage;
-    }
-
-    @Override
-    public void createControl(Composite composite)
+    public void createControl(@NotNull Composite composite)
     {
         controlModifyListener = new ControlsListener();
 

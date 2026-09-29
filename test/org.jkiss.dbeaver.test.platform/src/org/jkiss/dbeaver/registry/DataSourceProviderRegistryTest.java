@@ -17,12 +17,51 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 
 public class DataSourceProviderRegistryTest {
+    @Test
+    public void testEveryDriverHasDataSourceType() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+
+        for (DBPDataSourceProviderDescriptor provider : registry.getDataSourceProviders()) {
+            for (DBPDriver driver : provider.getDrivers()) {
+                DBPDataSourceType type = driver.getDataSourceType();
+                Assertions.assertNotNull(type, provider.getId() + ":" + driver.getId());
+                Assertions.assertFalse(type.getDataSourceInformation().isBlank(), type.getId());
+            }
+        }
+    }
+
+    @Test
+    public void testCustomDriverUsesCustomDataSourceType() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DriverDescriptor driver = new DriverDescriptor(registry.getDataSourceProvider("generic"), "test-custom-driver");
+
+        Assertions.assertSame(registry.getDataSourceType(DBPDataSourceType.CUSTOM_ID), driver.getDataSourceType());
+    }
+
+    @Test
+    public void testBigQueryDriversShareDataSourceType() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DBPDataSourceType type = registry.getDataSourceType("bigquery");
+        DBPDriver simbaDriver = registry.getDataSourceProvider("bigquery").getDriver("google_bigquery_jdbc_simba");
+        DBPDriver standardDriver = registry.getDataSourceProvider("bigquery").getDriver("google_bigquery_jdbc");
+
+        Assertions.assertNotNull(type);
+        Assertions.assertEquals(type, standardDriver.getDataSourceType());
+        Assertions.assertEquals(type, simbaDriver.getDataSourceType());
+        Assertions.assertSame(type.getIcon(), standardDriver.getPlainIcon());
+        Assertions.assertSame(type.getIconBig(), standardDriver.getIconBig());
+    }
+
     @Test
     public void testConnectionTypesCollectionIsStableDuringRegistryUpdate() {
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();

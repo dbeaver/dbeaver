@@ -9,6 +9,20 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="libsql"
+            label="LibSQL"
+            description="LibSQL database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/libsql_icon.png"
+            iconBig="icons/libsql_icon_big.png"/>
+        <dataSourceType
+            id="sqlite"
+            label="SQLite"
+            description="SQLite database"
+            dataSourceInformation="Lightweight embedded relational database engine"
+            icon="icons/sqlite_icon.png"
+            iconBig="icons/sqlite_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSourceProvider"
                 description="SQLite"
@@ -32,9 +46,8 @@
             <drivers managable="true">
                 <driver
                         id="sqlite_jdbc"
+                        dataSourceType="sqlite"
                         label="SQLite"
-                        icon="icons/sqlite_icon.png"
-                        iconBig="icons/sqlite_icon_big.png"
                         class="org.sqlite.JDBC"
                         sampleURL="jdbc:sqlite:{file}"
                         supportedConfigurationTypes="MANUAL,URL"
@@ -66,10 +79,9 @@
                 <!-- LibSQL / Turso-->
                 <driver
                         id="libsql_jdbc"
+                        dataSourceType="libsql"
                         label="LibSQL"
                         class="com.dbeaver.jdbc.driver.libsql.LibSqlDriver"
-                        icon="icons/libsql_icon.png"
-                        iconBig="icons/libsql_icon_big.png"
                         sampleURL="jdbc:dbeaver:libsql:{server}"
                         defaultDatabase="http://localhost"
                         description="LibSQL DBeaver JDBC driver. Works with standalone LibSQL server and with Turso."
