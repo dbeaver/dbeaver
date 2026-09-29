@@ -28,6 +28,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -59,7 +60,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.TaskFeatures;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.SQLEditorThemeSettings;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -544,12 +544,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         @Override
         public final void update(@NotNull ViewerCell cell) {
             DBTTaskRun taskRun = (DBTTaskRun) cell.getElement();
-            if (taskRun != null && taskRun.isFinished() && !taskRun.isRunSuccess()) {
-                cell.setForeground(SQLEditorThemeSettings.instance.editorSemanticErrorColor);
-            } else {
-                cell.setForeground(null);
-            }
             update(cell, taskRun);
+            Color background = taskRun != null && taskRun.isFinished() && !taskRun.isRunSuccess()
+                ? BaseThemeSettings.instance.colorError : null;
+            cell.setBackground(background);
+            cell.setForeground(background == null ? null : UIStyles.getContrastColor(background));
         }
 
         protected abstract void update(ViewerCell cell, DBTTaskRun task);
