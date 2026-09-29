@@ -19,15 +19,22 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="gaussdb"
+            label="GaussDB"
+            description="GaussDB database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/gaussdb_icon.png"
+            iconBig="icons/gaussdb_icon_big.png"
+            logoImage="icons/gaussdb_logo.png"/>
         <datasource class="org.jkiss.dbeaver.ext.gaussdb.GaussDBDataSourceProvider"
-                    description="%datasource.gaussdb.description" id="gaussdb" parent="postgresql" label="GaussDB"
+                    description="%datasource.gaussdb.description" id="gaussdb"
+                    dataSourceType="gaussdb" parent="postgresql" label="GaussDB"
                     icon="icons/gaussdb_icon.png" dialect="gaussdb" inheritClients="false">
             <drivers managable="true">
                 <driver
                         id="gaussdb-jdbc"
                         label="GaussDB"
-                        icon="icons/gaussdb_icon.png"
-                        iconBig="icons/gaussdb_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="8000"

@@ -742,7 +742,9 @@ public class PostgreUtils {
     ) throws DBException {
         if (!(acl instanceof java.sql.Array)) {
             if (acl == null) {
-                // Special case. Means ALL permissions are granted to table owner
+                // Special case. NULL ACL means the object has default privileges:
+                // all privileges are granted to the object owner plus the default PUBLIC
+                // privileges for the specific object type (e.g. EXECUTE for procedures).
                 PostgreRole objectOwner = owner.getOwner(monitor);
                 PostgreRoleReference granteeReference = objectOwner == null ? null : objectOwner.getRoleReference();
 
@@ -757,8 +759,28 @@ public class PostgreUtils {
                                 PostgrePrivilegeType.ALL,
                                 false,
                                 false));
-                PostgreObjectPrivilege permission = new PostgreObjectPrivilege(owner, granteeReference, privileges);
-                return Collections.singletonList(permission);
+                List<PostgrePrivilege> permissions = new ArrayList<>();
+                permissions.add(new PostgreObjectPrivilege(owner, granteeReference, privileges));
+                if (owner instanceof PostgreProcedure) {
+                    // Procedures and functions are granted EXECUTE to PUBLIC by default (#11061)
+                    PostgreRoleReference publicReference = new PostgreRoleReference(
+                        owner.getDatabase(),
+                        PostgreConstants.PUBLIC_ROLE_NAME,
+                        null
+                    );
+                    privileges = new ArrayList<>();
+                    privileges.add(new PostgrePrivilegeGrant(
+                            granteeReference,
+                            publicReference,
+                            owner.getDatabase().getName(),
+                            owner.getSchema().getName(),
+                            owner.getName(),
+                            PostgrePrivilegeType.EXECUTE,
+                            false,
+                            false));
+                    permissions.add(new PostgreObjectPrivilege(owner, publicReference, privileges));
+                }
+                return permissions;
             }
             return Collections.emptyList();
         }

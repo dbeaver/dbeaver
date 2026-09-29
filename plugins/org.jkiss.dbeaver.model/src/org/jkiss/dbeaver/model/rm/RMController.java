@@ -79,6 +79,11 @@ public interface RMController extends DBPObjectController, DBPPingController {
      */
     void setProjectProperty(@NotNull String projectId, @NotNull String propName, @Nullable Object propValue) throws DBException;
 
+    /**
+     * Sets project properties
+     */
+    void setProjectProperties(@NotNull String projectId, @NotNull Map<String, Object> properties) throws DBException;
+
     ////////////////////////////////////////////
     // DataSources
 
