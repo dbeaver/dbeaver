@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -55,7 +54,7 @@ public class AdvancedList extends Canvas {
     private AdvancedListItem selectedItem;
     private AdvancedListItem hoverItem;
 
-    private final Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
+    private final Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor;
     private final Point textSize;
     private final ScrollBar vScroll;
     private int topRowIndex;
@@ -71,8 +70,6 @@ public class AdvancedList extends Canvas {
         this.foregroundColor = UIStyles.getDefaultTextForeground();
         this.selectionBackgroundColor = UIStyles.getDefaultTextSelectionBackground();
         this.selectionForegroundColor = UIStyles.getDefaultTextSelectionForeground();
-        this.hoverBackgroundColor = UIUtils.getSharedTextColors().getColor(
-            UIUtils.blend(this.selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 70));
 
         Font normalFont = BaseThemeSettings.instance.baseFont;
         FontData[] fontData = normalFont.getFontData();
@@ -130,11 +127,12 @@ public class AdvancedList extends Canvas {
         this.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
             public void mouseEnter(MouseEvent e) {
+                onMouseMove(e);
             }
 
             @Override
             public void mouseExit(MouseEvent e) {
-                onMouseMove(e);
+                updateHover(null);
             }
 
             @Override
@@ -161,7 +159,7 @@ public class AdvancedList extends Canvas {
             public void focusGained(FocusEvent e) {
                 super.focusGained(e);
                 if (getSelectedItem() == null && !items.isEmpty()) {
-                    setSelection(items.get(0));
+                    setSelection(items.getFirst());
                 }
             }
         });
@@ -184,10 +182,13 @@ public class AdvancedList extends Canvas {
 
     private void onMouseMove(MouseEvent e) {
         AdvancedListItem item = getItemByPos(e.x, e.y);
+        updateHover(item);
+    }
+
+    private void updateHover(@Nullable AdvancedListItem item) {
         if (item == hoverItem) {
             return;
         }
-        AdvancedListItem[] redrawItems = new AdvancedListItem[] { item, hoverItem };
         hoverItem = item;
         if (item == null) {
             toolTipHandler.updateToolTipText(null);
@@ -200,12 +201,7 @@ public class AdvancedList extends Canvas {
                 }
             }
         }
-        GC gc = new GC(this);
-        try {
-            paintList(gc, redrawItems);
-        } finally {
-            gc.dispose();
-        }
+        redraw();
     }
 
     private AdvancedListItem getItemByPos(int x, int y) {
@@ -250,10 +246,10 @@ public class AdvancedList extends Canvas {
     }
 
     private void onPaint(@NotNull PaintEvent e) {
-        paintList(e.gc, null);
+        paintList(e.gc);
     }
 
-    private void paintList(@NotNull GC gc, @Nullable AdvancedListItem[] redrawItems) {
+    private void paintList(@NotNull GC gc) {
         Point itemSize = getItemSize();
         int itemsPerRow = getItemsPerRow();
         int itemRowsVisible = getVisibleRowCount() + 1;
@@ -276,9 +272,7 @@ public class AdvancedList extends Canvas {
                     break;
                 }
                 AdvancedListItem item = items.get(itemIndex);
-                if (redrawItems == null || ArrayUtils.contains(redrawItems, item)) {
-                    item.painItem(gc, x, y);
-                }
+                item.painItem(gc, x, y);
 
                 x += itemSize.x;
             }
@@ -380,7 +374,10 @@ public class AdvancedList extends Canvas {
     }
 
     Color getHoverBackgroundColor() {
-        return hoverBackgroundColor;
+        RGB background = getBackground().getRGB();
+        return UIUtils.getSharedTextColors().getColor(UIUtils.isDark(background)
+            ? UIUtils.blend(selectionBackgroundColor.getRGB(), background, 25)
+            : UIUtils.blend(selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 70));
     }
 
     Point getTextSize() {
