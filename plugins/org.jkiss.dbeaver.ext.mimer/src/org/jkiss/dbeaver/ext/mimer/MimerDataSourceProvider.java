@@ -46,6 +46,9 @@ public class MimerDataSourceProvider extends GenericDataSourceProvider<MimerData
      * Guide's own example is {@code jdbc:mimer:local://user:pass@/database}, i.e. an
      * empty server name), so the host/port the connection page filled into the sample
      * URL template gets stripped rather than just left in place pointing nowhere useful.
+     * The {@code //} empty-authority marker itself is kept (not stripped along with the
+     * host/port) - the documented minimal form is {@code jdbc:mimer:local:///database},
+     * not {@code jdbc:mimer:local:/database}.
      */
     @NotNull
     @Override
@@ -57,7 +60,7 @@ public class MimerDataSourceProvider extends GenericDataSourceProvider<MimerData
         Matcher matcher = URL_HOST_PATTERN.matcher(url);
         if (matcher.matches()) {
             String tail = matcher.group(1);
-            return "jdbc:mimer:local:" + (tail == null ? "" : tail);
+            return "jdbc:mimer:local://" + (tail == null ? "" : tail);
         }
         return url;
     }
