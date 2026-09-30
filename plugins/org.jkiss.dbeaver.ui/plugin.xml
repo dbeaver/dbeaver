@@ -47,8 +47,8 @@
         </handler>
     </extension>
 
-    <extension point="org.eclipse.ui.startup">
-        <startup class="org.jkiss.dbeaver.ui.NativeThemeUtils"/>
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.NativeThemeUtils" order="2"/>
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">
