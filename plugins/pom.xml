@@ -16,7 +16,6 @@
         <module>org.jkiss.dbeaver.launcher</module>
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
-        <module>org.jkiss.dbeaver.model.ai.functions</module>
         <module>org.jkiss.dbeaver.model.datadam</module>
         <module>org.jkiss.dbeaver.model.cli</module>
         <module>org.jkiss.dbeaver.model.event</module>

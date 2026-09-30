@@ -41,6 +41,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     };
 
     private final AIToolboxInternalDescriptor toolbox;
+    private final ObjectType objectType;
     private final String id;
     private final String legacyId;
     private final String name;
@@ -74,6 +75,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     ) {
         super(config);
         this.toolbox = toolbox;
+        this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.legacyId = config.getAttribute("legacyId");
@@ -223,16 +225,23 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
                 } catch (Exception e) {
                     throw new DBRuntimeException("Error creating AI function " + getId(), e);
                 }
-            } else {
+            } else if (CommonUtils.isEmpty(objectType.getImplName())) {
                 instance = VOID_STUB;
+            } else {
+                try {
+                    instance = objectType.createInstance(AIFunction.class);
+                } catch (Exception e) {
+                    throw new DBRuntimeException("Error creating AI function " + getId(), e);
+                }
             }
         }
         return instance;
     }
 
     boolean hasImplementation() {
-        return implementation != null && (implementation.hasClass() ||
-            implementation.isHeadless() && type == AIFunctionType.ACTION);
+        return (implementation != null && (implementation.hasClass() ||
+            implementation.isHeadless() && type == AIFunctionType.ACTION)) ||
+            CommonUtils.isNotEmpty(objectType.getImplName());
     }
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {

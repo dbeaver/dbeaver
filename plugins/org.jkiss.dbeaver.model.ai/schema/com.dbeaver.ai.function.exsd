@@ -60,6 +60,14 @@
                <documentation>Function name used by AI assistant</documentation>
             </annotation>
          </attribute>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>Class implementing the AIFunction interface</documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunction"/>
+               </appInfo>
+            </annotation>
+         </attribute>
          <attribute name="description" type="string">
             <annotation>
                <documentation>Detailed AI-facing function description used by the assistant to understand the function behavior and when to call it</documentation>
