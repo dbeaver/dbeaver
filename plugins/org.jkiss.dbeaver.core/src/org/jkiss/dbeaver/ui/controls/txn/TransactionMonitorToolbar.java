@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogThemeSettings;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 /**
  * DataSource Toolbar
@@ -266,7 +267,7 @@ public class TransactionMonitorToolbar {
                 }
                 setToolTipText(toolTip);
             } else {
-                setToolTipText(CoreMessages.action_menu_transactionMonitor_autocommitMode);
+                setToolTipText(UIConnectionMessages.action_menu_transactionMonitor_autocommitMode);
             }
         }
     }

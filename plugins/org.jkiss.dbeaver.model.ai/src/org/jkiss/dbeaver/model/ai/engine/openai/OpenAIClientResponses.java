@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -47,14 +48,14 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
     public OpenAIClientResponses(
         @NotNull String baseUrl,
-        @NotNull List<HttpRequestFilter> requestFilters
+        @NotNull List<AIHttpRequestFilter> requestFilters
     ) {
         this(baseUrl, requestFilters, true);
     }
 
     public OpenAIClientResponses(
         @NotNull String baseUrl,
-        @NotNull List<HttpRequestFilter> requestFilters,
+        @NotNull List<AIHttpRequestFilter> requestFilters,
         boolean legacyFallback
     ) {
         super(baseUrl, requestFilters);

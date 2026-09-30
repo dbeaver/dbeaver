@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCCachedContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -205,6 +206,18 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         }
 
         return isRefreshed;
+    }
+
+    void setActiveWarehouse(@NotNull DBRProgressMonitor monitor, @NotNull String warehouseName) throws DBCException {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active warehouse")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("USE WAREHOUSE IDENTIFIER(?)")) {
+                dbStat.setString(1, warehouseName);
+                dbStat.executeUpdate();
+            }
+        } catch (SQLException e) {
+            log.error("Unable to set active warehouse due to unexpected SQLException. warehouseName=" + warehouseName);
+            throw new DBCException(e, this);
+        }
     }
 
     private void setActiveDatabase(DBRProgressMonitor monitor, @NotNull String databaseName) throws DBCException {

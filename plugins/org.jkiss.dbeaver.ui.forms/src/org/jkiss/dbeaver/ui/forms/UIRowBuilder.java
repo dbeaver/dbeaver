@@ -22,6 +22,7 @@ import org.eclipse.core.internal.databinding.validation.StringToIntegerValidator
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ShellUtils;
 
@@ -49,7 +50,17 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     UIRowBuilder panel(@NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
-    UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler);
+    default UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        return expandablePanel(text, expanded, identityConsumer(), handler);
+    }
+
+    @NotNull
+    UIRowBuilder expandablePanel(
+        @NotNull String text,
+        boolean expanded,
+        @NotNull Consumer<ExpandableComposite> onExpansionChanged,
+        @NotNull Consumer<? super UIPanelBuilder> handler
+    );
 
     @NotNull
     UIRowBuilder titledPanel(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler);

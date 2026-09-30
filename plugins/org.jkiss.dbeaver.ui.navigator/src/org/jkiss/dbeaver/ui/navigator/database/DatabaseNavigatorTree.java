@@ -945,11 +945,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     if (hasVisibleConnections(viewer, lf)) {
                         return true;
                     }
-                } else if (isLeafMatch(viewer, child)) {
-                    if (filterShowConnected && child instanceof DBNDataSource && !((DBNDataSource) child).getDataSourceContainer().isConnected()) {
-                        continue;
-                    }
-
+                } else if (isElementVisible(viewer, child)) {
                     return true;
                 }
             }

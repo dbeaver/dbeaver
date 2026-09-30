@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -51,11 +52,15 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -219,8 +224,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
     private static void changeDataBaseSelection(
         @Nullable IEditorPart activeEditor,
-        DBPDataSourceContainer dsContainer,
-        DBCExecutionContext executionContext,
+        @Nullable DBPDataSourceContainer dsContainer,
+        @Nullable DBCExecutionContext executionContext,
         @Nullable String curInstanceName,
         @Nullable String newInstanceName,
         @Nullable String newObjectName
@@ -235,14 +240,74 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 @Override
                 protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     try {
-                        DBExecUtils.setExecutionContextDefaults(monitor, dataSource, executionContext, newInstanceName, curInstanceName, newObjectName);
-                        return Status.OK_STATUS;
+                        DBExecUtils.setExecutionContextDefaults(
+                            monitor,
+                            dataSource,
+                            executionContext,
+                            newInstanceName,
+                            curInstanceName,
+                            newObjectName
+                        );
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
+                    try {
+                        commitTransactionIfNeeded(executionContext);
+                    } catch (DBException e) {
+                        log.error("Error committing transaction after changing active database", e);
+                    }
+                    return Status.OK_STATUS;
                 }
             }.schedule();
         }
+    }
+
+    /**
+     * Checks whether a transaction commit is needed after changing the active database.
+     *
+     * @param executionContext execution context to check transaction state
+     * @throws DBCException on error committing transaction
+     */
+    private static void commitTransactionIfNeeded(@Nullable DBCExecutionContext executionContext) throws DBCException {
+        var transactionManager = DBUtils.getTransactionManager(executionContext);
+        if (transactionManager == null || transactionManager.isAutoCommit()) {
+            return;
+        }
+        var contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults == null || !contextDefaults.isDefaultsChangeTransactional()) {
+            return;
+        }
+        // The execution queue guarantees that we don't interfere with toolbar refresh. Eclipse
+        // uses the current shell as the source of truth when refreshing command handlers,
+        // and this ensures that the dialog is shown BEFORE the schema toolbar is refreshed.
+        UIExecutionQueue.queueExec(() -> {
+            var reply = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                .setTitle(UINavigatorMessages.confirm_commit_after_defaults_change_title)
+                .setMessage(UINavigatorMessages.confirm_commit_after_defaults_change_message)
+                .setReplies(Reply.YES, Reply.NO)
+                .setDefaultReply(Reply.NO)
+                .setPrimaryImage(DBIcon.STATUS_QUESTION)
+                .showMessageBox();
+            if (reply != Reply.YES) {
+                return;
+            }
+            new AbstractJob("Commit transaction") {
+                @NotNull
+                @Override
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                    try {
+                        DBExecUtils.commitContextTransaction(monitor, executionContext);
+                    } catch (DBCException e) {
+                        DBWorkbench.getPlatformUI().showError(
+                            "Commit transaction",
+                            "Error committing transaction after changing active database",
+                            e
+                        );
+                    }
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
+        });
     }
 
     public static class MenuContributor extends DataSourceMenuContributor {

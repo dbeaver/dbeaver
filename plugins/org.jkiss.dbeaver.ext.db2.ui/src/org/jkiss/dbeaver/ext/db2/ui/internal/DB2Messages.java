@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ public class DB2Messages extends NLS {
     }
 
     public static String db2_connection_page_tab_database;
-	public static String db2_connection_page_tab_security;
 	public static String db2_connection_trace_page_checkbox_append;
 	public static String db2_connection_trace_page_checkbox_connect;
 	public static String db2_connection_trace_page_checkbox_connection_calls;
@@ -63,17 +62,12 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_options;
     public static String dialog_table_tools_result;
     public static String dialog_table_tools_progress;
-
-    public static String dialog_table_tools_runstats_title;
-    public static String dialog_table_tools_runstats_cols_title;
     public static String dialog_table_tools_runstats_cols_all;
     public static String dialog_table_tools_runstats_cols_all_and_distribution;
     public static String dialog_table_tools_runstats_cols_no;
-    public static String dialog_table_tools_runstats_indexes_title;
     public static String dialog_table_tools_runstats_indexes_detailed;
     public static String dialog_table_tools_runstats_indexes_all;
     public static String dialog_table_tools_runstats_indexes_no;
-    public static String dialog_table_tools_runstats_stats_title;
 
     public static String dialog_table_tools_reorg_title;
     public static String dialog_table_tools_reorg_inplace;
@@ -88,26 +82,6 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_reorg_access_no;
     public static String dialog_table_tools_reorg_access_read;
     public static String dialog_table_tools_reorg_access_readwrite;
-
-    public static String dialog_table_tools_reorgix_access_title;
-    public static String dialog_table_tools_reorgix_access_default;
-    public static String dialog_table_tools_reorgix_access_no;
-    public static String dialog_table_tools_reorgix_access_read;
-    public static String dialog_table_tools_reorgix_access_readwrite;
-    public static String dialog_table_tools_reorgix_options_title;
-    public static String dialog_table_tools_reorgix_options_full;
-    public static String dialog_table_tools_reorgix_options_cleanup_keys;
-    public static String dialog_table_tools_reorgix_options_cleanup_pages;
-
-    public static String dialog_table_tools_reorgcheck_title;
-
-    public static String dialog_table_tools_truncate_title;
-    public static String dialog_table_tools_truncate_storage_title;
-    public static String dialog_table_tools_truncate_storage_reuse;
-    public static String dialog_table_tools_truncate_storage_drop;
-    public static String dialog_table_tools_truncate_triggers_title;
-    public static String dialog_table_tools_truncate_triggers_ignore;
-    public static String dialog_table_tools_truncate_triggers_restrict;
 
     public static String dialog_tools_msg_title;
     public static String dialog_tools_msg_code;

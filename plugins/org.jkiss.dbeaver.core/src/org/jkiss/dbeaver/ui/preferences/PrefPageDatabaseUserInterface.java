@@ -18,18 +18,14 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.jface.fieldassist.ComboContentAdapter;
-import org.eclipse.jface.fieldassist.ContentProposal;
-import org.eclipse.jface.fieldassist.IContentProposal;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -38,6 +34,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.themes.ColorsAndFontsPreferencePage;
 import org.eclipse.ui.internal.themes.FontDefinition;
 import org.eclipse.ui.internal.themes.ThemeElementCategory;
@@ -49,22 +46,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
-import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
-import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
-import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
-import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.UIFontPreferenceManager;
+import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.BreadcrumbTrim;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -72,13 +63,10 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StringUtils;
 import org.osgi.service.event.EventHandler;
 
-import java.time.ZoneId;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageDatabaseUserInterface
@@ -95,19 +83,25 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     );
 
 
-    private Button automaticUpdateCheck;
-    private Combo workspaceLanguage;
-
-    @Nullable
-    private Combo clientTimezone;
-
     private final boolean isStandalone = DesktopPlatform.isStandalone();
+    @Nullable
+    private IThemeEngine themeEngine;
+    @Nullable
+    private org.eclipse.e4.ui.css.swt.theme.ITheme originalTheme;
+    @Nullable
+    private org.eclipse.e4.ui.css.swt.theme.ITheme selectedTheme;
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
 
     private Button statusBarShowBreadcrumbsCheck;
     private Button statusBarShowStatusCheck;
     private Combo statusBarBreadcrumbPositionCombo;
+    @Nullable
+    private String appliedBreadcrumbLocation;
+    private boolean appliedBreadcrumbLocationIsDefault;
+    private boolean appliedStatusLineVisible;
+    private boolean appliedStatusLineVisibleIsDefault;
+    private boolean statusBarPreviewed;
     private Button zoomRestartPromptCheck;
 
     @Nullable
@@ -130,127 +124,27 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
-        if (isStandalone && !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-            Composite groupObjects = UIUtils.createTitledComposite(
-                composite,
-                CoreMessages.pref_page_ui_general_group_general,
-                2,
-                GridData.VERTICAL_ALIGN_BEGINNING
-            );
-            automaticUpdateCheck = UIUtils.createCheckbox(
-                groupObjects,
-                CoreMessages.pref_page_ui_general_checkbox_automatic_updates,
-                null,
-                false,
-                2);
-        }
         if (isStandalone) {
-            Composite regionalSettingsGroup = UIUtils.createTitledComposite(
-                composite,
-                CoreMessages.pref_page_ui_general_group_regional,
-                2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
-            workspaceLanguage = UIUtils.createLabelCombo(regionalSettingsGroup,
-                CoreMessages.pref_page_ui_general_combo_language,
-                CoreMessages.pref_page_ui_general_combo_language_tip,
-                SWT.READ_ONLY | SWT.DROP_DOWN
-            );
-            workspaceLanguage.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
-            DBPPlatformLanguage pLanguage = DBPPlatformDesktop.getInstance().getPlatformLanguage();
-            for (int i = 0; i < languages.size(); i++) {
-                PlatformLanguageDescriptor lang = languages.get(i);
-                workspaceLanguage.add(lang.getLabel());
-                if (CommonUtils.equalObjects(pLanguage, lang)) {
-                    workspaceLanguage.select(i);
-                }
-            }
-            if (workspaceLanguage.getSelectionIndex() < 0) {
-                workspaceLanguage.select(0);
-            }
-
-            clientTimezone = UIUtils.createLabelCombo(regionalSettingsGroup,
-                CoreMessages.pref_page_ui_general_combo_timezone,
-                CoreMessages.pref_page_ui_general_combo_timezone_tip,
-                SWT.DROP_DOWN
-            );
-            clientTimezone.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            clientTimezone.add(DBConstants.DEFAULT_TIMEZONE);
-            for (String timezoneName : TimezoneRegistry.getTimezoneNames()) {
-                clientTimezone.add(timezoneName);
-            }
-            clientTimezone.addModifyListener(e -> {
-                updateApplyButton();
-                getContainer().updateButtons();
-            });
-            IContentProposalProvider proposalProvider = (contents, position) -> {
-                List<IContentProposal> proposals = new ArrayList<>();
-                for (String item : clientTimezone.getItems()) {
-                    if (StringUtils.containsIgnoreCase(item, contents.toLowerCase())) {
-                        proposals.add(new ContentProposal(item));
-                    }
-                }
-                return proposals.toArray(IContentProposal[]::new);
-            };
-            ContentAssistUtils.installContentProposal(clientTimezone, new ComboContentAdapter(), proposalProvider);
-
-            Control tipLabelRestart = UIUtils.createInfoLabel(regionalSettingsGroup,
-                CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart
-            );
-            tipLabelRestart.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                false,
-                false,
-                2,
-                1
-            ));
-
-            Composite groupObjects = UIUtils.createTitledComposite(
-                composite,
-                CoreMessages.pref_page_ui_general_group_browser,
-                2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
-            );
-            if (RuntimeUtils.isWindows()) {
-                browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
-                    SWT.READ_ONLY
+            themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+            if (themeEngine != null) {
+                originalTheme = themeEngine.getActiveTheme();
+                selectedTheme = originalTheme;
+                Composite themes = UIUtils.createTitledComposite(
+                    composite, CoreMessages.pref_page_ui_general_group_theme, 1,
+                    GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
                 );
-                browserCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
-                    browserCombo.add(value.getFullName(), value.ordinal());
-                }
-                Control tipLabel =
-                    UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
-                tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
-                    GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1
-                ));
-            }
-
-            useEmbeddedBrowserAuth = UIUtils.createCheckbox(groupObjects,
-                CoreMessages.pref_page_ui_general_check_browser_auth,
-                CoreMessages.pref_page_ui_general_check_browser_auth_tip,
-                false,
-                2
-            );
-            useEmbeddedBrowserAuth.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                false,
-                false,
-                2,
-                1
-            ));
-            if (browserCombo != null) {
-                browserCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
-                            useEmbeddedBrowserAuth.setEnabled(false);
-                            useEmbeddedBrowserAuth.setSelection(false);
-                        } else {
-                            useEmbeddedBrowserAuth.setEnabled(true);
+                for (org.eclipse.e4.ui.css.swt.theme.ITheme theme : themeEngine.getThemes()) {
+                    Button button = UIUtils.createRadioButton(themes, theme.getLabel(), theme, SelectionListener.widgetSelectedAdapter(e -> {
+                        if (((Button) e.widget).getSelection()) {
+                            if (fontsController != null) {
+                                fontsController.rollback();
+                            }
+                            selectedTheme = theme;
+                            themeEngine.setTheme(theme, false);
                         }
-                    }
-                });
+                    }));
+                    button.setSelection(theme.getId().equals(originalTheme.getId()));
+                }
             }
 
             this.fontsController = this.prepareFontsController(composite, QUICK_FONT_IDS);
@@ -269,16 +163,19 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             true,
             1
         );
-        if (isStandalone) {
-            statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
-                statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection())));
-        }
+        statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            if (isStandalone) {
+                statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
+            }
+            previewStatusBar();
+        }));
 
         statusBarBreadcrumbPositionCombo = new Combo(breadcrumbs, SWT.READ_ONLY | SWT.DROP_DOWN);
         statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_status_bar_label);
         statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_editors_label);
         if (isStandalone) {
             statusBarBreadcrumbPositionCombo.select(0);
+            statusBarBreadcrumbPositionCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> previewStatusBar()));
         } else {
             statusBarBreadcrumbPositionCombo.select(1);
             statusBarBreadcrumbPositionCombo.setEnabled(false);
@@ -291,6 +188,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             true,
             2
         );
+        statusBarShowStatusCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> previewStatusBar()));
 
         if (RuntimeUtils.isLinux()) {
             Composite displayGroup = UIUtils.createTitledComposite(
@@ -306,6 +204,62 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 true,
                 2
             );
+        }
+
+        if (isStandalone) {
+            Composite groupObjects = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_ui_general_group_browser,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
+            if (RuntimeUtils.isWindows()) {
+                browserCombo = UIUtils.createLabelCombo(
+                    groupObjects,
+                    CoreMessages.pref_page_ui_general_combo_browser,
+                    SWT.READ_ONLY
+                );
+                browserCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                for (SWTBrowserRegistry.BrowserSelection value : SWTBrowserRegistry.BrowserSelection.values()) {
+                    browserCombo.add(value.getFullName(), value.ordinal());
+                }
+                Control tipLabel =
+                    UIUtils.createInfoLabel(groupObjects, CoreMessages.pref_page_ui_general_combo_browser_tip);
+                tipLabel.setLayoutData(new GridData(
+                    GridData.HORIZONTAL_ALIGN_BEGINNING,
+                    GridData.VERTICAL_ALIGN_BEGINNING,
+                    false,
+                    false,
+                    2,
+                    1
+                ));
+            }
+
+            useEmbeddedBrowserAuth = UIUtils.createCheckbox(
+                groupObjects,
+                CoreMessages.pref_page_ui_general_check_browser_auth,
+                CoreMessages.pref_page_ui_general_check_browser_auth_tip,
+                false,
+                2
+            );
+            useEmbeddedBrowserAuth.setLayoutData(new GridData(
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                false,
+                false,
+                2,
+                1
+            ));
+            if (browserCombo != null) {
+                browserCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    if (browserCombo.getSelectionIndex() == SWTBrowserRegistry.BrowserSelection.IE.ordinal()) {
+                        useEmbeddedBrowserAuth.setEnabled(false);
+                        useEmbeddedBrowserAuth.setSelection(false);
+                    } else {
+                        useEmbeddedBrowserAuth.setEnabled(true);
+                    }
+                }));
+            }
         }
 
         setSettings();
@@ -369,26 +323,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     private void setSettings() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        rememberAppliedStatusBar(store);
         if (isWindowsDesktopClient()) {
-            SWTBrowserRegistry.getActiveBrowser();
             browserCombo.select(SWTBrowserRegistry.getActiveBrowser().ordinal());
-            useEmbeddedBrowserAuth.setEnabled(!SWTBrowserRegistry.getActiveBrowser().equals(SWTBrowserRegistry.BrowserSelection.IE));
+            useEmbeddedBrowserAuth.setEnabled(
+                SWTBrowserRegistry.getActiveBrowser() != SWTBrowserRegistry.BrowserSelection.IE);
         }
-        if (isStandalone) { 
-            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-                automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-            }
+        if (isStandalone) {
             useEmbeddedBrowserAuth.setSelection(store.getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH));
         }
-        final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
-        if (clientTimezone != null) {
-            if (DBConstants.DEFAULT_TIMEZONE.equals(timezone)) {
-                clientTimezone.setText(DBConstants.DEFAULT_TIMEZONE);
-            } else {
-                clientTimezone.setText(timezone);
-            }
-        }
-
         BreadcrumbLocation breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.get(store);
         statusBarShowBreadcrumbsCheck.setSelection(breadcrumbLocation != DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN);
         if (isStandalone) {
@@ -406,24 +349,20 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isStandalone) {
             useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH));
-            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-                automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
-            }
         }
         if (isWindowsDesktopClient()) {
-            SWTBrowserRegistry.getActiveBrowser();
             browserCombo.select(SWTBrowserRegistry.getDefaultBrowser().ordinal());
         }
-        if (clientTimezone != null) {
-            UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
-        }
-
         BreadcrumbLocation location = BreadcrumbLocation.getDefault(store);
         statusBarShowBreadcrumbsCheck.setSelection(location != BreadcrumbLocation.HIDDEN);
         if (isStandalone) {
             statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
         }
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
+        if (isStandalone) {
+            statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
+        }
+        previewStatusBar();
         if (RuntimeUtils.isLinux()) {
             zoomRestartPromptCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
         }
@@ -433,8 +372,65 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         }
     }
 
+    @Override
+    public boolean performCancel() {
+        if (fontsController != null) {
+            fontsController.rollback();
+        }
+        if (statusBarPreviewed) {
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            if (appliedBreadcrumbLocationIsDefault) {
+                store.setToDefault(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS);
+            } else {
+                store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, appliedBreadcrumbLocation);
+            }
+            if (appliedStatusLineVisibleIsDefault) {
+                store.setToDefault(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE);
+            } else {
+                store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, appliedStatusLineVisible);
+            }
+            if (isStandalone) {
+                BreadcrumbTrim.refreshStatusBar();
+            }
+        }
+        if (themeEngine != null && originalTheme != null && selectedTheme != null &&
+            !originalTheme.getId().equals(selectedTheme.getId())) {
+            themeEngine.setTheme(originalTheme, false);
+        }
+        return super.performCancel();
+    }
+
     private boolean isWindowsDesktopClient() {
         return isStandalone && RuntimeUtils.isWindows();
+    }
+
+    private void rememberAppliedStatusBar(@NotNull DBPPreferenceStore store) {
+        appliedBreadcrumbLocation = store.getString(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS);
+        appliedBreadcrumbLocationIsDefault = store.isDefault(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS);
+        appliedStatusLineVisible = store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE);
+        appliedStatusLineVisibleIsDefault = store.isDefault(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE);
+        statusBarPreviewed = false;
+    }
+
+    private void previewStatusBar() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, getSelectedBreadcrumbLocation().name());
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
+        if (isStandalone) {
+            BreadcrumbTrim.refreshStatusBar();
+        }
+        statusBarPreviewed = true;
+    }
+
+    @NotNull
+    private BreadcrumbLocation getSelectedBreadcrumbLocation() {
+        if (!statusBarShowBreadcrumbsCheck.getSelection()) {
+            return BreadcrumbLocation.HIDDEN;
+        }
+        if (isStandalone && statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0) {
+            return BreadcrumbLocation.IN_STATUS_BAR;
+        }
+        return BreadcrumbLocation.IN_EDITORS;
     }
 
     @Override
@@ -447,66 +443,22 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
+        boolean themeChanged = themeEngine != null && originalTheme != null && selectedTheme != null &&
+            !originalTheme.getId().equals(selectedTheme.getId());
+        if (themeChanged) {
+            themeEngine.setTheme(selectedTheme, true);
+            originalTheme = selectedTheme;
+        }
+
         if (isStandalone) {
             store.setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
-            if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-                store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
-            } else {
-                store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, Boolean.FALSE);
-            }
-
-
             if (isWindowsDesktopClient()) {
-                SWTBrowserRegistry.setActiveBrowser(SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
-            }
-
-            PrefUtils.savePreferenceStore(store);
-            if (clientTimezone != null) {
-                if (DBConstants.DEFAULT_TIMEZONE.equals(clientTimezone.getText())) {
-                    TimezoneRegistry.setDefaultZone(null, true);
-                } else {
-                    TimezoneRegistry.setDefaultZone(
-                        ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())), true);
-                }
-            }
-
-            if (workspaceLanguage.getSelectionIndex() >= 0) {
-                PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
-                    .get(workspaceLanguage.getSelectionIndex());
-                DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getPlatformLanguage();
-
-                if (curLanguage != language) {
-                    if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager languageManager) {
-                        languageManager.setPlatformLanguage(language);
-                    }
-                    if (UIUtils.confirmAction(
-                        getShell(),
-                        "Restart " + GeneralUtils.getProductName(),
-                        "You need to restart " + GeneralUtils.getProductName()
-                            + " to perform actual language change.\nDo you want to restart?"
-                    )) {
-                        restartWorkbenchOnPrefChange();
-                    }
-                }
+                SWTBrowserRegistry.setActiveBrowser(
+                    SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
             }
         }
 
-        BreadcrumbLocation breadcrumbLocation;
-        if (!statusBarShowBreadcrumbsCheck.getSelection()) {
-            breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN;
-        } else {
-            if (isStandalone) {
-                if (statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0) {
-                    breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_STATUS_BAR;
-                } else {
-                    breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
-                }
-            } else {
-                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
-            }
-        }
-
-        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, getSelectedBreadcrumbLocation().name());
         store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
         if (RuntimeUtils.isLinux()) {
             store.setValue(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, zoomRestartPromptCheck.getSelection());
@@ -514,6 +466,18 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (this.fontsController != null) {
             this.fontsController.apply();
+        }
+        if (isStandalone) {
+            PrefUtils.savePreferenceStore(store);
+        }
+        rememberAppliedStatusBar(store);
+
+        if (themeChanged && UIUtils.confirmAction(
+            getShell(),
+            NLS.bind(CoreMessages.pref_page_ui_theme_restart_title, GeneralUtils.getProductName()),
+            NLS.bind(CoreMessages.pref_page_ui_theme_restart_message, GeneralUtils.getProductName())
+        )) {
+            restartWorkbenchOnPrefChange();
         }
 
         return true;
@@ -540,9 +504,11 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             private final Text example;
 
             @Nullable
-            private Font currentFont = null;
+            private FontRegistry previewRegistry;
             @Nullable
-            private Font customFont = null;
+            private FontData[] originalFontData;
+            @Nullable
+            private FontData[] pendingFontData;
 
             public FontEntry(@NotNull Composite container, @NotNull FontDefinition fontDef) {
                 this.definition = fontDef;
@@ -577,23 +543,24 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
 
             private void setFont(@NotNull FontData[] fontData) {
-                final Font oldFont = this.customFont;
-                this.customFont = new Font(this.example.getFont().getDevice(), fontData);
-                this.example.setFont(this.customFont);
-                this.example.setText(this.prepareFontDescription(this.customFont));
-                if (oldFont != null) {
-                    oldFont.dispose();
+                FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
+                if (this.previewRegistry != null && this.previewRegistry != fonts) {
+                    this.rollback();
                 }
+                if (this.previewRegistry == null) {
+                    this.previewRegistry = fonts;
+                    this.originalFontData = fonts.getFontData(this.definition.getId());
+                }
+                this.pendingFontData = fontData;
+                fonts.put(this.definition.getId(), fontData);
+                eventBroker.send(WorkbenchThemeManager.Events.THEME_REGISTRY_MODIFIED, null);
                 updateLayout(this.example, null);
             }
 
             public void refresh(@NotNull FontRegistry fonts) {
-                this.currentFont = fonts.get(this.definition.getId());
-                this.example.setFont(this.currentFont);
-                if (this.currentFont != null) {
-                    this.example.setText(this.prepareFontDescription(this.currentFont));
-                }
-                this.releaseCustomFontIfExists();
+                Font font = fonts.get(this.definition.getId());
+                this.example.setFont(font);
+                this.example.setText(this.prepareFontDescription(font));
             }
 
             public void resetToDefault() {
@@ -601,8 +568,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
 
             public boolean apply() {
-                if (this.customFont != null) {
-                    setFontPreference(this.definition, this.customFont.getFontData());
+                if (this.pendingFontData != null) {
+                    FontData[] fontData = this.pendingFontData;
+                    this.rollback();
+                    setFontPreference(this.definition, fontData);
                     return true;
                 } else {
                     return false;
@@ -633,11 +602,15 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 return tmp.toString();
             }
 
-            public void releaseCustomFontIfExists() {
-                if (this.customFont != null) {
-                    this.customFont.dispose();
-                    this.customFont = null;
+            public boolean rollback() {
+                if (this.previewRegistry != null && this.originalFontData != null) {
+                    this.previewRegistry.put(this.definition.getId(), this.originalFontData);
+                    this.previewRegistry = null;
+                    this.originalFontData = null;
+                    this.pendingFontData = null;
+                    return true;
                 }
+                return false;
             }
         }
 
@@ -658,9 +631,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         @NotNull
         private final IPropertyChangeListener currentThemeListener = event -> {
             if (event.getSource() instanceof FontRegistry) {
-                String fontId = event.getProperty();
-                FontData[] fontData = (FontData[]) event.getNewValue();
-                this.refreshFont(fontId, fontData);
+                this.refreshFont(event.getProperty());
             }
         };
 
@@ -686,7 +657,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             this.fontEntriesById.put(fontDef.getId(), new FontEntry(catContainer, fontDef));
         }
 
-        private void refreshFont(@NotNull String fontId, @NotNull FontData[] fontData) {
+        private void refreshFont(@NotNull String fontId) {
             FontEntry entry = this.fontEntriesById.get(fontId);
             if (entry != null) {
                 FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
@@ -724,6 +695,16 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             this.updateLayout(this.container, null);
         }
 
+        public void rollback() {
+            boolean changesMade = false;
+            for (FontEntry entry : this.fontEntriesById.values()) {
+                changesMade |= entry.rollback();
+            }
+            if (changesMade) {
+                eventBroker.send(WorkbenchThemeManager.Events.THEME_REGISTRY_MODIFIED, null);
+            }
+        }
+
         public void apply() {
             boolean changesMade = false;
             for (FontEntry entry : this.fontEntriesById.values()) {
@@ -755,6 +736,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             org.eclipse.e4.ui.css.swt.theme.ITheme actualCssTheme = this.getCurrentCssTheme();
             boolean changed = this.currentTheme != actualTheme || this.currentCssTheme != actualCssTheme;
             if (changed) {
+                this.rollback();
                 this.currentTheme.removePropertyChangeListener(this.currentThemeListener);
                 this.currentTheme = actualTheme;
                 this.currentCssTheme = actualCssTheme;
@@ -767,7 +749,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             this.currentTheme.removePropertyChangeListener(this.currentThemeListener);
             this.eventBroker.unsubscribe(themeRegistryRestyledHandler);
             this.workbench.getThemeManager().removePropertyChangeListener(themeChangeListener);
-            this.fontEntriesById.values().forEach(FontEntry::releaseCustomFontIfExists);
+            this.rollback();
             this.fontEntriesById.clear();
         }
     }

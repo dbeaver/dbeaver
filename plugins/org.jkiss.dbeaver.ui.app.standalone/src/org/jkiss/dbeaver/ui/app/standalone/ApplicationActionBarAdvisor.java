@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -55,7 +54,8 @@ import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
-import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
+import org.jkiss.dbeaver.ui.preferences.PrefPageGeneral;
+import org.jkiss.dbeaver.ui.services.ApplicationPolicyService;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -374,7 +374,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             tzItem.setDoubleClickListener(() -> {
                 PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
                     UIUtils.getActiveWorkbenchShell(),
-                    PrefPageDatabaseUserInterface.PAGE_ID,
+                    PrefPageGeneral.PAGE_ID,
                     null,
                     null);
                 if (preferenceDialog != null) {
@@ -400,7 +400,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             localeItem.setDoubleClickListener(() -> {
                 PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
                     UIUtils.getActiveWorkbenchShell(),
-                    PrefPageDatabaseUserInterface.PAGE_ID,
+                    PrefPageGeneral.PAGE_ID,
                     null,
                     null);
                 if (preferenceDialog != null) {

@@ -22,8 +22,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -113,12 +112,8 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
         this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
         this.aggregateTable.addDisposeListener(e -> menuMgr.dispose());
 
-        aggregateTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                presentation.getController().updatePanelActions();
-            }
-        });
+        aggregateTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            presentation.getController().updatePanelActions()));
 
         return this.aggregateTable;
     }

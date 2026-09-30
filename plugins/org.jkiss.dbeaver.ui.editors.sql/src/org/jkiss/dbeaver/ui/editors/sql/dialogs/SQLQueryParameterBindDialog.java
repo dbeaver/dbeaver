@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -173,16 +172,13 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
                     editor.setLayoutData(gridData);
                     Button button = UIUtils.createPushButton(composite, null, DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
                     editor.setText(CommonUtils.notEmpty(param.getValue()));
-                    button.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    button.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                             final String result = EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value,
                                 editor.getText() == null ? "" : editor.getText());
                             if (result != null) {
                                 editor.setText(result);
                             }
-                        }
-                    });
+                        }));
                     GridData buttonLayoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 0, 0);
                     buttonLayoutData.heightHint = editor.getSize().y;
                     button.setLayoutData(buttonLayoutData);
@@ -269,12 +265,7 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
             SQLEditorMessages.dialog_sql_param_hide_checkbox_tip,
             isHideIfSet(),
             1);
-        hideIfSetCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                fillParameterList(hideIfSetCheck.getSelection());
-            }
-        });
+        hideIfSetCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> fillParameterList(hideIfSetCheck.getSelection())));
 
         UIUtils.createInfoLabel(composite, SQLEditorMessages.dialog_sql_param_hint);
         UIUtils.applyMainFont(composite);
@@ -322,13 +313,10 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button skipButton = UIUtils.createDialogButton(parent, IDialogConstants.IGNORE_LABEL, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        Button skipButton = UIUtils.createDialogButton(parent, IDialogConstants.IGNORE_LABEL, SelectionListener.widgetSelectedAdapter(e -> {
                 setReturnCode(IDialogConstants.IGNORE_ID);
                 close();
-            }
-        });
+            }));
         skipButton.setToolTipText("Ignore parameters and execute query/script as is");
 
         ((GridLayout) parent.getLayout()).numColumns++;

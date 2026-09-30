@@ -235,11 +235,11 @@ public class EditorUtils {
     // Datasource <-> resource manipulations
 
     @Nullable
-    public static Object getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
+    public static String getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
         return project.getResourceProperty(project.getResourcePath(resource), propName);
     }
 
-    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
+    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable String value) {
         project.setResourceProperty(project.getResourcePath(resource), propName, value);
     }
 
@@ -284,17 +284,24 @@ public class EditorUtils {
                 if (localFile != null) {
                     final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
                     String dataSourceId = (String) efManager.getFileProperty(localFile, PROP_SQL_DATA_SOURCE_ID);
-                    String projectName = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
-                    if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
+                    String projectId = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
+                    if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectId)) {
                         return null;
                     }
-                    final IProject project = DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
-                    if (project == null || !project.exists()) {
-                        log.error("Can't locate project '" + projectName + "' in workspace");
+                    DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProjectById(projectId);
+                    if (projectMeta == null) {
+                        // External file metadata created by older versions contains the Eclipse project name.
+                        final IProject project = DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace()
+                            .getRoot().getProject(projectId);
+                        if (project.exists()) {
+                            projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
+                        }
+                    }
+                    if (projectMeta == null) {
+                        log.error("Can't locate project '" + projectId + "' in workspace");
                         return null;
                     }
-                    DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                    return projectMeta == null || (!forceRegistryLoad && !projectMeta.isRegistryLoaded()) ?
+                    return !forceRegistryLoad && !projectMeta.isRegistryLoaded() ?
                         null :
                         projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
 
@@ -354,11 +361,16 @@ public class EditorUtils {
         }
         RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
-            Object dataSourceId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
-            if (dataSourceId != null && (forceRegistryLoad || projectMeta.isRegistryLoaded())) {
-                DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
+            String dataSourceId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+            String dataSourceProjectId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID);
+            DBPProject dataSourceProject = CommonUtils.isEmpty(dataSourceProjectId) ?
+                projectMeta : DBWorkbench.getPlatform().getWorkspace().getProjectById(dataSourceProjectId);
+            if (dataSourceId != null && dataSourceProject != null &&
+                (forceRegistryLoad || dataSourceProject.isRegistryLoaded())) {
+                DBPDataSourceContainer dataSource = dataSourceProject.getDataSourceRegistry().getDataSource(dataSourceId);
                 if (dataSource == null) {
-                    log.debug("Datasource " + dataSourceId + " not found in project " + projectMeta.getName() + " (" + file.getFullPath().toString() + ")");
+                    log.debug("Datasource " + dataSourceId + " not found in project " + dataSourceProject.getName() +
+                        " (" + file.getFullPath() + ")");
                 }
                 return dataSource;
             } else {
@@ -431,7 +443,7 @@ public class EditorUtils {
         efManager.setFileProperty(
             localFile,
             PROP_SQL_PROJECT_ID,
-            dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
+            dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getId());
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
         efManager.setFileProperty(
             localFile,
@@ -455,16 +467,28 @@ public class EditorUtils {
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
 
         String resourcePath = projectMeta.getResourcePath(file);
-        projectMeta.setResourceProperty(resourcePath, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
+        Map<String, String> oldProperties = projectMeta.getResourceProperties(resourcePath);
+        Map<String, String> newProperties = oldProperties == null ?
+            new LinkedHashMap<>() : new LinkedHashMap<>(oldProperties);
+        if (dataSourceContainer == null) {
+            newProperties.remove(DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID);
+            newProperties.remove(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+        } else {
+            newProperties.put(DBConstants.PROP_RESOURCE_DEFAULT_PROJECT_ID, dataSourceContainer.getProject().getId());
+            newProperties.put(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
+        }
         if (!isDefaultContextSettings(context)) {
             String defaultCatalogName = getDefaultCatalogName(context);
             if (!CommonUtils.isEmpty(defaultCatalogName)) {
-                projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_CATALOG, defaultCatalogName);
+                newProperties.put(PROP_CONTEXT_DEFAULT_CATALOG, defaultCatalogName);
             }
             String defaultSchemaName = getDefaultSchemaName(context);
             if (!CommonUtils.isEmpty(defaultSchemaName)) {
-                projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_SCHEMA, defaultSchemaName);
+                newProperties.put(PROP_CONTEXT_DEFAULT_SCHEMA, defaultSchemaName);
             }
+        }
+        if (!newProperties.equals(oldProperties)) {
+            projectMeta.setResourceProperties(resourcePath, newProperties);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ public class SQLServerMessages extends NLS {
     public static String authentication_other_description;
 
     public static String password_expired_prompt;
-    public static String password_change_error_title;
     public static String password_change_error_message;
 
     public static String index_type_Heap;

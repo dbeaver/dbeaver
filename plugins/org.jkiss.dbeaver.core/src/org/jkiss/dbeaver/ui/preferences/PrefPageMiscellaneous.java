@@ -24,8 +24,6 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
@@ -90,14 +88,11 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
 
             UIUtils.createControlLabel(groupEditors, CoreMessages.pref_page_ui_general_boolean_label_mode);
 
-            final SelectionAdapter selectionListener = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-                    final BooleanMode mode = (BooleanMode) e.widget.getData();
-                    notifyBooleanStylesChanged(BooleanStyleSet.getDefaultStyles(store, mode));
-                }
-            };
+            final SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
+                final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+                final BooleanMode mode = (BooleanMode) e.widget.getData();
+                notifyBooleanStylesChanged(BooleanStyleSet.getDefaultStyles(preferenceStore, mode));
+            });
 
             booleanStylesChangeListeners.add(value -> {
                 booleanCheckedPanel.loadStyle(value.getCheckedStyle(), value.getDefaultColor());
@@ -274,9 +269,7 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
                     updateBooleanValidState();
                 };
 
-                final SelectionListener menuSelectionListener = new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                final SelectionListener menuSelectionListener = SelectionListener.widgetSelectedAdapter(e -> {
                         final MenuItem menu = (MenuItem) e.widget;
                         switch (menu.getID()) {
                             case MENU_PRESET_ID:
@@ -289,8 +282,7 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
                                 notifyPropertyChanged(e.widget, PROP_COLOR, currentDefaultColor);
                                 break;
                         }
-                    }
-                };
+                    });
 
                 for (UIElementAlignment alignment : UIElementAlignment.values()) {
                     final TextWithDropDown text = new TextWithDropDown(parent, SWT.BORDER, alignment.getStyle(), menuSelectionListener);
@@ -368,15 +360,12 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
                 final ToolBar alignToolBar = new ToolBar(parent, SWT.HORIZONTAL);
                 alignToolBar.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 
-                final SelectionListener selectionListener = new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                final SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
                         if (((ToolItem) e.widget).getSelection()) {
                             // React only to 'Selection' (avoid firing secondary event to 'DefaultSelection')
                             notifyPropertyChanged(e.widget, PROP_ALIGN, e.widget.getData());
                         }
-                    }
-                };
+                    });
 
                 for (final UIElementAlignment alignment : UIElementAlignment.values()) {
                     final ToolItem item = new ToolItem(alignToolBar, SWT.RADIO);

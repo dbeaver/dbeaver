@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -90,12 +91,7 @@ public abstract class ObjectViewerRenderer {
 
         if (trackInput) {
             final CellTrackListener actionsListener = new CellTrackListener();
-            SelectionAdapter selectionAdapter = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    selectedItem = lastClickItem = (Item) e.item;
-                }
-            };
+            SelectionListener selectionAdapter = SelectionListener.widgetSelectedAdapter(e -> selectedItem = lastClickItem = (Item) e.item);
             if (isTree) {
                 getTree().addSelectionListener(selectionAdapter);
             } else {

@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -239,9 +238,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
         authModelComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         authModelCombo = new Combo(authModelComp, SWT.DROP_DOWN | SWT.READ_ONLY);
         authModelCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        authModelCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        authModelCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 try {
                     DBPAuthModelDescriptor newAuthModel = allAuthModels.get(authModelCombo.getSelectionIndex());
                     if (selectedAuthModel != newAuthModel) {
@@ -261,8 +258,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
                         : CommonUtils.notEmpty(selectedAuthModel.getDescription()));
                 }
                 UIUtils.resizeShell(authModelCombo.getShell());
-            }
-        });
+            }));
         UIUtils.createEmptyLabel(authModelComp, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (sharedConfigurator != null) {
             sharedConfigurator.createControl(authModelComp, this, this::refreshCredentials);

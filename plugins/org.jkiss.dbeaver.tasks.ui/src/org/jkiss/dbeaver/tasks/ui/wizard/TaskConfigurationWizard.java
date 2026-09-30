@@ -20,8 +20,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -438,12 +436,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             currentTask != null && CommonUtils.toBoolean(currentTask.getProperties().get(DBTaskUtils.TASK_PROMPT_VARIABLES)),
             1
         );
-        promptTaskVariablesCheckbox.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                promptVariables = promptTaskVariablesCheckbox.getSelection();
-            }
-        });
+        promptTaskVariablesCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            promptVariables = promptTaskVariablesCheckbox.getSelection()));
         promptTaskVariablesCheckbox.notifyListeners(SWT.Selection, new Event());
     }
 

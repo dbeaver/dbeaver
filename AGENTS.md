@@ -30,12 +30,12 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ### Building
 
 - To perform full product build run `mvn package -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`  
-- To build only a single bundle run `mvn package` in bundle folder. It may fail because of missing dependencies in ~/.m2. In this case run `mvn clean install` once in aggregate product.
+- Building a single bundle with `mvn package` in bundle folder usually fails.
 - To build other products(s) use different profiles. You can find maven profiles list in file `product/pom.xml`.
 
 ### Running tests
 
-- Running tests in a single bundle usually fail because OSGI needs entire bundle to be included in build be installed in .m2.
+- Running tests in a single bundle usually fail because OSGI needs ALL bundles to be included in build OR be installed in .m2.
 - To run tests over full repo run `mvn verify -f product/aggregate/pom.xml -T1C -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce`. This will run tests for desktop dbeaver ce and dbeaver eclipse plugin.
 
 ### Repo dependencies
@@ -67,9 +67,7 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ### Annotations
 
 - Use `@NotNull` and `@Nullable` from `org.jkiss.code` on all method parameters and return types where applicable.
-- Expose object properties to the UI via `@Property` (from `org.jkiss.dbeaver.model.meta`) on getter methods.
-- Mark associations (child collections) with `@Association`.
-- Use `@ForTest` on members that exist solely for unit-testing access.
+- Expose object properties to the UI via `@Property` (from `org.jkiss.dbeaver.model.meta`) on getter methods. Object properties are needed in UI rendering.
 
 ### Code style
 
@@ -109,7 +107,6 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 ## Common Pitfalls / Known Issues
 
 - UI thread safety: All SWT/UI updates must run on the display thread. Use functions like `UIUtils.asyncExec(Runnable)` if needed.
-- `@Property` on getters only: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
 - Java 21 required: The target platform requires `JavaSE-21`. Do not use preview features.
 
 ## Creating unit tests

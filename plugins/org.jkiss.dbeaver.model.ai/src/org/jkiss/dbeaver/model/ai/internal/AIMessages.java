@@ -26,6 +26,8 @@ public class AIMessages extends NLS {
     public static String ai_scope_current_datasource;
     public static String ai_scope_custom;
 
+    public static String ai_sync_unit_name;
+
     public static String ai_execute_query_title;
     public static String ai_execute_query_confirm_sql_message;
     public static String ai_execute_query_confirm_dml_message;

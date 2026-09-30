@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -88,16 +87,13 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             for (SQLDialectMetadata dialect : dialects) {
                 createDialectItem(dialectTable, null, dialect);
             }
-            dialectTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            dialectTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     TreeItem[] selection = dialectTable.getSelection();
                     if (selection.length == 1) {
                         curDialect = (SQLDialectDescriptor) selection[0].getData();
                         loadDialectSettings();
                     }
-                }
-            });
+                }));
         }
 
         {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -307,6 +307,20 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     @NotNull
     public String getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
         String outputFileName = resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFilePattern());
+        if (exportObjects.size() > 1) {
+            // separate pg_dump invocations must not overwrite each other when the pattern only names the database
+            int objectIndex = exportObjects.indexOf(info);
+            if (objectIndex >= 0) {
+                String suffix = "-" + (objectIndex + 1);
+                int extensionIndex = outputFileName.lastIndexOf('.');
+                int separatorIndex = Math.max(outputFileName.lastIndexOf('/'), outputFileName.lastIndexOf('\\'));
+                if (extensionIndex > separatorIndex + 1) {
+                    outputFileName = outputFileName.substring(0, extensionIndex) + suffix + outputFileName.substring(extensionIndex);
+                } else {
+                    outputFileName += suffix;
+                }
+            }
+        }
         String outputFolder = getOutputFolder(info);
         return makeOutFilePath(outputFolder, outputFileName);
     }

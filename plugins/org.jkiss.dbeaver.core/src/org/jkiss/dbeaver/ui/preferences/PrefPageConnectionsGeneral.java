@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -27,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionNameResolver;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -67,7 +68,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     private static final String HELP_CONNECTIONS_LINK = "Create-Connection";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
-    private Combo navigatorSettingsCombo;
+    private CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo;
     private Text connectionDefaultNamePatternText;
 
     private String connectionNamePattern;
@@ -99,12 +100,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
                 GridData.VERTICAL_ALIGN_BEGINNING);
             Composite groupComposite = UIUtils.createComposite(groupDefaults, 2);
             connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupComposite);
-            connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    defaultConnectionType = connectionTypeCombo.getSelectedItem();
-                }
-            });
+            connectionTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                defaultConnectionType = connectionTypeCombo.getSelectedItem()));
             navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(
                 groupComposite, this, null);
             connectionDefaultNamePatternText = UIUtils.createLabelText(
@@ -151,7 +148,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
 
             Composite groupBehavior = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_connection_label_general,
+                UIConnectionMessages.pref_page_connection_label_general,
                 1,
                 GridData.VERTICAL_ALIGN_BEGINNING
             );
@@ -191,12 +188,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         Link urlHelpLabel = UIUtils.createLink(
             composite,
             "<a>" + CoreMessages.pref_page_connections_wiki_link + "</a>",
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK));
-                }
-            });
+            SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_CONNECTIONS_LINK))));
         GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
         urlHelpLabel.setLayoutData(gridData);
 
@@ -205,7 +198,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         return composite;
     }
 
-    private void createWinstoreSettings(Composite composite) {
+    private void createWinstoreSettings(@NotNull Composite composite) {
         if (RuntimeUtils.isWindows()) {
             Composite settings = UIUtils.createTitledComposite(
                 composite,
@@ -237,11 +230,11 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     }
 
     @Override
-    public void init(IWorkbench iWorkbench) {
+    public void init(@NotNull IWorkbench workbench) {
 
     }
 
-    private ConnectionNameResolver generateSampleDatasourceResolver() {
+    private @NotNull ConnectionNameResolver generateSampleDatasourceResolver() {
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         assert activeProject != null;
 
@@ -264,16 +257,16 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     }
 
     @Override
-    public IAdaptable getElement() {
+    public @Nullable IAdaptable getElement() {
         return null;
     }
 
     @Override
-    public void setElement(IAdaptable iAdaptable) {
+    public void setElement(@Nullable IAdaptable adaptable) {
 
     }
 
-    private void addLinkToSettings(Composite composite, String pageID) {
+    private void addLinkToSettings(@NotNull Composite composite, @NotNull String pageID) {
         if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
             UIUtils.createPreferenceLink(
                 composite,
@@ -286,7 +279,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     }
 
     @Override
-    public DBNBrowseSettings getNavigatorSettings() {
+    public @NotNull DBNBrowseSettings getNavigatorSettings() {
         return defaultNavigatorSettings;
     }
 

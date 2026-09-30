@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
@@ -84,13 +83,9 @@ public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEnt
 
     @Override
     protected void createContentsBeforeColumns(@NotNull Composite panel) {
-        Link label = UIUtils.createLink(panel, ObjectEditorMessages.dialog_struct_edit_dictionary_tip, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                // FIXME: Cannot use constant due to circular dependency.
-                UIUtils.showPreferencesFor(null, null, /*PrefPageDataViewer.PAGE_ID*/ "org.jkiss.dbeaver.preferences.main.dataviewer");
-            }
-        });
+        // FIXME: Cannot use constant due to circular dependency.
+        Link label = UIUtils.createLink(panel, ObjectEditorMessages.dialog_struct_edit_dictionary_tip, SelectionListener.widgetSelectedAdapter(
+            e -> UIUtils.showPreferencesFor(null, null, /*PrefPageDataViewer.PAGE_ID*/ "org.jkiss.dbeaver.preferences.main.dataviewer")));
         label.setLayoutData(GridDataFactory.create(GridData.FILL_HORIZONTAL).span(2, 1).create());
     }
 

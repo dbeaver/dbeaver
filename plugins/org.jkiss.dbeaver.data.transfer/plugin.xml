@@ -38,6 +38,7 @@
 
             <processor
                 id="stream.csv"
+                aiFormatId="csv"
                 class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
                 description="%dataTransfer.producer.stream.processor.csv.description"
                 icon="icons/formats/csv.svg"
@@ -235,6 +236,7 @@
             </processor>
             <processor
                     id="stream.source.code"
+                    aiFormatId="php"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSourceCode"
                     description="%dataTransfer.processor.source.code.description"
                     icon="icons/formats/code.svg"

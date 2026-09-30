@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.navigator;
 
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -104,12 +103,8 @@ class DashboardCreateWizardPage extends WizardPage {
             UIDashboardMessages.dialog_dashboard_view_config_group_viewcfg_checkbox_init_default_tooltip,
             true,
             2);
-        initDefChartsCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                initDefCharts = initDefChartsCheck.getSelection();
-            }
-        });
+        initDefChartsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            initDefCharts = initDefChartsCheck.getSelection()));
         setControl(configGroup);
     }
 

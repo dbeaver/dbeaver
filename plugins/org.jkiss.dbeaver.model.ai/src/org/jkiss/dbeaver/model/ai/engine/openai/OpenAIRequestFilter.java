@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpRequest;
 
-public class OpenAIRequestFilter implements OpenAiClientBase.HttpRequestFilter {
+public class OpenAIRequestFilter implements AIHttpRequestFilter {
     private final String token;
 
     public OpenAIRequestFilter(@NotNull String token) {
@@ -32,9 +33,11 @@ public class OpenAIRequestFilter implements OpenAiClientBase.HttpRequestFilter {
     @Override
     public HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(request.uri())
-            .uri(request.uri())
             .method(request.method(), request.bodyPublisher().orElse(HttpRequest.BodyPublishers.noBody()))
-            .headers(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token);
+            .headers(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + token);
+        // Keep the settings configured on the original request
+        request.timeout().ifPresent(builder::timeout);
+        request.version().ifPresent(builder::version);
         for (var headerEntry : request.headers().map().entrySet()) {
             for (String value : headerEntry.getValue()) {
                 builder.header(headerEntry.getKey(), value);

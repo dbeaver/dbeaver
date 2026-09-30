@@ -1553,10 +1553,12 @@
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.resources" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLResources" name="%pref.page.name.sql.resources">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.resources"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLTemplates" name="%pref.page.name.sql.templates">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.pref.keyword.sql.templates"/>
         </page>
     </extension>
 
@@ -1566,41 +1568,41 @@
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.codeeditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.codeeditor.label"/>
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqlexecute" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqlexecute.label"/>
         <keyword id="org.jkiss.dbeaver.pref.keyword.sql.sqleditor" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.sqleditor.label"/>
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.resources" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.resources.label"/>
+        <keyword id="org.jkiss.dbeaver.pref.keyword.sql.templates" label="%keyword.org.jkiss.dbeaver.pref.keyword.sql.templates.label"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
-        <dataSourceConfigurator>
-            <dataSourcePage
+    <extension point="org.jkiss.dbeaver.connectionPageConfigurator">
+            <page
                 id="sql-editor.main"
-                after="data-editor-main"
+                after="data-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqleditor.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.codeeditor"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCodeEditing"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.completion"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.completion.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.completion.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.format"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat"
                 title="%page.org.jkiss.dbeaver.preferences.main.sql.format.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sql.format.description"/>
-            <dataSourcePage
+            <page
                 id="sql-editor.execute"
                 parent="sql-editor.main"
                 class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute"
                 title="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.name"
                 description="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.description"/>
-        </dataSourceConfigurator>
     </extension>
 
     <!--
@@ -1625,7 +1627,9 @@
 
     <extension point="org.jkiss.dbeaver.sqlGenerator">
         <generator id="ddlByResultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorDDLFromResultSet" label="CREATE" description="%generator.org.jkiss.dbeaver.ui.editors.sql.ddlByResultSet.description" order="6">
-            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+            <!-- Hidden for dynamic-metadata (schemaless) sources: same condition the generator checks at run time -->
+            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"
+                        if="!object.getDataContainer().getDataSource().getInfo().isDynamicMetadata()"/>
         </generator>
     </extension>
 
@@ -1664,5 +1668,4 @@
     </extension>
 
 </plugin>
-
 

@@ -796,7 +796,8 @@ public class StringTemplate {
 
         @Nullable
         public String getFirstParamValue(@NotNull String paramName) {
-            return this.parameters == null ? null : this.parameters.get(paramName).getFirst();
+            List<String> values = this.parameters == null ? null : this.parameters.get(paramName);
+            return values == null || values.isEmpty() ? null : values.getFirst();
         }
 
         @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,12 @@ public class BinaryEditorMessages extends NLS {
 	public static String dialog_find_replace_1_replacement;
 	public static String dialog_find_replace_backward;
 	public static String dialog_find_replace_cancel;
-	public static String dialog_find_replace_close;
 	public static String dialog_find_replace_direction;
 	public static String dialog_find_replace_error_;
 	public static String dialog_find_replace_find;
 	public static String dialog_find_replace_find_literal;
 	public static String dialog_find_replace_find_replace;
-	public static String dialog_find_replace_copy;
-	public static String dialog_find_replace_paste;
 	public static String dialog_find_replace_goto_line;
-	public static String dialog_find_replace_undo;
-	public static String dialog_find_replace_redo;
 	public static String dialog_find_replace_forward;
 	public static String dialog_find_replace_found_literal;
 	public static String dialog_find_replace_ignore_case;
@@ -48,7 +43,6 @@ public class BinaryEditorMessages extends NLS {
 	public static String dialog_find_replace_searching;
 	public static String dialog_find_replace_stop;
 	public static String dialog_find_replace_text;
-	public static String dialog_go_to_button_close;
 	public static String dialog_go_to_button_go_to_location;
 	public static String dialog_go_to_button_show_location;
 	public static String dialog_go_to_label_enter_location_number;
