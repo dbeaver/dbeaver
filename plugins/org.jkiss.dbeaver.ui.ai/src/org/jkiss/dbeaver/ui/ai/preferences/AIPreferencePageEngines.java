@@ -455,7 +455,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             }
             return;
         }
-        settingsScroll.setMinSize(settingsPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        UIUtils.refreshScrolledComposite(settingsScroll);
     }
 
     private int updateSashWeights() {
