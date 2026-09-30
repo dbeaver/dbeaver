@@ -110,6 +110,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         DBDValueHint.HintType.STRING, DBDValueHint.HintType.ACTION, DBDValueHint.HintType.IMAGE);
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
+    private static final int MAX_FULL_ARRAY_PREVIEW_ITEMS = 100;
+    private static final int MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH = 1000;
 
     private Spreadsheet spreadsheet;
 
@@ -2443,6 +2445,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             info.value = cellValue;
             info.text = formatValue(colElement, rowElement, info.value);
+            if (attr != null && cellValue instanceof DBDCollection collection &&
+                !collection.isNull() && !collection.isEmpty() && !spreadsheet.isCellExpanded(rowElement, colElement)
+            ) {
+                info.fullTextProvider = () -> {
+                    try {
+                        return formatArrayPreview(collection, getValueRenderFormat(attr, collection));
+                    } catch (Exception e) {
+                        // The compact preview is still available if the full value cannot be formatted.
+                        return null;
+                    }
+                };
+            }
             info.state = STATE_NONE;
 
             if (attr != null && cellValue != DBDVoid.INSTANCE) {
@@ -2942,9 +2956,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (row == null) {
                 return null;
             }
-            CellInformation cellInfo = getCellInfo(colElement, rowElement, false);
             int hintOptions = options;
-            if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
+            if (spreadsheet.isCellExpanded(rowElement, colElement)) {
                 hintOptions |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
             if (controller.isRecordMode()) {
@@ -3218,6 +3231,64 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return value instanceof DBDCollection collection
             && !collection.isNull()
             && (collection.isEmpty() || spreadsheet.isCellExpanded(row, column));
+    }
+
+    @Nullable
+    private static String formatArrayPreview(
+        @NotNull DBDCollection collection,
+        @NotNull DBDDisplayFormat format
+    ) {
+        StringBuilder preview = new StringBuilder();
+        int[] remainingItems = {MAX_FULL_ARRAY_PREVIEW_ITEMS};
+        Set<DBDCollection> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        return appendArrayPreview(preview, collection, format, remainingItems, visited) ? preview.toString() : null;
+    }
+
+    private static boolean appendArrayPreview(
+        @NotNull StringBuilder preview,
+        @NotNull DBDCollection collection,
+        @NotNull DBDDisplayFormat format,
+        @NotNull int[] remainingItems,
+        @NotNull Set<DBDCollection> visited
+    ) {
+        if (!visited.add(collection) || !appendPreviewText(preview, "[")) {
+            return false;
+        }
+        try {
+            for (int i = 0; i < collection.getItemCount(); i++) {
+                if (--remainingItems[0] < 0 || i > 0 && !appendPreviewText(preview, ", ")) {
+                    return false;
+                }
+                Object item = collection.getItem(i);
+                if (item instanceof DBDCollection nested) {
+                    if (!appendArrayPreview(preview, nested, format, remainingItems, visited)) {
+                        return false;
+                    }
+                } else {
+                    if (item instanceof CharSequence text &&
+                        preview.length() + text.length() > MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH
+                    ) {
+                        return false;
+                    }
+                    String itemText = collection.getComponentValueHandler().getValueDisplayString(
+                        collection.getComponentType(), item, format);
+                    if (!appendPreviewText(preview, itemText)) {
+                        return false;
+                    }
+                }
+            }
+            return appendPreviewText(preview, "]");
+        } finally {
+            visited.remove(collection);
+        }
+    }
+
+    private static boolean appendPreviewText(@NotNull StringBuilder preview, @NotNull String text) {
+        if (preview.length() + text.length() > MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH) {
+            return false;
+        }
+        preview.append(text);
+        return true;
     }
 
     private boolean isComplexValuesExpansionEnabled() {

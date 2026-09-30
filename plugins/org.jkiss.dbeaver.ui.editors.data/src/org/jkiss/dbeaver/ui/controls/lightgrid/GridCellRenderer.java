@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -170,17 +171,41 @@ public class GridCellRenderer extends AbstractRenderer {
 
         int width = bounds.width - x - RIGHT_MARGIN;
 
+        final Font font = cellInfo.font;
+        gc.setFont(font != null ? font : grid.normalFont);
+        boolean fullTextSelected = false;
+        int textWidth = width;
+        List<IGridHint> cellHints = null;
+        if (cellInfo.fullTextProvider != null) {
+            cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo.value, 0);
+            List<IGridHint> fullTextHints = withoutOmissionHints(cellHints);
+            int fullTextWidth = width - getCellHintsWidth(gc, fullTextHints, selected, focus || hover);
+            String fullText = cellInfo.fullTextProvider.get();
+            if (fullText != null) {
+                boolean decorated = CommonUtils.isBitSet(state, IGridContentProvider.STATE_DECORATED);
+                int measuredWidth = decorated
+                    ? getDecoratedTextWidth(gc, fullText)
+                    : gc.textExtent(CommonUtils.getSingleLineString(fullText)).x;
+                // Avoid presenting LightGrid's safety truncation as a complete value.
+                if (grid.getCellText(fullText).equals(fullText) && measuredWidth <= fullTextWidth) {
+                    text = fullText;
+                    textWidth = fullTextWidth;
+                    cellHints = fullTextHints;
+                    fullTextSelected = true;
+                }
+            }
+        }
+
         final String originalText = text;
 
         // Get cell text
         if (!text.isEmpty()) {
-            // Get shortern version of string
-            text = UITextUtils.getShortString(grid.fontMetrics, text, width);
+            if (!fullTextSelected) {
+                // Shorten the string to the approximate visible length
+                text = UITextUtils.getShortString(grid.fontMetrics, text, width);
+            }
             // Replace linefeeds with space
             text = CommonUtils.getSingleLineString(text);
-
-            final Font font = cellInfo.font;
-            gc.setFont(font != null ? font : grid.normalFont);
 
             int textTopPos = bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN;
             switch (columnAlign) {
@@ -233,7 +258,7 @@ public class GridCellRenderer extends AbstractRenderer {
                         drawCellTextDecorated(gc, originalText, cellInfo, new Rectangle(
                             bounds.x + x,
                             textTopPos,
-                            bounds.width - LEFT_MARGIN - RIGHT_MARGIN,
+                            textWidth,
                             bounds.height
                         ));
                     } else {
@@ -245,7 +270,23 @@ public class GridCellRenderer extends AbstractRenderer {
                         );
                     }
 
-                    renderHints(gc, bounds, col, row, cellInfo, selected, text, cellInfo.background, x, textTopPos, focus, hover);
+                    int renderedTextWidth = CommonUtils.isBitSet(state, IGridContentProvider.STATE_DECORATED)
+                        ? getDecoratedTextWidth(gc, originalText)
+                        : gc.textExtent(text).x;
+                    renderHints(
+                        gc,
+                        bounds,
+                        col,
+                        row,
+                        cellInfo,
+                        cellHints,
+                        selected,
+                        renderedTextWidth,
+                        cellInfo.background,
+                        x,
+                        textTopPos,
+                        focus,
+                        hover);
 
                     break;
                 }
@@ -275,22 +316,24 @@ public class GridCellRenderer extends AbstractRenderer {
         @NotNull IGridColumn col,
         @NotNull IGridRow row,
         @NotNull IGridContentProvider.CellInformation cellInfo,
+        @Nullable List<IGridHint> cellHints,
         boolean selected,
-        @NotNull String text,
+        int textWidth,
         @NotNull Color background,
         int x,
         int textTopPos,
         boolean focus,
         boolean hover
     ) {
-        List<IGridHint> cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo.value, 0);
+        if (cellHints == null) {
+            cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo.value, 0);
+        }
         if (CommonUtils.isEmpty(cellHints)) {
             return;
         }
 
         boolean textHintRendered = false;
-        Point textSize = gc.textExtent(text);
-        int hintLeftPos = bounds.x + x + textSize.x + LEFT_MARGIN;
+        int hintLeftPos = bounds.x + x + textWidth + LEFT_MARGIN;
         // Render text
         for (IGridHint hint : cellHints) {
             if (x > bounds.x + bounds.width) {
@@ -301,7 +344,7 @@ public class GridCellRenderer extends AbstractRenderer {
                 String hintText = hint.getText();
                 if (!CommonUtils.isEmpty(hintText)) {
                     textHintRendered = true;
-                    if (textSize.x < bounds.width - LEFT_MARGIN) {
+                    if (textWidth < bounds.width - LEFT_MARGIN) {
                         final Color foreground;
 
                         if (hint.isError()) {
@@ -383,6 +426,92 @@ public class GridCellRenderer extends AbstractRenderer {
                 }
             }
         }
+    }
+
+    private int getCellHintsWidth(
+        @NotNull GC gc,
+        @Nullable List<IGridHint> cellHints,
+        boolean selected,
+        boolean showActionIcons
+    ) {
+        if (CommonUtils.isEmpty(cellHints)) {
+            return 0;
+        }
+        Font oldFont = gc.getFont();
+        if (selected) {
+            gc.setFont(grid.getLabelProvider().getMainFontItalic());
+        }
+        int hintsWidth = getCellHintTextWidth(gc, cellHints);
+        gc.setFont(oldFont);
+        if (showActionIcons) {
+            int iconsWidth = 0;
+            for (IGridHint hint : cellHints) {
+                DBPImage hintIcon = hint.getIcon();
+                if (hintIcon != null) {
+                    iconsWidth += DBeaverIcons.getImage(hintIcon).getBounds().width + 1;
+                }
+            }
+            if (iconsWidth > 0) {
+                hintsWidth += iconsWidth + 7;
+            }
+        }
+        return hintsWidth;
+    }
+
+    static int getCellHintTextWidth(@NotNull GC gc, @Nullable List<IGridHint> cellHints) {
+        if (cellHints != null) {
+            for (IGridHint hint : cellHints) {
+                String hintText = hint.getText();
+                if (!CommonUtils.isEmpty(hintText)) {
+                    return LEFT_MARGIN + gc.textExtent(hintText).x;
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Nullable
+    private static List<IGridHint> withoutOmissionHints(@Nullable List<IGridHint> cellHints) {
+        if (cellHints == null) {
+            return null;
+        }
+        List<IGridHint> filteredHints = null;
+        for (int i = 0; i < cellHints.size(); i++) {
+            IGridHint hint = cellHints.get(i);
+            if (hint.isOmission()) {
+                if (filteredHints == null) {
+                    filteredHints = new ArrayList<>(cellHints.size() - 1);
+                    filteredHints.addAll(cellHints.subList(0, i));
+                }
+            } else if (filteredHints != null) {
+                filteredHints.add(hint);
+            }
+        }
+        return filteredHints == null ? cellHints : filteredHints;
+    }
+
+    private static int getDecoratedTextWidth(@NotNull GC gc, @NotNull String text) {
+        int width = 0;
+        int start = 0;
+        for (int index = 0; index < text.length();) {
+            boolean matched = false;
+            for (String[] mapping : SPECIAL_CHARACTERS_MAP) {
+                String expected = mapping[0];
+                String replacement = mapping[1];
+                if (text.regionMatches(index, expected, 0, expected.length())) {
+                    width += gc.stringExtent(text.substring(start, index)).x;
+                    width += gc.stringExtent(replacement).x + (replacement.length() > 1 ? 2 : 0);
+                    index += expected.length();
+                    start = index;
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                index++;
+            }
+        }
+        return width + gc.stringExtent(text.substring(start)).x;
     }
 
     private boolean isOverHintAction(
@@ -558,6 +687,7 @@ public class GridCellRenderer extends AbstractRenderer {
                     index += expected.length();
                     start = index;
                     matched = true;
+                    break;
                 }
             }
 

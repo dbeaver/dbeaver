@@ -56,6 +56,13 @@ public interface IGridHint {
     boolean isReadOnly();
 
     /**
+     * @return true if the hint describes content omitted from the cell text
+     */
+    default boolean isOmission() {
+        return false;
+    }
+
+    /**
      * @return true if hint has action which can be executed by clicking on the icon
      */
     boolean hasAction();
