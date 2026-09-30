@@ -47,6 +47,10 @@
         </handler>
     </extension>
 
+    <extension point="org.eclipse.ui.startup">
+        <startup class="org.jkiss.dbeaver.ui.NativeThemeUtils"/>
+    </extension>
+
     <extension point="org.eclipse.ui.newWizards">
         <category id="org.jkiss.dbeaver.core.new.general" name="%category.org.jkiss.dbeaver.core.new.general.name"/>
     </extension>

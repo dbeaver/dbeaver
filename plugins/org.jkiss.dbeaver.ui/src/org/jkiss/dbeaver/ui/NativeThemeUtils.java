@@ -20,6 +20,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IStartup;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -30,18 +32,22 @@ import org.osgi.framework.FrameworkUtil;
  * It relies on Windows native controls theme update.
  * TODO: remove when it will be fixed in Eclipse SWT
  */
-public final class NativeThemeUtils {
+public final class NativeThemeUtils implements IStartup {
     private static final Log log = Log.getLog(NativeThemeUtils.class);
-    private static boolean textThemeListenerInstalled;
 
-    public static void installTextThemeListener(@NotNull Display display) {
-        if (!RuntimeUtils.isWindows() || textThemeListenerInstalled) {
+    @Override
+    public void earlyStartup() {
+        if (!RuntimeUtils.isWindows()) {
             return;
         }
-        textThemeListenerInstalled = true;
-        display.addListener(SWT.Skin, event -> {
-            if (event.widget instanceof Text text && !UIStyles.isDarkTheme()) {
-                updateNativeTheme(text);
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(() -> {
+            if (!display.isDisposed()) {
+                display.addListener(SWT.Skin, event -> {
+                    if (event.widget instanceof Text text && !UIStyles.isDarkTheme()) {
+                        updateNativeTheme(text);
+                    }
+                });
             }
         });
     }

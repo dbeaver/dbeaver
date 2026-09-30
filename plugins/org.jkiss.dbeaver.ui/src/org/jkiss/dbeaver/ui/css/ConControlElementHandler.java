@@ -26,7 +26,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ConComposite;
-import org.jkiss.dbeaver.ui.NativeThemeUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -45,7 +44,6 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         CSSEngine engine
     ) throws Exception {
         Widget widget = SWTElementHelpers.getWidget(element);
-        NativeThemeUtils.installTextThemeListener(widget.getDisplay());
 
         if (widget instanceof ToolBar toolBar) {
             // FIXME: it is a hack to set toolbar foreground explicitly.
