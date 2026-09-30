@@ -25,9 +25,15 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 public class FireBirdSQLDialect extends GenericSQLDialect {
 
@@ -42,8 +48,10 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     };
 
     private static final String[] DDL_KEYWORDS = new String[]{
-        "CREATE", "ALTER", "DROP", "EXECUTE", "RECREATE", "COMMENT"
+        "CREATE", "ALTER", "DROP", "RECREATE", "COMMENT"
     };
+
+    private static final String[] EXEC_KEYWORDS = new String[]{ "EXECUTE PROCEDURE" };
 
     // Firebird-specific keywords not covered by JDBC metadata or the generic dialect.
     // Covers Firebird 3.0 baseline plus 4.0/5.0 additions (LATERAL, SKIP LOCKED, etc.).
@@ -267,6 +275,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
         return FB_BEGIN_END_BLOCK;
     }
 
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
+    }
+
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         if (!dataSource.isServerVersionAtLeast(2, 0)) {
@@ -298,14 +311,55 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
-        return "select * from " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+    protected String getStoredProcedureCallInitialClause(DBSProcedure procedure) {
+        String[] execKeywords = this.getExecuteKeywords();
+        String qualifiedName = procedure.getFullyQualifiedName(DBPEvaluationContext.DML);
+        if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return SQLConstants.KEYWORD_SELECT + " " + qualifiedName;
+        }
+        if (!ArrayUtils.isEmpty(execKeywords) && procedure instanceof FireBirdProcedure fireBirdProcedure &&
+                fireBirdProcedure.getFireBirdProcedureType() == FireBirdProcedureType.EXECUTABLE) {
+            return execKeywords[0] + " " + qualifiedName;
+        }
+        return SQLConstants.KEYWORD_SELECT + " * FROM " + qualifiedName;
+    }
+
+    @NotNull
+    @Override
+    protected String getProcedureCallEndClause(DBSProcedure procedure) {
+        if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return "FROM " + FireBirdConstants.TABLE_DATABASE;
+        }
+        return super.getProcedureCallEndClause(procedure);
     }
 
     @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
         return true;
     }
+
+    @Override
+    protected boolean isStoredProcedureCallIncludesOutParameters() {
+        return false;
+    }
+
+    @Override
+    protected boolean useStoredProcedureCallParentheses(
+        DBSProcedure procedure,
+        Collection<? extends DBSProcedureParameter> parameters
+    ) {
+        if (procedure.getProcedureType() == DBSProcedureType.FUNCTION) {
+            return true;
+        }
+        for (DBSProcedureParameter parameter : parameters) {
+            DBSProcedureParameterKind kind = parameter.getParameterKind();
+            if (kind == DBSProcedureParameterKind.IN || kind == DBSProcedureParameterKind.INOUT) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     @NotNull
     @Override
