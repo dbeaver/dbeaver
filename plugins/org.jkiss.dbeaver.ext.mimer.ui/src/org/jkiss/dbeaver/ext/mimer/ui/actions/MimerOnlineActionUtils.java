@@ -62,7 +62,12 @@ final class MimerOnlineActionUtils {
 
     /**
      * The selected navigator nodes whose object is an instance of {@code type} - empty if the
-     * selection contains anything else (so an action only ever runs on a homogeneous selection).
+     * selection contains anything else (so an action only ever runs on a homogeneous selection),
+     * or if the selection spans more than one data source - every caller runs its generated
+     * statement(s) against a single data source (whichever the first selected object belongs to),
+     * so a selection spanning two connections would otherwise run statements built from objects
+     * in connection B against connection A, potentially acting on a same-named but unrelated
+     * object there instead.
      */
     @NotNull
     static <T extends DBSObject> List<DBNDatabaseNode> collectNodes(@Nullable ISelection selection, @NotNull Class<T> type) {
@@ -70,12 +75,18 @@ final class MimerOnlineActionUtils {
         if (selection == null) {
             return result;
         }
+        DBSObject dataSource = null;
         for (DBNNode node : NavigatorUtils.getSelectedNodes(selection)) {
-            if (node instanceof DBNDatabaseNode dbNode && type.isInstance(dbNode.getObject())) {
-                result.add(dbNode);
-            } else {
+            if (!(node instanceof DBNDatabaseNode dbNode) || !type.isInstance(dbNode.getObject())) {
                 return new ArrayList<>();
             }
+            DBSObject nodeDataSource = dbNode.getObject().getDataSource();
+            if (dataSource == null) {
+                dataSource = nodeDataSource;
+            } else if (dataSource != nodeDataSource) {
+                return new ArrayList<>();
+            }
+            result.add(dbNode);
         }
         return result;
     }
