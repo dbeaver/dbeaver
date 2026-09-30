@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -109,7 +110,7 @@ public class UIStyles {
         return isHighContrastTheme() && UIUtils.isDark(getDefaultWidgetBackground().getRGB());
     }
 
-    public static Color getDefaultWidgetBackground() {
+    public static @NotNull Color getDefaultWidgetBackground() {
         ITheme theme = UIUtils.getCurrentTheme();
         Color color = theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_BG_START);
         if (color == null) {
@@ -118,32 +119,27 @@ public class UIStyles {
         return color;
     }
 
-    public static Color getDefaultTextBackground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.Background", SWT.COLOR_LIST_BACKGROUND);
+    public static @NotNull Color getDefaultTextBackground() {
+        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND, SWT.COLOR_LIST_BACKGROUND);
     }
 
-    public static Color getDefaultTextForeground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.Foreground", SWT.COLOR_LIST_FOREGROUND);
+    public static @NotNull Color getDefaultTextForeground() {
+        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND, SWT.COLOR_LIST_FOREGROUND);
     }
 
-    public static Color getDefaultTextSelectionBackground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.SelectionBackground", SWT.COLOR_LIST_SELECTION);
+    public static @NotNull Color getDefaultTextSelectionBackground() {
+        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_SELECTION_BACKGROUND, SWT.COLOR_LIST_SELECTION);
     }
 
-    public static Color getDefaultTextSelectionForeground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.SelectionForeground", SWT.COLOR_LIST_SELECTION_TEXT);
+    public static @NotNull Color getDefaultTextSelectionForeground() {
+        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_SELECTION_FOREGROUND, SWT.COLOR_LIST_SELECTION_TEXT);
     }
 
-    public static Color getDefaultTextColor(String id, int defSWT) {
+    public static @NotNull Color getDefaultTextColor(String id, int defSWT) {
         IPreferenceStore preferenceStore = getEditorsPreferenceStore();
         String fgRGB = preferenceStore == null ? null : preferenceStore.getString(id);
         return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(defSWT) : UIUtils.getSharedColor(fgRGB);
     }
-
-    public static Color getErrorTextForeground() {
-        return getDefaultTextColor("AbstractTextEditor.Error.Color.Foreground", SWT.COLOR_RED);
-    }
-
 
     /**
      * Calculate the Contrast color based on Luma(brightness)
@@ -151,7 +147,7 @@ public class UIStyles {
      *
      * Do not dispose returned color.
      */
-    public static Color getContrastColor(Color color) {
+    public static @NotNull Color getContrastColor(Color color) {
         if (color == null) {
             return COLOR_BLACK;
         }
@@ -162,12 +158,11 @@ public class UIStyles {
         return COLOR_BLACK;
     }
 
-    public static Color getInvertedColor(Color color) {
+    public static @NotNull Color getInvertedColor(Color color) {
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
 
-    @NotNull
-    public static Color mix(@NotNull Color color1, @NotNull Color color2, float weight) {
+    public static @NotNull Color mix(@NotNull Color color1, @NotNull Color color2, float weight) {
         // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/ColorFunctions.java#L133C1-L156C3
         if (weight >= 1) {
             return color1;
