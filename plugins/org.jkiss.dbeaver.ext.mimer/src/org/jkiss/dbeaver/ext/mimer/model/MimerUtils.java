@@ -91,19 +91,23 @@ public class MimerUtils {
                 dbStat.setString(1, schemaName);
                 dbStat.setString(2, objectName);
                 dbStat.setString(3, objectType);
-                // EXT_SOURCE_DEFINITION stores one source line per row (keyed by LINE_NUMBER);
-                // re-join with newlines, tolerating rows that already carry a trailing one.
-                List<String> lines = new ArrayList<>();
+                // LINE_NUMBER is NOT a logical source line - it's a sequential index into fixed-
+                // width (400-character) raw chunks of the compiled source text, confirmed live:
+                // every chunk but the last comes back with CHAR_LENGTH = 400 regardless of where
+                // real line breaks fall, and a chunk boundary can land mid-identifier (e.g. one
+                // chunk ending "...   D" and the next starting "ECLARE ..."). The genuine line
+                // breaks are already literal characters embedded within the chunks themselves, so
+                // reconstruction is a plain concatenation in LINE_NUMBER order - no separator
+                // inserted between chunks, nothing stripped from either end of one.
+                StringBuilder source = new StringBuilder();
+                boolean found = false;
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String line = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1));
-                        while (line.endsWith("\n") || line.endsWith("\r")) {
-                            line = line.substring(0, line.length() - 1);
-                        }
-                        lines.add(line);
+                        found = true;
+                        source.append(CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1)));
                     }
                 }
-                return lines.isEmpty() ? MimerConstants.SOURCE_NOT_AVAILABLE : String.join("\n", lines);
+                return found ? source.toString() : MimerConstants.SOURCE_NOT_AVAILABLE;
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, context.getDataSource());
@@ -134,17 +138,18 @@ public class MimerUtils {
             ) {
                 dbStat.setString(1, schemaName);
                 dbStat.setString(2, statementName);
-                List<String> lines = new ArrayList<>();
+                // STATEMENT_SEQUENCE_NO is a fixed-width raw-chunk index, same as
+                // EXT_SOURCE_DEFINITION.LINE_NUMBER - see readSourceDefinition's comment for the
+                // live-confirmed shape. Plain concatenation, no separator inserted.
+                StringBuilder source = new StringBuilder();
+                boolean found = false;
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String line = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1));
-                        while (line.endsWith("\n") || line.endsWith("\r")) {
-                            line = line.substring(0, line.length() - 1);
-                        }
-                        lines.add(line);
+                        found = true;
+                        source.append(CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1)));
                     }
                 }
-                return lines.isEmpty() ? MimerConstants.SOURCE_NOT_AVAILABLE : String.join("\n", lines);
+                return found ? source.toString() : MimerConstants.SOURCE_NOT_AVAILABLE;
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, context.getDataSource());
