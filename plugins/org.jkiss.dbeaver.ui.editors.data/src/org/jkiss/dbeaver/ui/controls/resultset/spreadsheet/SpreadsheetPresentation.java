@@ -2450,7 +2450,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             ) {
                 info.fullTextProvider = () -> {
                     try {
-                        return formatArrayPreview(collection, getValueRenderFormat(attr, collection));
+                        return formatArrayPreview(collection);
                     } catch (Exception e) {
                         // The compact preview is still available if the full value cannot be formatted.
                         return null;
@@ -2641,7 +2641,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return attr.getValueRenderer().getValueDisplayString(
                     attr.getAttribute(),
                     value,
-                    getValueRenderFormat(attr, value));
+                    getValueRenderFormat(value));
             } catch (Exception e) {
                 return new DBDValueError(e);
             }
@@ -3204,7 +3204,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @NotNull
-    private DBDDisplayFormat getValueRenderFormat(@NotNull DBDAttributeBinding attr, @Nullable Object value) {
+    private DBDDisplayFormat getValueRenderFormat(@Nullable Object value) {
         if (value instanceof Number && useNativeNumbersFormat) {
             return DBDDisplayFormat.NATIVE;
         }
@@ -3234,20 +3234,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @Nullable
-    private static String formatArrayPreview(
-        @NotNull DBDCollection collection,
-        @NotNull DBDDisplayFormat format
-    ) {
+    private String formatArrayPreview(@NotNull DBDCollection collection) {
         StringBuilder preview = new StringBuilder();
         int[] remainingItems = {MAX_FULL_ARRAY_PREVIEW_ITEMS};
         Set<DBDCollection> visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        return appendArrayPreview(preview, collection, format, remainingItems, visited) ? preview.toString() : null;
+        return appendArrayPreview(preview, collection, remainingItems, visited) ? preview.toString() : null;
     }
 
-    private static boolean appendArrayPreview(
+    private boolean appendArrayPreview(
         @NotNull StringBuilder preview,
         @NotNull DBDCollection collection,
-        @NotNull DBDDisplayFormat format,
         @NotNull int[] remainingItems,
         @NotNull Set<DBDCollection> visited
     ) {
@@ -3261,7 +3257,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 Object item = collection.getItem(i);
                 if (item instanceof DBDCollection nested) {
-                    if (!appendArrayPreview(preview, nested, format, remainingItems, visited)) {
+                    if (!appendArrayPreview(preview, nested, remainingItems, visited)) {
                         return false;
                     }
                 } else {
@@ -3271,7 +3267,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         return false;
                     }
                     String itemText = collection.getComponentValueHandler().getValueDisplayString(
-                        collection.getComponentType(), item, format);
+                        collection.getComponentType(), item, getValueRenderFormat(item));
                     if (!appendPreviewText(preview, itemText)) {
                         return false;
                     }
