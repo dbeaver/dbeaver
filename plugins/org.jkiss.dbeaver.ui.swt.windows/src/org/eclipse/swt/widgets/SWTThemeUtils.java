@@ -25,7 +25,8 @@ public final class SWTThemeUtils {
     public static void updateExplorerTheme(Control control, boolean dark) {
         OS.AllowDarkModeForWindow(control.handle, dark);
         boolean isBrokenCtrl = control instanceof Table || control instanceof Tree;
-        {
+        // For some reason ToolBar looks-n-feel become corrupted after theme set
+        if (!(control instanceof ToolBar)) {
             OS.SetWindowTheme(control.handle, dark || isBrokenCtrl ? Display.EXPLORER : null, null);
         }
 //        if (control instanceof Text && !dark) {
