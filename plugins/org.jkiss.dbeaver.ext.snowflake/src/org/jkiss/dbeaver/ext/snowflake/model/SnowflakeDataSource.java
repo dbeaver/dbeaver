@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeUtils;
+import org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -90,6 +91,29 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Override
     protected boolean isPopulateClientAppName() {
         return false;
+    }
+
+    @Override
+    protected boolean isUserPasswordAuthentication(@NotNull DBPConnectionConfiguration connectionInfo) {
+        boolean passwordAuthModel = super.isUserPasswordAuthentication(connectionInfo)
+            || SnowflakeAuthModelSnowflake.ID.equals(connectionInfo.getAuthModelId());
+        return passwordAuthModel && hasPasswordAuthenticator(connectionInfo);
+    }
+
+    protected boolean hasPasswordAuthenticator(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return isPasswordAuthenticator(connectionInfo.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR))
+            && isPasswordAuthenticator(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY));
+    }
+
+    @Override
+    protected void prepareUserPasswordValidationConfiguration(@NotNull DBPConnectionConfiguration connectionInfo) {
+        // Keep Snowflake username/password model settings, including MFA configuration.
+    }
+
+    private static boolean isPasswordAuthenticator(@Nullable String authenticator) {
+        return CommonUtils.isEmpty(authenticator)
+            || SnowflakeConstants.AUTHENTICATOR_SNOWFLAKE.equalsIgnoreCase(authenticator)
+            || SnowflakeConstants.AUTHENTICATOR_USERNAME_PASSWORD_MFA.equalsIgnoreCase(authenticator);
     }
 
     @NotNull

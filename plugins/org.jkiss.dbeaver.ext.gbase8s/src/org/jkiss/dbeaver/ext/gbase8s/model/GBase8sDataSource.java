@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
@@ -72,9 +71,9 @@ public class GBase8sDataSource extends GenericDataSource {
         DEFAULT_JDBCTEMP = jdbcTemp;
     }
 
-    public GBase8sDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container,
-            @NotNull GenericMetaModel metaModel) throws DBException {
-        super(monitor, container, metaModel, new GBase8sSQLDialect());
+    public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+            throws DBException {
+        super(monitor, container, metaModel, new GBase8sDialect());
     }
 
     @Override

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatCompletionRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatCompletionResult;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatMessage;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -46,7 +47,7 @@ public class OpenAIClientChat extends OpenAiClientBase {
 
     public OpenAIClientChat(
         @NotNull String baseUrl,
-        @NotNull List<HttpRequestFilter> requestFilters
+        @NotNull List<AIHttpRequestFilter> requestFilters
     ) {
         super(baseUrl, requestFilters);
     }

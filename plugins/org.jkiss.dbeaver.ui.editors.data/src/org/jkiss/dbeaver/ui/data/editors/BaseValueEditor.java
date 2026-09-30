@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -243,9 +243,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
     private void saveValue(boolean showError, @NotNull Consumer<Object> valueUpdater) {
         try {
-            Object newValue = extractEditorValue();
             if (dirty || control instanceof Combo || control instanceof CCombo || control instanceof List) {
                 // Combos are always dirty (because drop-down menu sets a selection)
+                Object newValue = extractEditorValue();
                 valueUpdater.accept(newValue);
             }
         } catch (DBException e) {
