@@ -73,6 +73,10 @@ public class BreadcrumbTrim {
             viewer.getControl().getParent().layout(true, true);
         }
 
+        refreshStatusBar();
+    }
+
+    public static void refreshStatusBar() {
         for (IWorkbenchWindow window : Workbench.getInstance().getWorkbenchWindows()) {
             if (window instanceof WorkbenchWindow workbenchWindow) {
                 updateElementVisibility(workbenchWindow);
@@ -93,17 +97,28 @@ public class BreadcrumbTrim {
             dirty = true;
         }
 
-        var statusLineElement = modelService.find(WorkbenchWindow.STATUS_LINE_ID, model);
         var statusLineVisible = store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE);
-        if (statusLineElement != null && statusLineElement.isToBeRendered() != statusLineVisible) {
-            statusLineElement.setToBeRendered(statusLineVisible);
-            dirty = true;
+        if (statusLineVisible) {
+            MUIElement statusLineElement = modelService.find(WorkbenchWindow.STATUS_LINE_ID, model);
+            if (statusLineElement != null && !statusLineElement.isToBeRendered()) {
+                statusLineElement.setToBeRendered(true);
+                dirty = true;
+            }
         }
-
-        if (dirty) {
-            MUIElement element = modelService.find(BOTTOM_TRIM_ID, model);
-            if (element != null && element.getWidget() instanceof Composite composite) {
-                composite.layout(true, true);
+        MUIElement element = modelService.find(BOTTOM_TRIM_ID, model);
+        if (element != null) {
+            if (element.isVisible() != statusLineVisible) {
+                element.setVisible(statusLineVisible);
+                dirty = true;
+            }
+            if (element.getWidget() instanceof Composite composite && !composite.isDisposed()) {
+                if (composite.getVisible() != statusLineVisible) {
+                    composite.setVisible(statusLineVisible);
+                    dirty = true;
+                }
+            }
+            if (dirty) {
+                window.getShell().layout(true, true);
             }
         }
     }
