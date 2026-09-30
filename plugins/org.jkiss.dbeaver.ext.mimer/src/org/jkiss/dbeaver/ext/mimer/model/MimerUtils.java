@@ -407,7 +407,7 @@ public class MimerUtils {
             kind = procedure.getProcedureType() == DBSProcedureType.FUNCTION
                 ? DBSProcedureParameterKind.RETURN : DBSProcedureParameterKind.IN;
         } else {
-            kind = switch (mode.toUpperCase()) {
+            kind = switch (mode.toUpperCase(Locale.ENGLISH)) {
                 case "OUT" -> DBSProcedureParameterKind.OUT;
                 case "INOUT" -> DBSProcedureParameterKind.INOUT;
                 default -> DBSProcedureParameterKind.IN;
@@ -762,7 +762,7 @@ public class MimerUtils {
         if (CommonUtils.isEmpty(dataType)) {
             return "";
         }
-        String upper = dataType.toUpperCase();
+        String upper = dataType.toUpperCase(Locale.ENGLISH);
         if (charLength > 0) {
             return upper + "(" + charLength + ")";
         }

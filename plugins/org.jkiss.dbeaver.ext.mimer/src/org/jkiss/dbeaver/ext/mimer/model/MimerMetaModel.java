@@ -63,6 +63,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -410,7 +411,7 @@ public class MimerMetaModel extends GenericMetaModel {
         // fell through to the PRIMARY_KEY default, mistyping every CHECK/UNIQUE constraint.
         String type = JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTRAINT_TYPE");
         if (CommonUtils.isNotEmpty(type)) {
-            return switch (type.toUpperCase()) {
+            return switch (type.toUpperCase(Locale.ENGLISH)) {
                 case "UNIQUE" -> DBSEntityConstraintType.UNIQUE_KEY;
                 case "CHECK" -> DBSEntityConstraintType.CHECK;
                 default -> DBSEntityConstraintType.PRIMARY_KEY;
