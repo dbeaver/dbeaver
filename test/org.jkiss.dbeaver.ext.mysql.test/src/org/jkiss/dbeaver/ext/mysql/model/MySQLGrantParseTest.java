@@ -96,6 +96,15 @@ public class MySQLGrantParseTest extends DBeaverUnitTest {
         Assertions.assertTrue(grant.isAllTables());
     }
 
+    @Test
+    public void proxyGrantIsNotTreatedAsGlobal() throws DBException {
+        // PROXY targets an account, not db.table: it must not look like a grant on *.*
+        MySQLGrant grant = parse("GRANT PROXY ON ''@'' TO 'u'@'%' WITH GRANT OPTION");
+        Assertions.assertNotNull(grant);
+        Assertions.assertFalse(grant.isAllCatalogs());
+        Assertions.assertFalse(grant.isAllTables());
+    }
+
     // ---- routine grants ----
 
     @Test

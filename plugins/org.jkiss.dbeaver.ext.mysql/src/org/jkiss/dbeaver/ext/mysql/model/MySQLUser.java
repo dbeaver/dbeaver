@@ -105,11 +105,18 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
 
     /**
      * The account as a quoted SQL identifier ({@code 'user'@'host'}) for use in GRANT/REVOKE and
-     * other statements. Single quotes in the user or host are doubled so crafted names stay valid.
+     * other statements. Backslashes and single quotes in the user or host are escaped so crafted
+     * names stay valid (same string-literal rules as {@link MySQLDialect#escapeString(String)}).
      */
     @NotNull
     public String getFullName() {
-        return "'" + userName.replace("'", "''") + "'@'" + host.replace("'", "''") + "'";
+        return "'" + escapeAccountPart(userName) + "'@'" + escapeAccountPart(host) + "'";
+    }
+
+    @NotNull
+    private static String escapeAccountPart(@NotNull String part) {
+        // Backslashes first, otherwise the backslash of an escaped quote would be doubled again
+        return part.replace("\\", "\\\\").replace("'", "''");
     }
 
     @Nullable

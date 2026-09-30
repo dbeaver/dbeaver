@@ -1509,24 +1509,25 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         return selected;
     }
 
-    private void showCatalogTables()
-    {
+    private void showCatalogTables() {
+        // Capture the requested catalog so a result arriving after the user switched catalogs is discarded
+        final MySQLCatalog requestedCatalog = selectedCatalog;
         LoadingJob.createService(
                 new DatabaseLoadService<>(MySQLUIMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                     @Override
-                    public Collection<MySQLTableBase> evaluate(@NotNull DBRProgressMonitor monitor) {
-                        if (selectedCatalog == null) {
+                    public @Nullable Collection<MySQLTableBase> evaluate(@NotNull DBRProgressMonitor monitor) {
+                        if (requestedCatalog == null) {
                             return Collections.emptyList();
                         }
                         try {
-                            return selectedCatalog.getTableCache().getAllObjects(monitor, selectedCatalog);
+                            return requestedCatalog.getTableCache().getAllObjects(monitor, requestedCatalog);
                         } catch (DBException e) {
                             log.error(e);
                         }
                         return null;
                     }
                 },
-            pageControl.createTablesLoadVisualizer())
+            pageControl.createTablesLoadVisualizer(requestedCatalog))
             .schedule();
     }
 
@@ -1553,22 +1554,24 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void showCatalogProcedures() {
+        // Capture the requested catalog so a result arriving after the user switched catalogs is discarded
+        final MySQLCatalog requestedCatalog = selectedCatalog;
         LoadingJob.createService(
                 new DatabaseLoadService<>(MySQLUIMessages.editors_user_editor_privileges_service_load_procedures, getExecutionContext()) {
                     @Override
                     public @Nullable Collection<MySQLProcedure> evaluate(@NotNull DBRProgressMonitor monitor) {
-                        if (selectedCatalog == null) {
+                        if (requestedCatalog == null) {
                             return Collections.emptyList();
                         }
                         try {
-                            return selectedCatalog.getProceduresCache().getAllObjects(monitor, selectedCatalog);
+                            return requestedCatalog.getProceduresCache().getAllObjects(monitor, requestedCatalog);
                         } catch (DBException e) {
                             log.error(e);
                         }
                         return null;
                     }
                 },
-            pageControl.createProceduresLoadVisualizer())
+            pageControl.createProceduresLoadVisualizer(requestedCatalog))
             .schedule();
     }
 
@@ -1878,12 +1881,18 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             super(parent);
         }
 
-        public ProgressVisualizer<Collection<MySQLTableBase>> createTablesLoadVisualizer() {
+        public @NotNull ProgressVisualizer<Collection<MySQLTableBase>> createTablesLoadVisualizer(
+            @Nullable MySQLCatalog requestedCatalog
+        ) {
             return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable Collection<MySQLTableBase> tables) {
                     super.completeLoading(tables);
                     if (tablesTable.isDisposed()) {
+                        return;
+                    }
+                    // Discard a stale result: the user switched catalogs while this load was running
+                    if (selectedCatalog != requestedCatalog) {
                         return;
                     }
                     catalogTables = tables == null ? null : new ArrayList<>(tables);
@@ -1920,12 +1929,18 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             };
         }
 
-        public @NotNull ProgressVisualizer<Collection<MySQLProcedure>> createProceduresLoadVisualizer() {
+        public @NotNull ProgressVisualizer<Collection<MySQLProcedure>> createProceduresLoadVisualizer(
+            @Nullable MySQLCatalog requestedCatalog
+        ) {
             return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable Collection<MySQLProcedure> procedures) {
                     super.completeLoading(procedures);
                     if (proceduresTable.isDisposed()) {
+                        return;
+                    }
+                    // Discard a stale result: the user switched catalogs while this load was running
+                    if (selectedCatalog != requestedCatalog) {
                         return;
                     }
                     catalogProcedures = procedures == null ? null : new ArrayList<>(procedures);

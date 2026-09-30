@@ -54,4 +54,19 @@ public class MySQLUserAccountTest extends DBeaverUnitTest {
     public void quotesInBothPartsAreDoubled() {
         Assertions.assertEquals("'a''b'@'c''d'", user("a'b", "c'd").getFullName());
     }
+
+    @Test
+    public void backslashIsDoubled() {
+        Assertions.assertEquals("'a\\\\b'@'%'", user("a\\b", "%").getFullName());
+    }
+
+    @Test
+    public void trailingBackslashCannotEscapeClosingQuote() {
+        Assertions.assertEquals("'x\\\\'@'%'", user("x\\", "%").getFullName());
+    }
+
+    @Test
+    public void backslashAndQuoteAreBothEscaped() {
+        Assertions.assertEquals("'x\\\\'''@'%'", user("x\\'", "%").getFullName());
+    }
 }
