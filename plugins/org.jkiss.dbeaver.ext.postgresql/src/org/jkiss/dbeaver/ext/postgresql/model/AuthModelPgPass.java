@@ -45,6 +45,7 @@ import java.util.Properties;
 public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCredentials> {
     private static final Log log = Log.getLog(AuthModelPgPass.class);
 
+    public static final String ID = "postgres_pgpass";
     public static final String PGPASSFILE_ENV_VARIABLE = "PGPASSFILE";
 
     @NotNull

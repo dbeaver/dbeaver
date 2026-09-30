@@ -100,11 +100,30 @@ public class ConnectJob extends AbstractJob
         if (curJob != null) {
             curJob.setAttachedJob(this);
         }
+        Thread cancelWatcher = null;
         try {
             setThread(Thread.currentThread());
             reflect = false;
+            if (curJob == null) {
+                // Runnable contexts have no owner job to forward monitor cancellation.
+                cancelWatcher = Thread.ofVirtual().name("Connection cancel watcher").start(() -> {
+                    try {
+                        while (true) {
+                            if (monitor.isCanceled() && connectThread != null) {
+                                canceling();
+                                return;
+                            }
+                            Thread.sleep(50);
+                        }
+                    } catch (InterruptedException ignored) {
+                    }
+                });
+            }
             return run(monitor);
         } finally {
+            if (cancelWatcher != null) {
+                cancelWatcher.interrupt();
+            }
             if (curJob != null) {
                 curJob.setAttachedJob(null);
             }
