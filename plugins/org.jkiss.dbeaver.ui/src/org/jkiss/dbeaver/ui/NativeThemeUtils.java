@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -40,8 +39,8 @@ public final class NativeThemeUtils {
         }
         textThemeListenerInstalled = true;
         display.addListener(SWT.Skin, event -> {
-            if (event.widget instanceof Text text && !UIStyles.isDarkTheme()) {
-                updateNativeTheme(text);
+            if (event.widget instanceof Control control) {
+                updateNativeTheme(control);
             }
         });
     }

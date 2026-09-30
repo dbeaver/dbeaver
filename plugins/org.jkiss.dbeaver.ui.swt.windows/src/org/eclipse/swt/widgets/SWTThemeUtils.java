@@ -24,11 +24,15 @@ public final class SWTThemeUtils {
 
     public static void updateExplorerTheme(Control control, boolean dark) {
         OS.AllowDarkModeForWindow(control.handle, dark);
-        if (control instanceof Text && !dark) {
-            // A light EDIT control retains the dark Explorer background until its native state changes.
-            OS.SetWindowTheme(control.handle, null, null);
-        } else {
-            OS.SetWindowTheme(control.handle, Display.EXPLORER, null);
+        boolean isBrokenCtrl = control instanceof Table || control instanceof Tree;
+        {
+            OS.SetWindowTheme(control.handle, dark || isBrokenCtrl ? Display.EXPLORER : null, null);
         }
+//        if (control instanceof Text && !dark) {
+//            // A light EDIT control retains the dark Explorer background until its native state changes.
+//            OS.SetWindowTheme(control.handle, null, null);
+//        } else {
+//            OS.SetWindowTheme(control.handle, Display.EXPLORER, null);
+//        }
     }
 }
