@@ -197,6 +197,11 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         return isChatGptAccountAuthentication();
     }
 
+    @Override
+    public void setAccountAuthentication(boolean accountAuthentication) {
+        setAuthentication(accountAuthentication ? AUTHENTICATION_CHATGPT_ACCOUNT : AUTHENTICATION_API_TOKEN);
+    }
+
     public void setAuthentication(@Nullable String authentication) {
         this.authentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
