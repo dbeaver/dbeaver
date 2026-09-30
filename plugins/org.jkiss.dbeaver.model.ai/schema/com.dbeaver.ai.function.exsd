@@ -185,6 +185,14 @@
                <documentation>Comma-separated list of valid values for this parameter</documentation>
             </annotation>
          </attribute>
+         <attribute name="validValuesProvider" type="string">
+            <annotation>
+               <documentation>Optional class implementing AIFunctionParameterValueProvider used to provide valid values dynamically</documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterValueProvider"/>
+               </appInfo>
+            </annotation>
+         </attribute>
          <attribute name="transformer" type="string">
             <annotation>
                <documentation>Optional class implementing AIFunctionParameterTransformer used to transform the raw parameter value before passing it to the function</documentation>
