@@ -46,6 +46,8 @@ public class GridCellRenderer extends AbstractRenderer {
 
     private static final int TEXT_TOP_MARGIN = 1;
     private static final int INSIDE_MARGIN = 3;
+    private static final int HINT_ICON_MARGIN = 4;
+    private static final int HINT_ICON_SPACING = 1;
 
     static final Image LINK_IMAGE = DBeaverIcons.getImage(UIIcon.LINK);
     static final Image LINK2_IMAGE = DBeaverIcons.getImage(UIIcon.LINK2);
@@ -376,7 +378,10 @@ public class GridCellRenderer extends AbstractRenderer {
                 if (hintIcon != null) {
                     Image hintImage = DBeaverIcons.getImage(hintIcon);
                     Rectangle iconSize = hintImage.getBounds();
-                    iconsWidth += iconSize.width + 1;
+                    if (iconsWidth > 0) {
+                        iconsWidth += HINT_ICON_SPACING;
+                    }
+                    iconsWidth += iconSize.width;
                     if (iconList == null) {
                         iconList = new ArrayList<>();
                     }
@@ -385,7 +390,7 @@ public class GridCellRenderer extends AbstractRenderer {
             }
 
             if (iconList != null) {
-                int iconsPaddingWidth = iconsWidth + 7;
+                int iconsPaddingWidth = iconsWidth + HINT_ICON_MARGIN * 2;
                 Color oldBg = gc.getBackground(), oldFg = gc.getForeground();
                 gc.setBackground(background);
                 int leftDivPos = bounds.x + bounds.width - iconsPaddingWidth;
@@ -411,7 +416,7 @@ public class GridCellRenderer extends AbstractRenderer {
                 gc.setBackground(oldBg);
                 gc.setForeground(oldFg);
 
-                int iconRightPos = bounds.x + bounds.width - 4;
+                int iconRightPos = bounds.x + bounds.width - HINT_ICON_MARGIN;
                 // Render icons
                 for (IconInfo iconInfo : iconList) {
                     Rectangle iconSize = iconInfo.iconSize;
@@ -422,7 +427,7 @@ public class GridCellRenderer extends AbstractRenderer {
                         iconX,
                         iconY
                     );
-                    iconRightPos -= iconSize.width + 1;
+                    iconRightPos -= iconSize.width + HINT_ICON_SPACING;
                 }
             }
         }
@@ -448,11 +453,14 @@ public class GridCellRenderer extends AbstractRenderer {
             for (IGridHint hint : cellHints) {
                 DBPImage hintIcon = hint.getIcon();
                 if (hintIcon != null) {
-                    iconsWidth += DBeaverIcons.getImage(hintIcon).getBounds().width + 1;
+                    if (iconsWidth > 0) {
+                        iconsWidth += HINT_ICON_SPACING;
+                    }
+                    iconsWidth += DBeaverIcons.getImage(hintIcon).getBounds().width;
                 }
             }
             if (iconsWidth > 0) {
-                hintsWidth += iconsWidth + 7;
+                hintsWidth += iconsWidth + HINT_ICON_MARGIN * 2;
             }
         }
         return hintsWidth;
@@ -532,13 +540,13 @@ public class GridCellRenderer extends AbstractRenderer {
             if (hintIcon != null) {
                 Image hintImage = DBeaverIcons.getImage(hintIcon);
                 Rectangle iconSize = hintImage.getBounds();
-                if (y >= cellOrigin.y + 4 &&
-                    y <= cellOrigin.y + grid.getItemHeight() - 4 &&
-                    x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width &&
-                    x <= cellOrigin.x + column.getWidth() - 4) {
+                if (y >= cellOrigin.y + HINT_ICON_MARGIN &&
+                    y <= cellOrigin.y + grid.getItemHeight() - HINT_ICON_MARGIN &&
+                    x >= cellOrigin.x + column.getWidth() - HINT_ICON_MARGIN - iconsWidth - iconSize.width &&
+                    x <= cellOrigin.x + column.getWidth() - HINT_ICON_MARGIN) {
                     return true;
                 }
-                iconsWidth += iconSize.width + 1;
+                iconsWidth += iconSize.width + HINT_ICON_SPACING;
             }
         }
         return false;
@@ -563,7 +571,7 @@ public class GridCellRenderer extends AbstractRenderer {
             if (hintIcon != null) {
                 Image hintImage = DBeaverIcons.getImage(hintIcon);
                 Rectangle iconSize = hintImage.getBounds();
-                if (x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width) {
+                if (x >= cellOrigin.x + column.getWidth() - HINT_ICON_MARGIN - iconsWidth - iconSize.width) {
                     hint.performAction(grid.getGridController(), grid.toDisplay(x, y), state);
                     return;
                 }

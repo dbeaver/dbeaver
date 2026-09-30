@@ -2450,7 +2450,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             ) {
                 info.fullTextProvider = () -> {
                     try {
-                        return formatArrayPreview(collection);
+                        return formatArrayPreview(attr, collection);
                     } catch (Exception e) {
                         // The compact preview is still available if the full value cannot be formatted.
                         return null;
@@ -3233,58 +3233,67 @@ public class SpreadsheetPresentation extends AbstractPresentation
             && (collection.isEmpty() || spreadsheet.isCellExpanded(row, column));
     }
 
+    /**
+     * Produces a complete preview using the database-specific renderer when the collection is small enough to display.
+     */
     @Nullable
-    private String formatArrayPreview(@NotNull DBDCollection collection) {
-        StringBuilder preview = new StringBuilder();
+    private String formatArrayPreview(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull DBDCollection collection
+    ) {
         int[] remainingItems = {MAX_FULL_ARRAY_PREVIEW_ITEMS};
+        int[] remainingTextLength = {MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH};
+        boolean[] hasNumbers = {false};
         Set<DBDCollection> visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        return appendArrayPreview(preview, collection, remainingItems, visited) ? preview.toString() : null;
+        if (!isArrayPreviewBounded(collection, remainingItems, remainingTextLength, hasNumbers, visited)) {
+            return null;
+        }
+
+        String preview = attribute.getValueRenderer().getValueDisplayString(
+            attribute.getAttribute(),
+            collection,
+            hasNumbers[0] && useNativeNumbersFormat ? DBDDisplayFormat.NATIVE : gridValueFormat);
+        return preview.length() <= MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH ? preview : null;
     }
 
-    private boolean appendArrayPreview(
-        @NotNull StringBuilder preview,
+    /**
+     * Checks nested collection limits and cycles without invoking value handlers before the complete value is rendered.
+     */
+    private static boolean isArrayPreviewBounded(
         @NotNull DBDCollection collection,
         @NotNull int[] remainingItems,
+        @NotNull int[] remainingTextLength,
+        @NotNull boolean[] hasNumbers,
         @NotNull Set<DBDCollection> visited
     ) {
-        if (!visited.add(collection) || !appendPreviewText(preview, "[")) {
+        if (!visited.add(collection)) {
             return false;
         }
         try {
             for (int i = 0; i < collection.getItemCount(); i++) {
-                if (--remainingItems[0] < 0 || i > 0 && !appendPreviewText(preview, ", ")) {
+                if (--remainingItems[0] < 0) {
                     return false;
                 }
                 Object item = collection.getItem(i);
                 if (item instanceof DBDCollection nested) {
-                    if (!appendArrayPreview(preview, nested, remainingItems, visited)) {
+                    if (!isArrayPreviewBounded(nested, remainingItems, remainingTextLength, hasNumbers, visited)) {
                         return false;
                     }
                 } else {
-                    if (item instanceof CharSequence text &&
-                        preview.length() + text.length() > MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH
-                    ) {
-                        return false;
+                    if (item instanceof Number) {
+                        hasNumbers[0] = true;
                     }
-                    String itemText = collection.getComponentValueHandler().getValueDisplayString(
-                        collection.getComponentType(), item, getValueRenderFormat(item));
-                    if (!appendPreviewText(preview, itemText)) {
+                    if (item instanceof CharSequence text &&
+                        (remainingTextLength[0] -= text.length()) < 0
+                    ) {
                         return false;
                     }
                 }
             }
-            return appendPreviewText(preview, "]");
+            return true;
         } finally {
             visited.remove(collection);
         }
-    }
-
-    private static boolean appendPreviewText(@NotNull StringBuilder preview, @NotNull String text) {
-        if (preview.length() + text.length() > MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH) {
-            return false;
-        }
-        preview.append(text);
-        return true;
     }
 
     private boolean isComplexValuesExpansionEnabled() {
