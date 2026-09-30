@@ -52,6 +52,8 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
 
     private static final int TIMEOUT_MS = 30000;
     private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
+    private static final String FIELD_NAME = "name";
+    private static final String FIELD_DESCRIPTION = "description";
 
     static final String PROJECT_FIELDS = """
         id: projectId
@@ -162,8 +164,8 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("projectId", projectId.toString());
-            variables.put("name", name);
-            variables.put("description", description);
+            variables.put(FIELD_NAME, name);
+            variables.put(FIELD_DESCRIPTION, description);
             JsonObject data = call("""
                 mutation($projectId: ID!, $name: String!, $description: String) {
                     createProject(projectId: $projectId, name: $name, description: $description) {
@@ -184,8 +186,8 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("projectId", projectId.toString());
-            variables.put("name", name);
-            variables.put("description", description);
+            variables.put(FIELD_NAME, name);
+            variables.put(FIELD_DESCRIPTION, description);
             JsonObject data = call("""
                 mutation($projectId: ID!, $name: String!, $description: String) {
                     updateProject(projectId: $projectId, name: $name, description: $description) {
