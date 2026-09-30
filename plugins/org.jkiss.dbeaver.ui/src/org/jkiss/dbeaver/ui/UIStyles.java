@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.e4.ui.css.swt.internal.theme.Theme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
+import org.eclipse.e4.ui.internal.workbench.swt.E4Application;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
@@ -28,12 +29,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -49,19 +51,17 @@ import java.util.Collection;
 public class UIStyles {
 
     public static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
-    private static final Log log = Log.getLog(UIStyles.class);
+    public static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
+    public static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
 
-    private static final String THEME_HIGH_CONTRAST_ID = "org.eclipse.e4.ui.css.theme.high-contrast";
-    static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
-    static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
+    private static final String THEME_HIGH_CONTRAST_ID = E4Application.HIGH_CONTRAST_THEME_ID;
 
-    static IPreferenceStore EDITORS_PREFERENCE_STORE;
-    
-    static IThemeEngine themeEngine = null;
+    private static IPreferenceStore EDITORS_PREFERENCE_STORE;
+    private static IThemeEngine themeEngine = null;
 
-    public static synchronized IPreferenceStore getEditorsPreferenceStore() {
+    public static synchronized @NotNull IPreferenceStore getEditorsPreferenceStore() {
         if (EDITORS_PREFERENCE_STORE == null) {
-            EDITORS_PREFERENCE_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, "org.eclipse.ui.editors");
+            EDITORS_PREFERENCE_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, EditorsUI.PLUGIN_ID);
         }
         return EDITORS_PREFERENCE_STORE;
     }
@@ -70,7 +70,7 @@ public class UIStyles {
         return UIUtils.isDark(getDefaultTextBackground().getRGB()) || isDarkHighContrastTheme();
     }
 
-    private static IThemeEngine getThemeEngine() {
+    private static @Nullable IThemeEngine getThemeEngine() {
         if (themeEngine == null) {
             Bundle bundle = FrameworkUtil.getBundle(Theme.class);
             if (bundle != null) {
@@ -137,7 +137,7 @@ public class UIStyles {
 
     public static @NotNull Color getDefaultTextColor(String id, int defSWT) {
         IPreferenceStore preferenceStore = getEditorsPreferenceStore();
-        String fgRGB = preferenceStore == null ? null : preferenceStore.getString(id);
+        String fgRGB = preferenceStore.getString(id);
         return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(defSWT) : UIUtils.getSharedColor(fgRGB);
     }
 
