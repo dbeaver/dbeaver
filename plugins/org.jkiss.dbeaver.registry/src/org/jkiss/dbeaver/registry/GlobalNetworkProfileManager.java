@@ -37,7 +37,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,32 +59,25 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
     @NotNull
     @Override
     public Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException {
-        if (platform.getWorkspace() instanceof DBWNetworkProfileUsageProvider provider) {
-            return provider.findLocalProfileConflicts(profileName);
-        }
-        Map<String, String> result = new LinkedHashMap<>();
-        for (var project : platform.getWorkspace().getProjects()) {
-            if (DataSourceConfigurationProfileQuery.hasLocalProfile(project, profileName)) {
-                result.put(project.getId(), project.getName());
-            }
-        }
-        return result;
+        DBWNetworkProfileUsageProvider provider = getUsageProvider();
+        return provider == null ? Map.of() : provider.findLocalProfileConflicts(profileName);
     }
 
     @NotNull
     @Override
     public List<ProjectConnections> findGlobalProfileConnections(@NotNull String profileName) throws DBException {
-        if (platform.getWorkspace() instanceof DBWNetworkProfileUsageProvider provider) {
-            return provider.findGlobalProfileConnections(profileName);
+        DBWNetworkProfileUsageProvider provider = getUsageProvider();
+        return provider == null ? List.of() : provider.findGlobalProfileConnections(profileName);
+    }
+
+    @Nullable
+    private DBWNetworkProfileUsageProvider getUsageProvider() {
+        DBWNetworkProfileUsageProvider provider = RuntimeUtils.getObjectAdapter(
+            platform.getWorkspace(), DBWNetworkProfileUsageProvider.class, true);
+        if (provider == null) {
+            log.warn("Workspace does not provide network profile usage queries");
         }
-        List<ProjectConnections> result = new ArrayList<>();
-        for (var project : platform.getWorkspace().getProjects()) {
-            var connections = DataSourceConfigurationProfileQuery.findGlobalProfileConnections(project, profileName);
-            if (!connections.isEmpty()) {
-                result.add(new ProjectConnections(project.getId(), project.getName(), connections));
-            }
-        }
-        return result;
+        return provider;
     }
 
     @NotNull
