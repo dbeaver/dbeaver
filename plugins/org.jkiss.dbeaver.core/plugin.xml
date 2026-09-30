@@ -565,13 +565,9 @@
 
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
-            <separator name="sql_tools" visible="true"/>
-
             <command commandId="org.jkiss.dbeaver.core.project.active">
                 <visibleWhen checkEnabled="true"/>
             </command>
-
-            <separator name="create" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
@@ -618,6 +614,8 @@
                     <visibleWhen checkEnabled="true"/>
                 </command>
             </menu>
+
+            <separator name="create" visible="true"/>
 
 <!--
             <command commandId="org.jkiss.dbeaver.core.object.move.up">
@@ -691,6 +689,8 @@
             <command commandId="org.jkiss.dbeaver.folder.disconnect">
                 <visibleWhen checkEnabled="true"/>
             </command>
+
+            <separator name="sql_tools" visible="true"/>
         </menuContribution>
 
         <!-- Additions end - Copy/Paste/etc -->
