@@ -333,7 +333,7 @@ public class MySQLCatalog implements
         @Nullable MySQLTable table
     ) throws DBException {
         return getDataSource().supportsInformationSchema() ?
-                indexCache.getObjects(monitor, this, table) :
+                getIndexCache().getObjects(monitor, this, table) :
                 Collections.emptyList();
     }
 
@@ -438,7 +438,7 @@ public class MySQLCatalog implements
         monitor.subTask("Cache tables");
         getTableCache().getAllObjects(monitor, this);
         if ((scope & STRUCT_ENTITIES) != 0) {
-            indexCache.getAllObjects(monitor, this);
+            getIndexCache().getAllObjects(monitor, this);
         }
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
@@ -550,7 +550,7 @@ public class MySQLCatalog implements
         tableAdditionalInfoCached = false;
         databaseDDL = null;
         getTableCache().clearCache();
-        indexCache.clearCache();
+        getIndexCache().clearCache();
         uniqueKeyCache.clearCache();
         if (getDataSource().supportsCheckConstraints()) {
             checkConstraintCache.clearCache();
@@ -697,9 +697,8 @@ public class MySQLCatalog implements
     /**
      * Index cache implementation
      */
-    static class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
-        IndexCache(TableCache tableCache)
-        {
+    public static class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
+        protected IndexCache(TableCache tableCache) {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
 

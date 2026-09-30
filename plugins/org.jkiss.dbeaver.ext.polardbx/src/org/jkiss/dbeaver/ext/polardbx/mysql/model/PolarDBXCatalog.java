@@ -27,9 +27,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedureParameter;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -37,13 +34,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
@@ -51,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -149,14 +142,9 @@ public class PolarDBXCatalog extends MySQLCatalog {
 
     @NotNull
     @Override
-    public Collection<MySQLTableIndex> getIndexes(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable MySQLTable table
-    ) throws DBException {
-        return polarIndexCache.getObjects(monitor, this, table);
+    public MySQLCatalog.IndexCache getIndexCache() {
+        return polarIndexCache;
     }
-
-
 
     /**
      * PolarDB-X custom stored procedure cache implementation.
@@ -560,145 +548,23 @@ public class PolarDBXCatalog extends MySQLCatalog {
      * PolarDB-X smart index cache implementation.
      * Avoids repeated queries and optimizes the loading strategy.
      */
-    public class PolarDBXIndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
-
-        private volatile boolean fullCacheLoaded = false;
+    public class PolarDBXIndexCache extends MySQLCatalog.IndexCache {
 
         PolarDBXIndexCache(@NotNull TableCache tableCache) {
-            super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
+            super(tableCache);
         }
 
         @Override
         protected void loadObjects(@NotNull DBRProgressMonitor monitor, @NotNull MySQLCatalog owner, @Nullable MySQLTable forParent)
                 throws DBException {
             synchronized (this) {
-                // New strategy: for a full-database query, always reload to ensure data synchronization.
-                if (forParent == null) {
-                    // Clear the existing cache to avoid duplicates.
-                    super.clearCache();
-                    super.loadObjects(monitor, owner, null);
-                    fullCacheLoaded = true;
-                    return;
-                }
-
-                // If the full-database cache has already been loaded and a single table is requested, return directly.
-                if (fullCacheLoaded && forParent != null) {
-                    return;
-                }
-
-                // If this is the first single-table load, load the whole database directly.
-                if (!fullCacheLoaded) {
-                    super.loadObjects(monitor, owner, null); // force a full-database query
-                    fullCacheLoaded = true;
-                    return;
-                }
-
-                // Handle other cases with the original logic.
-                super.loadObjects(monitor, owner, forParent);
-            }
-        }
-
-        @NotNull
-        @Override
-        protected JDBCStatement prepareObjectsStatement(
-            @NotNull JDBCSession session,
-            @NotNull MySQLCatalog owner,
-            @Nullable MySQLTable forTable
-        ) throws SQLException {
-            // Use the same query logic as MySQL.
-            StringBuilder sql = new StringBuilder();
-            sql.append("SELECT * FROM ").append(MySQLConstants.META_TABLE_STATISTICS)
-               .append(" WHERE ").append(MySQLConstants.COL_TABLE_SCHEMA).append("=?");
-            if (forTable != null) {
-                sql.append(" AND ").append(MySQLConstants.COL_TABLE_NAME).append("=?");
-            }
-            sql.append(" ORDER BY ").append(MySQLConstants.COL_TABLE_NAME)
-                .append(",").append(MySQLConstants.COL_INDEX_NAME)
-                .append(",").append(MySQLConstants.COL_SEQ_IN_INDEX);
-
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, owner.getName());
-            if (forTable != null) {
-                dbStat.setString(2, forTable.getName());
-            }
-            return dbStat;
-        }
-
-        @Nullable
-        @Override
-        protected MySQLTableIndex fetchObject(
-            @NotNull JDBCSession session,
-            @NotNull MySQLCatalog owner,
-            @NotNull MySQLTable parent,
-            @NotNull String indexName,
-            @NotNull JDBCResultSet dbResult
-        ) throws SQLException, DBException {
-            // Replicate the implementation logic of MySQL IndexCache.
-            String indexTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_INDEX_TYPE);
-            DBSIndexType indexType;
-            if (MySQLConstants.INDEX_TYPE_BTREE.getId().equals(indexTypeName)) {
-                indexType = MySQLConstants.INDEX_TYPE_BTREE;
-            } else if (MySQLConstants.INDEX_TYPE_FULLTEXT.getId().equals(indexTypeName)) {
-                indexType = MySQLConstants.INDEX_TYPE_FULLTEXT;
-            } else if (CommonUtils.isNotEmpty(indexTypeName) &&
-                indexTypeName.toUpperCase(Locale.ENGLISH).contains(MySQLConstants.INDEX_TYPE_HASH.getId().toUpperCase(Locale.ENGLISH))
-            ) {
-                indexType = MySQLConstants.INDEX_TYPE_HASH;
-            } else if (MySQLConstants.INDEX_TYPE_RTREE.getId().equals(indexTypeName)) {
-                indexType = MySQLConstants.INDEX_TYPE_RTREE;
-            } else {
-                indexType = DBSIndexType.OTHER;
-            }
-            return new MySQLTableIndex(parent, indexName, indexType, dbResult);
-        }
-
-        @Nullable
-        @Override
-        protected MySQLTableIndexColumn[] fetchObjectRow(
-            @NotNull JDBCSession session,
-            @NotNull MySQLTable parent,
-            @NotNull MySQLTableIndex object,
-            @NotNull JDBCResultSet dbResult
-        ) throws SQLException, DBException {
-            // Replicate the implementation logic of MySQL IndexCache.
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SEQ_IN_INDEX);
-            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_COLUMN_NAME);
-            String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_COLLATION);
-            boolean nullable = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_NULLABLE));
-            String subPart = JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_SUB_PART);
-
-            MySQLTableColumn tableColumn = columnName == null ? null : parent.getAttribute(session.getProgressMonitor(), columnName);
-            if (tableColumn == null) {
-                return null;
-            }
-
-            return new MySQLTableIndexColumn[] { new MySQLTableIndexColumn(
-                object,
-                tableColumn,
-                ordinalPosition,
-                "A".equalsIgnoreCase(ascOrDesc),
-                nullable,
-                subPart)
-            };
-        }
-
-        @Override
-        protected void cacheChildren(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull MySQLTableIndex index,
-            @NotNull List<MySQLTableIndexColumn> rows
-        ) {
-            for (MySQLTableIndexColumn column : rows) {
-                index.addColumn(column);
+                super.loadObjects(monitor, owner, null);
             }
         }
 
         @Override
-        public void clearCache() {
-            synchronized (this) {
-                super.clearCache();
-                fullCacheLoaded = false;
-            }
+        public void clearObjectCache(@NotNull MySQLTable table) {
+            clearCache();
         }
     }
 }

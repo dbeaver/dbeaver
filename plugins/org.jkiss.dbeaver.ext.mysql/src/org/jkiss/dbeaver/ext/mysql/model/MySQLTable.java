@@ -223,7 +223,7 @@ public class MySQLTable extends MySQLTableBase
                     continue;
                 }
                 MySQLTableIndex index = new MySQLTableIndex(monitor, this, srcIndex);
-                this.getContainer().indexCache.cacheObject(index);
+                this.getContainer().getIndexCache().cacheObject(index);
             }
         }
 
@@ -801,7 +801,7 @@ public class MySQLTable extends MySQLTableBase
         if (getDataSource().supportsCheckConstraints()) {
             getContainer().checkConstraintCache.clearObjectCache(this);
         }
-        getContainer().indexCache.clearObjectCache(this);
+        getContainer().getIndexCache().clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
         getContainer().resetStatistics();
         this.referenceCache = null;
