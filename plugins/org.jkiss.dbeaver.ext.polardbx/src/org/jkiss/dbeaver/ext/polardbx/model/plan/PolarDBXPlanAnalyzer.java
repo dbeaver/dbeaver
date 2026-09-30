@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.polardbx.model.plan;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAbstract;
@@ -23,10 +26,22 @@ import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.polardbx.mysql.model.PolarDBXMySQLDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
+import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 public class PolarDBXPlanAnalyzer extends MySQLPlanAnalyser {
+    private static final String SERIALIZATION_VERSION = "polardbx-classic";
     private static final String[] FIRST_KEYWORD_BLOCK_LIST = new String[]{
         "DESC", "SET", "EXPLAIN"
     };
@@ -56,5 +71,46 @@ public class PolarDBXPlanAnalyzer extends MySQLPlanAnalyser {
             throw new DBCException("This statement could not produce execution plan");
         }
         return new PolarDBXPlainClassic(session, query);
+    }
+
+    @Override
+    public void serialize(@NotNull Writer writer, @NotNull DBCPlan plan) throws IOException {
+        serializeJson(writer, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
+            @NotNull
+            @Override
+            public String version() {
+                return SERIALIZATION_VERSION;
+            }
+
+            @Override
+            public void addNodeProperties(@NotNull DBCPlanNode node, @NotNull JsonObject nodeJson) {
+                PolarDBXPlanNodePlain plainNode = (PolarDBXPlanNodePlain) node;
+                JsonObject attributes = new JsonObject();
+                attributes.add("id", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getId())));
+                attributes.add("estRows", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getEstRows())));
+                attributes.add("task", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getTask())));
+                attributes.add("accessObject", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getAccessObject())));
+                attributes.add("operatorInfo", new JsonPrimitive(CommonUtils.notEmpty(plainNode.getOperatorInfo())));
+                nodeJson.add(PROP_ATTRIBUTES, attributes);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException {
+        JsonObject plan = new JsonParser().parse(planData).getAsJsonObject();
+        String version = getVersion(plan);
+        if (!SERIALIZATION_VERSION.equals(version)) {
+            throw new IOException("Unsupported PolarDB-X execution plan version: " + version);
+        }
+
+        ExecutionPlanDeserializer<PolarDBXPlanNodePlain> loader = new ExecutionPlanDeserializer<>();
+        List<PolarDBXPlanNodePlain> rootNodes = loader.loadRoot(
+            dataSource,
+            plan,
+            (source, node, parent) -> new PolarDBXPlanNodePlain(parent, getNodeAttributesAsStrings(node))
+        );
+        return new PolarDBXPlainClassic(dataSource, getQuery(plan), rootNodes);
     }
 }

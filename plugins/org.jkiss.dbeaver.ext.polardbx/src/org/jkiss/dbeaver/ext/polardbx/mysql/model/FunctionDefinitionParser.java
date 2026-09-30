@@ -25,7 +25,7 @@ import java.util.*;
 
 /**
  * Function Definition Parser for PolarDB-X
- * 
+ *
  * This class parses SHOW CREATE FUNCTION results to extract function parameter information.
  * The implementation is based on the existing logic from MySQL Connector/J's DatabaseMetaData class,
  * specifically the TypeDescriptor and getCallStmtParameterTypes methods.
@@ -42,7 +42,7 @@ public class FunctionDefinitionParser {
         private final String dataType;
         private final boolean isReturnParameter;
         private final int scale;
-        
+
         public ParameterInfo(
             @NotNull String parameterName,
             int length,
@@ -56,33 +56,33 @@ public class FunctionDefinitionParser {
             this.isReturnParameter = isReturnParameter;
             this.scale = scale;
         }
-        
+
         @NotNull
         public String getParameterName() {
-            return parameterName; 
+            return parameterName;
         }
-        
-        public int getLength() { 
-            return length; 
+
+        public int getLength() {
+            return length;
         }
-        
+
         @NotNull
         public String getDataType() {
-            return dataType; 
+            return dataType;
         }
-        
-        public boolean isReturnParameter() { 
-            return isReturnParameter; 
+
+        public boolean isReturnParameter() {
+            return isReturnParameter;
         }
-        
+
         public int getScale() {
             return scale;
         }
-        
+
         @Override
         @NotNull
         public String toString() {
-            return String.format("ParameterInfo{name='%s', length=%d, type='%s', scale=%d, isReturn=%s}", 
+            return String.format("ParameterInfo{name='%s', length=%d, type='%s', scale=%d, isReturn=%s}",
                                parameterName, length, dataType, scale, isReturnParameter);
         }
     }
@@ -105,12 +105,12 @@ public class FunctionDefinitionParser {
         if (functionDefinition == null || functionDefinition.trim().isEmpty()) {
             return parameters;
         }
-        
+
         try {
             // Based on DatabaseMetaData.getCallStmtParameterTypes logic
             // Clean up whitespace characters like the original implementation
             String procedureDef = functionDefinition.replaceAll("[\\t\\n\\x0B\\f\\r]", " ");
-            
+
             // 1. Parse return type - based on existing RETURNS parsing logic
             ParameterInfo returnParam = parseReturnTypeUsingOriginalLogic(procedureDef);
             if (returnParam != null) {
@@ -120,7 +120,7 @@ public class FunctionDefinitionParser {
             // 2. Parse input parameters - based on existing parameter parsing logic
             Map<String, ParameterInfo> inputParams = parseInputParametersUsingOriginalLogic(dialect, procedureDef);
             parameters.putAll(inputParams);
-            
+
         } catch (Exception e) {
             // Log error but don't throw exception to maintain compatibility
             log.debug("Error parsing function definition", e);
@@ -138,10 +138,10 @@ public class FunctionDefinitionParser {
         int returnsIndex = procedureDef.toUpperCase().indexOf("RETURNS");
         if (returnsIndex != -1) {
             int declarationStart = returnsIndex + "RETURNS".length();
-            
+
             // Find end of RETURNS clause
             int endReturnsDef = findEndOfReturnsClause(procedureDef, declarationStart);
-            
+
             if (endReturnsDef != -1) {
                 String returnsDefn = procedureDef.substring(declarationStart, endReturnsDef).trim();
 
@@ -157,7 +157,7 @@ public class FunctionDefinitionParser {
                 );
             }
         }
-        
+
         return null;
     }
 
@@ -169,16 +169,16 @@ public class FunctionDefinitionParser {
         String[] endKeywords = {"DETERMINISTIC", "NOT DETERMINISTIC", "READS SQL DATA",
                                 "MODIFIES SQL DATA", "NO SQL", "CONTAINS SQL", "SQL SECURITY",
                                 "COMMENT", "LANGUAGE SQL", "BEGIN", "AS"};
-        
+
         int minEndPos = procedureDef.length();
-        
+
         for (String keyword : endKeywords) {
             int keywordPos = procedureDef.toUpperCase().indexOf(keyword, startPos);
             if (keywordPos != -1 && keywordPos < minEndPos) {
                 minEndPos = keywordPos;
             }
         }
-        
+
         return minEndPos;
     }
 
@@ -192,24 +192,24 @@ public class FunctionDefinitionParser {
         @NotNull String procedureDef
     ) {
         Map<String, ParameterInfo> parameters = new LinkedHashMap<>();
-        
+
         int openParenIndex = procedureDef.indexOf('(');
         int endOfParamDeclarationIndex = findMatchingCloseParen(procedureDef, openParenIndex);
-        
+
         if (openParenIndex == -1 || endOfParamDeclarationIndex == -1) {
             return parameters; // No parameters
         }
-        
+
         // Extract parameter list
         String parameterList = procedureDef.substring(openParenIndex + 1, endOfParamDeclarationIndex);
-        
+
         if (parameterList.trim().isEmpty()) {
             return parameters; // No parameter function
         }
-        
+
         // Split parameters based on existing logic
         List<String> parameterStrings = splitParametersUsingOriginalLogic(parameterList);
-        
+
         for (String paramStr : parameterStrings) {
             ParameterInfo param = parseParameterUsingOriginalLogic(dialect, paramStr.trim());
             if (param != null) {
@@ -218,7 +218,7 @@ public class FunctionDefinitionParser {
                 parameters.put(key, param);
             }
         }
-        
+
         return parameters;
     }
 
@@ -229,16 +229,16 @@ public class FunctionDefinitionParser {
     @NotNull
     private static List<String> splitParametersUsingOriginalLogic(@NotNull String parameterList) {
         List<String> parameters = new ArrayList<>();
-        
+
         // Based on existing string processing logic, no regex
         int start = 0;
         int parenCount = 0;
         boolean inQuotes = false;
         char quoteChar = 0;
-        
+
         for (int i = 0; i < parameterList.length(); i++) {
             char c = parameterList.charAt(i);
-            
+
             if (!inQuotes) {
                 if (c == '\'' || c == '"' || c == '`') {
                     inQuotes = true;
@@ -261,13 +261,13 @@ public class FunctionDefinitionParser {
                 }
             }
         }
-        
+
         // Add last parameter
         String lastParam = parameterList.substring(start).trim();
         if (!lastParam.isEmpty()) {
             parameters.add(lastParam);
         }
-        
+
         return parameters;
     }
 
@@ -282,7 +282,7 @@ public class FunctionDefinitionParser {
         if (parameterDefinition == null || parameterDefinition.trim().isEmpty()) {
             return null;
         }
-        
+
         // Remove direction modifiers - based on existing logic
         String cleanParam = parameterDefinition;
         if (cleanParam.toUpperCase().startsWith("IN ")) {
@@ -292,21 +292,21 @@ public class FunctionDefinitionParser {
         } else if (cleanParam.toUpperCase().startsWith("INOUT ")) {
             cleanParam = cleanParam.substring(6).trim();
         }
-        
+
         // Split parameter name and type definition - using existing string processing
         int firstSpaceIndex = cleanParam.indexOf(' ');
         if (firstSpaceIndex == -1) {
             return null; // Invalid format
         }
-        
+
         String parameterName = cleanParam.substring(0, firstSpaceIndex).trim();
         String typeDefinition = cleanParam.substring(firstSpaceIndex + 1).trim();
-        
+
         parameterName = dialect.getUnquotedIdentifier(parameterName, true);
-        
+
         // Parse type definition
         TypeInfo typeInfo = parseTypeUsingOriginalLogic(typeDefinition);
-        
+
         return new ParameterInfo(
             parameterName,
             typeInfo.columnSize,
@@ -328,7 +328,7 @@ public class FunctionDefinitionParser {
         final String typeName;
         final int columnSize;
         final int decimalDigits;
-        
+
         TypeInfo(@NotNull String typeName, int columnSize, int decimalDigits) {
             this.typeName = typeName;
             this.columnSize = columnSize;
@@ -352,11 +352,11 @@ public class FunctionDefinitionParser {
 
         // Determine base MySQL type - based on DatabaseMetaData.TypeDescriptor logic
         String baseTypeName = extractBaseTypeName(normalizedType);
-        
+
         // Parse based on type - completely based on existing switch logic
         int columnSize = 0;
         int decimalDigits = 0;
-        
+
         // Based on DatabaseMetaData.java lines 240-410 logic
         if (baseTypeName.equals("FLOAT") || baseTypeName.equals("DOUBLE")) {
             // Based on lines 254-267 logic
@@ -412,7 +412,7 @@ public class FunctionDefinitionParser {
                 if (endParenIndex == -1) {
                     endParenIndex = typeInfo.length();
                 }
-                
+
                 String sizeStr = typeInfo.substring(typeInfo.indexOf("(") + 1, endParenIndex).trim();
                 try {
                     columnSize = Integer.parseInt(sizeStr);
@@ -459,7 +459,7 @@ public class FunctionDefinitionParser {
             // Other types use default values
             columnSize = getDefaultColumnSize(baseTypeName);
         }
-        
+
         return new TypeInfo(baseTypeName, columnSize, decimalDigits);
     }
 
@@ -471,7 +471,7 @@ public class FunctionDefinitionParser {
         // Find first space or parenthesis
         int spaceIndex = typeInfo.indexOf(' ');
         int parenIndex = typeInfo.indexOf('(');
-        
+
         int endIndex = typeInfo.length();
         if (spaceIndex != -1 && parenIndex != -1) {
             endIndex = Math.min(spaceIndex, parenIndex);
@@ -480,7 +480,7 @@ public class FunctionDefinitionParser {
         } else if (parenIndex != -1) {
             endIndex = parenIndex;
         }
-        
+
         return typeInfo.substring(0, endIndex).trim();
     }
 
@@ -488,7 +488,7 @@ public class FunctionDefinitionParser {
      * Check if string type
      */
     private static boolean isStringType(@NotNull String typeName) {
-        return typeName.equals("CHAR") || typeName.equals("VARCHAR") || 
+        return typeName.equals("CHAR") || typeName.equals("VARCHAR") ||
                typeName.equals("TEXT") || typeName.equals("TINYTEXT") ||
                typeName.equals("MEDIUMTEXT") || typeName.equals("LONGTEXT") ||
                typeName.equals("ENUM") || typeName.equals("SET");
@@ -545,7 +545,7 @@ public class FunctionDefinitionParser {
         if (openIndex == -1 || openIndex >= str.length()) {
             return -1;
         }
-        
+
         int count = 1;
         for (int i = openIndex + 1; i < str.length(); i++) {
             char c = str.charAt(i);

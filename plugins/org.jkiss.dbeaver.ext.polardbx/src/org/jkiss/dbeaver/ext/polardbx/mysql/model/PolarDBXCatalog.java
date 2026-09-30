@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -176,7 +177,28 @@ public class PolarDBXCatalog extends MySQLCatalog {
             return new PolarDBXProcedure((PolarDBXCatalog) owner, dbResult);
         }
 
+        @Nullable
+        @Override
+        public MySQLProcedure refreshObject(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull MySQLCatalog owner,
+            @NotNull MySQLProcedure oldObject
+        ) throws DBException {
+            functionDefinitionCache.remove(oldObject.getName());
+            return super.refreshObject(monitor, owner, oldObject);
+        }
 
+        @Override
+        public void removeObject(@NotNull MySQLProcedure object, boolean resetFullCache) {
+            functionDefinitionCache.remove(object.getName());
+            super.removeObject(object, resetFullCache);
+        }
+
+        @Override
+        public void clearCache() {
+            super.clearCache();
+            functionDefinitionCache.clear();
+        }
 
         @NotNull
         @Override
@@ -223,7 +245,8 @@ public class PolarDBXCatalog extends MySQLCatalog {
             try {
                 // Use SHOW CREATE FUNCTION to obtain the function definition.
                 // Note: in PolarDB-X the function name is used directly to avoid the double "mysql" prefix issue.
-                String showCreateSql = "SHOW CREATE FUNCTION `" + functionName + "`";
+                String showCreateSql = "SHOW CREATE FUNCTION " +
+                    DBUtils.getQuotedIdentifier(PolarDBXCatalog.this.getDataSource(), functionName);
 
                 try (JDBCPreparedStatement stmt = session.prepareStatement(showCreateSql)) {
                     try (JDBCResultSet result = stmt.executeQuery()) {
@@ -351,7 +374,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
                 return session.getMetaData().getProcedureColumns(
                     schemaName,
                     null,
-                    procedure.getName(),
+                    procedure == null ? null : JDBCUtils.escapeWildCards(session, procedure.getName()),
                     "%").getSourceStatement();
             }
         }

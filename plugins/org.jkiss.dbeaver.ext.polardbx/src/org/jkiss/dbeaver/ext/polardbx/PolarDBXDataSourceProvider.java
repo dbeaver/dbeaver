@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class PolarDBXDataSourceProvider extends MySQLDataSourceProvider {
@@ -34,6 +35,9 @@ public class PolarDBXDataSourceProvider extends MySQLDataSourceProvider {
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException {
+        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return connectionInfo.getUrl();
+        }
         String polardbxUrlTemplate = "jdbc:polardbx://{host}[:{port}][/{database}]";
         return DatabaseURL.generateUrlByTemplate(polardbxUrlTemplate, connectionInfo);
     }

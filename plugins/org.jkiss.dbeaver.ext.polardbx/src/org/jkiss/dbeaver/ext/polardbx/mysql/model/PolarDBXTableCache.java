@@ -46,7 +46,7 @@ public class PolarDBXTableCache extends MySQLCatalog.TableCache {
      */
     private boolean isSystemTable(@NotNull MySQLCatalog owner) {
         String schemaName = owner.getName();
-        
+
         // System databases
         return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(schemaName) ||
                "mysql".equalsIgnoreCase(schemaName) ||

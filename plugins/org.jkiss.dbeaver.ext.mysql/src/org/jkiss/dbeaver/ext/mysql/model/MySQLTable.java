@@ -288,11 +288,11 @@ public class MySQLTable extends MySQLTableBase
         return additionalInfo.partitioned;
     }
 
+    @NotNull
     @Override
     @Association
     public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+            throws DBException {
         return getContainer().getIndexes(monitor, this);
     }
 

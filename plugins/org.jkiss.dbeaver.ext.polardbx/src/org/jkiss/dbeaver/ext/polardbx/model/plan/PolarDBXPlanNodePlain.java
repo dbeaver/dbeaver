@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class PolarDBXPlanNodePlain extends MySQLPlanNode {
     protected String id;
@@ -53,6 +54,19 @@ public class PolarDBXPlanNodePlain extends MySQLPlanNode {
         this.task = JDBCUtils.safeGetString(dbResult, "task");
         this.accessObject = JDBCUtils.safeGetString(dbResult, "access object");
         this.operatorInfo = JDBCUtils.safeGetString(dbResult, "operator info");
+    }
+
+    public PolarDBXPlanNodePlain(
+        @Nullable PolarDBXPlanNodePlain parent,
+        @NotNull Map<String, String> attributes
+    ) {
+        this.parent = parent;
+        this.id = attributes.get("id");
+        this.estRows = attributes.get("estRows");
+        this.task = attributes.get("task");
+        this.accessObject = attributes.get("accessObject");
+        this.operatorInfo = attributes.get("operatorInfo");
+        this.nested = new ArrayList<>();
     }
 
     @Nullable
