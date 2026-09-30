@@ -16,7 +16,13 @@
         <page category="org.eclipse.ui.preferencePages.Workbench"
               id="org.jkiss.dbeaver.preferences.main.usageStatistics"
               class="org.jkiss.dbeaver.ui.statistics.PrefPageUsageStatistics"
-              name="%page.org.jkiss.dbeaver.preferences.main.usageStatistics"/>
+              name="%page.org.jkiss.dbeaver.preferences.main.usageStatistics">
+            <keywordReference id="org.jkiss.dbeaver.ui.statistics.keyword.pref.usage"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ui.statistics.keyword.pref.usage" label="%keyword.org.jkiss.dbeaver.ui.statistics.keyword.pref.usage.label"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.app.config">

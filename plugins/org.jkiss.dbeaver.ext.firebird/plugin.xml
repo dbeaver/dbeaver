@@ -9,12 +9,21 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
+        <dataSourceType
+            id="firebird"
+            label="Firebird"
+            description="Firebird database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/firebird_icon.png"
+            iconBig="icons/firebird_icon_big.png"/>
+
         <!-- SQL Server -->
 
         <datasource
                 class="org.jkiss.dbeaver.ext.firebird.FireBirdDataSourceProvider"
                 description="Firebird Jaybird driver"
                 id="jaybird"
+                dataSourceType="firebird"
                 parent="generic"
                 label="Firebird"
                 icon="icons/firebird_icon.png"
@@ -24,8 +33,6 @@
                 <driver
                         id="jaybird"
                         label="Firebird"
-                        icon="icons/firebird_icon.png"
-                        iconBig="icons/firebird_icon_big.png"
                         class="org.firebirdsql.jdbc.FBDriver"
                         sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                         defaultPort="3050"
@@ -56,8 +63,6 @@
                 <driver
                         id="jaybird_embedded"
                         label="Firebird Embedded"
-                        icon="icons/firebird_icon.png"
-                        iconBig="icons/firebird_icon_big.png"
                         class="org.firebirdsql.jdbc.FBDriver"
                         sampleURL="jdbc:firebirdsql:embedded:{file}"
                         defaultUser="SYSDBA"

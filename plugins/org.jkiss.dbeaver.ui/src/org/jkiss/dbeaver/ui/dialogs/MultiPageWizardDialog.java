@@ -29,8 +29,7 @@ import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -218,9 +217,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         updateNavigationTree();
 
-        pagesTree.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        pagesTree.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 TreeItem[] selection = pagesTree.getSelection();
                 if (selection.length > 0) {
                     Object newPage = selection[0].getData();
@@ -238,8 +235,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                     }
                 }
                 changePage();
-            }
-        });
+            }));
 
         // Horizontal separator
         UIUtils.createLabelSeparator(mainComposite, SWT.HORIZONTAL);

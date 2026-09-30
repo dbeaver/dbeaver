@@ -28,7 +28,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -231,8 +231,8 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
 
     private static class ShowSystemObjectsAction extends SettingsAction {
         ShowSystemObjectsAction(@NotNull DBPDataSourceContainer container) {
-            super(container, CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects, AS_CHECK_BOX);
-            setToolTipText(CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects_tip);
+            super(container, UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_system_objects, AS_CHECK_BOX);
+            setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_system_objects_tip);
             setChecked(container.getNavigatorSettings().isShowSystemObjects());
         }
 

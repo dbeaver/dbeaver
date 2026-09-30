@@ -147,7 +147,7 @@ public class SQLEditorUtils {
             }
 
             // Search in external files
-            for (Map.Entry<String, Map<String, Object>> fileEntry : DBPPlatformDesktop.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
+            for (var fileEntry : DBPPlatformDesktop.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
                 if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID))) {
                     File extFile = new File(fileEntry.getKey());
                     if (extFile.exists()) {
@@ -413,10 +413,10 @@ public class SQLEditorUtils {
     
     private abstract static class EditorFileInfo {
 
-        public abstract void setPropertyValue(@NotNull String propertyName, @NotNull Object value);
+        public abstract void setPropertyValue(@NotNull String propertyName, @NotNull String value);
 
         @Nullable
-        public abstract Object getPropertyValue(@NotNull String propertyName);
+        public abstract String getPropertyValue(@NotNull String propertyName);
         
         @Nullable
         public static EditorFileInfo getFromEditor(@Nullable IEditorInput input) {
@@ -447,7 +447,7 @@ public class SQLEditorUtils {
 
         @Nullable
         @Override
-        public Object getPropertyValue(@NotNull String propertyName) {
+        public String getPropertyValue(@NotNull String propertyName) {
             RCPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
             if (project == null) {
                 log.debug("Project '" + projectFile.getProject() + "' not recognized (property read)");
@@ -457,7 +457,7 @@ public class SQLEditorUtils {
         }
         
         @Override
-        public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
+        public void setPropertyValue(@NotNull String propertyName, @NotNull String value) {
             RCPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
             if (project == null) {
                 log.debug("Project '" + projectFile.getProject() + "' not recognized (property write)");
@@ -482,13 +482,13 @@ public class SQLEditorUtils {
 
         @Nullable
         @Override
-        public Object getPropertyValue(@NotNull String propertyName) {
+        public String getPropertyValue(@NotNull String propertyName) {
             final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
             return efManager.getFileProperty(platformFile, propertyName);
         }
     
         @Override
-        public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
+        public void setPropertyValue(@NotNull String propertyName, @NotNull String value) {
             final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
             efManager.setFileProperty(platformFile, propertyName, value);
         }

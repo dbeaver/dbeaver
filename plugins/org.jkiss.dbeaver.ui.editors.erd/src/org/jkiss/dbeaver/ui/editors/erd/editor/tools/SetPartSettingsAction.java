@@ -22,8 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
@@ -233,9 +232,7 @@ public class SetPartSettingsAction extends SelectionAction {
                     fontData = SharedFonts.toString(node.getCustomFont().getFontData()[0]);
                 }
 
-                changeFontButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                changeFontButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         FontDialog fontDialog = new FontDialog(getShell(), SWT.NONE);
                         fontDialog.setFontList(previewText.getFont().getFontData());
                         FontData result = fontDialog.open();
@@ -244,8 +241,7 @@ public class SetPartSettingsAction extends SelectionAction {
                             previewText.setFont(UIUtils.getSharedFonts().getFont(previewText.getDisplay(), result));
                             settingsGroup.layout(true, true);
                         }
-                    }
-                });
+                    }));
             }
 
             return dialogArea;

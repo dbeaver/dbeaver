@@ -58,18 +58,42 @@ public record DBPSyncFiles(
     }
 
     public void write(@NotNull Map<String, byte[]> resources) throws DBException {
-        for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
-            Path path = resolve(resource.getKey());
-            if (path == null) {
-                log.debug("Skip invalid resource name '" + resource.getKey() + "' for " + root);
-                continue;
+        try {
+            if (resources.size() == 1 && resources.containsKey("")) {
+                Files.createDirectories(root.getParent());
+                Files.write(root, resources.get(""));
+                return;
             }
-            try {
+            if (resources.isEmpty() && Files.isRegularFile(root)) {
+                Files.delete(root);
+                return;
+            }
+            boolean hasInvalidNames = false;
+            for (Map.Entry<String, byte[]> resource : resources.entrySet()) {
+                Path path = resolve(resource.getKey());
+                if (path == null) {
+                    log.warn("Skip invalid resource name '" + resource.getKey() + "' for " + root);
+                    hasInvalidNames = true;
+                    continue;
+                }
                 Files.createDirectories(path.getParent());
                 Files.write(path, resource.getValue());
-            } catch (IOException e) {
-                throw new DBException("Error writing " + path, e);
             }
+            if (hasInvalidNames) {
+                log.warn("Skip cleanup for " + root + " because some resource names were rejected");
+                return;
+            }
+            if (Files.isDirectory(root)) {
+                try (Stream<Path> list = Files.list(root)) {
+                    for (Path file : list.filter(Files::isRegularFile).toList()) {
+                        if (!resources.containsKey(file.getFileName().toString())) {
+                            Files.delete(file);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new DBException("Error writing " + root, e);
         }
     }
 

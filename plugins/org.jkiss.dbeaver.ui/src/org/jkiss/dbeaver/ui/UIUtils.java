@@ -721,8 +721,7 @@ public class UIUtils {
         host.setLayoutData(gd);
 
         var client = new Composite(host, SWT.NONE);
-        GridLayoutFactory.fillDefaults()
-            .margins(0, 5)
+        GridLayoutFactory.swtDefaults()
             .numColumns(columns)
             .applyTo(client);
 
@@ -932,15 +931,12 @@ public class UIUtils {
         //editButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         //editButton.setText("...");
         editButton.setImage(DBeaverIcons.getImage(UIIcon.EDIT)); //$NON-NLS-1$
-        editButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        editButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 String newText = EditTextDialog.editText(parent.getShell(), label, text.getText());
                 if (newText != null) {
                     text.setText(newText);
                 }
-            }
-        });
+            }));
         editTB.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         return text;
@@ -2165,6 +2161,14 @@ public class UIUtils {
             }
         } catch (Exception e) {
             log.debug(e);
+        }
+    }
+
+    public static void runInUIThread(@NotNull Runnable runnable) {
+        if (isUIThread()) {
+            runnable.run();
+        } else {
+            asyncExec(runnable);
         }
     }
 

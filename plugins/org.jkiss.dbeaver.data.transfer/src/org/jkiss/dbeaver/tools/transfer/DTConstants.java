@@ -23,6 +23,8 @@ import org.jkiss.utils.StandardConstants;
  */
 public class DTConstants {
 
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.data.transfer";
+
     public static final String TASK_IMPORT = "dataImport";
     public static final String TASK_EXPORT = "dataExport";
 

@@ -25,12 +25,12 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -52,8 +52,8 @@ import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -159,14 +159,10 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         gd.widthHint = 300;
         gd.heightHint = 150;
         columnsTable.setLayoutData(gd);
-        columnsTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        columnsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 handleItemSelect((TableItem) e.item, true);
                 validateProperties();
-            }
-        });
+            }));
 
         createAttributeColumns(columnsTable);
 
@@ -182,14 +178,11 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         };
 
         toggleButton = new Button(columnsGroup, SWT.PUSH);
-        toggleButton.setText(ObjectEditorMessages.selector_select_all_text);
+        toggleButton.setText(WorkbenchMessages.Workbench_selectAll);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = 120;
         toggleButton.setLayoutData(gd);
-        toggleButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        toggleButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 TableItem[] items = columnsTable.getItems();
                 if (hasCheckedColumns()) {
                     // Clear all checked
@@ -209,8 +202,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
                     }
                 }
                 validateProperties();
-            }
-        });
+            }));
     }
 
     protected void createAttributeColumns(@NotNull Table columnsTable) {
@@ -441,7 +433,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         if (hasCheckedColumns()) {
             toggleButton.setText(ObjectEditorMessages.selector_clear_all_text);
         } else {
-            toggleButton.setText(ObjectEditorMessages.selector_select_all_text);
+            toggleButton.setText(WorkbenchMessages.Workbench_selectAll);
         }
     }
 

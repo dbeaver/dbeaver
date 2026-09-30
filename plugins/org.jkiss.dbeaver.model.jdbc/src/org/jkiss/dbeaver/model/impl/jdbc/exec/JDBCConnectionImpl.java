@@ -88,6 +88,9 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @Override
     public boolean isConnected() {
         try {
+            if (context == null) {
+                return false;
+            }
             synchronized (context) {
                 return !isClosed();
             }

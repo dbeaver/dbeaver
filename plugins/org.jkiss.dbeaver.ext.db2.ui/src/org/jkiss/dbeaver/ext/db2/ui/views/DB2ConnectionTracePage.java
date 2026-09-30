@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.db2.ui.views;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -135,18 +134,14 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract {
             level.checkbox = UIUtils.createCheckbox(levelsGroup, level.label, false);
         }
 
-        enableTraceCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        enableTraceCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (traceEnableState == null) {
                     traceEnableState = ControlEnableState.disable(traceGroup);
                 } else {
                     traceEnableState.restore();
                     traceEnableState = null;
                 }
-            }
-        });
+            }));
 
         setControl(cfgGroup);
 

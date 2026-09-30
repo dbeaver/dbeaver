@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -141,7 +142,7 @@ public class FilterValueEditDialog extends BaseDialog{
         columnController.createColumns(true);
 
         Action[] elements = new Action[] {
-	        new Action("Select &All") {
+	        new Action(WorkbenchMessages.Workbench_selectAll) {
 	            @Override
 	            public void run() {
                     for (TableItem item : handler.getTableViewer().getTable().getItems()) {

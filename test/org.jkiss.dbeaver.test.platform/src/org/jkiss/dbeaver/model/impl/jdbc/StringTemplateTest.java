@@ -136,6 +136,18 @@ public class StringTemplateTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void testGetMissingOptionalParamValue() throws StringTemplate.StringTemplateException {
+        StringTemplate template = StringTemplate.parseTemplate(DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS);
+        StringTemplate.ParamEntries parameters = template.extractAllParametersTree("jdbc:as400://myhost");
+
+        Assertions.assertNotNull(parameters);
+        Assertions.assertEquals("myhost", parameters.getFirstParamValue(DBConstants.PROP_HOST));
+        Assertions.assertNull(parameters.getFirstParamValue(DBConstants.PROP_PORT));
+        Assertions.assertNull(parameters.getFirstParamValue(DBConstants.PROP_DATABASE));
+        Assertions.assertNull(parameters.getFirstParamValue("unknown"));
+    }
+
+    @Test
     public void testBranching() throws StringTemplate.StringTemplateException {
         evaluatePlainUrl("abc{x{x}|y{y}}def", "abcx134def", Map.of("x", "134"));
         evaluatePlainUrl("abc{x{x}|y{y}}def", "abcy456def", Map.of("y", "456"));

@@ -97,7 +97,10 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
 
     @Override
     public void dispose() {
-        super.dispose();
+        Shell splash = getSplash();
+        if (splash != null && !splash.isDisposed()) {
+            super.dispose();
+        }
         if (boldFont != null) {
             boldFont.dispose();
             boldFont = null;

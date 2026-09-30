@@ -23,6 +23,9 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class OpenAIPropertiesTest extends DBeaverUnitTest {
 
     @Test
@@ -41,4 +44,26 @@ public class OpenAIPropertiesTest extends DBeaverUnitTest {
         descriptor.writeValue(properties, 1);
         Assertions.assertEquals(1, properties.getContextWindowSize());
     }
+
+    @Test
+    public void tokenIsOptionalCredentialProperty() {
+        OpenAIProperties properties = new OpenAIProperties();
+        PropertySourceEditable propertySource = new PropertySourceEditable(properties, properties);
+        propertySource.collectProperties();
+
+        List<ObjectPropertyDescriptor> credentials = Arrays.stream(propertySource.getProperties())
+            .filter(ObjectPropertyDescriptor.class::isInstance)
+            .map(ObjectPropertyDescriptor.class::cast)
+            .filter(ObjectPropertyDescriptor::isPassword)
+            .toList();
+
+        Assertions.assertEquals(1, credentials.size());
+        Assertions.assertFalse(credentials.getFirst().isRequired());
+        Assertions.assertEquals(
+            AIConstants.AI_NON_GLOBAL_CREDENTIALS_HIDE_EXPRESSION,
+            credentials.getFirst().getHideExpression()
+        );
+        Assertions.assertNotNull(propertySource.getProperty(AIConstants.AI_GLOBAL_PROPERTY));
+    }
+
 }

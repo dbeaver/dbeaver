@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 
 import java.io.IOException;
@@ -29,7 +30,6 @@ import java.io.Reader;
 import java.io.Writer;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -77,7 +77,7 @@ public class DBDDocumentXML implements DBDDocument {
     @Override
     public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull Writer writer) throws IOException, DBException {
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            Transformer transformer = XMLUtils.newSecureTransformerFactory().newTransformer();
             Result output = new StreamResult(writer);
 
             transformer.transform(
@@ -91,7 +91,7 @@ public class DBDDocumentXML implements DBDDocument {
     @Override
     public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull Reader reader) throws IOException, DBException {
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            Transformer transformer = XMLUtils.newSecureTransformerFactory().newTransformer();
             DOMResult output = new DOMResult();
 
             transformer.transform(

@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -158,7 +159,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     protected abstract String getSQLText();
 
     protected void createCopyButton(Composite parent) {
-        createButton(parent, IDialogConstants.DETAILS_ID, SQLEditorMessages.dialog_view_sql_button_copy, false);
+        createButton(parent, IDialogConstants.DETAILS_ID, WorkbenchMessages.Workbench_copy, false);
     }
     
     protected void createRefreshButton(Composite parent) {

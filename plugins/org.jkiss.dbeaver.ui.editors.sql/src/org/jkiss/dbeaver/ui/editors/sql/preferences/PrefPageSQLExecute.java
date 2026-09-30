@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -60,6 +58,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
     private Spinner commitNQueryText;
     private Combo errorHandlingCombo;
     private Button fetchResultSetsCheck;
+    private Button confirmLargeScriptFetchCheck;
     private Button maxEditorCheck;
     private Combo showStatisticsCombo;
     private Button setSelectionToStatisticsTabCheck;
@@ -93,6 +92,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 store.contains(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING) ||
                 store.contains(SQLPreferenceConstants.SCRIPT_COMMIT_LINES) ||
                 store.contains(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS) ||
+                store.contains(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM) ||
 
                 store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
                 store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
@@ -242,6 +242,13 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 false,
                 2
             );
+            confirmLargeScriptFetchCheck = UIUtils.createCheckbox(
+                scriptsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_confirm_large_script_fetch,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_confirm_large_script_fetch_tip,
+                true,
+                2
+            );
             maxEditorCheck = UIUtils.createCheckbox(
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_max_editor_on_script_exec,
@@ -337,9 +344,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             gd.horizontalSpan = 2;
             gd.verticalIndent = 12;
 
-            UIUtils.createLink(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_explanation_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createLink(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_explanation_link, SelectionListener.widgetSelectedAdapter(e -> {
                     switch (e.text) {
                         case "params":
                             ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameters-binding"));
@@ -350,8 +355,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                         default:
                             break;
                     }
-                }
-            }).setLayoutData(gd);
+                })).setLayoutData(gd);
         }
 
         // Delimiters
@@ -432,6 +436,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name()
             );
             store.setValue(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM, confirmLargeScriptFetchCheck.getSelection());
             store.setValue(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, maxEditorCheck.getSelection());
             store.setValue(
                 SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION,
@@ -481,6 +486,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING);
         store.setToDefault(SQLPreferenceConstants.SCRIPT_COMMIT_LINES);
         store.setToDefault(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM);
 
         store.setToDefault(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB);
@@ -565,6 +571,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             useDefaults
                 ? store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
                 : store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
+        );
+        confirmLargeScriptFetchCheck.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM)
+                : store.getBoolean(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM)
         );
         maxEditorCheck.setSelection(
             useDefaults

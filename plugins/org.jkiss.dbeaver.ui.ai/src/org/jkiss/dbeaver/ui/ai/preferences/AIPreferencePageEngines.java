@@ -90,7 +90,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
 
     public AIPreferencePageEngines() {
         this.settings = AISettingsManager.getInstance().getSettings();
-        this.settings.resolveSecrets();
         this.selectedProfile = settings.getDefaultConfigurationOrNull();
     }
 
@@ -132,6 +131,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         flushSelectedProfile();
         reloadEngines();
         AISettingsManager.getInstance().saveSettings(this.settings);
+        AISettingsManager.getInstance().notifyProfilesChanged();
         try {
             store.save();
         } catch (IOException e) {
@@ -275,6 +275,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 table.setHeaderVisible(false);
             });
         }
+        UIUtils.asyncExec(() -> {
+            if (partDivider.isDisposed()) {
+                return;
+            }
+            settings.resolveSecrets();
+            loadSelectedProfileSettings();
+            relayoutPage();
+        });
 
         return composite;
     }
@@ -324,6 +332,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             DBWorkbench.getPlatformUI().showError(
                 AIUIMessages.ai_engines_page_create_error_title, AIUIMessages.ai_engines_page_create_error_message, e);
         }
+        UIUtils.packColumns(profilesViewer.getTable(), true);
     }
 
     private void duplicateProfile() {
@@ -507,6 +516,13 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor, this::handleConfiguratorChange);
         }
 
+        loadSelectedProfileSettings();
+    }
+
+    private void loadSelectedProfileSettings() {
+        if (selectedProfile == null || activeEngineConfiguratorPage == null) {
+            return;
+        }
         try {
             activeEngineConfiguratorPage.loadSettings(selectedProfile.getConfiguration());
         } catch (DBException e) {

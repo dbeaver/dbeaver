@@ -29,8 +29,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -172,12 +171,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                     createPlannerTab(previewFolder);
                 }
 
-                previewFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        updatePreview();
-                    }
-                });
+                previewFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updatePreview()));
             }
 
             {
@@ -222,9 +216,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 }
 
                 detailsFolder.setSelection(detailsItem);
-                detailsFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                detailsFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         CTabItem item = detailsFolder.getItem(detailsFolder.getSelectionIndex());
                         Object data = item.getData();
                         if (data instanceof DBAServerSessionDetails ssd) {
@@ -237,8 +229,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                                 detailsViewer.loadData();
                             }
                         }
-                    }
-                });
+                    }));
             }
 
             sashMain.setWeights(500, 500);

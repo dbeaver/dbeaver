@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -140,39 +139,27 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
 
             final ToolBar toolbar = new ToolBar(repoGroup, SWT.VERTICAL);
             toolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_add, UIIcon.ADD, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_add, UIIcon.ADD, SelectionListener.widgetSelectedAdapter(e -> {
                     String url = EnterNameDialog.chooseName(getShell(), UIConnectionMessages.pref_page_drivers_label_enter_drivers_location_url, "http://");
                     if (url != null) {
                         sourceList.add(url);
                     }
-                }
-            });
-            final ToolItem removeButton = UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_remove, UIIcon.DELETE, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                }));
+            final ToolItem removeButton = UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_remove, UIIcon.DELETE, SelectionListener.widgetSelectedAdapter(e -> {
                     final int index = sourceList.getSelectionIndex();
                     sourceList.remove(index);
                     sourceList.select(CommonUtils.clamp(index, 0, sourceList.getItemCount() - 1));
                     sourceList.notifyListeners(SWT.Selection, new Event());
-                }
-            });
+                }));
             removeButton.setEnabled(false);
 
-            sourceList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            sourceList.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (sourceList.getSelectionIndex() >= 0) {
                         removeButton.setEnabled(sourceList.getItemCount() > 1);
                     } else {
                         removeButton.setEnabled(false);
                     }
-                }
-            });
+                }));
             Control tip = UIUtils.createInfoLabel(repoGroup, UIConnectionMessages.pref_page_drivers_repo_info);
             tip.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }

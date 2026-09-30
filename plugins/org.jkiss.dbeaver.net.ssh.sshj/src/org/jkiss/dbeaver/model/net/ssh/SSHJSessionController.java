@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,10 +110,10 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
             } catch (Throwable e) {
                 throw new DBException("SSH public key authentication failed", e);
             }
-        } else if (auth instanceof SSHAuthConfiguration.Agent) {
+        } else if (auth instanceof SSHAuthConfiguration.Agent(String authSockPath)) {
             final List<AuthMethod> methods = new ArrayList<>();
             try {
-                for (Object identity : createAgentIdentityRepository().getIdentities()) {
+                for (Object identity : createAgentIdentityRepository(authSockPath).getIdentities()) {
                     methods.add(new DBeaverAuthAgent((Identity) identity));
                 }
                 client.auth(host.username(), methods);

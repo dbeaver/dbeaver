@@ -673,13 +673,12 @@ public abstract class LightGrid extends Canvas {
             }
 
             if (oldWidths != null) {
-                // Restore widths
-                if (oldWidths.size() == columns.size()) {
-                    for (GridColumn column : columns) {
-                        Integer newWidth = oldWidths.get(column.getElement());
-                        if (newWidth != null) {
-                            column.setWidth(newWidth);
-                        }
+                // We restore widths per column since the total number of columns may have changed
+                // if e.g. a column was hidden or shown. We want to reflect those individual changes.
+                for (GridColumn column : columns) {
+                    Integer newWidth = oldWidths.get(column.getElement());
+                    if (newWidth != null) {
+                        column.setWidth(newWidth);
                     }
                 }
             }
@@ -797,6 +796,7 @@ public abstract class LightGrid extends Canvas {
         return getColumn(col).getBounds();
     }
 
+    @Nullable
     public IGridRow getRowByElement(int fromIndex, Object element) {
         for (int i = fromIndex; i < gridRows.length; i++) {
             if (gridRows[i].getElement() == element) {

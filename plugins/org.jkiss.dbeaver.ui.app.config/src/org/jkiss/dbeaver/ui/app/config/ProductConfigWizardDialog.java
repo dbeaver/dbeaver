@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -38,11 +39,19 @@ import java.util.stream.Collectors;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window, @NotNull ProductConfigWizard.Origin origin) {
+        this(window, origin, origin == ProductConfigWizard.Origin.AUTOMATIC ? null : window.getShell());
+    }
+
+    public ProductConfigWizardDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull ProductConfigWizard.Origin origin,
+        @Nullable Shell parentShell
+    ) {
         super(
             window,
             new ProductConfigWizard(origin),
             null,
-            origin == ProductConfigWizard.Origin.AUTOMATIC ? null : window.getShell()
+            parentShell
         );
         setFinishButtonLabel("Apply");
         setMinimumPageSize(0, 0);
@@ -100,7 +109,7 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
 
     @Override
     public int getShellStyle() {
-        return SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE;
+        return SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE | SWT.APPLICATION_MODAL;
     }
 
     @Override

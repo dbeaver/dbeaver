@@ -144,6 +144,10 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info) {
+        this(info, true);
+    }
+
+    private DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info, boolean shareRuntimeAttributes) {
         this.hostName = info.hostName;
         this.hostPort = info.hostPort;
         this.serverName = info.serverName;
@@ -160,7 +164,9 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.configurationType = info.configurationType;
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);
-        this.runtimeAttributes = info.runtimeAttributes;
+        this.runtimeAttributes = shareRuntimeAttributes
+            ? info.runtimeAttributes
+            : new HashMap<>(info.runtimeAttributes);
         if (info.events != null) {
             this.events = new LinkedHashMap<>(info.events.size());
             for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
@@ -178,6 +184,13 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = info.keepAliveInterval;
         this.closeIdleConnection = info.closeIdleConnection;
         this.closeIdleInterval = info.closeIdleInterval;
+    }
+
+    @NotNull
+    public static DBPConnectionConfiguration copyWithIndependentRuntimeAttributes(
+        @NotNull DBPConnectionConfiguration info
+    ) {
+        return new DBPConnectionConfiguration(info, false);
     }
 
     @Nullable

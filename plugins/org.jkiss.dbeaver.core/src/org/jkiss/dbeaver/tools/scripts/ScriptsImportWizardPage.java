@@ -22,8 +22,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -104,9 +103,7 @@ class ScriptsImportWizardPage extends WizardPage {
 
             Button openFolder = new Button(generalSettings, SWT.PUSH);
             openFolder.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
-            openFolder.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            openFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
                     dialog.setMessage(CoreMessages.dialog_scripts_import_wizard_dialog_choose_dir_message);
                     dialog.setText(CoreMessages.dialog_scripts_import_wizard_dialog_choose_dir_text);
@@ -118,8 +115,7 @@ class ScriptsImportWizardPage extends WizardPage {
                     if (directory != null) {
                         directoryText.setText(directory);
                     }
-                }
-            });
+                }));
             extensionsText = UIUtils.createLabelText(
                 generalSettings,
                 CoreMessages.dialog_scripts_import_wizard_label_file_mask,

@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -55,12 +53,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        SelectionListener changeListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateState();
-            }
-        };
+        SelectionListener changeListener = SelectionListener.widgetSelectedAdapter(e -> updateState());
 
         Composite formatGroup = UIUtils.createTitledComposite(
             composite,
@@ -75,13 +68,10 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         }
         PostgreDatabaseBackupSettings settings = wizard.getSettings();
         formatCombo.select(settings.getFormat().ordinal());
-        formatCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        formatCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 fixOutputFileExtension();
                 updateState();
-            }
-        });
+            }));
 
         compressCombo = UIUtils.createLabelCombo(formatGroup, PostgreMessages.wizard_backup_page_setting_label_compression, SWT.DROP_DOWN | SWT.READ_ONLY);
         compressCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));

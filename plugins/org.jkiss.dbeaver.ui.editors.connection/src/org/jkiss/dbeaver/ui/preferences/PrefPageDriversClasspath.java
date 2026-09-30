@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -83,9 +82,7 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
             final ToolBar toolbar = new ToolBar(group, SWT.VERTICAL);
             toolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_add, UIIcon.ADD, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_add, UIIcon.ADD, SelectionListener.widgetSelectedAdapter(e -> {
                     Path[] files = DialogUtils.openFileList(getShell(), UIConnectionMessages.pref_page_drivers_classpath_global_libraries_choose_files, new String[]{"*.jar"});
                     if (files != null) {
                         for (Path file : files) {
@@ -95,28 +92,21 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
                             }
                         }
                     }
-                }
-            });
-            final ToolItem removeButton = UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_remove, UIIcon.DELETE, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            final ToolItem removeButton = UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_drivers_button_remove, UIIcon.DELETE, SelectionListener.widgetSelectedAdapter(e -> {
                     final int index = globalLibrariesList.getSelectionIndex();
                     globalLibrariesList.remove(index);
                     globalLibrariesList.select(CommonUtils.clamp(index, 0, globalLibrariesList.getItemCount() - 1));
                     globalLibrariesList.notifyListeners(SWT.Selection, new Event());
-                }
-            });
+                }));
 
-            globalLibrariesList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            globalLibrariesList.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (globalLibrariesList.getSelectionIndex() >= 0) {
                         removeButton.setEnabled(globalLibrariesList.getItemCount() >= 1);
                     } else {
                         removeButton.setEnabled(false);
                     }
-                }
-            });
+                }));
             globalLibrariesList.addMouseListener(new DoubleClickMouseAdapter() {
                 @Override
                 public void onMouseDoubleClick(@NotNull MouseEvent e) {

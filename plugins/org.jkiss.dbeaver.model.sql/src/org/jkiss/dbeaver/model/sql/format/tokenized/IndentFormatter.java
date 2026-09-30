@@ -43,6 +43,7 @@ class IndentFormatter {
     private boolean encounterBetween = false;
     private List<Boolean> functionBracket = new ArrayList<>();
     private List<Boolean> conditionBracket = new ArrayList<>();
+    private List<Boolean> constraintBracket = new ArrayList<>();
     private final String[] blockHeaderStrings;
     private boolean isFirstConditionInBrackets;
 
@@ -75,25 +76,28 @@ class IndentFormatter {
 
         switch (tokenString) {
             case "(":
+                boolean isConstraintBracket = isConstraintBracket(argList, index);
                 functionBracket.add(
                     formatterCfg.isFunction(prev.getString()) || formatterCfg.isIdentifier(prev.getString())
                     ? Boolean.TRUE
                     : Boolean.FALSE
                 );
                 conditionBracket.add(isCondition(argList, index) ? Boolean.TRUE : Boolean.FALSE);
+                constraintBracket.add(isConstraintBracket);
                 isFirstConditionInBrackets = true;
                 bracketIndent.add(indent);
                 bracketsDepth++;
                 // Adding indent after ( makes result too verbose and too multiline
-                if (!isCompact && formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)) {
+                if (!isCompact && !isConstraintBracket && formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)) {
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
                 break;
             case ")":
-                if (!bracketIndent.isEmpty() && !functionBracket.isEmpty() && !conditionBracket.isEmpty()) {
+                if (!bracketIndent.isEmpty() && !functionBracket.isEmpty() && !conditionBracket.isEmpty() && !constraintBracket.isEmpty()) {
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
-                    if (!isCompact && formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)) {
+                    boolean isConstraintColumns = constraintBracket.remove(constraintBracket.size() - 1);
+                    if (!isCompact && !isConstraintColumns && formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)) {
                         result += insertReturnAndIndent(argList, index, indent);
                     }
                     functionBracket.remove(functionBracket.size() - 1);
@@ -106,7 +110,8 @@ class IndentFormatter {
                     /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevSpecialKeyword(argList, index)))*/
                     boolean isInsideAFunction = functionBracket.size() != 0 && functionBracket.get(functionBracket.size() - 1).equals(Boolean.TRUE);
                     boolean isAfterInKeyword = bracketsDepth > 0 && SQLConstants.KEYWORD_IN.equalsIgnoreCase(getPrevKeyword(argList, index));
-                    if (!isInsideAFunction && !isAfterInKeyword)
+                    boolean isInsideConstraint = !constraintBracket.isEmpty() && constraintBracket.get(constraintBracket.size() - 1);
+                    if (!isInsideAFunction && !isAfterInKeyword && !isInsideConstraint)
                     {
                         boolean lfBeforeComma = formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
                         result += insertReturnAndIndent(
@@ -544,6 +549,34 @@ class IndentFormatter {
 
     private boolean isCondition(List<FormatterToken> argList, int index) {
         return getPrevSpecialKeyword(argList, index, true) != null;
+    }
+
+    private static boolean isConstraintBracket(@NotNull List<FormatterToken> argList, int index) {
+        int previousIndex = getPreviousTokenIndex(argList, index);
+        if (previousIndex < 0) {
+            return false;
+        }
+        String previous = argList.get(previousIndex).getString();
+        if ("UNIQUE".equalsIgnoreCase(previous)) {
+            return true;
+        }
+        previousIndex = getPreviousTokenIndex(argList, previousIndex);
+        if (previousIndex < 0) {
+            return false;
+        }
+        String beforePrevious = argList.get(previousIndex).getString();
+        return "REFERENCES".equalsIgnoreCase(beforePrevious) ||
+            "KEY".equalsIgnoreCase(previous) &&
+                ("PRIMARY".equalsIgnoreCase(beforePrevious) || "FOREIGN".equalsIgnoreCase(beforePrevious));
+    }
+
+    private static int getPreviousTokenIndex(@NotNull List<FormatterToken> argList, int index) {
+        for (int i = index - 1; i >= 0; i--) {
+            if (argList.get(i).getType() != TokenType.SPACE) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private int checkConditionDepth(int result, List<FormatterToken> argList, int index) {

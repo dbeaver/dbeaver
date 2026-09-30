@@ -222,7 +222,7 @@
                 class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester"
                 id="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester"
                 namespace="org.jkiss.dbeaver.core.resultset"
-                properties="active,hasData,hasMoreData,hasfilters,canSaveFilters,hasSavedFilter,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount,canPersistData"
+                properties="active,hasData,hasMoreData,hasfilters,canSaveFilters,hasSavedFilter,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,canUndo,canRedo,supportsCount,canPersistData"
                 type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewPropertyTester"
@@ -484,6 +484,22 @@
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.resultset.canCopy"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.canUndo"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.canRedo"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -1358,6 +1374,8 @@
         <toolBar key="resultsetViewer.bottom" name="%org.jkiss.dbeaver.toolBarConfiguration.resultsetViewer.bottom">
             <item commandId="org.jkiss.dbeaver.core.resultset.applyChanges" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" defaultVisibility="true"/>
+            <item commandId="org.eclipse.ui.edit.undo" defaultVisibility="false"/>
+            <item commandId="org.eclipse.ui.edit.redo" defaultVisibility="false"/>
             <item commandId="org.jkiss.dbeaver.core.resultset.row.edit" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.core.resultset.row.add" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.core.resultset.row.copy" defaultVisibility="true"/>
@@ -1380,6 +1398,8 @@
                     <or>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.applyChanges"/>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.rejectChanges"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.eclipse.ui.edit.undo"/>
+                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.eclipse.ui.edit.redo"/>
                     </or>
                 </visibleWhen>
             </dynamic>
@@ -1391,6 +1411,16 @@
             <command commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.toolbarLabel" >
                 <visibleWhen>
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.rejectChanges"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.eclipse.ui.edit.undo">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.eclipse.ui.edit.undo"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.eclipse.ui.edit.redo">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.eclipse.ui.edit.redo"/>
                 </visibleWhen>
             </command>
             <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.rowCmds.separator">
@@ -1497,6 +1527,7 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.presentation" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation" name="%page.org.jkiss.dbeaver.preferences.main.resultset.presentation.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.data.keyword.pref.presentation"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.resultset.presentation" id="org.jkiss.dbeaver.preferences.main.resultset.grid" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationGrid" name="%page.org.jkiss.dbeaver.preferences.main.resultset.grid.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
@@ -1512,7 +1543,13 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataviewer" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataViewer" name="%page.org.jkiss.dbeaver.preferences.main.dataviewer.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ui.editors.data.keyword.pref.data.viewer"/>
         </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ui.editors.data.keyword.pref.presentation" label="%keyword.org.jkiss.dbeaver.ui.editors.data.keyword.pref.presentation.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.data.keyword.pref.data.viewer" label="%keyword.org.jkiss.dbeaver.ui.editors.data.keyword.pref.data.viewer.label"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
@@ -1546,44 +1583,42 @@
         </page>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
-        <dataSourceConfigurator>
-            <dataSourcePage
+    <extension point="org.jkiss.dbeaver.connectionPageConfigurator">
+            <page
                     id="data-editor.main"
                     class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain"
                     title="%page.org.jkiss.dbeaver.preferences.main.resultset.name"
                     description="%page.org.jkiss.dbeaver.preferences.main.resultset.description"/>
-            <dataSourcePage
+            <page
                     id="data-editor.binary"
                     parent="data-editor.main"
                     class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetEditors"
                     title="%page.org.jkiss.dbeaver.preferences.main.resultset.editors.name"
                     description="%page.org.jkiss.dbeaver.preferences.main.resultset.editors.description"/>
-            <dataSourcePage
+            <page
                     id="data-editor.formats"
                     parent="data-editor.main"
                     class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat"
                     title="%page.org.jkiss.dbeaver.preferences.main.dataformat.name"
                     description="%page.org.jkiss.dbeaver.preferences.main.dataformat.description"/>
-            <dataSourcePage
+            <page
                     id="data-editor.presentation"
                     parent="data-editor.main"
                     class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation"
                     title="%page.org.jkiss.dbeaver.preferences.main.resultset.presentation.name"
                     description="%page.org.jkiss.dbeaver.preferences.main.resultset.presentation.description"/>
-            <dataSourcePage
+            <page
                     id="data-editor.presentation.grid"
                     parent="data-editor.presentation"
                     class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationGrid"
                     title="%page.org.jkiss.dbeaver.preferences.main.resultset.grid.name"
                     description="%page.org.jkiss.dbeaver.preferences.main.resultset.grid.description"/>
-            <dataSourcePage
+            <page
                     id="data-editor.presentation.text"
                     parent="data-editor.presentation"
                     class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationPlainText"
                     title="%page.org.jkiss.dbeaver.preferences.main.resultset.plain.text.name"
                     description="%page.org.jkiss.dbeaver.preferences.main.resultset.plain.text.description"/>
-        </dataSourceConfigurator>
     </extension>
 
 </plugin>
