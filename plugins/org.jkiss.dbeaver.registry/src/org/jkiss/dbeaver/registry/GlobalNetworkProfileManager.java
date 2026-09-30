@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileUsageProvider;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -36,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,7 @@ import java.util.Map;
 /**
  * Global network profile manager.
  */
-public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager {
+public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager implements DBWNetworkProfileUsageProvider {
     public static final String CONFIG_FILE_NAME = "network-profiles.json";
 
     private static final Log log = Log.getLog(GlobalNetworkProfileManager.class);
@@ -53,6 +55,37 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
     GlobalNetworkProfileManager(@NotNull DBPPlatform platform) {
         this.platform = platform;
         WorkspaceConfigEventManager.addConfigChangedListener(CONFIG_FILE_NAME, o -> reloadProfiles());
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException {
+        if (platform.getWorkspace() instanceof DBWNetworkProfileUsageProvider provider) {
+            return provider.findLocalProfileConflicts(profileName);
+        }
+        Map<String, String> result = new LinkedHashMap<>();
+        for (var project : platform.getWorkspace().getProjects()) {
+            if (DataSourceConfigurationProfileQuery.hasLocalProfile(project, profileName)) {
+                result.put(project.getId(), project.getName());
+            }
+        }
+        return result;
+    }
+
+    @NotNull
+    @Override
+    public List<ProjectConnections> findGlobalProfileConnections(@NotNull String profileName) throws DBException {
+        if (platform.getWorkspace() instanceof DBWNetworkProfileUsageProvider provider) {
+            return provider.findGlobalProfileConnections(profileName);
+        }
+        List<ProjectConnections> result = new ArrayList<>();
+        for (var project : platform.getWorkspace().getProjects()) {
+            var connections = DataSourceConfigurationProfileQuery.findGlobalProfileConnections(project, profileName);
+            if (!connections.isEmpty()) {
+                result.add(new ProjectConnections(project.getId(), project.getName(), connections));
+            }
+        }
+        return result;
     }
 
     @NotNull

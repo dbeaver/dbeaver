@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMObjectType;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -302,17 +303,17 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         jsonWriter.endObject();
     }
 
-    private String loadConfigFile(@NotNull InputStream stream, boolean decrypt) throws DBException, IOException {
+    private static String loadConfigFile(
+        @NotNull DBPProject project,
+        @NotNull InputStream stream,
+        boolean decrypt
+    ) throws DBException, IOException {
         ByteArrayOutputStream credBuffer = new ByteArrayOutputStream();
-        try {
-            IOUtils.copyStream(stream, credBuffer);
-        } catch (Exception e) {
-            log.error("Error reading secure credentials file", e);
-        }
+        IOUtils.copyStream(stream, credBuffer);
         if (!decrypt) {
             return credBuffer.toString(StandardCharsets.UTF_8);
         } else {
-            DBSValueEncryptor encryptor = registry.getProject().getValueEncryptor();
+            DBSValueEncryptor encryptor = project.getValueEncryptor();
             try {
                 return new String(encryptor.decryptValue(credBuffer.toByteArray()), StandardCharsets.UTF_8);
             } catch (Exception e) {
@@ -385,7 +386,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             throw new DBInterruptedException("Project secure credentials read canceled by user.");
         }
         try {
-            configurationMap = readConfiguration(configurationStorage, configurationManager, dataSourceIds);
+            configurationMap = readConfiguration(registry.getProject(), configurationStorage, configurationManager, dataSourceIds);
         } catch (DBInterruptedException e) {
             throw e;
         } catch (DBException e) {
@@ -945,7 +946,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             if (is == null) {
                 return null;
             }
-            final String data = loadConfigFile(is, true);
+            String data = loadConfigFile(registry.getProject(), is, true);
             return CONFIG_GSON.fromJson(data, new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
             }.getType());
         } catch (IOException e) {
@@ -956,12 +957,13 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
     @Nullable
-    private Map<String, Object> readConfiguration(
+    static Map<String, Object> readConfiguration(
+        @NotNull DBPProject project,
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @Nullable Collection<String> dataSourceIds
     ) throws DBException, IOException {
-        final InputStream is;
+        InputStream is;
         if (configurationStorage instanceof DataSourceMemoryStorage) {
             is = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
         } else {
@@ -971,7 +973,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             return null;
         }
         try (is) {
-            final String data = loadConfigFile(is, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
+            String data = loadConfigFile(project, is, project.isEncryptedProject());
             return JSONUtils.parseMap(CONFIG_GSON, new StringReader(data));
         } catch (DBInterruptedException e) {
             // happens only if user cancelled entering password
