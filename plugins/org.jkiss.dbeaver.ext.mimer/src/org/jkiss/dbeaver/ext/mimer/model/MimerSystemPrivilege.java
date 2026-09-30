@@ -122,13 +122,13 @@ public class MimerSystemPrivilege implements DBSObject, DBPNamedObject2, DBPSave
     @Override
     @NotNull
     public String buildGrantDDL() {
-        String ddl = "GRANT " + privilegeType + " TO \"" + ident.getName() + "\"";
+        String ddl = "GRANT " + privilegeType + " TO \"" + ident.getName().replace("\"", "\"\"") + "\"";
         return grantable ? ddl + " WITH GRANT OPTION" : ddl;
     }
 
     @Override
     @NotNull
     public String buildRevokeDDL() {
-        return "REVOKE " + privilegeType + " FROM \"" + ident.getName() + "\"";
+        return "REVOKE " + privilegeType + " FROM \"" + ident.getName().replace("\"", "\"\"") + "\"";
     }
 }

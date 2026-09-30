@@ -209,7 +209,7 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
      */
     @NotNull
     public String buildCreateDDL() {
-        StringBuilder sb = new StringBuilder("CREATE IDENT \"").append(name).append("\" AS USER");
+        StringBuilder sb = new StringBuilder("CREATE IDENT \"").append(name.replace("\"", "\"\"")).append("\" AS USER");
         if (!CommonUtils.isEmpty(password)) {
             sb.append(" USING '").append(password.replace("'", "''")).append('\'');
         }
@@ -221,7 +221,7 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
 
     @NotNull
     public String buildDropDDL() {
-        return "DROP IDENT \"" + name + "\"";
+        return "DROP IDENT \"" + name.replace("\"", "\"\"") + "\"";
     }
 
     /**
@@ -233,7 +233,8 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
     public List<String> buildGroupGrantDDL() {
         List<String> statements = new ArrayList<>(initialGroups.size());
         for (String group : initialGroups) {
-            statements.add("GRANT MEMBER ON GROUP \"" + group + "\" TO \"" + name + "\"");
+            statements.add("GRANT MEMBER ON GROUP \"" + group.replace("\"", "\"\"")
+                + "\" TO \"" + name.replace("\"", "\"\"") + "\"");
         }
         return statements;
     }
@@ -246,7 +247,7 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
     public List<String> buildAlterDDL(@NotNull Set<String> changedProperties) {
         List<String> statements = new ArrayList<>(1);
         if (changedProperties.contains("password") && !CommonUtils.isEmpty(password)) {
-            statements.add("ALTER IDENT \"" + name + "\" SET PASSWORD '" + password.replace("'", "''") + "'");
+            statements.add("ALTER IDENT \"" + name.replace("\"", "\"\"") + "\" SET PASSWORD '" + password.replace("'", "''") + "'");
         }
         return statements;
     }

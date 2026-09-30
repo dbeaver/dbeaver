@@ -146,7 +146,7 @@ public abstract class AbstractMimerObjectPrivilege<O extends DBSObject> implemen
     @Override
     public final String buildGrantDDL() {
         String ddl = "GRANT " + getPrivilegeType() + " ON " + getObjectTypeKeyword() + " " + buildQualifiedOwnerName()
-            + " TO \"" + getName() + "\"";
+            + " TO \"" + getName().replace("\"", "\"\"") + "\"";
         return isGrantable() ? ddl + " WITH GRANT OPTION" : ddl;
     }
 
@@ -154,6 +154,6 @@ public abstract class AbstractMimerObjectPrivilege<O extends DBSObject> implemen
     @Override
     public final String buildRevokeDDL() {
         return "REVOKE " + getPrivilegeType() + " ON " + getObjectTypeKeyword() + " " + buildQualifiedOwnerName()
-            + " FROM \"" + getName() + "\"";
+            + " FROM \"" + getName().replace("\"", "\"\"") + "\"";
     }
 }

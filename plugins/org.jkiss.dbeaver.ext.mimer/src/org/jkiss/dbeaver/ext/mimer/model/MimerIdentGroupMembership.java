@@ -126,13 +126,15 @@ public class MimerIdentGroupMembership implements DBSObject, DBPSaveableObject, 
     @Override
     @NotNull
     public String buildGrantDDL() {
-        String ddl = "GRANT MEMBER ON GROUP \"" + groupName + "\" TO \"" + ident.getName() + "\"";
+        String ddl = "GRANT MEMBER ON GROUP \"" + groupName.replace("\"", "\"\"")
+            + "\" TO \"" + ident.getName().replace("\"", "\"\"") + "\"";
         return grantable ? ddl + " WITH GRANT OPTION" : ddl;
     }
 
     @Override
     @NotNull
     public String buildRevokeDDL() {
-        return "REVOKE MEMBER ON GROUP \"" + groupName + "\" FROM \"" + ident.getName() + "\"";
+        return "REVOKE MEMBER ON GROUP \"" + groupName.replace("\"", "\"\"")
+            + "\" FROM \"" + ident.getName().replace("\"", "\"\"") + "\"";
     }
 }

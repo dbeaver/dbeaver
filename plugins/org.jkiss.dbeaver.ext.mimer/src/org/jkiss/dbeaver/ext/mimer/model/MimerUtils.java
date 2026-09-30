@@ -747,7 +747,7 @@ public class MimerUtils {
             if (i > 0) {
                 sb.append(", ");
             }
-            sb.append('"').append(names.get(i)).append('"');
+            sb.append('"').append(names.get(i).replace("\"", "\"\"")).append('"');
         }
         return sb.append(' ').append(state).toString();
     }

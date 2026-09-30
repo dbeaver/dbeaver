@@ -145,13 +145,13 @@ public abstract class AbstractMimerMultiTypePrivilege<O extends DBSObject> imple
     @NotNull
     @Override
     public final String buildGrantDDL() {
-        String ddl = "GRANT " + privilegeType + buildGrantRevokeTargetClause() + " TO \"" + grantee + "\"";
+        String ddl = "GRANT " + privilegeType + buildGrantRevokeTargetClause() + " TO \"" + grantee.replace("\"", "\"\"") + "\"";
         return grantable ? ddl + " WITH GRANT OPTION" : ddl;
     }
 
     @NotNull
     @Override
     public final String buildRevokeDDL() {
-        return "REVOKE " + privilegeType + buildGrantRevokeTargetClause() + " FROM \"" + grantee + "\"";
+        return "REVOKE " + privilegeType + buildGrantRevokeTargetClause() + " FROM \"" + grantee.replace("\"", "\"\"") + "\"";
     }
 }

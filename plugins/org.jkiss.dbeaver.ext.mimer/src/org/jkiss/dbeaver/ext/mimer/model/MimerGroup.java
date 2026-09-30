@@ -220,12 +220,12 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
 
     @NotNull
     public String buildCreateDDL() {
-        return "CREATE IDENT \"" + name + "\" AS GROUP";
+        return "CREATE IDENT \"" + name.replace("\"", "\"\"") + "\" AS GROUP";
     }
 
     @NotNull
     public String buildDropDDL() {
-        return "DROP IDENT \"" + name + "\"";
+        return "DROP IDENT \"" + name.replace("\"", "\"\"") + "\"";
     }
 
     static class MemberCache extends JDBCObjectCache<MimerGroup, MimerGroupMember> {

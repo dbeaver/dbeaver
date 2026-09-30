@@ -278,12 +278,12 @@ public class MimerProgram implements DBSObject, DBPNamedObject2, DBPSaveableObje
      */
     @NotNull
     public String buildCreateDDL() {
-        return "CREATE IDENT \"" + name + "\" AS PROGRAM USING '" + CommonUtils.notEmpty(password).replace("'", "''") + "'";
+        return "CREATE IDENT \"" + name.replace("\"", "\"\"") + "\" AS PROGRAM USING '" + CommonUtils.notEmpty(password).replace("'", "''") + "'";
     }
 
     @NotNull
     public String buildDropDDL() {
-        return "DROP IDENT \"" + name + "\"";
+        return "DROP IDENT \"" + name.replace("\"", "\"\"") + "\"";
     }
 
     /**
@@ -293,7 +293,7 @@ public class MimerProgram implements DBSObject, DBPNamedObject2, DBPSaveableObje
     public List<String> buildAlterDDL(@NotNull Set<String> changedProperties) {
         List<String> statements = new ArrayList<>(1);
         if (changedProperties.contains("password") && !CommonUtils.isEmpty(password)) {
-            statements.add("ALTER IDENT \"" + name + "\" SET PASSWORD '" + password.replace("'", "''") + "'");
+            statements.add("ALTER IDENT \"" + name.replace("\"", "\"\"") + "\" SET PASSWORD '" + password.replace("'", "''") + "'");
         }
         return statements;
     }

@@ -118,13 +118,15 @@ public class MimerGroupMember implements DBSObject, DBPNamedObject2, DBPSaveable
     @Override
     @NotNull
     public String buildGrantDDL() {
-        String ddl = "GRANT MEMBER ON GROUP \"" + group.getName() + "\" TO \"" + memberName + "\"";
+        String ddl = "GRANT MEMBER ON GROUP \"" + group.getName().replace("\"", "\"\"")
+            + "\" TO \"" + memberName.replace("\"", "\"\"") + "\"";
         return grantable ? ddl + " WITH GRANT OPTION" : ddl;
     }
 
     @Override
     @NotNull
     public String buildRevokeDDL() {
-        return "REVOKE MEMBER ON GROUP \"" + group.getName() + "\" FROM \"" + memberName + "\"";
+        return "REVOKE MEMBER ON GROUP \"" + group.getName().replace("\"", "\"\"")
+            + "\" FROM \"" + memberName.replace("\"", "\"\"") + "\"";
     }
 }
