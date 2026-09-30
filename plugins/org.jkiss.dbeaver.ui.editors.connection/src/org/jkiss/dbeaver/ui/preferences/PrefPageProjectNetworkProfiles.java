@@ -51,8 +51,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * PrefPageProjectResourceSettings
@@ -113,14 +115,33 @@ public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfil
 
     @NotNull
     @Override
-    protected DBWNetworkProfileManager getProfilesRegistry() {
+    protected DBWNetworkProfileManager getProfilesManager() {
         return getProjectMeta().getDataSourceRegistry().getNetworkProfiles();
     }
 
-    @NotNull
     @Override
-    protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
-        return getProjectMeta().getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
+    protected boolean deleteProfile(@NotNull DBWNetworkProfile profile) {
+        List<? extends DBPDataSourceContainer> usedBy = getProjectMeta().getDataSourceRegistry().getDataSourcesByProfile(profile);
+        if (!usedBy.isEmpty()) {
+            UIUtils.showMessageBox(
+                getShell(),
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info,
+                    profile.getProfileName(), usedBy.size(), usedBy.stream()
+                        .sorted(Comparator.comparing(DBPDataSourceContainer::getName))
+                        .map(connection -> " - " + connection.getName())
+                        .collect(Collectors.joining("\n"))
+                ),
+                SWT.ICON_ERROR
+            );
+            return false;
+        }
+        if (!super.confirmProfileDeletion(profile)) {
+            return false;
+        }
+        super.removeProfile(profile);
+        return true;
     }
 
     @NotNull
@@ -132,8 +153,8 @@ public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfil
     }
 
     @Override
-    protected boolean checkName(@NotNull String profileName) {
-        DBWNetworkProfile foundProfile = getProfilesRegistry().getProfile(null, profileName);
+    protected boolean isNameValid(@NotNull String profileName) {
+        DBWNetworkProfile foundProfile = getProfilesManager().getProfile(null, profileName);
         if (foundProfile == null) {
             return true;
         }

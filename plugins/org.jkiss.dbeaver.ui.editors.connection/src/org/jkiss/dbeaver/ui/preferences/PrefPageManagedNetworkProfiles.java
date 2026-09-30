@@ -17,12 +17,9 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
@@ -32,9 +29,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Common editing flow for project and global network profiles.
@@ -47,25 +42,25 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
     }
 
     @NotNull
-    protected abstract DBWNetworkProfileManager getProfilesRegistry();
+    protected abstract DBWNetworkProfileManager getProfilesManager();
 
     @NotNull
     protected abstract DBWNetworkProfile createProfile(@NotNull String profileName);
 
-    protected abstract boolean checkName(@NotNull String profileName);
+    protected abstract boolean isNameValid(@NotNull String profileName) throws DBException;
 
-    @NotNull
-    protected abstract List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile profile);
+    @Override
+    protected abstract boolean deleteProfile(@NotNull DBWNetworkProfile profile);
 
     @NotNull
     @Override
     protected List<DBWNetworkProfile> getDefaultNetworkProfiles() {
-        return getProfilesRegistry().getProfiles();
+        return getProfilesManager().getProfiles();
     }
 
     @Override
     protected void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles) {
-        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
+        DBWNetworkProfileManager profilesRegistry = getProfilesManager();
         for (DBWNetworkProfile profile : allProfiles) {
             saveSettings(profile);
             profilesRegistry.addOrUpdateProfile(profile);
@@ -73,44 +68,7 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
         profilesRegistry.saveSettings();
     }
 
-    @Override
-    protected boolean deleteProfile(@NotNull DBWNetworkProfile selectedProfile) {
-        List<? extends DBPDataSourceContainer> usedBy = connectionsUsingProfile(selectedProfile);
-        if (!confirmProfileDeletion(selectedProfile, usedBy)) {
-            return false;
-        }
-        try {
-            removeProfile(selectedProfile, usedBy);
-            return true;
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(
-                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
-                NLS.bind(
-                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_message,
-                    selectedProfile.getProfileName()
-                ),
-                e
-            );
-            return false;
-        }
-    }
-
-    protected boolean confirmProfileDeletion(
-        @NotNull DBWNetworkProfile profile,
-        @NotNull List<? extends DBPDataSourceContainer> usedBy
-    ) {
-        if (!usedBy.isEmpty()) {
-            UIUtils.showMessageBox(
-                getShell(),
-                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
-                NLS.bind(
-                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info,
-                    profile.getProfileName(), usedBy.size(), formatConnectionsUsingProfile(usedBy)
-                ),
-                SWT.ICON_ERROR
-            );
-            return false;
-        }
+    protected boolean confirmProfileDeletion(@NotNull DBWNetworkProfile profile) {
         return UIUtils.confirmAction(
             getShell(),
             UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
@@ -126,19 +84,8 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
         );
     }
 
-    @NotNull
-    protected String formatConnectionsUsingProfile(@NotNull List<? extends DBPDataSourceContainer> dataSources) {
-        return dataSources.stream()
-            .sorted(Comparator.comparing(DBPNamedObject::getName))
-            .map(dataSource -> " - " + dataSource.getName())
-            .collect(Collectors.joining("\n"));
-    }
-
-    protected void removeProfile(
-        @NotNull DBWNetworkProfile profile,
-        @NotNull List<? extends DBPDataSourceContainer> usedBy
-    ) throws DBException {
-        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
+    protected void removeProfile(@NotNull DBWNetworkProfile profile) {
+        DBWNetworkProfileManager profilesRegistry = getProfilesManager();
         profilesRegistry.removeProfile(profile);
         if (!DBWorkbench.isDistributed()) {
             profilesRegistry.saveSettings();
@@ -163,13 +110,19 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
 
             profileName = profileName.trim();
 
-            if (checkName(profileName)) {
-                break;
+            try {
+                if (isNameValid(profileName)) {
+                    break;
+                }
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title, null, e);
+                return null;
             }
         }
 
         DBWNetworkProfile newProfile = createProfile(profileName);
-        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
+        DBWNetworkProfileManager profilesRegistry = getProfilesManager();
         profilesRegistry.addOrUpdateProfile(newProfile);
         if (!DBWorkbench.isDistributed()) {
             profilesRegistry.saveSettings();

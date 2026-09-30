@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileUsageProvider.ProjectConnections;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.registry.GlobalNetworkProfileManager;
@@ -43,7 +44,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +55,6 @@ import java.util.stream.Collectors;
 public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.globalNetworkProfiles";
 
-    private final ProfileUsageCache profileUsageCache = new ProfileUsageCache();
     private PrefPageManagedNetworkProfiles networkProfilesPage;
     private Composite networkProfilesPageHolder;
     private int lastProjectIndex = -1;
@@ -116,8 +117,6 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         networkProfilesPageHolder.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).span(3, 1).create());
         networkProfilesPageHolder.setLayout(new FillLayout());
 
-        profileUsageCache.load(projects);
-
         // Populate and select active project
         projectCombo.add("<Global>");
         for (DBPProject project : projects) {
@@ -159,8 +158,6 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             return false;
         }
 
-        profileUsageCache.selectProject(project);
-
         // It's easier to recreate the whole page... not ideal
         if (networkProfilesPage != null) {
             networkProfilesPage.getControl().dispose();
@@ -193,26 +190,6 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
 
     private class PrefPageGlobalNetworkProfiles extends PrefPageManagedNetworkProfiles {
 
-        @Override
-        protected boolean confirmProfileDeletion(
-            @NotNull DBWNetworkProfile profile,
-            @NotNull List<? extends DBPDataSourceContainer> usedBy
-        ) {
-            if (usedBy.isEmpty()) {
-                return super.confirmProfileDeletion(profile, usedBy);
-            }
-            return UIUtils.confirmAction(
-                getShell(),
-                UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
-                withPrivateProjectsWarning(NLS.bind(
-                    UIConnectionMessages.pref_page_network_profiles_tool_delete_used_confirmation_question,
-                    profile.getProfileName(),
-                    usedBy.size(),
-                    formatConnectionsUsingProfile(usedBy)
-                ))
-            );
-        }
-
         @Nullable
         @Override
         protected DBSSecretController getSecretController() throws DBException {
@@ -228,8 +205,8 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         }
 
         @Override
-        protected boolean checkName(@NotNull String profileName) {
-            if (getProfilesRegistry().getProfile(null, profileName) != null) {
+        protected boolean isNameValid(@NotNull String profileName) throws DBException {
+            if (getProfilesManager().getProfile(null, profileName) != null) {
                 UIUtils.showMessageBox(
                     getShell(),
                     UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
@@ -238,8 +215,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 );
                 return false;
             }
-            List<String> projectsWithSameProfileName = profileUsageCache.getProjectsWithLocalProfile(profileName).stream()
-                .map(DBPProject::getName)
+            List<String> projectsWithSameProfileName = getProfilesManager().findLocalProfileConflicts(profileName).values().stream()
                 .map(name -> " - " + name)
                 .toList();
             return projectsWithSameProfileName.isEmpty() || UIUtils.confirmAction(
@@ -261,30 +237,77 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
 
         @NotNull
         @Override
-        protected GlobalNetworkProfileManager getProfilesRegistry() {
+        protected GlobalNetworkProfileManager getProfilesManager() {
             if (DBWorkbench.getPlatform().getNetworkProfiles() instanceof GlobalNetworkProfileManager manager) {
                 return manager;
             }
             throw new IllegalStateException("Global network profile manager expected");
         }
 
-        @NotNull
         @Override
-        protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
-            return profileUsageCache.getConnectionsUsingGlobalProfile(selectedProfile.getProfileName());
+        protected boolean deleteProfile(@NotNull DBWNetworkProfile profile) {
+            try {
+                List<ProjectConnections> usedBy = getProfilesManager().findGlobalProfileConnections(profile.getProfileName());
+                boolean confirmed = usedBy.isEmpty() ? super.confirmProfileDeletion(profile) : confirmUsedProfileDeletion(profile, usedBy);
+                if (!confirmed) {
+                    return false;
+                }
+                List<DBPDataSourceContainer> connections = resolveConnections(usedBy);
+                getProfilesManager().detachProfile(profile, connections);
+                super.removeProfile(profile);
+                return true;
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                    NLS.bind(
+                        UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_message,
+                        profile.getProfileName()
+                    ), e
+                );
+                return false;
+            }
         }
 
         @NotNull
-        @Override
-        protected String formatConnectionsUsingProfile(@NotNull List<? extends DBPDataSourceContainer> dataSources) {
-            return dataSources.stream()
-                .collect(Collectors.groupingBy(DBPDataSourceContainer::getProject))
-                .entrySet()
-                .stream()
-                .sorted(Comparator.comparing(entry -> entry.getKey().getName()))
-                .map(entry -> " " + entry.getKey().getName() + "\n" + entry.getValue().stream()
-                    .sorted(Comparator.comparing(DBPDataSourceContainer::getName))
-                    .map(dataSource -> "   - " + dataSource.getName())
+        private static List<DBPDataSourceContainer> resolveConnections(@NotNull List<ProjectConnections> usedBy) throws DBException {
+            List<DBPDataSourceContainer> connections = new ArrayList<>();
+            for (ProjectConnections projectUsage : usedBy) {
+                DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProjectById(projectUsage.projectId());
+                if (project == null) {
+                    throw new DBException("Project no longer exists: " + projectUsage.projectId());
+                }
+                var registry = project.getDataSourceRegistry();
+                registry.checkForErrors();
+                for (String id : projectUsage.connections().keySet()) {
+                    DBPDataSourceContainer connection = registry.getDataSource(id);
+                    if (connection == null) {
+                        throw new DBException("Cannot resolve connection " + id + " in project " + project.getName());
+                    }
+                    connections.add(connection);
+                }
+            }
+            return connections;
+        }
+
+        private boolean confirmUsedProfileDeletion(@NotNull DBWNetworkProfile profile, @NotNull List<ProjectConnections> usedBy) {
+            return UIUtils.confirmAction(
+                getShell(),
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
+                withPrivateProjectsWarning(NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_used_confirmation_question,
+                    profile.getProfileName(), usedBy.stream().mapToInt(project -> project.connections().size()).sum(),
+                    formatProjectConnections(usedBy)
+                ))
+            );
+        }
+
+        @NotNull
+        private String formatProjectConnections(@NotNull List<ProjectConnections> usedBy) {
+            return usedBy.stream()
+                .sorted(Comparator.comparing(ProjectConnections::projectName))
+                .map(project -> " " + project.projectName() + "\n" + project.connections().values().stream()
+                    .sorted()
+                    .map(name -> "   - " + name)
                     .collect(Collectors.joining("\n")))
                 .collect(Collectors.joining("\n"));
         }
@@ -304,77 +327,6 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
 
         private boolean isPrivateProjectsEnabled() {
             return getProjects().stream().anyMatch(DBPProject::isPrivateProject);
-        }
-
-        @Override
-        protected void removeProfile(
-            @NotNull DBWNetworkProfile profile,
-            @NotNull List<? extends DBPDataSourceContainer> usedBy
-        ) throws DBException {
-            try {
-                getProfilesRegistry().detachProfile(profile, usedBy);
-            } finally {
-                usedBy.stream()
-                    .map(DBPDataSourceContainer::getProject)
-                    .distinct()
-                    .forEach(profileUsageCache::refreshProject);
-            }
-            super.removeProfile(profile, usedBy);
-        }
-    }
-
-    private static class ProfileUsageCache {
-        private final Map<String, List<DBPProject>> projectsByLocalProfileName = new HashMap<>();
-        private final Map<String, List<DBPDataSourceContainer>> connectionsByGlobalProfileName = new HashMap<>();
-        private DBPProject activeProject;
-
-        void load(@NotNull List<? extends DBPProject> projects) {
-            projectsByLocalProfileName.clear();
-            connectionsByGlobalProfileName.clear();
-            projects.forEach(this::addProject);
-        }
-
-        void selectProject(@Nullable DBPProject project) {
-            if (activeProject != null) {
-                refreshProject(activeProject);
-            }
-            activeProject = project;
-        }
-
-        void refreshProject(@NotNull DBPProject project) {
-            projectsByLocalProfileName.values().forEach(projects -> projects.remove(project));
-            projectsByLocalProfileName.values().removeIf(List::isEmpty);
-            connectionsByGlobalProfileName.values().forEach(connections ->
-                connections.removeIf(connection -> connection.getProject() == project));
-            connectionsByGlobalProfileName.values().removeIf(List::isEmpty);
-            addProject(project);
-        }
-
-        @NotNull
-        List<DBPProject> getProjectsWithLocalProfile(@NotNull String profileName) {
-            return projectsByLocalProfileName.getOrDefault(profileName, List.of());
-        }
-
-        @NotNull
-        List<DBPDataSourceContainer> getConnectionsUsingGlobalProfile(@NotNull String profileName) {
-            return connectionsByGlobalProfileName.getOrDefault(profileName, List.of());
-        }
-
-        private void addProject(@NotNull DBPProject project) {
-            var registry = project.getDataSourceRegistry();
-            Set<String> localProfileNames = new HashSet<>();
-            for (DBWNetworkProfile profile : registry.getNetworkProfiles().getProfiles()) {
-                localProfileNames.add(profile.getProfileName());
-                projectsByLocalProfileName.computeIfAbsent(profile.getProfileName(), name -> new ArrayList<>()).add(project);
-            }
-            for (DBPDataSourceContainer connection : registry.getDataSources()) {
-                var configuration = connection.getConnectionConfiguration();
-                String profileName = configuration.getConfigProfileName();
-                if (configuration.getConfigProfileSource() == null && profileName != null &&
-                    !localProfileNames.contains(profileName)) {
-                    connectionsByGlobalProfileName.computeIfAbsent(profileName, name -> new ArrayList<>()).add(connection);
-                }
-            }
         }
     }
 }
