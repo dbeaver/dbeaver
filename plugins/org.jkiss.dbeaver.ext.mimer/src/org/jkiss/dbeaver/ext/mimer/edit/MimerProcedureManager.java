@@ -168,8 +168,8 @@ public class MimerProcedureManager extends SQLObjectEditor<MimerProcedure, Gener
         if (command.hasProperty("comment")) {
             String keyword = object.getProcedureType() == DBSProcedureType.FUNCTION ? "SPECIFIC FUNCTION" : "SPECIFIC PROCEDURE";
             String name = "\"" + object.getContainer().getName() + "\".\"" + object.getUniqueName() + "\"";
-            actionList.add(new SQLDatabasePersistAction("Comment " + object.getProcedureType().name().toLowerCase(),
-                MimerUtils.buildCommentDDL(object, keyword, name, object.getComment(monitor))));
+            MimerUtils.addCommentModifyAction(actionList, object, keyword, name,
+                "Comment " + object.getProcedureType().name().toLowerCase(), monitor);
         }
     }
 

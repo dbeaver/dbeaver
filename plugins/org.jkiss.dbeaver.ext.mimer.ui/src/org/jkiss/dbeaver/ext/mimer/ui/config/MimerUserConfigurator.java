@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUser;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL user before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerUserConfigurator implements DBEObjectConfigurator<MimerUser> {
+public class MimerUserConfigurator extends AbstractMimerConfigurator<MimerUser> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerUser configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerUser user,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateUserPage page = new MimerCreateUserPage(user);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return user;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerUser user, @Nullable Object container) {
+        return new MimerCreateUserPage(user);
     }
 }

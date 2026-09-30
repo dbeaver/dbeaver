@@ -46,7 +46,7 @@ import java.util.Collection;
  *
  * @author Mimer Information Technology
  */
-public class MimerSequence extends GenericSequence {
+public class MimerSequence extends GenericSequence implements MimerCommentable {
 
     private final PrivilegeCache privilegeCache = new PrivilegeCache();
     private final UsedByCache usedByCache = new UsedByCache();

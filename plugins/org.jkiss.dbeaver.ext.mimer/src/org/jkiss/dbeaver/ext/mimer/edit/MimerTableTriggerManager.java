@@ -136,8 +136,7 @@ public class MimerTableTriggerManager extends SQLObjectEditor<MimerTableTrigger,
         }
         if (command.hasProperty("comment")) {
             String name = "\"" + trigger.getTable().getSchema().getName() + "\".\"" + trigger.getName() + "\"";
-            actionList.add(new SQLDatabasePersistAction("Comment trigger",
-                MimerUtils.buildCommentDDL(trigger, "TRIGGER", name, trigger.getComment(monitor))));
+            MimerUtils.addCommentModifyAction(actionList, trigger, "TRIGGER", name, "Comment trigger", monitor);
         }
     }
 

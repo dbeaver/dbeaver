@@ -59,7 +59,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefreshableObject, DBSObjectWithScript {
+public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefreshableObject, DBSObjectWithScript, MimerCommentable {
 
     private final PrivilegeCache privilegeCache = new PrivilegeCache();
     private final UsesCache usesCache = new UsesCache();

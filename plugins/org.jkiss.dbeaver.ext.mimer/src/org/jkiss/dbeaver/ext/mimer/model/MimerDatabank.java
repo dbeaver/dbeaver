@@ -58,7 +58,7 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, DBPImageProvider {
+public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, DBPImageProvider, MimerCommentable {
 
     private final MimerDataSource dataSource;
     private final FileCache fileCache = new FileCache();

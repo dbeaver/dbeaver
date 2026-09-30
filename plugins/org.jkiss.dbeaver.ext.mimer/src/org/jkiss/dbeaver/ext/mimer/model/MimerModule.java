@@ -55,7 +55,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerModule implements DBSObject, DBPScriptObject, DBPSaveableObject, DBSObjectWithScript {
+public class MimerModule implements DBSObject, DBPScriptObject, DBPSaveableObject, DBSObjectWithScript, MimerCommentable {
 
     private final RoutineCache routineCache = new RoutineCache();
     private final MimerSchema schema;

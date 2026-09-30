@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDatabankFile;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the attributes of a new Mimer SQL databank file before it is added.
  *
  * @author Mimer Information Technology
  */
-public class MimerDatabankFileConfigurator implements DBEObjectConfigurator<MimerDatabankFile> {
+public class MimerDatabankFileConfigurator extends AbstractMimerConfigurator<MimerDatabankFile> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerDatabankFile configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerDatabankFile file,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateDatabankFilePage page = new MimerCreateDatabankFilePage(file);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return file;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerDatabankFile file, @Nullable Object container) {
+        return new MimerCreateDatabankFilePage(file);
     }
 }

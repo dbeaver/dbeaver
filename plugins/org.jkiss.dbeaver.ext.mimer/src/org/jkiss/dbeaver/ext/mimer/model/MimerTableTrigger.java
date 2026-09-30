@@ -51,7 +51,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerTableTrigger extends GenericTableTrigger implements DBSObjectWithScript, DBPSaveableObject {
+public class MimerTableTrigger extends GenericTableTrigger implements DBSObjectWithScript, DBPSaveableObject, MimerCommentable {
 
     private boolean persisted = true;
     private String comment;

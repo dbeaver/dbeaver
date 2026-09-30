@@ -47,7 +47,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateGroupMembershipPage extends BaseObjectEditPage {
+public class MimerCreateGroupMembershipPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateGroupMembershipPage.class);
 

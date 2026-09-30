@@ -18,10 +18,15 @@ package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -47,9 +52,14 @@ import org.jkiss.utils.CommonUtils;
  * can mix a special-algorithm column with ordinary ones (see {@link MimerAccessPath}'s own
  * Javadoc for why it isn't also exposed there).
  *
+ * Implements {@link DBPStatefulObject} purely for the tree-icon overlay a key column gets for
+ * free - {@link DBIcon#OVER_KEY}, the same overlay mechanism {@link MimerProcedure}'s own
+ * external-routine badge uses. {@code key} is already known at construction time (no async load
+ * needed), so {@link #refreshObjectState} has nothing to actually refresh.
+ *
  * @author Mimer Information Technology
  */
-public class MimerAccessPathColumn implements DBSObject {
+public class MimerAccessPathColumn implements DBSObject, DBPStatefulObject {
 
     private final MimerAccessPath accessPath;
     private final String name;
@@ -132,5 +142,16 @@ public class MimerAccessPathColumn implements DBSObject {
     @Override
     public MimerDataSource getDataSource() {
         return accessPath.getDataSource();
+    }
+
+    @NotNull
+    @Override
+    public DBSObjectState getObjectState() {
+        return key ? new DBSObjectState("Key column", DBIcon.OVER_KEY) : DBSObjectState.NORMAL;
+    }
+
+    @Override
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        // key is fixed at construction time - nothing to refresh.
     }
 }

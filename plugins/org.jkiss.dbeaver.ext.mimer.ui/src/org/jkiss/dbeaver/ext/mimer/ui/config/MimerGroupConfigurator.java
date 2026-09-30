@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerGroup;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL group before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerGroupConfigurator implements DBEObjectConfigurator<MimerGroup> {
+public class MimerGroupConfigurator extends AbstractMimerConfigurator<MimerGroup> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerGroup configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerGroup group,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateGroupPage page = new MimerCreateGroupPage(group);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return group;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerGroup group, @Nullable Object container) {
+        return new MimerCreateGroupPage(group);
     }
 }

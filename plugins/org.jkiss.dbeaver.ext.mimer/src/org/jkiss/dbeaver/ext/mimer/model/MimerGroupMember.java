@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  *
  * @author Mimer Information Technology
  */
-public class MimerGroupMember implements DBSObject, DBPNamedObject2, DBPSaveableObject {
+public class MimerGroupMember implements DBSObject, DBPNamedObject2, DBPSaveableObject, MimerGrantable {
 
     private final MimerGroup group;
     private String memberName;
@@ -115,12 +115,14 @@ public class MimerGroupMember implements DBSObject, DBPNamedObject2, DBPSaveable
         return group;
     }
 
+    @Override
     @NotNull
     public String buildGrantDDL() {
         String ddl = "GRANT MEMBER ON GROUP \"" + group.getName() + "\" TO \"" + memberName + "\"";
         return grantable ? ddl + " WITH GRANT OPTION" : ddl;
     }
 
+    @Override
     @NotNull
     public String buildRevokeDDL() {
         return "REVOKE MEMBER ON GROUP \"" + group.getName() + "\" FROM \"" + memberName + "\"";

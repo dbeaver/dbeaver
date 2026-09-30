@@ -17,12 +17,7 @@
 package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 /**
@@ -32,7 +27,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
  * Mimer SQL's GRANT/REVOKE EXECUTE syntax keys off the routine's own kind - {@code ON PROCEDURE}
  * vs {@code ON FUNCTION}, e.g. {@code GRANT EXECUTE ON PROCEDURE "mimer_store"."age_of_adult"
  * TO ...} in {@code mimer_store.sql}, {@code GRANT EXECUTE ON FUNCTION capitalize TO ...} in the
- * official docs - {@link MimerProcedure#getProcedureType()} picks the right keyword.
+ * official docs - {@link #getObjectTypeKeyword()} picks the right keyword per instance, the one
+ * place this class needs more than {@link AbstractMimerObjectPrivilege}'s usual fixed keyword.
  * <p>
  * The {@code OBJECT_TYPE} filter ({@code 'PROCEDURE'}/{@code 'FUNCTION'}, matching the
  * routine's own kind) matches its DDL keyword, unlike some other privilege types in this
@@ -40,98 +36,36 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
  *
  * @author Mimer Information Technology
  */
-public class MimerRoutinePrivilege implements DBSObject, DBPSaveableObject {
-
-    private final MimerProcedure procedure;
-    private String grantee;
-    private String grantor;
-    private boolean grantable;
-    private boolean persisted;
+public class MimerRoutinePrivilege extends AbstractMimerObjectPrivilege<MimerProcedure> {
 
     public MimerRoutinePrivilege(@NotNull MimerProcedure procedure, @NotNull JDBCResultSet dbResult) {
-        this.procedure = procedure;
-        this.grantee = JDBCUtils.safeGetString(dbResult, "GRANTEE");
-        this.grantor = JDBCUtils.safeGetString(dbResult, "GRANTOR");
-        this.grantable = "YES".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "IS_GRANTABLE"));
-        this.persisted = true;
+        super(procedure, dbResult);
     }
 
     public MimerRoutinePrivilege(@NotNull MimerProcedure procedure, @NotNull String grantee) {
-        this.procedure = procedure;
-        this.grantee = grantee;
-        this.persisted = false;
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return grantee;
-    }
-
-    public void setGrantee(String grantee) {
-        this.grantee = grantee;
-    }
-
-    @Property(viewable = true, order = 2)
-    public String getGrantor() {
-        return grantor;
-    }
-
-    @Property(viewable = true, order = 3)
-    public boolean isGrantable() {
-        return grantable;
-    }
-
-    public void setGrantable(boolean grantable) {
-        this.grantable = grantable;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return procedure;
-    }
-
-    @NotNull
-    @Override
-    public MimerDataSource getDataSource() {
-        return (MimerDataSource) procedure.getDataSource();
+        super(procedure, grantee);
     }
 
     @NotNull
     public MimerProcedure getProcedure() {
-        return procedure;
+        return owner;
     }
 
     @NotNull
-    private String routineKeyword() {
-        return procedure.getProcedureType() == DBSProcedureType.FUNCTION ? "FUNCTION" : "PROCEDURE";
+    @Override
+    protected String getPrivilegeType() {
+        return "EXECUTE";
     }
 
     @NotNull
-    public String buildGrantDDL() {
-        String ddl = "GRANT EXECUTE ON " + routineKeyword() + " \"" + procedure.getSchema().getName() + "\".\"" + procedure.getName() + "\" TO \"" + grantee + "\"";
-        return grantable ? ddl + " WITH GRANT OPTION" : ddl;
+    @Override
+    protected String getObjectTypeKeyword() {
+        return owner.getProcedureType() == DBSProcedureType.FUNCTION ? "FUNCTION" : "PROCEDURE";
     }
 
     @NotNull
-    public String buildRevokeDDL() {
-        return "REVOKE EXECUTE ON " + routineKeyword() + " \"" + procedure.getSchema().getName() + "\".\"" + procedure.getName() + "\" FROM \"" + grantee + "\"";
+    @Override
+    protected String buildQualifiedOwnerName() {
+        return "\"" + owner.getSchema().getName() + "\".\"" + owner.getName() + "\"";
     }
 }

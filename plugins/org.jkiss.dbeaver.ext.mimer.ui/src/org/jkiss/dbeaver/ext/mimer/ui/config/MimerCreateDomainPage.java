@@ -47,7 +47,7 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateDomainPage extends BaseObjectEditPage {
+public class MimerCreateDomainPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateDomainPage.class);
 

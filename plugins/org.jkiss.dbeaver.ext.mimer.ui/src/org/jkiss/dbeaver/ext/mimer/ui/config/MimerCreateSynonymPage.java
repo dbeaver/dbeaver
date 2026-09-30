@@ -46,7 +46,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateSynonymPage extends BaseObjectEditPage {
+public class MimerCreateSynonymPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateSynonymPage.class);
 

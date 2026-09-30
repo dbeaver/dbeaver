@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL table/view privilege grant before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerObjectPrivilegeConfigurator implements DBEObjectConfigurator<MimerObjectPrivilege> {
+public class MimerObjectPrivilegeConfigurator extends AbstractMimerConfigurator<MimerObjectPrivilege> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerObjectPrivilege configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerObjectPrivilege privilege,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateObjectPrivilegePage page = new MimerCreateObjectPrivilegePage(privilege);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return privilege;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerObjectPrivilege privilege, @Nullable Object container) {
+        return new MimerCreateObjectPrivilegePage(privilege);
     }
 }

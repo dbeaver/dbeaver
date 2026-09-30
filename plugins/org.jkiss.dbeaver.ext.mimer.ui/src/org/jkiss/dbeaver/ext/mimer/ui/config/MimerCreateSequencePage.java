@@ -45,7 +45,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateSequencePage extends BaseObjectEditPage {
+public class MimerCreateSequencePage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateSequencePage.class);
     private static final String[] DATA_TYPES = {"SMALLINT", "INTEGER", "BIGINT"};

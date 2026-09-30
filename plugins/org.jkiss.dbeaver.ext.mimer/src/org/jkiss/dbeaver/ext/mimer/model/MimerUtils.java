@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -582,6 +584,25 @@ public class MimerUtils {
     @NotNull
     public static String buildCommentDDL(@NotNull DBSObject context, @NotNull String keyword, @NotNull String name, @Nullable String comment) {
         return "COMMENT ON " + keyword + " " + name + " IS " + SQLUtils.quoteString(context, CommonUtils.notEmpty(comment));
+    }
+
+    /**
+     * Appends the "Comment ..." persist action for a {@code COMMENT ON <keyword>` change - the
+     * {@link #buildCommentDDL} call plus wrapping {@link SQLDatabasePersistAction} that every
+     * manager's {@code addObjectModifyActions} used to build by hand once it detected the
+     * {@code "comment"} property had changed. {@code quotedName} must already be the fully
+     * quoted/qualified object reference, same requirement as {@link #buildCommentDDL} itself.
+     */
+    public static void addCommentModifyAction(
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull MimerCommentable object,
+        @NotNull String keyword,
+        @NotNull String quotedName,
+        @NotNull String actionLabel,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException {
+        actionList.add(new SQLDatabasePersistAction(actionLabel,
+            buildCommentDDL(object, keyword, quotedName, object.getComment(monitor))));
     }
 
     // --- SET DATABANK/SHADOW ONLINE/OFFLINE ---------------------------------------------------

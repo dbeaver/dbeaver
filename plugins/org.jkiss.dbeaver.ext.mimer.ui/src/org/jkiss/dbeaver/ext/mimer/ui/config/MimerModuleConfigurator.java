@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerModule;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the name of a new Mimer SQL module before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerModuleConfigurator implements DBEObjectConfigurator<MimerModule> {
+public class MimerModuleConfigurator extends AbstractMimerConfigurator<MimerModule> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerModule configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerModule module,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateModulePage page = new MimerCreateModulePage(module);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return module;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerModule module, @Nullable Object container) {
+        return new MimerCreateModulePage(module);
     }
 }

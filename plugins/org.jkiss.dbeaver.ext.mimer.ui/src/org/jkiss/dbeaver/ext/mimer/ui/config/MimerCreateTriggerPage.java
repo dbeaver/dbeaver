@@ -46,7 +46,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateTriggerPage extends BaseObjectEditPage {
+public class MimerCreateTriggerPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final String INSTEAD_OF = "INSTEAD OF";
     private static final String[] TIMINGS = {"BEFORE", "AFTER"};

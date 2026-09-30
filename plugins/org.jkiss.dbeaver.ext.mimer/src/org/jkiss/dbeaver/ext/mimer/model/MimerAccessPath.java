@@ -22,11 +22,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * One access path Mimer SQL's optimizer can use against a table, read from {@code
@@ -36,6 +38,19 @@ import java.util.List;
  * an index, and the driver's raw {@code getIndexInfo()} also reports internal PK/FK structures
  * that don't belong there (see {@link MimerTable#isStandaloneIndex}). Rows are one per column,
  * grouped client-side by {@code INDEX_NAME} (see {@link MimerTable#loadAccessPaths}).
+ * <p>
+ * <b>Mimer SQL 11.1 changed what an access path's own column list means</b> - it's no longer just
+ * the key columns, it's every column reachable through that access path's physical layout
+ * (relevant once {@code CLUSTERED}/{@code INCLUDE} indexes exist: a clustered index's leaf pages
+ * physically carry the whole row, so every table column is "accessible" through it). A primary
+ * key access path on an 11.1+ server can legitimately list every column of the table - not a bug,
+ * confirmed live (a 3-column composite primary key genuinely returned all 3 of its own columns,
+ * each with {@code ORDINAL_POSITION} reflecting the column's position in the *table*, not the
+ * key). {@link MimerAccessPathColumn#isKey()} is what actually distinguishes a real key column
+ * from one merely reachable via the physical layout - {@link #getKeyColumns()} rolls that up here
+ * for a quick summary without drilling into the Columns folder. Both are 11.1+-only distinctions;
+ * pre-11.1, every access-path column already defaults to being a key column (see {@link
+ * MimerAccessPathColumn}'s own Javadoc), matching that version's simpler, key-columns-only view.
  * <p>
  * {@code IS_CLUSTERED} is physical row-storage clustering, not the same thing as the
  * user-facing {@code CREATE CLUSTERED INDEX} syntax (see {@link MimerTableIndex}). It shows
@@ -96,6 +111,28 @@ public class MimerAccessPath implements DBSObject {
     @Property(viewable = true, order = 3)
     public boolean isClustered() {
         return clustered;
+    }
+
+    /**
+     * Rollup of {@link MimerAccessPathColumn#isKey()} across every column - a quick "which of
+     * these columns actually form the key" summary right on the access path itself, without
+     * having to open the Columns folder and check each one. Only meaningful once a server can
+     * tell key columns apart from merely-reachable ones at all (see this class's own Javadoc) -
+     * hidden entirely pre-11.1 rather than shown redundantly listing every column.
+     */
+    @Property(viewable = true, order = 4, visibleIf = KeyColumnsSupportValidator.class)
+    public String getKeyColumns() {
+        return columns.stream()
+            .filter(MimerAccessPathColumn::isKey)
+            .map(MimerAccessPathColumn::getName)
+            .collect(Collectors.joining(", "));
+    }
+
+    public static class KeyColumnsSupportValidator implements IPropertyValueValidator<MimerAccessPath, Object> {
+        @Override
+        public boolean isValidValue(@NotNull MimerAccessPath object, @Nullable Object value) {
+            return object.getDataSource().supportsIndexInclude();
+        }
     }
 
     /**

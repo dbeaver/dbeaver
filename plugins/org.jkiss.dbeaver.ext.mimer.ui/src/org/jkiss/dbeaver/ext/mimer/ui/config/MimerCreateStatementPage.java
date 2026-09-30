@@ -42,7 +42,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateStatementPage extends BaseObjectEditPage {
+public class MimerCreateStatementPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final String[] CURSOR_MODES = {"Default (both)", "Scroll", "No Scroll"};
 

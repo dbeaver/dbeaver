@@ -63,7 +63,7 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateStructuredTypePage extends BaseObjectEditPage {
+public class MimerCreateStructuredTypePage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateStructuredTypePage.class);
 

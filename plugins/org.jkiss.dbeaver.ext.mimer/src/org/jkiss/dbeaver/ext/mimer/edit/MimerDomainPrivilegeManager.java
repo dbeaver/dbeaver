@@ -20,19 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDomain;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDomainPrivilege;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,33 +34,12 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerDomainPrivilegeManager extends SQLObjectEditor<MimerDomainPrivilege, MimerDomain> {
-
-    @Override
-    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
-        return FEATURE_SAVE_IMMEDIATELY;
-    }
-
-    @Override
-    public boolean canCreateObject(@NotNull Object container) {
-        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
-    }
-
-    @Override
-    public boolean canEditObject(@NotNull MimerDomainPrivilege object) {
-        return false;
-    }
+public class MimerDomainPrivilegeManager extends AbstractMimerPrivilegeManager<MimerDomainPrivilege, MimerDomain> {
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerDomainPrivilege> getObjectsCache(MimerDomainPrivilege object) {
+    public DBSObjectCache<MimerDomain, MimerDomainPrivilege> getObjectsCache(MimerDomainPrivilege object) {
         return object.getDomain().getPrivilegeCache();
-    }
-
-    @NotNull
-    @Override
-    protected String getBaseObjectName() {
-        return "NEW_PRIVILEGE";
     }
 
     @Override
@@ -81,27 +51,5 @@ public class MimerDomainPrivilegeManager extends SQLObjectEditor<MimerDomainPriv
         @NotNull Map<String, Object> options
     ) {
         return new MimerDomainPrivilege((MimerDomain) container, getBaseObjectName());
-    }
-
-    @Override
-    protected void addObjectCreateActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectCreateCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        actions.add(new SQLDatabasePersistAction("Grant privilege", command.getObject().buildGrantDDL()));
-    }
-
-    @Override
-    protected void addObjectDeleteActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectDeleteCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        actions.add(new SQLDatabasePersistAction("Revoke privilege", command.getObject().buildRevokeDDL()));
     }
 }

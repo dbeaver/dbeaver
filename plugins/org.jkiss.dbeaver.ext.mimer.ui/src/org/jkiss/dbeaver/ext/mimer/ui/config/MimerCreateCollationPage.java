@@ -44,7 +44,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateCollationPage extends BaseObjectEditPage {
+public class MimerCreateCollationPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateCollationPage.class);
 

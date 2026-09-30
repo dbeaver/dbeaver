@@ -17,107 +17,46 @@
 package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * One {@code USAGE} privilege grant on a domain, read from {@code
- * INFORMATION_SCHEMA.EXT_OBJECT_PRIVILEGES} (see {@link MimerDomain.PrivilegeCache}) - same
- * shape as {@link MimerSequencePrivilege}.
+ * INFORMATION_SCHEMA.EXT_OBJECT_PRIVILEGES} (see {@link MimerDomain.PrivilegeCache}) - see {@link
+ * AbstractMimerObjectPrivilege} for the shape this and every other single-privilege-type grant
+ * class share.
  *
  * @author Mimer Information Technology
  */
-public class MimerDomainPrivilege implements DBSObject, DBPSaveableObject {
-
-    private final MimerDomain domain;
-    private String grantee;
-    private String grantor;
-    private boolean grantable;
-    private boolean persisted;
+public class MimerDomainPrivilege extends AbstractMimerObjectPrivilege<MimerDomain> {
 
     public MimerDomainPrivilege(@NotNull MimerDomain domain, @NotNull JDBCResultSet dbResult) {
-        this.domain = domain;
-        this.grantee = JDBCUtils.safeGetString(dbResult, "GRANTEE");
-        this.grantor = JDBCUtils.safeGetString(dbResult, "GRANTOR");
-        this.grantable = "YES".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "IS_GRANTABLE"));
-        this.persisted = true;
+        super(domain, dbResult);
     }
 
     public MimerDomainPrivilege(@NotNull MimerDomain domain, @NotNull String grantee) {
-        this.domain = domain;
-        this.grantee = grantee;
-        this.persisted = false;
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return grantee;
-    }
-
-    public void setGrantee(String grantee) {
-        this.grantee = grantee;
-    }
-
-    @Property(viewable = true, order = 2)
-    public String getGrantor() {
-        return grantor;
-    }
-
-    @Property(viewable = true, order = 3)
-    public boolean isGrantable() {
-        return grantable;
-    }
-
-    public void setGrantable(boolean grantable) {
-        this.grantable = grantable;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return domain;
-    }
-
-    @NotNull
-    @Override
-    public MimerDataSource getDataSource() {
-        return domain.getDataSource();
+        super(domain, grantee);
     }
 
     @NotNull
     public MimerDomain getDomain() {
-        return domain;
+        return owner;
     }
 
     @NotNull
-    public String buildGrantDDL() {
-        String ddl = "GRANT USAGE ON DOMAIN \"" + domain.getSchema().getName() + "\".\"" + domain.getName() + "\" TO \"" + grantee + "\"";
-        return grantable ? ddl + " WITH GRANT OPTION" : ddl;
+    @Override
+    protected String getPrivilegeType() {
+        return "USAGE";
     }
 
     @NotNull
-    public String buildRevokeDDL() {
-        return "REVOKE USAGE ON DOMAIN \"" + domain.getSchema().getName() + "\".\"" + domain.getName() + "\" FROM \"" + grantee + "\"";
+    @Override
+    protected String getObjectTypeKeyword() {
+        return "DOMAIN";
+    }
+
+    @NotNull
+    @Override
+    protected String buildQualifiedOwnerName() {
+        return "\"" + owner.getSchema().getName() + "\".\"" + owner.getName() + "\"";
     }
 }

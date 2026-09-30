@@ -129,7 +129,6 @@ public class MimerSynonymManager extends SQLObjectEditor<MimerSynonym, MimerSche
         }
         MimerSynonym synonym = command.getObject();
         String name = "\"" + synonym.getParentObject().getName() + "\".\"" + synonym.getName() + "\"";
-        actionList.add(new SQLDatabasePersistAction("Comment synonym",
-            MimerUtils.buildCommentDDL(synonym, "SYNONYM", name, synonym.getComment(monitor))));
+        MimerUtils.addCommentModifyAction(actionList, synonym, "SYNONYM", name, "Comment synonym", monitor);
     }
 }

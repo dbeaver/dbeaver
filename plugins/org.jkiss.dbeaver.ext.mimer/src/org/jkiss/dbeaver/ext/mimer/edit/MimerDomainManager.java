@@ -129,7 +129,6 @@ public class MimerDomainManager extends SQLObjectEditor<MimerDomain, MimerSchema
         }
         MimerDomain domain = command.getObject();
         String name = "\"" + domain.getSchema().getName() + "\".\"" + domain.getName() + "\"";
-        actionList.add(new SQLDatabasePersistAction("Comment domain",
-            MimerUtils.buildCommentDDL(domain, "DOMAIN", name, domain.getComment(monitor))));
+        MimerUtils.addCommentModifyAction(actionList, domain, "DOMAIN", name, "Comment domain", monitor);
     }
 }

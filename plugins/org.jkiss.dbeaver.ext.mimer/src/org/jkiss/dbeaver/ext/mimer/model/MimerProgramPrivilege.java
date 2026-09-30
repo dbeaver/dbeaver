@@ -17,13 +17,8 @@
 package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * An {@code EXECUTE} privilege grant on a Mimer SQL program - lets a program's own {@code
@@ -31,100 +26,50 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * {@code INFORMATION_SCHEMA.EXT_OBJECT_PRIVILEGES} (see {@link MimerProgram.PrivilegeCache}:
  * {@code WHERE OBJECT_TYPE = 'IDENT' AND OBJECT_NAME = <program> AND PRIVILEGE_TYPE =
  * 'EXECUTE'} - {@code OBJECT_TYPE = 'IDENT'} is the same convention used for group membership).
- * That view only ever shows grants where the connected ident is the GRANTOR or GRANTEE, so this list can be
- * incomplete if a grant was made by a different ident than the one currently connected - same
- * caveat as {@link MimerGroupMember}.
+ * That view only ever shows grants where the connected ident is the GRANTOR or GRANTEE, so this
+ * list can be incomplete if a grant was made by a different ident than the one currently
+ * connected - same caveat as {@link MimerGroupMember}. See {@link AbstractMimerObjectPrivilege}
+ * for the shape this and every other single-privilege-type grant class share - a program has no
+ * schema, so {@link #buildQualifiedOwnerName()} is the one owner-kind here with a bare, unqualified
+ * name.
  *
  * @author Mimer Information Technology
  */
-public class MimerProgramPrivilege implements DBSObject, DBPNamedObject2, DBPSaveableObject {
-
-    private final MimerProgram program;
-    private String grantee;
-    private String grantor;
-    private boolean grantable;
-    private boolean persisted;
+public class MimerProgramPrivilege extends AbstractMimerObjectPrivilege<MimerProgram> implements DBPNamedObject2 {
 
     public MimerProgramPrivilege(@NotNull MimerProgram program, @NotNull JDBCResultSet dbResult) {
-        this.program = program;
-        this.grantee = JDBCUtils.safeGetString(dbResult, "GRANTEE");
-        this.grantor = JDBCUtils.safeGetString(dbResult, "GRANTOR");
-        this.grantable = "YES".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "IS_GRANTABLE"));
-        this.persisted = true;
+        super(program, dbResult);
     }
 
     public MimerProgramPrivilege(@NotNull MimerProgram program, @NotNull String grantee) {
-        this.program = program;
-        this.grantee = grantee;
-        this.persisted = false;
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return grantee;
+        super(program, grantee);
     }
 
     @Override
     public void setName(String name) {
-        this.grantee = name;
-    }
-
-    @Property(viewable = true, order = 2)
-    public String getGrantor() {
-        return grantor;
-    }
-
-    @Property(viewable = true, order = 3)
-    public boolean isGrantable() {
-        return grantable;
-    }
-
-    public void setGrantable(boolean grantable) {
-        this.grantable = grantable;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return program;
-    }
-
-    @NotNull
-    @Override
-    public MimerDataSource getDataSource() {
-        return program.getDataSource();
+        setGrantee(name);
     }
 
     @NotNull
     public MimerProgram getProgram() {
-        return program;
+        return owner;
     }
 
     @NotNull
-    public String buildGrantDDL() {
-        String ddl = "GRANT EXECUTE ON PROGRAM \"" + program.getName() + "\" TO \"" + grantee + "\"";
-        return grantable ? ddl + " WITH GRANT OPTION" : ddl;
+    @Override
+    protected String getPrivilegeType() {
+        return "EXECUTE";
     }
 
     @NotNull
-    public String buildRevokeDDL() {
-        return "REVOKE EXECUTE ON PROGRAM \"" + program.getName() + "\" FROM \"" + grantee + "\"";
+    @Override
+    protected String getObjectTypeKeyword() {
+        return "PROGRAM";
+    }
+
+    @NotNull
+    @Override
+    protected String buildQualifiedOwnerName() {
+        return "\"" + owner.getName() + "\"";
     }
 }

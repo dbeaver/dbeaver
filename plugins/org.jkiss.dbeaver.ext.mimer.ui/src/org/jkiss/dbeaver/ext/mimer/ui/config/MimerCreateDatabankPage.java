@@ -39,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateDatabankPage extends BaseObjectEditPage {
+public class MimerCreateDatabankPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final String[] OPTIONS = {"TRANSACTION", "LOG", "WORK"};
 

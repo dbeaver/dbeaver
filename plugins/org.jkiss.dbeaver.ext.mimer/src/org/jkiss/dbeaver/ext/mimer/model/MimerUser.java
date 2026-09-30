@@ -58,7 +58,7 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject {
+public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, MimerCommentable {
 
     public static final String TYPE_USER = "USER";
     public static final String TYPE_OS_USER = "OS_USER";

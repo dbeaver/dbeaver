@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateDatabankFilePage extends BaseObjectEditPage {
+public class MimerCreateDatabankFilePage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerDatabankFile file;
 

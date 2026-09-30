@@ -33,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateGroupPage extends BaseObjectEditPage {
+public class MimerCreateGroupPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerGroup group;
 

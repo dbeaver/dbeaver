@@ -34,7 +34,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateSchemaPage extends BaseObjectEditPage {
+public class MimerCreateSchemaPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerSchema schema;
 

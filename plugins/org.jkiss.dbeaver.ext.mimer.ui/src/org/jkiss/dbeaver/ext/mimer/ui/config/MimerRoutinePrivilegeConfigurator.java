@@ -19,12 +19,6 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerRoutinePrivilege;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL procedure/function EXECUTE grant before it is
@@ -32,24 +26,11 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerRoutinePrivilegeConfigurator implements DBEObjectConfigurator<MimerRoutinePrivilege> {
+public class MimerRoutinePrivilegeConfigurator extends AbstractMimerConfigurator<MimerRoutinePrivilege> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerRoutinePrivilege configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerRoutinePrivilege privilege,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateRoutinePrivilegePage page = new MimerCreateRoutinePrivilegePage(privilege);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return privilege;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerRoutinePrivilege privilege, @Nullable Object container) {
+        return new MimerCreateRoutinePrivilegePage(privilege);
     }
 }

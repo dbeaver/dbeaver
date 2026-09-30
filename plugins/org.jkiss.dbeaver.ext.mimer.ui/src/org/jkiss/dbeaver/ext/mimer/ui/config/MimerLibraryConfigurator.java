@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerLibrary;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL external library before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerLibraryConfigurator implements DBEObjectConfigurator<MimerLibrary> {
+public class MimerLibraryConfigurator extends AbstractMimerConfigurator<MimerLibrary> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerLibrary configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerLibrary library,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateLibraryPage page = new MimerCreateLibraryPage(library);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return library;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerLibrary library, @Nullable Object container) {
+        return new MimerCreateLibraryPage(library);
     }
 }

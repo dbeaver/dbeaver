@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateDatabankShadowPage extends BaseObjectEditPage {
+public class MimerCreateDatabankShadowPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerDatabankShadow shadow;
 

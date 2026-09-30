@@ -54,7 +54,7 @@ import java.util.List;
  *
  * @author Mimer Information Technology
  */
-public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DBPSaveableObject {
+public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DBPSaveableObject, MimerCommentable {
 
     private final MimerSchema schema;
     private String name;

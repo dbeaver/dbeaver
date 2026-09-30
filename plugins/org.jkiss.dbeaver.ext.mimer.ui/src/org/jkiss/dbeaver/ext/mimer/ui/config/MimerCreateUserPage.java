@@ -45,7 +45,7 @@ import java.util.Collections;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateUserPage extends BaseObjectEditPage {
+public class MimerCreateUserPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateUserPage.class);
 

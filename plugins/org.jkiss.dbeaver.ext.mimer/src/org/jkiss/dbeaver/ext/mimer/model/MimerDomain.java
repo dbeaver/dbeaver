@@ -49,7 +49,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObject {
+public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObject, MimerCommentable {
 
     private final MimerSchema schema;
     private String name;

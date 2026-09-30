@@ -153,7 +153,6 @@ public class MimerUserDefinedTypeManager extends SQLObjectEditor<MimerUserDefine
         }
         MimerUserDefinedType type = command.getObject();
         String name = "\"" + type.getSchema().getName() + "\".\"" + type.getName() + "\"";
-        actionList.add(new SQLDatabasePersistAction("Comment type",
-            MimerUtils.buildCommentDDL(type, "TYPE", name, type.getComment(monitor))));
+        MimerUtils.addCommentModifyAction(actionList, type, "TYPE", name, "Comment type", monitor);
     }
 }

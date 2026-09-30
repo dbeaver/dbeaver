@@ -42,7 +42,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateModulePage extends BaseObjectEditPage {
+public class MimerCreateModulePage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerModule module;
 

@@ -48,7 +48,7 @@ import java.util.List;
  *
  * @author Mimer Information Technology
  */
-public class MimerTableIndex extends GenericTableIndex {
+public class MimerTableIndex extends GenericTableIndex implements MimerCommentable {
 
     /**
      * "Ignore Nulls" choice from the create-index dialog - only meaningful before the index is

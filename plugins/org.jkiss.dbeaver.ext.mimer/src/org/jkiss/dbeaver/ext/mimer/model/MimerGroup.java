@@ -48,7 +48,7 @@ import java.util.Collection;
  *
  * @author Mimer Information Technology
  */
-public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject {
+public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, MimerCommentable {
 
     private final MimerDataSource dataSource;
     private final MemberCache memberCache = new MemberCache();

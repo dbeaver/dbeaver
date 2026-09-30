@@ -56,7 +56,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerSchema extends GenericSchema implements DBPSaveableObject {
+public class MimerSchema extends GenericSchema implements DBPSaveableObject, MimerCommentable {
 
     private final DomainCache domainCache = new DomainCache();
     private final ModuleCache moduleCache = new ModuleCache();

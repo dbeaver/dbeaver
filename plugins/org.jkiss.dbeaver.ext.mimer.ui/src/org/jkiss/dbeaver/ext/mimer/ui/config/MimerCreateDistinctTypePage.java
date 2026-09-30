@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateDistinctTypePage extends BaseObjectEditPage {
+public class MimerCreateDistinctTypePage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateDistinctTypePage.class);
 

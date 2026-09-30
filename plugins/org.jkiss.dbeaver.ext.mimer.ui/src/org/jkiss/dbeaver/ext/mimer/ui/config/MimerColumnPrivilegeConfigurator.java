@@ -19,12 +19,6 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerColumnPrivilege;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL column-restricted privilege grant before it is
@@ -32,24 +26,11 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerColumnPrivilegeConfigurator implements DBEObjectConfigurator<MimerColumnPrivilege> {
+public class MimerColumnPrivilegeConfigurator extends AbstractMimerConfigurator<MimerColumnPrivilege> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerColumnPrivilege configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerColumnPrivilege privilege,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateColumnPrivilegePage page = new MimerCreateColumnPrivilegePage(privilege);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return privilege;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerColumnPrivilege privilege, @Nullable Object container) {
+        return new MimerCreateColumnPrivilegePage(privilege);
     }
 }

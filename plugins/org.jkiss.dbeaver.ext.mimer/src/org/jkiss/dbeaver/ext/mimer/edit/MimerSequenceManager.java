@@ -113,8 +113,8 @@ public class MimerSequenceManager extends GenericSequenceManager {
         }
         if (command.hasProperty("comment")) {
             MimerSequence sequence = (MimerSequence) command.getObject();
-            actionList.add(new SQLDatabasePersistAction("Comment sequence",
-                MimerUtils.buildCommentDDL(sequence, "SEQUENCE", sequence.getFullyQualifiedName(DBPEvaluationContext.DDL), sequence.getComment(monitor))));
+            MimerUtils.addCommentModifyAction(actionList, sequence, "SEQUENCE",
+                sequence.getFullyQualifiedName(DBPEvaluationContext.DDL), "Comment sequence", monitor);
         }
     }
 }

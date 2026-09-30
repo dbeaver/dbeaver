@@ -207,7 +207,6 @@ public class MimerIndexManager extends GenericIndexManager {
             return;
         }
         String name = "\"" + index.getTable().getSchema().getName() + "\".\"" + index.getName() + "\"";
-        actionList.add(new SQLDatabasePersistAction("Comment index",
-            MimerUtils.buildCommentDDL(index, "INDEX", name, index.getComment(monitor))));
+        MimerUtils.addCommentModifyAction(actionList, index, "INDEX", name, "Comment index", monitor);
     }
 }

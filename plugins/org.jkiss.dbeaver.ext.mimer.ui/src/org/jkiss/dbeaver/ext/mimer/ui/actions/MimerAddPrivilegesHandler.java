@@ -21,19 +21,14 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
-import org.jkiss.dbeaver.ext.mimer.model.MimerGroup;
 import org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege;
-import org.jkiss.dbeaver.ext.mimer.model.MimerProgram;
-import org.jkiss.dbeaver.ext.mimer.model.MimerUser;
+import org.jkiss.dbeaver.ext.mimer.ui.config.MimerIdentPickerUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * "Add Privileges" navigator action - lets the user multi-select several tables/views and
@@ -55,8 +50,6 @@ import java.util.stream.Stream;
  */
 public class MimerAddPrivilegesHandler extends AbstractHandler {
 
-    private static final Log log = Log.getLog(MimerAddPrivilegesHandler.class);
-
     @Override
     public Object execute(ExecutionEvent event) {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -72,7 +65,7 @@ public class MimerAddPrivilegesHandler extends AbstractHandler {
         }
 
         MimerAddPrivilegesDialog dialog = new MimerAddPrivilegesDialog(
-            HandlerUtil.getActiveShell(event), tableNames, loadIdentNames(dataSource));
+            HandlerUtil.getActiveShell(event), tableNames, MimerIdentPickerUtils.loadIdentNames(dataSource));
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -92,21 +85,5 @@ public class MimerAddPrivilegesHandler extends AbstractHandler {
             false,
             () -> MimerOnlineActionUtils.refresh(nodes));
         return null;
-    }
-
-    private static String[] loadIdentNames(MimerDataSource dataSource) {
-        try {
-            VoidProgressMonitor monitor = new VoidProgressMonitor();
-            return Stream.of(
-                    dataSource.getUsers(monitor).stream().map(MimerUser::getName),
-                    dataSource.getGroups(monitor).stream().map(MimerGroup::getName),
-                    dataSource.getPrograms(monitor).stream().map(MimerProgram::getName))
-                .flatMap(s -> s)
-                .sorted()
-                .toArray(String[]::new);
-        } catch (Exception e) {
-            log.debug("Can't load ident list for the Add Privileges dialog", e);
-            return new String[0];
-        }
     }
 }

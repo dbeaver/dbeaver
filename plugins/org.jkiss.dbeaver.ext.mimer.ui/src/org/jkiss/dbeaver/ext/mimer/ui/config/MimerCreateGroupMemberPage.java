@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateGroupMemberPage extends BaseObjectEditPage {
+public class MimerCreateGroupMemberPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateGroupMemberPage.class);
 

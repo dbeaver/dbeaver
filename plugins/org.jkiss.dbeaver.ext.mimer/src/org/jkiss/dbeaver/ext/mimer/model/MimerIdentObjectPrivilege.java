@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -42,24 +41,19 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  *
  * @author Mimer Information Technology
  */
-public class MimerIdentObjectPrivilege implements DBSObject {
+public class MimerIdentObjectPrivilege extends AbstractMimerIdentPrivilegeSummary {
 
-    private final DBSObject ident;
     private final String objectSchema;
     private final String objectName;
     private final String objectType;
     private final String privilegeType;
-    private final String grantor;
-    private final boolean grantable;
 
     public MimerIdentObjectPrivilege(@NotNull DBSObject ident, @NotNull JDBCResultSet dbResult) {
-        this.ident = ident;
+        super(ident, dbResult);
         this.objectSchema = JDBCUtils.safeGetString(dbResult, "OBJECT_SCHEMA");
         this.objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
         this.objectType = JDBCUtils.safeGetStringTrimmed(dbResult, "OBJECT_TYPE");
         this.privilegeType = JDBCUtils.safeGetStringTrimmed(dbResult, "PRIVILEGE_TYPE");
-        this.grantor = JDBCUtils.safeGetString(dbResult, "GRANTOR");
-        this.grantable = "YES".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "IS_GRANTABLE"));
     }
 
     @NotNull
@@ -87,37 +81,5 @@ public class MimerIdentObjectPrivilege implements DBSObject {
     @Property(viewable = true, order = 5)
     public String getPrivilegeType() {
         return privilegeType;
-    }
-
-    @Property(viewable = true, order = 6)
-    public String getGrantor() {
-        return grantor;
-    }
-
-    @Property(viewable = true, order = 7)
-    public boolean isGrantable() {
-        return grantable;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return true;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return ident;
-    }
-
-    @NotNull
-    @Override
-    public MimerDataSource getDataSource() {
-        return (MimerDataSource) ident.getDataSource();
     }
 }

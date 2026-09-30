@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerStatement;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the name and cursor mode of a new Mimer SQL statement before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerStatementConfigurator implements DBEObjectConfigurator<MimerStatement> {
+public class MimerStatementConfigurator extends AbstractMimerConfigurator<MimerStatement> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerStatement configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerStatement statement,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateStatementPage page = new MimerCreateStatementPage(statement);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return statement;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerStatement statement, @Nullable Object container) {
+        return new MimerCreateStatementPage(statement);
     }
 }

@@ -20,57 +20,26 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerStatement;
 import org.jkiss.dbeaver.ext.mimer.model.MimerStatementPrivilege;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.List;
 import java.util.Map;
 
 /**
  * Adds CREATE / DROP support for a Mimer SQL statement's EXECUTE privilege, so its "Privileges"
- * node can grant/revoke: {@code GRANT EXECUTE ON STATEMENT "s"."n" TO "ident" [WITH GRANT
- * OPTION]} / {@code REVOKE EXECUTE ON STATEMENT "s"."n" FROM "ident"} (no {@code CASCADE} - fails
- * loud rather than silently revoking privileges the grantee held only through this grant). No
- * modify support - toggling WITH GRANT OPTION needs a revoke and re-grant, not an ALTER-style
- * statement, same as {@link MimerProgramPrivilegeManager}/{@link MimerGroupMemberManager}.
+ * folder can grant/revoke: {@code GRANT EXECUTE ON STATEMENT "s"."n" TO "ident" [WITH GRANT
+ * OPTION]} / {@code REVOKE EXECUTE ON STATEMENT "s"."n" FROM "ident"}. No {@code
+ * [RESTRICT|CASCADE]} clause, same convention as every other privilege manager in this plugin.
  *
  * @author Mimer Information Technology
  */
-public class MimerStatementPrivilegeManager extends SQLObjectEditor<MimerStatementPrivilege, MimerStatement> {
-
-    @Override
-    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
-        return FEATURE_SAVE_IMMEDIATELY;
-    }
-
-    @Override
-    public boolean canCreateObject(@NotNull Object container) {
-        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
-    }
-
-    @Override
-    public boolean canEditObject(@NotNull MimerStatementPrivilege object) {
-        return false;
-    }
+public class MimerStatementPrivilegeManager extends AbstractMimerPrivilegeManager<MimerStatementPrivilege, MimerStatement> {
 
     @Nullable
     @Override
     public DBSObjectCache<MimerStatement, MimerStatementPrivilege> getObjectsCache(MimerStatementPrivilege object) {
         return object.getStatement().getPrivilegeCache();
-    }
-
-    @NotNull
-    @Override
-    protected String getBaseObjectName() {
-        return "NEW_PRIVILEGE";
     }
 
     @Override
@@ -84,25 +53,15 @@ public class MimerStatementPrivilegeManager extends SQLObjectEditor<MimerStateme
         return new MimerStatementPrivilege((MimerStatement) container, getBaseObjectName());
     }
 
+    @NotNull
     @Override
-    protected void addObjectCreateActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectCreateCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        actions.add(new SQLDatabasePersistAction("Grant execute", command.getObject().buildGrantDDL()));
+    protected String getGrantActionLabel() {
+        return "Grant execute";
     }
 
+    @NotNull
     @Override
-    protected void addObjectDeleteActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectDeleteCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        actions.add(new SQLDatabasePersistAction("Revoke execute", command.getObject().buildRevokeDDL()));
+    protected String getRevokeActionLabel() {
+        return "Revoke execute";
     }
 }

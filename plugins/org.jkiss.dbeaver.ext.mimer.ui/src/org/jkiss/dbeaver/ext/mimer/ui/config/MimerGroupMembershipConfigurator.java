@@ -19,12 +19,6 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerIdentGroupMembership;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the group to join before a new Mimer SQL group membership grant is created (from the
@@ -32,24 +26,11 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerGroupMembershipConfigurator implements DBEObjectConfigurator<MimerIdentGroupMembership> {
+public class MimerGroupMembershipConfigurator extends AbstractMimerConfigurator<MimerIdentGroupMembership> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerIdentGroupMembership configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerIdentGroupMembership membership,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateGroupMembershipPage page = new MimerCreateGroupMembershipPage(membership);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return membership;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerIdentGroupMembership membership, @Nullable Object container) {
+        return new MimerCreateGroupMembershipPage(membership);
     }
 }

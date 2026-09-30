@@ -22,19 +22,11 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege;
 import org.jkiss.dbeaver.ext.mimer.model.MimerTable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerView;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,22 +40,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerObjectPrivilegeManager extends SQLObjectEditor<MimerObjectPrivilege, GenericTableBase> {
-
-    @Override
-    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
-        return FEATURE_SAVE_IMMEDIATELY;
-    }
-
-    @Override
-    public boolean canCreateObject(@NotNull Object container) {
-        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
-    }
-
-    @Override
-    public boolean canEditObject(@NotNull MimerObjectPrivilege object) {
-        return false;
-    }
+public class MimerObjectPrivilegeManager extends AbstractMimerPrivilegeManager<MimerObjectPrivilege, GenericTableBase> {
 
     @Nullable
     @Override
@@ -78,12 +55,6 @@ public class MimerObjectPrivilegeManager extends SQLObjectEditor<MimerObjectPriv
         return null;
     }
 
-    @NotNull
-    @Override
-    protected String getBaseObjectName() {
-        return "NEW_PRIVILEGE";
-    }
-
     @Override
     protected MimerObjectPrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
@@ -93,27 +64,5 @@ public class MimerObjectPrivilegeManager extends SQLObjectEditor<MimerObjectPriv
         @NotNull Map<String, Object> options
     ) {
         return new MimerObjectPrivilege((GenericTableBase) container, getBaseObjectName(), MimerObjectPrivilege.PRIVILEGE_TYPES[0]);
-    }
-
-    @Override
-    protected void addObjectCreateActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectCreateCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        actions.add(new SQLDatabasePersistAction("Grant privilege", command.getObject().buildGrantDDL()));
-    }
-
-    @Override
-    protected void addObjectDeleteActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectDeleteCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        actions.add(new SQLDatabasePersistAction("Revoke privilege", command.getObject().buildRevokeDDL()));
     }
 }

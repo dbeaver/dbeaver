@@ -17,17 +17,12 @@
 package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -36,121 +31,33 @@ import java.sql.SQLException;
  * One object privilege grant on a databank - {@code GRANT TABLE|SEQUENCE ON DATABANK "<db>" TO
  * "<ident>"} lets the grantee create tables / sequences in that databank. Read from {@code
  * INFORMATION_SCHEMA.EXT_OBJECT_PRIVILEGES} ({@code OBJECT_TYPE = 'DATABANK'}, {@code
- * OBJECT_SCHEMA} = the databank's creator), see {@link PrivilegeCache} - same two-field-identity
- * shape as {@link MimerObjectPrivilege} (a grantee can hold both {@code TABLE} and {@code
- * SEQUENCE}).
+ * OBJECT_SCHEMA} = the databank's creator), see {@link PrivilegeCache} - same shape as {@link
+ * AbstractMimerMultiTypePrivilege} in general, and {@link MimerObjectPrivilege} specifically (a
+ * grantee can hold both {@code TABLE} and {@code SEQUENCE}).
  *
  * @author Mimer Information Technology
  */
-public class MimerDatabankPrivilege implements DBSObject, DBPSaveableObject {
+public class MimerDatabankPrivilege extends AbstractMimerMultiTypePrivilege<MimerDatabank> {
 
     public static final String[] PRIVILEGE_TYPES = {"TABLE", "SEQUENCE"};
 
-    private final MimerDatabank databank;
-    private String grantee;
-    private String privilegeType;
-    private String grantor;
-    private boolean grantable;
-    private boolean persisted;
-
     public MimerDatabankPrivilege(@NotNull MimerDatabank databank, @NotNull JDBCResultSet dbResult) {
-        this.databank = databank;
-        this.grantee = JDBCUtils.safeGetString(dbResult, "GRANTEE");
-        this.privilegeType = JDBCUtils.safeGetStringTrimmed(dbResult, "PRIVILEGE_TYPE");
-        this.grantor = JDBCUtils.safeGetString(dbResult, "GRANTOR");
-        this.grantable = "YES".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "IS_GRANTABLE"));
-        this.persisted = true;
+        super(databank, dbResult);
     }
 
     public MimerDatabankPrivilege(@NotNull MimerDatabank databank, @NotNull String grantee, @NotNull String privilegeType) {
-        this.databank = databank;
-        this.grantee = grantee;
-        this.privilegeType = privilegeType;
-        this.persisted = false;
-    }
-
-    // Grantee alone isn't unique (the same grantee can hold both TABLE and SEQUENCE), so the
-    // identity/cache-key name combines both.
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return grantee + " (" + privilegeType + ")";
-    }
-
-    @Property(viewable = true, order = 2)
-    public String getGrantee() {
-        return grantee;
-    }
-
-    public void setGrantee(String grantee) {
-        this.grantee = grantee;
-    }
-
-    @Property(viewable = true, order = 3)
-    public String getPrivilegeType() {
-        return privilegeType;
-    }
-
-    public void setPrivilegeType(String privilegeType) {
-        this.privilegeType = privilegeType;
-    }
-
-    @Property(viewable = true, order = 4)
-    public String getGrantor() {
-        return grantor;
-    }
-
-    @Property(viewable = true, order = 5)
-    public boolean isGrantable() {
-        return grantable;
-    }
-
-    public void setGrantable(boolean grantable) {
-        this.grantable = grantable;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return databank;
-    }
-
-    @NotNull
-    @Override
-    public MimerDataSource getDataSource() {
-        return (MimerDataSource) databank.getDataSource();
+        super(databank, grantee, privilegeType);
     }
 
     @NotNull
     public MimerDatabank getDatabank() {
-        return databank;
+        return owner;
     }
 
     @NotNull
-    public String buildGrantDDL() {
-        String ddl = "GRANT " + privilegeType + " ON DATABANK \"" + databank.getName() + "\" TO \"" + grantee + "\"";
-        return grantable ? ddl + " WITH GRANT OPTION" : ddl;
-    }
-
-    @NotNull
-    public String buildRevokeDDL() {
-        return "REVOKE " + privilegeType + " ON DATABANK \"" + databank.getName() + "\" FROM \"" + grantee + "\"";
+    @Override
+    protected String buildGrantRevokeTargetClause() {
+        return " ON DATABANK \"" + owner.getName() + "\"";
     }
 
     /**

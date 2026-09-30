@@ -124,7 +124,6 @@ public class MimerCollationManager extends SQLObjectEditor<MimerCollation, Mimer
         }
         MimerCollation collation = command.getObject();
         String name = "\"" + collation.getSchema().getName() + "\".\"" + collation.getName() + "\"";
-        actionList.add(new SQLDatabasePersistAction("Comment collation",
-            MimerUtils.buildCommentDDL(collation, "COLLATION", name, collation.getComment(monitor))));
+        MimerUtils.addCommentModifyAction(actionList, collation, "COLLATION", name, "Comment collation", monitor);
     }
 }

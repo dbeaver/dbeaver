@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDomain;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL domain before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerDomainConfigurator implements DBEObjectConfigurator<MimerDomain> {
+public class MimerDomainConfigurator extends AbstractMimerConfigurator<MimerDomain> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerDomain configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerDomain domain,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateDomainPage page = new MimerCreateDomainPage(domain);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return domain;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerDomain domain, @Nullable Object container) {
+        return new MimerCreateDomainPage(domain);
     }
 }

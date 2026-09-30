@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerProgramPrivilege;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the grantee ident before a new Mimer SQL program EXECUTE privilege is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerProgramPrivilegeConfigurator implements DBEObjectConfigurator<MimerProgramPrivilege> {
+public class MimerProgramPrivilegeConfigurator extends AbstractMimerConfigurator<MimerProgramPrivilege> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerProgramPrivilege configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerProgramPrivilege privilege,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateProgramPrivilegePage page = new MimerCreateProgramPrivilegePage(privilege);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return privilege;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerProgramPrivilege privilege, @Nullable Object container) {
+        return new MimerCreateProgramPrivilegePage(privilege);
     }
 }

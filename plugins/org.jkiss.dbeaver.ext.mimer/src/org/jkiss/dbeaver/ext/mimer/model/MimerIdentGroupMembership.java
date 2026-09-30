@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  *
  * @author Mimer Information Technology
  */
-public class MimerIdentGroupMembership implements DBSObject, DBPSaveableObject {
+public class MimerIdentGroupMembership implements DBSObject, DBPSaveableObject, MimerGrantable {
 
     private final DBSObject ident;
     private String groupName;
@@ -123,12 +123,14 @@ public class MimerIdentGroupMembership implements DBSObject, DBPSaveableObject {
      * Same DDL as {@link MimerGroupMember#buildGrantDDL()}, just issued from the member's own
      * side rather than the group's.
      */
+    @Override
     @NotNull
     public String buildGrantDDL() {
         String ddl = "GRANT MEMBER ON GROUP \"" + groupName + "\" TO \"" + ident.getName() + "\"";
         return grantable ? ddl + " WITH GRANT OPTION" : ddl;
     }
 
+    @Override
     @NotNull
     public String buildRevokeDDL() {
         return "REVOKE MEMBER ON GROUP \"" + groupName + "\" FROM \"" + ident.getName() + "\"";

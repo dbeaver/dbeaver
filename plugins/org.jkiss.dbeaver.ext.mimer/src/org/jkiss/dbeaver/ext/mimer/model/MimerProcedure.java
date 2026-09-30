@@ -91,7 +91,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerProcedure extends GenericProcedure implements DBSObjectWithScript, DBSObjectWithType, DBPStatefulObject {
+public class MimerProcedure extends GenericProcedure implements DBSObjectWithScript, DBSObjectWithType, DBPStatefulObject, MimerCommentable {
 
     private static final DBSObjectType OBJECT_TYPE_PROCEDURE =
         new AbstractObjectType("Procedure", "Mimer SQL procedure", DBIcon.TREE_PROCEDURE, MimerProcedure.class);

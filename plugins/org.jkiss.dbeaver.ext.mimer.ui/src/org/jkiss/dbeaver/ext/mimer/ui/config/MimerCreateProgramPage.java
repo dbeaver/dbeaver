@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateProgramPage extends BaseObjectEditPage {
+public class MimerCreateProgramPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerProgram program;
 

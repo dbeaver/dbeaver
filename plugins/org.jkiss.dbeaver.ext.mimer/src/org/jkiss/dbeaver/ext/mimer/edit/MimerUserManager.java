@@ -138,8 +138,7 @@ public class MimerUserManager extends SQLObjectEditor<MimerUser, MimerDataSource
         }
         if (command.hasProperty("comment")) {
             MimerUser user = command.getObject();
-            actionList.add(new SQLDatabasePersistAction("Comment user",
-                MimerUtils.buildCommentDDL(user, "IDENT", "\"" + user.getName() + "\"", user.getComment(monitor))));
+            MimerUtils.addCommentModifyAction(actionList, user, "IDENT", "\"" + user.getName() + "\"", "Comment user", monitor);
         }
     }
 }

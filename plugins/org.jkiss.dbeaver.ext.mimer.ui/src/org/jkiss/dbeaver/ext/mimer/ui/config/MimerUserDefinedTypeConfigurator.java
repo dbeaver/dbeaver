@@ -19,12 +19,6 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedType;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL user-defined type before it is created - picks
@@ -34,33 +28,14 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerUserDefinedTypeConfigurator implements DBEObjectConfigurator<MimerUserDefinedType> {
+public class MimerUserDefinedTypeConfigurator extends AbstractMimerConfigurator<MimerUserDefinedType> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerUserDefinedType configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerUserDefinedType type,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            boolean structured = "STRUCTURED".equalsIgnoreCase(type.getCategory());
-            if (structured) {
-                MimerCreateStructuredTypePage page = new MimerCreateStructuredTypePage(type);
-                if (!page.edit()) {
-                    return null;
-                }
-                page.applyChanges();
-            } else {
-                MimerCreateDistinctTypePage page = new MimerCreateDistinctTypePage(type);
-                if (!page.edit()) {
-                    return null;
-                }
-                page.applyChanges();
-            }
-            return type;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerUserDefinedType type, @Nullable Object container) {
+        if ("STRUCTURED".equalsIgnoreCase(type.getCategory())) {
+            return new MimerCreateStructuredTypePage(type);
+        }
+        return new MimerCreateDistinctTypePage(type);
     }
 }

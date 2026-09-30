@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUserAuthorization;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the OS user name before a new Mimer SQL login authorization is added.
  *
  * @author Mimer Information Technology
  */
-public class MimerUserAuthorizationConfigurator implements DBEObjectConfigurator<MimerUserAuthorization> {
+public class MimerUserAuthorizationConfigurator extends AbstractMimerConfigurator<MimerUserAuthorization> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerUserAuthorization configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerUserAuthorization authorization,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateUserAuthorizationPage page = new MimerCreateUserAuthorizationPage(authorization);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return authorization;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerUserAuthorization authorization, @Nullable Object container) {
+        return new MimerCreateUserAuthorizationPage(authorization);
     }
 }

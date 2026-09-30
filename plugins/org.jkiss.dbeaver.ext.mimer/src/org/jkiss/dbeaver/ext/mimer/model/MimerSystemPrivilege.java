@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  *
  * @author Mimer Information Technology
  */
-public class MimerSystemPrivilege implements DBSObject, DBPNamedObject2, DBPSaveableObject {
+public class MimerSystemPrivilege implements DBSObject, DBPNamedObject2, DBPSaveableObject, MimerGrantable {
 
     private final DBSObject ident;
     private String privilegeType;
@@ -119,12 +119,14 @@ public class MimerSystemPrivilege implements DBSObject, DBPNamedObject2, DBPSave
         return (MimerDataSource) ident.getDataSource();
     }
 
+    @Override
     @NotNull
     public String buildGrantDDL() {
         String ddl = "GRANT " + privilegeType + " TO \"" + ident.getName() + "\"";
         return grantable ? ddl + " WITH GRANT OPTION" : ddl;
     }
 
+    @Override
     @NotNull
     public String buildRevokeDDL() {
         return "REVOKE " + privilegeType + " FROM \"" + ident.getName() + "\"";

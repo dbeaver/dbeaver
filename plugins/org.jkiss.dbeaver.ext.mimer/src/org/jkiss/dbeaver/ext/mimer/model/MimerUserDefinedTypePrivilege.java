@@ -17,113 +17,55 @@
 package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * A {@code USAGE} privilege grant on a Mimer SQL user-defined type, read from {@code
  * INFORMATION_SCHEMA.EXT_OBJECT_PRIVILEGES} (see {@link MimerUserDefinedType.PrivilegeCache}:
- * {@code WHERE OBJECT_TYPE = 'USER DEFINED TYPE' AND PRIVILEGE_TYPE = 'USAGE'}). That view only ever
- * shows grants where the connected ident is the GRANTOR or GRANTEE, so this list can be
- * incomplete if a grant was made by a different ident than the one currently connected.
+ * {@code WHERE OBJECT_TYPE = 'USER DEFINED TYPE' AND PRIVILEGE_TYPE = 'USAGE'}). That view only
+ * ever shows grants where the connected ident is the GRANTOR or GRANTEE, so this list can be
+ * incomplete if a grant was made by a different ident than the one currently connected. See
+ * {@link AbstractMimerObjectPrivilege} for the shape this and every other single-privilege-type
+ * grant class share.
  *
  * @author Mimer Information Technology
  */
-public class MimerUserDefinedTypePrivilege implements DBSObject, DBPNamedObject2, DBPSaveableObject {
-
-    private final MimerUserDefinedType type;
-    private String grantee;
-    private String grantor;
-    private boolean grantable;
-    private boolean persisted;
+public class MimerUserDefinedTypePrivilege extends AbstractMimerObjectPrivilege<MimerUserDefinedType> implements DBPNamedObject2 {
 
     public MimerUserDefinedTypePrivilege(@NotNull MimerUserDefinedType type, @NotNull JDBCResultSet dbResult) {
-        this.type = type;
-        this.grantee = JDBCUtils.safeGetString(dbResult, "GRANTEE");
-        this.grantor = JDBCUtils.safeGetString(dbResult, "GRANTOR");
-        this.grantable = "YES".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "IS_GRANTABLE"));
-        this.persisted = true;
+        super(type, dbResult);
     }
 
     public MimerUserDefinedTypePrivilege(@NotNull MimerUserDefinedType type, @NotNull String grantee) {
-        this.type = type;
-        this.grantee = grantee;
-        this.persisted = false;
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return grantee;
+        super(type, grantee);
     }
 
     @Override
     public void setName(String name) {
-        this.grantee = name;
-    }
-
-    @Property(viewable = true, order = 2)
-    public String getGrantor() {
-        return grantor;
-    }
-
-    @Property(viewable = true, order = 3)
-    public boolean isGrantable() {
-        return grantable;
-    }
-
-    public void setGrantable(boolean grantable) {
-        this.grantable = grantable;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return type;
-    }
-
-    @NotNull
-    @Override
-    public MimerDataSource getDataSource() {
-        return type.getDataSource();
+        setGrantee(name);
     }
 
     @NotNull
     public MimerUserDefinedType getType() {
-        return type;
+        return owner;
     }
 
     @NotNull
-    public String buildGrantDDL() {
-        String ddl = "GRANT USAGE ON TYPE \"" + type.getSchema().getName() + "\".\"" + type.getName()
-            + "\" TO \"" + grantee + "\"";
-        return grantable ? ddl + " WITH GRANT OPTION" : ddl;
+    @Override
+    protected String getPrivilegeType() {
+        return "USAGE";
     }
 
     @NotNull
-    public String buildRevokeDDL() {
-        return "REVOKE USAGE ON TYPE \"" + type.getSchema().getName() + "\".\"" + type.getName()
-            + "\" FROM \"" + grantee + "\"";
+    @Override
+    protected String getObjectTypeKeyword() {
+        return "TYPE";
+    }
+
+    @NotNull
+    @Override
+    protected String buildQualifiedOwnerName() {
+        return "\"" + owner.getSchema().getName() + "\".\"" + owner.getName() + "\"";
     }
 }

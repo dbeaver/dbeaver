@@ -61,7 +61,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptObject {
+public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptObject, MimerCommentable {
 
     private final MimerSchema schema;
     private String name;

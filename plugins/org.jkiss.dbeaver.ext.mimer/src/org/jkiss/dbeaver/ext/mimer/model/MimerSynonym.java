@@ -40,7 +40,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerSynonym extends GenericSynonym implements DBPScriptObject, DBPSaveableObject {
+public class MimerSynonym extends GenericSynonym implements DBPScriptObject, DBPSaveableObject, MimerCommentable {
 
     private String targetSchema;
     private String targetName;

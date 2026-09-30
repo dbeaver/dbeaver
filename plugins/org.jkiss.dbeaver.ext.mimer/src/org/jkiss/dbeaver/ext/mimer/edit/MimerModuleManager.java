@@ -129,8 +129,7 @@ public class MimerModuleManager extends SQLObjectEditor<MimerModule, MimerSchema
         }
         if (command.hasProperty("comment")) {
             String name = "\"" + module.getSchema().getName() + "\".\"" + module.getName() + "\"";
-            actionList.add(new SQLDatabasePersistAction("Comment module",
-                MimerUtils.buildCommentDDL(module, "MODULE", name, module.getComment(monitor))));
+            MimerUtils.addCommentModifyAction(actionList, module, "MODULE", name, "Comment module", monitor);
         }
     }
 

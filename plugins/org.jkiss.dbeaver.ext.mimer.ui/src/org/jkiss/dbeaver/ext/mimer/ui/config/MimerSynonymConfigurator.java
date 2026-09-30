@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerSynonym;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects all attributes of a new Mimer SQL synonym before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerSynonymConfigurator implements DBEObjectConfigurator<MimerSynonym> {
+public class MimerSynonymConfigurator extends AbstractMimerConfigurator<MimerSynonym> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerSynonym configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerSynonym synonym,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateSynonymPage page = new MimerCreateSynonymPage(synonym);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return synonym;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerSynonym synonym, @Nullable Object container) {
+        return new MimerCreateSynonymPage(synonym);
     }
 }

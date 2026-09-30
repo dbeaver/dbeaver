@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateSystemPrivilegePage extends BaseObjectEditPage {
+public class MimerCreateSystemPrivilegePage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerSystemPrivilege privilege;
     private final DBSObject ident;

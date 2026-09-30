@@ -55,7 +55,7 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerProgram implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject {
+public class MimerProgram implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, MimerCommentable {
 
     private final MimerDataSource dataSource;
     private String name;

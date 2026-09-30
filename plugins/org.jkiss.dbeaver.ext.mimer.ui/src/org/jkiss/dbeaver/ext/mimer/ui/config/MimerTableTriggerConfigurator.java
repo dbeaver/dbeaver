@@ -19,12 +19,6 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerTableTrigger;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the timing/event/granularity/name of a new Mimer SQL table trigger before it is
@@ -32,24 +26,11 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerTableTriggerConfigurator implements DBEObjectConfigurator<MimerTableTrigger> {
+public class MimerTableTriggerConfigurator extends AbstractMimerConfigurator<MimerTableTrigger> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerTableTrigger configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerTableTrigger trigger,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateTriggerPage page = new MimerCreateTriggerPage(trigger);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return trigger;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerTableTrigger trigger, @Nullable Object container) {
+        return new MimerCreateTriggerPage(trigger);
     }
 }

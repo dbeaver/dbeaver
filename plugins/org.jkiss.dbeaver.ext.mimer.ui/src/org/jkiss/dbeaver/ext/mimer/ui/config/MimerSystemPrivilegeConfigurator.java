@@ -19,38 +19,21 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerSystemPrivilege;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the privilege type and Grant Option before a new Mimer SQL system privilege grant is
- * created.
+ * created. Unlike every other privilege configurator in this plugin, the create page also needs
+ * the container (the User/Group/Program the privilege is being granted to) directly - {@link
+ * MimerSystemPrivilege} has no owner reference of its own to derive it from at construction time.
  *
  * @author Mimer Information Technology
  */
-public class MimerSystemPrivilegeConfigurator implements DBEObjectConfigurator<MimerSystemPrivilege> {
+public class MimerSystemPrivilegeConfigurator extends AbstractMimerConfigurator<MimerSystemPrivilege> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerSystemPrivilege configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerSystemPrivilege privilege,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateSystemPrivilegePage page = new MimerCreateSystemPrivilegePage(privilege, (DBSObject) container);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return privilege;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerSystemPrivilege privilege, @Nullable Object container) {
+        return new MimerCreateSystemPrivilegePage(privilege, (DBSObject) container);
     }
 }

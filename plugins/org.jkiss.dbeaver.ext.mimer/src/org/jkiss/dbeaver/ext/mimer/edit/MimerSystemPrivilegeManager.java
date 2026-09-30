@@ -23,19 +23,11 @@ import org.jkiss.dbeaver.ext.mimer.model.MimerGroup;
 import org.jkiss.dbeaver.ext.mimer.model.MimerProgram;
 import org.jkiss.dbeaver.ext.mimer.model.MimerSystemPrivilege;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUser;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,22 +42,7 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerSystemPrivilegeManager extends SQLObjectEditor<MimerSystemPrivilege, DBSObject> {
-
-    @Override
-    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
-        return FEATURE_SAVE_IMMEDIATELY;
-    }
-
-    @Override
-    public boolean canCreateObject(@NotNull Object container) {
-        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
-    }
-
-    @Override
-    public boolean canEditObject(@NotNull MimerSystemPrivilege object) {
-        return false;
-    }
+public class MimerSystemPrivilegeManager extends AbstractMimerPrivilegeManager<MimerSystemPrivilege, DBSObject> {
 
     @Nullable
     @Override
@@ -98,25 +75,15 @@ public class MimerSystemPrivilegeManager extends SQLObjectEditor<MimerSystemPriv
         return new MimerSystemPrivilege((DBSObject) container, getBaseObjectName());
     }
 
+    @NotNull
     @Override
-    protected void addObjectCreateActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectCreateCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        actions.add(new SQLDatabasePersistAction("Grant system privilege", command.getObject().buildGrantDDL()));
+    protected String getGrantActionLabel() {
+        return "Grant system privilege";
     }
 
+    @NotNull
     @Override
-    protected void addObjectDeleteActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectDeleteCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        actions.add(new SQLDatabasePersistAction("Revoke system privilege", command.getObject().buildRevokeDDL()));
+    protected String getRevokeActionLabel() {
+        return "Revoke system privilege";
     }
 }

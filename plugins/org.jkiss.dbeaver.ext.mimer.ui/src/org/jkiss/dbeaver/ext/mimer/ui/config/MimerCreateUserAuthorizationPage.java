@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateUserAuthorizationPage extends BaseObjectEditPage {
+public class MimerCreateUserAuthorizationPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerUserAuthorization authorization;
 

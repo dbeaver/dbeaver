@@ -19,36 +19,17 @@ package org.jkiss.dbeaver.ext.mimer.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-
-import java.util.Map;
 
 /**
  * Collects the name and file of a new Mimer SQL databank shadow before it is created.
  *
  * @author Mimer Information Technology
  */
-public class MimerDatabankShadowConfigurator implements DBEObjectConfigurator<MimerDatabankShadow> {
+public class MimerDatabankShadowConfigurator extends AbstractMimerConfigurator<MimerDatabankShadow> {
 
-    @Nullable
+    @NotNull
     @Override
-    public MimerDatabankShadow configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull MimerDatabankShadow shadow,
-        @NotNull Map<String, Object> options
-    ) {
-        return UITask.run(() -> {
-            MimerCreateDatabankShadowPage page = new MimerCreateDatabankShadowPage(shadow);
-            if (!page.edit()) {
-                return null;
-            }
-            page.applyChanges();
-            return shadow;
-        });
+    protected MimerCreatePage createPage(@NotNull MimerDatabankShadow shadow, @Nullable Object container) {
+        return new MimerCreateDatabankShadowPage(shadow);
     }
 }

@@ -23,20 +23,12 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
-import org.jkiss.dbeaver.ext.mimer.model.MimerGroup;
-import org.jkiss.dbeaver.ext.mimer.model.MimerProgram;
 import org.jkiss.dbeaver.ext.mimer.model.MimerStatementPrivilege;
-import org.jkiss.dbeaver.ext.mimer.model.MimerUser;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.stream.Stream;
 
 /**
  * {@code GRANT EXECUTE ON STATEMENT} dialog for Mimer SQL - collects the grantee ident and
@@ -45,9 +37,7 @@ import java.util.stream.Stream;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateStatementPrivilegePage extends BaseObjectEditPage {
-
-    private static final Log log = Log.getLog(MimerCreateStatementPrivilegePage.class);
+public class MimerCreateStatementPrivilegePage extends BaseObjectEditPage implements MimerCreatePage {
 
     private final MimerStatementPrivilege privilege;
 
@@ -74,7 +64,7 @@ public class MimerCreateStatementPrivilegePage extends BaseObjectEditPage {
 
         Combo granteeCombo = UIUtils.createLabelCombo(composite, "Grantee", SWT.DROP_DOWN);
         granteeCombo.setToolTipText(MimerUIMessages.tooltip_grantee_ident);
-        for (String name : loadIdentNames()) {
+        for (String name : MimerIdentPickerUtils.loadIdentNames(privilege.getDataSource())) {
             granteeCombo.add(name);
         }
         granteeCombo.addModifyListener(e -> {
@@ -92,25 +82,6 @@ public class MimerCreateStatementPrivilegePage extends BaseObjectEditPage {
         });
 
         return composite;
-    }
-
-    @NotNull
-    private String[] loadIdentNames() {
-        try {
-            if (privilege.getDataSource() instanceof MimerDataSource ds) {
-                VoidProgressMonitor monitor = new VoidProgressMonitor();
-                return Stream.of(
-                        ds.getUsers(monitor).stream().map(MimerUser::getName),
-                        ds.getGroups(monitor).stream().map(MimerGroup::getName),
-                        ds.getPrograms(monitor).stream().map(MimerProgram::getName))
-                    .flatMap(s -> s)
-                    .sorted()
-                    .toArray(String[]::new);
-            }
-        } catch (Exception e) {
-            log.debug("Can't load ident list for the grant-execute-on-statement dialog", e);
-        }
-        return new String[0];
     }
 
     @Override

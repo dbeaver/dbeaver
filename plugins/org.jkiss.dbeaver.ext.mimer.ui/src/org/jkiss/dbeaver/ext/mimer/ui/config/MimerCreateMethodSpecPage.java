@@ -57,7 +57,7 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerCreateMethodSpecPage extends BaseObjectEditPage {
+public class MimerCreateMethodSpecPage extends BaseObjectEditPage implements MimerCreatePage {
 
     private static final Log log = Log.getLog(MimerCreateMethodSpecPage.class);
 

@@ -17,18 +17,13 @@
 package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
 
@@ -37,7 +32,8 @@ import java.sql.SQLException;
  * grant on a table or view, read from the SQL-standard {@code
  * INFORMATION_SCHEMA.TABLE_PRIVILEGES} view (see {@link PrivilegeCache}), shared by {@link
  * MimerTable}/{@link MimerView} since Mimer SQL's GRANT/REVOKE syntax addresses both with {@code ON
- * TABLE} - there's no separate {@code ON VIEW} form.
+ * TABLE} - there's no separate {@code ON VIEW} form. See {@link AbstractMimerMultiTypePrivilege}
+ * for the shape this and every other selectable-privilege-type grant class share.
  * <p>
  * <b>Not {@code EXT_OBJECT_PRIVILEGES}</b>: that view does not surface grants to a {@code
  * PROGRAM} ident, while {@code TABLE_PRIVILEGES} does, along with Mimer SQL's own {@code
@@ -55,117 +51,29 @@ import java.sql.SQLException;
  *
  * @author Mimer Information Technology
  */
-public class MimerObjectPrivilege implements DBSObject, DBPSaveableObject {
+public class MimerObjectPrivilege extends AbstractMimerMultiTypePrivilege<GenericTableBase> {
 
     // "ALL PRIVILEGES" is a create-only shorthand for GRANT/REVOKE - the catalog never stores a
     // row of that type, so a granted ALL reads back as the individual SELECT/INSERT/... rows.
     public static final String[] PRIVILEGE_TYPES = {"SELECT", "INSERT", "UPDATE", "DELETE", "REFERENCES", "ALL PRIVILEGES"};
 
-    private final GenericTableBase table;
-    private String grantee;
-    private String privilegeType;
-    private String grantor;
-    private boolean grantable;
-    private boolean persisted;
-
     public MimerObjectPrivilege(@NotNull GenericTableBase table, @NotNull JDBCResultSet dbResult) {
-        this.table = table;
-        this.grantee = JDBCUtils.safeGetString(dbResult, "GRANTEE");
-        this.privilegeType = JDBCUtils.safeGetString(dbResult, "PRIVILEGE_TYPE");
-        this.grantor = JDBCUtils.safeGetString(dbResult, "GRANTOR");
-        this.grantable = "YES".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "IS_GRANTABLE"));
-        this.persisted = true;
+        super(table, dbResult);
     }
 
     public MimerObjectPrivilege(@NotNull GenericTableBase table, @NotNull String grantee, @NotNull String privilegeType) {
-        this.table = table;
-        this.grantee = grantee;
-        this.privilegeType = privilegeType;
-        this.persisted = false;
-    }
-
-    // Grantee alone isn't unique per table (the same grantee can hold several privilege
-    // types), so the identity/cache-key name combines both.
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return grantee + " (" + privilegeType + ")";
-    }
-
-    @Property(viewable = true, order = 2)
-    public String getGrantee() {
-        return grantee;
-    }
-
-    public void setGrantee(String grantee) {
-        this.grantee = grantee;
-    }
-
-    @Property(viewable = true, order = 3)
-    public String getPrivilegeType() {
-        return privilegeType;
-    }
-
-    public void setPrivilegeType(String privilegeType) {
-        this.privilegeType = privilegeType;
-    }
-
-    @Property(viewable = true, order = 4)
-    public String getGrantor() {
-        return grantor;
-    }
-
-    @Property(viewable = true, order = 5)
-    public boolean isGrantable() {
-        return grantable;
-    }
-
-    public void setGrantable(boolean grantable) {
-        this.grantable = grantable;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
-
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return table;
-    }
-
-    @NotNull
-    @Override
-    public MimerDataSource getDataSource() {
-        return (MimerDataSource) table.getDataSource();
+        super(table, grantee, privilegeType);
     }
 
     @NotNull
     public GenericTableBase getTable() {
-        return table;
+        return owner;
     }
 
     @NotNull
-    public String buildGrantDDL() {
-        String ddl = "GRANT " + privilegeType + " ON TABLE \"" + table.getSchema().getName() + "\".\"" + table.getName() + "\" TO \"" + grantee + "\"";
-        return grantable ? ddl + " WITH GRANT OPTION" : ddl;
-    }
-
-    @NotNull
-    public String buildRevokeDDL() {
-        return "REVOKE " + privilegeType + " ON TABLE \"" + table.getSchema().getName() + "\".\"" + table.getName() + "\" FROM \"" + grantee + "\"";
+    @Override
+    protected String buildGrantRevokeTargetClause() {
+        return " ON TABLE \"" + owner.getSchema().getName() + "\".\"" + owner.getName() + "\"";
     }
 
     /**

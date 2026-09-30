@@ -132,7 +132,6 @@ public class MimerSchemaManager extends SQLObjectEditor<MimerSchema, MimerDataSo
             return;
         }
         MimerSchema schema = command.getObject();
-        actionList.add(new SQLDatabasePersistAction("Comment schema",
-            MimerUtils.buildCommentDDL(schema, "SCHEMA", "\"" + schema.getName() + "\"", schema.getComment(monitor))));
+        MimerUtils.addCommentModifyAction(actionList, schema, "SCHEMA", "\"" + schema.getName() + "\"", "Comment schema", monitor);
     }
 }
