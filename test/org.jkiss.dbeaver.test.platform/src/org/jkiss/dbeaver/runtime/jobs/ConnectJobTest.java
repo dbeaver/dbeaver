@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.runtime.jobs;
 
+import org.eclipse.core.runtime.IStatus;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -60,5 +63,60 @@ public class ConnectJobTest {
             worker.join(5000);
         }
         Assertions.assertFalse(worker.isAlive());
+    }
+
+    @Test
+    public void canceledConnectionThatIgnoresInterruptionIsDisconnected() throws Exception {
+        AtomicBoolean canceled = new AtomicBoolean();
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        Mockito.when(monitor.isCanceled()).thenAnswer(invocation -> canceled.get());
+
+        DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
+        Mockito.when(container.getName()).thenReturn("Test connection");
+        Mockito.when(container.getDriver()).thenReturn(Mockito.mock(DBPDriver.class));
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch finishInitialization = new CountDownLatch(1);
+        Mockito.when(container.connect(monitor, true, false)).thenAnswer(invocation -> {
+            started.countDown();
+            // Simulate a driver which completes initialization despite cancellation.
+            while (true) {
+                try {
+                    finishInitialization.await();
+                    return true;
+                } catch (InterruptedException ignored) {
+                }
+            }
+        });
+
+        ConnectJob job = new ConnectJob(container);
+        Thread worker = Thread.ofVirtual().start(() -> job.runSync(monitor));
+        try {
+            Assertions.assertTrue(started.await(5, TimeUnit.SECONDS));
+            canceled.set(true);
+        } finally {
+            finishInitialization.countDown();
+            worker.join(5000);
+        }
+        Assertions.assertFalse(worker.isAlive());
+        Assertions.assertEquals(IStatus.CANCEL, job.getConnectStatus().getSeverity());
+        Mockito.verify(container).disconnect(Mockito.any(VoidProgressMonitor.class));
+    }
+
+    @Test
+    public void canceledConnectionExceptionIsReportedAsError() throws Exception {
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        Mockito.when(monitor.isCanceled()).thenReturn(true);
+        DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
+        Mockito.when(container.getName()).thenReturn("Test connection");
+        Mockito.when(container.getDriver()).thenReturn(Mockito.mock(DBPDriver.class));
+        DBException cancellation = new DBException("Connection has been canceled");
+        Mockito.when(container.connect(monitor, true, false)).thenThrow(cancellation);
+
+        ConnectJob job = new ConnectJob(container);
+        job.runSync(monitor);
+
+        Assertions.assertEquals(IStatus.ERROR, job.getConnectStatus().getSeverity());
+        Assertions.assertSame(cancellation, job.getConnectError());
+        Mockito.verify(container, Mockito.never()).disconnect(Mockito.any());
     }
 }
