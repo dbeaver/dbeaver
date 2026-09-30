@@ -1,22 +1,50 @@
- IEclipsePreferences#org-eclipse-ui-workbench:org-jkiss-dbeaver-core {
-        preferences:
-            'org.jkiss.dbeaver.txn.color.committed.background=11,60,0'
-            'org.jkiss.dbeaver.txn.color.reverted.background=72,19,5'
-            'org.jkiss.dbeaver.txn.color.transaction.background=82,52,0'
+ColorDefinition#org-jkiss-dbeaver-txn-color-committed-background {
+    color: #0b3c00;
+}
 
-            'org.jkiss.dbeaver.hex.editor.color.caret=80,80,80'
-            'org.jkiss.dbeaver.hex.editor.color.text=255,255,255'
+ColorDefinition#org-jkiss-dbeaver-txn-color-reverted-background {
+    color: #481305;
+}
 
-            'org.jkiss.dbeaver.xml.editor.color.tag=0,143,207'
-            'org.jkiss.dbeaver.xml.editor.color.text=255,255,255'
-            'org.jkiss.dbeaver.xml.editor.color.comment=255,0,0'
+ColorDefinition#org-jkiss-dbeaver-txn-color-transaction-background {
+    color: #523400;
+}
 
-            'org.jkiss.dbeaver.ui.navigator.node.transient.foreground=71,180,65'
-            'org.jkiss.dbeaver.ui.navigator.node.new.background=41,66,0'
-            'org.jkiss.dbeaver.ui.navigator.node.modified.background=82,52,0'
+ColorDefinition#org-jkiss-dbeaver-hex-editor-color-caret {
+    color: #505050;
+}
 
-            'org.jkiss.dbeaver.ui.navigator.node.foreground=140,140,140'
-            'org.jkiss.dbeaver.ui.navigator.node.statistics.background=105,105,105'
+ColorDefinition#org-jkiss-dbeaver-hex-editor-color-text,
+ColorDefinition#org-jkiss-dbeaver-xml-editor-color-text {
+    color: #ffffff;
+}
+
+ColorDefinition#org-jkiss-dbeaver-xml-editor-color-tag {
+    color: #008fcf;
+}
+
+ColorDefinition#org-jkiss-dbeaver-xml-editor-color-comment {
+    color: #ff0000;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-navigator-node-transient-foreground {
+    color: #47b441;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-navigator-node-new-background {
+    color: #294200;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-navigator-node-modified-background {
+    color: #523400;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-navigator-node-foreground {
+    color: #8c8c8c;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-navigator-node-statistics-background {
+    color: #696969;
 }
 
 Text.readOnlyConnectionUrl {
