@@ -213,7 +213,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
     @NotNull
     public String buildAddFileDDL() {
         StringBuilder sb = new StringBuilder("ALTER DATABANK \"");
-        sb.append(databank.getName()).append("\" ADD FILE '").append(fileName).append('\'');
+        sb.append(databank.getName()).append("\" ADD FILE '").append(fileName.replace("'", "''")).append('\'');
         if (!CommonUtils.isEmptyTrimmed(fileSize)) {
             sb.append(", FILESIZE ").append(fileSize.trim());
         }
@@ -231,7 +231,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
 
     @NotNull
     public String buildDropFileDDL() {
-        return "ALTER DATABANK \"" + databank.getName() + "\" DROP FILE '" + fileName + "'";
+        return "ALTER DATABANK \"" + databank.getName() + "\" DROP FILE '" + fileName.replace("'", "''") + "'";
     }
 
     /**
@@ -252,7 +252,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
         addSizeClause(changedProperties, "maxSize", "MAXSIZE", maxSize, setClauses, dropClauses);
 
         String prefix = "ALTER DATABANK \"" + databank.getName() + "\" "
-            + (databank.isSingleFile() ? "" : "ALTER FILE '" + fileName + "' ");
+            + (databank.isSingleFile() ? "" : "ALTER FILE '" + fileName.replace("'", "''") + "' ");
         List<String> statements = new ArrayList<>(2);
         if (!setClauses.isEmpty()) {
             statements.add(prefix + "SET " + String.join(", ", setClauses));
@@ -273,9 +273,10 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
     @NotNull
     public String buildRenameFileDDL(@NotNull String oldFileName, @NotNull String newFileName) {
         String db = "ALTER DATABANK \"" + databank.getName() + "\" ";
+        String newQuoted = newFileName.trim().replace("'", "''");
         return databank.isSingleFile()
-            ? db + "SET FILE '" + newFileName.trim() + "'"
-            : db + "ALTER FILE '" + oldFileName + "' SET FILE '" + newFileName.trim() + "'";
+            ? db + "SET FILE '" + newQuoted + "'"
+            : db + "ALTER FILE '" + oldFileName.replace("'", "''") + "' SET FILE '" + newQuoted + "'";
     }
 
     /**

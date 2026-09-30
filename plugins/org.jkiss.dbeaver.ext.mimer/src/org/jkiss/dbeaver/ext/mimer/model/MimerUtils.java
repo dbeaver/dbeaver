@@ -275,7 +275,7 @@ public class MimerUtils {
                     sb.append("CREATE COLLATION \"").append(schemaName).append("\".\"").append(collationName).append("\"\n");
                     sb.append("FROM \"").append(baseSchema).append("\".\"").append(baseName).append('"');
                     if (!definition.isEmpty()) {
-                        sb.append("\nUSING '").append(definition).append('\'');
+                        sb.append("\nUSING '").append(definition.toString().replace("'", "''")).append('\'');
                     }
                     return sb.toString();
                 }

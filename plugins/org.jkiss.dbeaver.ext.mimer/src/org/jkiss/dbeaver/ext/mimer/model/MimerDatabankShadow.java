@@ -184,7 +184,7 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
      */
     @NotNull
     public String buildCreateDDL() {
-        return "CREATE SHADOW \"" + name + "\" FOR \"" + databank.getName() + "\" IN '" + fileName + "'";
+        return "CREATE SHADOW \"" + name + "\" FOR \"" + databank.getName() + "\" IN '" + fileName.replace("'", "''") + "'";
     }
 
     @NotNull
@@ -200,7 +200,7 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
     public String buildAlterFileNameDDL() {
         return fileName == null || fileName.isBlank()
             ? null
-            : "ALTER SHADOW \"" + name + "\" INTO '" + fileName.trim() + "'";
+            : "ALTER SHADOW \"" + name + "\" INTO '" + fileName.trim().replace("'", "''") + "'";
     }
 
     /** {@code ALTER SHADOW "n" ADD <pages> PAGES} - extend the shadow file (2K Mimer SQL pages). */
