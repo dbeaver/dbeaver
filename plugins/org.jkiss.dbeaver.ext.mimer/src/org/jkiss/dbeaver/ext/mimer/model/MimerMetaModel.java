@@ -620,6 +620,14 @@ public class MimerMetaModel extends GenericMetaModel {
         // realProcedureNames below - a MimerProcedure's own getUniqueName() falls back to the
         // plain name whenever no specific name was ever assigned.
         Map<String, MimerExternalRoutineInfo> externalInfoByName = new HashMap<>();
+        // Two overloads sharing a plain name (e.g. "dummy(bigint)"/"dummy(nvarchar)") - a case
+        // Mimer SQL genuinely allows - silently loses everything but the first: the base loader's
+        // own GenericObjectContainer#hasProcedure(name) dedup check (in ext.generic, not
+        // overridable) matches by plain name only, with no specific-name awareness, so it treats
+        // the second overload's row as "already seen" and skips it before this class ever gets a
+        // chance to see it. Collected here (from the same ROUTINES scan this method already runs)
+        // and backfilled afterward for any specific name the base loader ended up dropping.
+        List<String[]> nonModuleRoutines = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read Mimer SQL routine types")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT ROUTINE_NAME, SPECIFIC_NAME, ROUTINE_TYPE, MODULE_NAME" +
@@ -632,11 +640,13 @@ public class MimerMetaModel extends GenericMetaModel {
                     while (dbResult.next()) {
                         String routineName = JDBCUtils.safeGetString(dbResult, "ROUTINE_NAME");
                         String specificName = JDBCUtils.safeGetString(dbResult, "SPECIFIC_NAME");
-                        if (JDBCUtils.safeGetStringTrimmed(dbResult, "MODULE_NAME") != null) {
+                        String routineType = JDBCUtils.safeGetStringTrimmed(dbResult, "ROUTINE_TYPE");
+                        boolean isModuleRoutine = JDBCUtils.safeGetStringTrimmed(dbResult, "MODULE_NAME") != null;
+                        if (isModuleRoutine) {
                             moduleRoutineNames.add(routineName);
                             moduleRoutineNames.add(specificName);
                         }
-                        if ("PROCEDURE".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "ROUTINE_TYPE"))) {
+                        if ("PROCEDURE".equalsIgnoreCase(routineType)) {
                             realProcedureNames.add(routineName);
                             realProcedureNames.add(specificName);
                         }
@@ -649,16 +659,49 @@ public class MimerMetaModel extends GenericMetaModel {
                             externalInfoByName.put(routineName, info);
                             externalInfoByName.put(specificName, info);
                         }
+                        if (!isModuleRoutine
+                            && ("PROCEDURE".equalsIgnoreCase(routineType) || "FUNCTION".equalsIgnoreCase(routineType))) {
+                            nonModuleRoutines.add(new String[]{routineName, specificName, routineType});
+                        }
                     }
                 }
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, container.getDataSource());
         }
+        // Mimer's own driver reports overlapping results between getFunctions()/getProcedures()
+        // (the exact situation supportsEqualFunctionsAndProceduresNames() exists to tolerate, see
+        // its own Javadoc) - every genuine function can come with a same-specific-name PROCEDURE-
+        // typed misreport alongside it, which the removeIf below strips back out. Backfilling has
+        // to run AFTER that cleanup, not before: checking "already loaded" against the pre-cleanup
+        // list would see the soon-to-be-removed spurious PROCEDURE entry and wrongly conclude a
+        // missing overload was already covered.
         procedures.removeIf(p ->
             moduleRoutineNames.contains(p.getName()) || moduleRoutineNames.contains(p.getUniqueName()) ||
             (p.getProcedureType() == DBSProcedureType.PROCEDURE
                 && !realProcedureNames.contains(p.getName()) && !realProcedureNames.contains(p.getUniqueName())));
+        Set<String> loadedSpecificNames = new HashSet<>();
+        for (GenericProcedure p : procedures) {
+            loadedSpecificNames.add(p.getUniqueName());
+        }
+        for (String[] routine : nonModuleRoutines) {
+            String routineName = routine[0];
+            String specificName = routine[1];
+            String routineType = routine[2];
+            String identity = specificName != null ? specificName : routineName;
+            if (loadedSpecificNames.contains(identity)) {
+                continue;
+            }
+            DBSProcedureType procedureType = "PROCEDURE".equalsIgnoreCase(routineType)
+                ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION;
+            GenericProcedure backfilled = createProcedureImpl(
+                container, routineName, specificName, null, procedureType,
+                procedureType == DBSProcedureType.FUNCTION ? GenericFunctionResultType.NO_TABLE : null);
+            // addProcedure() appends to this same procedures list (getProcedureCache() returns
+            // the live reference, not a copy) - don't also add() it here, or it ends up twice.
+            container.addProcedure(backfilled);
+            loadedSpecificNames.add(identity);
+        }
         if (supportsExternal) {
             for (GenericProcedure p : procedures) {
                 if (p instanceof MimerProcedure mp) {

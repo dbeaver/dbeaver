@@ -310,65 +310,121 @@ public class MimerUtils {
         @NotNull String routineType
     ) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, procedure.getDataSource(), "Read Mimer SQL routine parameters")) {
-            // Join through ROUTINES so we can filter on the routine NAME (matches getName())
-            // rather than SPECIFIC_NAME, which the Mimer SQL catalog does not always expose to JDBC.
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT p.PARAMETER_NAME, p.PARAMETER_MODE, p.ORDINAL_POSITION, p.DATA_TYPE,\n" +
-                "       p.CHARACTER_MAXIMUM_LENGTH, p.NUMERIC_PRECISION, p.NUMERIC_SCALE\n" +
-                "FROM INFORMATION_SCHEMA.PARAMETERS p\n" +
-                "JOIN INFORMATION_SCHEMA.ROUTINES r\n" +
-                "  ON r.SPECIFIC_SCHEMA = p.SPECIFIC_SCHEMA AND r.SPECIFIC_NAME = p.SPECIFIC_NAME\n" +
-                "WHERE r.ROUTINE_SCHEMA = ? AND r.ROUTINE_NAME = ? AND r.ROUTINE_TYPE = ?\n" +
-                "ORDER BY p.ORDINAL_POSITION")
-            ) {
-                dbStat.setString(1, procedure.getContainer().getName());
-                dbStat.setString(2, procedure.getName());
-                dbStat.setString(3, routineType);
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, "PARAMETER_NAME");
-                        String mode = JDBCUtils.safeGetStringTrimmed(dbResult, "PARAMETER_MODE");
-                        int position = JDBCUtils.safeGetInt(dbResult, "ORDINAL_POSITION");
-                        String typeName = JDBCUtils.safeGetStringTrimmed(dbResult, "DATA_TYPE");
-                        int charLength = JDBCUtils.safeGetInt(dbResult, "CHARACTER_MAXIMUM_LENGTH");
-                        Integer precision = JDBCUtils.safeGetInteger(dbResult, "NUMERIC_PRECISION");
-                        Integer scale = JDBCUtils.safeGetInteger(dbResult, "NUMERIC_SCALE");
-
-                        DBSProcedureParameterKind kind;
-                        if (position == 0 || CommonUtils.isEmpty(mode)) {
-                            // ORDINAL_POSITION 0 (no PARAMETER_MODE) is the function result
-                            kind = procedure.getProcedureType() == DBSProcedureType.FUNCTION
-                                ? DBSProcedureParameterKind.RETURN : DBSProcedureParameterKind.IN;
-                        } else {
-                            kind = switch (mode.toUpperCase()) {
-                                case "OUT" -> DBSProcedureParameterKind.OUT;
-                                case "INOUT" -> DBSProcedureParameterKind.INOUT;
-                                default -> DBSProcedureParameterKind.IN;
-                            };
-                        }
-                        if (CommonUtils.isEmpty(name) && kind == DBSProcedureParameterKind.RETURN) {
-                            name = "RETURN";
-                        }
-
-                        int columnSize = charLength > 0 ? charLength : (precision != null ? precision : 0);
-                        procedure.addColumn(new GenericProcedureParameter(
-                            procedure,
-                            name,
-                            typeName,
-                            resolveTypeId(procedure, typeName),
-                            position,
-                            columnSize,
-                            scale,
-                            precision,
-                            false,
-                            null,
-                            kind));
-                    }
-                }
+            // SPECIFIC_NAME is the only identifier that safely disambiguates two overloads
+            // sharing the same routine name - getUniqueName() already carries it when the
+            // driver reported one at procedure-listing time (the same accessor the Used By/
+            // Uses queries rely on). Only fall back to the coarser ROUTINE_NAME-based query
+            // (which merges every overload's parameters together) when the specific-name query
+            // genuinely finds nothing - covers the case noted below, where the driver didn't
+            // expose a real specific name and getUniqueName() silently fell back to getName().
+            boolean found = loadProcedureColumnsBySpecificName(procedure, session);
+            if (!found) {
+                loadProcedureColumnsByRoutineName(procedure, session, routineType);
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, procedure.getDataSource());
         }
+    }
+
+    private static boolean loadProcedureColumnsBySpecificName(
+        @NotNull GenericProcedure procedure,
+        @NotNull JDBCSession session
+    ) throws SQLException, DBException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT PARAMETER_NAME, PARAMETER_MODE, ORDINAL_POSITION, DATA_TYPE,\n" +
+            "       CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE\n" +
+            "FROM INFORMATION_SCHEMA.PARAMETERS\n" +
+            "WHERE SPECIFIC_SCHEMA = ? AND SPECIFIC_NAME = ?\n" +
+            "ORDER BY ORDINAL_POSITION")
+        ) {
+            dbStat.setString(1, procedure.getContainer().getName());
+            dbStat.setString(2, procedure.getUniqueName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                boolean found = false;
+                while (dbResult.next()) {
+                    found = true;
+                    addProcedureParameter(procedure, dbResult);
+                }
+                return found;
+            }
+        }
+    }
+
+    /**
+     * Join through ROUTINES so we can filter on the routine NAME (matches {@link
+     * GenericProcedure#getName()}) rather than SPECIFIC_NAME, for the case {@link
+     * #loadProcedureColumnsBySpecificName} covers: the Mimer SQL catalog does not always expose
+     * a real specific name to JDBC at procedure-listing time, in which case {@code
+     * getUniqueName()} silently falls back to the plain routine name (see {@code
+     * GenericProcedure#getUniqueName}) - merges every overload's parameters together, but only
+     * reached when there's no reliable specific name to filter on in the first place.
+     */
+    private static void loadProcedureColumnsByRoutineName(
+        @NotNull GenericProcedure procedure,
+        @NotNull JDBCSession session,
+        @NotNull String routineType
+    ) throws SQLException, DBException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT p.PARAMETER_NAME, p.PARAMETER_MODE, p.ORDINAL_POSITION, p.DATA_TYPE,\n" +
+            "       p.CHARACTER_MAXIMUM_LENGTH, p.NUMERIC_PRECISION, p.NUMERIC_SCALE\n" +
+            "FROM INFORMATION_SCHEMA.PARAMETERS p\n" +
+            "JOIN INFORMATION_SCHEMA.ROUTINES r\n" +
+            "  ON r.SPECIFIC_SCHEMA = p.SPECIFIC_SCHEMA AND r.SPECIFIC_NAME = p.SPECIFIC_NAME\n" +
+            "WHERE r.ROUTINE_SCHEMA = ? AND r.ROUTINE_NAME = ? AND r.ROUTINE_TYPE = ?\n" +
+            "ORDER BY p.ORDINAL_POSITION")
+        ) {
+            dbStat.setString(1, procedure.getContainer().getName());
+            dbStat.setString(2, procedure.getName());
+            dbStat.setString(3, routineType);
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    addProcedureParameter(procedure, dbResult);
+                }
+            }
+        }
+    }
+
+    private static void addProcedureParameter(
+        @NotNull GenericProcedure procedure,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
+        String name = JDBCUtils.safeGetString(dbResult, "PARAMETER_NAME");
+        String mode = JDBCUtils.safeGetStringTrimmed(dbResult, "PARAMETER_MODE");
+        int position = JDBCUtils.safeGetInt(dbResult, "ORDINAL_POSITION");
+        String typeName = JDBCUtils.safeGetStringTrimmed(dbResult, "DATA_TYPE");
+        int charLength = JDBCUtils.safeGetInt(dbResult, "CHARACTER_MAXIMUM_LENGTH");
+        Integer precision = JDBCUtils.safeGetInteger(dbResult, "NUMERIC_PRECISION");
+        Integer scale = JDBCUtils.safeGetInteger(dbResult, "NUMERIC_SCALE");
+
+        DBSProcedureParameterKind kind;
+        if (position == 0 || CommonUtils.isEmpty(mode)) {
+            // ORDINAL_POSITION 0 (no PARAMETER_MODE) is the function result
+            kind = procedure.getProcedureType() == DBSProcedureType.FUNCTION
+                ? DBSProcedureParameterKind.RETURN : DBSProcedureParameterKind.IN;
+        } else {
+            kind = switch (mode.toUpperCase()) {
+                case "OUT" -> DBSProcedureParameterKind.OUT;
+                case "INOUT" -> DBSProcedureParameterKind.INOUT;
+                default -> DBSProcedureParameterKind.IN;
+            };
+        }
+        if (CommonUtils.isEmpty(name) && kind == DBSProcedureParameterKind.RETURN) {
+            name = "RETURN";
+        }
+
+        int columnSize = charLength > 0 ? charLength : (precision != null ? precision : 0);
+        procedure.addColumn(new GenericProcedureParameter(
+            procedure,
+            name,
+            typeName,
+            resolveTypeId(procedure, typeName),
+            position,
+            columnSize,
+            scale,
+            precision,
+            false,
+            null,
+            kind));
     }
 
     /**
