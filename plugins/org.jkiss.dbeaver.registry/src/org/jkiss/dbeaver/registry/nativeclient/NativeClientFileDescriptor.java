@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,27 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.nativeclient;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
  * NativeClientDistributionDescriptor
  */
-public class NativeClientFileDescriptor {
+//remove after storage release
+@Deprecated
+public class NativeClientFileDescriptor extends AbstractDescriptor {
     private String type;
     private String name;
+    private String extension;
 
     public NativeClientFileDescriptor(IConfigurationElement config) {
+        super(config);
         this.type = config.getAttribute(RegistryConstants.ATTR_TYPE);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        this.extension = config.getAttribute("extension");
         while (name.startsWith("/")) {
             name = name.substring(1);
         }
