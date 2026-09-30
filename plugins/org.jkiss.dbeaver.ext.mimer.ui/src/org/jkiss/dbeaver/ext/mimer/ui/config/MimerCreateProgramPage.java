@@ -38,6 +38,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class MimerCreateProgramPage extends BaseObjectEditPage implements MimerCreatePage {
 
+    private static final int MAX_PASSWORD_LENGTH = 18;
+
     private final MimerProgram program;
 
     private String name = "";
@@ -68,6 +70,7 @@ public class MimerCreateProgramPage extends BaseObjectEditPage implements MimerC
 
         Text passwordText = UIUtils.createLabelText(group, "Password", "", SWT.BORDER | SWT.PASSWORD);
         passwordText.setMessage(MimerUIMessages.page_create_program_password_placeholder);
+        passwordText.setTextLimit(MAX_PASSWORD_LENGTH);
         passwordText.addModifyListener(e -> {
             password = passwordText.getText();
             updatePageState();
@@ -78,7 +81,8 @@ public class MimerCreateProgramPage extends BaseObjectEditPage implements MimerC
 
     @Override
     public boolean isPageComplete() {
-        return !CommonUtils.isEmptyTrimmed(name) && !CommonUtils.isEmpty(password);
+        return !CommonUtils.isEmptyTrimmed(name) && !CommonUtils.isEmpty(password)
+            && password.length() <= MAX_PASSWORD_LENGTH;
     }
 
     /**
