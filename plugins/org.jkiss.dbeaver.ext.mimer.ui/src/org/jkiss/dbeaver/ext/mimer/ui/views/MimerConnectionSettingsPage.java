@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mimer.MimerConstants;
+import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -68,15 +69,10 @@ public class MimerConnectionSettingsPage extends ConnectionPageAbstract {
             protocolCombo.add(label);
         }
         protocolCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        protocolCombo.setToolTipText(
-            "TCP/IP connects over the network (the default; same as omitting the protocol).\n" +
-            "Local uses shared-memory IPC and only works when the server runs on this machine - " +
-            "Host/Port are ignored.");
+        protocolCombo.setToolTipText(MimerUIMessages.page_connection_settings_protocol_tooltip);
 
         Composite programGroup = UIUtils.createTitledComposite(container, "Program", 2, GridData.FILL_HORIZONTAL);
-        programGroup.setToolTipText(
-            "Mimer SQL's PROGRAM security layer (\"ENTER <program> USING <password>\"). " +
-            "Leave both blank if the databank doesn't use it.");
+        programGroup.setToolTipText(MimerUIMessages.page_connection_settings_program_tooltip);
 
         programText = UIUtils.createLabelText(programGroup, "Program", "");
         programPasswordText = UIUtils.createLabelText(programGroup, "Program Password", "", SWT.BORDER | SWT.PASSWORD);

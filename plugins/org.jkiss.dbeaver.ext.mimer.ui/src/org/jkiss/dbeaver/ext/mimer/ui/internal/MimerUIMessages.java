@@ -88,6 +88,10 @@ public final class MimerUIMessages extends NLS {
     // MimerCreateIndexPage
     public static String page_create_index_name_error;
 
+    // MimerConnectionSettingsPage
+    public static String page_connection_settings_protocol_tooltip;
+    public static String page_connection_settings_program_tooltip;
+
     // Shared tooltips (identical text reused across several create-dialog pages)
     public static String tooltip_grantee_ident_public_program;
     public static String tooltip_grantee_ident;
