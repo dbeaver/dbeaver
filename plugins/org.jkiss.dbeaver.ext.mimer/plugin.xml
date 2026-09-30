@@ -16,7 +16,7 @@
                 id="mimer"
                 parent="generic"
                 label="%datasource.mimer.name"
-                icon="icons/mimer_icon.png"
+                icon="icons/mimer_icon.svg"
                 dialect="mimer">
 
             <tree path="mimer" label="%datasource.mimer.tree.name" supportsEntityMerge="true">
@@ -484,8 +484,8 @@
                 <driver
                         id="mimer"
                         label="%driver.mimer.name"
-                        icon="icons/mimer_icon.png"
-                        iconBig="icons/mimer_icon_big.png"
+                        icon="icons/mimer_icon.svg"
+                        iconBig="icons/mimer_icon_big.svg"
                         class="com.mimer.jdbc.Driver"
                         sampleURL="jdbc:mimer://{host}:{port}/{database}"
                         defaultPort="1360"
@@ -533,7 +533,7 @@
                  class="org.jkiss.dbeaver.ext.mimer.model.MimerSQLDialect"
                  label="%dialect.mimer.name"
                  description="%dialect.mimer.description"
-                 icon="icons/mimer_icon.png"/>
+                 icon="icons/mimer_icon.svg"/>
     </extension>
 
     <!-- Mimer SQL's four GIS types - see MimerGisPointValueHandler/MimerGisScalarValueHandler
