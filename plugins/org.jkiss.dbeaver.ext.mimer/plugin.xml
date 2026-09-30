@@ -513,7 +513,7 @@
                          connect time, so the field is just "Database" - not generic's
                          default "Database/Schema" fallback label. -->
                     <parameter name="term-database" value="Database"/>
-                    <!-- The plain JDBC Connection#getSchema()/#setSchema() API the curren mimjdbc3 exposes
+                    <!-- The plain JDBC Connection#getSchema()/#setSchema() API the current mimjdbc3 exposes
                          is Mimer SQL 11.1+ only - pre-11.1 it throws an exception.
                          Without this parameter, GenericExecutionContext
                          falls back to that unsupported API for "Execute -> Set Active Schema",
