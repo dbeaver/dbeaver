@@ -95,7 +95,7 @@ IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
     background-color: #2F2F2F;
 }
 
-.MPart Table {
+.MPartStack .MPart Table {
     background-color: #2F2F2F;
 }
 
