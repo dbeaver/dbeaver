@@ -4712,7 +4712,12 @@ public class ResultSetViewer extends Viewer
                 }
                 //fire selection change to update selection statistics in ResultSetStatListener
                 fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
-                if (success && getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
+                boolean refreshAll = model.getSingleSource() instanceof DBSDataManipulator manipulator
+                    && manipulator.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_REFRESH_AFTER_UPDATE);
+                if (success && refreshAll) {
+                    // The save has already completed. A failed refresh must not reapply its mutations.
+                    UIUtils.asyncExec(() -> refreshData(null));
+                } else if (success && getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
                     // Refresh updated rows
                     try {
                         persister.refreshInsertedRows();
