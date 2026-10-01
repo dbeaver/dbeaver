@@ -1141,13 +1141,6 @@
                 toggleMessage="default"
                 group="%confirmation.group.general.actions"/>
         <confirmation
-                id="disable_network_handler"
-                title="%confirm.disable_network_handler.title"
-                description="%confirm.disable_network_handler.tip"
-                message="%confirm.disable_network_handler.message"
-                toggleMessage="default"
-                group="%confirmation.group.general.actions"/>
-        <confirmation
                 id="test_connection_persist"
                 title="%confirm.test_connection_persist.title"
                 description="%confirm.test_connection_persist.tip"

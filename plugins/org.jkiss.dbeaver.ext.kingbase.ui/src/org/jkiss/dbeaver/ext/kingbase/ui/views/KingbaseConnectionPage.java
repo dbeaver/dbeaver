@@ -21,10 +21,7 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -41,7 +38,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
@@ -63,19 +59,7 @@ public class KingbaseConnectionPage extends ConnectionPageWithAuth implements ID
     private boolean activated = false;
 
     @Override
-    public void dispose() {
-        super.dispose();
-    }
-    
-    @Override
-    public Image getImage() {
-        final DBPDriver driver = site.getDriver();
-        PostgreServerType serverType = getServerType(driver);
-        return DBeaverIcons.getImage(serverType.getIcon());
-    }
-
-    @Override
-    public void createControl(Composite composite) {
+    public void createControl(@NotNull Composite composite) {
         final ModifyListener textListener = e -> {
             if (activated) {
                 super.updateUrl(urlText);
