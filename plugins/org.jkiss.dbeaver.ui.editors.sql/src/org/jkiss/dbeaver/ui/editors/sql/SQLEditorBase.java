@@ -161,26 +161,35 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         super();
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
+        boolean preserveThemeColors = DBWorkbench.getPlatform().getApplication().isStandalone();
         themeListener = new IPropertyChangeListener() {
+            long lastUpdateTime;
             long updateSequence;
 
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
-                    long scheduledUpdate = ++updateSequence;
-                    // Theme changes can trigger hundreds of events. Refresh once after the final color is applied.
-                    UIUtils.timerExec(500, () -> {
-                        if (scheduledUpdate != updateSequence) {
-                            return;
-                        }
+                    Runnable refreshSyntaxColors = () -> {
                         ISourceViewer sourceViewer = getSourceViewer();
                         if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
                             reloadSyntaxRules();
                             // Reconfigure to let comments/strings colors to take effect
                             sourceViewer.configure(getSourceViewerConfiguration());
                         }
-                    });
+                    };
+                    if (preserveThemeColors) {
+                        long scheduledUpdate = ++updateSequence;
+                        // Theme changes can trigger hundreds of events. Refresh once after the final color is applied.
+                        UIUtils.timerExec(500, () -> {
+                            if (scheduledUpdate == updateSequence) {
+                                refreshSyntaxColors.run();
+                            }
+                        });
+                    } else if (lastUpdateTime == 0 || System.currentTimeMillis() - lastUpdateTime >= 500) {
+                        lastUpdateTime = System.currentTimeMillis();
+                        UIUtils.asyncExec(refreshSyntaxColors);
+                    }
                 }
             }
         };

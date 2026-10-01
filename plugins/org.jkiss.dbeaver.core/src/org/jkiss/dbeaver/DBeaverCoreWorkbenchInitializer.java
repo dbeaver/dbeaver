@@ -53,7 +53,9 @@ public class DBeaverCoreWorkbenchInitializer implements IWorkbenchWindowInitiali
 
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
-        initializeThemePreferences();
+        if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
+            initializeThemePreferences();
+        }
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             WorkbenchUtils.removePreferencePages(PrefPageConnectionsGeneral.PAGE_ID + "/" + PrefPageConnectionTypes.PAGE_ID);
             WorkbenchUtils.removePreferencePages(PrefPageConnectionsGeneral.PAGE_ID + "/" + PrefPageTransactions.PAGE_ID);
