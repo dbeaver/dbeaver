@@ -38,7 +38,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -47,76 +46,6 @@ import java.util.jar.Manifest;
 public class CDataLicenseParserTest extends DBeaverUnitTest {
     @TempDir
     Path tempDirectory;
-
-    @Test
-    public void parseDriverInformation() {
-        Assertions.assertEquals(CDataLicenseStatus.NOT_INSTALLED, parseInformation("No License").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.TRIAL_ACTIVE, parseInformation("Trial license, 20 days remaining").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.TRIAL_EXPIRING, parseInformation("Trial license expires in 3 days").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.TRIAL_EXPIRED, parseInformation("Trial license has expired").getStatus());
-        Assertions.assertEquals(
-            CDataLicenseStatus.TRIAL_ACTIVE,
-            parseInformation("Limited Trial Version - EXPIRING TRIAL [29 DAYS LEFT]").getStatus()
-        );
-        Assertions.assertEquals(
-            CDataLicenseStatus.TRIAL_EXPIRING,
-            parseInformation("Limited Trial Version - EXPIRING TRIAL [3 DAYS LEFT]").getStatus()
-        );
-        Assertions.assertEquals(
-            CDataLicenseStatus.TRIAL_EXPIRED,
-            parseInformation("Limited Trial Version - EXPIRED").getStatus()
-        );
-        Assertions.assertEquals(CDataLicenseStatus.PURCHASED_ACTIVE, parseInformation("Single Developer License").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.PURCHASED_EXPIRING, parseInformation("License expires in 2 days").getStatus());
-        Assertions.assertEquals(
-            CDataLicenseStatus.PURCHASED_EXPIRING,
-            parseInformation("Single Developer License, 2 days left").getStatus()
-        );
-        Assertions.assertEquals(CDataLicenseStatus.MACHINE_MISMATCH, parseInformation("License machine mismatch").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.WRONG_MAJOR_VERSION, parseInformation("License version mismatch").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Unknown License").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Unexpected vendor response").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Trial license not installed").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Trial validation unavailable").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.INVALID_KEY, parseInformation("Invalid trial license").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.INVALID_KEY, parseInformation("Trial license is invalid").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("Trial license validation failed").getStatus());
-        Assertions.assertEquals(
-            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
-            parseInformation("Purchased license validation failed").getStatus()
-        );
-        Assertions.assertEquals(
-            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
-            parseInformation("Single Developer License inactive").getStatus()
-        );
-        Assertions.assertEquals(
-            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
-            parseInformation("Single Developer License revoked").getStatus()
-        );
-        Assertions.assertEquals(
-            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
-            CDataLicenseParser.parseInformation(Map.of("NodeId", "test-node")).getStatus()
-        );
-        Assertions.assertEquals(29, parseInformation("Limited Trial Version - EXPIRING TRIAL [29 DAYS LEFT]").getRemainingDays());
-        Assertions.assertNull(parseInformation("Single Developer License").getRemainingDays());
-    }
-
-    @Test
-    public void recognizeGenericPurchasedLicenseBeforeExpirationWarning() {
-        for (int days : List.of(0, 1, 3, 4, 20)) {
-            for (String information : List.of("License expires in " + days + " days", "License: " + days + " days remaining")) {
-                CDataDriverLicense license = parseInformation(information);
-                Assertions.assertEquals(days, license.getRemainingDays(), information);
-                Assertions.assertEquals(days <= 3 ? CDataLicenseStatus.PURCHASED_EXPIRING : CDataLicenseStatus.PURCHASED_ACTIVE,
-                    license.getStatus(), information);
-            }
-        }
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parseInformation("License").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.VALIDATION_UNAVAILABLE,
-            parseInformation("License expires in 20 days, validation unavailable").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.TRIAL_ACTIVE, parseInformation("Trial license expires in 20 days").getStatus());
-        Assertions.assertEquals(CDataLicenseStatus.PURCHASED_EXPIRING, parseInformation("License expiring").getStatus());
-    }
 
     @Test
     public void parseActivationFailureReason() {
@@ -436,29 +365,6 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void licenseProbeReportsFailureCause() throws Exception {
-        Path modelBundle = Path.of(CDataLicenseProbe.class.getProtectionDomain()
-            .getCodeSource()
-            .getLocation()
-            .toURI());
-        CDataProcessExecutor.ProcessResult result = CDataProcessExecutor.execute(
-            new VoidProgressMonitor(),
-            List.of(
-                GeneralUtils.findJavaExecutable(),
-                "-cp",
-                modelBundle.toString(),
-                CDataLicenseProbe.class.getName(),
-                "missing.Driver"
-            ),
-            modelBundle.toFile().isDirectory() ? modelBundle : modelBundle.getParent(),
-            "CData probe diagnostic test",
-            List.of()
-        );
-        Assertions.assertEquals(2, result.exitCode());
-        Assertions.assertTrue(result.output().contains(CDataLicenseProbe.ERROR_PREFIX));
-    }
-
-    @Test
     public void releaseActivationFileLockBeforeEnteringLoader() throws Exception {
         Path packageFolder = Files.createDirectories(
             CDataDriverLoaderDescriptor.getStoragePath().resolve("drivers/cdata.jdbc.postgresql"));
@@ -484,7 +390,7 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
             Files.writeString(resolved.licensePath(), "previous-license");
             CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
             Mockito.when(driver.getDriverInfo()).thenReturn(new CDataDriverInfo(
-                "postgresql", "postgresql-jdbc", "Test driver", 2026, CDataDriverTier.PROFESSIONAL, "https://example.org"));
+                "postgresql", "postgresql", "Test driver", 2026, CDataDriverTier.PROFESSIONAL, "https://example.org", "postgresql", null));
             Mockito.when(driver.beginLicenseActivationProcess()).thenReturn(true);
             Mockito.when(driver.getCurrentLicense()).thenCallRealMethod();
             DBPDriverLibrary library = Mockito.mock(DBPDriverLibrary.class);
@@ -632,45 +538,6 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         }
     }
 
-    @Test
-    public void doNotDiscardALicenseCDataRefusesToRecognize() throws Exception {
-        // A purchased license is bound to a registered calling class, so the external probe reports
-        // it as "No License". Discarding it on that basis burns a paid activation.
-        Path folder = Files.createDirectories(tempDirectory.resolve("cdata.jdbc.gmail/26"));
-        CDataResolvedDriver resolved = resolvedAt(folder);
-
-        Assertions.assertEquals(
-            CDataLicenseStatus.NOT_INSTALLED,
-            keep(CDataLicenseStatus.NOT_INSTALLED, resolved),
-            "no license file - nothing is installed"
-        );
-
-        Files.writeString(resolved.licensePath(), "purchased-license");
-        Assertions.assertEquals(
-            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
-            keep(CDataLicenseStatus.NOT_INSTALLED, resolved),
-            "the file is there - the state is unknown, not absent"
-        );
-        Assertions.assertTrue(keep(CDataLicenseStatus.NOT_INSTALLED, resolved).allowsDriverUsage());
-
-        // a license CData does recognize as bad still blocks
-        for (CDataLicenseStatus bad : new CDataLicenseStatus[]{
-            CDataLicenseStatus.EXPIRED, CDataLicenseStatus.TRIAL_EXPIRED, CDataLicenseStatus.MACHINE_MISMATCH}) {
-            Assertions.assertEquals(bad, keep(bad, resolved));
-            Assertions.assertFalse(bad.allowsDriverUsage());
-        }
-        Assertions.assertEquals(CDataLicenseStatus.TRIAL_ACTIVE, keep(CDataLicenseStatus.TRIAL_ACTIVE, resolved));
-    }
-
-    @NotNull
-    private static CDataLicenseStatus keep(
-        @NotNull CDataLicenseStatus status,
-        @NotNull CDataResolvedDriver resolved
-    ) {
-        return CDataLicenseValidator.keepInstalledLicense(
-            new CDataDriverLicense(status, "", null), resolved).getStatus();
-    }
-
     @NotNull
     private static CDataResolvedDriver resolvedAt(@NotNull Path majorFolder) {
         Path jar = majorFolder.resolve("cdata.jdbc.postgresql.jar");
@@ -681,8 +548,4 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         );
     }
 
-    @NotNull
-    private static CDataDriverLicense parseInformation(@NotNull String license) {
-        return CDataLicenseParser.parseInformation(Map.of("License", license, "NodeId", "test-node"));
-    }
 }

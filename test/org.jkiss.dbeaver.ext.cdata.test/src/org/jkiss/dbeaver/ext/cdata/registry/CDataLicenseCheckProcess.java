@@ -7,7 +7,6 @@
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +15,24 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
-import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 
-public enum CDataDriverTier {
-    @SerializedName("Professional")
-    PROFESSIONAL,
-    @SerializedName("Premium")
-    PREMIUM
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public final class CDataLicenseCheckProcess {
+    private CDataLicenseCheckProcess() {
+    }
+
+    public static void main(@NotNull String[] args) throws IOException {
+        if (args.length != 1 || !"--check-license".equals(args[0])) {
+            System.exit(2);
+            return;
+        }
+        Files.copy(Path.of("license-check.json"), System.out);
+        if (Files.exists(Path.of("fail-check"))) {
+            System.exit(2);
+        }
+    }
 }

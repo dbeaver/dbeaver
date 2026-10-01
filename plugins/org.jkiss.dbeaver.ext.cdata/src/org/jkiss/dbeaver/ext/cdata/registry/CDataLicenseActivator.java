@@ -147,6 +147,9 @@ public final class CDataLicenseActivator {
             if (Boolean.TRUE.equals(updateCurrentDriver)) {
                 driver.setCurrentLicense(verifiedLicense);
             }
+            if (verifiedLicense.isValidLicense()) {
+                CDataLicenseActivationReporter.report(driver.getDriverInfo(), resolvedDriver, request);
+            }
             monitor.worked(1);
             return verifiedLicense;
         } catch (CDataLicenseActivationException e) {

@@ -16,23 +16,18 @@
 package org.jkiss.dbeaver.ext.cdata.registry;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.FileMutex;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Base64;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 final class CDataLicenseValidator {
     private static final Log log = Log.getLog(CDataLicenseValidator.class);
@@ -62,78 +57,37 @@ final class CDataLicenseValidator {
         @NotNull CDataResolvedDriver resolvedDriver
     ) throws DBException {
         try {
-            Path probeLocation = Path.of(CDataLicenseProbe.class.getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI());
-            Path probeClass = Path.of(CDataLicenseProbe.class.getName().replace('.', File.separatorChar) + ".class");
-            if (Files.isDirectory(probeLocation) && !Files.isRegularFile(probeLocation.resolve(probeClass))) {
-                Path devClasses = probeLocation.resolve("target/classes");
-                if (Files.isRegularFile(devClasses.resolve(probeClass))) {
-                    probeLocation = devClasses;
-                }
-            }
             CDataProcessExecutor.ProcessResult result = CDataProcessExecutor.execute(
                 monitor,
                 List.of(
                     GeneralUtils.findJavaExecutable(),
-                    "-cp",
-                    probeLocation + File.pathSeparator + resolvedDriver.jarPath(),
-                    CDataLicenseProbe.class.getName(),
-                    resolvedDriver.driverClassName()
+                    "-jar",
+                    resolvedDriver.jarPath().toString(),
+                    "--check-license"
                 ),
                 resolvedDriver.jarPath().getParent(),
                 "CData license validation",
                 List.of()
             );
+            CDataDriverLicense parsed = CDataLicenseParser.parseLicenseCheck(result.output(), LocalDate.now());
             if (result.exitCode() != 0) {
-                String error = decode(result.output(), CDataLicenseProbe.ERROR_PREFIX);
-                log.warn("CData license validation probe failed with exit code " + result.exitCode() +
-                    (error == null ? "" : ": " + error));
-                return unavailable();
+                log.warn("CData license validation failed with exit code " + result.exitCode());
+                if (parsed.getStatus().isValid()) {
+                    return unavailable();
+                }
             }
-            String license = decode(result.output(), CDataLicenseProbe.LICENSE_PREFIX);
-            String nodeId = decode(result.output(), CDataLicenseProbe.NODE_PREFIX);
-            if (license == null || nodeId == null) {
-                log.warn("CData license validation probe returned an incomplete response");
-                return unavailable();
+            if (parsed.getStatus() == CDataLicenseStatus.INVALID_KEY && !Files.isRegularFile(resolvedDriver.licensePath())) {
+                return new CDataDriverLicense(CDataLicenseStatus.NOT_INSTALLED, "", null);
             }
-            CDataDriverLicense parsed = CDataLicenseParser.parseInformation(Map.of("License", license, "NodeId", nodeId));
-            parsed = keepInstalledLicense(parsed, resolvedDriver);
-            if (!parsed.getStatus().allowsDriverUsage()) {
+            if (!parsed.getStatus().isValid()) {
                 log.warn("CData reports the license of " + resolvedDriver.jarPath().getFileName() +
-                    " as " + parsed.getStatus() + ": \"" + license.replaceAll("\\s+", " ").strip() + "\"");
+                    " as " + parsed.getStatus());
             }
             return parsed;
-        } catch (IOException | URISyntaxException | RuntimeException e) {
-            log.warn("CData license validation probe could not be started", e);
+        } catch (IOException | RuntimeException e) {
+            log.warn("Unable to check the CData license", e);
             return unavailable();
         }
-    }
-
-    // the external probe's calling class is not registered with CData, so purchased licenses may appear as "No License"
-    @NotNull
-    static CDataDriverLicense keepInstalledLicense(
-        @NotNull CDataDriverLicense parsed,
-        @NotNull CDataResolvedDriver resolvedDriver
-    ) {
-        if (parsed.getStatus() != CDataLicenseStatus.NOT_INSTALLED ||
-            !Files.isRegularFile(resolvedDriver.licensePath())
-        ) {
-            return parsed;
-        }
-        log.debug("CData does not recognize the installed license of " + resolvedDriver.jarPath().getFileName());
-        return new CDataDriverLicense(CDataLicenseStatus.VALIDATION_UNAVAILABLE, parsed.getLicenseId(), null);
-    }
-
-    @Nullable
-    private static String decode(@NotNull String output, @NotNull String prefix) {
-        for (String line : output.lines().toList()) {
-            if (line.startsWith(prefix)) {
-                return new String(Base64.getDecoder().decode(line.substring(prefix.length())), StandardCharsets.UTF_8);
-            }
-        }
-        return null;
     }
 
     @NotNull

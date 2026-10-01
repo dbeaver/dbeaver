@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ext.cdata.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService;
 import org.jkiss.dbeaver.ext.cdata.model.CDataIcons;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriverLicense;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
@@ -42,6 +44,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     private static final long ICON_RETRY_NANOS = TimeUnit.MINUTES.toNanos(5);
 
     private final CDataDriverInfo driverInfo;
+    private DBPDataSourceType dataSourceType;
     private final Object licenseActivationLock = new Object();
     private final AtomicBoolean activationDialogInProgress = new AtomicBoolean();
     private final AtomicBoolean activationProcessInProgress = new AtomicBoolean();
@@ -69,6 +72,15 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     @NotNull
     public CDataDriverInfo getDriverInfo() {
         return driverInfo;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceType getDataSourceType() {
+        if (dataSourceType == null) {
+            dataSourceType = getProviderDescriptor().getRegistry().resolveDataSourceType(driverInfo.dataTypeId(), this);
+        }
+        return dataSourceType;
     }
 
     @Override
@@ -166,6 +178,18 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     @Override
     public String getDriverPurchaseURL() {
         return driverInfo.purchaseUrl();
+    }
+
+    @Nullable
+    @Override
+    public String getPropertiesWebURL() {
+        return driverInfo.documentationUrl();
+    }
+
+    @Nullable
+    @Override
+    public String getDatabaseDocumentationSuffixURL() {
+        return driverInfo.documentationUrl();
     }
 
     @NotNull
