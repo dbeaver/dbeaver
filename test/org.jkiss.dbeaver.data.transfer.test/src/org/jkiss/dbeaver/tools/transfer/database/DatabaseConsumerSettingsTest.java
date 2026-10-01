@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -45,16 +44,23 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DatabaseConsumerSettingsTest extends DBeaverUnitTest {
+    @TempDir
+    Path tempDirectory;
+
     private DBPProject project;
     private DBPDataSourceContainer dataSourceContainer;
     private DBSObjectContainer schema;
@@ -63,7 +69,7 @@ public class DatabaseConsumerSettingsTest extends DBeaverUnitTest {
     private StreamEntityMapping source;
 
     @BeforeEach
-    public void setUp() throws DBException {
+    public void setUp() throws DBException, IOException {
         project = Mockito.mock(DBPProject.class, Mockito.RETURNS_DEEP_STUBS);
         dataSourceContainer = Mockito.mock(DBPDataSourceContainer.class);
         DBPDataSource dataSource = Mockito.mock(DBPDataSource.class, Mockito.withSettings().extraInterfaces(DBSObjectContainer.class));
@@ -91,7 +97,9 @@ public class DatabaseConsumerSettingsTest extends DBeaverUnitTest {
         Mockito.when(targetColumn.getName()).thenReturn("renamed_column");
         Mockito.doReturn(List.of(targetColumn)).when(target).getAttributes(Mockito.any());
 
-        source = new StreamEntityMapping(Path.of("source.csv"));
+        Path sourceFile = tempDirectory.resolve("source.csv");
+        Files.writeString(sourceFile, "source_column,ignored_column\nvalue,ignored\n");
+        source = new StreamEntityMapping(sourceFile);
         source.getStreamColumns().add(new StreamDataImporterColumnInfo(source, 0, "source_column", "VARCHAR", 100, DBPDataKind.STRING));
         source.getStreamColumns().add(new StreamDataImporterColumnInfo(source, 1, "ignored_column", "VARCHAR", 100, DBPDataKind.STRING));
     }
@@ -135,6 +143,54 @@ public class DatabaseConsumerSettingsTest extends DBeaverUnitTest {
                 preferences.setValue(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE, previousReconnect);
             }
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void savingStreamExportPreservesDeferredDatabaseSettings(boolean hasSavedSettings) throws DBException {
+        DataTransferRegistry registry = DataTransferRegistry.getInstance();
+        var databaseConsumer = registry.getNodeByType(DatabaseTransferConsumer.class);
+        var streamConsumer = registry.getNodeByType(StreamTransferConsumer.class);
+        Map<String, Object> savedDatabaseSettings = hasSavedSettings ? getSavedConfiguration() : Map.of();
+        Map<String, Object> configuration = new LinkedHashMap<>();
+        configuration.put(DTConstants.PROP_CONSUMER_TYPE, databaseConsumer.getId());
+        configuration.put(StreamTransferConsumer.class.getSimpleName(), Map.of("outputFilePattern", "saved_pattern"));
+        if (hasSavedSettings) {
+            configuration.put(DatabaseTransferConsumer.class.getSimpleName(), savedDatabaseSettings);
+        }
+        DataTransferSettings transferSettings = new DataTransferSettings(
+            List.of(new DatabaseTransferProducer(source)),
+            null,
+            project,
+            configuration,
+            new DataTransferState(),
+            true,
+            true,
+            false,
+            false
+        );
+        transferSettings.getNodeSettings(databaseConsumer);
+        Map<String, Object> beforeLoading = new LinkedHashMap<>();
+        transferSettings.saveNodeSettings(databaseConsumer, beforeLoading);
+        Assertions.assertEquals(savedDatabaseSettings, beforeLoading);
+        Assertions.assertFalse(transferSettings.isNodeSettingsLoaded());
+        transferSettings.selectConsumer(streamConsumer, null, true);
+        transferSettings.loadNodeSettings(monitor);
+        StreamConsumerSettings streamSettings = (StreamConsumerSettings) transferSettings.getNodeSettings(streamConsumer);
+        streamSettings.setOutputFilePattern("edited_pattern");
+
+        Map<String, Object> databaseSection = new LinkedHashMap<>();
+        transferSettings.saveNodeSettings(databaseConsumer, databaseSection);
+        Assertions.assertEquals(savedDatabaseSettings, databaseSection);
+        Map<String, Object> streamSection = new LinkedHashMap<>();
+        transferSettings.saveNodeSettings(streamConsumer, streamSection);
+        Assertions.assertEquals("edited_pattern", streamSection.get("outputFilePattern"));
+        configuration.put(DatabaseTransferConsumer.class.getSimpleName(), databaseSection);
+        Map<String, Object> savedAgain = new LinkedHashMap<>();
+        transferSettings.saveNodeSettings(databaseConsumer, savedAgain);
+        Assertions.assertEquals(savedDatabaseSettings, savedAgain);
+        Mockito.verify(dataSourceContainer, Mockito.never()).connect(Mockito.any(), Mockito.anyBoolean(), Mockito.anyBoolean());
+        Assertions.assertFalse(transferSettings.getState().hasErrors());
     }
 
     @Test
@@ -183,10 +239,20 @@ public class DatabaseConsumerSettingsTest extends DBeaverUnitTest {
         transferSettings.selectConsumer(streamConsumer, null, true);
         transferSettings.loadNodeSettings(monitor);
         Assertions.assertEquals("edited_pattern", streamSettings.getOutputFilePattern());
+        Map<String, Object> databaseSection = new LinkedHashMap<>();
+        transferSettings.saveNodeSettings(databaseConsumer, databaseSection);
+        Assertions.assertEquals(321, databaseSection.get("commitAfterRows"));
+        Assertions.assertEquals(getSavedConfiguration().get("entityId"), databaseSection.get("entityId"));
+        Map<String, Object> producerSection = new LinkedHashMap<>();
+        transferSettings.saveNodeSettings(transferSettings.getProducer(), producerSection);
+        Assertions.assertEquals(456, producerSection.get("fetchSize"));
         transferSettings.selectConsumer(databaseConsumer, null, true);
         transferSettings.loadNodeSettings(monitor);
         Assertions.assertEquals(321, databaseSettings.getCommitAfterRows());
         assertMappings(databaseSettings, (DatabaseTransferConsumer) transferSettings.getDataPipes().getFirst().getConsumer());
+        databaseSection.clear();
+        transferSettings.saveNodeSettings(databaseConsumer, databaseSection);
+        Assertions.assertEquals(321, databaseSection.get("commitAfterRows"));
         Assertions.assertFalse(transferSettings.getState().hasErrors());
     }
 
@@ -212,7 +278,11 @@ public class DatabaseConsumerSettingsTest extends DBeaverUnitTest {
             List.of(new StreamTransferProducer(source)),
             List.of(consumer),
             project,
-            Map.of(DTConstants.PROP_PRODUCER_TYPE, StreamTransferProducer.NODE_ID),
+            Map.of(
+                DTConstants.PROP_PRODUCER_TYPE, StreamTransferProducer.NODE_ID,
+                DTConstants.PROP_PROCESSOR_TYPE, "stream.csv",
+                DatabaseTransferConsumer.class.getSimpleName(), configuration
+            ),
             new DataTransferState(),
             true,
             false,
@@ -220,8 +290,13 @@ public class DatabaseConsumerSettingsTest extends DBeaverUnitTest {
             taskRunning
         );
         DatabaseConsumerSettings settings = (DatabaseConsumerSettings) transferSettings.getNodeSettings(consumer);
-        settings.loadSettings(new MonitorRunnableContext(monitor), transferSettings, configuration);
-        transferSettings.getDataPipes().getFirst().initPipe(transferSettings, 0, 1);
+        transferSettings.loadNodeSettings(monitor);
+
+        Map<String, Object> expectedSettings = new LinkedHashMap<>();
+        settings.saveSettings(expectedSettings);
+        Map<String, Object> savedSettings = new LinkedHashMap<>();
+        transferSettings.saveNodeSettings(transferSettings.getConsumer(), savedSettings);
+        Assertions.assertEquals(expectedSettings, savedSettings);
 
         Assertions.assertFalse(transferSettings.getState().hasErrors());
         assertMappings(settings, consumer);

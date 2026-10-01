@@ -499,6 +499,20 @@ public class DataTransferSettings implements DBTTaskSettings {
         return JSONUtils.getObject(configurationMap, node.getNodeClass().getSimpleName());
     }
 
+    public void saveNodeSettings(@NotNull DataTransferNodeDescriptor node, @NotNull Map<String, Object> nodeSection) {
+        if (!loadedNodeSettings.contains(node)) {
+            Map<String, Object> rawSettings = getNodeSettingsMap(node);
+            if (rawSettings != null) {
+                nodeSection.putAll(rawSettings);
+            }
+            return;
+        }
+        IDataTransferSettings settings = getNodeSettings(node);
+        if (settings != null) {
+            settings.saveSettings(nodeSection);
+        }
+    }
+
     @Nullable
     public IDataTransferSettings getNodeSettings(@NotNull DataTransferNodeDescriptor node) {
         IDataTransferSettings settings = nodeSettings.get(node);
