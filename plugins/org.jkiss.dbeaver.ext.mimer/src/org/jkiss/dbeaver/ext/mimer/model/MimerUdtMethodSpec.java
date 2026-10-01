@@ -224,12 +224,13 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
     @NotNull
     public String buildAddSpecificationDDL() {
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TYPE \"").append(type.getSchema().getName()).append("\".\"").append(type.getName()).append("\"\n");
-        sb.append("ADD ").append(methodKindKeyword()).append(" \"").append(methodName).append("\"(\n");
+        sb.append("ALTER TYPE \"").append(type.getSchema().getName().replace("\"", "\"\""))
+            .append("\".\"").append(type.getName().replace("\"", "\"\"")).append("\"\n");
+        sb.append("ADD ").append(methodKindKeyword()).append(" \"").append(methodName.replace("\"", "\"\"")).append("\"(\n");
         sb.append(parameterList).append(")\n");
         sb.append("RETURNS ").append(returnDataType).append('\n');
         if (!CommonUtils.isEmptyTrimmed(specificName)) {
-            sb.append("SPECIFIC \"").append(specificName.trim()).append("\" ");
+            sb.append("SPECIFIC \"").append(specificName.trim().replace("\"", "\"\"")).append("\" ");
         }
         sb.append(deterministic ? "DETERMINISTIC" : "NOT DETERMINISTIC").append(' ').append(accessOption);
         return sb.toString();
@@ -250,8 +251,9 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
      */
     @NotNull
     public String buildDropDDL(boolean cascade) {
-        return "ALTER TYPE \"" + type.getSchema().getName() + "\".\"" + type.getName() + "\"\n"
-            + "DROP SPECIFIC METHOD \"" + specificName + "\" " + (cascade ? "CASCADE" : "RESTRICT");
+        return "ALTER TYPE \"" + type.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + type.getName().replace("\"", "\"\"") + "\"\n"
+            + "DROP SPECIFIC METHOD \"" + specificName.replace("\"", "\"\"") + "\" " + (cascade ? "CASCADE" : "RESTRICT");
     }
 
     @Nullable
@@ -288,7 +290,8 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
      */
     @NotNull
     public String buildCreateBodyDDL() {
-        return "CREATE SPECIFIC METHOD \"" + type.getSchema().getName() + "\".\"" + specificName + "\"\n" + source;
+        return "CREATE SPECIFIC METHOD \"" + type.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + specificName.replace("\"", "\"\"") + "\"\n" + source;
     }
 
     @NotNull

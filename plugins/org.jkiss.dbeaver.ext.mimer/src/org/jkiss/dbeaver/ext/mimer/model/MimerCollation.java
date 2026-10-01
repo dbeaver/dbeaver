@@ -146,7 +146,8 @@ public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptOb
      */
     @NotNull
     public static String formatReference(@NotNull String schemaName, @NotNull String name) {
-        return "INFORMATION_SCHEMA".equalsIgnoreCase(schemaName) ? name : "\"" + schemaName + "\".\"" + name + "\"";
+        return "INFORMATION_SCHEMA".equalsIgnoreCase(schemaName) ? name
+            : "\"" + schemaName.replace("\"", "\"\"") + "\".\"" + name.replace("\"", "\"\"") + "\"";
     }
 
     @NotNull
@@ -185,7 +186,8 @@ public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptOb
     @NotNull
     public String buildCreateDDL() {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE COLLATION \"").append(schema.getName()).append("\".\"").append(name).append("\"\n");
+        sb.append("CREATE COLLATION \"").append(schema.getName().replace("\"", "\"\""))
+            .append("\".\"").append(name.replace("\"", "\"\"")).append("\"\n");
         sb.append("FROM ").append(sourceCollation);
         if (!CommonUtils.isEmpty(usingClause)) {
             sb.append("\nUSING '").append(usingClause.replace("'", "''")).append('\'');

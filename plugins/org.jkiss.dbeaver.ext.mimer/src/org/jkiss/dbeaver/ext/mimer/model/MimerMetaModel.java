@@ -568,10 +568,11 @@ public class MimerMetaModel extends GenericMetaModel {
             if (columns.length() > 0) {
                 columns.append(", ");
             }
-            columns.append('"').append(column.getName()).append('"');
+            columns.append('"').append(column.getName().replace("\"", "\"\"")).append('"');
         }
 
-        return "CREATE VIEW \"" + sourceObject.getContainer().getName() + "\".\"" + sourceObject.getName() + "\""
+        return "CREATE VIEW \"" + sourceObject.getContainer().getName().replace("\"", "\"\"")
+            + "\".\"" + sourceObject.getName().replace("\"", "\"\"") + "\""
             + " (" + columns + ")\nAS " + body;
     }
 

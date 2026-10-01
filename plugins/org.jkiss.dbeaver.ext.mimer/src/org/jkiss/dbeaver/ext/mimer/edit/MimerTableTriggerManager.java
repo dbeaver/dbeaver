@@ -135,7 +135,8 @@ public class MimerTableTriggerManager extends SQLObjectEditor<MimerTableTrigger,
             actionList.add(new SQLDatabasePersistAction("Create trigger", trigger.getObjectDefinitionText(monitor, options)));
         }
         if (command.hasProperty("comment")) {
-            String name = "\"" + trigger.getTable().getSchema().getName() + "\".\"" + trigger.getName() + "\"";
+            String name = "\"" + trigger.getTable().getSchema().getName().replace("\"", "\"\"")
+                + "\".\"" + trigger.getName().replace("\"", "\"\"") + "\"";
             MimerUtils.addCommentModifyAction(actionList, trigger, "TRIGGER", name, "Comment trigger", monitor);
         }
     }
@@ -144,6 +145,7 @@ public class MimerTableTriggerManager extends SQLObjectEditor<MimerTableTrigger,
     private static String buildDropStatement(@NotNull MimerTableTrigger trigger) {
         // The optional CASCADE is appended by MimerCascadeDropUtil when the delete-confirmation
         // "Cascade" box is ticked; the drop-recreate edit path never cascades.
-        return "DROP TRIGGER \"" + trigger.getTable().getSchema().getName() + "\".\"" + trigger.getName() + "\"";
+        return "DROP TRIGGER \"" + trigger.getTable().getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + trigger.getName().replace("\"", "\"\"") + "\"";
     }
 }

@@ -57,6 +57,7 @@ public class MimerSequencePrivilege extends AbstractMimerObjectPrivilege<MimerSe
     @NotNull
     @Override
     protected String buildQualifiedOwnerName() {
-        return "\"" + owner.getParentObject().getName() + "\".\"" + owner.getName() + "\"";
+        return "\"" + owner.getParentObject().getName().replace("\"", "\"\"")
+            + "\".\"" + owner.getName().replace("\"", "\"\"") + "\"";
     }
 }

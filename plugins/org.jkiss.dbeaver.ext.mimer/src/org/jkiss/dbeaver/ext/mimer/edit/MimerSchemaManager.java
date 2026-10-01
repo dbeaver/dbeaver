@@ -104,7 +104,8 @@ public class MimerSchemaManager extends SQLObjectEditor<MimerSchema, MimerDataSo
         @NotNull ObjectCreateCommand command,
         @NotNull Map<String, Object> options
     ) {
-        actions.add(new SQLDatabasePersistAction("Create schema", "CREATE SCHEMA \"" + command.getObject().getName() + "\""));
+        actions.add(new SQLDatabasePersistAction("Create schema",
+            "CREATE SCHEMA \"" + command.getObject().getName().replace("\"", "\"\"") + "\""));
     }
 
     @Override
@@ -116,7 +117,7 @@ public class MimerSchemaManager extends SQLObjectEditor<MimerSchema, MimerDataSo
         @NotNull Map<String, Object> options
     ) {
         actions.add(MimerCascadeDropUtil.dropAction("Drop schema",
-            "DROP SCHEMA \"" + command.getObject().getName() + "\"",
+            "DROP SCHEMA \"" + command.getObject().getName().replace("\"", "\"\"") + "\"",
             options, "schema", command.getObject().getName(), executionContext));
     }
 
@@ -132,6 +133,6 @@ public class MimerSchemaManager extends SQLObjectEditor<MimerSchema, MimerDataSo
             return;
         }
         MimerSchema schema = command.getObject();
-        MimerUtils.addCommentModifyAction(actionList, schema, "SCHEMA", "\"" + schema.getName() + "\"", "Comment schema", monitor);
+        MimerUtils.addCommentModifyAction(actionList, schema, "SCHEMA", "\"" + schema.getName().replace("\"", "\"\"") + "\"", "Comment schema", monitor);
     }
 }

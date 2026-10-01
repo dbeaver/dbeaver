@@ -184,12 +184,13 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
      */
     @NotNull
     public String buildCreateDDL() {
-        return "CREATE SHADOW \"" + name + "\" FOR \"" + databank.getName() + "\" IN '" + fileName.replace("'", "''") + "'";
+        return "CREATE SHADOW \"" + name.replace("\"", "\"\"") + "\" FOR \"" + databank.getName().replace("\"", "\"\"")
+            + "\" IN '" + fileName.replace("'", "''") + "'";
     }
 
     @NotNull
     public String buildDropDDL() {
-        return "DROP SHADOW \"" + name + "\"";
+        return "DROP SHADOW \"" + name.replace("\"", "\"\"") + "\"";
     }
 
     /**
@@ -200,13 +201,13 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
     public String buildAlterFileNameDDL() {
         return fileName == null || fileName.isBlank()
             ? null
-            : "ALTER SHADOW \"" + name + "\" INTO '" + fileName.trim().replace("'", "''") + "'";
+            : "ALTER SHADOW \"" + name.replace("\"", "\"\"") + "\" INTO '" + fileName.trim().replace("'", "''") + "'";
     }
 
     /** {@code ALTER SHADOW "n" ADD <pages> PAGES} - extend the shadow file (2K Mimer SQL pages). */
     @NotNull
     public static String buildAddPagesDDL(@NotNull String shadowName, int pages) {
-        return "ALTER SHADOW \"" + shadowName + "\" ADD " + pages + " PAGES";
+        return "ALTER SHADOW \"" + shadowName.replace("\"", "\"\"") + "\" ADD " + pages + " PAGES";
     }
 
     public static class OnlineTransitionListProvider implements IPropertyValueListProvider<MimerDatabankShadow> {

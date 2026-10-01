@@ -108,7 +108,8 @@ public class MimerCreateCollationPage extends BaseObjectEditPage implements Mime
         try {
             if (collation.getDataSource() instanceof MimerDataSource ds) {
                 return ds.getCollations(new VoidProgressMonitor()).stream()
-                    .map(c -> "\"" + c.getSchemaName() + "\".\"" + c.getName() + "\"")
+                    .map(c -> "\"" + c.getSchemaName().replace("\"", "\"\"")
+                        + "\".\"" + c.getName().replace("\"", "\"\"") + "\"")
                     .toArray(String[]::new);
             }
         } catch (Exception e) {

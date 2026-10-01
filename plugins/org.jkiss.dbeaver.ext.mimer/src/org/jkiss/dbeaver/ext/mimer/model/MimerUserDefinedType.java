@@ -224,7 +224,8 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
     @NotNull
     public String buildCreateDDL() {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TYPE \"").append(schema.getName()).append("\".\"").append(name).append("\" AS\n");
+        sb.append("CREATE TYPE \"").append(schema.getName().replace("\"", "\"\""))
+            .append("\".\"").append(name.replace("\"", "\"\"")).append("\" AS\n");
         if ("STRUCTURED".equalsIgnoreCase(category)) {
             sb.append('(').append(attributesBody).append(')');
         } else {

@@ -410,12 +410,12 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
             clauses.add("REMOVABLE");
         }
         clauses.add("OPTION " + (CommonUtils.isEmpty(type) ? "TRANSACTION" : type));
-        return "CREATE DATABANK \"" + name + "\" SET " + String.join(", ", clauses);
+        return "CREATE DATABANK \"" + name.replace("\"", "\"\"") + "\" SET " + String.join(", ", clauses);
     }
 
     @NotNull
     public String buildDropDDL() {
-        return "DROP DATABANK \"" + name + "\"";
+        return "DROP DATABANK \"" + name.replace("\"", "\"\"") + "\"";
     }
 
     /**
@@ -426,7 +426,7 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
      */
     @Nullable
     public String buildSetFileDDL() {
-        return CommonUtils.isEmptyTrimmed(file) ? null : "ALTER DATABANK \"" + name + "\" SET FILE '" + file.trim().replace("'", "''") + "'";
+        return CommonUtils.isEmptyTrimmed(file) ? null : "ALTER DATABANK \"" + name.replace("\"", "\"\"") + "\" SET FILE '" + file.trim().replace("'", "''") + "'";
     }
 
     /**
@@ -452,10 +452,10 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
 
         List<String> statements = new ArrayList<>(2);
         if (!setClauses.isEmpty()) {
-            statements.add("ALTER DATABANK \"" + name + "\" SET " + String.join(", ", setClauses));
+            statements.add("ALTER DATABANK \"" + name.replace("\"", "\"\"") + "\" SET " + String.join(", ", setClauses));
         }
         if (!dropClauses.isEmpty()) {
-            statements.add("ALTER DATABANK \"" + name + "\" DROP " + String.join(", ", dropClauses));
+            statements.add("ALTER DATABANK \"" + name.replace("\"", "\"\"") + "\" DROP " + String.join(", ", dropClauses));
         }
         return statements;
     }

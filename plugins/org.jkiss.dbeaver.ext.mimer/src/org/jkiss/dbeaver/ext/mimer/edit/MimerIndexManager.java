@@ -206,7 +206,8 @@ public class MimerIndexManager extends GenericIndexManager {
         if (!command.hasProperty("comment") || !(command.getObject() instanceof MimerTableIndex index)) {
             return;
         }
-        String name = "\"" + index.getTable().getSchema().getName() + "\".\"" + index.getName() + "\"";
+        String name = "\"" + index.getTable().getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + index.getName().replace("\"", "\"\"") + "\"";
         MimerUtils.addCommentModifyAction(actionList, index, "INDEX", name, "Comment index", monitor);
     }
 }

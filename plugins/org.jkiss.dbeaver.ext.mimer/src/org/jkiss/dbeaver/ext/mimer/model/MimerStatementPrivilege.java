@@ -69,6 +69,7 @@ public class MimerStatementPrivilege extends AbstractMimerObjectPrivilege<MimerS
     @NotNull
     @Override
     protected String buildQualifiedOwnerName() {
-        return "\"" + owner.getSchema().getName() + "\".\"" + owner.getName() + "\"";
+        return "\"" + owner.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + owner.getName().replace("\"", "\"\"") + "\"";
     }
 }

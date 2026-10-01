@@ -128,7 +128,8 @@ public class MimerModuleManager extends SQLObjectEditor<MimerModule, MimerSchema
             actionList.add(new SQLDatabasePersistAction("Create module", module.getObjectDefinitionText(monitor, options)));
         }
         if (command.hasProperty("comment")) {
-            String name = "\"" + module.getSchema().getName() + "\".\"" + module.getName() + "\"";
+            String name = "\"" + module.getSchema().getName().replace("\"", "\"\"")
+                + "\".\"" + module.getName().replace("\"", "\"\"") + "\"";
             MimerUtils.addCommentModifyAction(actionList, module, "MODULE", name, "Comment module", monitor);
         }
     }
@@ -137,6 +138,7 @@ public class MimerModuleManager extends SQLObjectEditor<MimerModule, MimerSchema
     private static String buildDropStatement(@NotNull MimerModule module) {
         // The optional CASCADE is appended by MimerCascadeDropUtil when the delete-confirmation
         // "Cascade" box is ticked; the drop-recreate edit path never cascades.
-        return "DROP MODULE \"" + module.getSchema().getName() + "\".\"" + module.getName() + "\"";
+        return "DROP MODULE \"" + module.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + module.getName().replace("\"", "\"\"") + "\"";
     }
 }

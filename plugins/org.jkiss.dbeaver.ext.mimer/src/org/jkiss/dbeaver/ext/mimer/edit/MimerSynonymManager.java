@@ -113,7 +113,8 @@ public class MimerSynonymManager extends SQLObjectEditor<MimerSynonym, MimerSche
         // DROP SYNONYM takes no RESTRICT/CASCADE clause (matches the DbVisualizer Mimer profile's
         // own drop action, which offers none) - plain drop only.
         actions.add(new SQLDatabasePersistAction("Drop synonym",
-            "DROP SYNONYM \"" + synonym.getParentObject().getName() + "\".\"" + synonym.getName() + "\""));
+            "DROP SYNONYM \"" + synonym.getParentObject().getName().replace("\"", "\"\"")
+                + "\".\"" + synonym.getName().replace("\"", "\"\"") + "\""));
     }
 
     @Override
@@ -128,7 +129,8 @@ public class MimerSynonymManager extends SQLObjectEditor<MimerSynonym, MimerSche
             return;
         }
         MimerSynonym synonym = command.getObject();
-        String name = "\"" + synonym.getParentObject().getName() + "\".\"" + synonym.getName() + "\"";
+        String name = "\"" + synonym.getParentObject().getName().replace("\"", "\"\"")
+            + "\".\"" + synonym.getName().replace("\"", "\"\"") + "\"";
         MimerUtils.addCommentModifyAction(actionList, synonym, "SYNONYM", name, "Comment synonym", monitor);
     }
 }

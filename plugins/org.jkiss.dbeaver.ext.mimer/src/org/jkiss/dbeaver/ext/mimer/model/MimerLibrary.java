@@ -134,7 +134,7 @@ public class MimerLibrary implements DBSObject, DBPSaveableObject {
      */
     @NotNull
     public String buildCreateDDL() {
-        return "CREATE LIBRARY \"" + name + "\" FILE '" + fileName.replace("'", "''") + "' LANGUAGE " + language;
+        return "CREATE LIBRARY \"" + name.replace("\"", "\"\"") + "\" FILE '" + fileName.replace("'", "''") + "' LANGUAGE " + language;
     }
 
     @Association

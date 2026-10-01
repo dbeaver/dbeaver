@@ -169,7 +169,8 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
         } else {
             clause = "";
         }
-        return "CREATE" + clause + " STATEMENT \"" + schema.getName() + "\".\"" + name + "\"";
+        return "CREATE" + clause + " STATEMENT \"" + schema.getName().replace("\"", "\"\"")
+            + "\".\"" + name.replace("\"", "\"\"") + "\"";
     }
 
     /**

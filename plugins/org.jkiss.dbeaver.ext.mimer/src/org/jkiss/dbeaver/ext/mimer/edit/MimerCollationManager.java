@@ -107,7 +107,8 @@ public class MimerCollationManager extends SQLObjectEditor<MimerCollation, Mimer
     ) {
         MimerCollation collation = command.getObject();
         actions.add(MimerCascadeDropUtil.dropAction("Drop collation",
-            "DROP COLLATION \"" + collation.getSchema().getName() + "\".\"" + collation.getName() + "\"",
+            "DROP COLLATION \"" + collation.getSchema().getName().replace("\"", "\"\"")
+                + "\".\"" + collation.getName().replace("\"", "\"\"") + "\"",
             options, "collation", collation.getName(), executionContext));
     }
 
@@ -123,7 +124,8 @@ public class MimerCollationManager extends SQLObjectEditor<MimerCollation, Mimer
             return;
         }
         MimerCollation collation = command.getObject();
-        String name = "\"" + collation.getSchema().getName() + "\".\"" + collation.getName() + "\"";
+        String name = "\"" + collation.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + collation.getName().replace("\"", "\"\"") + "\"";
         MimerUtils.addCommentModifyAction(actionList, collation, "COLLATION", name, "Comment collation", monitor);
     }
 }

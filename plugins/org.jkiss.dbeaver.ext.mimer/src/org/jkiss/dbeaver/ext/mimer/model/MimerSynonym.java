@@ -137,7 +137,8 @@ public class MimerSynonym extends GenericSynonym implements DBPScriptObject, DBP
     @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) {
-        return "CREATE SYNONYM \"" + getParentObject().getName() + "\".\"" + getName() + "\"\n" +
-            "    FOR \"" + targetSchema + "\".\"" + targetName + "\"";
+        return "CREATE SYNONYM \"" + getParentObject().getName().replace("\"", "\"\"")
+            + "\".\"" + getName().replace("\"", "\"\"") + "\"\n" +
+            "    FOR \"" + targetSchema.replace("\"", "\"\"") + "\".\"" + targetName.replace("\"", "\"\"") + "\"";
     }
 }

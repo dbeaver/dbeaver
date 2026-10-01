@@ -108,7 +108,7 @@ public class MimerLibraryManager extends SQLObjectEditor<MimerLibrary, MimerData
     ) {
         MimerLibrary library = command.getObject();
         actions.add(MimerCascadeDropUtil.dropAction("Drop library",
-            "DROP LIBRARY \"" + library.getName() + "\"",
+            "DROP LIBRARY \"" + library.getName().replace("\"", "\"\"") + "\"",
             options, "library", library.getName(), executionContext));
     }
 }

@@ -173,7 +173,8 @@ public class MimerUtils {
     ) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, context, "Read Mimer SQL domain definition")) {
             StringBuilder sb = new StringBuilder();
-            sb.append("CREATE DOMAIN \"").append(schemaName).append("\".\"").append(domainName).append("\" AS ");
+            sb.append("CREATE DOMAIN \"").append(schemaName.replace("\"", "\"\""))
+                .append("\".\"").append(domainName.replace("\"", "\"\"")).append("\" AS ");
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE,\n" +
@@ -201,7 +202,8 @@ public class MimerUtils {
                     boolean isDefaultCollation = "INFORMATION_SCHEMA".equalsIgnoreCase(collationSchema)
                         && ("ISO8BIT".equalsIgnoreCase(collationName) || "UCS_BASIC".equalsIgnoreCase(collationName));
                     if (!CommonUtils.isEmpty(collationName) && !isDefaultCollation) {
-                        sb.append(" COLLATE \"").append(collationSchema).append("\".\"").append(collationName).append('"');
+                        sb.append(" COLLATE \"").append(collationSchema.replace("\"", "\"\""))
+                            .append("\".\"").append(collationName.replace("\"", "\"\"")).append('"');
                     }
                     if (!CommonUtils.isEmpty(domainDefault)) {
                         sb.append("\n    DEFAULT ").append(domainDefault);
@@ -223,7 +225,7 @@ public class MimerUtils {
                     while (dbResult.next()) {
                         String constraintName = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME");
                         String checkClause = JDBCUtils.safeGetString(dbResult, "CHECK_CLAUSE");
-                        sb.append("\n    CONSTRAINT \"").append(constraintName).append("\" CHECK (").append(checkClause).append(')');
+                        sb.append("\n    CONSTRAINT \"").append(constraintName.replace("\"", "\"\"")).append("\" CHECK (").append(checkClause).append(')');
                     }
                 }
             }
@@ -277,8 +279,10 @@ public class MimerUtils {
                         return MimerConstants.SOURCE_NOT_AVAILABLE;
                     }
                     StringBuilder sb = new StringBuilder();
-                    sb.append("CREATE COLLATION \"").append(schemaName).append("\".\"").append(collationName).append("\"\n");
-                    sb.append("FROM \"").append(baseSchema).append("\".\"").append(baseName).append('"');
+                    sb.append("CREATE COLLATION \"").append(schemaName.replace("\"", "\"\""))
+                        .append("\".\"").append(collationName.replace("\"", "\"\"")).append("\"\n");
+                    sb.append("FROM \"").append(baseSchema.replace("\"", "\"\""))
+                        .append("\".\"").append(baseName.replace("\"", "\"\"")).append('"');
                     if (!definition.isEmpty()) {
                         sb.append("\nUSING '").append(definition.toString().replace("'", "''")).append('\'');
                     }
@@ -510,7 +514,8 @@ public class MimerUtils {
         boolean isFunction = procedure.getProcedureType() == DBSProcedureType.FUNCTION;
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE ").append(isFunction ? "FUNCTION" : "PROCEDURE")
-            .append(" \"").append(schemaName).append("\".\"").append(name).append("\"(");
+            .append(" \"").append(schemaName.replace("\"", "\"\"")).append("\".\"")
+            .append(name.replace("\"", "\"\"")).append("\"(");
         String returnType = null;
         boolean first = true;
         for (GenericProcedureParameter param : CommonUtils.safeCollection(procedure.getParameters(monitor))) {
@@ -525,7 +530,7 @@ public class MimerUtils {
             if (!isFunction) {
                 sb.append(param.getParameterKind().name()).append(' ');
             }
-            sb.append('"').append(param.getName()).append("\" ").append(param.getFullTypeName());
+            sb.append('"').append(param.getName().replace("\"", "\"\"")).append("\" ").append(param.getFullTypeName());
         }
         sb.append(')');
         if (isFunction && returnType != null) {
@@ -534,7 +539,7 @@ public class MimerUtils {
         sb.append("\nLANGUAGE ").append(CommonUtils.notEmpty(info.language()));
         sb.append("\nEXTERNAL NAME '").append(CommonUtils.notEmpty(info.externalName()).replace("'", "''")).append('\'');
         if (!CommonUtils.isEmpty(info.library())) {
-            sb.append(" IN \"").append(info.library()).append('"');
+            sb.append(" IN \"").append(info.library().replace("\"", "\"\"")).append('"');
         }
         return sb.toString();
     }

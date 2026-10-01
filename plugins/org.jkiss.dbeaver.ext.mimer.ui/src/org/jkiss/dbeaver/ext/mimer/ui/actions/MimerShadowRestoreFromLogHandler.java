@@ -61,7 +61,7 @@ public class MimerShadowRestoreFromLogHandler extends AbstractHandler {
 
         List<String> statements = new ArrayList<>(names.size());
         for (String name : names) {
-            statements.add("ALTER DATABANK \"" + name + "\" RESTORE USING LOG");
+            statements.add("ALTER DATABANK \"" + name.replace("\"", "\"\"") + "\" RESTORE USING LOG");
         }
         final List<DBNNode> parents = MimerOnlineActionUtils.parentsOf(nodes);
         MimerOnlineActionUtils.run(

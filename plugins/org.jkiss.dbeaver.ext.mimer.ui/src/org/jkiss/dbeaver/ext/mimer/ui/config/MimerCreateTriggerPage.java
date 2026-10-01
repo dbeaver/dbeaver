@@ -140,12 +140,13 @@ public class MimerCreateTriggerPage extends BaseObjectEditPage implements MimerC
         boolean needsOld = !event.equals(EVENTS[0]); // not INSERT
         boolean needsNew = !event.equals(EVENTS[2]); // not DELETE
 
-        String schemaName = trigger.getTable().getSchema().getName();
-        String tableName = trigger.getTable().getName();
+        String schemaName = trigger.getTable().getSchema().getName().replace("\"", "\"\"");
+        String tableName = trigger.getTable().getName().replace("\"", "\"\"");
         String kind = forEachRow ? "ROW" : "TABLE";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TRIGGER \"").append(schemaName).append("\".\"").append(triggerName).append("\"\n");
+        sb.append("CREATE TRIGGER \"").append(schemaName).append("\".\"")
+            .append(triggerName.replace("\"", "\"\"")).append("\"\n");
         sb.append(timing).append(' ').append(event).append('\n');
         sb.append("ON \"").append(schemaName).append("\".\"").append(tableName).append("\"\n");
         if (needsNew || needsOld) {

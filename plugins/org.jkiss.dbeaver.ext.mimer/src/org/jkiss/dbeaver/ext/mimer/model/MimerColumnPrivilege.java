@@ -60,8 +60,9 @@ public class MimerColumnPrivilege extends AbstractMimerMultiTypePrivilege<MimerT
     @NotNull
     @Override
     protected String buildGrantRevokeTargetClause() {
-        return "(\"" + owner.getName() + "\") ON TABLE \""
-            + owner.getTable().getSchema().getName() + "\".\"" + owner.getTable().getName() + "\"";
+        return "(\"" + owner.getName().replace("\"", "\"\"") + "\") ON TABLE \""
+            + owner.getTable().getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + owner.getTable().getName().replace("\"", "\"\"") + "\"";
     }
 
     /**

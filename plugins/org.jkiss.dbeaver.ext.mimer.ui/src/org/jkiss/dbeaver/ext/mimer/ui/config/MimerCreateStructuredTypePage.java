@@ -258,7 +258,7 @@ public class MimerCreateStructuredTypePage extends BaseObjectEditPage implements
             if (!sb.isEmpty()) {
                 sb.append(",\n");
             }
-            sb.append('"').append(row.name.trim()).append("\" ").append(row.dataType.trim());
+            sb.append('"').append(row.name.trim().replace("\"", "\"\"")).append("\" ").append(row.dataType.trim());
             if (!CommonUtils.isEmptyTrimmed(row.size)) {
                 sb.append('(').append(row.size.trim()).append(')');
             }

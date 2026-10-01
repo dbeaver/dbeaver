@@ -150,7 +150,8 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
     @NotNull
     public String buildCreateDDL() {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DOMAIN \"").append(schema.getName()).append("\".\"").append(name).append("\" AS\n");
+        sb.append("CREATE DOMAIN \"").append(schema.getName().replace("\"", "\"\""))
+            .append("\".\"").append(name.replace("\"", "\"\"")).append("\" AS\n");
         sb.append(dataType);
         if (!CommonUtils.isEmpty(collation)) {
             sb.append(" COLLATE ").append(collation);
@@ -161,7 +162,7 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
         if (!CommonUtils.isEmpty(checkClause)) {
             sb.append('\n');
             if (!CommonUtils.isEmpty(constraintName)) {
-                sb.append("CONSTRAINT \"").append(constraintName).append("\" ");
+                sb.append("CONSTRAINT \"").append(constraintName.replace("\"", "\"\"")).append("\" ");
             }
             sb.append("CHECK(").append(checkClause).append(')');
         }

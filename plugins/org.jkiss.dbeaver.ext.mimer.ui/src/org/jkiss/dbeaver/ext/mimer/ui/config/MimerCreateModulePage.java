@@ -91,10 +91,11 @@ public class MimerCreateModulePage extends BaseObjectEditPage implements MimerCr
         String moduleName = name.trim();
         module.setName(moduleName);
 
-        String schemaName = module.getSchema().getName();
-        String procedureName = moduleName + "_proc";
+        String schemaName = module.getSchema().getName().replace("\"", "\"\"");
+        String quotedModuleName = moduleName.replace("\"", "\"\"");
+        String procedureName = (moduleName + "_proc").replace("\"", "\"\"");
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE MODULE \"").append(schemaName).append("\".\"").append(moduleName).append("\"\n");
+        sb.append("CREATE MODULE \"").append(schemaName).append("\".\"").append(quotedModuleName).append("\"\n");
         sb.append("DECLARE PROCEDURE \"").append(schemaName).append("\".\"").append(procedureName).append("\" ()\n");
         sb.append("LANGUAGE SQL\n");
         sb.append("NOT DETERMINISTIC\n");

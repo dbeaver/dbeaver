@@ -129,7 +129,7 @@ public class MimerProgramManager extends SQLObjectEditor<MimerProgram, MimerData
         }
         if (command.hasProperty("comment")) {
             MimerProgram program = command.getObject();
-            MimerUtils.addCommentModifyAction(actionList, program, "IDENT", "\"" + program.getName() + "\"", "Comment program", monitor);
+            MimerUtils.addCommentModifyAction(actionList, program, "IDENT", "\"" + program.getName().replace("\"", "\"\"") + "\"", "Comment program", monitor);
         }
     }
 }

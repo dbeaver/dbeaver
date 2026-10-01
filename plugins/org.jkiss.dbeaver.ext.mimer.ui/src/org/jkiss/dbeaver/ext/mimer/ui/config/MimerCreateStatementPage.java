@@ -102,12 +102,13 @@ public class MimerCreateStatementPage extends BaseObjectEditPage implements Mime
         String statementName = name.trim();
         statement.setName(statementName);
 
-        String schemaName = statement.getSchema().getName();
+        String schemaName = statement.getSchema().getName().replace("\"", "\"\"");
         String clause = CURSOR_MODES[1].equals(cursorMode) ? " SCROLL"
             : CURSOR_MODES[2].equals(cursorMode) ? " NO SCROLL" : "";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE").append(clause).append(" STATEMENT \"").append(schemaName).append("\".\"").append(statementName).append("\"\n");
+        sb.append("CREATE").append(clause).append(" STATEMENT \"").append(schemaName).append("\".\"")
+            .append(statementName.replace("\"", "\"\"")).append("\"\n");
         sb.append("    -- TODO: statement body, e.g. SELECT/INSERT/UPDATE/DELETE/CALL");
 
         statement.setObjectDefinitionText(sb.toString());

@@ -136,7 +136,8 @@ public class MimerUserDefinedTypeManager extends SQLObjectEditor<MimerUserDefine
         MimerUserDefinedType type = command.getObject();
         boolean cascade = MimerCascadeDropUtil.isCascade(options);
         actions.add(MimerCascadeDropUtil.confirmedDrop("Drop type",
-            "DROP TYPE \"" + type.getSchema().getName() + "\".\"" + type.getName() + "\"" + (cascade ? " CASCADE" : " RESTRICT"),
+            "DROP TYPE \"" + type.getSchema().getName().replace("\"", "\"\"")
+                + "\".\"" + type.getName().replace("\"", "\"\"") + "\"" + (cascade ? " CASCADE" : " RESTRICT"),
             cascade, "type", type.getName(), executionContext));
     }
 
@@ -152,7 +153,8 @@ public class MimerUserDefinedTypeManager extends SQLObjectEditor<MimerUserDefine
             return;
         }
         MimerUserDefinedType type = command.getObject();
-        String name = "\"" + type.getSchema().getName() + "\".\"" + type.getName() + "\"";
+        String name = "\"" + type.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + type.getName().replace("\"", "\"\"") + "\"";
         MimerUtils.addCommentModifyAction(actionList, type, "TYPE", name, "Comment type", monitor);
     }
 }

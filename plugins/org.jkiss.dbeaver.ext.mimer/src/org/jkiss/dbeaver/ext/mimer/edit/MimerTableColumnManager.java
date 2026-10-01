@@ -188,7 +188,8 @@ public class MimerTableColumnManager extends GenericTableColumnManager {
             }
         }
         boolean nextValueFor = !(column.getDataSource() instanceof MimerDataSource ds) || ds.supportsNextValueForSyntax();
-        column.setDefaultValue((nextValueFor ? "NEXT VALUE FOR \"" : "NEXT_VALUE OF \"") + schemaName + "\".\"" + seqName + "\"");
+        column.setDefaultValue((nextValueFor ? "NEXT VALUE FOR \"" : "NEXT_VALUE OF \"")
+            + schemaName.replace("\"", "\"\"") + "\".\"" + seqName.replace("\"", "\"\"") + "\"");
         if (exists) {
             return Collections.emptyList();
         }

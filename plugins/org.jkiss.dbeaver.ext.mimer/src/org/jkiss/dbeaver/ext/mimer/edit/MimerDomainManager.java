@@ -112,7 +112,8 @@ public class MimerDomainManager extends SQLObjectEditor<MimerDomain, MimerSchema
     ) {
         MimerDomain domain = command.getObject();
         actions.add(MimerCascadeDropUtil.dropAction("Drop domain",
-            "DROP DOMAIN \"" + domain.getSchema().getName() + "\".\"" + domain.getName() + "\"",
+            "DROP DOMAIN \"" + domain.getSchema().getName().replace("\"", "\"\"")
+                + "\".\"" + domain.getName().replace("\"", "\"\"") + "\"",
             options, "domain", domain.getName(), executionContext));
     }
 
@@ -128,7 +129,8 @@ public class MimerDomainManager extends SQLObjectEditor<MimerDomain, MimerSchema
             return;
         }
         MimerDomain domain = command.getObject();
-        String name = "\"" + domain.getSchema().getName() + "\".\"" + domain.getName() + "\"";
+        String name = "\"" + domain.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + domain.getName().replace("\"", "\"\"") + "\"";
         MimerUtils.addCommentModifyAction(actionList, domain, "DOMAIN", name, "Comment domain", monitor);
     }
 }

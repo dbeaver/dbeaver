@@ -400,7 +400,7 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
             if (!paramList.isEmpty()) {
                 paramList.append(", ");
             }
-            paramList.append(direction).append(" \"").append(row.name.trim()).append("\" ").append(row.type.trim());
+            paramList.append(direction).append(" \"").append(row.name.trim().replace("\"", "\"\"")).append("\" ").append(row.type.trim());
 
             DBSProcedureParameterKind kind = switch (direction) {
                 case "OUT" -> DBSProcedureParameterKind.OUT;
@@ -417,10 +417,11 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
                 procedure, "RETURN", returnType.trim(), Types.OTHER, 0, 0, null, null, false, null, DBSProcedureParameterKind.RETURN));
         }
 
-        String schemaName = procedure.getSchema().getName();
+        String schemaName = procedure.getSchema().getName().replace("\"", "\"\"");
         String keyword = type == DBSProcedureType.FUNCTION ? "FUNCTION" : "PROCEDURE";
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE ").append(keyword).append(" \"").append(schemaName).append("\".\"").append(name).append("\" ")
+        sb.append("CREATE ").append(keyword).append(" \"").append(schemaName).append("\".\"")
+            .append(name.replace("\"", "\"\"")).append("\" ")
             .append(paramList.isEmpty() ? "()" : "(" + paramList + ")").append('\n');
         if (type == DBSProcedureType.FUNCTION) {
             sb.append("RETURNS ").append(returnType.trim()).append('\n');
@@ -428,13 +429,13 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
         boolean external = "CLR".equals(language);
         sb.append("LANGUAGE ").append(language).append('\n');
         if (specific != null) {
-            sb.append("SPECIFIC \"").append(specific).append("\"\n");
+            sb.append("SPECIFIC \"").append(specific.replace("\"", "\"\"")).append("\"\n");
         }
         sb.append(deterministic).append('\n');
         sb.append(accessOption).append('\n');
         if (external) {
             sb.append("EXTERNAL NAME '").append(externalName.trim().replace("'", "''")).append('\'')
-                .append(" IN \"").append(externalLibrary.trim()).append('"');
+                .append(" IN \"").append(externalLibrary.trim().replace("\"", "\"\"")).append('"');
         } else {
             sb.append("BEGIN\n");
             sb.append("    -- TODO: ").append(type == DBSProcedureType.FUNCTION ? "function" : "procedure").append(" body\n");

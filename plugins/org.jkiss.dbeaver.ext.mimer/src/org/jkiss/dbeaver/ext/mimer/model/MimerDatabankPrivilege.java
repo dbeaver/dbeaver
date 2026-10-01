@@ -57,7 +57,7 @@ public class MimerDatabankPrivilege extends AbstractMimerMultiTypePrivilege<Mime
     @NotNull
     @Override
     protected String buildGrantRevokeTargetClause() {
-        return " ON DATABANK \"" + owner.getName() + "\"";
+        return " ON DATABANK \"" + owner.getName().replace("\"", "\"\"") + "\"";
     }
 
     /**

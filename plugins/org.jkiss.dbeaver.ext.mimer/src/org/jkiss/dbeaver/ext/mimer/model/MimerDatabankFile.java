@@ -251,7 +251,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
         addSizeClause(changedProperties, "goalSize", "GOALSIZE", goalSize, setClauses, dropClauses);
         addSizeClause(changedProperties, "maxSize", "MAXSIZE", maxSize, setClauses, dropClauses);
 
-        String prefix = "ALTER DATABANK \"" + databank.getName() + "\" "
+        String prefix = "ALTER DATABANK \"" + databank.getName().replace("\"", "\"\"") + "\" "
             + (databank.isSingleFile() ? "" : "ALTER FILE '" + fileName.replace("'", "''") + "' ");
         List<String> statements = new ArrayList<>(2);
         if (!setClauses.isEmpty()) {
@@ -272,7 +272,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
      */
     @NotNull
     public String buildRenameFileDDL(@NotNull String oldFileName, @NotNull String newFileName) {
-        String db = "ALTER DATABANK \"" + databank.getName() + "\" ";
+        String db = "ALTER DATABANK \"" + databank.getName().replace("\"", "\"\"") + "\" ";
         String newQuoted = newFileName.trim().replace("'", "''");
         return databank.isSingleFile()
             ? db + "SET FILE '" + newQuoted + "'"

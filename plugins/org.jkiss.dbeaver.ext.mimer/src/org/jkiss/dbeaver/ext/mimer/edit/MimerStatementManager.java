@@ -129,13 +129,15 @@ public class MimerStatementManager extends SQLObjectEditor<MimerStatement, Mimer
             actionList.add(new SQLDatabasePersistAction("Create statement", statement.getObjectDefinitionText(monitor, options)));
         }
         if (command.hasProperty("comment")) {
-            String name = "\"" + statement.getSchema().getName() + "\".\"" + statement.getName() + "\"";
+            String name = "\"" + statement.getSchema().getName().replace("\"", "\"\"")
+                + "\".\"" + statement.getName().replace("\"", "\"\"") + "\"";
             MimerUtils.addCommentModifyAction(actionList, statement, "STATEMENT", name, "Comment statement", monitor);
         }
     }
 
     @NotNull
     private static String buildDropStatement(@NotNull MimerStatement statement) {
-        return "DROP STATEMENT \"" + statement.getSchema().getName() + "\".\"" + statement.getName() + "\"";
+        return "DROP STATEMENT \"" + statement.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + statement.getName().replace("\"", "\"\"") + "\"";
     }
 }

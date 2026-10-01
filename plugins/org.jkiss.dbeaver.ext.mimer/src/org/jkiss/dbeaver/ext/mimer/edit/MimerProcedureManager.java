@@ -167,7 +167,8 @@ public class MimerProcedureManager extends SQLObjectEditor<MimerProcedure, Gener
         }
         if (command.hasProperty("comment")) {
             String keyword = object.getProcedureType() == DBSProcedureType.FUNCTION ? "SPECIFIC FUNCTION" : "SPECIFIC PROCEDURE";
-            String name = "\"" + object.getContainer().getName() + "\".\"" + object.getUniqueName() + "\"";
+            String name = "\"" + object.getContainer().getName().replace("\"", "\"\"")
+                + "\".\"" + object.getUniqueName().replace("\"", "\"\"") + "\"";
             MimerUtils.addCommentModifyAction(actionList, object, keyword, name,
                 "Comment " + object.getProcedureType().name().toLowerCase(), monitor);
         }
@@ -186,7 +187,8 @@ public class MimerProcedureManager extends SQLObjectEditor<MimerProcedure, Gener
     @NotNull
     private String buildDropSql(@NotNull MimerProcedure object) {
         String keyword = "SPECIFIC " + object.getProcedureType().name();
-        String name = "\"" + object.getContainer().getName() + "\".\"" + object.getUniqueName() + "\"";
+        String name = "\"" + object.getContainer().getName().replace("\"", "\"\"")
+            + "\".\"" + object.getUniqueName().replace("\"", "\"\"") + "\"";
         return "DROP " + keyword + " " + name;
     }
 }

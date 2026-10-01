@@ -104,7 +104,7 @@ public class MimerUdtMethodManager extends SQLObjectEditor<MimerUdtMethod, Mimer
         MimerUdtMethod object = command.getObject();
         boolean cascade = MimerCascadeDropUtil.isCascade(options);
         actions.add(MimerCascadeDropUtil.confirmedDrop("Drop method",
-            "DROP SPECIFIC METHOD \"" + object.getUniqueName() + "\" " + (cascade ? "CASCADE" : "RESTRICT"),
+            "DROP SPECIFIC METHOD \"" + object.getUniqueName().replace("\"", "\"\"") + "\" " + (cascade ? "CASCADE" : "RESTRICT"),
             cascade, "method", object.getName(), executionContext));
     }
 }

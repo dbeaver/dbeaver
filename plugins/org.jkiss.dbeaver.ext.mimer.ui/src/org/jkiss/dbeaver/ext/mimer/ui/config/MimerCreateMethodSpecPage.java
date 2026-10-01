@@ -86,7 +86,8 @@ public class MimerCreateMethodSpecPage extends BaseObjectEditPage implements Mim
         this.constructor = "CONSTRUCTOR METHOD".equals(spec.getMethodKind());
         this.methodName = constructor ? spec.getType().getName() : "";
         this.returnType = constructor
-            ? "\"" + spec.getType().getSchema().getName() + "\".\"" + spec.getType().getName() + "\""
+            ? "\"" + spec.getType().getSchema().getName().replace("\"", "\"\"")
+                + "\".\"" + spec.getType().getName().replace("\"", "\"\"") + "\""
             : "";
     }
 
@@ -296,7 +297,7 @@ public class MimerCreateMethodSpecPage extends BaseObjectEditPage implements Mim
             if (!paramList.isEmpty()) {
                 paramList.append(", ");
             }
-            paramList.append('"').append(row.name.trim()).append("\" ").append(row.type.trim());
+            paramList.append('"').append(row.name.trim().replace("\"", "\"\"")).append("\" ").append(row.type.trim());
             if (!CommonUtils.isEmptyTrimmed(row.size)) {
                 paramList.append('(').append(row.size.trim()).append(')');
             }

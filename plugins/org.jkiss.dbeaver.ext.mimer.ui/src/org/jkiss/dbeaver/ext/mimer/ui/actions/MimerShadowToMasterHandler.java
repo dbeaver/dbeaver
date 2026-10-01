@@ -60,7 +60,7 @@ public class MimerShadowToMasterHandler extends AbstractHandler {
         MimerOnlineActionUtils.run(
             (MimerDataSource) shadow.getDataSource(),
             "Switch shadow to master",
-            List.of("ALTER SHADOW \"" + shadow.getName() + "\" TO MASTER"),
+            List.of("ALTER SHADOW \"" + shadow.getName().replace("\"", "\"\"") + "\" TO MASTER"),
             false,
             () -> MimerOnlineActionUtils.refresh(parents));
         return null;

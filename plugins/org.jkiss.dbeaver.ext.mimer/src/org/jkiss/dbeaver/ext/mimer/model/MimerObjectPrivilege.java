@@ -73,7 +73,8 @@ public class MimerObjectPrivilege extends AbstractMimerMultiTypePrivilege<Generi
     @NotNull
     @Override
     protected String buildGrantRevokeTargetClause() {
-        return " ON TABLE \"" + owner.getSchema().getName() + "\".\"" + owner.getName() + "\"";
+        return " ON TABLE \"" + owner.getSchema().getName().replace("\"", "\"\"")
+            + "\".\"" + owner.getName().replace("\"", "\"\"") + "\"";
     }
 
     /**
