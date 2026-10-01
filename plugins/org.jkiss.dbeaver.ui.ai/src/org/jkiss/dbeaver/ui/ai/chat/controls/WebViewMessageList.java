@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.ai.chat.controls;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
@@ -26,6 +27,7 @@ import org.eclipse.swt.browser.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -53,6 +55,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -66,6 +69,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
 
     protected final Browser browser;
     private final WebCSSInitializer cssInitializer;
+    private final IPropertyChangeListener themeChangeListener;
     private final AISettingsManager settingsManager;
     private final AIFunctionAllowMenu functionAllowMenu;
     private final Map<Integer, PendingConfirmation> pendingConfirmations = new HashMap<>();
@@ -78,7 +82,16 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         super(parent, SWT.NONE);
         browser = new Browser(this, SWT.NONE);
         cssInitializer = createCssInitializer();
-        addDisposeListener(e -> cssInitializer.close());
+        var refreshTheme = RuntimeUtils.debounce(
+            () -> UIUtils.asyncExec(this::refreshTheme),
+            Duration.ofMillis(500)
+        );
+        themeChangeListener = event -> refreshTheme.run();
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+        addDisposeListener(e -> {
+            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
+            cssInitializer.close();
+        });
         renderer = new WebViewMessageRenderer(browser, this::getDataSource, cssInitializer);
 
         messageChunkBuffer = new AIMessageChunkBuffer(getDisplay(), renderer::addMessageChunk, this::isDisposed);
@@ -227,6 +240,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 renderer.showEmptyChat();
             }
             renderer.execute("setBusy", Map.of("busy", chat.getChatSession().isBusy()));
+            renderer.execute("setThemeStylesheet", Map.of("href", cssInitializer.getThemeStylesheetPath()));
         }));
 
         browser.addLocationListener(new LocationAdapter() {
@@ -258,6 +272,16 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     @Override
     public void onSettingsUpdate(@NotNull AISettingsManager registry) {
         UIUtils.asyncExec(() -> renderer.execute("settingsChanged"));
+    }
+
+    private void refreshTheme() {
+        if (browser.isDisposed()) {
+            return;
+        }
+        cssInitializer.refreshTheme();
+        if (!isInitWaiting) {
+            renderer.execute("setThemeStylesheet", Map.of("href", cssInitializer.getThemeStylesheetPath()));
+        }
     }
 
     public void focusChat() {
