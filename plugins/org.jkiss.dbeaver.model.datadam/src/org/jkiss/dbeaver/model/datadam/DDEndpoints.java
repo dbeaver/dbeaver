@@ -27,7 +27,7 @@ public final class DDEndpoints {
     private static final String STAGE_ARGUMENT = "-dbeaver.datadam.stage";
 
     private static final String STAGE_ACCOUNT_URL = "https://account.datadam.beavers.team";
-    private static final String STAGE_STORAGE_URL = "https://gateway.datadam.beavers.team";
+    private static final String STAGE_STORAGE_URL = "https://dbeaver-storage.datadam.beavers.team";
     //TODO Replace these placeholders with the production endpoints once they are available.
     private static final String PROD_ACCOUNT_URL = "https://account.prod.datadam.invalid";
     private static final String PROD_STORAGE_URL = "https://storage.prod.datadam.invalid";
