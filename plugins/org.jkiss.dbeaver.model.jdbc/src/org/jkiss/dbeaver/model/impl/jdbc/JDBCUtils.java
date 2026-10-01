@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * JDBCUtils
@@ -57,6 +58,22 @@ public class JDBCUtils {
     private static final Log log = Log.getLog(JDBCUtils.class);
 
     private static final Map<String, Integer> badColumnNames = new HashMap<>();
+
+    public static boolean matchesSQLException(
+        @NotNull Throwable error,
+        @NotNull Predicate<SQLException> predicate
+    ) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqlException) {
+                for (SQLException current = sqlException; current != null; current = current.getNextException()) {
+                    if (predicate.test(current)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     @Nullable
     public static String safeGetString(ResultSet dbResult, String columnName) {
