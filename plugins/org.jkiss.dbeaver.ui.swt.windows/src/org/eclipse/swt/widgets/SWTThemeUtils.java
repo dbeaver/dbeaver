@@ -19,6 +19,8 @@ package org.eclipse.swt.widgets;
 import com.sun.jna.Function;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.internal.win32.MENUITEMINFO;
 import org.eclipse.swt.internal.win32.OS;
 
 /**
@@ -41,8 +43,59 @@ public final class SWTThemeUtils {
         }
         for (Shell shell : display.getShells()) {
             shell.setDarkThemePreferred(dark);
-            if (shell.getMenuBar() != null) {
-                OS.DrawMenuBar(shell.handle);
+            Menu menuBar = shell.getMenuBar();
+            if (menuBar != null) {
+                updateMenuBarTheme(menuBar);
+            }
+            if (shell.menus != null) {
+                updateMenusTheme(shell.menus);
+            }
+        }
+    }
+
+    private static void updateMenuBarTheme(Menu menuBar) {
+        Display display = menuBar.getDisplay();
+        if (menuBar.foreground != display.menuBarForegroundPixel || menuBar.background != display.menuBarBackgroundPixel) {
+            menuBar.initThemeColors();
+            menuBar.updateBackground();
+            menuBar.updateForeground();
+            boolean callback = menuBar.needsMenuCallback();
+            MenuItem[] items = menuBar.getItems();
+            for (int i = 0; i < items.length; i++) {
+                // SWT chooses both the owner-draw type and bitmap callback when it creates a menu item.
+                // Menu.updateForeground() changes only the bitmap, leaving Windows to draw the text twice.
+                MENUITEMINFO info = new MENUITEMINFO();
+                info.cbSize = MENUITEMINFO.sizeof;
+                info.fMask = OS.MIIM_FTYPE;
+                if (OS.GetMenuItemInfo(menuBar.handle, i, true, info)) {
+                    info.fType = callback ? OS.MFT_OWNERDRAW : items[i].widgetStyle();
+                    info.fMask = OS.MIIM_FTYPE | OS.MIIM_BITMAP;
+                    info.hbmpItem = callback ? OS.HBMMENU_CALLBACK : items[i].hBitmap;
+                    OS.SetMenuItemInfo(menuBar.handle, i, true, info);
+                    if (!callback && items[i].getImage() != null) {
+                        // Restore image handles that were not created while the dark menu used callbacks.
+                        var image = items[i].getImage();
+                        items[i].setImage(null);
+                        items[i].setImage(image);
+                    }
+                }
+            }
+        }
+        menuBar.update();
+    }
+
+    private static void updateMenusTheme(Menu [] menus) {
+        for (Menu menu : menus) {
+            if (menu == null || menu.isDisposed()) {
+                continue;
+            }
+            for (MenuItem item : menu.getItems()) {
+                if (item.imageSelected != null && item.getImage() != null) {
+                    // SWT's Win11 checked-item image contains the menu colors from its creation.
+                    Image image = item.getImage();
+                    item.setImage(null);
+                    item.setImage(image);
+                }
             }
         }
     }
