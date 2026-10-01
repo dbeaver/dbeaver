@@ -22,14 +22,18 @@ import com.google.gson.stream.JsonToken;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.junit.DBeaverUnitTest;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
+import java.util.Set;
 
 public class AISettingsManagerTest extends DBeaverUnitTest {
 
@@ -40,13 +44,13 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
         Assertions.assertNotNull(engine);
         AIConfigurationProfile work = settings.createConfiguration("test-work", engine);
         work.setProfileName("Work");
-        work.getConfiguration().selectModel(OpenAIModels.getModelByName("gpt-4.1").orElseThrow());
+        work.getConfiguration().selectModel(new AIModel("gpt-4.1", 1_048_576, Set.of(AIModelFeature.CHAT)));
         AIConfigurationProfile personal = settings.createConfiguration("test-personal", engine);
         personal.setProfileName("Personal");
-        personal.getConfiguration().selectModel(OpenAIModels.getModelByName("gpt-4.1-mini").orElseThrow());
+        personal.getConfiguration().selectModel(new AIModel("gpt-4.1-mini", 1_048_576, Set.of(AIModelFeature.CHAT)));
         settings.setDefaultConfiguration(work);
 
-        personal.getConfiguration().selectModel(OpenAIModels.getModelByName("gpt-4o").orElseThrow());
+        personal.getConfiguration().selectModel(new AIModel("gpt-4o", 128_000, Set.of(AIModelFeature.CHAT)));
         Assertions.assertTrue(settings.getProperty(AIConstants.AI_CHAT_SHOW_PROFILE_AND_MODEL, true));
         settings.setProperty(AIConstants.AI_CHAT_SHOW_PROFILE_AND_MODEL, false);
         AISettings restored = AISettingsManager.READ_PROPS_GSON.fromJson(

@@ -127,7 +127,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         applySettings();
         loadAdvancedSettings(configuration);
 
-        contextWindowSizeField.setValue(configuration.getContextWindowSize());
+        contextWindowSizeField.setValue(configuration.getConfiguredContextWindowSize());
+        contextWindowSizeField.setDefaultValue(configuration.getContextWindowSize());
 
         boolean useAccountAuthentication = isAccountAuthenticationSupported()
             && configuration.isAccountAuthentication();
@@ -180,25 +181,17 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .toList()
             )
             .withModifyListener(() -> {
-                OpenAIModels.getModelByName(modelSelectorField.getSelectedModelName())
-                    .ifPresentOrElse(
-                        model -> {
-                            contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
-                        }, () -> {
-                            contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
-                            temperatureText.setEnabled(true);
-                        }
-                    );
-
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
-                    if (selectedModel != null && selectedModel.contextWindowSize() != null) {
-                        contextWindowSizeField.setValue(selectedModel.contextWindowSize());
-                    }
-                })
-                .build();
+                if (selectedModel == null && (OpenAIModels.isOpenAIEndpoint(baseUrl)
+                    || isAccountAuthentication() && accountAuthenticator instanceof OpenAIAccountAuthenticator)
+                ) {
+                    selectedModel = OpenAIModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
+                }
+                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, true);
+            })
+            .withModelsRefreshListener(() -> updateModelParameters(
+                modelSelectorField.getSelectedModel(), temperatureText, contextWindowSizeField, false))
+            .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)
@@ -220,13 +213,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         String currentToken = useAccountAuthentication ? apiToken : token;
         String currentBaseUrl = baseUrl;
         if (currentProperties != null && useAccountAuthentication) {
-            return fetchAccountModels(currentProperties, currentAuthenticator).stream()
-                .map(model -> new AIModel(
-                    model,
-                    OpenAIProperties.DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE,
-                    OpenAIModels.detectModelFeatures(model)
-                ))
-                .toList();
+            return fetchAccountModelDetails(monitor, currentProperties, currentAuthenticator);
         }
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(currentToken);
@@ -245,6 +232,15 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         @NotNull AIAccountAuthenticator authenticator
     ) throws DBException {
         return ((OpenAIAccountAuthenticator) authenticator).listModels(properties);
+    }
+
+    @NotNull
+    protected List<AIModel> fetchAccountModelDetails(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PROPERTIES properties,
+        @NotNull AIAccountAuthenticator authenticator
+    ) throws DBException {
+        return ((OpenAIAccountAuthenticator) authenticator).listModelDetails(monitor, properties);
     }
 
     @NotNull

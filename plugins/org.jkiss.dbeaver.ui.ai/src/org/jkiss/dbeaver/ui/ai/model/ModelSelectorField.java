@@ -60,6 +60,8 @@ public class ModelSelectorField {
     private final ModelListProvider modelListProvider;
     @NotNull
     private final List<RequiredSetting> requiredSettings;
+    @Nullable
+    private final Runnable modelsRefreshListener;
 
     private volatile String selectedModelName;
     private volatile AIModel selectedModel;
@@ -73,6 +75,7 @@ public class ModelSelectorField {
     private ModelSelectorField(@NotNull Builder builder) {
         this.modelListProvider = builder.modelListSupplier;
         this.requiredSettings = List.copyOf(builder.requiredSettings);
+        this.modelsRefreshListener = builder.modelsRefreshListener;
 
         this.combo = UIUtils.createLabelCombo(builder.parent, builder.modelLabel, SWT.DROP_DOWN);
         this.combo.setLayoutData(builder.gridData);
@@ -170,10 +173,6 @@ public class ModelSelectorField {
     public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
         loadedModels = modelListProvider.getModels(monitor, refresh);
 
-        if (loadedModels.isEmpty()) {
-            return 0;
-        }
-
         UIUtils.syncExec(() -> {
             if (combo.isDisposed()) {
                 return;
@@ -189,9 +188,17 @@ public class ModelSelectorField {
                 .toList();
 
             disableModifyListener = true;
-            combo.setItems(sortedModels.toArray(new String[0]));
-            disableModifyListener = false;
-            combo.select(sortedModels.indexOf(selectedItem));
+            try {
+                combo.setItems(sortedModels.toArray(new String[0]));
+                combo.select(sortedModels.indexOf(selectedItem));
+                selectedModelName = combo.getText();
+                selectedModel = getModel(selectedModelName);
+            } finally {
+                disableModifyListener = false;
+            }
+            if (modelsRefreshListener != null) {
+                modelsRefreshListener.run();
+            }
         });
 
         return loadedModels.size();
@@ -301,6 +308,8 @@ public class ModelSelectorField {
 
         @Nullable
         private Runnable onModify;
+        @Nullable
+        private Runnable modelsRefreshListener;
 
         @NotNull
         private ModelListProvider modelListSupplier;
@@ -320,6 +329,12 @@ public class ModelSelectorField {
 
         public Builder withModifyListener(@NotNull Runnable onModify) {
             this.onModify = onModify;
+            return this;
+        }
+
+        @NotNull
+        public Builder withModelsRefreshListener(@NotNull Runnable listener) {
+            this.modelsRefreshListener = listener;
             return this;
         }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,14 @@ public class ContextWindowSizeField {
     private final Text text;
 
     private Integer value;
+    private boolean userDefined;
 
     private ContextWindowSizeField(@NotNull Text text) {
         this.text = text;
-        this.text.addModifyListener(e -> value = CommonUtils.toInteger(text.getText(), null));
+        this.text.addModifyListener(e -> {
+            value = CommonUtils.toInteger(text.getText(), null);
+            userDefined = value != null;
+        });
     }
 
     @NotNull
@@ -45,6 +49,15 @@ public class ContextWindowSizeField {
     public void setValue(@Nullable Integer value) {
         this.text.setText(value == null ? "" : value.toString());
         this.value = value;
+        userDefined = value != null;
+    }
+
+    public void setDefaultValue(@Nullable Integer value) {
+        if (!userDefined) {
+            setValue(value);
+            // Metadata may be replaced by a later refresh until the user edits the field.
+            userDefined = false;
+        }
     }
 
     @Nullable
