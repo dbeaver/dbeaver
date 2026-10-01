@@ -30,6 +30,7 @@ public final class SWTThemeUtils {
      * Uses Windows-specific calls and constants to update native widgets look-and-feel
      */
     public static void updateExplorerTheme(Control control, boolean dark) {
+        // TODO: do not style custom wigets and empty composites
         OS.AllowDarkModeForWindow(control.handle, dark);
         // For Tree and Table we shouldn't set any theme but EXPLORER.
         // Setting to NULL makes Tree legacy-styled widget.
