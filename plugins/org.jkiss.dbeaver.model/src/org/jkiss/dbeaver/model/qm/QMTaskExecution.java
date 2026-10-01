@@ -74,13 +74,16 @@ public final class QMTaskExecution implements AutoCloseable {
     private static Consumer<DBTTaskRunRecord> createPublisher() {
         try {
             DBTTaskRunStorage storage = DBTTaskRunStorage.getInstance();
+            // Decide once per execution: turning recording off must not strand an existing RUNNING row,
+            // and turning it back on must not create a completion-only row for an unrecorded execution.
+            if (storage == null || !storage.isRecordingEnabled()) {
+                return run -> { /* nothing to do */ };
+            }
             return run -> {
-                if (storage != null) {
-                    try {
-                        storage.saveRun(run);
-                    } catch (Exception e) {
-                        log.error("Error saving task execution " + run.id(), e);
-                    }
+                try {
+                    storage.saveRun(run);
+                } catch (Exception e) {
+                    log.error("Error saving task execution " + run.id(), e);
                 }
             };
         } catch (Exception e) {

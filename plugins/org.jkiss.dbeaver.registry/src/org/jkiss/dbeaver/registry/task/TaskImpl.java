@@ -340,24 +340,20 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @NotNull
     protected List<? extends DBTTaskRun> loadRunStatistics() {
-        List<DBTTaskRunRecord> storedRuns = List.of();
+        List<DBTTaskRun> result;
         DBTTaskRunStorage storage = getRunStorage();
         if (storage != null) {
             try {
                 var filter = new DBTTaskRunStorage.Filter(project.getId(), id, null, null, null, null, null,
                     DBTTaskRunStorage.Order.START_TIME, true);
-                storedRuns = storage.findRuns(new VoidProgressMonitor(), filter, 0, MAX_RUNS_IN_STATS);
+                result = new ArrayList<>(storage.findRuns(new VoidProgressMonitor(), filter, 0, MAX_RUNS_IN_STATS));
             } catch (DBException e) {
                 log.error("Error reading task run history", e);
+                return List.of();
             }
+        } else {
+            result = new ArrayList<>(TaskUtils.loadRunStatistics(getTaskStatsFolder(false).resolve(META_FILE_NAME), gson));
         }
-        // Querying storage can migrate and remove the metadata file. Read only what remains,
-        // and deduplicate retries whose database commit succeeded but file deletion failed.
-        Map<String, DBTTaskRun> byId = new LinkedHashMap<>();
-        TaskUtils.loadRunStatistics(getTaskStatsFolder(false).resolve(META_FILE_NAME), gson)
-            .forEach(run -> byId.put(run.getId(), run));
-        storedRuns.forEach(run -> byId.put(getRunFileId(run), run));
-        List<DBTTaskRun> result = new ArrayList<>(byId.values());
         result.sort(Comparator.comparing(DBTTaskRun::getStartTime).thenComparing(DBTTaskRun::getId));
         return result;
     }

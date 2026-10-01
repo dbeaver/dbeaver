@@ -51,6 +51,11 @@ public interface DBTTaskRunStorage {
             DBWorkbench.getPlatform().getApplication(), DBTTaskRunStorage.class.getName());
     }
 
+    /** Whether new executions should be recorded. Existing executions may still save their final snapshot. */
+    default boolean isRecordingEnabled() {
+        return true;
+    }
+
     /** Inserts the initial snapshot or updates the same run when it completes. */
     void saveRun(@NotNull DBTTaskRunRecord run) throws DBException;
 
