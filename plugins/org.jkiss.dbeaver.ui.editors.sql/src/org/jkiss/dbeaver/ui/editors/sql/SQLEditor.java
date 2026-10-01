@@ -91,6 +91,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -131,8 +132,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -1249,9 +1250,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         StyledText textWidget = getViewer().getTextWidget();
         textWidget.addVerifyKeyListener(e -> {
-            if ((e.keyCode == SWT.ARROW_RIGHT || e.keyCode == SWT.TAB || e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR)
-                && suggestionTextPainter.hasContentToShow()
-            ) {
+            ProposalActivationKey activationKey = ProposalActivationKey.fromPreferences(getActivePreferenceStore());
+            boolean acceptsSuggestion = e.keyCode == SWT.ARROW_RIGHT
+                || e.keyCode == SWT.TAB && activationKey.acceptsTab()
+                || (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) && activationKey.acceptsEnter();
+            if (acceptsSuggestion && suggestionTextPainter.hasContentToShow()) {
                 e.doit = false;
                 suggestionTextPainter.applyHint();
             }
@@ -3465,6 +3468,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
+        }
+        // Native toolbar items must be restyled after the datasource marker is set.
+        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+            CSSUtils.applyStyles(topBar);
+        }
+        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+            CSSUtils.applyStyles(bottomBar);
         }
 
         // Repaint the workbench editor tab folder so the custom tab renderer

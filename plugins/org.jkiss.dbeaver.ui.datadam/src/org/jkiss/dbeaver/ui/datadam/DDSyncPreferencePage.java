@@ -31,16 +31,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.DDBrowserLogin;
-import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
-import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
-import org.jkiss.dbeaver.model.datadam.sync.DDLocalSyncConflictException;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncBinding;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncConflict;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncResult;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncService;
+import org.jkiss.dbeaver.model.datadam.auth.*;
+import org.jkiss.dbeaver.model.datadam.sync.*;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationNotFoundException;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationSummary;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -48,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -303,8 +296,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
         List<String> resolved = new ArrayList<>();
         try {
-            runInProgress(() -> {
+            runInProgressAction(monitor -> {
                 for (DDSyncConflict conflict : conflicts) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     if (takeRemote) {
                         service.forceDownload(conflict.key());
                     } else {
@@ -343,11 +339,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return holder.get();
     }
 
-    private void runInProgress(@NotNull DBRunnable runnable) throws DBException {
+    private void runInProgressAction(@NotNull DBRunnable runnable) throws DBException {
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    runnable.run();
+                    runnable.run(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -372,7 +368,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     @FunctionalInterface
     private interface DBRunnable {
-        void run() throws DBException;
+        void run(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 
     private void showChanged(@NotNull String emptyMessage, @NotNull String label, @NotNull DDSyncResult result) {
@@ -486,8 +482,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     @Override
     protected void performApply() {
         String url = urlText.getText().trim();
+        boolean changed = !savedUrl.equals(url);
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SERVER_URL, url);
         savedUrl = url;
+        if (changed) {
+            DDProjectSyncUIManager.getInstance().refresh();
+        }
         updateApplyState();
     }
 
@@ -508,7 +508,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    result[0] = new DDBrowserLogin(siteUrl).login();
+                    result[0] = new DDBrowserLogin(siteUrl).login(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -520,6 +520,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
 
         DDCryptoState state = result[0];
+        if (state == null) {
+            return;
+        }
         if (!state.cryptoConfigured()) {
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
@@ -541,6 +544,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             });
             DDKeyStore.save(keyBundle[0]);
+            DDProjectSyncUIManager.getInstance().refresh();
             DDTrackingInitializer.start();
             refresh();
         } catch (DBException e) {
@@ -555,6 +559,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         try {
             DDTrackingInitializer.stop();
             DDKeyStore.clear();
+            DDProjectSyncUIManager.getInstance().refresh();
             refresh();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, e);

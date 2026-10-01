@@ -178,7 +178,7 @@ public class OracleConstants {
     static final String COLUMN_CREATED = "CREATED";
     static final String COLUMN_LAST_DDL_TIME = "LAST_DDL_TIME";
     static final String COLUMN_OBJECT_NAME = "OBJECT_NAME";
-    static final String COLUMN_OBJECT_TYPE = "OBJECT_TYPE";
+    public static final String COLUMN_OBJECT_TYPE = "OBJECT_TYPE";
     public static final String COLUMN_STATUS = "STATUS";
     static final String RESULT_STATUS_VALID = "VALID";
     static final String RESULT_YES_VALUE = "Y";
@@ -227,6 +227,7 @@ public class OracleConstants {
      * Oracle error codes
      */
     public static final int EC_INVALID_USERNAME_PASSWORD = 1017;
+    public static final int EC_INVALID_OLD_PASSWORD = 28008;
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
     public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;

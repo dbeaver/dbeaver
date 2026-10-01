@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver YashanDB Model
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.yashandb;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20260205
+Require-Bundle: org.eclipse.core.runtime,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.ext.oracle
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Vendor: DBeaver Corp
+Export-Package: org.jkiss.dbeaver.ext.yashandb.model,
+ org.jkiss.dbeaver.ext.yashandb.model.session
+Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.ext.yashandb

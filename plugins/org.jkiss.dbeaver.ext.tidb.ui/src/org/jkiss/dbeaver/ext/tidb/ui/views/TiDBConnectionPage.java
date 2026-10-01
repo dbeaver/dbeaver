@@ -17,29 +17,10 @@
 
 package org.jkiss.dbeaver.ext.tidb.ui.views;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.mysql.ui.views.MySQLConnectionPage;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * TiDBConnectionPage
  */
 public class TiDBConnectionPage extends MySQLConnectionPage {
-    private final Image LOGO_TIDB;
-
-    public TiDBConnectionPage() {
-        LOGO_TIDB = createImage("icons/tidb_logo.png");
-    }
-
-    @Override
-    public void dispose()
-    {
-        super.dispose();
-        UIUtils.dispose(LOGO_TIDB);
-    }
-
-    @Override
-    public Image getImage() {
-        return LOGO_TIDB;
-    }
 }
