@@ -112,35 +112,25 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
         // (which is where the proposals computation was initially triggered, not where it is really expected to get them).
         Position completionRequestPosition = new Position(documentOffset);
         try {
-            IRegion line = document.getLineInformationOfOffset(documentOffset);
-            if (documentOffset <= line.getLength() + line.getOffset() && line.getLength() > 0) { // we are in the nonempty line
-                String typeAtLine = TextUtilities.getContentType(document, SQLParserPartitions.SQL_PARTITIONING, documentOffset - 1, true);
-                // and previous position belongs to the single-line comment or command
-                if (SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(typeAtLine)
-                    || SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL.equals(typeAtLine)
-                ) {
-                    return new ICompletionProposal[0];
-                }
+            if (isCompletionDisabled(document, documentOffset)) {
+                return new ICompletionProposal[0];
             }
         } catch (BadLocationException e) {
             log.debug(e);
             return new ICompletionProposal[0];
         }
 
-        final SQLCompletionRequest request = new SQLCompletionRequest(
-            editor.getCompletionContext(),
-            document,
-            documentOffset,
-            editor.extractQueryAtPos(documentOffset),
-            simpleMode
-        );
+        final SQLCompletionRequest request = editor.createCompletionRequest(document, documentOffset, simpleMode);
         SQLWordPartDetector wordDetector = request.getWordDetector();
 
 
         String contentType;
         try {
+            if (request.getDocument() != document && isCompletionDisabled(request.getDocument(), documentOffset)) {
+                return new ICompletionProposal[0];
+            }
             // Check that word start position is in default partition (#5994)
-            contentType = TextUtilities.getContentType(document, SQLParserPartitions.SQL_PARTITIONING, documentOffset, true);
+            contentType = TextUtilities.getContentType(request.getDocument(), SQLParserPartitions.SQL_PARTITIONING, documentOffset, true);
         } catch (BadLocationException e) {
             log.debug(e);
             return new ICompletionProposal[0];
@@ -178,7 +168,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
 
                     DBPPreferenceStore store = this.editor.getActivePreferenceStore();
                     SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(store);
-                    boolean useNewCompletionEngine = mode.useNewAnalyzer
+                    boolean useNewCompletionEngine = request.supportsSemanticCompletion() && mode.useNewAnalyzer
                         && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
                         && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
                         && dataSource != null && dataSource.getSQLDialect() instanceof BasicSQLDialect;
@@ -190,7 +180,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                     if (useNewCompletionEngine) {
                         // new analyzer is reusable
                         SQLEditorQueryCompletionAnalyzer newAnalyzer = new SQLEditorQueryCompletionAnalyzer(
-                            monitor -> this.editor.obtainCompletionContext(monitor, completionRequestPosition),
+                            monitor -> request.obtainCompletionContext(
+                                monitor, () -> this.editor.obtainCompletionContext(monitor, completionRequestPosition)
+                            ),
                             request,
                             () -> completionRequestPosition.getOffset()
                         );
@@ -207,7 +199,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                         });
                     }
 
-                    if (request.getWordPart() != null && mode.useOldAnalyzer || !useNewCompletionEngine) {
+                    if (request.getWordPart() != null && mode.useOldAnalyzer || !useNewCompletionEngine || request.requiresLegacyCompletion()) {
                         if (dataSource != null) {
                             completionJobSuppliers.add(() -> {
                                 // old analyzer is not reusable, but it doesn't matter because see the next comment below
@@ -244,7 +236,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
             if (actualCompletionOffset != request.getDocumentOffset()) {
                 for (Object cp : proposals) {
                     if (cp instanceof ICompletionProposal proposal && ((cp instanceof ICompletionProposalExtension2 exp && exp.validate(
-                        request.getDocument(),
+                        document,
                         completionRequestPosition.getOffset(),
                         null
                     )) || !(cp instanceof ICompletionProposalExtension2))) {
@@ -263,6 +255,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
         } finally {
             document.removePosition(completionRequestPosition);
         }
+    }
+
+    private static boolean isCompletionDisabled(@NotNull IDocument document, int offset) throws BadLocationException {
+        IRegion line = document.getLineInformationOfOffset(offset);
+        if (offset <= line.getLength() + line.getOffset() && line.getLength() > 0) {
+            String type = TextUtilities.getContentType(document, SQLParserPartitions.SQL_PARTITIONING, offset - 1, true);
+            return SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(type) || SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL.equals(type);
+        }
+        return false;
     }
 
     private List<?> computeProposalsWithJobs(
