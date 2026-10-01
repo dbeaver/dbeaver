@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -77,14 +79,16 @@ class LegacyNetworkProfileUsageProviderTest {
         assertThrows(DBException.class, () -> provider.findGlobalProfileConnections("shared"));
     }
 
-    private static DBPProject project(String id, String name) {
+    @NotNull
+    private static DBPProject project(@NotNull String id, @NotNull String name) {
         DBPProject project = mock(DBPProject.class);
         when(project.getId()).thenReturn(id);
         when(project.getName()).thenReturn(name);
         return project;
     }
 
-    private static DBPDataSourceRegistry registry(DBPProject project) {
+    @NotNull
+    private static DBPDataSourceRegistry registry(@NotNull DBPProject project) {
         DBPDataSourceRegistry registry = mock(DBPDataSourceRegistry.class);
         DBWNetworkProfileManager profiles = mock(DBWNetworkProfileManager.class);
         when(project.getDataSourceRegistry()).thenReturn(registry);
@@ -92,7 +96,13 @@ class LegacyNetworkProfileUsageProviderTest {
         return registry;
     }
 
-    private static DBPDataSourceContainer connection(String id, String name, String profileName, String source) {
+    @NotNull
+    private static DBPDataSourceContainer connection(
+        @NotNull String id,
+        @NotNull String name,
+        @NotNull String profileName,
+        @Nullable String source
+    ) {
         DBPDataSourceContainer connection = mock(DBPDataSourceContainer.class);
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setConfigProfileName(profileName);
