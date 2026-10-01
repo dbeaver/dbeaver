@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
@@ -82,5 +83,29 @@ class DataSourceConfigurationProfileQueryTest {
         assertTrue(DataSourceConfigurationProfileQuery.hasLocalProfile(project, "local"));
         verify(encryptor).decryptValue(any());
         verify(project, never()).getDataSourceRegistry();
+    }
+
+    @Test
+    void skipsLegacyStoragesWithoutLoadingTheRegistry() throws Exception {
+        Files.writeString(projectFolder.resolve(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_NAME), "not JSON");
+        Files.writeString(projectFolder.resolve(".dbeaver-data-sources-extra.xml"), "not JSON");
+        DBPProject project = mock(DBPProject.class);
+        when(project.getAbsolutePath()).thenReturn(projectFolder);
+        when(project.getMetadataFolder(false)).thenReturn(projectFolder.resolve(".dbeaver"));
+        when(project.getName()).thenReturn("Legacy project");
+
+        assertFalse(DataSourceConfigurationProfileQuery.hasLocalProfile(project, "profile"));
+        assertTrue(DataSourceConfigurationProfileQuery.findGlobalProfileConnections(project, "profile").isEmpty());
+        verify(project, never()).getDataSourceRegistry();
+    }
+
+    @Test
+    void doesNotSkipInvalidJson() throws Exception {
+        Path metadata = Files.createDirectory(projectFolder.resolve(".dbeaver"));
+        Files.writeString(metadata.resolve(DBPDataSourceRegistry.MODERN_CONFIG_FILE_NAME), "{\"network-profiles\": ");
+        DBPProject project = mock(DBPProject.class);
+        when(project.getMetadataFolder(false)).thenReturn(metadata);
+
+        assertThrows(DBException.class, () -> DataSourceConfigurationProfileQuery.hasLocalProfile(project, "profile"));
     }
 }

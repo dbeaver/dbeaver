@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -33,12 +34,14 @@ import java.util.Map;
  * Queries saved datasource configurations without constructing a datasource registry.
  */
 public final class DataSourceConfigurationProfileQuery {
+    private static final Log log = Log.getLog(DataSourceConfigurationProfileQuery.class);
+
     private DataSourceConfigurationProfileQuery() {
     }
 
     public static boolean hasLocalProfile(@NotNull DBPProject project, @NotNull String profileName) throws DBException {
         DataSourceConfigurationManager manager = new DataSourceConfigurationManagerNIO(project);
-        for (DBPDataSourceConfigurationStorage storage : manager.getConfigurationStorages()) {
+        for (DBPDataSourceConfigurationStorage storage : getModernStorages(project, manager)) {
             if (storage.isDefault()) {
                 return hasLocalProfile(read(project, manager, storage), profileName);
             }
@@ -51,7 +54,7 @@ public final class DataSourceConfigurationProfileQuery {
         @NotNull DBPProject project, @NotNull String profileName
     ) throws DBException {
         DataSourceConfigurationManager manager = new DataSourceConfigurationManagerNIO(project);
-        List<DBPDataSourceConfigurationStorage> storages = manager.getConfigurationStorages();
+        List<DBPDataSourceConfigurationStorage> storages = getModernStorages(project, manager);
         Map<String, String> connections = new LinkedHashMap<>();
         for (DBPDataSourceConfigurationStorage storage : storages) {
             if (storage.isDefault()) {
@@ -69,6 +72,23 @@ public final class DataSourceConfigurationProfileQuery {
             }
         }
         return connections;
+    }
+
+    @NotNull
+    private static List<DBPDataSourceConfigurationStorage> getModernStorages(
+        @NotNull DBPProject project,
+        @NotNull DataSourceConfigurationManager manager
+    ) {
+        return manager.getConfigurationStorages().stream()
+            .filter(storage -> {
+                if (storage.getStorageName().endsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_EXT)) {
+                    log.warn("Skipping legacy datasource configuration '" + storage.getStorageName() +
+                        "' in project '" + project.getName() + "'");
+                    return false;
+                }
+                return true;
+            })
+            .toList();
     }
 
     private static boolean hasLocalProfile(@NotNull Map<String, Object> config, @NotNull String profileName) {
@@ -101,9 +121,6 @@ public final class DataSourceConfigurationProfileQuery {
         @NotNull DataSourceConfigurationManager manager,
         @NotNull DBPDataSourceConfigurationStorage storage
     ) throws DBException {
-        if (storage.getStorageName().endsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_EXT)) {
-            throw new DBException("Legacy datasource configuration is not supported for project " + project.getName());
-        }
         try {
             Map<String, Object> config = DataSourceSerializerModern.readConfiguration(project, storage, manager, null);
             return config == null ? Map.of() : config;
