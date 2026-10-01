@@ -23,6 +23,9 @@ import org.eclipse.swt.internal.win32.OS;
  */
 public final class SWTThemeUtils {
 
+    public static final char[] WINDOW_THEME_COMBO = "CFD\0".toCharArray();
+    public static final char[] WINDOW_THEME_DEFAULT = Display.EXPLORER;
+
     /**
      * Uses Windows-specific calls and constants to update native widgets look-and-feel
      */
@@ -33,7 +36,16 @@ public final class SWTThemeUtils {
         boolean isBrokenCtrl = control instanceof Table || control instanceof Tree;
         // For some reason ToolBar looks-n-feel become corrupted after theme set
         if (!(control instanceof ToolBar)) {
-            OS.SetWindowTheme(control.handle, dark || isBrokenCtrl ? Display.EXPLORER : null, null);
+            OS.SetWindowTheme(
+                control.handle,
+                dark || isBrokenCtrl ? getDarkThemeIdByWidgetType(control) : null,
+                null
+            );
         }
+    }
+
+    private static char[] getDarkThemeIdByWidgetType(Control control) {
+        // Combo is an exception?
+        return control instanceof Combo ? WINDOW_THEME_COMBO : WINDOW_THEME_DEFAULT;
     }
 }
