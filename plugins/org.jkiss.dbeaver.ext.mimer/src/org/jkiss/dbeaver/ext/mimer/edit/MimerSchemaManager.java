@@ -133,6 +133,7 @@ public class MimerSchemaManager extends SQLObjectEditor<MimerSchema, MimerDataSo
             return;
         }
         MimerSchema schema = command.getObject();
-        MimerUtils.addCommentModifyAction(actionList, schema, "SCHEMA", "\"" + schema.getName().replace("\"", "\"\"") + "\"", "Comment schema", monitor);
+        String quotedName = "\"" + schema.getName().replace("\"", "\"\"") + "\"";
+        MimerUtils.addCommentModifyAction(actionList, schema, "SCHEMA", quotedName, "Comment schema", monitor);
     }
 }

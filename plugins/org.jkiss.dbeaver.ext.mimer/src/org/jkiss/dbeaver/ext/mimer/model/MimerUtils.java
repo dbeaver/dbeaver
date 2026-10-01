@@ -225,7 +225,8 @@ public class MimerUtils {
                     while (dbResult.next()) {
                         String constraintName = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME");
                         String checkClause = JDBCUtils.safeGetString(dbResult, "CHECK_CLAUSE");
-                        sb.append("\n    CONSTRAINT \"").append(constraintName.replace("\"", "\"\"")).append("\" CHECK (").append(checkClause).append(')');
+                        String quotedConstraintName = constraintName.replace("\"", "\"\"");
+                        sb.append("\n    CONSTRAINT \"").append(quotedConstraintName).append("\" CHECK (").append(checkClause).append(')');
                     }
                 }
             }

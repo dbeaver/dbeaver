@@ -122,7 +122,8 @@ public class MimerUserAuthorization implements DBSObject, DBPNamedObject2, DBPSa
      */
     @NotNull
     public String buildAddDDL() {
-        return "ALTER IDENT \"" + user.getName().replace("\"", "\"\"") + "\" ADD " + authorizationType + " '" + osUser.replace("'", "''") + "'";
+        String quotedUser = "\"" + user.getName().replace("\"", "\"\"") + "\"";
+        return "ALTER IDENT " + quotedUser + " ADD " + authorizationType + " '" + osUser.replace("'", "''") + "'";
     }
 
     /**
@@ -130,6 +131,7 @@ public class MimerUserAuthorization implements DBSObject, DBPNamedObject2, DBPSa
      */
     @NotNull
     public String buildDropDDL() {
-        return "ALTER IDENT \"" + user.getName().replace("\"", "\"\"") + "\" DROP " + authorizationType + " '" + osUser.replace("'", "''") + "'";
+        String quotedUser = "\"" + user.getName().replace("\"", "\"\"") + "\"";
+        return "ALTER IDENT " + quotedUser + " DROP " + authorizationType + " '" + osUser.replace("'", "''") + "'";
     }
 }

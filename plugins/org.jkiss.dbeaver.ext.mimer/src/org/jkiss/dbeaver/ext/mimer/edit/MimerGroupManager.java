@@ -122,6 +122,7 @@ public class MimerGroupManager extends SQLObjectEditor<MimerGroup, MimerDataSour
             return;
         }
         MimerGroup group = command.getObject();
-        MimerUtils.addCommentModifyAction(actionList, group, "IDENT", "\"" + group.getName().replace("\"", "\"\"") + "\"", "Comment group", monitor);
+        String quotedName = "\"" + group.getName().replace("\"", "\"\"") + "\"";
+        MimerUtils.addCommentModifyAction(actionList, group, "IDENT", quotedName, "Comment group", monitor);
     }
 }

@@ -426,7 +426,10 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
      */
     @Nullable
     public String buildSetFileDDL() {
-        return CommonUtils.isEmptyTrimmed(file) ? null : "ALTER DATABANK \"" + name.replace("\"", "\"\"") + "\" SET FILE '" + file.trim().replace("'", "''") + "'";
+        if (CommonUtils.isEmptyTrimmed(file)) {
+            return null;
+        }
+        return "ALTER DATABANK \"" + name.replace("\"", "\"\"") + "\" SET FILE '" + file.trim().replace("'", "''") + "'";
     }
 
     /**

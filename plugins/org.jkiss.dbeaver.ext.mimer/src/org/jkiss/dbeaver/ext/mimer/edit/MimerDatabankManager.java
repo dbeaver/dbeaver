@@ -171,7 +171,8 @@ public class MimerDatabankManager extends SQLObjectEditor<MimerDatabank, MimerDa
         }
         if (command.hasProperty("comment")) {
             MimerDatabank databank = command.getObject();
-            MimerUtils.addCommentModifyAction(actionList, databank, "DATABANK", "\"" + databank.getName().replace("\"", "\"\"") + "\"", "Comment databank", monitor);
+            String quotedName = "\"" + databank.getName().replace("\"", "\"\"") + "\"";
+            MimerUtils.addCommentModifyAction(actionList, databank, "DATABANK", quotedName, "Comment databank", monitor);
         }
     }
 }
