@@ -18,22 +18,22 @@ package org.eclipse.swt.widgets;
 
 import org.eclipse.swt.internal.win32.OS;
 
+/**
+ * SWT theme switch helpers
+ */
 public final class SWTThemeUtils {
-    private SWTThemeUtils() {
-    }
 
+    /**
+     * Uses Windows-specific calls and constants to update native widgets look-and-feel
+     */
     public static void updateExplorerTheme(Control control, boolean dark) {
         OS.AllowDarkModeForWindow(control.handle, dark);
+        // For Tree and Table we shouldn't set any theme but EXPLORER.
+        // Setting to NULL makes Tree legacy-styled widget.
         boolean isBrokenCtrl = control instanceof Table || control instanceof Tree;
         // For some reason ToolBar looks-n-feel become corrupted after theme set
         if (!(control instanceof ToolBar)) {
             OS.SetWindowTheme(control.handle, dark || isBrokenCtrl ? Display.EXPLORER : null, null);
         }
-//        if (control instanceof Text && !dark) {
-//            // A light EDIT control retains the dark Explorer background until its native state changes.
-//            OS.SetWindowTheme(control.handle, null, null);
-//        } else {
-//            OS.SetWindowTheme(control.handle, Display.EXPLORER, null);
-//        }
     }
 }
