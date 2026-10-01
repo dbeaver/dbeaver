@@ -78,6 +78,7 @@ class ConfigureColumnsDialog extends BaseDialog {
         viewer = new CheckboxTreeViewer(composite, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
         viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTree().setLinesVisible(false);
+        viewer.getTree().setHeaderVisible(true);
         viewer.getTree().setLayoutData(gd);
 
 
@@ -85,13 +86,25 @@ class ConfigureColumnsDialog extends BaseDialog {
             @Override
             public Object[] getChildren(Object element) {
                 // We have preloaded the attributes before, so it is 'safe' to use void monitor here
-                return ((StreamMappingContainer) element).getAttributes(new VoidProgressMonitor()).toArray();
+                return element instanceof StreamMappingContainer container
+                    ? container.getAttributes(new VoidProgressMonitor()).toArray()
+                    : new Object[0];
             }
 
             @Override
             public boolean hasChildren(Object element) {
                 return element instanceof StreamMappingContainer;
             }
+        });
+        viewer.addCheckStateListener(event -> {
+            if (event.getElement() instanceof StreamMappingContainer container) {
+                viewer.setSubtreeChecked(container, event.getChecked());
+            } else if (event.getElement() instanceof StreamMappingAttribute attribute) {
+                StreamMappingContainer container = attribute.getContainer();
+                boolean hasCheckedColumns = container.getAttributes(new VoidProgressMonitor()).stream().anyMatch(viewer::getChecked);
+                viewer.setChecked(container, hasCheckedColumns);
+            }
+            updateCompletion();
         });
 
         {
@@ -107,6 +120,17 @@ class ConfigureColumnsDialog extends BaseDialog {
             });
             column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_name_column_name);
         }
+        {
+            TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.LEFT);
+            column.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell) {
+                    cell.setText(cell.getElement() instanceof StreamMappingAttribute attribute
+                        ? attribute.getAttribute().getFullTypeName() : "");
+                }
+            });
+            column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_type_column_name);
+        }
 
         errorLabel = new CLabel(group, SWT.NONE);
         errorLabel.setText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_text);
@@ -119,14 +143,15 @@ class ConfigureColumnsDialog extends BaseDialog {
 
             List<Object> checked = new ArrayList<>();
             for (StreamMappingContainer element : mappings) {
-                final StreamMappingType type = element.getMappingType();
-                if (type == StreamMappingType.export) {
-                    checked.add(element);
-                }
+                boolean hasCheckedColumns = false;
                 for (StreamMappingAttribute attr : element.getAttributes(new VoidProgressMonitor())) {
                     if (attr.getMappingType() == StreamMappingType.export) {
                         checked.add(attr);
+                        hasCheckedColumns = true;
                     }
+                }
+                if (hasCheckedColumns) {
+                    checked.add(element);
                 }
             }
             viewer.setCheckedElements(checked.toArray());
@@ -156,7 +181,8 @@ class ConfigureColumnsDialog extends BaseDialog {
     }
 
     private void updateCompletion() {
-        final boolean isComplete = mappings.stream().allMatch(StreamMappingContainer::isComplete);
+        final boolean isComplete = mappings.stream().allMatch(container ->
+            container.getAttributes(new VoidProgressMonitor()).stream().anyMatch(viewer::getChecked));
         errorLabel.setVisible(!isComplete);
         enableButton(IDialogConstants.OK_ID, isComplete);
     }

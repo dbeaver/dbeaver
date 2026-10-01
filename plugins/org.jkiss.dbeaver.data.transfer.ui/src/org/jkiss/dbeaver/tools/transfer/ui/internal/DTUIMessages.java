@@ -155,6 +155,7 @@ public class DTUIMessages extends NLS {
     public static String stream_consumer_page_warning_not_enough_sources_chosen;
     public static String stream_consumer_page_mapping_title;
     public static String stream_consumer_page_mapping_name_column_name;
+    public static String stream_consumer_page_mapping_type_column_name;
     public static String stream_consumer_page_mapping_label_error_no_columns_selected_text;
 
     public static String data_transfer_task_configurator_group_label_export_tables;
