@@ -303,6 +303,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         jsonWriter.endObject();
     }
 
+    @NotNull
     private static String loadConfigFile(
         @NotNull DBPProject project,
         @NotNull InputStream stream,

@@ -49,6 +49,15 @@ public final class DataSourceConfigurationProfileQuery {
         return false;
     }
 
+    private static boolean hasLocalProfile(@NotNull Map<String, Object> config, @NotNull String profileName) {
+        for (var profile : JSONUtils.getNestedObjects(config, "network-profiles")) {
+            if (profileName.equals(profile.getKey())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @NotNull
     public static Map<String, String> findGlobalProfileConnections(
         @NotNull DBPProject project, @NotNull String profileName
@@ -89,15 +98,6 @@ public final class DataSourceConfigurationProfileQuery {
                 return true;
             })
             .toList();
-    }
-
-    private static boolean hasLocalProfile(@NotNull Map<String, Object> config, @NotNull String profileName) {
-        for (var profile : JSONUtils.getNestedObjects(config, "network-profiles")) {
-            if (profileName.equals(profile.getKey())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static void addConnections(

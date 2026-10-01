@@ -27,72 +27,70 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileUsageProvider.ProjectConnections;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-
 class LegacyNetworkProfileUsageProviderTest {
     @Test
     void excludesLocalOverridesAndExternalProfiles() throws DBException {
-        DBPWorkspace workspace = mock(DBPWorkspace.class);
+        DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
         DBPProject localProject = project("local", "Local project");
         DBPProject globalProject = project("global", "Global project");
-        when(workspace.getProjects()).thenAnswer(invocation -> List.of(localProject, globalProject));
+        Mockito.when(workspace.getProjects()).thenAnswer(invocation -> List.of(localProject, globalProject));
 
         DBPDataSourceRegistry localRegistry = registry(localProject);
         DBWNetworkProfile localProfile = new DBWNetworkProfile(localProject);
         localProfile.setProfileName("shared");
-        when(localRegistry.getNetworkProfiles().getProfiles()).thenReturn(List.of(localProfile));
+        Mockito.when(localRegistry.getNetworkProfiles().getProfiles()).thenReturn(List.of(localProfile));
         DBPDataSourceRegistry globalRegistry = registry(globalProject);
-        when(globalRegistry.getDataSources()).thenAnswer(invocation -> List.of(
+        Mockito.when(globalRegistry.getDataSources()).thenAnswer(invocation -> List.of(
             connection("global-connection", "Global connection", "shared", null),
             connection("external-connection", "External connection", "shared", "external"),
             connection("other-connection", "Other connection", "other", null)
         ));
 
         LegacyNetworkProfileUsageProvider provider = new LegacyNetworkProfileUsageProvider(workspace);
-        assertEquals(Map.of("local", "Local project"), provider.findLocalProfileConflicts("shared"));
-        assertEquals(
+        Assertions.assertEquals(Map.of("local", "Local project"), provider.findLocalProfileConflicts("shared"));
+        Assertions.assertEquals(
             List.of(new ProjectConnections(
                 "global", "Global project",
                 Map.of("global-connection", "Global connection")
             )), provider.findGlobalProfileConnections("shared")
         );
-        verify(localRegistry, never()).getDataSources();
+        Mockito.verify(localRegistry, Mockito.never()).getDataSources();
     }
 
     @Test
     void failsWhenProjectRegistryCannotLoad() throws DBException {
-        DBPWorkspace workspace = mock(DBPWorkspace.class);
+        DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
         DBPProject project = project("broken", "Broken project");
-        when(workspace.getProjects()).thenAnswer(invocation -> List.of(project));
+        Mockito.when(workspace.getProjects()).thenAnswer(invocation -> List.of(project));
         DBPDataSourceRegistry registry = registry(project);
-        doThrow(new DBException("Failed to load project")).when(registry).checkForErrors();
+        Mockito.doThrow(new DBException("Failed to load project")).when(registry).checkForErrors();
 
         LegacyNetworkProfileUsageProvider provider = new LegacyNetworkProfileUsageProvider(workspace);
-        assertThrows(DBException.class, () -> provider.findLocalProfileConflicts("shared"));
-        assertThrows(DBException.class, () -> provider.findGlobalProfileConnections("shared"));
+        Assertions.assertThrows(DBException.class, () -> provider.findLocalProfileConflicts("shared"));
+        Assertions.assertThrows(DBException.class, () -> provider.findGlobalProfileConnections("shared"));
     }
 
     @NotNull
     private static DBPProject project(@NotNull String id, @NotNull String name) {
-        DBPProject project = mock(DBPProject.class);
-        when(project.getId()).thenReturn(id);
-        when(project.getName()).thenReturn(name);
+        DBPProject project = Mockito.mock(DBPProject.class);
+        Mockito.when(project.getId()).thenReturn(id);
+        Mockito.when(project.getName()).thenReturn(name);
         return project;
     }
 
     @NotNull
     private static DBPDataSourceRegistry registry(@NotNull DBPProject project) {
-        DBPDataSourceRegistry registry = mock(DBPDataSourceRegistry.class);
-        DBWNetworkProfileManager profiles = mock(DBWNetworkProfileManager.class);
-        when(project.getDataSourceRegistry()).thenReturn(registry);
-        when(registry.getNetworkProfiles()).thenReturn(profiles);
+        DBPDataSourceRegistry registry = Mockito.mock(DBPDataSourceRegistry.class);
+        DBWNetworkProfileManager profiles = Mockito.mock(DBWNetworkProfileManager.class);
+        Mockito.when(project.getDataSourceRegistry()).thenReturn(registry);
+        Mockito.when(registry.getNetworkProfiles()).thenReturn(profiles);
         return registry;
     }
 
@@ -103,13 +101,13 @@ class LegacyNetworkProfileUsageProviderTest {
         @NotNull String profileName,
         @Nullable String source
     ) {
-        DBPDataSourceContainer connection = mock(DBPDataSourceContainer.class);
+        DBPDataSourceContainer connection = Mockito.mock(DBPDataSourceContainer.class);
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setConfigProfileName(profileName);
         configuration.setConfigProfileSource(source);
-        when(connection.getId()).thenReturn(id);
-        when(connection.getName()).thenReturn(name);
-        when(connection.getConnectionConfiguration()).thenReturn(configuration);
+        Mockito.when(connection.getId()).thenReturn(id);
+        Mockito.when(connection.getName()).thenReturn(name);
+        Mockito.when(connection.getConnectionConfiguration()).thenReturn(configuration);
         return connection;
     }
 }

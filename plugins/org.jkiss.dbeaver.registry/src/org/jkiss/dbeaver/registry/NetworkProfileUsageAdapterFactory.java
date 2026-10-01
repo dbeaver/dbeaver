@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileUsageProvider;
 
@@ -24,7 +26,8 @@ public final class NetworkProfileUsageAdapterFactory implements IAdapterFactory 
     private static final Class<?>[] ADAPTERS = {DBWNetworkProfileUsageProvider.class};
 
     @Override
-    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+    @Nullable
+    public <T> T getAdapter(@NotNull Object adaptableObject, @NotNull Class<T> adapterType) {
         if (!(adaptableObject instanceof DBPWorkspace workspace) || adapterType != DBWNetworkProfileUsageProvider.class ||
             workspace.getPlatform().getApplication().isDistributed()) {
             return null;
@@ -33,6 +36,7 @@ public final class NetworkProfileUsageAdapterFactory implements IAdapterFactory 
     }
 
     @Override
+    @NotNull
     public Class<?>[] getAdapterList() {
         return ADAPTERS;
     }

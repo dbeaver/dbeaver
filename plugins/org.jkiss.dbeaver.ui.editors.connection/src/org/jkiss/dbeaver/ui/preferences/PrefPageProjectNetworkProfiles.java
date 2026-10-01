@@ -59,7 +59,8 @@ import java.util.stream.Collectors;
 /**
  * PrefPageProjectResourceSettings
  */
-public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfiles implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
+public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfiles
+    implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.project.settings.networkProfiles"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(PrefPageProjectNetworkProfiles.class);
