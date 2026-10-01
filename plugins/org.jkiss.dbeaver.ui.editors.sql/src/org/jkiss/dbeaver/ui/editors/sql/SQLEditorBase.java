@@ -162,20 +162,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
         themeListener = new IPropertyChangeListener() {
-            long lastUpdateTime = 0;
+            long updateSequence;
 
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
-                    if (lastUpdateTime > 0 && System.currentTimeMillis() - lastUpdateTime < 500) {
-                        // Do not update too often (theme change may trigger this hundreds of times)
-                        return;
-                    }
-                    lastUpdateTime = System.currentTimeMillis();
-                    UIUtils.asyncExec(() -> {
+                    long scheduledUpdate = ++updateSequence;
+                    // Theme changes can trigger hundreds of events. Refresh once after the final color is applied.
+                    UIUtils.timerExec(500, () -> {
+                        if (scheduledUpdate != updateSequence) {
+                            return;
+                        }
                         ISourceViewer sourceViewer = getSourceViewer();
-                        if (sourceViewer != null) {
+                        if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
                             reloadSyntaxRules();
                             // Reconfigure to let comments/strings colors to take effect
                             sourceViewer.configure(getSourceViewerConfiguration());
