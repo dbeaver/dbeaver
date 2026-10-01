@@ -140,8 +140,6 @@ class ConfigureColumnsDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        settings.getDataMappings().clear();
-
         Set<Object> checkedElements = Set.of(viewer.getCheckedElements());
         for (StreamMappingContainer container : mappings) {
             container.setMappingType(checkedElements.contains(container) ? StreamMappingType.export : StreamMappingType.skip);

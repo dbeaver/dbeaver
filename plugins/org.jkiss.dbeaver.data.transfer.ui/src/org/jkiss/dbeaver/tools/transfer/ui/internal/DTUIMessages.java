@@ -22,6 +22,18 @@ public class DTUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages"; //$NON-NLS-1$
 
     public static String data_transfer_wizard_name;
+    public static String data_transfer_wizard_format_group;
+    public static String data_transfer_wizard_migration_group;
+    public static String data_transfer_wizard_source_table;
+    public static String data_transfer_wizard_data_source;
+    public static String data_transfer_wizard_configure_columns;
+    public static String data_transfer_wizard_choose_data_source;
+    public static String data_transfer_wizard_confirm_remove_sources;
+    public static String data_transfer_wizard_empty_sources;
+    public static String data_transfer_wizard_sources_locked;
+    public static String data_transfer_wizard_select_source;
+    public static String data_transfer_wizard_select_query;
+    public static String data_transfer_wizard_columns_unavailable;
     public static String data_transfer_wizard_final_column_source;
     public static String data_transfer_wizard_final_column_source_container;
     public static String data_transfer_wizard_final_column_source_format;
