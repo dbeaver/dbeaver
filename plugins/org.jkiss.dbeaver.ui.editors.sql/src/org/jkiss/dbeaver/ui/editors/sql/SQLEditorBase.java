@@ -22,6 +22,9 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -148,6 +151,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
+    @Nullable
+    private final AbstractUIJob themeUpdateJob;
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
@@ -162,33 +167,33 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
         boolean preserveThemeColors = DBWorkbench.getPlatform().getApplication().isStandalone();
+        themeUpdateJob = preserveThemeColors ? new AbstractUIJob("SQL editor theme update") {
+            {
+                setSystem(true);
+            }
+
+            @NotNull
+            @Override
+            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+                refreshSyntaxColors();
+                return Status.OK_STATUS;
+            }
+        } : null;
         themeListener = new IPropertyChangeListener() {
             long lastUpdateTime;
-            long updateSequence;
 
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
-                    Runnable refreshSyntaxColors = () -> {
-                        ISourceViewer sourceViewer = getSourceViewer();
-                        if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
-                            reloadSyntaxRules();
-                            // Reconfigure to let comments/strings colors to take effect
-                            sourceViewer.configure(getSourceViewerConfiguration());
+                    if (themeUpdateJob != null) {
+                        switch (themeUpdateJob.getState()) {
+                            case Job.WAITING, Job.SLEEPING -> themeUpdateJob.cancel();
                         }
-                    };
-                    if (preserveThemeColors) {
-                        long scheduledUpdate = ++updateSequence;
-                        // Theme changes can trigger hundreds of events. Refresh once after the final color is applied.
-                        UIUtils.timerExec(500, () -> {
-                            if (scheduledUpdate == updateSequence) {
-                                refreshSyntaxColors.run();
-                            }
-                        });
+                        themeUpdateJob.schedule(500);
                     } else if (lastUpdateTime == 0 || System.currentTimeMillis() - lastUpdateTime >= 500) {
                         lastUpdateTime = System.currentTimeMillis();
-                        UIUtils.asyncExec(refreshSyntaxColors);
+                        UIUtils.asyncExec(SQLEditorBase.this::refreshSyntaxColors);
                     }
                 }
             }
@@ -202,6 +207,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         completionContext = new SQLEditorCompletionContext(this);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
+    }
+
+    private void refreshSyntaxColors() {
+        ISourceViewer sourceViewer = getSourceViewer();
+        if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
+            reloadSyntaxRules();
+            // Reconfigure to let comments/strings colors to take effect
+            sourceViewer.configure(getSourceViewerConfiguration());
+        }
     }
 
     @Override
@@ -735,6 +749,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     @Override
     public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
+        if (themeUpdateJob != null) {
+            themeUpdateJob.cancel();
+        }
         if (this.semanticMarkersManager != null) {
             this.semanticMarkersManager.dispose();
         }
