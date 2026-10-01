@@ -101,12 +101,12 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private TableViewer nodesTable;
     private TableViewer migrationTable;
     private TableViewer inputsTable;
+    private TransferTarget lastExportTarget;
     private ToolItem removeButton;
     private ToolItem addButton;
     private ToolItem addQueryButton;
     private ToolItem editQueryButton;
     private ToolItem columnsButton;
-    private ToolBar sourceToolbar;
 
     private static class TransferTarget {
         DataTransferNodeDescriptor node;
@@ -146,7 +146,6 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         Composite targets = createNodesTable(composite);
         if (!isDataImport()) {
             composite.setTabList(new Control[]{sources, targets});
-            installTabStops();
         }
 
         setControl(composite);
@@ -156,23 +155,6 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         if (migrationTable != null) {
             migrationTable.getTable().addControlListener(ControlListener.controlResizedAdapter(e -> packTablesColumns()));
         }
-    }
-
-    private void installTabStops() {
-        addTabStop(inputsTable.getTable(), SWT.TRAVERSE_TAB_NEXT, sourceToolbar);
-        addTabStop(sourceToolbar, SWT.TRAVERSE_TAB_PREVIOUS, inputsTable.getTable());
-        addTabStop(sourceToolbar, SWT.TRAVERSE_TAB_NEXT, nodesTable.getTable());
-        addTabStop(nodesTable.getTable(), SWT.TRAVERSE_TAB_PREVIOUS, sourceToolbar);
-        addTabStop(nodesTable.getTable(), SWT.TRAVERSE_TAB_NEXT, migrationTable.getTable());
-        addTabStop(migrationTable.getTable(), SWT.TRAVERSE_TAB_PREVIOUS, nodesTable.getTable());
-    }
-
-    private void addTabStop(@NotNull Control source, int direction, @NotNull Control target) {
-        source.addTraverseListener(e -> {
-            if (e.detail == direction && target.isEnabled() && target.setFocus()) {
-                e.doit = false;
-            }
-        });
     }
 
     private void packTablesColumns() {
@@ -208,36 +190,41 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             exportData.widthHint = 0;
             exportPanel.setLayoutData(exportData);
             UIUtils.createControlLabel(exportPanel, DTUIMessages.data_transfer_wizard_format_group);
-            nodesTable = createTargetTable(exportPanel, 9);
+            nodesTable = createTargetTable(exportPanel, true);
             Composite migrationPanel = UIUtils.createComposite(targets, 1);
             GridData migrationData = new GridData(GridData.FILL_BOTH);
             migrationData.widthHint = 0;
             migrationPanel.setLayoutData(migrationData);
             UIUtils.createControlLabel(migrationPanel, DTUIMessages.data_transfer_wizard_migration_group);
-            migrationTable = createTargetTable(migrationPanel, 1);
+            migrationTable = createTargetTable(migrationPanel, true);
+            nodesTable.getTable().addListener(SWT.FocusIn, e -> {
+                if (nodesTable.getSelection().isEmpty() && !migrationTable.getSelection().isEmpty() &&
+                    nodesTable.getInput() instanceof List<?> options && !options.isEmpty()) {
+                    nodesTable.setSelection(new StructuredSelection(getLastExportTarget(options)));
+                    nodesTable.getTable().showSelection();
+                    migrationTable.setSelection(StructuredSelection.EMPTY);
+                    setSelectedSettings(true);
+                }
+            });
             exportPanel.setTabList(new Control[]{nodesTable.getTable()});
             migrationPanel.setTabList(new Control[]{migrationTable.getTable()});
             targets.setTabList(new Control[]{exportPanel, migrationPanel});
             return targets;
         } else {
             UIUtils.createControlLabel(composite, DTUIMessages.data_transfer_wizard_final_column_source_format);
-            nodesTable = createTargetTable(composite, 10);
+            nodesTable = createTargetTable(composite, false);
             return composite;
         }
     }
 
     @NotNull
-    private TableViewer createTargetTable(@NotNull Composite panel, int visibleRows) {
+    private TableViewer createTargetTable(@NotNull Composite panel, boolean fillVertical) {
         TableViewer viewer = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.V_SCROLL);
         Table table = viewer.getTable();
-        GridData gd = new GridData(SWT.FILL, SWT.TOP, true, false);
-        if (!isDataImport() && visibleRows > 1) {
-            gd.verticalAlignment = SWT.FILL;
-            gd.grabExcessVerticalSpace = true;
+        GridData gd = new GridData(SWT.FILL, fillVertical ? SWT.FILL : SWT.TOP, true, fillVertical);
+        if (fillVertical) {
             gd.heightHint = 0;
             gd.minimumHeight = 3 * table.getItemHeight();
-        } else {
-            gd.heightHint = visibleRows * table.getItemHeight() + table.getBorderWidth() * 2;
         }
         if (!isDataImport()) {
             gd.widthHint = 0;
@@ -301,6 +288,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                 if (viewer == migrationTable) {
                     nodesTable.setSelection(StructuredSelection.EMPTY);
                 } else if (migrationTable != null) {
+                    lastExportTarget = (TransferTarget) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
                     migrationTable.setSelection(StructuredSelection.EMPTY);
                 }
                 setSelectedSettings(true);
@@ -318,7 +306,12 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             TableViewer other = e.keyCode == SWT.ARROW_RIGHT && viewer == nodesTable ? migrationTable :
                 e.keyCode == SWT.ARROW_LEFT && viewer == migrationTable ? nodesTable : null;
             if (other != null && other.getInput() instanceof List<?> options && !options.isEmpty()) {
-                other.setSelection(new StructuredSelection(options.getFirst()));
+                if (viewer == nodesTable) {
+                    lastExportTarget = (TransferTarget) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+                }
+                Object target = other == nodesTable ? getLastExportTarget(options) : options.getFirst();
+                other.setSelection(new StructuredSelection(target));
+                other.getTable().showSelection();
                 viewer.setSelection(StructuredSelection.EMPTY);
                 other.getTable().setFocus();
                 setSelectedSettings(true);
@@ -326,6 +319,19 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             }
         });
         return viewer;
+    }
+
+    @NotNull
+    private Object getLastExportTarget(@NotNull List<?> options) {
+        if (lastExportTarget != null) {
+            for (Object option : options) {
+                if (option instanceof TransferTarget target && target.node == lastExportTarget.node &&
+                    target.processor == lastExportTarget.processor) {
+                    return target;
+                }
+            }
+        }
+        return options.getFirst();
     }
 
     private void setSelectedSettings(boolean forceUpdate) {
@@ -509,7 +515,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                     columnsButton.notifyListeners(SWT.Selection, new Event());
                 }
             });
-            sourceToolbar = createConfigureColumnsButton(inputTable);
+            ToolBar sourceToolbar = createConfigureColumnsButton(inputTable);
             inputTable.setTabList(new Control[]{table, sourceToolbar});
             panel.setTabList(new Control[]{inputTable});
             updateSourceButtons();
@@ -879,11 +885,14 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             if (migrationTable != null && ((List<?>) migrationTable.getInput()).contains(currentTarget)) {
                 nodesTable.setSelection(StructuredSelection.EMPTY);
                 migrationTable.setSelection(selection);
+                migrationTable.getTable().showSelection();
             } else {
                 if (migrationTable != null) {
                     migrationTable.setSelection(StructuredSelection.EMPTY);
                 }
                 nodesTable.setSelection(selection);
+                nodesTable.getTable().showSelection();
+                lastExportTarget = currentTarget;
             }
             setSelectedSettings(false);
         }
