@@ -213,7 +213,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
     @NotNull
     public String buildAddFileDDL() {
         StringBuilder sb = new StringBuilder("ALTER DATABANK \"");
-        sb.append(databank.getName()).append("\" ADD FILE '").append(fileName.replace("'", "''")).append('\'');
+        sb.append(databank.getName().replace("\"", "\"\"")).append("\" ADD FILE '").append(fileName.replace("'", "''")).append('\'');
         if (!CommonUtils.isEmptyTrimmed(fileSize)) {
             sb.append(", FILESIZE ").append(fileSize.trim());
         }
@@ -231,7 +231,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
 
     @NotNull
     public String buildDropFileDDL() {
-        return "ALTER DATABANK \"" + databank.getName() + "\" DROP FILE '" + fileName.replace("'", "''") + "'";
+        return "ALTER DATABANK \"" + databank.getName().replace("\"", "\"\"") + "\" DROP FILE '" + fileName.replace("'", "''") + "'";
     }
 
     /**
