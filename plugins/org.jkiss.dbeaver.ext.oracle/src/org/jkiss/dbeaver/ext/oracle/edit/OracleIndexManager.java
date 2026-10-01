@@ -37,7 +37,7 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableIndex> getObjectsCache(OracleTableIndex object) {
-        return object.getParentObject().getSchema().indexCache;
+        return object.getParentObject().getSchema().getIndexCache();
     }
 
     @Override

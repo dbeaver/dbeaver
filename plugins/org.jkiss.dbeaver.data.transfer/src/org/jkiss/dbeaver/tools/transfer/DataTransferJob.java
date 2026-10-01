@@ -129,6 +129,13 @@ public class DataTransferJob extends AbstractJob {
         super.canceling();
     }
 
+    @Nullable
+    @Override
+    protected DBRProgressMonitor getCancellationMonitor() {
+        // A single transfer uses the parent monitor for its JDBC sessions and active blocks.
+        return parentMonitor != null ? parentMonitor : super.getCancellationMonitor();
+    }
+
     void transferData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DataTransferPipe transferPipe

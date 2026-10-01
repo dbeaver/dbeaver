@@ -877,6 +877,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 //        if (isTemporaryConnection()) {
 //            return false;
 //        }
+        if (wizard.getPageSettings() != this) {
+            return true;
+        }
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
@@ -887,9 +890,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 }
             }
         }
-        return wizard.getPageSettings() != this ||
-            this.connectionEditor != null &&
-                (this.connectionEditor.isExternalConfigurationProvided() || this.connectionEditor.isComplete());
+        return this.connectionEditor != null &&
+            (this.connectionEditor.isExternalConfigurationProvided() || this.connectionEditor.isComplete());
     }
 
     @Override
