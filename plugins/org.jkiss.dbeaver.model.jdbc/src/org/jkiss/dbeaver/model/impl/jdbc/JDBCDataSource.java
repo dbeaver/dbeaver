@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractDataSource;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -134,6 +135,43 @@ public abstract class JDBCDataSource extends AbstractDataSource
             context,
             new DBPConnectionConfiguration(container.getActualConnectionConfiguration()),
             purpose);
+    }
+
+    public void validateUserPassword(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String userName,
+        @NotNull String userPassword
+    ) throws DBCException {
+        DBPConnectionConfiguration actualConnectionInfo = container.getActualConnectionConfiguration();
+        if (!isUserPasswordAuthentication(actualConnectionInfo)) {
+            throw new DBCException("Current password validation requires database username/password authentication");
+        }
+        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration(actualConnectionInfo);
+        prepareUserPasswordValidationConfiguration(connectionInfo);
+        connectionInfo.setUserName(userName);
+        connectionInfo.setUserPassword(userPassword);
+        try (Connection ignored = openConnectionForPasswordValidation(monitor, connectionInfo)) {
+            // The successful connection validates the supplied credentials.
+        } catch (SQLException e) {
+            throw new DBCException("Error validating current user password", e);
+        }
+    }
+
+    protected boolean isUserPasswordAuthentication(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return CommonUtils.isEmpty(connectionInfo.getAuthModelId())
+            || AuthModelDatabaseNative.ID.equals(connectionInfo.getAuthModelId());
+    }
+
+    protected void prepareUserPasswordValidationConfiguration(@NotNull DBPConnectionConfiguration connectionInfo) {
+        connectionInfo.setAuthModelId(AuthModelDatabaseNative.ID);
+        connectionInfo.setAuthProperties(null);
+    }
+
+    protected Connection openConnectionForPasswordValidation(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        return openConnection(monitor, null, connectionInfo, "Validate current user password");
     }
 
     protected Connection openConnection(

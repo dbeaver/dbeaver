@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,9 +172,18 @@ public abstract class AbstractJob extends Job {
         return true;
     }
 
+    @Nullable
+    protected DBRProgressMonitor getCancellationMonitor() {
+        return progressMonitor;
+    }
+
     private void runBlockCanceler() {
+        DBRProgressMonitor cancellationMonitor = getCancellationMonitor();
+        if (cancellationMonitor == null) {
+            return;
+        }
         final List<DBRBlockingObject> activeBlocks = new ArrayList<>(
-            CommonUtils.safeList(progressMonitor.getActiveBlocks()));
+            CommonUtils.safeList(cancellationMonitor.getActiveBlocks()));
         if (activeBlocks.isEmpty()) {
             // Nothing to cancel
             return;
@@ -187,7 +196,7 @@ public abstract class AbstractJob extends Job {
         final DBRBlockingObject lastBlock = activeBlocks.removeLast();
 
         try {
-            new JobCanceler(lastBlock).schedule();
+            new JobCanceler(lastBlock, cancellationMonitor).schedule();
         } catch (Exception e) {
             // If this happens during shutdown and job manager is not active
             log.debug(e);
@@ -216,7 +225,7 @@ public abstract class AbstractJob extends Job {
                     protected IStatus run(IProgressMonitor monitor) {
                         if (!finished) {
                             DBRBlockingObject nextBlock = activeBlocks.removeLast();
-                            new JobCanceler(nextBlock).schedule();
+                            new JobCanceler(nextBlock, cancellationMonitor).schedule();
                             if (!activeBlocks.isEmpty()) {
                                 schedule(cancelCheckTimeout);
                             }
@@ -232,10 +241,12 @@ public abstract class AbstractJob extends Job {
 
     private class JobCanceler extends Job {
         private final DBRBlockingObject block;
+        private final DBRProgressMonitor cancellationMonitor;
 
-        public JobCanceler(DBRBlockingObject block) {
+        public JobCanceler(DBRBlockingObject block, DBRProgressMonitor cancellationMonitor) {
             super("Operation cancel"); //$NON-N LS-1$
             this.block = block;
+            this.cancellationMonitor = cancellationMonitor;
             setSystem(true);
             setUser(false);
         }
@@ -245,7 +256,7 @@ public abstract class AbstractJob extends Job {
         protected IStatus run(@NotNull IProgressMonitor monitor) {
             if (!finished) {
                 try {
-                    BlockCanceler.cancelBlock(progressMonitor, block);
+                    BlockCanceler.cancelBlock(cancellationMonitor, block);
                 } catch (DBException e) {
                     log.debug("Block cancel error", e); //$NON-N LS-1$
                     if (!isSkipErrorOnCanceling()) {

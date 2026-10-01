@@ -33,6 +33,7 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
@@ -316,7 +317,7 @@ public class ContentUtils {
     }
 
     public static boolean deleteFileRecursive(@NotNull Path file) {
-        if (Files.isDirectory(file)) {
+        if (Files.isDirectory(file, LinkOption.NOFOLLOW_LINKS)) {
             try (Stream<Path> list = Files.list(file)) {
                 List<Path> files = list.toList();
                 for (Path ch : files) {

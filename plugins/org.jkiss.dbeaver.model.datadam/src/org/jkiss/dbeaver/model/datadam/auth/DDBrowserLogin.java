@@ -21,6 +21,8 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.awt.*;
@@ -48,6 +50,7 @@ public class DDBrowserLogin {
     private static final int STATE_SIZE_BYTES = 32;
     private static final int MAX_BODY_SIZE = 64 * 1024;
     private static final Duration TIMEOUT = Duration.ofMinutes(3);
+    private static final Duration CANCEL_POLL_INTERVAL = Duration.ofMillis(100);
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private static final String DONE_PAGE = """
@@ -62,6 +65,16 @@ public class DDBrowserLogin {
 
     @NotNull
     public DDCryptoState login() throws DBException {
+        try {
+            return login(new VoidProgressMonitor());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new DBException("Login was interrupted", e);
+        }
+    }
+
+    @NotNull
+    public DDCryptoState login(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
         String state = randomState();
         CompletableFuture<Map<String, String>> result = new CompletableFuture<>();
 
@@ -78,18 +91,34 @@ public class DDBrowserLogin {
         try {
             int port = server.getAddress().getPort();
             openBrowser(buildLoginUrl(port, state));
-            return toCryptoState(result.get(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
-        } catch (TimeoutException e) {
-            throw new DBException("Login was not completed in time", e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new DBException("Login was interrupted", e);
-        } catch (ExecutionException e) {
-            throw new DBException("Login failed: " + e.getCause().getMessage(), e.getCause());
+            return toCryptoState(awaitResult(result, monitor, TIMEOUT));
         } finally {
             server.stop(0);
             executor.shutdownNow();
         }
+    }
+
+    @NotNull
+    static <T> T awaitResult(
+        @NotNull CompletableFuture<T> result,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Duration timeout
+    ) throws DBException, InterruptedException {
+        long deadline = System.nanoTime() + timeout.toNanos();
+        while (!monitor.isCanceled()) {
+            long remaining = deadline - System.nanoTime();
+            if (remaining <= 0) {
+                throw new DBException("Login was not completed in time");
+            }
+            try {
+                return result.get(Math.min(remaining, CANCEL_POLL_INTERVAL.toNanos()), TimeUnit.NANOSECONDS);
+            } catch (TimeoutException e) {
+                // Poll the monitor while waiting for the browser callback.
+            } catch (ExecutionException e) {
+                throw new DBException("Login failed: " + e.getCause().getMessage(), e.getCause());
+            }
+        }
+        throw new InterruptedException("Login was canceled");
     }
 
     private void handleCallback(
