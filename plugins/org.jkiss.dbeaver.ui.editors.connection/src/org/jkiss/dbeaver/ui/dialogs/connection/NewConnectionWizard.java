@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -199,6 +200,22 @@ public class NewConnectionWizard extends ConnectionWizard
         } else {
             return getPageSettings((DriverDescriptor) getSelectedDriver());
         }
+    }
+
+    @Override
+    public boolean canFinish() {
+        if (initialDriver == null) {
+            return super.canFinish();
+        }
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+            return false;
+        }
+        for (IWizardPage page : getPages()) {
+            if (page != pageDataSource && page != pageConnector && !page.isPageComplete()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
