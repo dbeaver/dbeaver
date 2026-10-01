@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDescriptionEditable;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithType;
@@ -54,7 +55,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     DBPScriptObjectExt2,
     PostgrePrivilegeOwner,
     DBPNamedObject2,
-    DBSObjectWithType
+    DBSObjectWithType, DBSDescriptionEditable
 {
     private static final Log log = Log.getLog(PostgreTableBase.class);
 
@@ -158,7 +159,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return this.description;
     }
 
-    public void setDescription(String description) {
+    @Override
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 

@@ -96,6 +96,12 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
 
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         String roleName = connectionInfo.getAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE);
+        if (CommonUtils.isEmpty(roleName)) {
+            roleName = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTH_ROLE);
+        }
+        if (CommonUtils.isEmpty(roleName)) {
+            roleName = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE_LEGACY);
+        }
         if (roleName != null) {
             userRoleCombo.setText(roleName);
         }
@@ -103,6 +109,9 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
             String authName = connectionInfo.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
             if (CommonUtils.isEmpty(authName)) {
                 authName = CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY));
+            }
+            if (CommonUtils.isEmpty(authName)) {
+                authName = CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR));
             }
             authTypeComboDecorator.setText(authName);
         }

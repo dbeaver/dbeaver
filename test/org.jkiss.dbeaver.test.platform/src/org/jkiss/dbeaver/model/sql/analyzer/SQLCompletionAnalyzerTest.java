@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,19 @@ import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.jkiss.junit.osgi.annotation.RunnerProxy;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
-@RunnerProxy(MockitoJUnitRunner.Silent.class)
 public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
     private static RequestResult modelDataRequest;
 
-    @Before
+    @BeforeEach
     public void init() throws DBException {
         if (Platform.isRunning()) {
             modelDataRequest = RequestBuilder
@@ -81,20 +78,20 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SEL|");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("SELECT", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("SELECT", proposals.get(0).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * |");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("FROM", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("FROM", proposals.get(0).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM T |");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("WHERE", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("WHERE", proposals.get(0).getReplacementString());
         }
     }
 
@@ -124,70 +121,70 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT | FROM Table1");
 
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT * FROM Table1 WHERE |");
 
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Table1.Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table1.Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table1.Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Table1.Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Table1.Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Table1.Col3", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT * FROM Table1 WHERE Table1.|");
 
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT * FROM Table1 t WHERE t.|");
 
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT * FROM \"Table 3\" t WHERE t.|");
 
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col7", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col8", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col9", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col7", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col8", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col9", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT t.| FROM Table1 t");
 
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT t2.| FROM Table1 t, Table2 t2");
 
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col4", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col5", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col6", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col4", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col5", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col6", proposals.get(2).getReplacementString());
         }
     }
 
@@ -205,13 +202,13 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         }).prepare();
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Table1 join Table2 t on t.|", false);
-            Assert.assertEquals("Col4", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col5", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col4", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col5", proposals.get(1).getReplacementString());
         }
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Table1 b join Table2 on b.|", false);
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
         }
     }
 
@@ -231,24 +228,24 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT *| FROM Table1", false);
 
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("Col1, Col2, Col3", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("Col1, Col2, Col3", proposals.get(0).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT t.*| FROM Table1 t", false);
 
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("Col1, t.Col2, t.Col3", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("Col1, t.Col2, t.Col3", proposals.get(0).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT Table1.*| FROM Table1", false);
 
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("Col1, Table1.Col2, Table1.Col3", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("Col1, Table1.Col2, Table1.Col3", proposals.get(0).getReplacementString());
         }
     }
 
@@ -267,21 +264,21 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM |");
-            Assert.assertTrue(proposals.size() >= 3);
-            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
+            Assertions.assertTrue(proposals.size() >= 3);
+            Assertions.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Table3 t", proposals.get(2).getReplacementString());
 
             // TODO: Is 'WHERE' even supposed to be here?
-            // Assert.assertEquals("WHERE", proposals.get(3).getReplacementString());
+            // Assertions.assertEquals("WHERE", proposals.get(3).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Tb|");
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Tbl4 t", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Tbl5 t", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Tbl6 t", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Tbl4 t", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Tbl5 t", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Tbl6 t", proposals.get(2).getReplacementString());
         }
     }
 
@@ -304,17 +301,17 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Sch|");
-            Assert.assertEquals(2, proposals.size());
-            Assert.assertEquals("Schema1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Schema2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals(2, proposals.size());
+            Assertions.assertEquals("Schema1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Schema2", proposals.get(1).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Schema1.|");
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Table3 t", proposals.get(2).getReplacementString());
         }
     }
 
@@ -346,43 +343,43 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Da|");
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Database1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Database2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Database3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Database1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Database2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Database3", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database1.|");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("Schema1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("Schema1", proposals.get(0).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database1.Schema1.|");
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Table3 t", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.|");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("\"a.schema\"", proposals.get(0).getReplacementString());
-            Assert.assertEquals(24, proposals.get(0).getReplacementOffset());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("\"a.schema\"", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(24, proposals.get(0).getReplacementOffset());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.\"a.schema\".|");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("\"a.table\" t", proposals.get(0).getReplacementString());
-            Assert.assertEquals(35, proposals.get(0).getReplacementOffset());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("\"a.table\" t", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(35, proposals.get(0).getReplacementOffset());
         }
     }
 
     @Test
-    @Ignore("See #12159")
+    @Disabled("See #12159")
     public void testQuotedNamesCompletion() throws DBException {
         final RequestResult request = RequestBuilder
             .databases(x -> {
@@ -400,28 +397,28 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM \"Dat|\"");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("Database1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("Database1", proposals.get(0).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM \"Database1\".\"Sch|\"");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("Schema1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("Schema1", proposals.get(0).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM \"Database1\".\"Schema1\".\"Tab|\"");
-            Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals(1, proposals.size());
+            Assertions.assertEquals("Table1", proposals.get(0).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM \"Database1\".\"Schema1\".\"Table1\".\"Col|\"");
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
     }
 
@@ -443,26 +440,26 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT | FROM Database1.Schema1.Table1");
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT | FROM \"Database1\".Schema1.\"Table1\"");
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
 
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT | FROM \"Database1\".\"Schema1\".\"Table1\"");
-            Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Col1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Col2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Col3", proposals.get(2).getReplacementString());
+            Assertions.assertEquals(3, proposals.size());
+            Assertions.assertEquals("Col1", proposals.get(0).getReplacementString());
+            Assertions.assertEquals("Col2", proposals.get(1).getReplacementString());
+            Assertions.assertEquals("Col3", proposals.get(2).getReplacementString());
         }
     }
     
@@ -471,63 +468,63 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE |");
         
-        Assert.assertEquals("a.attribute1", proposals.get(0).getReplacementString());
-        Assert.assertEquals("a.attribute2", proposals.get(1).getReplacementString());
-        Assert.assertEquals("a.attribute3", proposals.get(2).getReplacementString());
-        Assert.assertEquals("b.attribute1", proposals.get(3).getReplacementString());
-        Assert.assertEquals("b.attribute2", proposals.get(4).getReplacementString());
-        Assert.assertEquals("b.attribute3", proposals.get(5).getReplacementString());
+        Assertions.assertEquals("a.attribute1", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("a.attribute2", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("a.attribute3", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("b.attribute1", proposals.get(3).getReplacementString());
+        Assertions.assertEquals("b.attribute2", proposals.get(4).getReplacementString());
+        Assertions.assertEquals("b.attribute3", proposals.get(5).getReplacementString());
 
         proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE a.|");
-        Assert.assertEquals("attribute1", proposals.get(0).getReplacementString());
-        Assert.assertEquals("attribute2", proposals.get(1).getReplacementString());
-        Assert.assertEquals("attribute3", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("attribute1", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("attribute2", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("attribute3", proposals.get(2).getReplacementString());
 
         proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE b.|");
-        Assert.assertEquals("attribute1", proposals.get(0).getReplacementString());
-        Assert.assertEquals("attribute2", proposals.get(1).getReplacementString());
-        Assert.assertEquals("attribute3", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("attribute1", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("attribute2", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("attribute3", proposals.get(2).getReplacementString());
         
         proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE a.attribute1=1 AND |");
-        Assert.assertEquals("a.attribute1", proposals.get(0).getReplacementString());
-        Assert.assertEquals("a.attribute2", proposals.get(1).getReplacementString());
-        Assert.assertEquals("a.attribute3", proposals.get(2).getReplacementString());
-        Assert.assertEquals("b.attribute1", proposals.get(3).getReplacementString());
-        Assert.assertEquals("b.attribute2", proposals.get(4).getReplacementString());
-        Assert.assertEquals("b.attribute3", proposals.get(5).getReplacementString());
+        Assertions.assertEquals("a.attribute1", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("a.attribute2", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("a.attribute3", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("b.attribute1", proposals.get(3).getReplacementString());
+        Assertions.assertEquals("b.attribute2", proposals.get(4).getReplacementString());
+        Assertions.assertEquals("b.attribute3", proposals.get(5).getReplacementString());
         
         proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE a.attribute1=1 AND b.|");
-        Assert.assertEquals("attribute1", proposals.get(0).getReplacementString());
-        Assert.assertEquals("attribute2", proposals.get(1).getReplacementString());
-        Assert.assertEquals("attribute3", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("attribute1", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("attribute2", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("attribute3", proposals.get(2).getReplacementString());
 
         // all
         proposals = modelDataRequest
             .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE |");
-        Assert.assertEquals("a.\"attribute-a\"", proposals.get(0).getReplacementString());
-        Assert.assertEquals("a.\"attribute-A\"", proposals.get(1).getReplacementString());
-        Assert.assertEquals("a.\"attribute-Aa\"", proposals.get(2).getReplacementString());
-        Assert.assertEquals("b.\"attribute-a\"", proposals.get(3).getReplacementString());
-        Assert.assertEquals("b.\"attribute-A\"", proposals.get(4).getReplacementString());
-        Assert.assertEquals("b.\"attribute-Aa\"", proposals.get(5).getReplacementString());
+        Assertions.assertEquals("a.\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("a.\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("a.\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("b.\"attribute-a\"", proposals.get(3).getReplacementString());
+        Assertions.assertEquals("b.\"attribute-A\"", proposals.get(4).getReplacementString());
+        Assertions.assertEquals("b.\"attribute-Aa\"", proposals.get(5).getReplacementString());
 
         // a
         proposals = modelDataRequest
             .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE a.|");
-        Assert.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
-        Assert.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
-        Assert.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
 
         // b
         proposals = modelDataRequest
             .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE a.attribute-a=1 AND b.|");
-        Assert.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
-        Assert.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
-        Assert.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
     }
     
     @Test
@@ -535,30 +532,30 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE |");
         // alias from a and b
-        Assert.assertEquals("a.\"attribute-a\"", proposals.get(0).getReplacementString());
-        Assert.assertEquals("a.\"attribute-A\"", proposals.get(1).getReplacementString());
-        Assert.assertEquals("a.\"attribute-Aa\"", proposals.get(2).getReplacementString());
-        Assert.assertEquals("b.\"attribute-a\"", proposals.get(3).getReplacementString());
-        Assert.assertEquals("b.\"attribute-A\"", proposals.get(4).getReplacementString());
-        Assert.assertEquals("b.\"attribute-Aa\"", proposals.get(5).getReplacementString());
+        Assertions.assertEquals("a.\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("a.\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("a.\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("b.\"attribute-a\"", proposals.get(3).getReplacementString());
+        Assertions.assertEquals("b.\"attribute-A\"", proposals.get(4).getReplacementString());
+        Assertions.assertEquals("b.\"attribute-Aa\"", proposals.get(5).getReplacementString());
         // alias from a
         proposals = modelDataRequest
             .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE a.|");
-        Assert.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
-        Assert.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
-        Assert.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
         // alias from b
         proposals = modelDataRequest
             .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE a.attribute-a=1 AND b.|");
-        Assert.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
-        Assert.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
-        Assert.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
+        Assertions.assertEquals("\"attribute-a\"", proposals.get(0).getReplacementString());
+        Assertions.assertEquals("\"attribute-A\"", proposals.get(1).getReplacementString());
+        Assertions.assertEquals("\"attribute-Aa\"", proposals.get(2).getReplacementString());
     }
 
     @Test
     public void testCompleteTablesByAliaseNegative() throws DBException {
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE c.|");
-        Assert.assertTrue(proposals.isEmpty());
+        Assertions.assertTrue(proposals.isEmpty());
     }
 }

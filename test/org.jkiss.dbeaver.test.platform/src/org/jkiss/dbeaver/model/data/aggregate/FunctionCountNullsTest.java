@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,42 +20,28 @@ package org.jkiss.dbeaver.model.data.aggregate;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 
-@RunWith(value = Parameterized.class)
 public class FunctionCountNullsTest extends DBeaverUnitTest {
 
-    @Parameter(value = 0)
-    public List<Integer> values;
-
-    @Parameter(value = 1)
-    public Long expectedCount;
-
-    /**
-     * Test data
-     *
-     * @return parameters for test
-     */
-    @Parameters(name = "{index}: Test count nulls in {0} Should be {1}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {Arrays.asList(1, 2, 3, 4), 0L},
-                {Arrays.asList(1, 2, 3, null), 1L},
-                {Arrays.asList(null, null), 2L}
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(Arrays.asList(1, 2, 3, 4), 0L),
+                Arguments.of(Arrays.asList(1, 2, 3, null), 1L),
+                Arguments.of(Arrays.asList(null, null), 2L)
+        );
     }
 
-    @Test
-    public void shouldGetZeroCountWhenNoNullsPresent() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void shouldGetZeroCountWhenNoNullsPresent(List<Integer> values, Long expectedCount) {
         var nullsCountFunc = new FunctionCountNulls();
         values.forEach(value -> nullsCountFunc.accumulate(value, false));
         MatcherAssert.assertThat(nullsCountFunc.getResult(0), CoreMatchers.is(expectedCount));

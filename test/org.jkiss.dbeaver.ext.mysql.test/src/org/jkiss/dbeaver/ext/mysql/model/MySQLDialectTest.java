@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MySQLDialectTest extends DBeaverUnitTest {
 
@@ -27,9 +26,9 @@ public class MySQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void quoteStringTest() {
-        assertEquals("`a ' b`", dialect.getQuotedIdentifier("a ' b", false, true));
-        assertEquals("`a `` b`", dialect.getQuotedIdentifier("a ` b", false, true));
-        assertEquals("`a b`", dialect.getQuotedIdentifier("a b", false, true));
+        Assertions.assertEquals("`a ' b`", dialect.getQuotedIdentifier("a ' b", false, true));
+        Assertions.assertEquals("`a `` b`", dialect.getQuotedIdentifier("a ` b", false, true));
+        Assertions.assertEquals("`a b`", dialect.getQuotedIdentifier("a b", false, true));
     }
 
     @Test
@@ -39,7 +38,7 @@ public class MySQLDialectTest extends DBeaverUnitTest {
         // WHEN
         String actual = dialect.escapeString(expected);
         // THEN
-        assertEquals(expected, actual);
+        Assertions.assertEquals(expected, actual);
     }
 
     @Test
@@ -49,7 +48,7 @@ public class MySQLDialectTest extends DBeaverUnitTest {
         // WHEN
         String actual = dialect.escapeString(given);
         // THEN
-        assertEquals("[\"{\"subjectId\":3,\"levelId\":2,\"isOur\":true}\"]", actual);
+        Assertions.assertEquals("[\"{\"subjectId\":3,\"levelId\":2,\"isOur\":true}\"]", actual);
     }
 
     @Test
@@ -59,6 +58,6 @@ public class MySQLDialectTest extends DBeaverUnitTest {
         // WHEN
         String actual = dialect.escapeString(given);
         // THEN
-        assertEquals("[\"{\\\\\"subjectId\\\\\":3,\\\\\"levelId\\\\\":2,\\\\\"isOur\\\\\":true}\"]", actual);
+        Assertions.assertEquals("[\"{\\\\\"subjectId\\\\\":3,\\\\\"levelId\\\\\":2,\\\\\"isOur\\\\\":true}\"]", actual);
     }
 }

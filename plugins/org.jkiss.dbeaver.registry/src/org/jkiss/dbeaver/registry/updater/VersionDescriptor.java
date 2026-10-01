@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Version descriptor
@@ -47,9 +44,6 @@ public class VersionDescriptor {
     private String baseURL;
     private String downloadURL;
     private String releaseNotes;
-
-    private final List<DistributionDescriptor> distributions = new ArrayList<>();
-    private final List<UpdateSiteDescriptor> updateSites = new ArrayList<>();
 
     public VersionDescriptor(DBPPlatform platform, String fileAddr)
         throws IOException {
@@ -102,14 +96,6 @@ public class VersionDescriptor {
 
     public String getReleaseNotes() {
         return releaseNotes;
-    }
-
-    public Collection<DistributionDescriptor> getDistributions() {
-        return distributions;
-    }
-
-    public Collection<UpdateSiteDescriptor> getUpdateSites() {
-        return updateSites;
     }
 
     private void parseVersionInfo(InputStream inputStream) throws IOException, XMLException {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.util.Map;
  */
 public interface DBECommand<OBJECT_TYPE extends DBPObject> {
 
+    @NotNull
     String getTitle();
 
     @NotNull
@@ -52,10 +53,11 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
      * Validates command.
      * If command is fine then just returns, otherwise throws an exception
      * @throws DBException contains information about invalid command state
-     * @param monitor
-     * @param options
      */
-    void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException;
+    void validateCommand(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Map<String, Object> options
+    ) throws DBException;
 
     void updateModel();
 
@@ -64,7 +66,7 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
         @Nullable DBECommand<?> prevCommand,
         @NotNull Map<Object, Object> userParams);
 
-    @NotNull
+    @Nullable
     DBEPersistAction[] getPersistActions(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,

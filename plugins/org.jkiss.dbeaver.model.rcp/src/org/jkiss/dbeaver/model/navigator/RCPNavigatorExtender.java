@@ -30,23 +30,20 @@ public class RCPNavigatorExtender implements DBNModelExtender {
     @Nullable
     @Override
     public DBNNode createNode(@NotNull DBNNode parentNode) {
-        if (parentNode instanceof DBNProject) {
-            if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
-                return null;
-            }
-            DBNFileSystems fsNode = new DBNFileSystems((DBNProject) parentNode) {
-                @Override
-                protected void dispose(boolean reflect) {
-                    super.dispose(reflect);
-                    EFSNIOMonitor.removeListener(resourceListener);
-                    resourceListener = null;
-                }
-            };
-            resourceListener = new DBFResourceListener(fsNode);
-            EFSNIOMonitor.addListener(resourceListener);
-            return fsNode;
+        if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
+            return null;
         }
-        return null;
+        DBNFileSystems fsNode = new DBNFileSystems(parentNode) {
+            @Override
+            protected void dispose(boolean reflect) {
+                super.dispose(reflect);
+                EFSNIOMonitor.removeListener(resourceListener);
+                resourceListener = null;
+            }
+        };
+        resourceListener = new DBFResourceListener(fsNode);
+        EFSNIOMonitor.addListener(resourceListener);
+        return fsNode;
     }
 
 

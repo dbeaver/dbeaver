@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -31,7 +32,7 @@ public class DefaultDataFormatter implements DBDDataFormatter {
     }
 
     @Override
-    public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
+    public void init(DBSTypedObject type, @NotNull Locale locale, @NotNull Map<String, Object> properties)
     {
     }
 

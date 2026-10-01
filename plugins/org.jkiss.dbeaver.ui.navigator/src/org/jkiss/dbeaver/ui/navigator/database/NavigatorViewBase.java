@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,8 +98,8 @@ public abstract class NavigatorViewBase extends ViewPart
      * it.
      */
     @Override
-    public void createPartControl(Composite parent) {
-        this.tree = createNavigatorTree(parent, null);
+    public void createPartControl(@NotNull Composite parent) {
+        this.tree = createNavigatorTree(parent);
         this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer(this));
 
         getViewSite().setSelectionProvider(tree.getViewer());
@@ -113,11 +113,11 @@ public abstract class NavigatorViewBase extends ViewPart
         });
     }
 
-    private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode) {
+    private DatabaseNavigatorTree createNavigatorTree(@NotNull Composite parent) {
         // Create tree
         final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(
             parent,
-            rootNode,
+            null,
             getTreeStyle(),
             false,
             getNavigatorFilter()
@@ -128,9 +128,7 @@ public abstract class NavigatorViewBase extends ViewPart
         navigatorTree.getViewer().addSelectionChangedListener(
             event -> onSelectionChange((IStructuredSelection) event.getSelection())
         );
-        navigatorTree.getViewer().getTree().addListener(SWT.MouseDoubleClick, event -> {
-            event.doit = false;
-        });
+        navigatorTree.getViewer().getTree().addListener(SWT.MouseDoubleClick, event -> event.doit = false);
         navigatorTree.getViewer().getTree().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
@@ -159,10 +157,9 @@ public abstract class NavigatorViewBase extends ViewPart
             TreeViewer viewer = tree.getViewer();
             IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
             for (Object node : selection.toArray()) {
-                //Object node = selection.getFirstElement();
-                if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder)) {
+                if ((node instanceof DBNResource resNode && resNode.getResource() instanceof IFolder)) {
                     toggleNode(viewer, node);
-                } else if (node instanceof DBNDataSource) {
+                } else if (node instanceof DBNDataSource dataSourceNode) {
                     NavigatorPreferences.DoubleClickBehavior dsBehaviorDefault = CommonUtils.valueOf(
                         NavigatorPreferences.DoubleClickBehavior.class,
                         DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK),
@@ -171,10 +168,11 @@ public abstract class NavigatorViewBase extends ViewPart
                     if (dsBehaviorDefault == NavigatorPreferences.DoubleClickBehavior.EXPAND) {
                         toggleNode(viewer, node);
                     } else {
-                        DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
+                        DBPDataSourceContainer dataSource = dataSourceNode.getObject();
+                        assert dataSource != null;
                         switch (dsBehaviorDefault) {
                             case EDIT:
-                                NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, UIUtils.getActiveWorkbenchWindow());
+                                NavigatorHandlerObjectOpen.openEntityEditor(dataSourceNode, null, UIUtils.getActiveWorkbenchWindow());
                                 break;
                             case CONNECT: {
                                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
@@ -239,7 +237,7 @@ public abstract class NavigatorViewBase extends ViewPart
         return navigatorTree;
     }
 
-    protected void installDragAndDropSupport(DatabaseNavigatorTree navigatorTree) {
+    protected void installDragAndDropSupport(@NotNull DatabaseNavigatorTree navigatorTree) {
         // Add drag and drop support
         NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
     }
@@ -248,15 +246,15 @@ public abstract class NavigatorViewBase extends ViewPart
 
     }
 
-    private void toggleNode(TreeViewer viewer, Object node) {
-        if (Boolean.TRUE.equals(viewer.getExpandedState(node))) {
+    private void toggleNode(@NotNull TreeViewer viewer, @NotNull Object node) {
+        if (viewer.getExpandedState(node)) {
             viewer.collapseToLevel(node, 1);
         } else {
             viewer.expandToLevel(node, 1);
         }
     }
 
-    private void onSelectionChange(IStructuredSelection structSel) {
+    private void onSelectionChange(@NotNull IStructuredSelection structSel) {
         if (!structSel.isEmpty()) {
             lastSelection = structSel.getFirstElement();
             if (lastSelection instanceof DBNRoot) {
@@ -318,15 +316,16 @@ public abstract class NavigatorViewBase extends ViewPart
         return true;
     }
 
+    @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == IPropertySheetPage.class) {
             return adapter.cast(new PropertyPageStandard());
         }
         return super.getAdapter(adapter);
     }
 
-    public void showNode(DBNNode node) {
+    public void showNode(@NotNull DBNNode node) {
         tree.showNode(node);
     }
 
@@ -372,5 +371,23 @@ public abstract class NavigatorViewBase extends ViewPart
                 break;
         }
     }
+/*
+
+    protected void updateProjectViewTitle() {
+        IViewDescriptor viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(getViewSite().getId());
+        if (viewDescriptor == null) {
+            return;
+        }
+        DBPProject project = getViewProject();
+        String title = viewDescriptor.getLabel() + (project == null ? "" : " - " + project.getName());
+        setPartName(title);
+        setTitleToolTip(title + "\n" + viewDescriptor.getDescription());
+    }
+
+    @Nullable
+    protected static DBPProject getViewProject() {
+        return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+    }
+*/
 
 }

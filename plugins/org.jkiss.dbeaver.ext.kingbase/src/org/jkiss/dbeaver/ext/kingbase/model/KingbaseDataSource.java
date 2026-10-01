@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,7 @@ package org.jkiss.dbeaver.ext.kingbase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
@@ -39,11 +35,6 @@ public class KingbaseDataSource extends PostgreDataSource {
     
     public KingbaseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         super(monitor, container, new KingbaseDialect());
-    }
-
-    @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        super.initialize(monitor);
     }
 
     @NotNull

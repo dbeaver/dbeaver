@@ -1,0 +1,238 @@
+/* ========================================
+   MESSAGE STYLES
+   ======================================== */
+.message {
+    padding: 10px;
+    border-radius: 5px;
+    font-size: var(--font-size);
+    border: 1px solid;
+    word-wrap: break-word;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+}
+
+.message p {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.message a {
+    color: var(--hyperlink-color);
+    text-decoration: underline;
+}
+
+.message hr {
+    width: 66.67%;
+    margin: 15px auto;
+    opacity: 0.3;
+}
+
+.message pre {
+    text-wrap: wrap;
+}
+
+/* Message headings */
+.message h1 {
+    margin: 12px 0 8px 0;
+}
+
+.message h2 {
+    margin: 10px 0 6px 0;
+}
+
+.message h3 {
+    margin: 8px 0 4px 0;
+}
+
+.message h4,
+.message h5,
+.message h6 {
+    margin: 6px 0 4px 0;
+}
+
+/* Message lists */
+.message ul {
+    padding-inline-start: 20px;
+}
+
+.message-meta {
+    color: color-mix(in hsl, var(--text-color), var(--background-color));
+    font-size: smaller;
+    text-align: right;
+    margin-top: 0.5em !important;
+}
+
+/* ========================================
+   MESSAGE TYPE VARIANTS
+   ======================================== */
+.left {
+    padding-left: 0;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-right: 10px;
+    margin-left: 10px;
+    color: var(--text-color);
+    border: 0;
+}
+
+.message.streaming {
+    position: relative;
+}
+
+.right {
+    margin-left: 30px;
+    margin-right: 10px;
+    margin-top: 6px;
+    margin-bottom: 4px;
+    color: var(--text-color);
+    border-color: var(--prompt-border);
+    background-color: var(--prompt-background);
+    position: relative;
+}
+
+.attachment {
+    margin-left: 10px;
+    margin-right: 10px;
+    color: var(--text-color);
+    border: 0;
+    background-color: transparent;
+    position: relative;
+    padding: 10px 0;
+}
+
+
+.warning {
+    margin-left: 10px;
+    margin-right: 10px;
+    color: var(--text-color);
+    background-color: transparent;
+    border: none;
+    border-left: 4px solid var(--warning-background);
+    border-radius: 0;
+    padding: 4px 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+}
+
+.error {
+    margin-left: 10px;
+    margin-right: 10px;
+    color: var(--text-color);
+    background-color: transparent;
+    border: none;
+    border-left: 4px solid var(--error-background);
+    border-radius: 0;
+    padding: 4px 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    position: relative;
+    font-family: var(--font-family), sans-serif;
+    font-size: var(--font-size);
+}
+
+.message-type-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    margin-top: 0;
+}
+
+.warning .message-type-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* ========================================
+   MESSAGE INFO ICON & TOOLTIP
+   ======================================== */
+.message-icons-container {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+    background-color: var(--background-color-inactive);
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+.message-clean-icon,
+.message-close-icon {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    display: block;
+}
+
+.message-clean-icon:hover,
+.message-close-icon:hover {
+    opacity: 1;
+}
+
+/* ========================================
+   MESSAGE CLEAN ICON
+   ======================================== */
+
+.tooltip {
+    position: fixed;
+    background-color: var(--background-color-inactive);
+    color: var(--text-color);
+    border: 1px solid #999;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 1000;
+    pointer-events: none;
+    max-width: 250px;
+    word-wrap: break-word;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
+
+
+/* ========================================
+   TABLES (MARKDOWN)
+   ======================================== */
+.message table:not(.code-table) {
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+
+.message table:not(.code-table) th,
+.message table:not(.code-table) td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.message table:not(.code-table) th {
+    background-color: var(--background-color-inactive);
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.message table:not(.code-table) td {
+    color: var(--text-color);
+}

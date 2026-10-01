@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,24 @@ class LauncherUtils {
             return new File(new URI(spec));
         } catch (URISyntaxException | IllegalArgumentException e) {
             return new File(spec.substring(5));
+        }
+    }
+
+
+    static URL toURL(File file) throws MalformedURLException {
+        return file.toURI().toURL();
+    }
+
+
+    static File toFile(URL url) {
+        if (!"file".equalsIgnoreCase(url.getProtocol())) {
+            throw new IllegalArgumentException("Unsupported protocol: " + url.getProtocol());
+        }
+        try {
+            return new File(url.toURI());
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            // Handles legacy URLs (e.g. produced by deprecated File.toURL()) which may be unescaped or use authority (UNC form)
+            return toFileURL(url.toExternalForm());
         }
     }
 

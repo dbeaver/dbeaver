@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,18 +44,21 @@ import java.util.Map;
  * JDBC constraint manager
  */
 public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableConstraint, TABLE_TYPE extends AbstractTable>
-    extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
-{
+    extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE> {
 
     @Override
-    public long getMakerOptions(@NotNull DBPDataSource dataSource)
-    {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
 
         actions.add(
@@ -65,20 +68,30 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     @Override
-    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_constraint,
                 getDropConstraintPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
-                    .replace(PATTERN_ITEM_CONSTRAINT, DBUtils.getQuotedIdentifier(command.getObject())))
+                    .replace(PATTERN_ITEM_CONSTRAINT, DBUtils.getQuotedIdentifier(command.getObject()))
+            )
         );
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
-    {
+    public StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull TABLE_TYPE owner,
+        @NotNull DBECommandAbstract<OBJECT_TYPE> command,
+        @NotNull Map<String, Object> options
+    ) {
         OBJECT_TYPE constraint = command.getObject();
 
         // Create column
@@ -103,7 +116,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
         return decl;
     }
 
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<OBJECT_TYPE> command) {
+    protected void appendConstraintDefinition(@NotNull StringBuilder decl, @NotNull DBECommandAbstract<OBJECT_TYPE> command) {
         decl.append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         try {
@@ -137,8 +150,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
         return constraint.getConstraintType().getName().toUpperCase(Locale.ENGLISH);
     }
 
-    protected String getDropConstraintPattern(OBJECT_TYPE constraint)
-    {
+    protected String getDropConstraintPattern(OBJECT_TYPE constraint) {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 

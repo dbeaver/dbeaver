@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class AIHttpUtils {
     private static final Log log = Log.getLog(AIHttpUtils.class);
+
+    private static final int MAX_ERROR_TEXT_LENGTH = 300;
+    private static final Pattern HTML_TITLE_PATTERN =
+        Pattern.compile("<title>\\s*(.*?)\\s*</title>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private AIHttpUtils() {
     }
@@ -37,7 +44,17 @@ public final class AIHttpUtils {
      */
     public static URI resolve(String base, String... paths) throws DBException {
         try {
-            URI uri = new URI(base);
+            // RFC 3986 relative-reference resolution treats the segment after the last "/" in
+            // the base as a file name, not a directory, so resolving a relative path against a
+            // base without a trailing slash replaces that last segment instead of appending to
+            // it - e.g. "http://host/v1".resolve("models") -> "http://host/models", silently
+            // dropping "/v1". Self-hosted OpenAI-compatible endpoints (Ollama, vLLM, LM Studio,
+            // ...) are commonly configured without the trailing slash, which turns every request
+            // into a 404. Only normalize when there is a relative path to resolve against -
+            // callers that pass an already-complete URL as `base` with no extra `paths` rely on
+            // it being used exactly as given.
+            String normalizedBase = (paths.length > 0 && !base.endsWith("/")) ? base + "/" : base;
+            URI uri = new URI(normalizedBase);
             for (String path : paths) {
                 uri = uri.resolve(path);
             }
@@ -52,11 +69,12 @@ public final class AIHttpUtils {
      * Extracts the "message" field from the "error" or root object of the JSON structure.
      * If the parsing fails or no suitable message field is found, the original input string is returned.
      *
-     * @param body the JSON string containing an OpenAI-style error message
-     * @return the extracted error message if present, otherwise the original input string
+     * @param statusCode HTTP status code of the failed response, 0 if unknown
+     * @param body       the response body, expected to be an OpenAI-style JSON error
+     * @return the extracted error message if present, otherwise a short status description
      */
     @NotNull
-    public static String parseOpenAIStyleErrorMessage(@NotNull String body) {
+    public static String parseOpenAIStyleErrorMessage(int statusCode, @NotNull String body) {
         try {
             JsonElement errorResponse = JSONUtils.GSON.fromJson(body, JsonElement.class);
             if (errorResponse != null && errorResponse.isJsonObject()) {
@@ -76,10 +94,23 @@ public final class AIHttpUtils {
                     }
                 }
             }
-            return body;
         } catch (JsonSyntaxException e) {
             log.debug("Failed to parse error response: " + e.getMessage());
-            return body;
         }
+        return describeNonJsonError(statusCode, body);
+    }
+
+    @NotNull
+    private static String describeNonJsonError(int statusCode, @NotNull String body) {
+        String status = statusCode > 0 ? "HTTP " + statusCode : "Unexpected server response";
+        String text = body.trim();
+        Matcher title = HTML_TITLE_PATTERN.matcher(text);
+        if (title.find()) {
+            text = title.group(1).replaceAll("&[#a-zA-Z0-9]+;", " ");
+        } else if (text.startsWith("<")) {
+            text = "";
+        }
+        text = CommonUtils.truncateString(text.replaceAll("\\s+", " ").trim(), MAX_ERROR_TEXT_LENGTH);
+        return CommonUtils.isEmpty(text) ? status : status + " (" + text + ")";
     }
 }

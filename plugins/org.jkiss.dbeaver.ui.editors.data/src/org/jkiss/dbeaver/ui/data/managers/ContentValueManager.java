@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentCached;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.storage.ExternalContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -77,6 +75,13 @@ public class ContentValueManager extends BaseValueManager {
     private static final Log log = Log.getLog(ContentValueManager.class);
 
     public static final String PROP_CATEGORY_CONTENT = "CONTENT";
+
+    @NotNull
+    public static DBDContent copyContentForEdit(@NotNull DBRProgressMonitor monitor, @NotNull DBDContent content)
+        throws DBCException {
+        // Copy when supported; otherwise preserve editing without capturing the value in undo history.
+        return content instanceof DBDValueCloneable cloneable ? (DBDContent) cloneable.cloneValue(monitor) : content;
+    }
 
     public static void contributeContentActions(
         @NotNull IContributionManager manager,
@@ -118,8 +123,8 @@ public class ContentValueManager extends BaseValueManager {
                             String str = controller.getValueHandler()
                                     .getValueDisplayString(controller.getValueType(), 
                                             controller.getValue(), DBDDisplayFormat.EDIT);
-                            String charset = 
-                                    DBValueFormatting.getDefaultBinaryFileEncoding(controller.getExecutionContext().getDataSource());
+                            String charset = DBValueFormatting.getDefaultBinaryFileEncoding(
+                                controller.getExecutionContext().getDataSource());
                             byte[] bytes = str.getBytes(charset);
                             openOctetStream(bytes);
                         }
@@ -254,7 +259,7 @@ public class ContentValueManager extends BaseValueManager {
         }
 
         Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File openFile = DialogUtils.openFile(shell);
+        Path openFile = DialogUtils.openFile(shell);
         if (openFile == null) {
             return false;
         }
@@ -262,12 +267,20 @@ public class ContentValueManager extends BaseValueManager {
             try {
                 DBDContentStorage storage;
                 if (ContentUtils.isTextContent(value)) {
-                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile.toPath(), GeneralUtils.UTF8_ENCODING);
+                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile, GeneralUtils.UTF8_ENCODING);
                 } else {
-                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile.toPath());
+                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile);
                 }
-                value.updateContents(monitor, storage);
-                controller.updateValue(value, true);
+                DBDContent editedValue = copyContentForEdit(monitor, value);
+                try {
+                    editedValue.updateContents(monitor, storage);
+                } catch (DBException e) {
+                    if (editedValue != value) {
+                        editedValue.release();
+                    }
+                    throw e;
+                }
+                controller.updateValue(editedValue, true);
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }
@@ -283,7 +296,7 @@ public class ContentValueManager extends BaseValueManager {
         }
 
         Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File saveFile = DialogUtils.selectFileForSave(shell, controller.getValueName());
+        Path saveFile = DialogUtils.selectFileForSave(shell, controller.getValueName());
         if (saveFile == null) {
             return;
         }
@@ -294,11 +307,10 @@ public class ContentValueManager extends BaseValueManager {
                     if (ContentUtils.isTextContent(value)) {
                         try (Reader cr = storage.getContentReader()) {
                             ContentUtils.saveContentToFile(
-                                    cr,
-                                    saveFile,
-                                    GeneralUtils.UTF8_ENCODING,
-                                    monitor
-                                    );
+                                cr,
+                                saveFile,
+                                GeneralUtils.UTF8_ENCODING,
+                                monitor);
                         }
                     } else {
                         try (InputStream cs = storage.getContentStream()) {
@@ -313,7 +325,7 @@ public class ContentValueManager extends BaseValueManager {
         catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
                     ResultSetMessages.model_jdbc_could_not_save_content,
-                    ResultSetMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
+                    ResultSetMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.toAbsolutePath() + "'", //$NON-NLS-2$
                     e.getTargetException());
         }
         catch (InterruptedException e) {

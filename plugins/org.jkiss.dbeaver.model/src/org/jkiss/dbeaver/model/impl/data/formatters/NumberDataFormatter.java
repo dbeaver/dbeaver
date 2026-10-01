@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -25,10 +26,7 @@ import org.jkiss.utils.CommonUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.FieldPosition;
-import java.text.NumberFormat;
-import java.text.ParseException;
+import java.text.*;
 import java.util.Locale;
 import java.util.Map;
 
@@ -39,15 +37,17 @@ public class NumberDataFormatter implements DBDDataFormatter {
     private static final Log log = Log.getLog(NumberDataFormatter.class);
 
     private DecimalFormat numberFormat;
+    private DecimalFormat scientificFormat;
     private StringBuffer buffer;
     private FieldPosition position;
     private boolean nativeSpecialValues;
+    private boolean scientificSmallValues;
 
     public NumberDataFormatter() {
     }
 
     @Override
-    public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
+    public void init(DBSTypedObject type, @NotNull Locale locale, @NotNull Map<String, Object> properties)
     {
         numberFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
         Object useGrouping = properties.get(NumberFormatSample.PROP_USE_GROUPING);
@@ -116,6 +116,27 @@ public class NumberDataFormatter implements DBDDataFormatter {
         buffer = new StringBuffer();
         position = new FieldPosition(0);
         nativeSpecialValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_NATIVE_SPECIAL_VALUES));
+        scientificSmallValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_SCIENTIFIC_SMALL_VALUES));
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+        String scientificExpSep = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_EXP_SEP));
+        if (!CommonUtils.isEmpty(scientificExpSep)) {
+            if (scientificExpSep.indexOf(symbols.getDecimalSeparator()) >= 0
+                || scientificExpSep.indexOf(symbols.getGroupingSeparator()) >= 0) {
+                throw new IllegalArgumentException(
+                    "Exponent separator must not contain the decimal or grouping separator");
+            }
+            symbols.setExponentSeparator(scientificExpSep);
+            numberFormat.setDecimalFormatSymbols(symbols);
+        }
+        String scientificPattern = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_PATTERN));
+        if (CommonUtils.isEmpty(scientificPattern)) {
+            scientificPattern = NumberFormatSample.DEFAULT_SCIENTIFIC_PATTERN;
+        }
+        if (scientificPattern.indexOf('E') < 0) {
+            throw new IllegalArgumentException("Scientific notation pattern must contain an exponent, for example "
+                + NumberFormatSample.DEFAULT_SCIENTIFIC_PATTERN);
+        }
+        scientificFormat = new DecimalFormat(scientificPattern, symbols);
     }
 
     @Nullable
@@ -146,6 +167,12 @@ public class NumberDataFormatter implements DBDDataFormatter {
             synchronized (this) {
                 buffer.setLength(0);
                 try {
+                    if (scientificSmallValues && value instanceof BigDecimal bigValue) {
+                        BigDecimal smallestValue = BigDecimal.ONE.movePointLeft(numberFormat.getMaximumFractionDigits());
+                        if (bigValue.signum() != 0 && bigValue.abs().compareTo(smallestValue) < 0) {
+                            return scientificFormat.format(value, buffer, position).toString();
+                        }
+                    }
                     return numberFormat.format(value, buffer, position).toString();
                 } catch (ArithmeticException e) {
                     if (numberFormat.getRoundingMode() == RoundingMode.UNNECESSARY) {

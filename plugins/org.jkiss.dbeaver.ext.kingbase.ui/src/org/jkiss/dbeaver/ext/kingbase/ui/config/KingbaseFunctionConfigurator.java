@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.kingbase.ui.config;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.kingbase.model.KingbaseFunction;
 import org.jkiss.dbeaver.ext.kingbase.ui.views.CreateFunctionOrProcedurePage;
@@ -39,12 +40,14 @@ public class KingbaseFunctionConfigurator implements DBEObjectConfigurator<Kingb
 
     public static boolean isFunction = true;
 
+    @NotNull
     @Override
-    public KingbaseFunction configureObject(DBRProgressMonitor monitor,
-            DBECommandContext commandContext, 
-            Object container,
-            KingbaseFunction newProcedure, 
-            Map<String, Object> options) {
+    public KingbaseFunction configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        DBECommandContext commandContext,
+        Object container,
+        @NotNull KingbaseFunction newProcedure,
+        @NotNull Map<String, Object> options) {
         return new UITask<KingbaseFunction>() {
             @Override
             protected KingbaseFunction runTask() {

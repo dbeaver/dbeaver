@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,26 +26,27 @@ import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Abstract execution context
  */
 public abstract class AbstractSession implements DBCSession, DBDFormatSettingsExt, DBRBlockingObject {
 
-    private DBRProgressMonitor monitor;
-    private DBCExecutionPurpose purpose;
-    private String taskTitle;
+    private final DBRProgressMonitor monitor;
+    private final DBCExecutionPurpose purpose;
+    private final String taskTitle;
     private DBDDataFormatterProfile dataFormatterProfile;
     private boolean holdsBlock = false;
     private boolean loggingEnabled = true;
     private byte useNativeDateTimeFormat = -1;
 
-    public AbstractSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
+    public AbstractSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle) {
         this.monitor = monitor;
         this.purpose = purpose;
         this.taskTitle = taskTitle;
 
-        if (taskTitle != null) {
+        if (CommonUtils.isNotEmpty(taskTitle)) {
             monitor.startBlock(this, taskTitle);
             holdsBlock = true;
         }
@@ -87,6 +88,7 @@ public abstract class AbstractSession implements DBCSession, DBDFormatSettingsEx
         loggingEnabled = enable;
     }
 
+    @NotNull
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
         if (dataFormatterProfile == null) {
@@ -96,7 +98,7 @@ public abstract class AbstractSession implements DBCSession, DBDFormatSettingsEx
     }
 
     @Override
-    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile) {
+    public void setDataFormatterProfile(@NotNull DBDDataFormatterProfile formatterProfile) {
         dataFormatterProfile = formatterProfile;
     }
 

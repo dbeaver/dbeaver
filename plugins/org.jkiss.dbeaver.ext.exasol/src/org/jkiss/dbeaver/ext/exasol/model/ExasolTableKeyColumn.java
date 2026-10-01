@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +65,7 @@ public class ExasolTableKeyColumn extends AbstractTableConstraintColumn {
         return tableColumn.getName();
     }
 
-    @NotNull
+    @Nullable
     @Override
     @Property(id = "name", viewable = true, order = 1)
     public ExasolTableColumn getAttribute() {

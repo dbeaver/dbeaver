@@ -1,0 +1,66 @@
+@import url("styles/layout.css");
+@import url("styles/messages.css");
+@import url("styles/sql.css");
+@import url("styles/attachments.css");
+@import url("styles/function-confirmations.css");
+
+:root {
+    --background-color: {{BACKGROUND_COLOR}};
+    --background-color-inactive: {{BACKGROUND_COLOR_INACTIVE}};
+    --text-color: {{TEXT_COLOR}};
+    --prompt-background: {{PROMPT_BACKGROUND}};
+    --prompt-border: {{PROMPT_BORDER}};
+    --warning-background: {{WARNING_BACKGROUND}};
+    --error-background: {{ERROR_BACKGROUND}};
+    --font-family: {{FONT_FAMILY}};
+    --font-size: {{FONT_SIZE}};
+    --monospace-font-family: {{MONOSPACE_FONT_FAMILY}};
+    --monospace-font-size: {{MONOSPACE_FONT_SIZE}};
+    --hyperlink-color: {{HYPERLINK_COLOR}};
+    --border-color: {{BORDER_COLOR}};
+    --color-scheme: {{COLOR_SCHEME}};
+}
+
+:root {
+    color-scheme: var(--color-scheme);
+}
+
+/* Accessibility */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#chat > div.a11y-focus:focus,
+#chat.a11y-focus:focus {
+    outline: 2px solid var(--hyperlink-color);
+    outline-offset: -2px;
+}
+
+#chat > div:focus:not(.a11y-focus),
+#chat:focus:not(.a11y-focus) {
+    outline: none;
+}
+
+.message:focus-within .message-icons-container {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.message-clean-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    line-height: 0;
+}

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -177,6 +178,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         @Nullable DBDAttributeBinding attr,
         @Nullable ResultSetRow row,
         int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         @NotNull ContextMenuLocation menuLocation
     );
 
@@ -187,6 +189,11 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     @NotNull
     ResultSetRow addNewRow(@NotNull RowPlacement placement, boolean copyCurrent, boolean updatePresentation);
+
+    /**
+     * Adds empty rows at the specified visual index without updating the presentation.
+     */
+    void preserveNewRows(int rowIndex, int rowCount);
 
     /**
      * Fills rows in current selection with values from row above/below it.
@@ -278,6 +285,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void updateDirtyFlag();
 
+    // TODO introduce value path here
     boolean updateCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
@@ -285,6 +293,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         @Nullable Object value,
         boolean refreshHints) throws DBException;
 
+    // TODO introduce value path here
     void resetCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,

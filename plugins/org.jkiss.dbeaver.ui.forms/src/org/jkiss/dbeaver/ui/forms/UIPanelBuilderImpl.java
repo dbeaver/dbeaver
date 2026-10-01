@@ -24,6 +24,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -35,7 +36,11 @@ import java.util.function.Consumer;
 
 final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Control> implements UIPanelBuilder {
     sealed interface Kind {
-        record Expandable(@NotNull String text, boolean expanded) implements Kind {
+        record Expandable(
+            @NotNull String text,
+            boolean expanded,
+            @NotNull Consumer<ExpandableComposite> onExpansionChanged
+        ) implements Kind {
         }
 
         record Titled(@NotNull String text) implements Kind {
@@ -66,8 +71,12 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
     }
 
     @NotNull
-    static UIPanelBuilderImpl expandable(@NotNull String text, boolean expanded) {
-        return new UIPanelBuilderImpl(new Kind.Expandable(text, expanded));
+    static UIPanelBuilderImpl expandable(
+        @NotNull String text,
+        boolean expanded,
+        @NotNull Consumer<ExpandableComposite> onExpansionChanged
+    ) {
+        return new UIPanelBuilderImpl(new Kind.Expandable(text, expanded, onExpansionChanged));
     }
 
     @NotNull
@@ -154,6 +163,9 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
                 var composite = (ExpandableComposite) host;
                 composite.setClient(client);
                 composite.setExpanded(k.expanded(), true);
+                composite.addExpansionListener(IExpansionListener.expansionStateChangedAdapter(
+                    e -> k.onExpansionChanged().accept(composite)
+                ));
                 yield composite;
             }
             case Kind.Titled ignored -> {
@@ -181,10 +193,10 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
             var builder = (UIControlBuilderImpl<?, Control>) row.controls.get(i);
 
             var data = new GridData();
-            data.horizontalAlignment = builder.alignX;
-            data.verticalAlignment = builder.alignY;
-            data.grabExcessHorizontalSpace = builder.grow;
-            data.grabExcessVerticalSpace = builder.grow;
+            data.horizontalAlignment = builder.alignX.toSWT();
+            data.verticalAlignment = builder.alignY.toSWT();
+            data.grabExcessHorizontalSpace = builder.growX == UIGrowX.ALWAYS;
+            data.grabExcessVerticalSpace = builder.growY == UIGrowY.ALWAYS;
 
             var control = builder.build(context, parent, row);
 

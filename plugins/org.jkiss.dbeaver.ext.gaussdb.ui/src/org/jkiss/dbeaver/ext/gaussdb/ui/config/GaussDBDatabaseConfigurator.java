@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ext.gaussdb.ui.config;
 
-import java.util.Map;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -31,8 +29,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Map;
+
 public class GaussDBDatabaseConfigurator implements DBEObjectConfigurator<GaussDBDatabase> {
 
+    @NotNull
     @Override
     public GaussDBDatabase configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext,
         @Nullable Object container, @NotNull GaussDBDatabase database, @NotNull Map<String, Object> options) {

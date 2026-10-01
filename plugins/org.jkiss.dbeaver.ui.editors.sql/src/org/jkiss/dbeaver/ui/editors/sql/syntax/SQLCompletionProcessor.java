@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -243,10 +243,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
             LinkedHashSet<ICompletionProposal> result = new LinkedHashSet<>(proposals.size());
             if (actualCompletionOffset != request.getDocumentOffset()) {
                 for (Object cp : proposals) {
-                    if (cp instanceof ICompletionProposal proposal && (
-                        (cp instanceof ICompletionProposalExtension2 exp && exp.validate(request.getDocument(), completionRequestPosition.getOffset(), null))
-                        || !(cp instanceof ICompletionProposalExtension2)
-                    )) {
+                    if (cp instanceof ICompletionProposal proposal && ((cp instanceof ICompletionProposalExtension2 exp && exp.validate(
+                        request.getDocument(),
+                        completionRequestPosition.getOffset(),
+                        null
+                    )) || !(cp instanceof ICompletionProposalExtension2))) {
                         result.add(proposal);
                     }
                 }
@@ -257,7 +258,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                     }
                 }
             }
-            this.contentAssistant.setLastCompletionOffset(actualCompletionOffset);
+            this.contentAssistant.setCompletionRegionOffset(actualCompletionOffset);
             return ArrayUtils.toArray(ICompletionProposal.class, result);
         } finally {
             document.removePosition(completionRequestPosition);
@@ -455,7 +456,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
         @Override
         public void assistSessionEnded(ContentAssistEvent event) {
             simpleMode = false;
-            contentAssistant.setLastCompletionOffset(-1);
+            contentAssistant.clearCompletionRegion();
         }
 
         @Override

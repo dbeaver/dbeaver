@@ -21,9 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.forms.*;
@@ -81,7 +79,8 @@ public class FormsDialog extends TrayDialog {
             .row(rb -> rb.titledPanel("Text", buildTextPanel()))
             .row(rb -> rb.titledPanel("Combo", buildComboPanel()))
             .row(rb -> rb.titledPanel("Check", buildCheckPanel()))
-            .row(rb -> rb.titledPanel("Buttons", buildButtonPanel()));
+            .row(rb -> rb.titledPanel("Buttons", buildButtonPanel()))
+            .row(rb -> rb.titledPanel("Custom", buildCustomPanel()));
     }
 
     @NotNull
@@ -113,6 +112,14 @@ public class FormsDialog extends TrayDialog {
                 .expandablePanel("An expandable panel", true, pb1 -> pb1
                     .align(UIAlignX.FILL)
                     .row(rb1 -> rb1.label("An expandable panel label"))))
+            .row(rb -> rb
+                .expandablePanel("A collapsed panel with shell resizing", false, control -> {
+                    Shell shell = control.getShell();
+                    UIUtils.resizeShell(shell);
+                    shell.layout(true, true);
+                }, pb1 -> pb1
+                    .align(UIAlignX.FILL)
+                    .row(rb1 -> rb1.label(lb -> lb.text("Expand and collapse without resizing the window").hint(400, 200)))))
             .row(rb -> rb
                 .titledPanel("A scrolled panel", pb1 -> pb1
                     .row(rb1 -> rb1.scrolledPanel(true, true, pb2 -> pb2
@@ -211,6 +218,15 @@ public class FormsDialog extends TrayDialog {
                     "Show message",
                     e -> UIUtils.showMessageBox(UIUtils.getActiveShell(), "Hello", "Hello from forms", SWT.ICON_INFORMATION),
                     bb -> bb.enabled(enabled)));
+        // @formatter:on
+    }
+
+    @NotNull
+    private static Consumer<UIPanelBuilder> buildCustomPanel() {
+        // @formatter:off
+        return pb -> pb
+            .row("Progress bar", rb -> rb.control(parent -> new ProgressBar(parent, SWT.INDETERMINATE)))
+            .row("Calendar", rb -> rb.control(parent -> new DateTime(parent, SWT.CALENDAR)));
         // @formatter:on
     }
 

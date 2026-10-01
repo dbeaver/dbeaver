@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -67,20 +68,17 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     /**
      * No-arg constructor
      */
-    public ERDEditorStandalone()
-    {
+    public ERDEditorStandalone() {
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
     }
 
     @Override
-    public void init(IEditorSite site, IEditorInput input) throws PartInitException
-    {
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
@@ -89,12 +87,12 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     public boolean isReadOnly() {
         return !this.isProjectResourceEditable();
     }
-    
+
     @Override
     public boolean isModelEditEnabled() {
         return super.isModelEditEnabled() && this.isProjectResourceEditable();
     }
-    
+
     private boolean isProjectResourceEditable() {
         DBPProject project = this.getDiagramProject();
         return project == null || project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
@@ -107,8 +105,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
                 null,
                 NavigatorPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,
-                getTitle()) != IDialogConstants.YES_ID)
-            {
+                getTitle()
+            ) != IDialogConstants.YES_ID) {
                 return;
             }
 
@@ -117,18 +115,22 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         super.createPartControl(parent);
 
         loadDiagram(false);
     }
 
     @Override
-    public void doSave(IProgressMonitor monitor)
-    {
+    public void doSave(@NotNull IProgressMonitor monitor) {
         try {
-            String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, false);
+            String diagramState = DiagramLoader.serializeDiagram(
+                RuntimeUtils.makeMonitor(monitor),
+                getDiagramPart(),
+                getDiagram(),
+                false,
+                false
+            );
             IEditorInput editorInput = getEditorInput();
             final IFile file = EditorUtils.getFileFromInput(editorInput);
             if (file != null) {
@@ -137,7 +139,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
                     new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8)),
                     true,
                     true,
-                    monitor);
+                    monitor
+                );
             } else if (editorInput instanceof IURIEditorInput uriInput) {
                 // file is outside of workspace
                 IPath path = URIUtil.toPath(uriInput.getURI());
@@ -164,8 +167,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
 */
 
     @Override
-    protected synchronized void loadDiagram(boolean refreshMetadata)
-    {
+    protected synchronized void loadDiagram(boolean refreshMetadata) {
         if (diagramLoadingJob != null) {
             // Do not start new one while old is running
             return;
@@ -188,11 +190,11 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
                     return ERDEditorStandalone.this;
                 }
             },
-            progressControl.createLoadVisualizer());
+            progressControl.createLoadVisualizer()
+        );
         diagramLoadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
-            public void done(IJobChangeEvent event)
-            {
+            public void done(IJobChangeEvent event) {
                 diagramLoadingJob = null;
             }
         });
@@ -200,7 +202,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         setPartName(getEditorInput().getName());
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPProject getDiagramProject() {
         final IFile resource = getEditorFile();
@@ -210,9 +212,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
     }
 
-    private EntityDiagram loadContentFromFile(DBRProgressMonitor progressMonitor)
-        throws DBException
-    {
+    @NotNull
+    private EntityDiagram loadContentFromFile(@NotNull DBRProgressMonitor progressMonitor) throws DBException {
         IStorage storage = EditorUtils.getStorageFromInput(getEditorInput());
 
         final DiagramPart diagramPart = getDiagramPart();
@@ -220,7 +221,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
             null,
             storage == null ? CommonUtils.toString(getEditorInput()) : storage.getName(),
             getContentProvider(),
-            getDecorator());
+            getDecorator()
+        );
         entityDiagram.clear();
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
@@ -237,8 +239,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         return entityDiagram;
     }
 
-    private IFile getEditorFile()
-    {
+    @Nullable
+    private IFile getEditorFile() {
         return EditorUtils.getFileFromInput(getEditorInput());
     }
 
@@ -260,9 +262,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     }*/
 
     @Override
-    public void resourceChanged(IResourceChangeEvent event)
-    {
-        IResourceDelta delta= event.getDelta();
+    public void resourceChanged(IResourceChangeEvent event) {
+        IResourceDelta delta = event.getDelta();
         if (delta == null) {
             return;
         }

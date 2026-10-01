@@ -46,11 +46,11 @@ public class ObjectManagerRegistry implements DBERegistry {
         return instance;
     }
 
-    private List<ObjectManagerDescriptor> entityManagers = new ArrayList<ObjectManagerDescriptor>();
-    private Map<String, ObjectManagerDescriptor> entityManagerMap = new HashMap<>();
-    private Map<String, Boolean> nullEntityManagerMap = new HashMap<>();
+    private final List<ObjectManagerDescriptor> entityManagers = new ArrayList<>();
+    private final Map<String, ObjectManagerDescriptor> entityManagerMap = new HashMap<>();
+    private final Map<String, Boolean> nullEntityManagerMap = new HashMap<>();
 
-    public ObjectManagerRegistry(IExtensionRegistry registry) {
+    public ObjectManagerRegistry(@NotNull IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ObjectManagerDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {

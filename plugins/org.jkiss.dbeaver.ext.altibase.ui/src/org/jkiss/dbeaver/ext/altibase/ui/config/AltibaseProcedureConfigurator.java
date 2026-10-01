@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.ui.config;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -32,9 +33,11 @@ import java.util.Map;
  */
 public class AltibaseProcedureConfigurator implements DBEObjectConfigurator<AltibaseProcedureStandAlone> {
 
+    @NotNull
     @Override
-    public AltibaseProcedureStandAlone configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext,
-            Object container, AltibaseProcedureStandAlone procedure, Map<String, Object> options) {
+    public AltibaseProcedureStandAlone configureObject(
+        @NotNull DBRProgressMonitor monitor, DBECommandContext commandContext,
+        Object container, @NotNull AltibaseProcedureStandAlone procedure, @NotNull Map<String, Object> options) {
         return new UITask<AltibaseProcedureStandAlone>() {
             @Override
             protected AltibaseProcedureStandAlone runTask() {

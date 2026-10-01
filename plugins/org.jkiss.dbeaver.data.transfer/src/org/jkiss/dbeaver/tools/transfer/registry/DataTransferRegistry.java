@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.utils.CommonUtils;
@@ -79,6 +80,11 @@ public class DataTransferRegistry {
                     log.error("Referenced data transfer node '" + nodeReference + "' not found");
                 } else {
                     refNode.loadNodeConfigurations(ext);
+                    String settingsOverride = ext.getAttribute("settings");
+                    if (!CommonUtils.isEmpty(settingsOverride)) {
+                        refNode.overrideSettingsType(new NodeSettingsContributor(ext).settingsType);
+                        log.debug("Settings of data transfer node '" + nodeReference + "' overridden with '" + settingsOverride + "'");
+                    }
                 }
             }
         }
@@ -207,5 +213,14 @@ public class DataTransferRegistry {
     @Nullable
     public DataTransferEventProcessorDescriptor getEventProcessorById(@NotNull String id) {
         return eventProcessors.get(id);
+    }
+
+    private static final class NodeSettingsContributor extends AbstractDescriptor {
+        private final ObjectType settingsType;
+
+        private NodeSettingsContributor(@NotNull IConfigurationElement config) {
+            super(config);
+            this.settingsType = new ObjectType(config, "settings");
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.eclipse.core.filesystem.provider.FileSystem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
@@ -78,34 +77,31 @@ public class EFSNIOFileSystem extends FileSystem {
                 String fsId = vfsPath[1];
                 String fsRootPath = vfsPath[2];
 
-                DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(project);
-                if (projectNode != null) {
-                    DBNFileSystems fileSystemsNode = projectNode.getExtraNode(DBNFileSystems.class);
-                    if (fileSystemsNode != null) {
-                        try {
-                            fileSystemsNode.getChildren(monitor);
-                            DBNFileSystem fsNode = fileSystemsNode.getFileSystem(fsType, fsId);
-                            if (fsNode != null) {
-                                fsNode.getChildren(monitor);
-                                DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
-                                if (fsNodeRoot != null) {
-                                    try {
-                                        relPath = CommonUtils.removeLeadingSlash(relPath);
-                                        relPath = URLDecoder.decode(relPath, StandardCharsets.UTF_8);
-                                        path = fsNodeRoot.getPath().resolve(relPath);
-                                    } catch (Exception e) {
-                                        throw new IllegalArgumentException("Error resolving path '" + relPath + "'", e);
-                                    }
+                DBNFileSystems fileSystemsNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getExtraNode(DBNFileSystems.class);
+                if (fileSystemsNode != null) {
+                    try {
+                        fileSystemsNode.getChildren(monitor);
+                        DBNFileSystem fsNode = fileSystemsNode.getFileSystem(fsType, fsId);
+                        if (fsNode != null) {
+                            fsNode.getChildren(monitor);
+                            DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
+                            if (fsNodeRoot != null) {
+                                try {
+                                    relPath = CommonUtils.removeLeadingSlash(relPath);
+                                    relPath = URLDecoder.decode(relPath, StandardCharsets.UTF_8);
+                                    path = fsNodeRoot.getPath().resolve(relPath);
+                                } catch (Exception e) {
+                                    throw new IllegalArgumentException("Error resolving path '" + relPath + "'", e);
                                 }
-                            } else {
-                                log.debug("File system '" + fsType + ":" + fsId + "' not found");
                             }
-                        } catch (Exception e) {
-                            if (e instanceof RuntimeException re) {
-                                throw re;
-                            }
-                            throw new IllegalArgumentException("Error reading file systems", e);
+                        } else {
+                            log.debug("File system '" + fsType + ":" + fsId + "' not found");
                         }
+                    } catch (Exception e) {
+                        if (e instanceof RuntimeException re) {
+                            throw re;
+                        }
+                        throw new IllegalArgumentException("Error reading file systems", e);
                     }
                 }
             }

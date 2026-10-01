@@ -132,6 +132,15 @@ public class CLIHelp extends CommandLine.Help {
                 label = label.concat(" (required)");
             }
 
+            if (CommonUtils.isNotEmpty(label.toString())
+                && CommonUtils.isNotEmpty(delegate.separator())
+                && !label.plainString().startsWith(delegate.separator())
+            ) {
+                // stupid way to insert separator at the beginning of the label, and save all existing styles/color scheme
+                label = label.substring(0, 0)
+                    .concat(delegate.separator())
+                    .concat(label.plainString());
+            }
             return label;
         }
 

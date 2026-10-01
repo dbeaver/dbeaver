@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,11 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
-        throws DBException
-    {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
@@ -69,20 +71,31 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     @Override
     public DBSObjectCache<? extends DBSObject, OracleMaterializedView> getObjectsCache(OracleMaterializedView object)
     {
-        return (DBSObjectCache) object.getSchema().tableCache;
+        return (DBSObjectCache) object.getSchema().getTableCache();
     }
 
     @Override
-    protected OracleMaterializedView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected OracleMaterializedView createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         OracleSchema schema = (OracleSchema) container;
-        OracleMaterializedView newView = new OracleMaterializedView(schema, "NEW_MVIEW"); //$NON-NLS-1$
+        OracleMaterializedView newView = createMaterializedView(schema);
         setNewObjectName(monitor, schema, newView);
         newView.setObjectDefinitionText("SELECT 1 FROM DUAL");
         newView.setCurrentDDLFormat(OracleDDLFormat.COMPACT);
         return newView;
     }
 
+    @NotNull
+    protected OracleMaterializedView createMaterializedView(@NotNull OracleSchema schema) {
+        return new OracleMaterializedView(schema, "NEW_MVIEW"); //$NON-NLS-1$
+    }
+
+    @NotNull
     @Override
     protected String getBaseObjectName() {
         return SQLTableManager.BASE_MATERIALIZED_VIEW_NAME;

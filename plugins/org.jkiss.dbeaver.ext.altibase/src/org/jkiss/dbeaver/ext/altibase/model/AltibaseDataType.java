@@ -16,10 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model;
 
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 
-public class AltibaseDataType extends GenericDataType {
+public class AltibaseDataType extends GenericDataType implements DBPImageProvider {
 
     public AltibaseDataType(GenericStructContainer owner, AltibaseDataTypeDomain dataTypeDomin) {
         super(owner, dataTypeDomin.getValueType(), dataTypeDomin.getTypeName(), null, false, true, 0, 0, 0);
@@ -30,5 +35,21 @@ public class AltibaseDataType extends GenericDataType {
             int precision, int minScale, int maxScale) {
         super(owner, fieldType.getValueType(), name, remarks, unsigned, searchable, precision, 
                 minScale, maxScale);
+    }
+
+    @Override
+    public DBPDataKind getDataKind() {
+        return switch (getName().toUpperCase()) {
+            case AltibaseConstants.TYPE_NAME_JSON -> DBPDataKind.CONTENT;
+            case AltibaseConstants.TYPE_NAME_NUMBER -> DBPDataKind.NUMERIC;
+            default -> super.getDataKind();
+        };
+    }
+
+    public DBPImage getObjectImage() {
+        return switch (getName().toUpperCase()) {
+            case AltibaseConstants.TYPE_NAME_JSON -> DBIcon.TYPE_JSON;
+            default -> null;
+        };
     }
 }

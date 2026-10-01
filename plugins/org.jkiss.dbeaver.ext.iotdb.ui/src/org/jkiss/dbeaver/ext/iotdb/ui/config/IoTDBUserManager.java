@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.iotdb.ui.config;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBDataSource;
@@ -35,7 +36,7 @@ public class IoTDBUserManager extends AbstractObjectManager<IoTDBRelationalUser>
         implements DBEObjectMaker<IoTDBRelationalUser, IoTDBDataSource> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -46,27 +47,30 @@ public class IoTDBUserManager extends AbstractObjectManager<IoTDBRelationalUser>
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(IoTDBRelationalUser object) {
+    public boolean canDeleteObject(@NotNull IoTDBRelationalUser object) {
         return false;
     }
 
+    @Nullable
     @Override
-    public IoTDBRelationalUser createNewObject(DBRProgressMonitor monitor,
-                                               DBECommandContext commandContext,
-                                               Object container, Object copyFrom,
-                                               Map<String, Object> options) throws DBException {
+    public IoTDBRelationalUser createNewObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        @NotNull Object container, Object copyFrom,
+        @NotNull Map<String, Object> options) throws DBException {
         return null;
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext,
-                             IoTDBRelationalUser object,
-                             Map<String, Object> options) throws DBException {
+    public void deleteObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull IoTDBRelationalUser object,
+        @NotNull Map<String, Object> options) throws DBException {
         // no-op
     }
 }

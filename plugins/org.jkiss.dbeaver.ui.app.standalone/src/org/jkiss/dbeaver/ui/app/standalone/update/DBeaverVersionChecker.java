@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
+import org.jkiss.dbeaver.ui.services.UIServiceApplicationVersionUpdater;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.io.IOException;
-import java.util.Calendar;
 
 /**
  * Version checker job
@@ -44,12 +44,11 @@ import java.util.Calendar;
 public class DBeaverVersionChecker extends AbstractJob {
 
     private static final Log log = Log.getLog(DBeaverVersionChecker.class);
-
     private static final boolean SKIP_VERSION_CHECK;
     private static final Version OVERRIDE_PRODUCT_VERSION;
 
     static {
-        String versionProperty = CommonUtils.toString(System.getProperty("dbeaver.debug.override-product-version"));
+        String versionProperty = System.getProperty("dbeaver.debug.override-product-version");
         Version version = null;
 
         if (CommonUtils.isNotEmpty(versionProperty)) {
@@ -85,30 +84,11 @@ public class DBeaverVersionChecker extends AbstractJob {
         if (!showUpdateDialog) {
             // Check for auto-update settings
             showUpdateDialog = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK);
-            if (showUpdateDialog) {
-
-                long lastVersionCheckTime = DBWorkbench.getPlatform().getPreferenceStore().getLong(DBeaverPreferences.UI_UPDATE_CHECK_TIME);
-                if (lastVersionCheckTime > 0) {
-                    // Do not check more often than daily
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(lastVersionCheckTime);
-                    int checkMonth = cal.get(Calendar.MONTH);
-                    int checkDay = cal.get(Calendar.DAY_OF_MONTH);
-                    cal.setTimeInMillis(System.currentTimeMillis());
-                    int curMonth = cal.get(Calendar.MONTH);
-                    int curDay = cal.get(Calendar.DAY_OF_MONTH);
-                    if (curMonth == checkMonth && curDay == checkDay) {
-                        // Already checked today
-                        return Status.OK_STATUS;
-                    }
-                }
-            }
         }
         if (!showAlways && !showUpdateDialog) {
             return Status.OK_STATUS;
         }
 
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(DBeaverPreferences.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
         IProduct product = Platform.getProduct();
         if (product == null) {
             // No product!
@@ -133,8 +113,18 @@ public class DBeaverVersionChecker extends AbstractJob {
             return Status.CANCEL_STATUS;
         }
 
-        if (showAlways || (!isSuppressed(newVersion) && (SKIP_VERSION_CHECK || newVersion.getProgramVersion().compareTo(currentVersion) > 0))) {
-            showUpdaterDialog(currentVersion, newVersion);
+        boolean newVersionAvailable = newVersion.getProgramVersion().compareTo(currentVersion) > 0;
+        boolean suppressed = isSuppressed(newVersion);
+        UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
+        boolean showToolbarNotification = updater == null && newVersionAvailable && !showAlways;
+        if (showAlways || (!suppressed && (SKIP_VERSION_CHECK || newVersionAvailable))) {
+            if (updater != null) {
+                UIUtils.asyncExec(updater::handleVersionUpdate);
+            } else if (showToolbarNotification) {
+                UIUtils.asyncExec(() -> VersionUpdateHandler.showNotification(currentVersion, newVersion));
+            } else {
+                showUpdaterDialog(currentVersion, newVersion);
+            }
         }
 
         return Status.OK_STATUS;
@@ -147,7 +137,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         });
     }
 
-    private static boolean isSuppressed(@NotNull VersionDescriptor version) {
+    static boolean isSuppressed(@NotNull VersionDescriptor version) {
         CoreApplicationActivator activator = CoreApplicationActivator.getDefault();
         return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
     }

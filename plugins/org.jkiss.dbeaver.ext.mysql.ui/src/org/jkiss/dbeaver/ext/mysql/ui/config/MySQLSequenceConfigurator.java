@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.util.Map;
 
 public class MySQLSequenceConfigurator implements DBEObjectConfigurator<MySQLSequence> {
 
+    @NotNull
     @Override
     public MySQLSequence configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull MySQLSequence sequence, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {

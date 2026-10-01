@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,7 +158,8 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
     public BlobFileConflictBehavior getBlobFileConflictBehavior() {
         return blobFileConflictBehavior;
     }
-    
+
+    @Nullable
     @Override
     public ConsumerRuntimeParameters prepareRuntimeParameters() {
         return new ConsumerRuntimeParameters();
@@ -307,7 +308,11 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
     }
 
     @Override
-    public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
+    public void loadSettings(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DataTransferSettings dataTransferSettings,
+        @NotNull Map<String, Object> settings
+    ) {
         lobExtractType = CommonUtils.valueOf(LobExtractType.class, CommonUtils.toString(settings.get("lobExtractType")), LobExtractType.INLINE);
         lobEncoding = CommonUtils.valueOf(LobEncoding.class, CommonUtils.toString(settings.get("lobEncoding")), LobEncoding.BINARY);
 
@@ -401,7 +406,7 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
     }
 
     @Override
-    public void saveSettings(Map<String, Object> settings) {
+    public void saveSettings(@NotNull Map<String, Object> settings) {
         settings.put("lobExtractType", lobExtractType.name());
         settings.put("lobEncoding", lobEncoding.name());
         // settings.put("appendToFile", appendToFileEnd);
@@ -440,7 +445,8 @@ public class StreamConsumerSettings implements IDataTransferConsumerSettings {
             settings.put("eventProcessors", eventProcessors);
         }
     }
-    
+
+    @NotNull
     @Override
     public String getSettingsSummary() {
         StringBuilder summary = new StringBuilder();

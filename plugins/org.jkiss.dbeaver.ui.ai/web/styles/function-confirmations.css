@@ -1,0 +1,331 @@
+/* ========================================
+   FUNCTION CALL CONFIRMATION
+   ======================================== */
+.confirmation {
+    margin-left: 10px;
+    margin-right: 10px;
+    color: var(--text-color);
+    border: none;
+    background-color: transparent;
+    padding: 4px 0;
+}
+
+.confirmation-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--background-color-inactive);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.confirmation-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.confirmation-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.confirmation-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 400;
+    font-size: var(--font-size);
+}
+
+.confirmation-title-emphasis {
+    font-weight: 800;
+}
+
+.confirmation-description {
+    color: color-mix(in hsl, var(--text-color) 70%, var(--background-color));
+    font-size: smaller;
+    line-height: 1.4;
+}
+
+.confirmation-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.confirmation-allow-group {
+    display: inline-flex;
+    align-items: stretch;
+}
+
+.confirmation-params {
+    cursor: default;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.confirmation-params-summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    color: inherit;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    min-width: 0;
+}
+
+.confirmation-params-summary::-webkit-details-marker {
+    display: none;
+}
+
+.confirmation-params-content {
+    margin-top: 6px;
+    padding-left: 18px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.confirmation-inline-summary {
+    width: 100%;
+}
+
+.confirmation-expander {
+    width: 0px;
+    height: 0px;
+    margin-left: 6px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: color-mix(in hsl, var(--text-color) 72%, var(--background-color));
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    transform: translateY(0);
+    transition: transform 0.15s ease;
+}
+
+.confirmation-params[open] .confirmation-expander {
+    transform: rotate(90deg);
+}
+
+.confirmation-btn {
+    padding: 5px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.confirmation-btn-allow {
+    background: #3574F0;
+    border: 1px solid #3574F0;
+    color: #fff;
+}
+
+.confirmation-btn-allow-main {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.confirmation-btn-allow-menu {
+    width: 28px;
+    padding-left: 0;
+    padding-right: 0;
+    border-left-color: rgba(255, 255, 255, 0.45);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.confirmation-btn-allow:hover {
+    background: #2D64D0;
+    border-color: #2D64D0;
+}
+
+.confirmation-btn-decline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.confirmation-btn-decline:hover {
+    background: rgba(200, 50, 50, 0.08);
+    border-color: rgba(200, 50, 50, 0.4);
+}
+
+/* Post-decision status messages */
+.confirmation-result {
+    margin-left: 10px;
+    margin-right: 10px;
+    border: none;
+    background-color: transparent;
+    padding: 0;
+}
+
+.confirmation-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: color-mix(in hsl, var(--text-color) 72%, var(--background-color));
+}
+
+.confirmation-status-label {
+    font-size: 0.92em;
+}
+
+.confirmation-status-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.confirmation-status-icon-approved {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.confirmation-status-icon-declined {
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.confirmation-status-icon-error {
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.confirmation-status-approved {
+    color: color-mix(in hsl, var(--text-color) 80%, var(--background-color));
+}
+
+.confirmation-status-declined {
+    padding-left: 8px;
+    color: color-mix(in hsl, var(--text-color) 80%, var(--background-color));
+}
+
+.confirmation-status-error {
+    color: color-mix(in hsl, var(--error-background) 70%, var(--text-color));
+}
+
+/* ========================================
+   COLLAPSIBLE FUNCTION STATUS
+   ======================================== */
+.fn-collapsible {
+    cursor: default;
+}
+
+.fn-collapsible summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: color-mix(in hsl, var(--text-color) 72%, var(--background-color));
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.fn-summary-label {
+    font-size: 0.92em;
+}
+
+.fn-collapsible summary::-webkit-details-marker {
+    display: none;
+}
+
+.fn-collapsible summary::before {
+    content: '\203A';
+    font-size: 16px;
+    font-weight: bold;
+    transition: transform 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 16px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.fn-collapsible[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.fn-details-content {
+    padding: 4px 10px 6px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.fn-detail-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+}
+
+.fn-detail-description {
+    color: color-mix(in hsl, var(--text-color) 70%, var(--background-color));
+    font-size: smaller;
+    line-height: 1.4;
+}
+
+.fn-detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.fn-detail-label {
+    color: color-mix(in hsl, var(--text-color) 60%, var(--background-color));
+    font-size: smaller;
+    font-weight: bold;
+}
+
+.fn-detail-value {
+    color: var(--text-color);
+    font-family: var(--monospace-font-family);
+    font-size: var(--monospace-font-size);
+    margin: 0;
+    padding: 4px 8px;
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+.fn-detail-result .fn-detail-value {
+    max-height: 132px;
+}

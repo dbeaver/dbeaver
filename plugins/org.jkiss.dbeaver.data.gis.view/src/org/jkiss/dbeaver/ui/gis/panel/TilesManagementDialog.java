@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -95,9 +96,7 @@ class TilesManagementDialog extends BaseDialog {
                 toolBar,
                 GISMessages.panel_select_tiles_action_manage_dialog_toolbar_add_new_tiles,
                 UIIcon.ADD,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                SelectionListener.widgetSelectedAdapter(e -> {
                         TileLayerDefinitionDialog dialog = new TileLayerDefinitionDialog(getShell(), null);
                         int status = dialog.open();
                         if (status != IDialogConstants.OK_ID) {
@@ -117,8 +116,7 @@ class TilesManagementDialog extends BaseDialog {
                         }
                         userDefinedTiles.add(descriptor);
                         repopulateTree(descriptor, true);
-                    }
-                }
+                    })
             );
             addNewTilesItem.setEnabled(true);
 
@@ -126,9 +124,7 @@ class TilesManagementDialog extends BaseDialog {
                 toolBar,
                 GISMessages.panel_select_tiles_action_manage_dialog_toolbar_view_or_edit_tiles,
                 UIIcon.TEXTFIELD,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                SelectionListener.widgetSelectedAdapter(e -> {
                         if (isRootItem(lastSelectedTreeItem)) {
                             log.error("Can't find tiles to edit!");
                             return;
@@ -159,8 +155,7 @@ class TilesManagementDialog extends BaseDialog {
                         if (originalDescriptor.equals(currentSelectedTileLayer)) {
                             currentSelectedTileLayer = editedDescriptor;
                         }
-                    }
-                }
+                    })
             );
             viewOrEditTilesItem.setEnabled(false);
 
@@ -168,9 +163,7 @@ class TilesManagementDialog extends BaseDialog {
                 toolBar,
                 GISMessages.panel_select_tiles_action_manage_dialog_toolbar_delete_tiles,
                 UIIcon.DELETE,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                SelectionListener.widgetSelectedAdapter(e -> {
                         if (lastSelectedTreeItem == null || lastSelectedTreeItem.equals(predefinedTilesRootItem)) {
                             log.error("Can't find tiles to delete!");
                             return;
@@ -201,8 +194,7 @@ class TilesManagementDialog extends BaseDialog {
                         if (descriptor.equals(currentSelectedTileLayer)) {
                             currentSelectedTileLayer = null;
                         }
-                    }
-                }
+                    })
             );
             deleteTilesItem.setEnabled(false);
         }
@@ -429,13 +421,9 @@ class TilesManagementDialog extends BaseDialog {
             gd.widthHint = UIUtils.getFontHeight(layersDefinitionText) * 60;
             layersDefinitionText.setLayoutData(gd);
 
-            UIUtils.createLink(dialogArea, GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_layers_definition_explanation_link_text, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(
-                        HelpUtils.getHelpExternalReference("Working-with-Spatial-GIS-data#defining-custom-tile-layer"));
-                }
-            });
+            UIUtils.createLink(dialogArea, GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_layers_definition_explanation_link_text, SelectionListener.widgetSelectedAdapter(e ->
+                ShellUtils.launchProgram(
+                        HelpUtils.getHelpExternalReference("Working-with-Spatial-GIS-data#defining-custom-tile-layer"))));
 
             return dialogArea;
         }

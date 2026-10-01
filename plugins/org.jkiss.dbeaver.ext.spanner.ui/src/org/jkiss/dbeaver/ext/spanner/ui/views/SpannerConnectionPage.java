@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.spanner.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -25,9 +24,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.spanner.auth.SpannerAuthModel;
-import org.jkiss.dbeaver.ext.spanner.ui.SpannerActivator;
 import org.jkiss.dbeaver.ext.spanner.ui.internal.SpannerMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -48,7 +47,6 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text instanceText;
     private Text databaseText;
 
-    private static ImageDescriptor logoImage = SpannerActivator.getImageDescriptor("icons/spanner_logo.png"); //$NON-NLS-1$
     private DriverPropertiesDialogPage driverPropsPage;
 
     public SpannerConnectionPage() {
@@ -56,16 +54,8 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     @Override
-    public void dispose()
+    public void createControl(@NotNull Composite composite)
     {
-        super.dispose();
-    }
-
-    @Override
-    public void createControl(Composite composite)
-    {
-        setImageDescriptor(logoImage);
-
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         settingsGroup.setLayout(new GridLayout(1, false));
         settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -124,7 +114,7 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (projectText != null) {
@@ -145,6 +135,7 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
         return SpannerAuthModel.ID;
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {

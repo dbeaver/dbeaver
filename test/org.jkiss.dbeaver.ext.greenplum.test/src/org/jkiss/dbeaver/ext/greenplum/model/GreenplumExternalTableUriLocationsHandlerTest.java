@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.greenplum.model;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 
 public class GreenplumExternalTableUriLocationsHandlerTest {
@@ -25,13 +25,13 @@ public class GreenplumExternalTableUriLocationsHandlerTest {
     public void getCommaSeparatedList_whenConstructedWithALineFeedSeparatedListOfLocations_shouldReturnCommaSeparatedString() {
         GreenplumExternalTableUriLocationsHandler handler =
                 new GreenplumExternalTableUriLocationsHandler("location1\nlocation2", '\n');
-        Assert.assertEquals("location1,location2", handler.getCommaSeparatedList());
+        Assertions.assertEquals("location1,location2", handler.getCommaSeparatedList());
     }
 
     @Test
     public void getLineFeedSeparatedList_whenConstructedWithALineFeedSeparatedListOfLocations_shouldReturnLineFeedSeparatedString() {
         GreenplumExternalTableUriLocationsHandler handler =
                 new GreenplumExternalTableUriLocationsHandler("location1\nlocation2", '\n');
-        Assert.assertEquals("location1\nlocation2", handler.getLineFeedSeparatedList());
+        Assertions.assertEquals("location1\nlocation2", handler.getLineFeedSeparatedList());
     }
 }

@@ -49,7 +49,7 @@ public class BQDataSource extends GenericDataSource {
     }
 
     @Override
-    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         String connectionURL = super.getConnectionURL(connectionInfo);
         if (CommonUtils.isNotEmpty(connectionURL) &&
             (connectionURL.contains("OAuthPvtKeyPath={server};") || connectionURL.contains("OAuthServiceAcctEmail=;"))

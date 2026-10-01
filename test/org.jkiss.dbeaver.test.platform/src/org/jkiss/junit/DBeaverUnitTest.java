@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.Mock;
 
 
@@ -40,9 +40,9 @@ public abstract class DBeaverUnitTest extends ApplicationUnitTest {
     @NotNull
     protected DBPDataSourceContainer configureTestContainer(@NotNull String driverID) {
         DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverID);
-        Assert.assertNotNull(driver);
+        Assertions.assertNotNull(driver);
         DBPProject mockProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        Assert.assertNotNull(mockProject);
+        Assertions.assertNotNull(mockProject);
 
         DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
         DBPDataSourceContainer dataSourceContainer = new DataSourceDescriptor(

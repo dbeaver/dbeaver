@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -26,9 +27,10 @@ import java.util.regex.Pattern;
 public class SQLQueryParameter {
 
     public static final String VARIABLE_NAME_GROUP_NAME = "pn";
+    private static final String DOUBLE_CURLY_VARIABLE_NAME_GROUP_NAME = "cpn";
 
-    private static final Pattern VARIABLE_PATTERN_SIMPLE = Pattern.compile("\\$\\{(?<pn>[a-z0-9_.\"]+)\\}", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VARIABLE_PATTERN_FULL = Pattern.compile("\\$P?!?\\{(?<pn>[a-z0-9_.\"]+)\\}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VARIABLE_PATTERN_SIMPLE = Pattern.compile("\\$\\{(?<pn>[a-z0-9_.\"]+)\\}|\\{\\{(?<cpn>[a-z0-9_.\"]+)\\}\\}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VARIABLE_PATTERN_FULL = Pattern.compile("\\$P?!?\\{(?<pn>[a-z0-9_.\"]+)\\}|\\{\\{(?<cpn>[a-z0-9_.\"]+)\\}\\}", Pattern.CASE_INSENSITIVE);
     //private static final Pattern VARIABLE_PATTERN_QUOTED = Pattern.compile("\\$\\{(?<pn>\"[a-z0-9_.]+)\"\\}}", Pattern.CASE_INSENSITIVE);
 
 
@@ -131,6 +133,15 @@ public class SQLQueryParameter {
     }
 
     @NotNull
+    public static String getVariableName(@NotNull Matcher matcher) {
+        String parameterName = matcher.group(VARIABLE_NAME_GROUP_NAME);
+        if (parameterName == null) {
+            parameterName = matcher.group(DOUBLE_CURLY_VARIABLE_NAME_GROUP_NAME);
+        }
+        return parameterName;
+    }
+
+    @NotNull
     public static String stripVariablePattern(String pattern) {
         if (supportsJasperSyntax()) {
             if (pattern.startsWith("$P{") && pattern.endsWith("}")) {
@@ -141,6 +152,8 @@ public class SQLQueryParameter {
         }
         if (pattern.startsWith("${") && pattern.endsWith("}")) {
             return pattern.substring(2, pattern.length() - 1);
+        } else if (pattern.startsWith("{{") && pattern.endsWith("}}")) {
+            return pattern.substring(2, pattern.length() - 2);
         }
 
         return pattern;

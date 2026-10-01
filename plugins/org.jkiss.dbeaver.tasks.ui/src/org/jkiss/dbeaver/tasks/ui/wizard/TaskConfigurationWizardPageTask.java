@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
@@ -230,10 +231,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 gd.heightHint = 100;
                 gd.widthHint = 200;
                 taskCategoryTree.setLayoutData(gd);
-                taskCategoryTree.addSelectionListener(new SelectionAdapter() {
-
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                taskCategoryTree.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         TreeItem[] selection = taskCategoryTree.getSelection();
                         if (selection.length == 1) {
                             Object itemData = selection[0].getData();
@@ -252,8 +250,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                             }
                             updateTaskTypeSelection();
                         }
-                    }
-                });
+                    }));
                 TreeColumn nameColumn = new TreeColumn(taskCategoryTree, SWT.LEFT);
                 nameColumn.setText("Task");
                 TreeColumn descColumn = new TreeColumn(taskCategoryTree, SWT.RIGHT);

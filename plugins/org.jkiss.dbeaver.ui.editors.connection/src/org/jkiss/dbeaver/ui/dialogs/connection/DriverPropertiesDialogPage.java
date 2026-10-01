@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
@@ -70,6 +70,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
                 return;
             }
+            propertySource = null;
+            prevConnectionInfo = null;
+            propsControl.loadProperties(new PropertySourceCustom());
+            setErrorMessage(null);
 
             final DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
             final DataSourceDescriptor tempDataSource = site.getDataSourceRegistry()
@@ -90,6 +94,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
                         propertySource = propsControl.makeProperties(
                             monitor,
                             getSite().getDriver(),
+                            tempDataSource,
                             tmpConnectionInfo,
                             driverSubstitution);
                     } finally {
@@ -103,8 +108,8 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             }
             if (propertySource != null) {
                 propsControl.loadProperties(propertySource);
+                prevConnectionInfo = activeDataSource.getConnectionConfiguration();
             }
-            prevConnectionInfo = activeDataSource.getConnectionConfiguration();
 
             tempDataSource.dispose();
         }
@@ -117,11 +122,11 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         if (propsControl != null) {
             propsControl.saveEditorValues();
         }
-        if (propertySource != null) {
+        if (propertySource != null && prevConnectionInfo == site.getActiveDataSource().getConnectionConfiguration()) {
             final Map<String, String> properties = dataSource.getConnectionConfiguration().getProperties();
             properties.clear();
             for (Map.Entry<String, Object> entry : propertySource.getPropertyValues().entrySet()) {
@@ -165,16 +170,13 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             Link netConfigLink = new Link(linksComposite, SWT.NONE);
             if (!CommonUtils.isEmpty(site.getDriver().getWebURL())) {
                 netConfigLink.setText("<a>" + UIConnectionMessages.dialog_setting_connection_driver_properties_docs_web_reference + "</a>");
-                netConfigLink.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                netConfigLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         String url = site.getDriver().getPropertiesWebURL();
                         if (CommonUtils.isEmpty(url)) {
                             url = site.getDriver().getWebURL();
                         }
                         UIUtils.openWebBrowser(url);
-                    }
-                });
+                    }));
             }
             netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }

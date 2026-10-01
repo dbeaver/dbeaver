@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,9 +114,8 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                         monitor.subTask("Load " + getCacheName());
                         dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                         dbStat.executeStatement();
-                        JDBCResultSet dbResult = dbStat.getResultSet();
-                        if (dbResult != null) {
-                            try {
+                        try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                            if (dbResult != null) {
                                 while (dbResult.next()) {
                                     if (monitor.isCanceled()) {
                                         return;
@@ -135,8 +134,6 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                                         break;
                                     }
                                 }
-                            } finally {
-                                dbResult.close();
                             }
                         }
                     } finally {

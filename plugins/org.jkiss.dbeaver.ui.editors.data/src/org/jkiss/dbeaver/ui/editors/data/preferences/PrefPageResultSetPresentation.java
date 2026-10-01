@@ -44,6 +44,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
 
     private Button autoSwitchMode;
     private Button showFiltersInSingleTabMode;
+    private Button showFilterPanel;
     private Combo columnHeaderExtra;
     private Button columnWidthByValue;
     private Button showConnectionName;
@@ -62,6 +63,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
         return
             store.contains(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL) ||
             store.contains(ResultSetPreferences.RESULT_SET_COLUMN_HEADER_EXTRA) ||
             store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||
@@ -87,6 +89,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_switch_mode_on_rows, null, false, 2);
             showFiltersInSingleTabMode = UIUtils.createCheckbox(uiGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_filters_panel_in_singletab_mode,
+                null, true, 2);
+            showFilterPanel = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_filter_panel,
                 null, true, 2);
             columnHeaderExtra = UIUtils.createLabelCombo(uiGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_column_header_extra, SWT.READ_ONLY
@@ -134,6 +139,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
         try {
             autoSwitchMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
             showFiltersInSingleTabMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE));
+            showFilterPanel.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL));
             columnHeaderExtra.select(
                 CommonUtils.valueOf(
                     ResultSetPreferences.ColumnHeaderExtraContent.class,
@@ -157,6 +163,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE, showFiltersInSingleTabMode.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL, showFilterPanel.getSelection());
             int selectedIndex = Math.max(0, columnHeaderExtra.getSelectionIndex());
             store.setValue(ResultSetPreferences.RESULT_SET_COLUMN_HEADER_EXTRA,
                 ResultSetPreferences.ColumnHeaderExtraContent.values()[selectedIndex].name()
@@ -177,6 +184,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
     protected void clearPreferences(@NotNull DBPPreferenceStore store) {
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL);
         store.setToDefault(ResultSetPreferences.RESULT_SET_COLUMN_HEADER_EXTRA);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
@@ -191,6 +199,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         autoSwitchMode.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
         showFiltersInSingleTabMode.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE));
+        showFilterPanel.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL));
         columnHeaderExtra.select(
             CommonUtils.valueOf(
                 ResultSetPreferences.ColumnHeaderExtraContent.class,

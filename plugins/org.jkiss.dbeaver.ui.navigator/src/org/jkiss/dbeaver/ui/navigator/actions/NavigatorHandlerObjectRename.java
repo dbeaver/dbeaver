@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
             Object element = structSelection.getFirstElement();
             DBNNode node = RuntimeUtils.getObjectAdapter(element, DBNNode.class);
             if (node != null) {
-                DBPProject nodeProject = node.getOwnerProject();
+                DBPProject nodeProject = node.getOwnerProjectOrNull();
                 if (nodeProject == null || nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                     renameNode(HandlerUtil.getActiveWorkbenchWindow(event), HandlerUtil.getActiveShell(event), node, null, this);
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.edit.prop;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -32,20 +33,21 @@ import java.util.Map;
  */
 public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBECommandAbstract<OBJECT_TYPE> {
 
-    //public static final String PROP_COMPOSITE_COMMAND = ".composite";
-
-    private DBEPropertyHandler<OBJECT_TYPE> handler;
+    private final DBEPropertyHandler<OBJECT_TYPE> handler;
     private Object oldValue;
     private Object newValue;
 
-    public DBECommandProperty(OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler)
-    {
+    public DBECommandProperty(@NotNull OBJECT_TYPE object, @NotNull DBEPropertyHandler<OBJECT_TYPE> handler) {
         super(object, "Property '" + handler + "' change");
         this.handler = handler;
     }
 
-    public DBECommandProperty(OBJECT_TYPE object, DBEPropertyHandler<OBJECT_TYPE> handler, Object oldValue, Object newValue)
-    {
+    public DBECommandProperty(
+        @NotNull OBJECT_TYPE object,
+        @NotNull DBEPropertyHandler<OBJECT_TYPE> handler,
+        @Nullable Object oldValue,
+        @Nullable Object newValue
+    ) {
         this(object, handler);
         this.oldValue = oldValue;
         this.newValue = newValue;
@@ -54,23 +56,25 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         }
     }
 
+    @NotNull
     public DBEPropertyHandler<OBJECT_TYPE> getHandler()
     {
         return handler;
     }
 
+    @Nullable
     public Object getOldValue()
     {
         return oldValue;
     }
 
+    @Nullable
     public Object getNewValue()
     {
         return newValue;
     }
 
-    public void setNewValue(Object newValue)
-    {
+    public void setNewValue(@Nullable Object newValue) {
         this.newValue = newValue;
         if (handler instanceof DBEPropertyReflector) {
             ((DBEPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(getObject(), oldValue, this.newValue);
@@ -82,10 +86,9 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         this.newValue = this.oldValue;
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
-    {
+    public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
         if (!(prevCommand instanceof DBECommandProperty) || prevCommand.getObject() != getObject()) {
             // Dunno what to do with it
             //return this;
@@ -100,25 +103,29 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
     }
 
     @Override
-    public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
-    {
+    public void validateCommand(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (handler instanceof DBEPropertyValidator) {
             ((DBEPropertyValidator<OBJECT_TYPE>)handler).validate(getObject(), newValue);
         }
     }
 
     @Override
-    public void updateModel()
-    {
+    public void updateModel() {
         if (handler instanceof DBEPropertyUpdater) {
             ((DBEPropertyUpdater<OBJECT_TYPE>)handler).updateModel(getObject(), newValue);
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
-    {
+    public DBEPersistAction[] getPersistActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Map<String, Object> options
+    ) {
         if (handler instanceof DBEPropertyPersister) {
             return ((DBEPropertyPersister<OBJECT_TYPE>)handler).getPersistActions(getObject(), newValue);
         }

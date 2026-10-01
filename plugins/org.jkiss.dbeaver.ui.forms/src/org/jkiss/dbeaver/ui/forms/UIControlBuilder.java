@@ -29,20 +29,40 @@ import java.util.function.Function;
  * The builder for a control.
  */
 public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
-    permits UIControlBuilder.ButtonBuilder, UIControlBuilder.ComboBuilder, UIControlBuilder.LabelBuilder, UIControlBuilder.LinkBuilder,
-    UIControlBuilder.TextBuilder, UIControlBuilderImpl, UIPanelBuilder {
+    permits UIControlBuilder.ButtonBuilder, UIControlBuilder.ComboBuilder, UIControlBuilder.ControlBuilder, UIControlBuilder.LabelBuilder,
+    UIControlBuilder.LinkBuilder, UIControlBuilder.TextBuilder, UIControlBuilderImpl, UIPanelBuilder {
 
     @NotNull
-    B visible(@NotNull UIObservable<Boolean> binding);
+    B visible(@NotNull UIObservable<Boolean> value);
 
     @NotNull
-    B enabled(@NotNull UIObservable<Boolean> binding);
+    default B visible(boolean value) {
+        return visible(UIObservable.of(value));
+    }
+
+    @NotNull
+    B enabled(@NotNull UIObservable<Boolean> value);
+
+    @NotNull
+    default B enabled(boolean value) {
+        return enabled(UIObservable.of(value));
+    }
 
     @NotNull
     B font(@NotNull UIObservable<Font> value);
 
     @NotNull
-    B tooltip(@NotNull String value);
+    default B font(@NotNull Font value) {
+        return font(UIObservable.of(value, Font.class));
+    }
+
+    @NotNull
+    B tooltip(@NotNull UIObservable<String> value);
+
+    @NotNull
+    default B tooltip(@NotNull String value) {
+        return tooltip(UIObservable.of(value));
+    }
 
     /**
      * The control becomes resizable and occupies all available
@@ -50,9 +70,22 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
      * extra space is equally divided between them.
      *
      * @return this builder
+     * @deprecated use {@link #grow(UIGrowX)} instead
      */
+    @Deprecated
     @NotNull
-    B grow();
+    default B grow() {
+        return grow(UIGrowX.ALWAYS);
+    }
+
+    @NotNull
+    B grow(@NotNull UIGrowX x, @NotNull UIGrowY y);
+
+    @NotNull
+    B grow(@NotNull UIGrowX x);
+
+    @NotNull
+    B grow(@NotNull UIGrowY y);
 
     @NotNull
     B align(@NotNull UIAlignX x, @NotNull UIAlignY y);
@@ -88,6 +121,15 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
         default LabelBuilder image(@Nullable DBIcon image) {
             return image(image != null ? UIObservable.of(image, DBIcon.class) : null);
         }
+
+        /**
+         * Enables automatic text wrapping for this label.
+         * <p>
+         * Requires the label to either have a fixed width (e.g. via {@link #hint(int, int)}) or
+         * by making it resizable (e.g. via {@link #grow()}).
+         */
+        @NotNull
+        LabelBuilder wrap();
     }
 
     /**
@@ -124,5 +166,11 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
      * The builder for a combo control.
      */
     sealed interface ComboBuilder<T> extends UIControlBuilder<ComboBuilder<T>> permits UIControlBuilderImpl.ComboBuilderImpl {
+    }
+
+    /**
+     * The builder for a generic control (e.g. a custom control created by a client code).
+     */
+    sealed interface ControlBuilder extends UIControlBuilder<ControlBuilder> permits UIControlBuilderImpl.ControlBuilderImpl {
     }
 }

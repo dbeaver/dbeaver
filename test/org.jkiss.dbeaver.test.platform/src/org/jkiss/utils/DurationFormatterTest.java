@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.utils.DurationFormat;
 import org.jkiss.dbeaver.utils.DurationFormatter;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Locale;
@@ -31,13 +31,13 @@ import java.util.Locale;
 public class DurationFormatterTest extends DBeaverUnitTest {
     private static Locale originalLocale;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         originalLocale = Locale.getDefault();
         Locale.setDefault(Locale.ENGLISH);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         Locale.setDefault(originalLocale);
         originalLocale = null;
@@ -87,6 +87,6 @@ public class DurationFormatterTest extends DBeaverUnitTest {
     }
 
     private static void assertDurationEquals(@NotNull String expected, @NotNull Duration duration, @NotNull DurationFormat format) {
-        Assert.assertEquals(expected, DurationFormatter.format(duration, format));
+        Assertions.assertEquals(expected, DurationFormatter.format(duration, format));
     }
 }

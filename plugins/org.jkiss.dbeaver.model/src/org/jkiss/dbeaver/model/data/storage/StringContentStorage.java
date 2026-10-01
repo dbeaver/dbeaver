@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,12 @@ public class StringContentStorage implements DBDContentStorage, DBDContentCached
 
     private String data;
 
-    public StringContentStorage(String data)
+    public StringContentStorage(@NotNull String data)
     {
         this.data = data;
     }
 
+    @NotNull
     @Override
     public InputStream getContentStream()
         throws IOException
@@ -47,6 +48,7 @@ public class StringContentStorage implements DBDContentStorage, DBDContentCached
         return new ByteArrayInputStream(data.getBytes(GeneralUtils.getDefaultFileEncoding()));
     }
 
+    @NotNull
     @Override
     public Reader getContentReader()
         throws IOException
@@ -60,14 +62,16 @@ public class StringContentStorage implements DBDContentStorage, DBDContentCached
         return data == null ? 0 : data.length();
     }
 
+    @NotNull
     @Override
     public String getCharset()
     {
         return GeneralUtils.getDefaultFileEncoding();
     }
 
+    @NotNull
     @Override
-    public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
+    public DBDContentStorage cloneStorage(@NotNull DBRProgressMonitor monitor)
         throws IOException
     {
         return new StringContentStorage(data);
@@ -118,6 +122,7 @@ public class StringContentStorage implements DBDContentStorage, DBDContentCached
         return new StringContentStorage(buffer.toString());
     }
 
+    @NotNull
     @Override
     public String getCachedValue() {
         return data;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -146,9 +147,9 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         @NotNull IDataTransferConsumer consumer,
         @Nullable IDataTransferProcessor processor,
         @NotNull StreamProducerSettings settings,
-        @Nullable DBTTask task)
-        throws DBException
-    {
+        @Nullable DBTTask task,
+        long maxRows
+    ) throws DBException {
         // Initialize importer
         DBSObject databaseObject = consumer.getDatabaseObject();
         if (!(databaseObject instanceof DBSEntity)) {
@@ -157,6 +158,8 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         if (processor == null) {
             throw new DBException("Stream data producer requires data processor");
         }
+
+        settings.setMaxRows(maxRows);
 
         Map<String, Object> processorProperties = settings.getProcessorProperties();
         StreamDataImporterSite site = new StreamDataImporterSite(settings, entityMapping, processorProperties);
@@ -182,6 +185,13 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             return CommonUtils.equalObjects(entityMapping, ((StreamTransferProducer) obj).entityMapping);
         }
         return super.equals(obj);
+    }
+
+    @Override
+    public void close() {
+        if (entityMapping != null) {
+            entityMapping.getDataSource().getDefaultInstance().shutdown(new VoidProgressMonitor());
+        }
     }
 
     public static class ObjectSerializer implements DTObjectSerializer<DBTTask, StreamTransferProducer> {

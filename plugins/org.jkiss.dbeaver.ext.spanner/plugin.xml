@@ -5,12 +5,22 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
+        <dataSourceType
+            id="google_cloud_spanner"
+            label="Google Cloud Spanner"
+            description="Google Cloud Spanner database"
+            dataSourceInformation="Cloud-native distributed data platform"
+            icon="icons/spanner_icon.png"
+            iconBig="icons/spanner_icon_big.png"
+            logoImage="icons/spanner_logo.png"/>
+
         <!-- Spanner -->
 
         <datasource
                 class="org.jkiss.dbeaver.ext.spanner.SpannerDataSourceProvider"
                 description="Google Spanner datasource"
                 id="google_spanner"
+                dataSourceType="google_cloud_spanner"
                 parent="generic"
                 label="Google Cloud Spanner"
                 icon="icons/spanner_icon.png"
@@ -20,8 +30,6 @@
                 <driver
                         id="spanner_jdbc_official"
                         label="Google Cloud Spanner"
-                        icon="icons/spanner_icon.png"
-                        iconBig="icons/spanner_icon_big.png"
                         class="com.google.cloud.spanner.jdbc.JdbcDriver"
                         sampleURL="jdbc:cloudspanner:/projects/my-project/instances/my-instance/databases/my-database"
                         supportedPageFields="host,database,server"
@@ -37,14 +45,13 @@
                     <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE[2.33.1]" bundle="!drivers.spanner"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/spanner" bundle="drivers.spanner"/>
-                    <file type="jar" path="bundle:/org.jkiss.bundle.google-cloud" bundle="drivers.spanner"/>
+                    <file type="jar" path="bundle:/org.jkiss.bundle.gcp-sdk" bundle="drivers.spanner"/>
+                    <file type="jar" path="bundle:/org.jkiss.bundle.netty" bundle="drivers.spanner"/>
                 </driver>
                 
                 <driver
                         id="spanner_jdbc"
                         label="Google Cloud Spanner (Deprecated)"
-                        icon="icons/spanner_icon.png"
-                        iconBig="icons/spanner_icon_big.png"
                         class="nl.topicus.jdbc.CloudSpannerDriver"
                         sampleURL="jdbc:cloudspanner://localhost"
                         defaultPort=""

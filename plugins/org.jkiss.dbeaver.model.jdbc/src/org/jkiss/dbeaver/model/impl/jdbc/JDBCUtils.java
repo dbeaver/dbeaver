@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -36,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -44,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * JDBCUtils
@@ -54,6 +58,22 @@ public class JDBCUtils {
     private static final Log log = Log.getLog(JDBCUtils.class);
 
     private static final Map<String, Integer> badColumnNames = new HashMap<>();
+
+    public static boolean matchesSQLException(
+        @NotNull Throwable error,
+        @NotNull Predicate<SQLException> predicate
+    ) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqlException) {
+                for (SQLException current = sqlException; current != null; current = current.getNextException()) {
+                    if (predicate.test(current)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     @Nullable
     public static String safeGetString(ResultSet dbResult, String columnName) {
@@ -464,14 +484,14 @@ public class JDBCUtils {
 
         // Invalidate in non-blocking task.
         // Timeout is CONNECTION_VALIDATION_TIMEOUT + 2 seconds
-        final boolean[] isValid = new boolean[1];
+        // isValid is true by default. Otherwise it may cause issues with long-running queries
+        final boolean[] isValid = new boolean[] { true };
         RuntimeUtils.runTask(monitor -> {
             try {
                 if (!CommonUtils.isEmpty(testSQL)) {
                     // Execute test SQL
                     try (Statement dbStat = connection.createStatement()) {
                         dbStat.execute(testSQL);
-                        isValid[0] = true;
                     }
                 } else {
                     try {
@@ -480,7 +500,6 @@ public class JDBCUtils {
                         // isValid may be unsupported by driver
                         // Let's try to read table list
                         connection.getMetaData().getTables(null, null, "DBEAVERFAKETABLENAMEFORPING", null);
-                        isValid[0] = true;
                     }
                 }
             } catch (SQLException e) {
@@ -948,7 +967,7 @@ public class JDBCUtils {
             case Types.BIGINT, Types.DECIMAL, Types.DOUBLE, Types.FLOAT, Types.INTEGER, Types.NUMERIC, Types.REAL, Types.SMALLINT ->
                 DBPDataKind.NUMERIC;
             case Types.BIT, Types.TINYINT -> {
-                if (typeName != null && typeName.toLowerCase().contains("bool")) {
+                if (typeName != null && StringUtils.containsIgnoreCase(typeName, "bool")) {
                     // Declared as numeric but actually it's a boolean
                     yield DBPDataKind.BOOLEAN;
                 }
@@ -962,10 +981,18 @@ public class JDBCUtils {
             case Types.ARRAY -> DBPDataKind.ARRAY;
             case Types.ROWID -> DBPDataKind.ROWID;
             case Types.REF -> DBPDataKind.REFERENCE;
+            case Types.JAVA_OBJECT -> DBPDataKind.OBJECT;
             case Types.OTHER ->
                 // TODO: really?
                 DBPDataKind.OBJECT;
             default -> DBPDataKind.UNKNOWN;
         };
+    }
+
+    public static <RS extends DBCResultSet> RS requireResultSet(RS rs) throws DBException {
+        if (rs == null) {
+            throw new DBException("Null resultset was reqturned from a query");
+        }
+        return rs;
     }
 }

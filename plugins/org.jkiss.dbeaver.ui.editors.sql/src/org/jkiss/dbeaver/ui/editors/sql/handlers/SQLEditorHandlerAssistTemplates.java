@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,21 +22,23 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class SQLEditorHandlerAssistTemplates extends AbstractHandler {
 
-    public SQLEditorHandlerAssistTemplates()
-    {
+    public SQLEditorHandlerAssistTemplates() {
     }
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        if (activeEditor instanceof SQLEditorBase) {
-            SQLEditorBase editor = (SQLEditorBase)activeEditor;
+        SQLEditorBase editor = GeneralUtils.adapt(activeEditor, SQLEditorBase.class);
+        if (editor != null) {
             boolean oldValue = SQLCompletionProcessor.isLookupTemplates();
             SQLCompletionProcessor.setLookupTemplates(true);
             try {

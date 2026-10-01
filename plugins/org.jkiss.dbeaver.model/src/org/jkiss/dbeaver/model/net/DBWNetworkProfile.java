@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretSubject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.AlphanumericComparator;
 
 import java.io.StringReader;
 import java.util.*;
@@ -41,7 +42,20 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     // Secret key prefix
     public static final String PROFILE_KEY_PREFIX = "/network-profile/";
 
+    public static final Comparator<DBWNetworkProfile> PROFILE_NAME_COMPARATOR = Comparator.comparing(
+        DBWNetworkProfile::getProfileName,
+        AlphanumericComparator.getInstance()
+    );
+
     private transient DBSSecretSubject secretSubject;
+
+    public DBWNetworkProfile() {
+        // Global profile
+    }
+
+    public DBWNetworkProfile(@NotNull DBPProject project) {
+        super(project);
+    }
 
     @NotNull
     private final List<DBWHandlerConfiguration> configurations = new ArrayList<>();
@@ -51,13 +65,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         return configurations;
     }
 
-    public DBWNetworkProfile() {
-    }
-
-    public DBWNetworkProfile(DBPProject project) {
-        super(project);
-    }
-
+    @Nullable
     @Override
     public String getProfileSource() {
         return secretSubject == null ? null : secretSubject.getSecretSubjectId();
@@ -112,7 +120,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
         Map<String, Object> props = new LinkedHashMap<>();
 
         // Info fields (we don't use them anyhow)
@@ -139,7 +147,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
         String secretValue = secretController.getPrivateSecretValue(getSecretKeyId());
         if (secretValue == null) {
             if (!DBWorkbench.isDistributed()) {
@@ -161,11 +169,15 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         }
     }
 
+    // Global profile is the one which doesn't has a project and also doesn't belong to some subject (e.g. cloud)
+    public boolean isGlobal() {
+        return getProject() == null && secretSubject == null;
+    }
+
     private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
-        if (!(secretController instanceof DBSSecretBrowser) || getProject() == null) {
+        if (!(secretController instanceof DBSSecretBrowser secretBrowser) || getProject() == null) {
             return;
         }
-        DBSSecretBrowser secretBrowser = (DBSSecretBrowser) secretController;
         for (DBWHandlerConfiguration cfg : configurations) {
             String prefix = "projects/" + getProject().getId() + "/network/" + cfg.getId() + "/profile/" + getProfileId();
             Map<String, String> secureProps = new LinkedHashMap<>();
@@ -190,6 +202,24 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
                 cfg.setSecureProperties(secureProps);
             }
         }
+    }
+
+    public boolean equalConfigurations(@Nullable DBWNetworkProfile other) {
+        if (other == null ||
+            !Objects.equals(getProfileName(), other.getProfileName()) ||
+            !Objects.equals(getProfileDescription(), other.getProfileDescription()) ||
+            !Objects.equals(getProperties(), other.getProperties()) ||
+            this.configurations.size() != other.configurations.size()
+        ) {
+            return false;
+        }
+        for (DBWHandlerConfiguration cfg : configurations) {
+            DBWHandlerConfiguration otherCfg = other.getConfiguration(cfg.getId());
+            if (!Objects.equals(cfg, otherCfg)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

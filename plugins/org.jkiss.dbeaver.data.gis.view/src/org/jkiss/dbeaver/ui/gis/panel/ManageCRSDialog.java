@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
-import org.jkiss.dbeaver.ui.internal.UIActivator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -72,11 +72,12 @@ public class ManageCRSDialog extends BaseDialog {
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        return UIUtils.getSettingsSection(UIActivator.getDefault().getDialogSettings(), DIALOG_ID);
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
 
         if (crsLoader == null) {
@@ -112,16 +113,6 @@ public class ManageCRSDialog extends BaseDialog {
         UIUtils.createTreeColumn(crsTree, SWT.LEFT, GISMessages.panel_manage_crs_dialog_tree_column_text_projection);
 
         treeViewer.setContentProvider(new ITreeContentProvider() {
-            @Override
-            public void dispose() {
-
-            }
-
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-
-            }
-
             @Override
             public Object[] getChildren(Object parentElement) {
                 if (parentElement == crsLoader) {
@@ -197,14 +188,14 @@ public class ManageCRSDialog extends BaseDialog {
     }
 
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createContents(@NotNull Composite parent) {
         Control contents = super.createContents(parent);
         updateButtons();
         return contents;
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(selectedSRID != 0);
+        enableButton(IDialogConstants.OK_ID, selectedSRID != 0);
     }
 
     public int getSelectedSRID() {
@@ -258,9 +249,9 @@ public class ManageCRSDialog extends BaseDialog {
         }
     }
 
-    private class CRSLoader implements DBRRunnableWithProgress {
+    private static class CRSLoader implements DBRRunnableWithProgress {
 
-        private Map<String, List<CRSInfo>> crsMap = new LinkedHashMap<>();
+        private final Map<String, List<CRSInfo>> crsMap = new LinkedHashMap<>();
 
         @Override
         public void run(DBRProgressMonitor monitor) {

@@ -29,9 +29,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -94,7 +92,6 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     private final IEditorSite subSite;
     private final SQLEditorBase sqlViewer;
 
-    private final Font boldFont;
     private final PropertyTreeViewer sessionProps;
     private DBAServerSession curSession;
     private final AutoRefreshControl refreshControl;
@@ -115,7 +112,6 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         this.workbenchPart = part;
         this.sessionManager = sessionManager;
         this.subSite = new SubEditorSite(workbenchPart.getSite());
-        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         planner = DBUtils.getAdapter(DBCQueryPlanner.class, sessionManager.getDataSource());
 
@@ -175,12 +171,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                     createPlannerTab(previewFolder);
                 }
 
-                previewFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        updatePreview();
-                    }
-                });
+                previewFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updatePreview()));
             }
 
             {
@@ -192,8 +183,8 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 detailsItem.setImage(DBeaverIcons.getImage(UIIcon.PROPERTIES));
                 detailsItem.setControl(sessionProps.getControl());
 
-                if (sessionManager instanceof DBAServerSessionDetailsProvider) {
-                    List<DBAServerSessionDetails> sessionDetails = ((DBAServerSessionDetailsProvider) sessionManager).getSessionDetails();
+                if (sessionManager instanceof DBAServerSessionDetailsProvider sdp) {
+                    List<DBAServerSessionDetails> sessionDetails = sdp.getSessionDetails();
                     if (sessionDetails != null) {
                         for (DBAServerSessionDetails detailsInfo : sessionDetails) {
                             CTabItem extDetailsItem = new CTabItem(detailsFolder, SWT.NONE);
@@ -225,13 +216,11 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 }
 
                 detailsFolder.setSelection(detailsItem);
-                detailsFolder.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                detailsFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         CTabItem item = detailsFolder.getItem(detailsFolder.getSelectionIndex());
                         Object data = item.getData();
-                        if (data instanceof DBAServerSessionDetails) {
-                            Class<?> detailsType = ((DBAServerSessionDetails) data).getDetailsType();
+                        if (data instanceof DBAServerSessionDetails ssd) {
+                            Class<?> detailsType = ssd.getDetailsType();
                             if (DBPObjectWithDescription.class.isAssignableFrom(detailsType)) {
                                 StyledText styledText = (StyledText) item.getControl();
                                 loadPlainTextDetails((DBAServerSessionDetails) data, styledText);
@@ -240,14 +229,13 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                                 detailsViewer.loadData();
                             }
                         }
-                    }
-                });
+                    }));
             }
 
-            sashMain.setWeights(new int[]{500, 500});
+            sashMain.setWeights(500, 500);
         }
 
-        sashMain.setWeights(new int[]{700, 300});
+        sashMain.setWeights(700, 300);
     }
 
     private void loadPlainTextDetails(DBAServerSessionDetails data, StyledText styledText) {
@@ -257,10 +245,13 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             new ProgressLoaderVisualizer<>(loadingService, styledText) {
                 @Override
                 public void completeLoading(@Nullable Collection<DBPObject> dbpObjects) {
+                    if (dbpObjects == null) {
+                        return;
+                    }
                     StringBuilder text = new StringBuilder();
                     for (DBPObject item : dbpObjects) {
-                        if (item instanceof DBPObjectWithDescription) {
-                            text.append(((DBPObjectWithDescription) item).getDescription());
+                        if (item instanceof DBPObjectWithDescription owd) {
+                            text.append(owd.getDescription());
                             text.append(GeneralUtils.getDefaultLineSeparator());
                         }
                     }
@@ -292,8 +283,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             CTabItem detailsItem = detailsFolder.getItem(detailsFolder.getSelectionIndex());
             Object data = detailsItem.getData();
             if (data instanceof DBAServerSessionDetails) {
-                if (detailsItem.getControl() instanceof StyledText) {
-                    StyledText styledText = (StyledText) detailsItem.getControl();
+                if (detailsItem.getControl() instanceof StyledText styledText) {
                     loadPlainTextDetails((DBAServerSessionDetails) data, styledText);
                 } else {
                     DetailsListControl detailsListControl = (DetailsListControl) detailsItem.getControl();
@@ -343,7 +333,6 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     public void dispose() {
         sessionTable.disposeControl();
-        UIUtils.dispose(boldFont);
     }
 
     protected void onSessionSelect(@Nullable DBAServerSession session) {
@@ -427,11 +416,11 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     protected void loadSettings(IDialogSettings settings) {
         int mainSashRatio = CommonUtils.toInt(settings.get("MainSashRatio"), 0);
         if (mainSashRatio > 0) {
-            sashMain.setWeights(new int[] { mainSashRatio, 1000 - mainSashRatio });
+            sashMain.setWeights(mainSashRatio, 1000 - mainSashRatio);
         }
         int detailsSashRatio = CommonUtils.toInt(settings.get("DetailsSashRatio"), 0);
         if (detailsSashRatio > 0) {
-            sashDetails.setWeights(new int[] { detailsSashRatio, 1000 - detailsSashRatio });
+            sashDetails.setWeights(detailsSashRatio, 1000 - detailsSashRatio);
         }
     }
 
@@ -603,7 +592,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     private class DetailsListControl extends DatabaseObjectListControl<DBPObject> {
 
-        private DBAServerSessionDetails sessionDetails;
+        private final DBAServerSessionDetails sessionDetails;
 
         DetailsListControl(Composite parent, IWorkbenchSite site, DBAServerSessionDetails sessionDetails) {
             super(parent, SWT.SHEET, site, new ListContentProvider());
@@ -631,7 +620,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     private class SessionDetailsLoadService extends DatabaseLoadService<Collection<DBPObject>> {
 
-        private DBAServerSessionDetails sessionDetails;
+        private final DBAServerSessionDetails sessionDetails;
 
         SessionDetailsLoadService(DBAServerSessionDetails sessionDetails) {
             super("Load session details " + sessionDetails.getDetailsTitle(), sessionManager.getDataSource());
@@ -639,9 +628,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         @Override
-        public Collection<DBPObject> evaluate(@NotNull DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
+        public Collection<DBPObject> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
             if (curSession == null) {
                 return Collections.emptyList();
             }

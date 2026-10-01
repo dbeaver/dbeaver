@@ -24,8 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -331,9 +330,7 @@ public class ReferenceValueEditor {
                 Link dictLabel = UIUtils.createLink(
                     labelGroup,
                     "<a>" + refTable.getName() + "</a>",
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    SelectionListener.widgetSelectedAdapter(e -> {
                             // Open
                             final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
                             UIUtils.runInUI(window, monitor -> {
@@ -346,8 +343,7 @@ public class ReferenceValueEditor {
                                     NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
                                 }
                             });
-                        }
-                    });
+                        }));
                 dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 Button hintLabel = UIUtils.createPushButton(
@@ -355,15 +351,12 @@ public class ReferenceValueEditor {
                     null,
                     ResultSetMessages.reference_value_editor_define_description_value,
                     UIIcon.CONFIGURATION,
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    SelectionListener.widgetSelectedAdapter(e -> {
                             EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
                             if (editDictionaryPage.edit(parent.getShell())) {
                                 controller.reload(true);
                             }
-                        }
-                    }
+                        })
                 );
                 hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
             }
@@ -403,12 +396,7 @@ public class ReferenceValueEditor {
             prevSortColumn = descColumn;
         }
 
-        editorSelector.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                primeValueToSelection();
-            }
-        });
+        editorSelector.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(e -> primeValueToSelection()));
         {
             MenuManager menuMgr = new MenuManager();
             menuMgr.addMenuListener(manager -> {
@@ -712,7 +700,12 @@ public class ReferenceValueEditor {
                         DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, precAttribute);
                         if (rowAttr != null) {
                             Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
-                            restColumns.add(new DBDAttributeValue(precAttribute, precValue));
+                            DBSEntityAttribute referredPrecAttribute = DBUtils.getReferenceAttribute(
+                                monitor, association, precAttribute, false);
+                            if (referredPrecAttribute == null) {
+                                return null;
+                            }
+                            restColumns.add(new DBDAttributeValue(referredPrecAttribute, precValue));
                         }
                     }
                 }

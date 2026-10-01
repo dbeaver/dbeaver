@@ -38,6 +38,11 @@ public class CubridCharset implements DBSObject
         this.dataSource = dataSource;
     }
 
+    protected CubridCharset(@NotNull CubridDataSource dataSource, @NotNull String name) {
+        this.name = name;
+        this.dataSource = dataSource;
+    }
+
     @NotNull
     public CubridDataSource getDataSource() {
         return dataSource;

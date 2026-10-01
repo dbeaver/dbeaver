@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.access;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -27,7 +28,23 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
 public class DBAuthUtils {
+    private static final Log log = Log.getLog(DBAuthUtils.class);
+    private static final String RUNTIME_ATTR_PASSWORD_CHANGE_INFO = "dbeaver.password-change.info";
+    private static final String externalAuthSuccessHtml;
+
+    static {
+        try (InputStream is = DBAuthUtils.class.getResourceAsStream("external_auth_success.html")) {
+            Objects.requireNonNull(is, "external_auth_success not found");
+            externalAuthSuccessHtml = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     /**
      *
@@ -48,17 +65,9 @@ public class DBAuthUtils {
             return false;
         }
         DBPConnectionConfiguration connectionInfo = dataSourceContainer.getConnectionConfiguration();
-        String oldPassword = connectionInfo.getUserPassword();
         DBPConnectionConfiguration actualConnectionConfiguration = dataSourceContainer.getActualConnectionConfiguration();
-        String userName = actualConnectionConfiguration.getUserName();
-        if (CommonUtils.isEmpty(userName)) {
-            // Look at the actual configuration first, then on connection info
-            userName = connectionInfo.getUserName();
-        }
-        if (CommonUtils.isEmpty(oldPassword)) {
-            // Credentials not saved in the connection settings, use actual configuration
-            oldPassword = actualConnectionConfiguration.getUserPassword();
-        }
+        String userName = getCurrentUserName(dataSourceContainer);
+        String oldPassword = getCurrentUserPassword(dataSourceContainer);
         DBAPasswordChangeInfo userPassword = DBWorkbench.getPlatformUI().promptUserPasswordChange(
             ModelMessages.dialog_user_password_change_label,
             userName,
@@ -89,11 +98,68 @@ public class DBAuthUtils {
         return false;
     }
 
+    public static void changePasswordForCurrentUser(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBAUserPasswordManager passwordChangeManager,
+        @NotNull DBAPasswordChangeInfo passwordInfo
+    ) throws DBException {
+        passwordChangeManager.changeUserPassword(
+            monitor,
+            passwordInfo.getUserName(),
+            passwordInfo.getNewPassword(),
+            passwordInfo.getOldPassword()
+        );
+        dataSourceContainer.getActualConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+        dataSourceContainer.getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+        clearPendingPasswordChange(dataSourceContainer.getActualConnectionConfiguration());
+    }
+
+    @Nullable
+    public static String getCurrentUserName(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        String userName = dataSourceContainer.getActualConnectionConfiguration().getUserName();
+        return CommonUtils.isEmpty(userName)
+            ? dataSourceContainer.getConnectionConfiguration().getUserName()
+            : userName;
+    }
+
+    @Nullable
+    public static String getCurrentUserPassword(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        String password = dataSourceContainer.getActualConnectionConfiguration().getUserPassword();
+        return CommonUtils.isEmpty(password)
+            ? dataSourceContainer.getConnectionConfiguration().getUserPassword()
+            : password;
+    }
+
+    public static void setPendingPasswordChange(
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull DBAPasswordChangeInfo passwordChangeInfo
+    ) {
+        configuration.setRuntimeAttribute(RUNTIME_ATTR_PASSWORD_CHANGE_INFO, passwordChangeInfo);
+    }
+
+    public static void clearPendingPasswordChange(@NotNull DBPConnectionConfiguration configuration) {
+        configuration.removeRuntimeAttribute(RUNTIME_ATTR_PASSWORD_CHANGE_INFO);
+    }
+
+    @Nullable
+    public static DBAPasswordChangeInfo getPendingPasswordChange(@NotNull DBPConnectionConfiguration configuration) {
+        Object value = configuration.getRuntimeAttribute(RUNTIME_ATTR_PASSWORD_CHANGE_INFO);
+        return value instanceof DBAPasswordChangeInfo passwordChangeInfo ? passwordChangeInfo : null;
+    }
+
     @NotNull
     public static String getExternalBrowserSuccessResponse(@Nullable String providerName) {
-        return "<h2>Authentication complete</h2>"
-            + "<div>It was requested by <b>" + GeneralUtils.getProductTitle() + "</b></div>"
-            + "<div>You successfully authorized %s</div>".formatted(providerName == null ? "for using database" : "in " + providerName)
-            + "<div>You can <a href=\"#\" onclick=\"javascript:window.close()\">close this page</a> and return to the application.</div>";
+        return GeneralUtils.replaceVariables(externalAuthSuccessHtml, name -> {
+            var result = switch (name) {
+                case "PRODUCT_NAME" -> GeneralUtils.getProductTitle();
+                case "AUTH_NAME" -> providerName == null ? "for using database" : "in " + providerName;
+                default -> {
+                    log.error("Unknown variable: '" + name + "'");
+                    yield "";
+                }
+            };
+            return CommonUtils.escapeHtml(result);
+        });
     }
 }

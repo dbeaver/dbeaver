@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -54,6 +56,7 @@ public abstract class AbstractDataSourceProvider<DATASOURCE extends AbstractData
     public DBPPropertyDescriptor[] getConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException {
         return new DBPPropertyDescriptor[0];

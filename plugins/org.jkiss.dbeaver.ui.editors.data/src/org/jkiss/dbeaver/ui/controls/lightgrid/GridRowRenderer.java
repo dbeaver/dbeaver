@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UITextUtils;
@@ -39,18 +40,18 @@ class GridRowRenderer extends AbstractRenderer {
     public static final int EXPANDER_SPACING = 2;
     public static final int LEVEL_SPACING = EXPANDED_BOUNDS.width;
 
-    public GridRowRenderer(LightGrid grid) {
+    public GridRowRenderer(@NotNull LightGrid grid) {
         super(grid);
     }
 
     public void paint(
-        GC gc,
-        Rectangle bounds,
+        @NotNull GC gc,
+        @NotNull Rectangle bounds,
         boolean selected,
         int level,
-        IGridContentProvider.ElementState state,
-        IGridRow element)
-    {
+        @NotNull IGridContentProvider.ElementState state,
+        @NotNull IGridRow element
+    ) {
         gc.setBackground(grid.getLabelProvider().getHeaderBackground(element, selected));
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
@@ -127,8 +128,7 @@ class GridRowRenderer extends AbstractRenderer {
         return width;
     }
 
-    public static boolean isOverExpander(int x, int level)
-    {
+    public static boolean isOverExpander(int x, int level) {
         int expandBegin = LEFT_MARGIN + level * LEVEL_SPACING;
         int expandEnd = expandBegin + EXPANDED_BOUNDS.width;
         return x >= expandBegin && x <= expandEnd;

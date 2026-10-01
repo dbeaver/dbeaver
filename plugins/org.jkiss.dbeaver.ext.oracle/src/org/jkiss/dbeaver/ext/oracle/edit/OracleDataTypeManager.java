@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleDataType> getObjectsCache(@NotNull OracleDataType object) {
-        return object.getSchema().dataTypeCache;
+        return object.getSchema().getDataTypeCache();
     }
 
     @Override
@@ -53,17 +53,27 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected OracleDataType createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected OracleDataType createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         OracleSchema schema = (OracleSchema) container;
-        OracleDataType dataType = new OracleDataType(
-            schema,
-            "DataType",
-            false);
+        OracleDataType dataType = createDataType(schema);
         dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
             "(\n" + //$NON-NLS-1$
             ")"); //$NON-NLS-1$
         return dataType;
+    }
+
+    @NotNull
+    protected OracleDataType createDataType(@NotNull OracleSchema schema) {
+        return new OracleDataType(
+            schema,
+            "DataType",
+            false);
     }
 
     @Override
@@ -94,7 +104,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private void createOrReplaceProcedureQuery(
+    protected void createOrReplaceProcedureQuery(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actionList,

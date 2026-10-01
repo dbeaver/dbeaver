@@ -63,7 +63,7 @@ public class SQLGeneratorInnerJoin extends SQLGenerator<DBSEntity> {
         } catch (Exception e) {
             throw new InvocationTargetException(e);
         }
-        result = sql.toString();
+        result = formatIfApplicable(objects.getFirst().getDataSource(), sql);
     }
 
     @Override

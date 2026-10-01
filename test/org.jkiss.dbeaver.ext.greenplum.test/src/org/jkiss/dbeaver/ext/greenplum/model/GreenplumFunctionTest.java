@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -65,7 +65,7 @@ public class GreenplumFunctionTest extends DBeaverUnitTest {
     private final String exampleTableName = "sampleTable";
     private PostgreLanguage postgreLanguage;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 //        Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
@@ -92,7 +92,7 @@ public class GreenplumFunctionTest extends DBeaverUnitTest {
 
         withGreenplumVersion6AndAbove(() -> {
             GreenplumFunction function = new GreenplumFunction(mockMonitor, mockSchema, mockResults);
-            Assert.assertEquals(GreenplumFunction.FunctionExecLocation.a, function.getExecutionLocation());
+            Assertions.assertEquals(GreenplumFunction.FunctionExecLocation.a, function.getExecutionLocation());
         });
     }
 
@@ -101,7 +101,7 @@ public class GreenplumFunctionTest extends DBeaverUnitTest {
             throws SQLException {
         withGreenplumVersionLessThan6(() -> {
             GreenplumFunction function = new GreenplumFunction(mockMonitor, mockSchema, mockResults);
-            Assert.assertNull(function.getExecutionLocation());
+            Assertions.assertNull(function.getExecutionLocation());
         });
 
         Mockito.verify(mockResults, Mockito.times(0)).getString("proexeclocation");
@@ -111,7 +111,7 @@ public class GreenplumFunctionTest extends DBeaverUnitTest {
     public void onCreation_whenGreenplumVersionIsSixAndAbove_thenExecutionLocationDefaultsToANY() {
         withGreenplumVersion6AndAbove(() -> {
             GreenplumFunction function = new GreenplumFunction(mockSchema);
-            Assert.assertEquals(GreenplumFunction.FunctionExecLocation.a, function.getExecutionLocation());
+            Assertions.assertEquals(GreenplumFunction.FunctionExecLocation.a, function.getExecutionLocation());
         });
     }
 
@@ -119,7 +119,7 @@ public class GreenplumFunctionTest extends DBeaverUnitTest {
     public void onCreation_whenGreenplumVersionIsBelowSix_thenExecutionLocationIsNotSet() {
         withGreenplumVersionLessThan6(() -> {
             GreenplumFunction function = new GreenplumFunction(mockSchema);
-            Assert.assertNull(function.getExecutionLocation());
+            Assertions.assertNull(function.getExecutionLocation());
         });
     }
 
@@ -128,7 +128,7 @@ public class GreenplumFunctionTest extends DBeaverUnitTest {
             throws SQLException, DBException {
         withGreenplumVersionLessThan6(() -> {
             GreenplumFunction function = new GreenplumFunction(mockMonitor, mockSchema, mockResults);
-            Assert.assertFalse(function.generateFunctionDeclaration(postgreLanguage, "someName", "funcBody")
+            Assertions.assertFalse(function.generateFunctionDeclaration(postgreLanguage, "someName", "funcBody")
                     .contains("EXECUTE ON"));
         });
     }
@@ -155,7 +155,7 @@ public class GreenplumFunctionTest extends DBeaverUnitTest {
         Mockito.when(mockResults.getString("proexeclocation")).thenReturn(executionLocationCode);
         withGreenplumVersion6AndAbove(() -> {
             GreenplumFunction function = new GreenplumFunction(mockMonitor, mockSchema, mockResults);
-            Assert.assertTrue(function.generateFunctionDeclaration(postgreLanguage, "someName", "funcBody")
+            Assertions.assertTrue(function.generateFunctionDeclaration(postgreLanguage, "someName", "funcBody")
                     .endsWith(expectedClause));
         });
     }

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,6 +46,9 @@ public abstract class SQLQueryConnectionContext {
 
     @NotNull
     public abstract List<SQLQueryResultPseudoColumn> obtainRowsetPseudoColumns(@Nullable SQLQueryRowsSourceModel rowsSource);
+
+    @NotNull
+    public abstract Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumns();
 
     /**
      * Resolve target object for alias

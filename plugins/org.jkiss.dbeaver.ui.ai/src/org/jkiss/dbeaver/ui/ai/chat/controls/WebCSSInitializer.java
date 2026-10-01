@@ -1,0 +1,216 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.ai.chat.controls;
+
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.internal.IWorkbenchThemeConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatThemeSettings;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
+import org.jkiss.dbeaver.ui.browser.LocalResourceHttpServer;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.osgi.framework.Bundle;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+public class WebCSSInitializer implements AutoCloseable {
+    private static final String WEB_ROOT = "web";
+    private static final String WEB_CSS_PATH = "styles.css";
+    private static final String WEB_HTML_PATH = "index.html";
+    private static final String EXTRA_HEAD_PLACEHOLDER = "<!--{{EXTRA_HEAD}}-->";
+
+    private final LocalResourceHttpServer.Handle server;
+    private final Map<String, String> resourceUrls = new HashMap<>();
+    private volatile Map<String, String> cssValues;
+    private long themeRevision;
+
+    public WebCSSInitializer() throws IOException {
+        cssValues = fillValues();
+        server = LocalResourceHttpServer.acquire();
+        try {
+            for (Bundle bundle : getResourceBundles()) {
+                server.addBundleResources(bundle, WEB_ROOT, this::registerWebResource);
+            }
+        } catch (RuntimeException e) {
+            server.close();
+            throw e;
+        }
+    }
+
+    @NotNull
+    protected List<Bundle> getResourceBundles() {
+        return List.of(AIUIActivator.getInstance().getBundle());
+    }
+
+    @NotNull
+    protected String getExtraHeadContent() {
+        return "";
+    }
+
+    private void registerWebResource(@NotNull String resource, @NotNull URL url) {
+        switch (resource) {
+            case WEB_CSS_PATH -> server.addTextResource(
+                resource,
+                LocalResourceHttpServer.Resource.of(url::openStream)
+                    .map(this::updateThemeValues)
+            );
+            case WEB_HTML_PATH -> server.addTextResource(
+                resource,
+                LocalResourceHttpServer.Resource.of(url::openStream)
+                    .map(this::updateThemeValues)
+                    .map(content -> content.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent()))
+            );
+            default -> server.addResource(resource, url::openStream);
+        }
+    }
+
+    @NotNull
+    public String getWebHtmlPath() {
+        return server.getUrl(WEB_HTML_PATH);
+    }
+
+    @NotNull
+    public String getWebPath() {
+        return server.getBaseUrl();
+    }
+
+    public void refreshTheme() {
+        cssValues = fillValues();
+        themeRevision++;
+    }
+
+    @NotNull
+    public String getThemeStylesheetPath() {
+        return server.getUrl(WEB_CSS_PATH) + "?theme=" + themeRevision;
+    }
+
+    @NotNull
+    String getResourceUrl(@NotNull DBPImage image) throws IOException {
+        String location = image.getLocation();
+        String resourceUrl = resourceUrls.get(location);
+        if (resourceUrl != null) {
+            return resourceUrl;
+        }
+        Path file = RuntimeUtils.getPlatformFile(location);
+        String fileName = file.getFileName().toString();
+        int extensionIndex = fileName.lastIndexOf('.');
+        String extension = extensionIndex >= 0 ? fileName.substring(extensionIndex) : "";
+        String resourcePath = "external/" + UUID.randomUUID() + extension;
+        server.addResource(resourcePath, () -> Files.newInputStream(file));
+        resourceUrl = server.getUrl(resourcePath);
+        resourceUrls.put(location, resourceUrl);
+        return resourceUrl;
+    }
+
+    @Override
+    public void close() {
+        server.close();
+    }
+
+    @NotNull
+    private String updateThemeValues(@NotNull String content) {
+        for (var entry : cssValues.entrySet()) {
+            content = content.replace(entry.getKey(), entry.getValue());
+        }
+        return content;
+    }
+
+    @NotNull
+    private Map<String, String> fillValues() {
+        final ColorRegistry registry = UIUtils.getColorRegistry();
+        String promptBackground = colorToHex(AIChatThemeSettings.instance.promptBackgroundColor);
+        String promptBorder = colorToHex(AIChatThemeSettings.instance.promptBorderColor);
+        String waningBackground = colorToHex(BaseThemeSettings.instance.colorWarning);
+        String errorBackground = colorToHex(BaseThemeSettings.instance.colorError);
+        String chatBackground = colorToHex(UIStyles.getDefaultTextBackground());
+        String chatInactiveBackground = colorToHex(UIStyles.getDefaultWidgetBackground());
+        String textColor = colorToHex(registry.get(IWorkbenchThemeConstants.ACTIVE_TAB_TEXT_COLOR));
+        String themeSchema = UIStyles.isDarkTheme() ? "dark" : "light";
+
+        String hyperLinkColor = colorToHex(registry.get(JFacePreferences.HYPERLINK_COLOR));
+        String borderColor = colorToHex(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+
+        FontData[] mainFont = BaseThemeSettings.instance.baseFont.getFontData();
+        String fontSize = getFontSize(mainFont);
+        String fontFamily = getFontFamily(mainFont, "Arial");
+
+        FontData[] monoFont = BaseThemeSettings.instance.monospaceFont.getFontData();
+        String monoFontSize = getFontSize(monoFont);
+        String monoFontFamily = getFontFamily(monoFont, "monospace");
+
+        return Map.ofEntries(
+            Map.entry("{{BACKGROUND_COLOR}}", chatBackground),
+            Map.entry("{{BACKGROUND_COLOR_INACTIVE}}", chatInactiveBackground),
+            Map.entry("{{TEXT_COLOR}}", textColor),
+            Map.entry("{{PROMPT_BACKGROUND}}", promptBackground),
+            Map.entry("{{PROMPT_BORDER}}", promptBorder),
+            Map.entry("{{WARNING_BACKGROUND}}", waningBackground),
+            Map.entry("{{ERROR_BACKGROUND}}", errorBackground),
+            Map.entry("{{FONT_SIZE}}", fontSize),
+            Map.entry("{{FONT_FAMILY}}", fontFamily),
+            Map.entry("{{MONOSPACE_FONT_SIZE}}", monoFontSize),
+            Map.entry("{{MONOSPACE_FONT_FAMILY}}", monoFontFamily),
+            Map.entry("{{HYPERLINK_COLOR}}", hyperLinkColor),
+            Map.entry("{{BORDER_COLOR}}", borderColor),
+            Map.entry("{{COLOR_SCHEME}}", themeSchema)
+        );
+    }
+
+    @NotNull
+    private static String getFontSize(@NotNull FontData[] mainFont) {
+        String unit = RuntimeUtils.isMacOS() ? "px" : "pt";
+        int height = mainFont.length > 0 ? mainFont[0].getHeight() : 13;
+        return height + unit;
+    }
+
+    @NotNull
+    private static String getFontFamily(@NotNull FontData[] mainFont, @NotNull String defaultFamily) {
+        String fontFamily = defaultFamily;
+        if (mainFont.length > 0) {
+            fontFamily = mainFont[0].getName();
+            if (fontFamily.equals(".AppleSystemUIFont")) {
+                fontFamily = "system-ui";
+            }
+        }
+        return fontFamily;
+    }
+
+    @NotNull
+    private String colorToHex(@Nullable Color color) {
+        if (color == null) {
+            return "#000000";
+        }
+        return String.format("#%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue());
+    }
+}

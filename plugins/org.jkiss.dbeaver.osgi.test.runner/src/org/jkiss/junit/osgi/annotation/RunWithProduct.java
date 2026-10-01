@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
  */
 package org.jkiss.junit.osgi.annotation;
 
-import org.jkiss.junit.osgi.OSGITestRunner;
+import org.jkiss.junit.osgi.OSGIFrameworkHandler;
 
 import java.lang.annotation.*;
 
 /**
- * Run with product used for @{@link OSGITestRunner}
+ * Run with product used for @{@link OSGIFrameworkHandler}
  * product should contain the test bundle
- * See {@link org.jkiss.junit.osgi.OSGITestRunner}
+ * See {@link OSGIFrameworkHandler}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

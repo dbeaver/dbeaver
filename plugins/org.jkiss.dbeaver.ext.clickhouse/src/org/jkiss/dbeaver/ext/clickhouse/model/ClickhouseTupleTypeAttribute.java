@@ -70,4 +70,11 @@ public class ClickhouseTupleTypeAttribute extends AbstractAttribute implements D
     public DBSDataType getDataType() {
         return attributeType;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ClickhouseTupleTypeAttribute other
+            && this.attributeType.equals(other.attributeType)
+            && this.name.equals(other.name);
+    }
 }

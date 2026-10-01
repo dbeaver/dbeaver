@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.duckdb.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
  * DuckDBConnectionPage
  */
 public class DuckDBConnectionPage extends GenericConnectionPage {
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         if (extrasOnly) {

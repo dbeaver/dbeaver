@@ -29,6 +29,8 @@ import java.util.*;
 public final class AIFunctionSettings {
     @SerializedName("enabled")
     private boolean functionsEnabled = true;
+    @SerializedName("mcpEncrypted")
+    private boolean mcpConfigEncrypted = false;
     private final Map<String, ToolboxSettings> functions = new LinkedHashMap<>();
 
     /**
@@ -42,16 +44,24 @@ public final class AIFunctionSettings {
         private Set<String> enabledFunctions;
         @SerializedName("df")
         private Set<String> disabledFunctions;
+        @SerializedName("aaf")
+        private Set<String> alwaysAllowedFunctions;
+        @SerializedName("qf")
+        private Set<String> askFunctions;
 
         public ToolboxSettings() {
             this.enabledFunctions = new LinkedHashSet<>();
             this.disabledFunctions = new LinkedHashSet<>();
+            this.alwaysAllowedFunctions = new LinkedHashSet<>();
+            this.askFunctions = new LinkedHashSet<>();
         }
 
         public ToolboxSettings(@NotNull ToolboxSettings src) {
             this.enabled = src.enabled;
-            this.enabledFunctions = new LinkedHashSet<>(src.enabledFunctions);
-            this.disabledFunctions = new LinkedHashSet<>(src.disabledFunctions);
+            this.enabledFunctions = new LinkedHashSet<>(src.getEnabledFunctions());
+            this.disabledFunctions = new LinkedHashSet<>(src.getDisabledFunctions());
+            this.alwaysAllowedFunctions = new LinkedHashSet<>(src.getAlwaysAllowedFunctions());
+            this.askFunctions = new LinkedHashSet<>(src.getAskFunctions());
         }
 
         public boolean isEnabled() {
@@ -88,6 +98,70 @@ public final class AIFunctionSettings {
             }
         }
 
+        public void setFunctionEnabled(@NotNull AIFunctionDescriptor function, boolean enabled) {
+            if (function.isEnabledByDefault()) {
+                if (enabled) {
+                    disabledFunctions.remove(function.getId());
+                } else {
+                    disabledFunctions.add(function.getId());
+                }
+            } else {
+                if (enabled) {
+                    enabledFunctions.add(function.getId());
+                } else {
+                    enabledFunctions.remove(function.getId());
+                }
+            }
+        }
+
+        @NotNull
+        public Set<String> getAlwaysAllowedFunctions() {
+            return alwaysAllowedFunctions;
+        }
+
+        public void setAlwaysAllowedFunctions(@NotNull Collection<String> alwaysAllowedFunctions) {
+            this.alwaysAllowedFunctions = new LinkedHashSet<>(alwaysAllowedFunctions);
+        }
+
+        @NotNull
+        public Set<String> getAskFunctions() {
+            return askFunctions;
+        }
+
+        public void setAskFunctions(@NotNull Collection<String> askFunctions) {
+            this.askFunctions = new LinkedHashSet<>(askFunctions);
+        }
+
+        @NotNull
+        public AIFunctionAllowMode getFunctionAllowMode(@NotNull AIFunctionDescriptor function) {
+            String functionId = function.getId();
+            if (alwaysAllowedFunctions.contains(functionId) || function.isOmitConfirmation()) {
+                return AIFunctionAllowMode.ALWAYS_ALLOW;
+            }
+            if (askFunctions.contains(functionId)) {
+                return AIFunctionAllowMode.ASK;
+            }
+            return function.getDefaultAllowMode();
+        }
+
+        public void setFunctionAllowMode(
+            @NotNull AIFunctionDescriptor function,
+            @NotNull AIFunctionAllowMode allowMode
+        ) {
+            if (function.isOmitConfirmation()) {
+                return;
+            }
+            String functionId = function.getId();
+            alwaysAllowedFunctions.remove(functionId);
+            askFunctions.remove(functionId);
+
+            if (allowMode != function.getDefaultAllowMode()) {
+                switch (allowMode) {
+                    case ALWAYS_ALLOW -> getAlwaysAllowedFunctions().add(functionId);
+                    case ASK -> getAskFunctions().add(functionId);
+                }
+            }
+        }
     }
 
     public boolean isFunctionsEnabled() {
@@ -98,10 +172,21 @@ public final class AIFunctionSettings {
         this.functionsEnabled = functionsEnabled;
     }
 
+    public boolean isMcpConfigEncrypted() {
+        return mcpConfigEncrypted;
+    }
+
+    public void setMcpConfigEncrypted(boolean mcpConfigEncrypted) {
+        this.mcpConfigEncrypted = mcpConfigEncrypted;
+    }
+
     @NotNull
     public ToolboxSettings getToolboxSettings(@NotNull AIToolbox toolbox) {
         return functions.computeIfAbsent(toolbox.getToolboxId(), s -> new ToolboxSettings());
     }
 
-}
+    public void removeToolboxSettings(@NotNull String toolboxId) {
+        functions.remove(toolboxId);
+    }
 
+}

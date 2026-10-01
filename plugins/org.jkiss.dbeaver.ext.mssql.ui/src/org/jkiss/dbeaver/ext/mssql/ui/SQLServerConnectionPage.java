@@ -17,24 +17,23 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
@@ -62,32 +61,11 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
 
     private boolean activated;
 
-    private final Image LOGO_AZURE;
-    private final Image LOGO_BABELFISH;
-    private final Image LOGO_SQLSERVER;
-    private final Image LOGO_SYBASE;
-
-    public SQLServerConnectionPage() {
-        LOGO_AZURE = createImage("icons/azure_logo.png");
-        LOGO_BABELFISH = createImage("icons/babelfish_logo.png");
-        LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
-        LOGO_SYBASE = createImage("icons/sybase_logo.png");
-    }
-
     @Override
-    public void dispose() {
-        super.dispose();
-        UIUtils.dispose(LOGO_AZURE);
-        UIUtils.dispose(LOGO_BABELFISH);
-        UIUtils.dispose(LOGO_SQLSERVER);
-        UIUtils.dispose(LOGO_SYBASE);
-    }
-
-    @Override
-    public void createControl(Composite composite) {
+    public void createControl(@NotNull Composite composite) {
         ModifyListener textListener = e -> {
             if (activated) {
-                updateUrl();
+                super.updateUrl(urlText);
                 site.updateButtons();
             }
         };
@@ -107,14 +85,10 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             GridData.FILL_HORIZONTAL
         );
 
-        SelectionAdapter typeSwitcher = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
-                updateUrl();
-            }
-        };
-        createConnectionModeSwitcher(addrGroup, typeSwitcher);
+        createConnectionModeSwitcher(addrGroup, SelectionListener.widgetSelectedAdapter(e -> {
+            super.setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
+            super.updateUrl(urlText);
+        }));
 
         Label urlLabel = UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
         urlLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -126,7 +100,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         gd.widthHint = 355;
         urlText.setLayoutData(gd);
         urlText.addModifyListener(e -> site.updateButtons());
-
+        urlText.setData(URL_TEXT_DATA_ERROR_DECORATOR_KEY, new ControlDecoration(urlText, SWT.BOTTOM | SWT.LEFT));
 
         needsPort = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsPort"), true);
         {
@@ -217,25 +191,6 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         }
     }
 
-    @Override
-    public Image getImage() {
-        DBPImage logoImage = site.getDriver().getLogoImage();
-        if (logoImage != null) {
-            return DBeaverIcons.getImage(logoImage);
-        }
-        Image logo = LOGO_SYBASE;
-        if (isSqlServer()) {
-            if (isDriverAzure()) {
-                logo = LOGO_AZURE;
-            } else if (isDriverBabelfish()) {
-                logo = LOGO_BABELFISH;
-            } else {
-                logo = LOGO_SQLSERVER;
-            }
-        }
-        return logo;
-    }
-
     private boolean isDriverAzure() {
         return SQLServerUtils.isDriverAzure(getSite().getDriver());
     }
@@ -301,13 +256,13 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             urlText.setText(connectionInfo.getUrl());
         }
         setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
-        updateUrl();
+        updateUrl(urlText);
 
         activated = true;
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         
         connectionInfo.setConfigurationType(
@@ -348,19 +303,10 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
-    }
-
-    private void updateUrl() {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        saveSettings(dataSourceContainer);
-        if (typeURLRadio != null && typeURLRadio.getSelection()) {
-            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
-        } else {
-            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
-        }
     }
 
 }

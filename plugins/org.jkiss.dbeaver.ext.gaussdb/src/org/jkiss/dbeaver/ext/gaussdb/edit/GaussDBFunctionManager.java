@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,18 +77,24 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
-        throws DBException
-    {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Function name cannot be empty");
         }
     }
 
     @Override
-    protected GaussDBFunction createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
-                                                   Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected GaussDBFunction createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull final Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         return new GaussDBFunction((PostgreSchema) container);
     }
 

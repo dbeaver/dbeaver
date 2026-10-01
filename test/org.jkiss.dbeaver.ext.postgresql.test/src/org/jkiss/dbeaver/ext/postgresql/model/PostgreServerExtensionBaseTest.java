@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 public class PostgreServerExtensionBaseTest extends DBeaverUnitTest {
@@ -35,7 +35,7 @@ public class PostgreServerExtensionBaseTest extends DBeaverUnitTest {
 
     private PostgreServerPostgreSQL serverExtension;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         serverExtension = new PostgreServerPostgreSQL(dataSource);
     }
@@ -45,7 +45,7 @@ public class PostgreServerExtensionBaseTest extends DBeaverUnitTest {
         setupGeneralWhenMocks(true);
 
         String withClause = serverExtension.createWithClause(table, null);
-        assertEquals("\nWITH (\n\tOIDS=TRUE\n)", withClause);
+        Assertions.assertEquals("\nWITH (\n\tOIDS=TRUE\n)", withClause);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class PostgreServerExtensionBaseTest extends DBeaverUnitTest {
         setupGeneralWhenMocks(false);
 
         String withClause = serverExtension.createWithClause(table, null);
-        assertEquals("", withClause);
+        Assertions.assertEquals("", withClause);
     }
 
     @Test
@@ -61,7 +61,7 @@ public class PostgreServerExtensionBaseTest extends DBeaverUnitTest {
         setupGeneralWhenMocks(false);
 
         String withClause = serverExtension.createWithClause(table, null);
-        assertEquals("", withClause);
+        Assertions.assertEquals("", withClause);
     }
 
     private void setupGeneralWhenMocks(boolean hasOids) {

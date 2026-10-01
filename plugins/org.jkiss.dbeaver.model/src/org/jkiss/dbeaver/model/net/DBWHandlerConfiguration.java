@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Network handler configuration
@@ -54,6 +55,7 @@ public class DBWHandlerConfiguration {
     private final Map<String, String> secureProperties;
 
     DBWHandlerConfiguration() {
+        this.id = UUID.randomUUID().toString();
         this.properties = new LinkedHashMap<>();
         this.secureProperties = new LinkedHashMap<>();
     }
@@ -89,7 +91,8 @@ public class DBWHandlerConfiguration {
         return descriptor;
     }
 
-    public <T extends DBWNetworkHandler> T createHandler(Class<T> type) throws DBException {
+    @NotNull
+    public <T extends DBWNetworkHandler> T createHandler(@NotNull Class<T> type) throws DBException {
         try {
             return getHandlerDescriptor().createHandler(type);
         } catch (Exception e) {
@@ -107,10 +110,11 @@ public class DBWHandlerConfiguration {
         return dataSource;
     }
 
-    public void setDataSource(DBPDataSourceContainer dataSource) {
+    public void setDataSource(@Nullable DBPDataSourceContainer dataSource) {
         this.dataSource = dataSource;
     }
 
+    @NotNull
     public DBWHandlerType getType() {
         return getHandlerDescriptor().getType();
     }
@@ -124,6 +128,7 @@ public class DBWHandlerConfiguration {
         return this.id;
     }
 
+    @NotNull
     public String getTitle() {
         return getHandlerDescriptor().getLabel();
     }
@@ -136,14 +141,16 @@ public class DBWHandlerConfiguration {
         this.enabled = enabled;
     }
 
+    @Nullable
     public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName) {
+    public void setUserName(@Nullable String userName) {
         this.userName = userName;
     }
 
+    @Nullable
     public String getPassword() {
         return password;
     }
@@ -231,14 +238,17 @@ public class DBWHandlerConfiguration {
         this.secureProperties.putAll(secureProperties);
     }
 
+    @NotNull
     public Map<String, Object> saveToMap() {
         return saveToMap(false);
     }
 
+    @NotNull
     public Map<String, Object> saveToSecret() {
         return saveToMap(true);
     }
 
+    @NotNull
     private Map<String, Object> saveToMap(boolean ignoreSecureProperties) {
         Map<String, Object> handlerProps = new LinkedHashMap<>();
         if (!isSavePassword() && ignoreSecureProperties) {
@@ -256,7 +266,7 @@ public class DBWHandlerConfiguration {
         return handlerProps;
     }
 
-    void loadFromMap(Map<String, Object> handlerMap) {
+    void loadFromMap(@NotNull Map<String, Object> handlerMap) {
         userName = JSONUtils.getString(handlerMap, "user");
         password = JSONUtils.getString(handlerMap, "password");
         secureProperties.clear();
@@ -265,10 +275,9 @@ public class DBWHandlerConfiguration {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof DBWHandlerConfiguration)) {
+        if (!(obj instanceof DBWHandlerConfiguration source)) {
             return false;
         }
-        DBWHandlerConfiguration source = (DBWHandlerConfiguration) obj;
         return
             CommonUtils.equalObjects(this.id, source.id) &&
                 CommonUtils.equalObjects(this.dataSource, source.dataSource) &&
@@ -280,7 +289,7 @@ public class DBWHandlerConfiguration {
                 CommonUtils.equalObjects(this.secureProperties, source.secureProperties);
     }
 
-    public void resolveDynamicVariables(IVariableResolver variableResolver) {
+    public void resolveDynamicVariables(@NotNull IVariableResolver variableResolver) {
         userName = GeneralUtils.replaceVariables(userName, variableResolver);
         password = GeneralUtils.replaceVariables(password, variableResolver);
         for (Map.Entry<String, Object> prop : properties.entrySet()) {

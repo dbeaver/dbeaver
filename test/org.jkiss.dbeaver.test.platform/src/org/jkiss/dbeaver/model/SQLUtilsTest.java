@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class SQLUtilsTest extends DBeaverUnitTest {
 
@@ -28,18 +28,18 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void makeRegexFromLikeTest() {
-        Assert.assertEquals("^ABC$", SQLUtils.makeRegexFromLike("ABC"));
-        Assert.assertEquals("^A.*C$", SQLUtils.makeRegexFromLike("A%C"));
-        Assert.assertEquals("^ABC", SQLUtils.makeRegexFromLike("ABC%"));
-        Assert.assertEquals("ABC$", SQLUtils.makeRegexFromLike("%ABC"));
-        Assert.assertEquals("ABC", SQLUtils.makeRegexFromLike("%ABC%"));
-        Assert.assertEquals("^A.C$", SQLUtils.makeRegexFromLike("A_C"));
-        Assert.assertEquals("A.C", SQLUtils.makeRegexFromLike("%A_C%"));
+        Assertions.assertEquals("^ABC$", SQLUtils.makeRegexFromLike("ABC"));
+        Assertions.assertEquals("^A.*C$", SQLUtils.makeRegexFromLike("A%C"));
+        Assertions.assertEquals("^ABC", SQLUtils.makeRegexFromLike("ABC%"));
+        Assertions.assertEquals("ABC$", SQLUtils.makeRegexFromLike("%ABC"));
+        Assertions.assertEquals("ABC", SQLUtils.makeRegexFromLike("%ABC%"));
+        Assertions.assertEquals("^A.C$", SQLUtils.makeRegexFromLike("A_C"));
+        Assertions.assertEquals("A.C", SQLUtils.makeRegexFromLike("%A_C%"));
     }
 
     @Test
     public void fixLineFeedsTest() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "SELECT LastName -- x\r\n"
                 + "FROM Persons drai where PersonID  = 1\r\n"
                 + "-- AND ResourceId  = 1\n\r"
@@ -54,30 +54,30 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     @Test
     public void makeGlobFromSqlLikePattern_whenWithNoSpecialSymbols_thenSuccess() {
         String source = "key1234";
-        Assert.assertEquals(source, SQLUtils.makeGlobFromSqlLikePattern(source));
+        Assertions.assertEquals(source, SQLUtils.makeGlobFromSqlLikePattern(source));
     }
 
     @Test
     public void makeGlobFromSqlLikePattern_whenWithSpecialSymbols_thenSuccess() {
-        Assert.assertEquals("key?*\\?*\\", SQLUtils.makeGlobFromSqlLikePattern("key_%?*\\"));
+        Assertions.assertEquals("key?*\\?*\\", SQLUtils.makeGlobFromSqlLikePattern("key_%?*\\"));
     }
 
     @Test
     public void extractProcedureParameterTypes_whenNullOrEmpty_thenParens() {
-        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes(null));
-        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes(""));
-        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes("   "));
-        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes("()"));
-        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes("(   )"));
+        Assertions.assertEquals("()", SQLUtils.extractProcedureParameterTypes(null));
+        Assertions.assertEquals("()", SQLUtils.extractProcedureParameterTypes(""));
+        Assertions.assertEquals("()", SQLUtils.extractProcedureParameterTypes("   "));
+        Assertions.assertEquals("()", SQLUtils.extractProcedureParameterTypes("()"));
+        Assertions.assertEquals("()", SQLUtils.extractProcedureParameterTypes("(   )"));
     }
 
     @Test
     public void extractProcedureParameterTypes_whenNamesPresent_thenRemoved() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(NUMBER(38,0), VARCHAR)",
             SQLUtils.extractProcedureParameterTypes("(a NUMBER(38,0), b VARCHAR)")
         );
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(ARRAY, OBJECT)",
             SQLUtils.extractProcedureParameterTypes("(x ARRAY, y OBJECT)")
         );
@@ -85,11 +85,11 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void extractTypesOnly_whenNestedProcedureParameterTypes_thenKeepInnerParens() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(DECIMAL(10,2), ARRAY(VARCHAR))",
             SQLUtils.extractProcedureParameterTypes("(price DECIMAL(10,2), tags ARRAY(VARCHAR))")
         );
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(ARRAY(OBJECT), VARIANT)",
             SQLUtils.extractProcedureParameterTypes("(p ARRAY(OBJECT), v VARIANT)")
         );
@@ -97,11 +97,11 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void extractProcedureParameterTypes_whenNoOuterParens_thenSingleType() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(NUMBER)",
             SQLUtils.extractProcedureParameterTypes("id NUMBER")
         );
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(ARRAY(VARCHAR))",
             SQLUtils.extractProcedureParameterTypes("arr ARRAY(VARCHAR)")
         );
@@ -109,11 +109,11 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void extractProcedureParameterTypes_whenWhitespaceAndCase_thenCanonicalUpper() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(NUMBER, VARCHAR)",
             SQLUtils.extractProcedureParameterTypes("(  a   number  ,   b   varchar  )")
         );
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(ARRAY, OBJECT, VARIANT)",
             SQLUtils.extractProcedureParameterTypes("( arr  array , obj   object , v   variant )")
         );
@@ -121,7 +121,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void extractProcedureParameterTypes_whenComplexSignature_thenCorrectSplit() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "(DECIMAL(38,0), ARRAY(DECIMAL(10,2)), OBJECT)",
             SQLUtils.extractProcedureParameterTypes("(a DECIMAL(38,0), b ARRAY(DECIMAL(10,2)), c OBJECT)")
         );
@@ -131,10 +131,10 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     public void addMultiStatementDDL_whenNullOrEmpty_thenNoChange() {
         StringBuilder sb = new StringBuilder();
         SQLUtils.addMultiStatementDDL(ORACLE_SQL_DIALECT, sb, null);
-        Assert.assertEquals("", sb.toString());
+        Assertions.assertEquals("", sb.toString());
 
         SQLUtils.addMultiStatementDDL(ORACLE_SQL_DIALECT, sb, "   ");
-        Assert.assertEquals("", sb.toString());
+        Assertions.assertEquals("", sb.toString());
     }
 
     @Test
@@ -149,7 +149,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
         StringBuilder sb = new StringBuilder();
         SQLUtils.addMultiStatementDDL(ORACLE_SQL_DIALECT, sb, ddl);
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "GRANT CREATE TABLE TO \"TEST_USER_DECL\";\n" +
                 "GRANT CREATE SESSION TO \"TEST_USER_DECL\";\n" +
                 "GRANT \"ROLE1\" TO \"TEST_USER_DECL\";\n" +
@@ -164,7 +164,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
         String ddl = "CREATE TABLE A(id INT)\nCREATE INDEX I ON A(id)";
         StringBuilder sb = new StringBuilder();
         SQLUtils.addMultiStatementDDL(ORACLE_SQL_DIALECT, sb, ddl);
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "CREATE TABLE A(id INT);\n" +
                 "CREATE INDEX I ON A(id);\n\n",
             sb.toString()
@@ -176,7 +176,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
         String ddl = "CREATE TABLE A(id INT);\nCREATE INDEX I ON A(id);";
         StringBuilder sb = new StringBuilder();
         SQLUtils.addMultiStatementDDL(ORACLE_SQL_DIALECT, sb, ddl);
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "CREATE TABLE A(id INT);\n" +
                 "CREATE INDEX I ON A(id);\n\n",
             sb.toString()
@@ -188,7 +188,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
         String ddl = "\n\n  \nCREATE TABLE A(id INT)\n   \nCREATE INDEX I ON A(id)  \n\n";
         StringBuilder sb = new StringBuilder();
         SQLUtils.addMultiStatementDDL(ORACLE_SQL_DIALECT, sb, ddl);
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "CREATE TABLE A(id INT);\n" +
                 "CREATE INDEX I ON A(id);\n\n",
             sb.toString()

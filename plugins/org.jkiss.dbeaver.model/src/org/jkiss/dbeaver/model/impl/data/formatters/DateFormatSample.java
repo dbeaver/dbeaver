@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
@@ -28,12 +29,14 @@ public class DateFormatSample implements DBDDataFormatterSample {
 
     public static final String DEFAULT_DATE_PATTERN = DBConstants.DEFAULT_DATE_FORMAT;
 
+    @NotNull
     @Override
-    public Map<String, Object> getDefaultProperties(Locale locale) {
+    public Map<String, Object> getDefaultProperties(@NotNull Locale locale) {
         return Collections.singletonMap(
             DateTimeDataFormatter.PROP_PATTERN, DEFAULT_DATE_PATTERN);
     }
 
+    @NotNull
     @Override
     public Object getSampleValue() {
         return new Date();

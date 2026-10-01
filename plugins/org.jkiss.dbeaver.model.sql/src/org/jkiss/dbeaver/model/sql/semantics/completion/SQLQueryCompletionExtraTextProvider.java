@@ -68,6 +68,13 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
 
     @NotNull
     @Override
+    public String visitGlobalPseudoColumn(@NotNull SQLGlobalPseudoColumnCompletionItem pseudoColumn) {
+        String typeName = this.prepareTypeNameString(pseudoColumn.columnInfo.type);
+        return typeName == null ? " - Global pseudo-column" : (" : " + typeName);
+    }
+
+    @NotNull
+    @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
         String tail;
         if (tableName.isRelated || tableName.isUsed) {

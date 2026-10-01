@@ -39,7 +39,13 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
     @Nullable
     DBPImage getIcon();
 
+    @Nullable
+    default DBPDataSourceType getDataSourceType() {
+        return null;
+    }
+
     boolean isDriversManageable();
+    boolean supportsDriverMigration();
 
     @NotNull
     List<? extends DBPDriver> getEnabledDrivers();
@@ -58,6 +64,7 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
     @Nullable
     DBPDriver getDriver(@NotNull String id);
 
+    @NotNull
     List<? extends DBPDriver> getDrivers();
 
     @Nullable

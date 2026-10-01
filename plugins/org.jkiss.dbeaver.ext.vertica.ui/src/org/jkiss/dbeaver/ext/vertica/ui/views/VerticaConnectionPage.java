@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,13 @@
 package org.jkiss.dbeaver.ext.vertica.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 
 public class VerticaConnectionPage extends GenericConnectionPage {
 
-    private final Image logoImage;
-
-    public VerticaConnectionPage() {
-        logoImage = createImage("icons/vertica_logo.png"); //$NON-NLS-1$
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        UIUtils.dispose(logoImage);
-    }
-
-    @Override
-    public Image getImage() {
-        return logoImage;
-    }
-
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {

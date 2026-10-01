@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -297,8 +297,9 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                                 objectType.getTypeClass(),
                                 objectType)
                             {
+                                @NotNull
                                 @Override
-                                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                                     DBSObject object = objectType.findObject(session.getProgressMonitor(), objectSchema, objectName);
                                     if (object == null) {
                                         throw new DBException(objectTypeName + " '" + objectName + "' not found");
@@ -355,8 +356,9 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                     final SQLServerObjectType objectType = SQLServerObjectType.valueOf(JDBCUtils.safeGetStringTrimmed(dbResult, "type"));
 
                     objects.add(new AbstractObjectReference<>(objectName, database, null, objectType.getTypeClass(), objectType) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             DBSObject object = schema.getChild(session.getProgressMonitor(), objectName);
                             if (object == null) {
                                 // Likely not cached, invalidate and try again

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -51,7 +51,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
     @Mock
     private JDBCRemoteInstance mockRemoteInstance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws DBException {
         DBPDataSourceContainer dataSourceContainer = configureTestContainer("oracle");
         testDataSource = new OracleDataSource(dataSourceContainer);
@@ -93,7 +93,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD COLUMN4 INTEGER NULL;" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -109,7 +109,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN1 IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) NOT NULL;" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -142,7 +142,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         String expectedDDL =
             "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value';" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         String expectedDDL =
             "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42;" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -177,7 +177,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         String expectedDDL =
             "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value';" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33);" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -209,7 +209,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0);" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -227,7 +227,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         String expectedDDL =
             "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42;" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -249,7 +249,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) NULL;" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -265,7 +265,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE RENAME COLUMN COLUMN3 TO COLUMN33;" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -279,6 +279,6 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE DROP COLUMN COLUMN1;" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 }

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -267,7 +268,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @NotNull
     @Override
-    public String escapeString(String string) {
+    public String escapeString(@NotNull String string) {
         return escapeString(string, null);
     }
 
@@ -284,8 +285,8 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @NotNull
     @Override
-    public String unEscapeString(String string) {
-        return string.replace("''", "'").replace("``", "`").replace("\\\\", "\\");
+    public String unEscapeString(@Nullable String string) {
+        return CommonUtils.notEmpty(string).replace("''", "'").replace("``", "`").replace("\\\\", "\\");
     }
 
     @NotNull
@@ -356,11 +357,16 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         if (isInCondition && attribute.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return "CAST(" + expression + " AS JSON)";
         } else {
-            return super.getTypeCastClause(attribute, expression, isInCondition);
+            return super.getTypeCastClause(attribute, expression, isInCondition, exprIsAttrRef);
         }
     }
 

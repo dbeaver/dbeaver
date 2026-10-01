@@ -34,7 +34,9 @@ import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
@@ -71,15 +73,24 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
 
     @Override
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
-        if (getProject().isInMemory()) {
+        persistDataSourceUpdates(List.of(container));
+    }
+
+    @Override
+    protected void persistDataSourceUpdates(@NotNull List<? extends DBPDataSourceContainer> containers) {
+        if (getProject().isInMemory() || containers.isEmpty()) {
             return;
         }
-        DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
-        saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dsc.equals(container));
+        Set<String> dataSourceIds = new LinkedHashSet<>();
+        for (DBPDataSourceContainer container : containers) {
+            dataSourceIds.add(container.getId());
+        }
 
+        DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
+        saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dataSourceIds.contains(dsc.getId()));
         try {
             rmController.updateProjectDataSources(
-                getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.of(container.getId()));
+                getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.copyOf(dataSourceIds));
             lastError = null;
         } catch (DBException e) {
             lastError = e;
@@ -149,18 +160,31 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
         super.moveFolder(oldPath, newPath);
     }
 
+    public void updateDataSources(@NotNull List<? extends DBPDataSourceContainer> dataSources) throws DBException {
+        if (getProject().isInMemory() || dataSources.isEmpty()) {
+            return;
+        }
+        persistDataSourceUpdates(dataSources);
+        checkForErrors();
+    }
+
     @Override
-    protected void saveDataSources(DBRProgressMonitor monitor) {
+    protected void saveDataSources(@NotNull DBRProgressMonitor monitor) {
         if (getProject().isInMemory()) {
             return;
         }
 
+        // Save everything BUT data sources
+        // It can be used to save profiles, connection types, etc
+        // Do not save all project datasources in TE
+        // We save them only thru persistDataSourceX methods
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
-        saveConfigurationToManager(monitor, buffer, null);
+        saveConfigurationToManager(monitor, buffer, dataSourceContainer -> false);
 
         try {
+            String configuration = new String(buffer.getData(), StandardCharsets.UTF_8);
             rmController.updateProjectDataSources(
-                getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.of());
+                getRemoteProjectId(), configuration, List.of());
             lastError = null;
         } catch (DBException e) {
             lastError = e;

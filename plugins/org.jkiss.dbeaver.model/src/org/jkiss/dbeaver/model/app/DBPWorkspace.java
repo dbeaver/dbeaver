@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemContainer;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 
 import java.nio.file.Path;
@@ -36,7 +37,7 @@ import java.util.List;
  * *
  * Operates with projects, resources and user session.
  */
-public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm {
+public interface DBPWorkspace extends DBFFileSystemContainer, SMAuthSpace, DBAPermissionRealm {
     String METADATA_FOLDER = ".metadata";
 
     @NotNull

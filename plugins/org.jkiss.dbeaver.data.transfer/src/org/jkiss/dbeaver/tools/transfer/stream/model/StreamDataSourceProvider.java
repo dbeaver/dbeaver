@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -49,6 +50,7 @@ public class StreamDataSourceProvider implements DBPDataSourceProvider<DBPDataSo
     public DBPPropertyDescriptor[] getConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) {
         return new DBPPropertyDescriptor[0];

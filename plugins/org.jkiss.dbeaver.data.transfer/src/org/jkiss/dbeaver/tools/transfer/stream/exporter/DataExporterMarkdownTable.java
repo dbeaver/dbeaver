@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -32,9 +34,11 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.function.Consumer;
 
 /**
  * Markdown Table Exporter
@@ -45,13 +49,20 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     private static final String PROP_SHOW_HEADER_SEPARATOR = "showHeaderSeparator";
     private static final String PROP_CONFLUENCE_FORMAT = "confluenceFormat";
+    public static final String PROP_ESCAPE_CELL_CONTENT = "escapeCellContent";
 
     private static final String PIPE_ESCAPE = "&#124;";
+    public static final String NEW_LINE_ESCAPE = "<br>";
+    public static final char CELL_VALUE_ESCAPE = '`';
 
     private String rowDelimiter;
     private String nullString;
     private boolean showHeaderSeparator;
     private boolean confluenceFormat;
+    private boolean isEscapeCellContent;
+
+    private final CellValueEscaper cellValueEscaper = new CellValueEscaper();
+
     private DBDAttributeBinding[] columns;
 
     private final StringBuilder buffer = new StringBuilder();
@@ -66,12 +77,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         showHeaderSeparator = CommonUtils.getBoolean(site.getProperties().get(PROP_SHOW_HEADER_SEPARATOR), true);
         confluenceFormat = CommonUtils.getBoolean(site.getProperties().get(PROP_CONFLUENCE_FORMAT), false);
-    }
-
-    @Override
-    public void dispose()
-    {
-        super.dispose();
+        isEscapeCellContent = CommonUtils.getBoolean(site.getProperties().get(PROP_ESCAPE_CELL_CONTENT), false);
     }
 
     @Override
@@ -135,7 +141,13 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                     if (cs == null) {
                         writeCellValue(DBConstants.NULL_VALUE_LABEL);
                     } else if (ContentUtils.isTextContent(content)) {
-                        writeCellValue(cs.getContentReader());
+                        if (isEscapeCellContent) {
+                            try (Reader reader = cs.getContentReader()) {
+                                cellValueEscaper.writeCellValue(IOUtils.readToString(reader));
+                            }
+                        } else {
+                            writeCellValue(cs.getContentReader());
+                        }
                     } else {
                         getSite().writeBinaryData(cs);
                     }
@@ -144,7 +156,8 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                     DTUtils.closeContents(resultSet, content);
                 }
             } else {
-                writeCellValue(super.getValueDisplayString(column, row[i]));
+                Consumer<String> cellWriter = isEscapeCellContent ? cellValueEscaper::writeCellValue : this::writeCellValue;
+                cellWriter.accept(super.getValueDisplayString(column, row[i]));
             }
             writeDelimiter();
         }
@@ -156,21 +169,25 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     {
     }
 
-    private void writeCellValue(String value)
+    private void writeCellValue(@NotNull String value)
     {
-        // escape quotes with double quotes
         buffer.setLength(0);
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c == '|') {
+            if (c == '\r') {
+                buffer.append(NEW_LINE_ESCAPE);
+                if (i + 1 < value.length() && value.charAt(i + 1) == '\n') {
+                    i++;
+                }
+            } else if (c == '\n') {
+                buffer.append(NEW_LINE_ESCAPE);
+            } else if (c == '|') {
                 buffer.append(PIPE_ESCAPE);
             } else {
                 buffer.append(c);
             }
         }
-        value = buffer.toString();
-
-        getWriter().write(value);
+        getWriter().write(buffer.toString());
     }
 
     private void writeCellValue(Reader reader) throws IOException
@@ -178,18 +195,34 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
         try {
             // Copy reader
             char buffer[] = new char[2000];
+            boolean pendingCarriageReturn = false;
             for (;;) {
                 int count = reader.read(buffer);
                 if (count <= 0) {
                     break;
                 }
                 for (int i = 0; i < count; i++) {
-                    if (buffer[i] == '|') {
+                    char c = buffer[i];
+                    if (pendingCarriageReturn) {
+                        getWriter().write(NEW_LINE_ESCAPE);
+                        pendingCarriageReturn = false;
+                        if (c == '\n') {
+                            continue;
+                        }
+                    }
+                    if (c == '\r') {
+                        pendingCarriageReturn = true;
+                    } else if (c == '\n') {
+                        getWriter().write(NEW_LINE_ESCAPE);
+                    } else if (c == '|') {
                         getWriter().write(PIPE_ESCAPE);
                     } else {
-                        getWriter().write(buffer[i]);
+                        getWriter().write(c);
                     }
                 }
+            }
+            if (pendingCarriageReturn) {
+                getWriter().write(NEW_LINE_ESCAPE);
             }
         } finally {
             ContentUtils.close(reader);
@@ -204,6 +237,70 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     private void writeRowLimit()
     {
         getWriter().write(rowDelimiter);
+    }
+
+    private class CellValueEscaper {
+        int indexEscapeStart;
+        int escapeSequenceLength = 1;
+        boolean cellEscaped = true;
+
+
+        public void writeCellValue(@NotNull String value) {
+            reset();
+            fillBuffer(value);
+            getWriter().write(buffer.toString());
+        }
+
+        private void fillBuffer(@NotNull String value) {
+            for (int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                if (c == '\r') {
+                    if (i + 1 < value.length() && value.charAt(i + 1) == '\n') {
+                        i++;
+                    }
+                    terminateEscapeSequence(NEW_LINE_ESCAPE);
+                } else if (c == '\n') {
+                    terminateEscapeSequence(NEW_LINE_ESCAPE);
+                } else if (c == '|') {
+                    terminateEscapeSequence(PIPE_ESCAPE);
+                } else {
+                    if (c == CELL_VALUE_ESCAPE) {
+                        // we must escape any number (N)(`) in code blocks with N+1 (`) in the beginning and end of the code block. Ex: a`b ->``a`b`` ; a``b -> ```a``b```
+                        int localEscapeSequenceLength = 2;
+                        while (i + 1 < value.length() && value.charAt(i + 1) == CELL_VALUE_ESCAPE) {
+                            localEscapeSequenceLength++;
+                            i++;
+                            buffer.append(value.charAt(i));
+                        }
+                        escapeSequenceLength = Math.max(escapeSequenceLength, localEscapeSequenceLength);
+                    }
+                    buffer.append(c);
+                    cellEscaped = false;
+                }
+            }
+            terminateEscapeSequence(null);
+        }
+
+        private void terminateEscapeSequence(@Nullable String tokenTerminateSequence) {
+            String fullEscapeSequence = String.valueOf(CELL_VALUE_ESCAPE).repeat(escapeSequenceLength);
+            if (!cellEscaped) {
+                buffer.insert(indexEscapeStart, fullEscapeSequence);
+                buffer.append(fullEscapeSequence);
+            }
+            if (tokenTerminateSequence != null) {
+                buffer.append(tokenTerminateSequence);
+            }
+            indexEscapeStart = buffer.length();
+            escapeSequenceLength = 1;
+            cellEscaped = true;
+        }
+
+        public void reset() {
+            buffer.setLength(0);
+            escapeSequenceLength = 1;
+            indexEscapeStart = 0;
+            cellEscaped = true;
+        }
     }
 
 }

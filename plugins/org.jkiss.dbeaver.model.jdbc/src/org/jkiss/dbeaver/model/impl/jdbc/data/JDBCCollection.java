@@ -94,11 +94,13 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         return valueHandler;
     }
 
+    @NotNull
     @Override
-    public DBDValueCloneable cloneValue(DBRProgressMonitor monitor) {
+    public DBDValueCloneable cloneValue(@NotNull DBRProgressMonitor monitor) {
         return new JDBCCollection(monitor, type, valueHandler, contents);
     }
 
+    @Nullable
     @Override
     public Object getRawValue() {
         return contents;
@@ -159,19 +161,20 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         return contents == null ? 0 : contents.length;
     }
 
+    @Nullable
     @Override
     public Object getItem(int index) {
         return contents[index];
     }
 
     @Override
-    public void setItem(int index, Object value) {
+    public void setItem(int index, @Nullable Object value) {
         contents[index] = value;
         modified = true;
     }
 
     @Override
-    public void setContents(Object[] contents) {
+    public void setContents(@NotNull Object[] contents) {
         this.contents = contents;
         this.modified = true;
     }

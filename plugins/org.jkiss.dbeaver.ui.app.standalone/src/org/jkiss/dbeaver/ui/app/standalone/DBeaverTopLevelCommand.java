@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ui.app.standalone;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.cli.CLIConstants;
-import org.jkiss.dbeaver.model.cli.CLIContextImpl;
-import org.jkiss.dbeaver.model.cli.CLIProcessResult;
-import org.jkiss.dbeaver.model.cli.CLIRunMeta;
+import org.jkiss.dbeaver.model.cli.*;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
 import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
@@ -85,7 +82,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
 
     @CommandLine.Option(names = {"-bringToFront"}, description = "Bring DBeaver window on top of other applications")
     private boolean bringToFront;
-    @CommandLine.Option(names = {"-q"}, description = "Run quietly (do not print logs)")
+    @CommandLine.Option(names = {"-q", "-quiet"}, description = "Run quietly (do not print logs)")
     private boolean quiet;
 
     @Nullable
@@ -101,7 +98,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     }
 
     @Override
-    public void run() {
+    public void run() throws CLIException {
         super.run();
         if (context.getPostAction() != null) {
             return;

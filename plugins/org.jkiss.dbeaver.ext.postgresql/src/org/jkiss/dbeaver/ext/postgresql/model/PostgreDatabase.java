@@ -395,7 +395,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return null;
         }
         checkInstanceConnection(monitor);
-        return roleCache.getObject(monitor, this, reference.getRoleName());
+        PostgreRole role = roleCache.getObject(monitor, this, reference.getRoleName());
+        if (role == null && PostgreConstants.PUBLIC_ROLE_NAME.equalsIgnoreCase(reference.getRoleName())) {
+            // information_schema reports the PUBLIC pseudo-role as 'PUBLIC' while ACL parsing
+            // produces lowercase 'public'. Resolve both variants to the same role.
+            role = roleCache.getObject(monitor, this, PostgreConstants.PUBLIC_ROLE_NAME);
+        }
+        return role;
     }
 
     @Property(editable = false, updatable = false, order = 5/*, listProvider = CharsetListProvider.class*/)
@@ -989,7 +995,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
         // Check schemas in search path
         PostgreExecutionContext metaContext = getMetaContext();
-        List<String> searchPath = metaContext == null ? Collections.singletonList(PostgreConstants.CATALOG_SCHEMA_NAME) : metaContext.getSearchPath();
+        List<String> searchPath = metaContext == null ? List.of(PostgreConstants.CATALOG_SCHEMA_NAME) : metaContext.computeSearchPath();
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
             if (schema != null) {
@@ -1086,6 +1092,21 @@ public class PostgreDatabase extends JDBCRemoteInstance
         protected PostgreRole fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
             return new PostgreRole(owner, dbResult);
+        }
+
+        @Override
+        protected void addCustomObjects(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull PostgreDatabase owner,
+            @NotNull List<PostgreRole> objectList
+        ) {
+            // Add the PUBLIC pseudo-role. It is not stored in pg_roles but exists in every
+            // database since cluster initialization and is represented by zero ACL grantee id.
+            // Without it PUBLIC grants are invisible in the permissions editors.
+            // See https://github.com/dbeaver/dbeaver/issues/11061
+            PostgreRole publicRole = new PostgreRole(owner, PostgreConstants.PUBLIC_ROLE_NAME, null, false);
+            publicRole.setPersisted(true);
+            objectList.add(publicRole);
         }
 
         @Override
@@ -1336,7 +1357,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 "SELECT n.oid,n.*,d.description FROM pg_catalog.pg_namespace n\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid AND d.objsubid=0 AND d.classoid='pg_namespace'::regclass\n");
             boolean extraConditionAdded = addExtraCondition(session, catalogQuery);
-            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
+            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, database, false);
             if ((catalogFilters != null && !catalogFilters.isNotApplicable()) || object != null || objectName != null) {
                 if (object != null || objectName != null) {
                     catalogFilters = new DBSObjectFilter();

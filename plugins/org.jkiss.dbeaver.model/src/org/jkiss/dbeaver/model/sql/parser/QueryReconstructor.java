@@ -62,6 +62,10 @@ public class QueryReconstructor {
             : null;
     }
 
+    public boolean hasRecoverableComments() {
+        return this.originalQueryCommentsInfo != null;
+    }
+
     @NotNull
     public String reconstructFromOriginalFragments(@NotNull String newSqlText) throws Exception {
         SQLUtils.CommentEntry[] comments = this.commentsCollectionResult.comments();
@@ -171,8 +175,11 @@ public class QueryReconstructor {
 
         Matcher rm = Pattern.compile("([\\r\\n]++[\\t\\f\\v ]*+)++$").matcher(result.toString());
         if (rm.find() && rm.end() == result.length()) { // if presented text ends with newline
-            Matcher fm = Pattern.compile("^([\\t\\f\\v ]*+[\\r\\n]++)++").matcher(fragment);
+            Matcher fm = Pattern.compile("^([\\t\\f ]*+[\\r\\n]++)++").matcher(fragment);
             if (fm.find() && fm.start() == 0) { // and appendance starts with newline
+                int lastNewline = Math.max(result.lastIndexOf("\n"), result.lastIndexOf("\r"));
+                // need to drop symbols after \n like \t and etc
+                result.setLength(lastNewline + 1); // and appendance starts with newline
                 preparedFragment = fragment.substring(fm.end()); // truncate leading newlines of the appendance
             }
         }
@@ -223,7 +230,9 @@ public class QueryReconstructor {
         while (trailingCommentIndex >= 0 && lastToken.absoluteBegin < comments[trailingCommentIndex].cleanPosition()) {
             trailingCommentIndex--;
         }
-        int end = comments[trailingCommentIndex].accumulatedOffset() + lastToken.absoluteEnd;
+        // when all comments are positioned after the last token (purely trailing)
+        int lastTokenOffset = trailingCommentIndex >= 0 ? comments[trailingCommentIndex].accumulatedOffset() : 0;
+        int end = lastTokenOffset + lastToken.absoluteEnd;
 
         boolean hasOnlySurroundingComments = (trailingCommentIndex + 1) - (leadingCommentIndex - 1) <= 1;
 

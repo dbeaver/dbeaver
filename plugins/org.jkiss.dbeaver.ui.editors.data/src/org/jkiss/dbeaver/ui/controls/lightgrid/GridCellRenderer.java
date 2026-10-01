@@ -94,12 +94,20 @@ public class GridCellRenderer extends AbstractRenderer {
 
     protected Color colorLineFocused;
 
-    public GridCellRenderer(LightGrid grid) {
+    public GridCellRenderer(@NotNull LightGrid grid) {
         super(grid);
         colorLineFocused = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, boolean hover, IGridColumn col, IGridRow row) {
+    public void paint(
+        @NotNull GC gc,
+        @NotNull Rectangle bounds,
+        boolean selected,
+        boolean focus,
+        boolean hover,
+        @NotNull IGridColumn col,
+        @NotNull IGridRow row
+    ) {
         boolean drawBackground = true;
 
         IGridContentProvider.CellInformation cellInfo = grid.getContentProvider().getCellInfo(col, row, selected);
@@ -252,24 +260,24 @@ public class GridCellRenderer extends AbstractRenderer {
         if (focus || hover) {
 
             gc.setForeground(colorLineFocused);
-            gc.drawRectangle(bounds.x + 1, bounds.y, bounds.width - 2, bounds.height - 1);
-
             if (grid.isFocusControl()) {
-                gc.drawRectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 3);
+                gc.setLineWidth(2);
             }
+            gc.drawRectangle(bounds.x + 1, bounds.y, bounds.width - 2, bounds.height - 1);
+            gc.setLineWidth(1);
         }
     }
 
     // Render hints
     private void renderHints(
-        GC gc,
-        Rectangle bounds,
-        IGridColumn col,
-        IGridRow row,
-        IGridContentProvider.CellInformation cellInfo,
+        @NotNull GC gc,
+        @NotNull Rectangle bounds,
+        @NotNull IGridColumn col,
+        @NotNull IGridRow row,
+        @NotNull IGridContentProvider.CellInformation cellInfo,
         boolean selected,
-        String text,
-        Color background,
+        @NotNull String text,
+        @NotNull Color background,
         int x,
         int textTopPos,
         boolean focus,
@@ -378,10 +386,10 @@ public class GridCellRenderer extends AbstractRenderer {
     }
 
     private boolean isOverHintAction(
-        IGridRow row,
-        GridColumn column,
-        IGridContentProvider.CellInformation cellInfo,
-        Point cellOrigin,
+        @NotNull IGridRow row,
+        @NotNull GridColumn column,
+        @NotNull IGridContentProvider.CellInformation cellInfo,
+        @NotNull Point cellOrigin,
         int x,
         int y
     ) {
@@ -408,19 +416,15 @@ public class GridCellRenderer extends AbstractRenderer {
     }
 
     public void executeHintAction(
-        IGridRow row,
-        IGridColumn column,
-        IGridContentProvider.CellInformation cellInfo,
+        @NotNull IGridRow row,
+        @NotNull IGridColumn column,
+        @NotNull IGridContentProvider.CellInformation cellInfo,
         int x,
         int y,
-        int state) {
+        int state
+    ) {
         List<IGridHint> cellHints = grid.getContentProvider().getCellHints(column, row, cellInfo.value, 0);
         if (CommonUtils.isEmpty(cellHints)) {
-            return;
-        }
-        IGridController gridController = grid.getGridController();
-        if (gridController == null) {
-            log.error("No grid controller");
             return;
         }
         Point cellOrigin = grid.getOrigin(column, row.getVisualPosition());
@@ -431,7 +435,7 @@ public class GridCellRenderer extends AbstractRenderer {
                 Image hintImage = DBeaverIcons.getImage(hintIcon);
                 Rectangle iconSize = hintImage.getBounds();
                 if (x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width) {
-                    hint.performAction(gridController, grid.toDisplay(x, y), state);
+                    hint.performAction(grid.getGridController(), grid.toDisplay(x, y), state);
                     return;
                 }
             }
@@ -440,12 +444,12 @@ public class GridCellRenderer extends AbstractRenderer {
     }
 
 
-    private static @NotNull Color getDisabledForeground(IGridContentProvider.CellInformation cellInfo) {
+    private static @NotNull Color getDisabledForeground(@NotNull IGridContentProvider.CellInformation cellInfo) {
         return UIUtils.getSharedColor(
             UIUtils.blend(cellInfo.foreground.getRGB(), cellInfo.background.getRGB(), 50));
     }
 
-    boolean isOverLink(GridColumn column, int row, int x, int y) {
+    boolean isOverLink(@NotNull GridColumn column, int row, int x, int y) {
         IGridRow rowElement = grid.getRow(row);
         if (rowElement == null) {
             return false;
@@ -522,7 +526,12 @@ public class GridCellRenderer extends AbstractRenderer {
             (state & IGridContentProvider.STATE_HYPER_LINK) != 0;
     }
 
-    private void drawCellTextDecorated(@NotNull GC gc, @NotNull String text, @NotNull IGridContentProvider.CellInformation cellInfo, @NotNull Rectangle bounds) {
+    private void drawCellTextDecorated(
+        @NotNull GC gc,
+        @NotNull String text,
+        @NotNull IGridContentProvider.CellInformation cellInfo,
+        @NotNull Rectangle bounds
+    ) {
         final Color activeForeground = cellInfo.foreground;
         final Color disabledForeground = getDisabledForeground(cellInfo);
 

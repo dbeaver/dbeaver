@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
@@ -63,7 +64,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -75,6 +75,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnEx
 import org.jkiss.dbeaver.ui.editors.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -268,7 +269,8 @@ public class SQLQueryJob extends DataSourceJob {
                         log.error(lastError);
                         boolean isQueue = isQueue();
                         DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
-                            isQueue ? "SQL script execution" : "SQL query execution",
+                            (isQueue ? "SQL script execution" : "SQL query execution") +
+                                "\n" +  GeneralUtils.getFirstMessage(lastError),
                             lastError,
                             isQueue);
 
@@ -591,7 +593,7 @@ public class SQLQueryJob extends DataSourceJob {
                     //statistics.setRowsUpdated(0);
 
                     // Toggle smart commit mode
-                    if (resultsConsumer instanceof ISmartTransactionManager && ((ISmartTransactionManager) resultsConsumer).isSmartAutoCommit()) {
+                    if (resultsConsumer instanceof DBCSmartTransactionManager && ((DBCSmartTransactionManager) resultsConsumer).isSmartAutoCommit()) {
                         changedToManualCommit = DBExecUtils.checkSmartAutoCommit(session, execStatement.getText());
                     }
                     long execStartTime = System.currentTimeMillis();
@@ -988,6 +990,22 @@ public class SQLQueryJob extends DataSourceJob {
                                 // Multiple source entities
                                 sourceName += "(+)";
                                 break;
+                            }
+                        }
+                    }
+                    // Fallback: extract table name from parsed SQL query AST.
+                    // Some drivers (e.g. Oracle JDBC thin) do not return table names
+                    // from ResultSetMetaData.getTableName(), so we use JSQLParser results instead.
+                    if (CommonUtils.isEmpty(sourceName)) {
+                        SQLQuery sqlQuery = result.getStatement();
+                        DBCEntityMetaData entityMeta = sqlQuery.getEntityMetadata(false);
+                        if (entityMeta != null) {
+                            sourceName = entityMeta.getEntityName();
+                        } else if (!sqlQuery.getAllSelectEntitiesNames().isEmpty()) {
+                            // Query has JOINs - use first table name with (+) marker
+                            sourceName = sqlQuery.getAllSelectEntitiesNames().getFirst();
+                            if (sqlQuery.getAllSelectEntitiesNames().size() > 1) {
+                                sourceName += "(+)";
                             }
                         }
                     }

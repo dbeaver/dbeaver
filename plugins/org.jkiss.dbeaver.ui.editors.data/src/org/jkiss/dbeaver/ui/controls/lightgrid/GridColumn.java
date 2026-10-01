@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -309,7 +309,7 @@ public class GridColumn implements IGridColumn {
             }
             if (newWidth > childrenWidth) {
                 // Header width bigger than children width
-                GridColumn lastChild = children.get(children.size() - 1);
+                GridColumn lastChild = children.getLast();
                 lastChild.setWidth(lastChild.getWidth() + newWidth - childrenWidth);
             } else {
                 newWidth = childrenWidth;
@@ -444,7 +444,7 @@ public class GridColumn implements IGridColumn {
         if (children == null) {
             return this;
         } else {
-            return children.get(0).getFirstLeaf();
+            return children.getFirst().getFirstLeaf();
         }
     }
 

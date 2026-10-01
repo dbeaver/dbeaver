@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -29,7 +28,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
     private final DBXTreeNode meta;
     private DBSObject object;
 
-    DBNDatabaseItem(@NotNull DBNNode parent, @NotNull DBXTreeNode meta, DBSObject object, boolean reflect) {
+    DBNDatabaseItem(@NotNull DBNNode parent, @NotNull DBXTreeNode meta, @NotNull DBSObject object) {
         super(parent);
         this.meta = meta;
         this.object = object;
@@ -71,16 +70,13 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
         return true;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBSObject getObject() {
-        // FIXME: we can't throw error here because too many
-//        if (object == null) {
-//            throw new IllegalStateException("Null object in navigator node. Node was disposed?");
-//        }
         return object;
     }
 
+    @NotNull
     @Override
     public Object getValueObject() {
         return object;

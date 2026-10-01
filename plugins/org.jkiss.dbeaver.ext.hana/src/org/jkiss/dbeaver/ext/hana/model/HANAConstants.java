@@ -45,4 +45,5 @@ public class HANAConstants {
     // error codes, see SYS.M_ERROR_CODES view
     public static final int ERR_SQL_ALTER_PASSWORD_NEEDED = 414;
     public static final int WRN_SQL_NEARLY_EXPIRED_PASSWORD = 431;
+    public static final int ERR_SQL_ALTER_LICENSE_NEEDED = 437;
 }

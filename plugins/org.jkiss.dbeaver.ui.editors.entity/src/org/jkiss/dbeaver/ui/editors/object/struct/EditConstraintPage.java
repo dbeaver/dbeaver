@@ -18,14 +18,14 @@
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -98,8 +98,9 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
         this.constraintTypes = constraintTypes;
     }
 
+    @NotNull
     @Override
-    protected Composite createPageContents(Composite parent) {
+    protected Composite createPageContents(@NotNull Composite parent) {
         final Composite pageContents = super.createPageContents(parent);
         toggleEditAreas();
         return pageContents;
@@ -124,7 +125,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     }
 
     @Override
-    protected void createContentsBeforeColumns(Composite panel) {
+    protected void createContentsBeforeColumns(@NotNull Composite panel) {
         final Text nameText = object != null ? UIUtils.createLabelText(
             panel,
             ObjectEditorMessages.dialog_struct_edit_constrain_label_name,
@@ -153,9 +154,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
             typeCombo.select(0);
             selectedConstraintType = constraintTypes[0];
         }
-        typeCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        typeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 selectedConstraintType = constraintTypes[typeCombo.getSelectionIndex()];
                 nameGenerator.setConstraintType(selectedConstraintType);
                 if (nameText != null) {
@@ -163,37 +162,29 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
                 }
                 validateProperties();
                 toggleEditAreas();
-            }
-        });
+            }));
 
         if (showEnable) {
             final Button enableConstraintButton = UIUtils.createCheckbox(panel, ObjectEditorMessages.edit_constraints_enable_constraint_text, ObjectEditorMessages.edit_constraints_enable_constraint_tip, true, 2);
             enableConstraintButton.setVisible(showEnable);
-            enableConstraintButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    enableConstraint = enableConstraintButton.getSelection();
-                }
-            });
+            enableConstraintButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                enableConstraint = enableConstraintButton.getSelection()));
         }
 
         if (isUniqueVirtualKeyEdit()) {
             final Button useAllColumnsCheck = UIUtils.createCheckbox(panel, ObjectEditorMessages.edit_constraints_use_all_columns_text, ObjectEditorMessages.edit_constraints_use_all_columns_tip, useAllColumns, 2);
-            useAllColumnsCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            useAllColumnsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     useAllColumns = useAllColumnsCheck.getSelection();
                     columnsTable.setEnabled(!useAllColumns);
                     validateProperties();
                     updatePageState();
-                }
-            });
+                }));
         }
         validateProperties();
     }
 
     @Override
-    protected void createContentsAfterColumns(Composite panel) {
+    protected void createContentsAfterColumns(@NotNull Composite panel) {
         expressionGroup = UIUtils.createTitledComposite(
             panel,
             ObjectEditorMessages.edit_constraints_expression_text,
@@ -233,6 +224,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
         return constraint;
     }
 
+    @Nullable
     @Override
     protected String getEditError() {
         // Constraint name may be empty (auto-generated)
@@ -260,7 +252,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     }
 
     @Override
-    public boolean isColumnSelected(DBSEntityAttribute attribute) {
+    public boolean isColumnSelected(@NotNull DBSEntityAttribute attribute) {
         if (!CommonUtils.isEmpty(attributes)) {
             for (DBSEntityAttributeRef ref : attributes) {
                 if (ref.getAttribute() == attribute) {

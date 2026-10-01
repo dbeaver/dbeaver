@@ -59,6 +59,11 @@ public enum SQLQueryCompletionItemKind {
      * */
     TABLE_COLUMN_NAME(false, true, 100),
     /**
+     * Global pseudo-column provided by the dialect
+     * <p> (simple identifier)
+     */
+    GLOBAL_PSEUDO_COLUMN(false, true, 500),
+    /**
      * Composite field name
      * <p> (simple identifier)
      * */
@@ -86,4 +91,3 @@ public enum SQLQueryCompletionItemKind {
         this.sortOrder = sortOrder;
     }
 }
-    

@@ -138,4 +138,12 @@ public class DBPConnectionBootstrap {
         }
     }
 
+    public void reset() {
+        this.defaultCatalogName = null;
+        this.defaultSchemaName = null;
+        this.defaultAutoCommit = null;
+        this.defaultTransactionIsolation = null;
+        this.initQueries.clear();
+        this.ignoreErrors = false;
+    }
 }

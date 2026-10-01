@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContex
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposal;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.utils.Pair;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -127,7 +127,7 @@ public class RequestResult {
         );
         recognitionContext.reset();
         SQLQueryModel queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, queryText);
-        Assert.assertNotNull(queryModel);
+        Assertions.assertNotNull(queryModel);
 
         final SQLQueryCompletionAnalyzer analyzer = getSqlQueryCompletionAnalyzer(queryText, queryModel, request);
         try {

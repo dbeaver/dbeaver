@@ -78,7 +78,7 @@ public class JDBCCompositeDynamic extends JDBCComposite {
                         values[i] = value;
                     }
                 } else {
-                    log.debug("Data type '" + contents + "' isn't resolved as structured type. Use synthetic attributes.");
+                    // Data type isn't resolved as structured type. Use synthetic attributes.");
                     for (int i = 0, attrValuesLength = attrValues.length; i < attrValuesLength; i++) {
                         Object value = attrValues[i];
                         DBSDataType attrType = resolveAttrType(session, value);
@@ -110,8 +110,9 @@ public class JDBCCompositeDynamic extends JDBCComposite {
         }
     }
 
+    @NotNull
     @Override
-    public JDBCCompositeDynamic cloneValue(DBRProgressMonitor monitor) throws DBCException {
+    public JDBCCompositeDynamic cloneValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
         return new JDBCCompositeDynamic(this, monitor);
     }
 

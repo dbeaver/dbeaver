@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
     protected static final Log log = Log.getLog(AbstractObjectManager.class);
 
     @Override
-    public void executePersistAction(DBCSession session, DBECommand<OBJECT_TYPE> command, DBEPersistAction action) throws DBException
+    public void executePersistAction(@NotNull DBCSession session, @NotNull DBECommand<OBJECT_TYPE> command, @NotNull DBEPersistAction action) throws DBException
     {
         DBExecUtils.executePersistAction(session, action);
     }

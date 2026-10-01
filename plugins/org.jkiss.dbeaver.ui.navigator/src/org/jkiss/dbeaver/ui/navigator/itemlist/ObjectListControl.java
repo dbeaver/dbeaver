@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -35,6 +36,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -61,8 +63,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -83,6 +85,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private boolean isTree;
 
     private ColumnViewer itemsViewer;
+    private final IPropertyChangeListener themeChangeListener;
+    private boolean themeRefreshPending;
     //private ColumnViewerEditor itemsEditor;
     private IDoubleClickListener doubleClickHandler;
     private PropertySourceAbstract listPropertySource;
@@ -198,6 +202,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         //PropertiesContributor.getInstance().addLazyListener(this);
         new DefaultViewerToolTipSupport(itemsViewer);
 
+        themeChangeListener = event -> {
+            if (!themeRefreshPending) {
+                themeRefreshPending = true;
+                UIUtils.asyncExec(() -> {
+                    themeRefreshPending = false;
+                    if (!isDisposed()) {
+                        NativeThemeUtils.updateNativeTheme(itemsViewer.getControl());
+                        itemsViewer.refresh();
+                    }
+                });
+            }
+        };
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+
         // Add selection listener
         itemsViewer.addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -288,6 +306,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return itemsViewer;
     }
 
+    @Nullable
     protected ObjectColumn getColumnByIndex(int index) {
         return columnController.getColumnData(index);
     }
@@ -302,6 +321,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     @Override
     public void disposeControl() {
+        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         synchronized (this) {
             if (loadingJob != null) {
                 // Cancel running job
@@ -971,7 +991,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     int columnsCount = columnController.getColumnsCount();
                     for (int i = 0; i < columnsCount; i++) {
                         ObjectColumn column = getColumnByIndex(i);
-                        if (column.isNameColumn(object)) {
+                        if (column != null && column.isNameColumn(object)) {
                             nameColumn = column;
                             break;
                         }
@@ -1494,7 +1514,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             // Header
             for (int i = 0; i < columnsCount; i++) {
                 ObjectColumn column = getColumnByIndex(i);
-                if (i > 0) buf.append("\t");
+                if (column == null) {
+                    continue;
+                }
+                if (!buf.isEmpty()) {
+                    buf.append("\t");
+                }
                 buf.append(column.displayName);
             }
             buf.append("\n");
@@ -1502,16 +1527,25 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         List<OBJECT_TYPE> elementList = itemsViewer.getStructuredSelection().toList();
         for (OBJECT_TYPE element : elementList) {
             Object object = getObjectValue(element);
+            boolean hasValue = false;
             for (int i = 0; i < columnsCount; i++) {
-                ObjectPropertyDescriptor property = getColumnByIndex(i).getProperty(object);
+                ObjectColumn column = getColumnByIndex(i);
+                if (column == null) {
+                    continue;
+                }
+                ObjectPropertyDescriptor property = column.getProperty(object);
                 try {
                     Object cellValue = property == null ? null : property.readValue(object, new VoidProgressMonitor(), true);
-                    if (i > 0) buf.append("\t");
+                    if (hasValue) {
+                        buf.append("\t");
+                    }
                     String strValue = DBValueFormatting.getDefaultValueDisplayString(cellValue, DBDDisplayFormat.UI);
                     if (strValue.contains("\n") || strValue.contains("\t")) {
-                        strValue = '"' + strValue + '"';
+                        buf.append('"').append(strValue).append('"');
+                    } else {
+                        buf.append(strValue);
                     }
-                    buf.append(strValue);
+                    hasValue = true;
                 } catch (Throwable e) {
                     // ignore
                 }
@@ -1526,7 +1560,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         private int[] originalColumnOrder;
 
-        GroupingViewerColumnController(String id, ColumnViewer viewer) {
+        GroupingViewerColumnController(@NotNull String id, @NotNull ColumnViewer viewer) {
             super(id, viewer);
         }
 
@@ -1547,6 +1581,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         public void run() {
                             if (columnPersist) {
                                 groupingColumn = getColumnByIndex(selectedColumnNumber);
+                                if (groupingColumn == null) {
+                                    return;
+                                }
                                 groupingColumn.columnIndex = selectedColumnNumber;
                                 originalColumnOrder = ((TreeViewer) itemsViewer).getTree().getColumnOrder();
                                 moveGroupingColumnInTheBeginning(selectedColumnNumber);

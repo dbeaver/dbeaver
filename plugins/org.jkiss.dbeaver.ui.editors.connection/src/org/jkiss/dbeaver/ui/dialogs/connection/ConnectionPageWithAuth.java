@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         authModelSelector = new AuthModelSelector(parent, () -> {
             // Apply font on auth mode change
             Dialog.applyDialogFont(authModelSelector);
-        }, () -> getSite().updateButtons(), true, this.getIntention());
+        }, this::authModelPropertiesChanged, true, this.getIntention());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.setDefaultTextControlWidthHint(authModelSelector);
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
@@ -62,6 +62,10 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
                     () -> site.updateButtons());
             }
         }
+    }
+
+    protected void authModelPropertiesChanged() {
+        getSite().updateButtons();
     }
 
     protected Composite getAuthPanelComposite() {
@@ -110,7 +114,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.saveSettings(dataSource);
 
         if (isAuthEnabled()) {

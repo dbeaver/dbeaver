@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -54,7 +54,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
     @Mock
     private JDBCRemoteInstance mockRemoteInstance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws DBException {
         DBPDataSourceContainer mockDataSourceContainer = configureTestContainer("oracle");
         testDataSource = new OracleDataSource(mockDataSourceContainer);
@@ -116,7 +116,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
             "\tCOLUMN2 INTEGER NULL" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -162,7 +162,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
             "\tCOLUMN2 INTEGER NOT NULL" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -208,7 +208,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
             "\tCONSTRAINT NEWTABLE_PK PRIMARY KEY (COLUMN1)" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -236,7 +236,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
                 "COMMENT ON COLUMN TEST_SCHEMA.NEWTABLE.COLUMN1 IS 'Test comment 1';" + lineBreak +
                 "COMMENT ON COLUMN TEST_SCHEMA.NEWTABLE.COLUMN2 IS 'Test comment 2';" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -252,7 +252,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE RENAME TO NEW_TEST_TABLE;" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -268,7 +268,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON TABLE TEST_SCHEMA.TEST_TABLE IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -282,7 +282,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
 
         String expectedDDL = "DROP TABLE TEST_SCHEMA.TEST_TABLE;" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
 }

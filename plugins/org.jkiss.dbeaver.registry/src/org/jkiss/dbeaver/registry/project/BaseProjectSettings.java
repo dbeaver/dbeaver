@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.security.SMObjectType;
+import org.jkiss.dbeaver.model.auth.SMObjectType;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
 import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 
@@ -112,30 +112,30 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
         @NotNull String objectId,
         @Nullable Collection<String> settingIds
     ) {
-        if (projectSettings == null) {
-            return;
-        }
-        synchronized (this) {
-            Map<String, Map<String, String>> cache = projectSettings.get(objectType);
-            if (cache != null) {
-                Map<String, String> settingRemoved;
-                if (settingIds == null) {
-                    settingRemoved = cache.remove(objectId);
-                } else {
-                    settingRemoved = new LinkedHashMap<>();
-                    for (String settingId : settingIds) {
+        Collection<String> changedSettingIds = settingIds;
+        if (projectSettings != null) {
+            synchronized (this) {
+                Map<String, Map<String, String>> cache = projectSettings.get(objectType);
+                if (cache != null) {
+                    if (settingIds == null) {
+                        Map<String, String> settingsRemoved = cache.remove(objectId);
+                        if (settingsRemoved != null) {
+                            changedSettingIds = settingsRemoved.keySet();
+                        }
+                    } else {
                         Map<String, String> settings = cache.get(objectId);
                         if (settings != null) {
-                            settingRemoved.put(
-                                settingId,
-                                settings.remove(settingId));
+                            settingIds.forEach(settings::remove);
                         }
                     }
                 }
-                DataSourceNavigatorSettingsUtils.objectSettingUpdated(project, objectId, settingRemoved.keySet());
-                UserDBSObjectFilterUtils.objectSettingUpdated(project, objectId, settingRemoved.keySet());
             }
         }
+        if (changedSettingIds == null || changedSettingIds.isEmpty()) {
+            return;
+        }
+        DataSourceNavigatorSettingsUtils.objectSettingUpdated(project, objectId, changedSettingIds);
+        UserDBSObjectFilterUtils.objectSettingUpdated(project, objectId, changedSettingIds);
     }
 
     @NotNull

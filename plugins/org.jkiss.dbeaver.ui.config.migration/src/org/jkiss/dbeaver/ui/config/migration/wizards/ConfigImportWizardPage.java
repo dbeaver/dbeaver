@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,19 @@ package org.jkiss.dbeaver.ui.config.migration.wizards;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.internal.WorkbenchMessages;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
@@ -74,29 +75,21 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
 
         {
             Composite buttonsPanel = UIUtils.createComposite(placeholder, 5);
-            UIUtils.createDialogButton(buttonsPanel, ImportConfigMessages.config_import_wizard_btn_select_all, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createDialogButton(buttonsPanel, WorkbenchMessages.Workbench_selectAll, SelectionListener.widgetSelectedAdapter(e -> {
                     for (TableItem item : getConnectionTable().getItems()) {
                         ((ImportConnectionInfo) item.getData()).setChecked(true);
                         item.setChecked(true);
                     }
                     getContainer().updateButtons();
-                }
-            });
-            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_deselect_all, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_deselect_all, SelectionListener.widgetSelectedAdapter(e -> {
                     for (TableItem item : getConnectionTable().getItems()) {
                         item.setChecked(false);
                         ((ImportConnectionInfo) item.getData()).setChecked(false);
                     }
                     getContainer().updateButtons();
-                }
-            });
-            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_set_driver, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            UIUtils.createDialogButton(buttonsPanel,  ImportConfigMessages.config_import_wizard_btn_set_driver, SelectionListener.widgetSelectedAdapter(e -> {
                     TableItem[] selection = getConnectionTable().getSelection();
                     if (selection != null && selection.length > 0) {
                         for (TableItem item : selection) {
@@ -106,8 +99,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
                         }
                         isPageComplete();
                     }
-                }
-            });
+                }));
 
             folderSelector = new ConnectionFolderSelector(buttonsPanel);
             folderSelector.loadConnectionFolders(NavigatorUtils.getSelectedProject());
@@ -115,9 +107,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
 
         UIUtils.packColumns(getConnectionTable());
 
-        getConnectionTable().addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        getConnectionTable().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 TableItem item = (TableItem) e.item;
                 if (item == null) {
                     return;
@@ -126,22 +116,21 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
                     connectionInfo.setChecked(item.getChecked());
                 }
                 getContainer().updateButtons();
-            }
-        });
+            }));
 
         setControl(placeholder);
     }
 
     protected ImportConnectionInfo setDriverForConnection(ImportConnectionInfo connectionInfo) {
         final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        List<DriverDescriptor> matchedDrivers = new ArrayList<>();
+        List<DBPDriver> matchedDrivers = new ArrayList<>();
         for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
-            for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {
+            for (DBPDriver driver : dataSourceProvider.getEnabledDrivers()) {
                 matchedDrivers.add(driver);
             }
         }
-        matchedDrivers = matchedDrivers.stream().sorted(Comparator.comparing(DriverDescriptor::getName)).collect(Collectors.toList());
-        DriverDescriptor driver = ObjectListDialog.selectObject(
+        matchedDrivers = matchedDrivers.stream().sorted(Comparator.comparing(DBPDriver::getName)).collect(Collectors.toList());
+        DBPDriver driver = ObjectListDialog.selectObject(
             getShell(), NLS.bind(ImportConfigMessages.config_import_wizard_choose_driver_for_connections, connectionInfo.getAlias()), "ImportDriverSelector", matchedDrivers);
         if (driver != null) {
             connectionInfo.setDriver(driver);
@@ -210,7 +199,7 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
         super.deactivatePage();
     }
 
-    protected abstract void loadConnections(ImportData importData) throws DBException;
+    protected abstract void loadConnections(@NotNull ImportData importData) throws DBException;
 
     @Override
     public boolean isPageComplete() {

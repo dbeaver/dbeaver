@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyEditable;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -37,7 +38,7 @@ import java.sql.ResultSet;
 /**
  * OracleTableForeignKey
  */
-public class OracleTableForeignKey extends OracleTableConstraintBase implements DBSTableForeignKey
+public class OracleTableForeignKey extends OracleTableConstraintBase implements DBSTableForeignKeyEditable
 {
     private static final Log log = Log.getLog(OracleTableForeignKey.class);
 
@@ -126,6 +127,11 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         this.referencedKey = referencedKey;
     }
 
+    @Override
+    public void setReferencedConstraint(@Nullable DBSEntityConstraint referencedConstraint) {
+        setReferencedConstraint(referencedConstraint instanceof OracleTableConstraint c ? c : null);
+    }
+
     @NotNull
     @Override
     @Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
@@ -134,16 +140,20 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         return deleteRule;
     }
 
-    public void setDeleteRule(DBSForeignKeyModifyRule deleteRule) {
+    @Override
+    public void setDeleteRule(@NotNull DBSForeignKeyModifyRule deleteRule) {
         this.deleteRule = deleteRule;
     }
 
-    // Update rule is not supported by Oracle
     @NotNull
     @Override
-    public DBSForeignKeyModifyRule getUpdateRule()
-    {
+    public DBSForeignKeyModifyRule getUpdateRule() {
         return DBSForeignKeyModifyRule.NO_ACTION;
+    }
+
+    @Override
+    public void setUpdateRule(@NotNull DBSForeignKeyModifyRule updateRule) {
+        // Update rule is not supported by Oracle
     }
 
     @Nullable

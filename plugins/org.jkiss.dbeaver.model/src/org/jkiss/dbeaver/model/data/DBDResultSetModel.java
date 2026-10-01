@@ -30,6 +30,11 @@ import java.util.List;
  */
 public interface DBDResultSetModel {
 
+    @Nullable
+    default DBDAttributeBinding getDocumentAttribute() {
+        return null;
+    }
+
     @NotNull
     DBDAttributeBinding[] getAttributes() throws DBException;
 
@@ -47,13 +52,14 @@ public interface DBDResultSetModel {
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
         @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         boolean retrieveDeepestCollectionElement
     ) throws DBException;
 
     @Nullable
     Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) throws DBException;
 
-    @Nullable
+    @NotNull
     DBDValueHintContext getHintContext();
 
     @Nullable

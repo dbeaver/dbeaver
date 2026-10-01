@@ -118,4 +118,8 @@ public interface DBCExecutionContext extends DBPObject, DBPCloseableObject, DBPC
      */
     @Nullable
     DBCExecutionContextDefaults getContextDefaults();
+
+    default boolean isQMLoggingEnabled() {
+        return true;
+    }
 }

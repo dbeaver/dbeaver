@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,9 @@ public abstract class HANAVectorValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-            int paramIndex, Object value) throws DBCException, SQLException {
+    protected void bindParameter(
+        @NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType,
+        int paramIndex, Object value) throws DBCException, SQLException {
         if (value == null) {
             statement.setNull(paramIndex, Types.ARRAY);
         } else if (value instanceof DBDCollection) {
@@ -65,8 +66,9 @@ public abstract class HANAVectorValueHandler extends JDBCArrayValueHandler {
             @NotNull JDBCCollection collection)
             throws DBCException, SQLException;
 
+    @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         return SUPPORTED_OPERATORS;
     }
 }

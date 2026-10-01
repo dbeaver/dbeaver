@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractDataSource;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -87,6 +88,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     private JDBCRemoteInstance defaultRemoteInstance;
 
     protected Version databaseVersion = null;
+    protected Version driverVersion = null;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
     protected List<Path> tempFiles;
@@ -135,6 +137,43 @@ public abstract class JDBCDataSource extends AbstractDataSource
             purpose);
     }
 
+    public void validateUserPassword(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String userName,
+        @NotNull String userPassword
+    ) throws DBCException {
+        DBPConnectionConfiguration actualConnectionInfo = container.getActualConnectionConfiguration();
+        if (!isUserPasswordAuthentication(actualConnectionInfo)) {
+            throw new DBCException("Current password validation requires database username/password authentication");
+        }
+        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration(actualConnectionInfo);
+        prepareUserPasswordValidationConfiguration(connectionInfo);
+        connectionInfo.setUserName(userName);
+        connectionInfo.setUserPassword(userPassword);
+        try (Connection ignored = openConnectionForPasswordValidation(monitor, connectionInfo)) {
+            // The successful connection validates the supplied credentials.
+        } catch (SQLException e) {
+            throw new DBCException("Error validating current user password", e);
+        }
+    }
+
+    protected boolean isUserPasswordAuthentication(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return CommonUtils.isEmpty(connectionInfo.getAuthModelId())
+            || AuthModelDatabaseNative.ID.equals(connectionInfo.getAuthModelId());
+    }
+
+    protected void prepareUserPasswordValidationConfiguration(@NotNull DBPConnectionConfiguration connectionInfo) {
+        connectionInfo.setAuthModelId(AuthModelDatabaseNative.ID);
+        connectionInfo.setAuthProperties(null);
+    }
+
+    protected Connection openConnectionForPasswordValidation(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        return openConnection(monitor, null, connectionInfo, "Validate current user password");
+    }
+
     protected Connection openConnection(
         @NotNull DBRProgressMonitor monitor,
         @Nullable JDBCExecutionContext context,
@@ -143,13 +182,23 @@ public abstract class JDBCDataSource extends AbstractDataSource
     ) throws DBCException {
         DBPDriver driver = container.getDriver();
         Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-        String url = getConnectionURL(connectionInfo);
+        String url;
+        try {
+            url = getConnectionURL(connectionInfo);
+        } catch (DBException ex) {
+            throw new DBCException("Connection URL preparation error", ex);
+        }
 
         url = substituteDriverIfNeeded(monitor, connectionInfo, connectProps, url);
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
         DBPAuthModelDescriptor authModelDescriptor = driver.getDataSourceProvider().detectConnectionAuthModel(driver, connectionInfo);
+        if (!authModelDescriptor.isApplicableTo(driver)) {
+            throw new DBCException(
+                "Authentication model '" + authModelDescriptor.getId() + "' is not applicable to connection '" + getName() + "'");
+        }
+
         DBAAuthModel<DBAAuthCredentials> authModel = authModelDescriptor.getInstance();
 
         // Obtain connection
@@ -319,7 +368,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Nullable
-    private Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, DBPDriver driver) throws DBCException {
+    protected Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, DBPDriver driver) throws DBCException {
         // It MUST be a JDBC driver
         Driver driverInstance = null;
         String driverClassName = driver.getDriverClassName();
@@ -388,7 +437,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Nullable
-    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
         String url = connectionInfo.getUrl();
         if (CommonUtils.isEmpty(url)) {
             url = getContainer().getDriver().getConnectionURL(connectionInfo);
@@ -535,6 +584,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
             readDatabaseServerVersion(session, metaData);
+            readDriverVersion(metaData);
 
             if (this.sqlDialect instanceof JDBCSQLDialect jdbcDialect) {
                 try {
@@ -577,6 +627,20 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
+    protected synchronized void readDriverVersion(@NotNull DatabaseMetaData metaData) {
+        if (driverVersion == null) {
+            try {
+                driverVersion = new Version(
+                    metaData.getDriverMajorVersion(),
+                    metaData.getDriverMinorVersion(),
+                    0);
+            } catch (Throwable e) {
+                log.error("Error determining driver version", e);
+                driverVersion = new Version(0, 0, 0);
+            }
+        }
+    }
+
     public boolean isServerVersionAtLeast(int major, int minor) {
         if (databaseVersion == null) {
             log.warn(new DBException("Checking server version before connection initialization"));
@@ -591,15 +655,21 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     public boolean isDriverVersionAtLeast(int major, int minor) {
+        if (driverVersion != null) {
+            if (driverVersion.getMajor() < major) {
+                return false;
+            } else {
+                return driverVersion.getMajor() != major || driverVersion.getMinor() >= minor;
+            }
+        }
         try {
             Driver driver = getDriverInstance(new VoidProgressMonitor());
             int majorVersion = driver.getMajorVersion();
             if (majorVersion < major) {
                 return false;
-            } else if (majorVersion == major && driver.getMinorVersion() < minor) {
-                return false;
+            } else {
+                return majorVersion != major || driver.getMinorVersion() >= minor;
             }
-            return true;
         } catch (DBException e) {
             log.debug("Can't obtain driver instance", e);
             return false;

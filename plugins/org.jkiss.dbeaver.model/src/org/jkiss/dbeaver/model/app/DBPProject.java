@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,12 @@ package org.jkiss.dbeaver.model.app;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemContainer;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
@@ -38,7 +36,7 @@ import java.util.UUID;
 /**
  * Project meta information.
  */
-public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
+public interface DBPProject extends DBFFileSystemContainer, SMAuthSpace, DBAPermissionRealm {
     String METADATA_FOLDER = ".dbeaver";
 
     @NotNull
@@ -141,29 +139,26 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      * Finds resources that match the supplied {@code properties} map.
      */
     @NotNull
-    String[] findResources(@NotNull Map<String, ?> properties) throws DBException;
+    String[] findResources(@NotNull Map<String, String> properties) throws DBException;
 
     @Nullable
-    Map<String, Object> getResourceProperties(@NotNull String resourcePath);
+    Map<String, String> getResourceProperties(@NotNull String resourcePath);
 
-    void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, Object> newProps);
+    void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, String> newProps);
 
     @Nullable
-    Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);
+    String getResourceProperty(@NotNull String resourcePath, @NotNull String propName);
 
-    void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
+    void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable String propValue);
 
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 
-    void refreshProject(DBRProgressMonitor monitor);
+    void refreshProject();
 
     void updateProject(@Nullable String newName, @Nullable String description) throws DBException;
 
-    @Nullable
-    DBNModel getNavigatorModel();
-
     @NotNull
-    DBFFileSystemManager getFileSystemManager();
+    DBNModel getNavigatorModel();
 
     /**
      * close project and all related resources

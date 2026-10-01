@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 
@@ -31,6 +32,6 @@ public interface DBPDataSourceURLProvider {
      * @return valid connection URL or null (if URLs not supported by driver)
      */
     @NotNull
-    String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo);
+    String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) throws DBException;
 
 }

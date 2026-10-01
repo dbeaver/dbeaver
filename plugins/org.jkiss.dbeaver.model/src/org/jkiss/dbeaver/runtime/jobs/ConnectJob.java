@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ package org.jkiss.dbeaver.runtime.jobs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -31,9 +32,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  * Always returns OK status.
  * To get real status use getConectStatus.
  */
-public class ConnectJob extends AbstractJob
-{
-    private static final Log log = Log.getLog(ConnectJob.class);
+public class ConnectJob extends AbstractJob {
 
     private volatile Thread connectThread;
     protected boolean initialize = true;
@@ -42,48 +41,63 @@ public class ConnectJob extends AbstractJob
     protected IStatus connectStatus;
     protected final DBPDataSourceContainer container;
 
-    public ConnectJob(
-        DBPDataSourceContainer container)
-    {
+    public ConnectJob(@NotNull DBPDataSourceContainer container) {
         super("Connect to '" + container.getName() + "'");
         setUser(true);
         this.container = container;
     }
 
-    public IStatus getConnectStatus() {
+    public @Nullable IStatus getConnectStatus() {
         return connectStatus;
     }
 
-    public Throwable getConnectError() {
+    public @Nullable Throwable getConnectError() {
         return connectError;
     }
 
     @NotNull
     @Override
-    protected IStatus run(@NotNull DBRProgressMonitor monitor)
-    {
+    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         try {
-            if (container.getDriver().isNotAvailable()) {
+            if (container.getDriver().getDriverStub() != null) {
                 throw new DBException(
                     "Driver " + container.getDriver().getFullName()+ " is not available." +
                     " Please see the connection page for more info.");
             }
 
-            connectThread = getThread();
-            String oldName = connectThread == null ? null : connectThread.getName();
-            if (reflect && connectThread != null) {
-                connectThread.setName(getName());
+            Thread connectionThread = getThread();
+            connectThread = connectionThread;
+            String oldName = connectionThread == null ? null : connectionThread.getName();
+            if (reflect && connectionThread != null) {
+                connectionThread.setName(getName());
             }
 
             try {
                 final boolean connected = container.connect(monitor, initialize, reflect);
+                connectThread = null;
 
-                connectStatus = connected ? Status.OK_STATUS : Status.CANCEL_STATUS;
-            } finally {
-                if (connectThread != null && oldName != null) {
-                    connectThread.setName(oldName);
-                    connectThread = null;
+                if (monitor.isCanceled()) {
+                    if (connected) {
+                        // Some drivers ignore interruption and complete initialization after cancellation.
+                        // Use a fresh monitor so the cleanup itself cannot be canceled.
+                        boolean interrupted = Thread.interrupted();
+                        try {
+                            container.disconnect(new VoidProgressMonitor());
+                        } finally {
+                            if (interrupted) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                    }
+                    connectStatus = Status.CANCEL_STATUS;
+                } else {
+                    connectStatus = connected ? Status.OK_STATUS : Status.CANCEL_STATUS;
                 }
+            } finally {
+                if (oldName != null) {
+                    connectionThread.setName(oldName);
+                }
+                connectThread = null;
             }
         }
         catch (Throwable ex) {
@@ -94,17 +108,35 @@ public class ConnectJob extends AbstractJob
         return Status.OK_STATUS;
     }
 
-    public IStatus runSync(DBRProgressMonitor monitor)
-    {
+    public @NotNull IStatus runSync(@NotNull DBRProgressMonitor monitor) {
         AbstractJob curJob = CURRENT_JOB.get();
         if (curJob != null) {
             curJob.setAttachedJob(this);
         }
+        Thread cancelWatcher = null;
         try {
             setThread(Thread.currentThread());
             reflect = false;
+            if (curJob == null) {
+                // Runnable contexts have no owner job to forward monitor cancellation.
+                cancelWatcher = Thread.ofVirtual().name("Connection cancel watcher").start(() -> {
+                    try {
+                        while (true) {
+                            if (monitor.isCanceled() && connectThread != null) {
+                                canceling();
+                                return;
+                            }
+                            Thread.sleep(50);
+                        }
+                    } catch (InterruptedException ignored) {
+                    }
+                });
+            }
             return run(monitor);
         } finally {
+            if (cancelWatcher != null) {
+                cancelWatcher.interrupt();
+            }
             if (curJob != null) {
                 curJob.setAttachedJob(null);
             }
@@ -118,8 +150,7 @@ public class ConnectJob extends AbstractJob
     }
 
     @Override
-    protected void canceling()
-    {
+    protected void canceling() {
         if (connectThread != null) {
             connectThread.interrupt();
         }

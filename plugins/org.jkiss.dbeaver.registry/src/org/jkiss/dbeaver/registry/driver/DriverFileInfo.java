@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 
 import java.nio.file.Path;
@@ -28,7 +30,13 @@ public class DriverFileInfo {
     private final String fileLocation;
     private long fileCRC;
 
-    public DriverFileInfo(String id, String version, DBPDriverLibrary.FileType type, Path file, String fileLocation) {
+    public DriverFileInfo(
+        @NotNull String id,
+        @Nullable String version,
+        @NotNull DBPDriverLibrary.FileType type,
+        @NotNull Path file,
+        @NotNull String fileLocation
+    ) {
         this.id = id;
         this.version = version;
         this.file = file;
@@ -36,7 +44,7 @@ public class DriverFileInfo {
         this.fileLocation = fileLocation;
     }
 
-    DriverFileInfo(DBPDriverLibrary library) {
+    DriverFileInfo(@NotNull DBPDriverLibrary library) {
         this.id = library.getId();
         this.version = library.getVersion();
         this.file = library.getLocalFile();
@@ -45,6 +53,7 @@ public class DriverFileInfo {
         this.fileCRC = library.getFileCRC();
     }
 
+    @Nullable
     public Path getFile() {
         return file;
     }

@@ -25,6 +25,9 @@
         <event topicId="cb_session" id="cb_access_token_expired"
                class="org.jkiss.dbeaver.model.websocket.event.session.WSAccessTokenExpiredEvent"/>
 
+        <event topicId="cb_profiles" id="cb_network_profile_updated"
+               class="org.jkiss.dbeaver.model.websocket.event.datasource.WSNetworkProfileEvent"/>
+
         <event topicId="cb_datasource" id="cb_datasource_created"
                class="org.jkiss.dbeaver.model.websocket.event.datasource.WSDataSourceEvent"/>
         <event topicId="cb_datasource" id="cb_datasource_updated"

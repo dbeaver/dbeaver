@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,16 @@
 package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class ChatTruncator {
+
+    private static final String DEFAULT_TRUNCATED_SUFFIX  = "\n[...truncated, don't try again]";
 
     private final int maxTokens;
     private final int reserveForSystem;
@@ -34,26 +34,29 @@ public final class ChatTruncator {
     private final int reserveForOverhead;
     private final TokenCounter counter;
 
-    private ChatTruncator(Builder b) {
+    private ChatTruncator(@NotNull Builder b) {
         this.maxTokens = b.maxTokens;
         this.reserveForReply = b.reserveForReply;
         this.reserveForOverhead = b.reserveForOverhead;
         this.counter = Objects.requireNonNull(b.counter, "TokenCounter is required");
         this.reserveForSystem = b.reserveForSystem;
         if (maxTokens <= reserveForReply + reserveForOverhead) {
-            throw new IllegalArgumentException("maxDbSnapshotTokens too small for the reserves");
+            throw new IllegalArgumentException("This AI request does not fit into the selected context window");
         }
     }
 
     /**
-     * Truncate the conversation to fit into (maxDbSnapshotTokens - reserves).
-     * Ordering in the result is chronological (SYSTEM first, then oldest->newest).
+     * Attempts to truncate the conversation so it fits within the configured token budget.
+     *
+     * @param input the full conversation history (may be unordered with respect to SYSTEM messages)
+     * @return the truncated message list if anything was cut or dropped,
+     *         or {@code null} if the entire input already fits within the budget unchanged
      */
-    @NotNull
-    public List<AIMessage> truncate(@NotNull List<AIMessage> input) {
+    @Nullable
+    public List<AIMessage> tryTruncate(@NotNull List<AIMessage> input) {
         List<AIMessage> messages = filterNonEmpty(input);
         if (messages.isEmpty()) {
-            return List.of();
+            return null;
         }
 
         // 1) Extract and merge SYSTEM messages
@@ -74,47 +77,88 @@ public final class ChatTruncator {
         int headroom = maxTokens - reserveForReply - reserveForOverhead;
         int budget = Math.max(0, headroom - systemCap);
 
-        // 2) Walk from newest to oldest
-        ArrayList<AIMessage> pickedReverse = new ArrayList<>(rest.size());
+        // 2) Walk from newest to oldest.
+        List<AIMessage> pickedReverse = new ArrayList<>(rest.size());
         int used = 0;
+        boolean truncated = false;
 
-        // Simple greedy: newest -> oldest
-        for (int i = rest.size() - 1; i >= 0; i--) {
-            AIMessage m = rest.get(i);
-            int t = counter.count(m.getContent());
-            if (used + t <= budget) {
-                pickedReverse.add(m);
-                used += t;
-            } else {
-                int remaining = budget - used;
-                if (remaining <= 0) {
+        if (!rest.isEmpty()) {
+            int[] pinnedIndexes = getLastUserAndAssistantMessage(rest);
+            Map<Integer, AIMessage> pinned = new LinkedHashMap<>();
+            for (int idx : pinnedIndexes) {
+                if (idx < 0) {
+                    continue;
+                }
+                AIMessage m = rest.get(idx);
+                AIMessage truncatedMessage = tryTruncateMessage(m, Math.max(0, budget - used));
+                AIMessage pickedMessage = truncatedMessage == null ? m : truncatedMessage;
+                pinned.put(idx, pickedMessage);
+                used += counter.count(pickedMessage.getContent());
+                truncated = truncated | truncatedMessage != null;
+            }
+
+            Map<Integer, AIMessage> extra = new LinkedHashMap<>();
+            for (int i = rest.size() - 1; i >= 0; i--) {
+                if (pinned.containsKey(i)) {
+                    continue;
+                }
+                AIMessage m = rest.get(i);
+                AIMessage truncatedMessage = tryTruncateMessage(m, budget - used);
+                if (truncatedMessage == null) {
+                    extra.put(i, m);
+                    used += counter.count(m.getContent());
+                } else {
+                    truncated = true;
+                    int contentTokens = countTokensWithoutTruncatedSuffix(truncatedMessage);
+                    if (contentTokens <= 0) {
+                        break;
+                    }
+                    extra.put(i, truncatedMessage);
+                    used += contentTokens;
                     break;
                 }
-                AIMessage cut = truncateToTokens(m, remaining);
-                int cutTokens = counter.count(cut.getContent());
-                if (cutTokens > 0) {
-                    pickedReverse.add(cut);
-                    used += cutTokens;
-                }
-                break;
             }
+
+            TreeMap<Integer, AIMessage> ordered = new TreeMap<>();
+            ordered.putAll(pinned);
+            ordered.putAll(extra);
+            pickedReverse.addAll(ordered.values()); // TreeMap iterates in ascending key order
         }
 
-        // 3) Chronological order
-        Collections.reverse(pickedReverse);
-
-        // 4) Place SYSTEM in front
-        ArrayList<AIMessage> result = new ArrayList<>(pickedReverse.size() + 1);
+        // 3) Place SYSTEM in front; optionally prepend omission notice
+        ArrayList<AIMessage> result = new ArrayList<>(pickedReverse.size() + 2);
         if (mergedSystem != null) {
             int remainingForSystem = Math.max(0, headroom - used);
-            result.add(truncateToTokens(mergedSystem, remainingForSystem));
+            AIMessage truncatedSystem = tryTruncateMessage(mergedSystem, remainingForSystem);
+            truncated = truncated || truncatedSystem != null;
+            result.add(truncatedSystem == null ? mergedSystem : truncatedSystem);
         }
 
         result.addAll(pickedReverse);
-        return result;
+        return truncated ? result : null;
     }
 
-    private static AIMessage mergeSystems(List<AIMessage> systems) {
+    @NotNull
+    private static int[] getLastUserAndAssistantMessage(@NotNull List<AIMessage> rest) {
+        int pinnedUserIdx = -1;
+        int pinnedAssistantIdx = -1;
+        for (int i = rest.size() - 1; i >= 0; i--) {
+            AIMessageType role = rest.get(i).getRole();
+            if (pinnedUserIdx < 0 && role == AIMessageType.USER) {
+                pinnedUserIdx = i;
+            }
+            if (pinnedAssistantIdx < 0 && role == AIMessageType.ASSISTANT) {
+                pinnedAssistantIdx = i;
+            }
+            if (pinnedUserIdx >= 0 && pinnedAssistantIdx >= 0) {
+                break;
+            }
+        }
+        return new int[]{pinnedUserIdx, pinnedAssistantIdx};
+    }
+
+    @NotNull
+    private static AIMessage mergeSystems(@NotNull List<AIMessage> systems) {
         assert !systems.isEmpty() : "At least one SYSTEM message is required";
 
         // Preserve chronological order; newest last has the highest precedence for humans reading.
@@ -126,7 +170,8 @@ public final class ChatTruncator {
         return systems.getFirst().withContent(mergedMessage);
     }
 
-    private static List<AIMessage> filterNonEmpty(List<AIMessage> in) {
+    @NotNull
+    private static List<AIMessage> filterNonEmpty(@Nullable List<AIMessage> in) {
         if (in == null || in.isEmpty()) {
             return List.of();
         }
@@ -143,7 +188,8 @@ public final class ChatTruncator {
      * Truncate message content to <= maxDbSnapshotTokens using binary search over substring length.
      * Keeps the BEGINNING of the content (most stable/system prompts, etc).
      */
-    private AIMessage truncateToTokens(AIMessage message, int maxTokens) {
+    @NotNull
+    private AIMessage truncateToTokens(@NotNull AIMessage message, int maxTokens) {
         if (maxTokens <= 0) {
             return message.withContent("");
         }
@@ -171,7 +217,25 @@ public final class ChatTruncator {
         return best;
     }
 
-    private static String safeHead(String s, int headLen) {
+    @Nullable
+    private AIMessage tryTruncateMessage(@NotNull AIMessage message, int maxTokens) {
+        if (maxTokens >= counter.count(message.getContent())) {
+            return null;
+        }
+        AIMessage truncatedMessage = truncateToTokens(message, maxTokens);
+        return truncatedMessage.withContent(truncatedMessage.getContent() + DEFAULT_TRUNCATED_SUFFIX);
+    }
+
+    private int countTokensWithoutTruncatedSuffix(@NotNull AIMessage message) {
+        String content = message.getContent();
+        if (!content.endsWith(DEFAULT_TRUNCATED_SUFFIX)) {
+            return counter.count(content);
+        }
+        return counter.count(content.substring(0, content.length() - DEFAULT_TRUNCATED_SUFFIX.length()));
+    }
+
+    @NotNull
+    private static String safeHead(@NotNull String s, int headLen) {
         if (headLen <= 0) {
             return "";
         }
@@ -183,6 +247,7 @@ public final class ChatTruncator {
 
     // ----- builder -----
 
+    @NotNull
     public static Builder builder() {
         return new Builder();
     }
@@ -194,34 +259,40 @@ public final class ChatTruncator {
         private int reserveForOverhead;
         private TokenCounter counter;
 
+        @NotNull
         public Builder maxTokens(int v) {
             this.maxTokens = v;
             return this;
         }
 
+        @NotNull
         public Builder reserveForSystem(int v) {
             this.reserveForSystem = v;
             return this;
         }
 
+        @NotNull
         public Builder reserveForReply(int v) {
             this.reserveForReply = v;
             return this;
         }
 
+        @NotNull
         public Builder reserveForOverhead(int v) {
             this.reserveForOverhead = v;
             return this;
         }
 
-        public Builder tokenCounter(TokenCounter c) {
+        @NotNull
+        public Builder tokenCounter(@NotNull TokenCounter c) {
             this.counter = c;
             return this;
         }
 
+        @NotNull
         public ChatTruncator build() {
             assert maxTokens > reserveForReply + reserveForOverhead + reserveForSystem
-                : "maxDbSnapshotTokens must be greater than the sum of reserves";
+                : "This AI request does not fit into the selected context window";
 
             return new ChatTruncator(this);
         }

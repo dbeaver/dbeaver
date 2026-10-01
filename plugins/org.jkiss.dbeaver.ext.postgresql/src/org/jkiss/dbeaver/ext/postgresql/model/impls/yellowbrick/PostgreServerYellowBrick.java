@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
@@ -39,13 +39,15 @@ public class PostgreServerYellowBrick extends PostgreServerExtensionBase {
         return false;
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "YellowBrick";
     }
 
+    @Nullable
     @Override
-    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+    public String readTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase table) {
         // Extract main portion from server
         StringBuilder ddl = new StringBuilder();
 

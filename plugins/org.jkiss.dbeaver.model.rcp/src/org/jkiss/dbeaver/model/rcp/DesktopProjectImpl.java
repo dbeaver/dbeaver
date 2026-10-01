@@ -33,9 +33,6 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFolder;
 import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -44,6 +41,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -182,26 +180,12 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
     @Override
     public <T> T adaptResource(DBFVirtualFileSystemRoot fsRoot, Path path, Class<T> adapter) {
         if (adapter == IResource.class) {
-            return adapter.cast(createResourceFromPath(fsRoot, path));
+            return adapter.cast(ResourceUtils.createResourceFromPath(fsRoot, getEclipseProject(), path));
         }
         return null;
     }
 
     @NotNull
-    private IResource createResourceFromPath(DBFVirtualFileSystemRoot fsRoot, Path path) {
-        EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
-            getEclipseProject(),
-            fsRoot,
-            fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
-        );
-        if (fsRoot.getFileSystem().isDirectory(path)) {
-            return new EFSNIOFolder(root, path);
-        } else {
-            return new EFSNIOFile(root, path);
-        }
-    }
-
-    @Nullable
     @Override
     public DBNModel getNavigatorModel() {
         return getWorkspace().getPlatform().getNavigatorModel();
@@ -250,7 +234,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
         Path mdConfig = getMetadataPath().resolve(BaseProjectImpl.METADATA_STORAGE_FILE);
         if (!Files.exists(mdConfig)) {
             // Migrate
-            Map<String, Map<String, Object>> projectResourceProperties = extractProjectResourceProperties();
+            Map<String, Map<String, String>> projectResourceProperties = extractProjectResourceProperties();
             synchronized (metadataSync) {
                 setResourceProperties(projectResourceProperties);
             }
@@ -258,8 +242,8 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
         }
     }
 
-    private Map<String, Map<String, Object>> extractProjectResourceProperties() {
-        Map<String, Map<String, Object>> result = new LinkedHashMap<>();
+    private Map<String, Map<String, String>> extractProjectResourceProperties() {
+        Map<String, Map<String, String>> result = new LinkedHashMap<>();
 
         DBPWorkspaceEclipse workspaceEclipse;
         if (getWorkspace() instanceof DBPWorkspaceEclipse) {
@@ -283,7 +267,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
                                                           if ("sql-editor-project-id".equals(resProps[1])) {
                                                               continue;
                                                           }
-                                                          Map<String, Object> propsMap = result.computeIfAbsent(
+                                                          Map<String, String> propsMap = result.computeIfAbsent(
                                                               entry.getPath().makeRelativeTo(projectPath).toString(), s -> new LinkedHashMap<>());
                                                           propsMap.put(resProps[1], resProps[2]);
                                                       }
@@ -335,7 +319,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
     }
 
     @NotNull
-    public Map<String, Map<String, Object>> getAllResourceProperties() {
+    public Map<String, Map<String, String>> getAllResourceProperties() {
         this.loadMetadata();
         synchronized (resourcesSync) {
             return new TreeMap<>(this.resourceProperties);
@@ -360,7 +344,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
         synchronized (resourcesSync) {
             if (resourceProperties != null) {
                 String oldResPath = CommonUtils.normalizeResourcePath(oldPath.toString());
-                Map<String, Object> props = resourceProperties.remove(oldResPath);
+                Map<String, String> props = resourceProperties.remove(oldResPath);
                 if (props != null) {
                     String newResPath = CommonUtils.normalizeResourcePath(newPath.toString());
                     resourceProperties.put(newResPath, props);

@@ -11,5 +11,9 @@
         <parameter
             exitAfterExecute="true"
             handler="org.jkiss.dbeaver.model.cli.command.ListNetworkHandlersParameterHandler"/>
+        <parameter
+            exitAfterExecute="true"
+            handler="org.jkiss.dbeaver.model.cli.command.CLIAutoComplete"/>
+
     </extension>
 </plugin>

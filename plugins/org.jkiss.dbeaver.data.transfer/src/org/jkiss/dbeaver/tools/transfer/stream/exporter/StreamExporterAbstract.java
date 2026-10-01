@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
@@ -54,7 +55,7 @@ public abstract class StreamExporterAbstract implements IStreamDataExporter {
     }
 
     @Override
-    public void dispose()
+    public void dispose() throws IOException
     {
         // do nothing
     }

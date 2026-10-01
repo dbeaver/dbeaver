@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.hive.model.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -55,8 +56,13 @@ public class HiveTableManager extends GenericTableManager implements DBEObjectRe
         return CHILD_TYPES;
     }
 
+    @Nullable
     @Override
-    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, GenericTableBase object, Class<? extends DBSObject> childType) throws DBException {
+    public Collection<? extends DBSObject> getChildObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase object,
+        @NotNull Class<? extends DBSObject> childType
+    ) throws DBException {
         if (childType == HiveTableColumn.class) {
             return object.getAttributes(monitor);
         } else if (childType == HiveIndex.class) {

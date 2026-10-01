@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreInfo;
@@ -62,7 +64,7 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
     }
 
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
+    public void init(@NotNull IWorkbench workbench, @Nullable IStructuredSelection selection) {
         super.init(workbench, selection);
         settingsPage = new PostgreRestoreWizardPageSettings(this);
     }
@@ -75,7 +77,7 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
     }
 
     @Override
-    public IWizardPage getNextPage(IWizardPage page) {
+    public IWizardPage getNextPage(@NotNull IWizardPage page) {
         if (page == settingsPage) {
             return null;
         }
@@ -83,7 +85,7 @@ class PostgreRestoreWizard extends AbstractNativeImportExportWizard<PostgreDatab
     }
 
     @Override
-    public IWizardPage getPreviousPage(IWizardPage page) {
+    public IWizardPage getPreviousPage(@NotNull IWizardPage page) {
         if (page == logPage) {
             return settingsPage;
         }

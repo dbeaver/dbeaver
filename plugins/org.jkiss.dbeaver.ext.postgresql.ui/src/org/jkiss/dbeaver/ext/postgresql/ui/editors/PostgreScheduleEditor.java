@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,6 +26,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
@@ -287,14 +286,11 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
         final int cols = ((GridLayout) parent.getLayout()).numColumns;
         final int rows = (int) Math.ceil(input.length / (float) cols);
         final Button[] buttons = new Button[input.length];
-        final SelectionListener listener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        final SelectionListener listener = SelectionListener.widgetSelectedAdapter(e -> {
                 final Button button = (Button) e.widget;
                 final T data = (T) button.getData();
                 decorator.setChecked(data, button.getSelection());
-            }
-        };
+            });
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -375,7 +371,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             super(object, "Update schedule");
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             final PostgreJobSchedule schedule = getObject();
@@ -417,9 +413,9 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             };
         }
 
-        @NotNull
+        @Nullable
         @Override
-        public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
+        public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
             final String name = "schedule#" + getObject().getObjectId();
 
             if (userParams.putIfAbsent(name, this) == null) {

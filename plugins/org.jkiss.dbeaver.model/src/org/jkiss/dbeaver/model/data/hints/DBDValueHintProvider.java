@@ -37,5 +37,5 @@ public interface DBDValueHintProvider {
     int OPTION_ACTION_TOOLTIP = 1 << 3; // Tooltip for hint action button
     int OPTION_ROW_EXPANDED = 1 << 4; // Passed row is expanded (has sub-rows)
     int OPTION_APPROXIMATE = 1 << 5; // Return hints ignoring actual row values
-
+    int OPTION_RECORD_MODE = 1 << 6; // ResultSetViewer is in record mode
 }

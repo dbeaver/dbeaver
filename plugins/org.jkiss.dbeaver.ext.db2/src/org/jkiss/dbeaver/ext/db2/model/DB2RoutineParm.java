@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +24,8 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineRowType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPOverloadedObject;
+import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -39,30 +40,29 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Routine Parameter
- * 
+ *
  * @author Denis Forveille
  */
-public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DBSTypedObjectEx {
+public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DBSTypedObjectEx, DBPUniqueObject, DBPOverloadedObject {
     private static final String UNNAMED_PARAM_PREFIX = "parameter#";
 
-    private final DB2Routine  procedure;
-    private String            name;
-    private String            remarks;
-    private Integer           scale;
-    private Integer           length;
+    private final DB2Routine procedure;
+    private String name;
+    private String remarks;
+    private Integer scale;
+    private Integer length;
     private DB2RoutineRowType rowType;
 
-    private DB2DataType       dataType;
-    private DB2Schema         dataTypeSchema;
+    private DB2DataType dataType;
+    private DB2Schema dataTypeSchema;
 
-    private String            typeName;
+    private String typeName;
 
     // -----------------------
     // Constructors
     // -----------------------
 
-    public DB2RoutineParm(DBRProgressMonitor monitor, DB2Routine procedure, ResultSet dbResult) throws DBException
-    {
+    public DB2RoutineParm(DBRProgressMonitor monitor, DB2Routine procedure, ResultSet dbResult) throws DBException {
         super();
 
         this.procedure = procedure;
@@ -110,33 +110,28 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return remarks;
     }
 
     @NotNull
     @Override
-    public DB2DataSource getDataSource()
-    {
+    public DB2DataSource getDataSource() {
         return procedure.getDataSource();
     }
 
     @Override
-    public DB2Routine getParentObject()
-    {
+    public DB2Routine getParentObject() {
         return procedure;
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return true;
     }
 
     @Override
-    public Integer getPrecision()
-    {
+    public Integer getPrecision() {
         // TODO Auto-generated method stub
         return 0;
     }
@@ -144,28 +139,24 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
     // DF: Strange typeName and typeId are attributes of DBPDataKind...
     @NotNull
     @Override
-    public String getTypeName()
-    {
+    public String getTypeName() {
         return typeName;
     }
 
     @NotNull
     @Override
-    public String getFullTypeName()
-    {
+    public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
     }
 
     @Override
-    public int getTypeID()
-    {
+    public int getTypeID() {
         return dataType.getEquivalentSqlType();
     }
 
     @NotNull
     @Override
-    public DBPDataKind getDataKind()
-    {
+    public DBPDataKind getDataKind() {
         return dataType.getDataKind();
     }
 
@@ -176,37 +167,49 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
+    @NotNull
+    @Override
+    public String getUniqueName() {
+        // Signature parameters (IN/OUT/INOUT) have unique names, so no rowType qualification needed.
+        // Result columns (R/C) and state (S) may clash with a parameter name - disambiguate them.
+        if (rowType == null || rowType == DB2RoutineRowType.P || rowType == DB2RoutineRowType.O || rowType == DB2RoutineRowType.B) {
+            return name;
+        }
+        return name + " (" + rowType.getName() + ")";
+    }
+
+    @NotNull
+    @Override
+    public String getOverloadedName() {
+        return getUniqueName();
+    }
+
     @Property(viewable = true, order = 2)
-    public DB2Schema getDataTypeSchema()
-    {
+    public DB2Schema getDataTypeSchema() {
         return dataTypeSchema;
     }
 
     @Nullable
     @Override
     @Property(viewable = true, order = 3)
-    public DB2DataType getDataType()
-    {
+    public DB2DataType getDataType() {
         return dataType;
     }
 
     @NotNull
     @Override
     @Property(viewable = true, order = 4)
-    public DBSProcedureParameterKind getParameterKind()
-    {
+    public DBSProcedureParameterKind getParameterKind() {
         return rowType.getParameterKind();
     }
 
     @Override
     @Property(viewable = true, order = 5)
-    public long getMaxLength()
-    {
+    public long getMaxLength() {
         return length;
     }
 
@@ -217,20 +220,17 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
 
     @Override
     @Property(viewable = true, order = 6)
-    public Integer getScale()
-    {
+    public Integer getScale() {
         return scale;
     }
 
-    public DB2RoutineRowType getRowType()
-    {
+    public DB2RoutineRowType getRowType() {
         return rowType;
     }
 
     @NotNull
     @Override
-    public DBSTypedObject getParameterType()
-    {
+    public DBSTypedObject getParameterType() {
         return this;
     }
 }

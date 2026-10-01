@@ -537,6 +537,7 @@ public class DB2Table extends DB2TableBase
         return lastRegenTime;
     }
 
+    @Nullable
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
     {
@@ -554,6 +555,7 @@ public class DB2Table extends DB2TableBase
         }
     }
 
+    @NotNull
     @Override
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return PRESENTED_PSEUDO_ATTRS;

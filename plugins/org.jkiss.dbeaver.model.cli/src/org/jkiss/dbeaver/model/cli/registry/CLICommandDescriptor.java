@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.cli.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -26,6 +27,7 @@ public class CLICommandDescriptor extends AbstractDescriptor {
     private final boolean exitAfterExecute;
     private final boolean exclusiveMode;
     private final boolean forceNewInstance;
+    private final String commandName;
     @NotNull
     private final ObjectType type;
     @Nullable
@@ -36,6 +38,7 @@ public class CLICommandDescriptor extends AbstractDescriptor {
         this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
         this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
         this.forceNewInstance = CommonUtils.toBoolean(config.getAttribute("forceNewInstance"));
+        this.commandName = config.getAttribute("name");
         this.type = new ObjectType(config.getAttribute("handler"));
         if (CommonUtils.isNotEmpty(config.getAttribute("replace"))) {
             this.replace = new ObjectType(config.getAttribute("replace"));
@@ -44,6 +47,10 @@ public class CLICommandDescriptor extends AbstractDescriptor {
         }
     }
 
+    @NotNull
+    public String getCommandName() {
+        return commandName;
+    }
 
     public boolean isExclusiveMode() {
         return exclusiveMode;
@@ -60,6 +67,11 @@ public class CLICommandDescriptor extends AbstractDescriptor {
     @NotNull
     public Class<?> getImplClass() {
         return type.getImplClass();
+    }
+
+    @NotNull
+    public Object getInstance() throws DBException {
+        return type.createInstance(getImplClass());
     }
 
     @Nullable

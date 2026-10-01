@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,13 @@ package org.jkiss.util;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.utils.AlphanumericComparator;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class AlphanumericComparatorTest {
     private final AlphanumericComparator comparator = AlphanumericComparator.getInstance();
@@ -45,19 +43,19 @@ public class AlphanumericComparatorTest {
     public void comparatorIgnoreCaseTestBorderCases() {
         AlphanumericComparator alphanumericComparator = AlphanumericComparator.getInstance();
         // even cases letters
-        assertEquals(0, alphanumericComparator.compareIgnoreCase("A", "A"));
-        assertEquals(0, alphanumericComparator.compareIgnoreCase("a", "A"));
-        assertEquals(0, alphanumericComparator.compareIgnoreCase("a", "a"));
-        assertEquals(0, alphanumericComparator.compareIgnoreCase("test", "TEST"));
-        assertEquals(0, alphanumericComparator.compareIgnoreCase("TesT", "TEst"));
-        assertEquals(0, alphanumericComparator.compareIgnoreCase("TesT", "TEst"));
-        assertEquals(0, alphanumericComparator.compareIgnoreCase("LongStringWithCASE", "longstringwithcase"));
+        Assertions.assertEquals(0, alphanumericComparator.compareIgnoreCase("A", "A"));
+        Assertions.assertEquals(0, alphanumericComparator.compareIgnoreCase("a", "A"));
+        Assertions.assertEquals(0, alphanumericComparator.compareIgnoreCase("a", "a"));
+        Assertions.assertEquals(0, alphanumericComparator.compareIgnoreCase("test", "TEST"));
+        Assertions.assertEquals(0, alphanumericComparator.compareIgnoreCase("TesT", "TEst"));
+        Assertions.assertEquals(0, alphanumericComparator.compareIgnoreCase("TesT", "TEst"));
+        Assertions.assertEquals(0, alphanumericComparator.compareIgnoreCase("LongStringWithCASE", "longstringwithcase"));
 
         // not even
-        assertTrue(alphanumericComparator.compareIgnoreCase("b", "a") > 0);
-        assertTrue(alphanumericComparator.compareIgnoreCase("b", "A") > 0);
-        assertTrue(alphanumericComparator.compareIgnoreCase("a2", "A1") > 0);
-        assertTrue(alphanumericComparator.compareIgnoreCase("aa", "a") > 0);
+        Assertions.assertTrue(alphanumericComparator.compareIgnoreCase("b", "a") > 0);
+        Assertions.assertTrue(alphanumericComparator.compareIgnoreCase("b", "A") > 0);
+        Assertions.assertTrue(alphanumericComparator.compareIgnoreCase("a2", "A1") > 0);
+        Assertions.assertTrue(alphanumericComparator.compareIgnoreCase("aa", "a") > 0);
     }
 
     @Test
@@ -534,8 +532,7 @@ public class AlphanumericComparatorTest {
         final ArrayList<? extends CharSequence> sorted = new ArrayList<>(input);
         sorted.sort(comparator);
 
-        assertEquals(expected, sorted);
+        Assertions.assertEquals(expected, sorted);
     }
-
 
 }

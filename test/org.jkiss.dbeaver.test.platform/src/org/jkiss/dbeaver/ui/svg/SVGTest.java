@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,18 @@ package org.jkiss.dbeaver.ui.svg;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.imageio.ImageIO;
 
 public class SVGTest {
     @Test
-    @Ignore("See #26434")
+    @Disabled("See #26434")
     public void rasterizeSvgAndCompareToPngTest() throws IOException {
         compareImages("logo.svg", "logo.png", 1.0f);
         compareImages("logo.svg", "logo@1.5x.png", 1.5f);
@@ -40,7 +40,7 @@ public class SVGTest {
     }
 
     @Test
-    @Ignore("See #26434")
+    @Disabled("See #26434")
     public void rasterizeSvgStressTest() throws IOException {
         final long start = System.currentTimeMillis();
         final int count = 1000;
@@ -58,27 +58,27 @@ public class SVGTest {
         final BufferedImage actual;
 
         try (InputStream is = SVGTest.class.getResourceAsStream(svgImagePath)) {
-            Assert.assertNotNull("Should be able to locate source SVG image at " + svgImagePath, is);
+            Assertions.assertNotNull(is, "Should be able to locate source SVG image at " + svgImagePath);
             actual = getImage(is, factor);
-            Assert.assertNotNull("Should be able to load source SVG image at " + svgImagePath, actual);
+            Assertions.assertNotNull(actual, "Should be able to load source SVG image at " + svgImagePath);
         }
 
         try (InputStream is = SVGTest.class.getResourceAsStream(pngImagePath)) {
-            Assert.assertNotNull("Should be able to locate target PNG image at " + pngImagePath, is);
+            Assertions.assertNotNull(is, "Should be able to locate target PNG image at " + pngImagePath);
             expected = ImageIO.read(is);
-            Assert.assertNotNull("Should be able to load target PNG image at " + pngImagePath, expected);
+            Assertions.assertNotNull(expected, "Should be able to load target PNG image at " + pngImagePath);
         }
 
         compareImages(actual, expected);
     }
 
     private static void compareImages(@NotNull BufferedImage a, @NotNull BufferedImage b) {
-        Assert.assertEquals(a.getWidth(), b.getWidth());
-        Assert.assertEquals(a.getHeight(), b.getHeight());
+        Assertions.assertEquals(a.getWidth(), b.getWidth());
+        Assertions.assertEquals(a.getHeight(), b.getHeight());
 
         for (int x = 0; x < a.getWidth(); x++) {
             for (int y = 0; y < a.getHeight(); y++) {
-                Assert.assertEquals("Pixel at %d-%d should be the same".formatted(x, y), a.getRGB(x, y), b.getRGB(x, y));
+                Assertions.assertEquals(a.getRGB(x, y), b.getRGB(x, y), "Pixel at %d-%d should be the same".formatted(x, y));
             }
         }
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -54,7 +55,7 @@ class PostgreScriptExecuteWizard extends AbstractNativeScriptExecuteWizard<Postg
     }
 
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
+    public void init(@NotNull IWorkbench workbench, @Nullable IStructuredSelection selection) {
         super.init(workbench, selection);
         this.mainPage = new PostgreScriptExecuteWizardPageSettings(this);
     }

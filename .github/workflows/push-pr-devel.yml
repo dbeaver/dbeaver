@@ -21,10 +21,13 @@ jobs:
     with:
       project-directory: ./dbeaver/product/aggregate
       project-deps: ./dbeaver/project.deps
-      timeout-minutes: 5
-      mvn-args: -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce,appstore
+      timeout-minutes: 10
+      mvn-args: -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce
 
   lint-java:
     name: Check style
     uses: dbeaver/dbeaver-common/.github/workflows/java-checkstyle.yml@devel
     secrets: inherit
+    permissions:
+      contents: read
+      pull-requests: read

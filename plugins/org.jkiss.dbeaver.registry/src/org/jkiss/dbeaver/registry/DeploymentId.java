@@ -1,0 +1,71 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.registry;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
+
+import java.util.Base64;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
+public final class DeploymentId {
+
+    private static final Log log = Log.getLog(DeploymentId.class);
+
+    private static final String PREF_NODE = "org/jkiss/dbeaver";
+    private static final String PREF_KEY = "deploymentId";
+
+    private static final String PREFIX = "DI";
+    private static final int RANDOM_BYTES = 12;
+
+    private DeploymentId() {
+    }
+
+    @NotNull
+    public static synchronized String get() {
+        Preferences prefs = Preferences.userRoot().node(PREF_NODE);
+        String id = prefs.get(PREF_KEY, null);
+        if (CommonUtils.isEmpty(id)) {
+            id = generate();
+            prefs.put(PREF_KEY, id);
+            try {
+                prefs.flush();
+            } catch (BackingStoreException e) {
+                log.error("Cannot persist deployment id", e);
+            }
+        }
+        return id;
+    }
+
+    @NotNull
+    private static String generate() {
+        String macHex;
+        try {
+            macHex = CommonUtils.toHexString(RuntimeUtils.getLocalMacAddress());
+        } catch (Exception e) {
+            log.debug("Cannot read MAC address for deployment id", e);
+            macHex = "";
+        }
+        String random = Base64.getEncoder().withoutPadding()
+            .encodeToString(SecurityUtils.generateRandomBytes(RANDOM_BYTES));
+        return String.join("_", PREFIX, macHex, random);
+    }
+}

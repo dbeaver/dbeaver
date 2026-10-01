@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ public class CopilotMessages extends NLS {
     public static String copilot_preference_page_token_info;
     public static String copilot_access_token;
     public static String copilot_access_token_authorize;
+    public static String copilot_access_token_required;
     public static String oauth_auth_title;
     public static String oauth_auth_success_message;
     public static String oauth_auth_error_message;

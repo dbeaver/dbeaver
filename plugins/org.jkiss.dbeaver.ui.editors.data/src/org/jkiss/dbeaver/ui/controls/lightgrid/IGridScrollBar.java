@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,62 +19,48 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
 
 /**
  * Used by Grid to externalize the scrollbars from the table itself.
- * 
- * @author chris.gross@us.ibm.com
- * @version 1.0.0
  */
-public interface IGridScrollBar
-{
+public interface IGridScrollBar {
 
-    public int getWidth();
+    int getWidth();
 
-    public boolean getVisible();
+    boolean getVisible();
 
-    public void setVisible(boolean visible);
+    void setVisible(boolean visible);
 
-    public int getSelection();
+    int getSelection();
 
-    public void setSelection(int selection);
+    void setSelection(int selection);
 
     /**
      * Sets the receiver's selection, minimum value, maximum value, thumb,
      * increment and page increment all at once.
-     * 
-     * @param selection selection
-     * @param min minimum
-     * @param max maximum
-     * @param thumb thumb
-     * @param increment increment
-     * @param pageIncrement page increment
      */
-    public void setValues(int selection, int min, int max, int thumb, int increment, int pageIncrement);
+    void setValues(int selection, int min, int max, int thumb, int increment, int pageIncrement);
 
-    public void handleMouseWheel(Event e);
+    void handleMouseWheel(Event e);
     
-    public void setMinimum(int min);
+    void setMinimum(int min);
     
-    public int getMinimum();
+    int getMinimum();
     
-    public void setMaximum(int max);
+    void setMaximum(int max);
     
-    public int getMaximum();
+    int getMaximum();
     
-    public void setThumb(int thumb);
+    void setThumb(int thumb);
     
-    public int getThumb();
+    int getThumb();
     
-    public void setIncrement(int increment);
+    void setIncrement(int increment);
     
-    public int getIncrement();
+    int getIncrement();
+
+    void addSelectionListener(@NotNull SelectionListener listener);
     
-    public void setPageIncrement(int page);
-    
-    public int getPageIncrement();
-    
-    public void addSelectionListener(SelectionListener listener);
-    
-    public void removeSelectionListener(SelectionListener listener);
+    void removeSelectionListener(@NotNull SelectionListener listener);
 }

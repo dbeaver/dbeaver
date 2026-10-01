@@ -84,7 +84,7 @@ public class Log {
 
         quietMode = ArrayUtils.containsAny(
             Platform.getApplicationArgs(),
-            "-q", "--q", "-h", "-help", "--help", "-version", "--version"
+            "-q", "--q", "-quiet", "-h", "-help", "--help", "-version", "--version"
         );
     }
 
@@ -193,10 +193,6 @@ public class Log {
         return name;
     }
 
-    public boolean isDebugEnabled() {
-        return handler == null || handler.isDebugEnabled(name);
-    }
-
     public boolean isErrorEnabled() {
         return handler == null || handler.isErrorEnabled(name);
     }
@@ -209,13 +205,18 @@ public class Log {
         return handler == null || handler.isInfoEnabled(name);
     }
 
-    public boolean isTraceEnabled() {
-        return handler == null || handler.isTraceEnabled(name);
-    }
-
     public boolean isWarnEnabled() {
         return handler == null || handler.isWarnEnabled(name);
     }
+
+    public boolean isDebugEnabled() {
+        return handler != null && handler.isDebugEnabled(name);
+    }
+
+    public boolean isTraceEnabled() {
+        return handler != null && handler.isTraceEnabled(name);
+    }
+
 
     public void trace(Object message) {
         if (message instanceof Throwable) {

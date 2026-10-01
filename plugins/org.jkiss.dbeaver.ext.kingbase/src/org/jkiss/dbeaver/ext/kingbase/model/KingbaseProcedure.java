@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.kingbase.KingbaseUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,12 +34,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -51,12 +48,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class KingbaseProcedure extends PostgreProcedure{
     private static final Log log = Log.getLog(KingbaseProcedure.class);
-   
-   
+
     public long propackageid;
     public String prokind;
     public String procSrc;
@@ -216,8 +211,8 @@ public class KingbaseProcedure extends PostgreProcedure{
     private void inArgTypesJudge(long[] inArgTypes, DBRProgressMonitor monitor, String[] argNames) {
         if (!ArrayUtils.isEmpty(inArgTypes)) {
             for (int i = 0; i < inArgTypes.length; i++) {
-                Long paramType = inArgTypes[i];
-                final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType.intValue());
+                long paramType = inArgTypes[i];
+                final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType);
                 if (dataType == null) {
                     log.warn("Parameter data type [" + paramType + "] not found");
                     continue;
@@ -277,12 +272,6 @@ public class KingbaseProcedure extends PostgreProcedure{
             }
         }
     }
-    
-    @NotNull
-    @Override
-    public PostgreDatabase getDatabase() {
-        return container.getDatabase();
-    }
 
     @Property(viewable = false, order = 3)
     public PostgreProcedureKind getKind() {
@@ -291,12 +280,6 @@ public class KingbaseProcedure extends PostgreProcedure{
 
     public void setKind(PostgreProcedureKind kind) {
         this.kind = kind;
-    }
-
-    @Override
-    @Property(order = 5)
-    public long getObjectId() {
-        return oid;
     }
 
     @Override
@@ -314,56 +297,6 @@ public class KingbaseProcedure extends PostgreProcedure{
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getBody() {
         return body;
-    }
-
-    @Nullable
-    @Override
-    public List<PostgreProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) {
-        return params;
-    }
-
-    public List<PostgreProcedureParameter> getInputParameters() {
-        List<PostgreProcedureParameter> result = new ArrayList<>();
-        for (PostgreProcedureParameter param : params) {
-            if (param.getParameterKind().isInput()) {
-                result.add(param);
-            }
-        }
-        return result;
-    }
-
-    public List<PostgreProcedureParameter> getParameters(DBSProcedureParameterKind kind) {
-        List<PostgreProcedureParameter> result = new ArrayList<>();
-        for (PostgreProcedureParameter param : params) {
-            if (param.getParameterKind() == kind) {
-                result.add(param);
-            }
-        }
-        return result;
-    }
-
-    @NotNull
-    @Override
-    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getContainer(),
-            this);
-    }
-
-    @NotNull
-    @Override
-    public String getOverloadedName() {
-        return overloadedName;
-    }
-
-    @NotNull
-    @Override
-    public String getUniqueName() {
-        return overloadedName;
-    }
-
-    public String getSpecificName() {
-        return name + "_" + getObjectId();
     }
 
     @Override
@@ -472,8 +405,8 @@ public class KingbaseProcedure extends PostgreProcedure{
 
                         // Data type of the aggregate function's internal transition (state) data
                         String aggtranstype = JDBCUtils.safeGetString(dbResult, "aggtranstype");
-                        TransitionModifies finalmodify = null;
-                        TransitionModifies mfinalmodify = null;
+                        TransitionModifies finalmodify;
+                        TransitionModifies mfinalmodify;
                         finalmodify = TransitionModifies.valueOf(
                                 JDBCUtils.safeGetString(dbResult, "aggfinalmodify"));
                         mfinalmodify = TransitionModifies.valueOf(
@@ -769,90 +702,10 @@ public class KingbaseProcedure extends PostgreProcedure{
         body = sourceText;
     }
 
-    public long getOwnerId() {
-        return ownerId;
-    }
 
-    @Property(category = CAT_PROPS, order = 10)
-    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        if (!getDataSource().getServerType().supportsRoles()) {
-            return null;
-        }
-        return container.getDatabase().getRoleById(monitor, ownerId);
-    }
-
-    
     @Property(category = CAT_PROPS, viewable = true, order = 11)
     public PostgreLanguage getLanguage(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, new KingbaseDatabase.LanguageCache(), container.getDatabase(), languageId);
-    }
-    
-    public void setLanguage(PostgreLanguage language) {
-        this.languageId = language.getObjectId();
-    }
-
-    @Property(category = CAT_PROPS, viewable = true, order = 12)
-    public PostgreDataType getReturnType() {
-        return returnType;
-    }
-
-    public void setReturnType(PostgreDataType returnType) {
-        this.returnType = returnType;
-    }
-
-    @Property(category = CAT_PROPS, viewable = false, order = 13)
-    public PostgreDataType getVarArrayType() {
-        return varArrayType;
-    }
-
-    @Property(category = CAT_PROPS, viewable = false, order = 14)
-    public String getProcTransform() {
-        return procTransform;
-    }
-
-    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 30)
-    public float getExecCost() {
-        return execCost;
-    }
-
-    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 31)
-    public float getEstRows() {
-        return estRows;
-    }
-
-    @Property(category = CAT_FLAGS, viewable = true, order = 100)
-    public boolean isAggregate() {
-        return isAggregate;
-    }
-
-    @Property(category = CAT_FLAGS, viewable = true, order = 101)
-    public boolean isWindow() {
-        return isWindow;
-    }
-
-    @Property(category = CAT_FLAGS, viewable = true, order = 102)
-    public boolean isSecurityDefiner() {
-        return isSecurityDefiner;
-    }
-
-    @Property(category = CAT_FLAGS, viewable = true, order = 103)
-    public boolean isLeakproof() {
-        return leakproof;
-    }
-
-    @Property(category = CAT_FLAGS, viewable = true, order = 104)
-    public boolean isStrict() {
-        return isStrict;
-    }
-
-    @Property(category = CAT_FLAGS, viewable = true, order = 105)
-    public boolean isReturnsSet() {
-        return returnsSet;
-    }
-
-    @Property(category = CAT_FLAGS, viewable = true, order = 106)
-    public ProcedureVolatile getProcVolatile() {
-        return procVolatile;
     }
 
     public static String makeOverloadedName(
@@ -871,7 +724,7 @@ public class KingbaseProcedure extends PostgreProcedure{
         // In our case, they all have associated keywords, so we could abuse it.
         final List<PostgreProcedureParameter> keywordParams = params.stream()
             .filter(x -> x.getArgumentMode().getKeyword() != null)
-            .collect(Collectors.toList());
+            .toList();
 
         // In general, 'in' arguments may contain only the type without the keyword because it's implied.
         // It's a shorthand for procedures that accept a set of arguments and return nothing, making its
@@ -927,42 +780,9 @@ public class KingbaseProcedure extends PostgreProcedure{
     }
 
     @Override
-    public PostgreSchema getSchema() {
-        return container;
-    }
-
-    @Override
-    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, 
-            boolean includeNestedObjects) throws DBException {
-        return PostgreUtils.extractPermissionsFromACL(monitor, this, acl, false);
-    }
-
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
-    }
-
-    @Override
     public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         return "ALTER " + this.getProcedureTypeName() + " " + this.getFullQualifiedSignature() + " OWNER TO " + owner;
     }
 
-    @Association
-    public List<PostgreDependency> getDependencies(DBRProgressMonitor monitor) throws DBCException {
-        return PostgreDependency.readDependencies(monitor, this, true);
-    }
 
-    @Override
-    public boolean supportsObjectDefinitionOption(@NotNull String option) {
-        return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) 
-            || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) 
-            || DBPScriptObject.OPTION_CAST_PARAMS.equals(option);
-    }
-
-    @Override
-    public String toString() {
-        return overloadedName == null ? name : overloadedName;
-    }
-    
-    
 }

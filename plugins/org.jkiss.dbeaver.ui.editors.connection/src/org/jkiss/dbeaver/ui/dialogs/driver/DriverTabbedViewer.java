@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.DriverCategoryDescriptor;
 import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -46,38 +48,35 @@ import java.util.List;
 
 /**
  * DriverTabbedViewer
- *
- // Tabs:
- // - Recent
- // - Cloud
- // - Embedded
- // - All
-
  */
 public class DriverTabbedViewer extends StructuredViewer {
-    private static final Log log = Log.getLog(DriverTabbedViewer.class);
 
     private static final String DIALOG_ID = "DBeaver.DriverTabbedViewer";//$NON-NLS-1$
     private static final String PARAM_LAST_FOLDER = "folder";
+    public static final String ALL_DRIVERS_FOLDER_ID = "all";
+
+    private static final boolean SAVE_LAST_FOLDER = false;
 
     private final TabbedFolderComposite folderComposite;
     private final List<DBPDataSourceContainer> dataSources;
     private ViewerFilter[] curFilters;
     private Comparator<DBPDriver> listComparator;
 
-    public DriverTabbedViewer(Composite parent, int style, List<DBPDataSourceContainer> dataSources, Comparator<DBPDriver> driverComparator) {
-
+    public DriverTabbedViewer(
+        @NotNull Composite parent,
+        int style,
+        @NotNull List<DBPDataSourceContainer> dataSources,
+        @NotNull Comparator<DBPDriver> driverComparator
+    ) {
         this.dataSources = dataSources;
         this.listComparator = driverComparator;
-        //listComparator = new DriverUtils.DriverScoreComparator(dataSources);
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
-        //allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
-
-        List<DBPDriver> ratedDrivers = new ArrayList<>(allDrivers);
-        //DriverUtils.sortDriversByRating(dataSources, ratedDrivers);
-
-        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
+        List<DBPDriver> standardDrivers = allDrivers.stream()
+            .filter(driver -> !(driver instanceof DBPDriverWithLicense))
+            .toList();
+        List<DBPDriver> ratedDrivers = new ArrayList<>(standardDrivers);
+        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(standardDrivers, 12);
 
         folderComposite = new TabbedFolderComposite(parent, style) {
             @Override
@@ -95,12 +94,22 @@ public class DriverTabbedViewer extends StructuredViewer {
         List<TabbedFolderInfo> folders = new ArrayList<>();
         folders.add(
             new TabbedFolderInfo(
-                "all", UIConnectionMessages.dialog_driver_category_all_label, DBIcon.TREE_DATABASE, UIConnectionMessages.dialog_driver_category_all_tip, false,
-                new DriverListFolder(null, ratedDrivers)));
+                ALL_DRIVERS_FOLDER_ID,
+                UIConnectionMessages.dialog_driver_category_all_label,
+                DBIcon.TREE_DATABASE,
+                UIConnectionMessages.dialog_driver_category_all_tip,
+                false,
+                new DriverListFolder(null, ratedDrivers)
+            ));
         folders.add(
             new TabbedFolderInfo(
-                "popular", UIConnectionMessages.dialog_driver_category_popular_label, DBIcon.TREE_DATABASE, UIConnectionMessages.dialog_driver_category_popular_tip, false,
-                new DriverListFolder(null, recentDrivers)));
+                "popular",
+                UIConnectionMessages.dialog_driver_category_popular_label,
+                DBIcon.TREE_DATABASE,
+                UIConnectionMessages.dialog_driver_category_popular_tip,
+                false,
+                new DriverListFolder(null, recentDrivers)
+            ));
 
         List<TabbedFolderInfo> extFolders = new ArrayList<>();
         for (DriverCategoryDescriptor category : DriverManagerRegistry.getInstance().getCategories()) {
@@ -129,33 +138,32 @@ public class DriverTabbedViewer extends StructuredViewer {
         });
         folders.addAll(extFolders);
 
-        String folderId = UIUtils.getDialogSettings(DIALOG_ID).get(PARAM_LAST_FOLDER);
-        if (CommonUtils.isEmpty(folderId)) {
-            folderId = "all";
+        String folderId = ALL_DRIVERS_FOLDER_ID;
+        if (SAVE_LAST_FOLDER) {
+            folderId = UIUtils.getDialogSettings(DIALOG_ID).get(PARAM_LAST_FOLDER);
+            if (CommonUtils.isEmpty(folderId)) {
+                folderId = ALL_DRIVERS_FOLDER_ID;
+            }
         }
         folderComposite.setFolders(getClass().getSimpleName(), folders.toArray(new TabbedFolderInfo[0]));
         folderComposite.switchFolder(folderId, false);
         folderComposite.addFolderListener(folderId1 -> {
-            if (curFilters != null) {
+            if (curFilters != null && folderComposite.getActiveFolder() != null) {
                 ((DriverListFolder) folderComposite.getActiveFolder()).viewer.setFilters(curFilters);
             }
             UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1);
             StructuredViewer currentViewer = getCurrentViewer();
             if (currentViewer != null) {
                 ISelection selection = currentViewer.getSelection();
-                if (selection.isEmpty()) {
-                    DriverCategoryDescriptor category = DriverManagerRegistry.getInstance().getCategory(folderId1);
-                    if (category != null) {
-                        //fireSelectionChanged(new SelectionChangedEvent(currentViewer, new StructuredSelection(category)));
-                    }
-                } else {
+                if (!selection.isEmpty()) {
                     fireSelectionChanged(new SelectionChangedEvent(currentViewer, selection));
                 }
             }
         });
     }
 
-    private List<DBPDriver> getCategoryDrivers(DriverCategoryDescriptor category, List<DBPDriver> allDrivers) {
+    @NotNull
+    private List<DBPDriver> getCategoryDrivers(@NotNull DriverCategoryDescriptor category, @NotNull List<DBPDriver> allDrivers) {
         List<DBPDriver> drivers = new ArrayList<>();
         for (DBPDriver driver : allDrivers) {
             if (driver.getCategories().contains(category.getId())) {
@@ -165,10 +173,26 @@ public class DriverTabbedViewer extends StructuredViewer {
         return drivers;
     }
 
+    @NotNull
     public TabbedFolderComposite getFolderComposite() {
         return folderComposite;
     }
 
+    @Nullable
+    public String getActiveFolderId() {
+        ITabbedFolder activeFolder = folderComposite.getActiveFolder(false);
+        TabbedFolderInfo[] folders = folderComposite.getFolders();
+        if (activeFolder != null && folders != null) {
+            for (TabbedFolderInfo folder : folders) {
+                if (folder.getContents() == activeFolder) {
+                    return folder.getId();
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
     private StructuredViewer getCurrentViewer() {
         ITabbedFolder activeFolder = folderComposite.getActiveFolder();
         if (activeFolder instanceof DriverListFolder) {
@@ -177,7 +201,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         return null;
     }
 
-    public void setListComparator(Comparator<DBPDriver> listComparator) {
+    public void setListComparator(@NotNull Comparator<DBPDriver> listComparator) {
         this.listComparator = listComparator;
 
         TabbedFolderInfo[] folders = folderComposite.getFolders();
@@ -259,7 +283,7 @@ public class DriverTabbedViewer extends StructuredViewer {
     }
 
     @Override
-    protected List getSelectionFromWidget() {
+    protected List<?> getSelectionFromWidget() {
         return null;
     }
 
@@ -342,9 +366,12 @@ public class DriverTabbedViewer extends StructuredViewer {
         }
 
         private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {
+            @NotNull
             @Override
-            public Image getImage(Object element) {
-                return DBeaverIcons.getImage(((DBPDriver) element).getIconBig());
+            public Image getImage(@NotNull Object element) {
+                DBPDriver driver = (DBPDriver) element;
+                DriverIconLoader.load(driver, viewer);
+                return DBeaverIcons.getImage(driver.getIconBig());
             }
 
             @Override
@@ -366,7 +393,7 @@ public class DriverTabbedViewer extends StructuredViewer {
                     toolTip.append(UIConnectionMessages.driver_labal_provider_tip_no_saved_connections);
                 }
                 if (!CommonUtils.isEmpty(driver.getDescription())) {
-                    if (toolTip.length() > 0) {
+                    if (!toolTip.isEmpty()) {
                         toolTip.append("\n\n");
                     }
                     toolTip.append(driver.getDescription());

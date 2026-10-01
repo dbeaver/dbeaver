@@ -41,6 +41,7 @@ public class SQLEditorQueryCompletionProposalContext extends SQLQueryCompletionP
         put(SQLQueryCompletionItemKind.USED_TABLE_NAME, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
         put(SQLQueryCompletionItemKind.RELATED_TABLE_NAME, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
         put(SQLQueryCompletionItemKind.TABLE_COLUMN_NAME, ThemeConstants.SQL_EDITOR_COLOR_COLUMN);
+        put(SQLQueryCompletionItemKind.GLOBAL_PSEUDO_COLUMN, ThemeConstants.SQL_EDITOR_COLOR_SQL_VARIABLE);
         put(SQLQueryCompletionItemKind.PROCEDURE, ThemeConstants.SQL_EDITOR_COLOR_FUNCTION);
         put(SQLQueryCompletionItemKind.COMPOSITE_FIELD_NAME, ThemeConstants.SQL_EDITOR_COLOR_COMPOSITE_FIELD);
     }};

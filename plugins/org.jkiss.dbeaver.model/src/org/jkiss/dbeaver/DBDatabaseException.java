@@ -82,8 +82,11 @@ public class DBDatabaseException extends DBException {
         if (!CommonUtils.isEmpty(ex.getSQLState())) {
             msg.append(" [").append(ex.getSQLState()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        if (!CommonUtils.isEmpty(ex.getMessage())) {
-            msg.append(": ").append(SQLUtils.stripTransformations(ex.getMessage())); //$NON-NLS-1$
+        String sqlMessage = ex.getMessage();
+        if (!CommonUtils.isEmpty(sqlMessage)) {
+            msg.append(": ").append(SQLUtils.stripTransformations(sqlMessage)); //$NON-NLS-1$
+        } else if (ex.getErrorCode() > 0) {
+            msg.append(": Error ").append(ex.getErrorCode()); //$NON-NLS-1$
         }
         return msg.toString();
     }

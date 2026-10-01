@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -47,6 +46,7 @@ import java.util.Map;
 public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<PostgreTableForeignKey> {
 
 
+    @Nullable
     @Override
     public PostgreTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull PostgreTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
@@ -97,8 +97,9 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 Collections.emptyMap());
         }
 
+        @NotNull
         @Override
-        protected Composite createPageContents(Composite parent) {
+        protected Composite createPageContents(@NotNull Composite parent) {
             Composite panel = super.createPageContents(parent);
 
             final Composite defGroup = UIUtils.createComposite(panel, 2);
@@ -106,19 +107,10 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
                 // Cascades
                 defGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 final Button deferrableCheck = UIUtils.createCheckbox(defGroup, PostgreMessages.postgre_foreign_key_manager_checkbox_deferrable, false);
-                deferrableCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        isDeferrable = deferrableCheck.getSelection();
-                    }
-                });
+                deferrableCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    isDeferrable = deferrableCheck.getSelection()));
                 final Button deferredCheck = UIUtils.createCheckbox(defGroup, PostgreMessages.postgre_foreign_key_manager_checkbox_deferred, false);
-                deferredCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        isDeferred = deferredCheck.getSelection();
-                    }
-                });
+                deferredCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> isDeferred = deferredCheck.getSelection()));
             }
             addPhysicalKeyComponent(defGroup);
 

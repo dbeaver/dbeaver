@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,7 @@ package org.jkiss.dbeaver.ext.kingbase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureKind;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -80,16 +75,14 @@ public class KingbaseSchema extends PostgreSchema {
  
     @Association
     public List<KingbaseProcedure> getKingbaseProcedures(DBRProgressMonitor monitor) throws DBException {
-        List<KingbaseProcedure> list = getKingbaseProceduresCache().getAllObjects(monitor, this).stream()
+        return getKingbaseProceduresCache().getAllObjects(monitor, this).stream()
             .filter(e -> e.getPropackageid() == 0 && e.getKind() == PostgreProcedureKind.p).collect(Collectors.toList());
-        return list;
     }
 
     @Association
     public List<KingbaseFunction> getKingbaseFunctions(DBRProgressMonitor monitor) throws DBException {
-        List<KingbaseFunction> list = getKingbaseFunctionsCache().getAllObjects(monitor, this).stream()
+        return getKingbaseFunctionsCache().getAllObjects(monitor, this).stream()
             .filter(e -> e.getPropackageid() == 0 && e.getKind() == PostgreProcedureKind.f).collect(Collectors.toList());
-        return list;
     }
 
     
@@ -126,8 +119,11 @@ public class KingbaseSchema extends PostgreSchema {
         }
 
         @Override
-        protected KingbaseProcedure fetchObject(@NotNull JDBCSession session, @NotNull KingbaseSchema owner,
-            @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected KingbaseProcedure fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull KingbaseSchema owner,
+            @NotNull JDBCResultSet dbResult
+        ) {
             return new KingbaseProcedure(session.getProgressMonitor(), owner, dbResult);
         }
 
@@ -165,8 +161,11 @@ public class KingbaseSchema extends PostgreSchema {
         }
 
         @Override
-        protected KingbaseFunction fetchObject(@NotNull JDBCSession session, @NotNull KingbaseSchema owner,
-            @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected KingbaseFunction fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull KingbaseSchema owner,
+            @NotNull JDBCResultSet dbResult
+        ) {
             return new KingbaseFunction(session.getProgressMonitor(), owner, dbResult);
         }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueMan
     private final List<ValueManagerDescriptor> managers = new ArrayList<>();
     private final Map<String, StreamValueManagerDescriptor> streamManagers = new HashMap<>();
 
-    private ValueManagerRegistry(IExtensionRegistry registry) {
+    private ValueManagerRegistry(@NotNull IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ValueManagerDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
@@ -79,7 +79,11 @@ public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueMan
     }
 
     @NotNull
-    public static IValueManager findValueManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject, @NotNull Class<?> valueType) {
+    public static IValueManager findValueManager(
+        @Nullable DBPDataSource dataSource,
+        @NotNull DBSTypedObject typedObject,
+        @NotNull Class<?> valueType
+    ) {
         return getInstance().getValueBinding(typedObject, dataSource, typedObject, valueType);
     }
 
@@ -93,7 +97,11 @@ public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueMan
         return streamManagers.get(id);
     }
 
-    public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
+    public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSTypedObject attribute,
+        @Nullable DBDContent value
+    ) {
         boolean isTextContent = ContentUtils.isTextContent(value);
         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
         for (StreamValueManagerDescriptor contentManager : streamManagers.values()) {
@@ -117,7 +125,10 @@ public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueMan
         return result;
     }
 
-    public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getStreamManagersByMimeType(@NotNull String mimeType, String primaryType) {
+    public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getStreamManagersByMimeType(
+        @NotNull String mimeType,
+        @Nullable String primaryType
+    ) {
         MimeType mime = new MimeType(mimeType);
         MimeType primaryMime = primaryType == null ? null : new MimeType(primaryType);
 

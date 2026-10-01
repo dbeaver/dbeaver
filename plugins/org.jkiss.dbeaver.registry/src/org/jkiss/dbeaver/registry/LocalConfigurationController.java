@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -42,6 +43,7 @@ public class LocalConfigurationController implements DBConfigurationController {
         this.legacyConfigFolder = legacyConfigFolder;
     }
 
+    @Nullable
     @Override
     public String loadConfigurationFile(@NotNull String filePath) throws DBException {
         Path localPath = configFolder.resolve(filePath);

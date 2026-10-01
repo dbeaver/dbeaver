@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.binary.pref;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
@@ -153,15 +152,11 @@ public class HexPreferencesManager {
             gridData52.heightHint = itemsDisplayed * listFont.getItemHeight();
             gridData52.widthHint = averageCharWidth * 40;
             listFont.setLayoutData(gridData52);
-            listFont.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            listFont.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     textName.setText(listFont.getSelection()[0]);
                     updateSizeItemsAndGuessSelected();
                     updateAndRefreshSample();
-                }
-            });
+                }));
 
             listStyle = new List(fontGroup, SWT.SINGLE | SWT.BORDER);
             GridData gridData21 = new GridData();
@@ -169,28 +164,20 @@ public class HexPreferencesManager {
             gridData21.widthHint = averageCharWidth * TEXT_BOLD_ITALIC.length() * 2;
             listStyle.setLayoutData(gridData21);
             listStyle.setItems(new String[] { TEXT_REGULAR, TEXT_BOLD, TEXT_ITALIC, TEXT_BOLD_ITALIC });
-            listStyle.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            listStyle.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     textStyle.setText(listStyle.getSelection()[0]);
                     updateAndRefreshSample();
-                }
-            });
+                }));
 
             listSize = new List(fontGroup, SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER);
             GridData gridData7 = new GridData();
             gridData7.widthHint = gridData6.widthHint;
             gridData7.heightHint = gridData52.heightHint;
             listSize.setLayoutData(gridData7);
-            listSize.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            listSize.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     textSize.setText(listSize.getSelection()[0]);
                     updateAndRefreshSample();
-                }
-            });
+                }));
 
             sampleText = new Text(fontGroup, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY | SWT.BORDER);
             sampleText.setText(SAMPLE_TEXT);

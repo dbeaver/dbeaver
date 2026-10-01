@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,13 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected PostgreDatabase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected PostgreDatabase createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return ((PostgreDataSource) container).createDatabaseImpl(monitor, "NewDatabase", null, null, null, null);
     }
 
@@ -148,7 +154,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(@NotNull DBRProgressMonitor monitor, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         super.validateObjectProperties(monitor, command, options);
         options.put(DBECommandContext.OPTION_AVOID_TRANSACTIONS, true);
     }
@@ -163,7 +169,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         }
 
         @Override
-        public void beforeExecute(DBCSession session) throws DBCException {
+        public void beforeExecute(@NotNull DBCSession session) throws DBCException {
             super.beforeExecute(session);
             database.shutdown(session.getProgressMonitor());
         }
@@ -178,7 +184,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         }
 
         @Override
-        public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+        public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error) throws DBCException {
             super.afterExecute(session, error);
             if (error == null) {
                 try {

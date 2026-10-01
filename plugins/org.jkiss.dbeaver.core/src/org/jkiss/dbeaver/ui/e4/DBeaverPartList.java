@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,15 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.ConnectionLabelUtils;
 import org.jkiss.dbeaver.ui.SearchCellLabelProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.Method;
 
@@ -115,12 +114,8 @@ public class DBeaverPartList extends BasicPartList {
     }
 
     private class CellLabelProvider extends SearchCellLabelProvider {
-        private final Font italicFont;
-        private final Font italicBoldFont;
 
         public CellLabelProvider() {
-            this.italicFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.ITALIC);
-            this.italicBoldFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.BOLD | SWT.ITALIC);
         }
 
         @Nullable
@@ -160,7 +155,7 @@ public class DBeaverPartList extends BasicPartList {
             if (isShowing(element)) {
                 return null;
             } else {
-                return italicFont;
+                return BaseThemeSettings.instance.baseFontItalic;
             }
         }
 
@@ -168,9 +163,9 @@ public class DBeaverPartList extends BasicPartList {
         @Override
         public Font getMatchFont(@NotNull Object element) {
             if (isShowing(element)) {
-                return boldFont;
+                return BaseThemeSettings.instance.baseFontBold;
             } else {
-                return italicBoldFont;
+                return BaseThemeSettings.instance.baseFontItalic;
             }
         }
 
@@ -189,13 +184,6 @@ public class DBeaverPartList extends BasicPartList {
         public void update(@NotNull ViewerCell cell) {
             super.update(cell);
             ConnectionLabelUtils.applyConnectionInfo(cell, resolveContainer(cell.getElement()));
-        }
-
-        @Override
-        public void dispose() {
-            italicFont.dispose();
-            italicBoldFont.dispose();
-            super.dispose();
         }
 
         private boolean isShowing(@NotNull Object element) {

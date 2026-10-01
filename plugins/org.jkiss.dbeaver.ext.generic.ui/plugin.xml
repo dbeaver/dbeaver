@@ -3,23 +3,8 @@
 
 <plugin>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
-                dataSource="generic"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                icon="#database_icon_default">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                icon="#database_icon_default"
-                id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
-                dataSource="generic"
-                label="%dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="generic" class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">

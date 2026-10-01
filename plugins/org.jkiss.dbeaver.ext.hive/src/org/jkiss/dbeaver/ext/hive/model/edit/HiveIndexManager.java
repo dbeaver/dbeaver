@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.hive.model.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
@@ -47,7 +48,13 @@ public class HiveIndexManager extends GenericIndexManager {
     }
 
     @Override
-    protected GenericTableIndex createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object from, @NotNull Map<String, Object> options) {
+    protected GenericTableIndex createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object from,
+        @NotNull Map<String, Object> options
+    ) {
         return new HiveIndex((HiveTable) container, "NewIndex",false, "", "Compact", null);
     }
 

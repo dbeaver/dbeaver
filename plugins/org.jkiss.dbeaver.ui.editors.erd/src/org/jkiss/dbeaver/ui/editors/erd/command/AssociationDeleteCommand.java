@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,12 +65,20 @@ public class AssociationDeleteCommand extends Command {
     public void execute() {
         DBSEntityAssociation entityAssociation = association.getObject();
         if (entityAssociation instanceof DBVEntityForeignKey) {
-            if (!UIUtils.confirmAction("Delete logical key", "Are you sure you want to delete logical key '" + part.getAssociation().getName() + "'?")) {
+            if (!UIUtils.confirmAction(
+                "Delete logical key",
+                "Are you sure you want to delete logical key '" + part.getAssociation().getName() + "'?"
+            )) {
                 return;
             }
             DBVEntity vEntity = DBVUtils.getVirtualEntity(entityAssociation.getParentObject(), false);
             if (vEntity == null) {
-                UIUtils.showMessageBox(UIUtils.getActiveWorkbenchShell(), "No virtual entity", "Can't find association owner virtual entity", SWT.ICON_ERROR);
+                UIUtils.showMessageBox(
+                    UIUtils.getActiveWorkbenchShell(),
+                    "No virtual entity",
+                    "Can't find association owner virtual entity",
+                    SWT.ICON_ERROR
+                );
                 return;
             }
             vEntity.removeForeignKey((DBVEntityForeignKey) entityAssociation);

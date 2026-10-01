@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.tools.compare.simple.ui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -66,13 +65,8 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
             showOnlyDifference = UIUtils.createCheckbox(reportSettings,
                 CompareUIMessages.compare_objects_page_checkbox_show_only_differences,
                 settings.isShowOnlyDifferences());
-            showOnlyDifference.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    settings.setShowOnlyDifferences(showOnlyDifference.getSelection());
-                }
-            });
+            showOnlyDifference.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                settings.setShowOnlyDifferences(showOnlyDifference.getSelection())));
         }
 
         {
@@ -89,10 +83,7 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
                 reportTypeCombo.add(outputType.getTitle());
             }
             reportTypeCombo.select(settings.getOutputType().ordinal());
-            reportTypeCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            reportTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     for (CompareObjectsSettings.OutputType outputType : CompareObjectsSettings.OutputType.values()) {
                         if (outputType.ordinal() == reportTypeCombo.getSelectionIndex()) {
                             settings.setOutputType(outputType);
@@ -100,8 +91,7 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
                             break;
                         }
                     }
-                }
-            });
+                }));
 
             outputFolderText = DialogUtils.createOutputFolderChooser(outputSettings, null, null, false, null);
             outputFolderText.setText(settings.getOutputFolder());

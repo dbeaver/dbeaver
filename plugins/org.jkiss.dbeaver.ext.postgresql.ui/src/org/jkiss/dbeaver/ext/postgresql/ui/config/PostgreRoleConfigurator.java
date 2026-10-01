@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import java.util.Map;
  * Postgre role configurator
  */
 public class PostgreRoleConfigurator implements DBEObjectConfigurator<PostgreRole> {
+    @NotNull
     @Override
     public PostgreRole configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreRole role, @NotNull Map<String, Object> options) {
         return new UITask<PostgreRole>() {

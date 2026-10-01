@@ -20,14 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -84,7 +84,6 @@ public class ProcedureBodyExtractorTest {
                DBMS_OUTPUT.PUT_LINE('proc_with_params');
              END proc_with_params;"""
     );
-
 
     private final ProcTestCase simpleFunc = new ProcTestCase(
         "simple_func", DBSProcedureType.FUNCTION, """
@@ -250,7 +249,6 @@ public class ProcedureBodyExtractorTest {
         END;"""
     );
 
-
     private final ProcTestCase whileLoopEndLoop = new ProcTestCase(
         "while_loop_end_loop", DBSProcedureType.PROCEDURE, """
         PROCEDURE while_loop_end_loop IS
@@ -342,7 +340,6 @@ public class ProcedureBodyExtractorTest {
         END;"""
     );
 
-
     private final ProcTestCase outerBeginEndInnerFunc = new ProcTestCase(
         "outer_func", DBSProcedureType.FUNCTION, """
         FUNCTION outer_func RETURN NUMBER IS
@@ -425,14 +422,13 @@ public class ProcedureBodyExtractorTest {
         3
     );
 
-
     @Test
     public void unknownFunctionType() {
         // given
         String notEmptyPackageDefinition = constructPackageBody(simpleNoArgsProc);
         ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(unknownProc.procedure, notEmptyPackageDefinition);
         // then
-        assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
+        Assertions.assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
     }
 
     @Test
@@ -441,7 +437,7 @@ public class ProcedureBodyExtractorTest {
         String notEmptyPackageDefinition = constructPackageBody(noNameMatch);
         ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(noNameMatch.procedure, notEmptyPackageDefinition);
         // then
-        assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
+        Assertions.assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
     }
 
     @Test
@@ -476,7 +472,7 @@ public class ProcedureBodyExtractorTest {
             packageDefinitionTemplate.formatted(funcBodyWithCommentFalseStart)
         );
         // then
-        assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
+        Assertions.assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
     }
 
     @Test
@@ -491,7 +487,7 @@ public class ProcedureBodyExtractorTest {
             packageDefinitionTemplate.formatted(funcBodyWithCommentFalseStart)
         );
         // then
-        assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
+        Assertions.assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
     }
 
     @Test
@@ -634,12 +630,12 @@ public class ProcedureBodyExtractorTest {
         // then
         for (ProcTestCase procToSearch : allTestCases) {
             ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(procToSearch.procedure, packageBody);
-            assertEquals(procToSearch.procBody, procedureBodyExtractor.extractProcBody());
+            Assertions.assertEquals(procToSearch.procBody, procedureBodyExtractor.extractProcBody());
         }
 
         for (ProcTestCase procToSearch : reversedAllCases) {
             ProcedureBodyExtractor procedureBodyExtractorReversed = new ProcedureBodyExtractor(procToSearch.procedure, reversedPackageBody);
-            assertEquals(procToSearch.procBody, procedureBodyExtractorReversed.extractProcBody());
+            Assertions.assertEquals(procToSearch.procBody, procedureBodyExtractorReversed.extractProcBody());
         }
     }
 
@@ -650,14 +646,13 @@ public class ProcedureBodyExtractorTest {
     private void assertBodyFound(@NotNull ProcTestCase testCase, @NotNull String packageBodyDefinition) {
         ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(testCase.procedure, packageBodyDefinition);
         // then
-        assertEquals(testCase.procBody, procedureBodyExtractor.extractProcBody());
+        Assertions.assertEquals(testCase.procBody, procedureBodyExtractor.extractProcBody());
     }
 
     private String constructPackageBody(@NotNull ProcTestCase testCase) {
         return packageDefinitionTemplate
             .formatted(testCase.procBody);
     }
-
 
     private class ProcTestCase {
         private final OracleProcedurePackaged procedure;

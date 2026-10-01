@@ -344,7 +344,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public boolean persistConfiguration() {
+    public boolean persistConfiguration(boolean forcePersistSecrets) {
         return true;
     }
 
@@ -433,6 +433,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
         return true;
     }
 
+    @NotNull
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
         return DBWorkbench.getPlatform().getDataFormatterRegistry().getGlobalProfile();
@@ -501,12 +502,12 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
 
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
 
     }
 

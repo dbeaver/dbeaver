@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.sql.parser;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateNode;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
@@ -65,6 +65,6 @@ public class TokenPredicatesConditionTest extends DBeaverUnitTest {
                 seq -> seq.stream().map(t -> t.getString()).collect(Collectors.toList())
         ).collect(Collectors.toSet());
 
-        Assert.assertEquals(expectedSequences, computedSequences);
+        Assertions.assertEquals(expectedSequences, computedSequences);
     }
 }

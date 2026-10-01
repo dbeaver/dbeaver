@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import java.util.Map;
 public class DB2PlanSchemaConfigurator implements DBEObjectConfigurator<DB2PlanConfig> {
     protected static final Log log = Log.getLog(DB2PlanSchemaConfigurator.class);
 
+    @NotNull
     @Override
     public DB2PlanConfig configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object db2dataSource, @NotNull DB2PlanConfig object, @NotNull Map<String, Object> options) {
         DB2DataSource db2source = (DB2DataSource) db2dataSource;

@@ -13,17 +13,19 @@
         </dialect>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="cubrid-maven-repo" name="Cubrid Repository" url="https://maven.cubrid.org">
-            <scope group="cubrid"/>
-        </repository>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="cubrid"
+            label="CUBRID"
+            description="CUBRID database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/cubrid_icon.png"
+            iconBig="icons/cubrid_icon_big.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.cubrid.CubridDataSourceProvider"
             description="Cubrid JDBC connector"
             id="cubrid"
+            dataSourceType="cubrid"
             parent="generic"
             label="Cubrid"
             icon="icons/cubrid_icon.png"
@@ -141,8 +143,12 @@
                             <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym">
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.triggers.node.name" icon="#folder_trigger" description="%tree.triggers.node.tip" visibleIf="object.supportsTrigger()">
-                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.table_triggers.node.name" icon="#folder_trigger" description="%tree.table_triggers.node.tip" visibleIf="object.supportsTrigger()">
+                            <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.user_triggers.node.name" icon="#folder_trigger" description="%tree.user_triggers.node.tip" visibleIf="object.supportsTrigger()">
+                            <items label="%tree.trigger.node.name" path="trigger" property="userTriggers" icon="#trigger">
                             </items>
                         </folder>
                         <folder id="procedures-or-functions" label="%tree.procedures_functions.node.name" icon="#folder_procedure" description="%tree.procedures_functions.node.tip">
@@ -186,8 +192,6 @@
                 <driver
                     id="cubrid_jdbc"
                     label="CUBRID"
-                    icon="icons/cubrid_icon.png"
-                    iconBig="icons/cubrid_icon_big.png"
                     class="cubrid.jdbc.driver.CUBRIDDriver"
                     sampleURL="jdbc:CUBRID:{host}:{port}:{database}:::"
                     defaultPort="30000"
@@ -196,7 +200,7 @@
                     webURL="https://www.cubrid.org/manual/en/11.2/api/jdbc.html#configuration-connection"
                     categories="sql">
 
-                    <file type="jar" path="maven:/cubrid:cubrid-jdbc:RELEASE" bundle="!drivers.cubrid"/>
+                    <file type="jar" path="maven:/org.cubrid:cubrid-jdbc:RELEASE" bundle="!drivers.cubrid"/>
                     <file type="jar" path="drivers/cubrid" bundle="drivers.cubrid"/>
                     <replace provider="generic" driver="cubrid_jdbc"/>
                     <parameter name="stored-unquoted-case" value="UPPER"/>

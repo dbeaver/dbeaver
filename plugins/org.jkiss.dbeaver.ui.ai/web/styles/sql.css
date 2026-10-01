@@ -1,0 +1,92 @@
+/* ========================================
+   SQL CODE BLOCKS
+   ======================================== */
+.sql-form {
+    border: 1px solid #999;
+    margin-top: 6px;
+    background: var(--background-color);
+    font-family: monospace;
+    overflow: hidden;
+}
+
+.sql-content {
+    background: var(--background-color);
+    max-height: 10em;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.code-table {
+    border-spacing: 0;
+    width: 100%;
+    color: var(--text-color);
+    table-layout: fixed;
+}
+
+.code-table td {
+    vertical-align: top;
+}
+
+.line-number {
+    width: 2em;
+    text-align: right;
+    color: #888;
+    padding-right: 5px;
+    user-select: none;
+    font-family: monospace;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.code-line {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font-family: monospace;
+}
+
+.sql-textarea {
+    display: none;
+}
+
+/* ========================================
+   SQL ACTION BUTTONS
+   ======================================== */
+.sql-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 6px 0;
+    background: inherit;
+}
+
+.sql-button {
+    padding: 1px 2px;
+    border: 0.5px solid #999;
+    cursor: pointer;
+    color: var(--text-color);
+    background: var(--background-color-inactive);
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sql-button-img {
+    width: 20px;
+    height: 20px;
+}
+
+.sql-button.disabled,
+.sql-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sql-button.disabled .sql-button-img,
+.sql-button:disabled .sql-button-img {
+    filter: grayscale(100%);
+}
+

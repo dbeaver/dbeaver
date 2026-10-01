@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
@@ -31,14 +30,11 @@ import java.util.List;
  * A label provider that highlights matching parts of a label against the supplied pattern.
  */
 public abstract class SearchCellLabelProvider extends StyledCellLabelProvider implements ILabelProvider, IFontProvider {
-    protected final Font boldFont;
-
     public static boolean matches(@NotNull String pattern, @NotNull String value) {
         return match(pattern, value) != null;
     }
 
     public SearchCellLabelProvider() {
-        this.boldFont = UIUtils.makeBoldFont(Display.getCurrent().getSystemFont());
     }
 
     @Override
@@ -81,7 +77,7 @@ public abstract class SearchCellLabelProvider extends StyledCellLabelProvider im
 
     @NotNull
     public Font getMatchFont(@NotNull Object element) {
-        return boldFont;
+        return BaseThemeSettings.instance.treeAndTableFont;
     }
 
     @Nullable
@@ -92,11 +88,6 @@ public abstract class SearchCellLabelProvider extends StyledCellLabelProvider im
 
     @Nullable
     public abstract String getPattern();
-
-    @Override
-    public void dispose() {
-        boldFont.dispose();
-    }
 
     @Nullable
     private static List<int[]> match(@NotNull String pattern, @NotNull String value) {

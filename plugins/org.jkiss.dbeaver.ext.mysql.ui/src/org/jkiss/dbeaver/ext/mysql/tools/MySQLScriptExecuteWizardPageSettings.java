@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -94,12 +93,8 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
             logLevelCombo.add(logLevel.name());
         }
         logLevelCombo.select(wizard.getLogLevel().ordinal());
-        logLevelCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                wizard.getSettings().setLogLevel(CommonUtils.valueOf(MySQLScriptExecuteSettings.LogLevel.class, logLevelCombo.getText()));
-            }
-        });
+        logLevelCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            wizard.getSettings().setLogLevel(CommonUtils.valueOf(MySQLScriptExecuteSettings.LogLevel.class, logLevelCombo.getText()))));
         createExtraArgsInput(settingsGroup);
         disableForeignKeyChecks = UIUtils.createCheckbox(
             settingsGroup,

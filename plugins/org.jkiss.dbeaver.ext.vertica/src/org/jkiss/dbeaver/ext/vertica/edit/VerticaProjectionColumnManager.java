@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ext.vertica.edit;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaProjection;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -51,6 +51,7 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
         return false;
     }
 
+    @NotNull
     @Override
     protected ColumnModifier[] getSupportedModifiers(VerticaProjectionColumn column, Map<String, Object> options) {
         // According to SQL92 DEFAULT comes before constraints
@@ -58,7 +59,13 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
     }
 
     @Override
-    protected VerticaProjectionColumn createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected VerticaProjectionColumn createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         return null;
     }
 

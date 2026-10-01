@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.model.*;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -40,7 +46,10 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * MySQL table column manager
@@ -107,9 +116,19 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }
 
+    @NotNull
     protected ColumnModifier[] getSupportedModifiers(MySQLTableColumn column, Map<String, Object> options)
     {
         return new ColumnModifier[] {MySQLDataTypeModifier, CharsetModifier, CollationModifier, DefaultModifier, ExtraInfoModifier, NullNotNullModifier};
+    }
+
+    @Override
+    protected long getDDLFeatures(MySQLTableColumn object) {
+        long features = 0;
+        if (object.getDataSource().supportsAlterTableAddColumn()) {
+            features |= FEATURE_ALTER_TABLE_ADD_COLUMN;
+        }
+        return features;
     }
 
     @Override
@@ -140,7 +159,13 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected MySQLTableColumn createDatabaseObject(@NotNull final DBRProgressMonitor monitor, @NotNull final DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected MySQLTableColumn createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         MySQLTable table = (MySQLTable) container;
 
         MySQLTableColumn column;
@@ -217,17 +242,17 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     // Reorder
 
     @Override
-    public int getMinimumOrdinalPosition(MySQLTableColumn object) {
+    public int getMinimumOrdinalPosition(@NotNull MySQLTableColumn object) {
         return 1;
     }
 
     @Override
-    public int getMaximumOrdinalPosition(MySQLTableColumn object) {
+    public int getMaximumOrdinalPosition(@NotNull MySQLTableColumn object) {
         return object.getTable().getCachedAttributes().size();
     }
 
     @Override
-    public void setObjectOrdinalPosition(DBECommandContext commandContext, MySQLTableColumn object, List<MySQLTableColumn> siblingObjects, int newPosition) throws DBException {
+    public void setObjectOrdinalPosition(@NotNull DBECommandContext commandContext, @NotNull MySQLTableColumn object, @NotNull List<MySQLTableColumn> siblingObjects, int newPosition) throws DBException {
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 }

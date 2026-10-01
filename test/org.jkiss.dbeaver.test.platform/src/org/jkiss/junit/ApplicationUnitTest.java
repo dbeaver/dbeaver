@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,27 @@
  */
 package org.jkiss.junit;
 
-import org.jkiss.junit.osgi.OSGITestRunner;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.osgi.annotation.RunWithApplication;
-import org.jkiss.junit.osgi.annotation.RunnerProxy;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.jkiss.junit.osgi.behaviors.IAsyncApplication;
+import org.jkiss.junit.osgi.extension.OSGITestExtension;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockitoAnnotations;
 
 
-@RunnerProxy(MockitoJUnitRunner.class)
-@RunWith(OSGITestRunner.class)
+@ExtendWith(OSGITestExtension.class)
 @RunWithApplication(bundleName = "org.jkiss.dbeaver.headless", registryName = "org.jkiss.dbeaver.headless.application")
-public abstract class ApplicationUnitTest {
+public abstract class ApplicationUnitTest implements IAsyncApplication {
+
+    @BeforeEach
+    public void setupMocks() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Override
+    public boolean verifyLaunched() {
+        return DBWorkbench.isPlatformStarted();
+    }
 
 }

@@ -34,8 +34,9 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
+import java.security.Security;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -132,21 +133,6 @@ public class DBeaverLauncher {
     private boolean newInstance = false;
     protected boolean splashDown = false;
     protected boolean cliMode = false;
-
-    public final class SplashHandler extends Thread {
-        @Override
-        public void run() {
-            takeDownSplash();
-        }
-
-        @SuppressWarnings("unused")
-        public void updateSplash() {
-            // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
-            if (bridge != null && !splashDown) {
-                bridge.updateSplash();
-            }
-        }
-    }
 
     private Thread splashHandler = null;
 
@@ -378,6 +364,89 @@ public class DBeaverLauncher {
         }
     }
 
+    /**
+     * Searches for the product ID in the provided array of command-line arguments.
+     * The ID follows the `-product` flag.
+     *
+     * @param args an array of command-line arguments to search through
+     * @return the product ID, or empty string if not found
+     */
+    private static String findProductIdInArgs(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (PRODUCT.equals(arg) && i + 1 < args.length) {
+                return args[i + 1];
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Patch `java.security` properties to allow certain legacy crypto to work with non-server DBeaver products.
+     * <p>
+     * As explained in the linked issues and JRE and JDK Cryptographic Roadmap, some of the crypto algorithms are disabled in Java
+     * by default due to their inadequate (by modern standards) security qualities. However, these algorithms are still used by some
+     * legacy databases for encryption in transit. We believe that it's ok to enable them as long as we do it only for non-server products
+     * (i.e., DBeaver desktop, dbvr), since these applications do not have incoming traffic.
+     * <p>
+     * See:
+     * <a href="https://github.com/dbeaver/dbeaver/issues/12668">#12668</a>
+     * <a href="https://github.com/dbeaver/dbeaver/issues/40987">#40987</a>
+     * <a href="https://www.java.com/en/jre-jdk-cryptoroadmap.html">JRE and JDK Cryptographic Roadmap</a>
+     *
+     * @param args command line arguments
+     */
+    private static void patchJavaSecurity(String[] args) {
+        // We need a way to disable this using a Java property just in case
+        if (!Boolean.parseBoolean(System.getProperty("dbeaver.security.enableLegacyAlgorithms", "false"))) {
+            return;
+        }
+        // Let's detect a desktop DBeaver or dbvr using their product ID
+        String productId = findProductIdInArgs(args);
+        if (!productId.startsWith(Constants.PRODUCT_DBEAVER_COMMUNITY_PREFIX) &&
+            !productId.startsWith(Constants.PRODUCT_PROPRIETARY_DBEAVER_DESKTOP_PREFIX) &&
+            !productId.startsWith(Constants.PRODUCT_DBVR_PREFIX)
+        ) {
+            return;
+        }
+        // Let's put these obsolete algorithms into the ` legacyAlgorithms ` category so that they are still in use,
+        // but only if all other TLS protos and ciphers fail.
+        // See `conf/security/java.security` for an explanation of the used properties.
+        try {
+            String disabledAlgosKey = "jdk.tls.disabledAlgorithms";
+            Collection<String> algorithms = getSecurityPropertyValues(disabledAlgosKey);
+            String legacyAlgosKey = "jdk.tls.legacyAlgorithms";
+            getSecurityPropertyValues(legacyAlgosKey, algorithms);
+            Security.setProperty(legacyAlgosKey, String.join(", ", algorithms));
+            Security.setProperty(disabledAlgosKey, "");
+            // We also need to remove `ChaCha20-Poly1305 KeyUpdate 2^37` from `jdk.tls.keyLimits`. The reason for this is lost to history.
+            String keyLimitsKey = "jdk.tls.keyLimits";
+            Collection<String> keyLimits = getSecurityPropertyValues(keyLimitsKey);
+            keyLimits.remove("ChaCha20-Poly1305 KeyUpdate 2^37");
+            Security.setProperty(keyLimitsKey, String.join(", ", keyLimits));
+        } catch (RuntimeException ignore) {
+            // Just in case
+        }
+    }
+
+    private static Collection<String> getSecurityPropertyValues(String propertyKey) {
+        Collection<String> values = new HashSet<>();
+        getSecurityPropertyValues(propertyKey, values);
+        return values;
+    }
+
+    private static void getSecurityPropertyValues(String propertyKey, Collection<? super String> values) {
+        String propertyValue = Security.getProperty(propertyKey);
+        if (propertyValue == null) {
+            return;
+        }
+        // Split by `,` and then strip leading space instead of splitting by `, ` directly for performance reasons
+        String[] valuesArray = propertyValue.split(",");
+        for (String value : valuesArray) {
+            values.add(value.stripLeading());
+        }
+    }
+
     private String getWS() {
         if (ws != null)
             return ws;
@@ -513,7 +582,7 @@ public class DBeaverLauncher {
             if (urls != null && urls.length > 0) {
                 //the last one is most interesting
                 for (int i = urls.length - 1; i >= 0 && libPath == null; i--) {
-                    File entryFile = new File(urls[i].getFile());
+                    File entryFile = LauncherUtils.toFile(urls[i]);
                     String dir = entryFile.getParent();
                     if (inDevelopmentMode) {
                         String devDir = dir + "/" + PLUGIN_ID + "/fragments"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -528,7 +597,7 @@ public class DBeaverLauncher {
         }
         if (libPath == null) {
             URL install = getInstallLocation();
-            String location = install.getFile();
+            String location = LauncherUtils.toFile(install).getPath();
             location += "/plugins/"; //$NON-NLS-1$
             fragment = searchFor(fragmentName, location);
             if (fragment != null)
@@ -590,6 +659,7 @@ public class DBeaverLauncher {
         disableDefaultProxyServiceActivation();
         commands = args;
         String[] passThruArgs = processCommandLine(args);
+        patchJavaSecurity(passThruArgs);
         if (debug) {
             System.out.println("Processed command line arguments: " + Arrays.toString(passThruArgs));
         }
@@ -877,13 +947,16 @@ public class DBeaverLauncher {
     }
 
     private Path detectDefaultWorkspaceLocation(String[] args, Path dbeaverDataDir) {
-        String productName = "";
-        String customWorkspacePath = null;
+        String customWorkspacePath = System.getenv(Constants.ENV_WORKSPACE_PATH);
+        if (customWorkspacePath != null && !customWorkspacePath.isBlank()) {
+            // Custom location
+            return Path.of(customWorkspacePath);
+        }
+
+
+        String productName = findProductIdInArgs(args);
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            if (PRODUCT.equals(arg)) {
-                productName = args[++i];
-            }
             if (ARG_DATA.equals(arg)) {
                 customWorkspacePath = args[++i];
                 break;
@@ -1101,7 +1174,7 @@ public class DBeaverLauncher {
             // user wants readonly config area
             return true;
         }
-        File configDir = new File(locationUrl.getFile()).getAbsoluteFile();
+        File configDir = LauncherUtils.toFile(locationUrl).getAbsoluteFile();
         if (!configDir.exists()) {
             configDir.mkdirs();
             if (!configDir.exists()) {
@@ -1199,7 +1272,7 @@ public class DBeaverLauncher {
 
     private void readFrameworkExtensions(URL base, ArrayList<URL> result) throws IOException {
         String[] extensions = getArrayFromList(System.getProperty(PROP_EXTENSIONS));
-        String parent = new File(base.getFile()).getParent();
+        String parent = LauncherUtils.toFile(base).getParent();
         ArrayList<String> extensionResults = new ArrayList<>(extensions.length);
         for (String extension : extensions) {
             //Search the extension relatively to the osgi plugin
@@ -1214,7 +1287,7 @@ public class DBeaverLauncher {
             URL extensionURL;
             if (installLocation.getProtocol().equals("file")) { //$NON-NLS-1$
                 extensionResults.add(path);
-                extensionURL = new File(path).toURL();
+                extensionURL = LauncherUtils.toURL(new File(path));
             } else
                 extensionURL = new URL(installLocation.getProtocol(), installLocation.getHost(), installLocation.getPort(), path);
             //Load a property file of the extension, merge its content, and in case of dev mode add the bin entries
@@ -1266,7 +1339,7 @@ public class DBeaverLauncher {
             baseJarList = System.getProperty(PROP_CLASSPATH);
         }
 
-        File fwkFile = new File(base.getFile());
+        File fwkFile = LauncherUtils.toFile(base);
         boolean fwkIsDirectory = fwkFile.isDirectory();
         //We found where the fwk is, remember it and its shape
         if (fwkIsDirectory) {
@@ -1274,7 +1347,7 @@ public class DBeaverLauncher {
         } else {
             System.setProperty(PROP_FRAMEWORK_SHAPE, "jar");//$NON-NLS-1$
         }
-        String fwkPath = new File(new File(base.getFile()).getParent()).getAbsolutePath();
+        String fwkPath = LauncherUtils.toFile(base).getParentFile().getAbsolutePath();
         if (Character.isUpperCase(fwkPath.charAt(0))) {
             char[] chars = fwkPath.toCharArray();
             chars[0] = Character.toLowerCase(chars[0]);
@@ -1284,7 +1357,7 @@ public class DBeaverLauncher {
 
         String[] baseJars = getArrayFromList(baseJarList);
         if (baseJars.length == 0) {
-            if (!inDevelopmentMode && new File(base.getFile()).isDirectory())
+            if (!inDevelopmentMode && LauncherUtils.toFile(base).isDirectory())
                 throw new IOException("Unable to initialize " + PROP_CLASSPATH); //$NON-NLS-1$
             addEntry(base, result);
             return;
@@ -1300,7 +1373,7 @@ public class DBeaverLauncher {
                 }
                 URL url;
                 if (string.startsWith(FILE_SCHEME))
-                    url = new File(string.substring(5)).toURL();
+                    url = LauncherUtils.toURL(new File(string.substring(5)));
                 else
                     url = new URL(string);
                 addEntry(url, result);
@@ -1311,7 +1384,7 @@ public class DBeaverLauncher {
     }
 
     protected void addEntry(URL url, List<URL> result) {
-        if (new File(url.getFile()).exists())
+        if (LauncherUtils.toFile(url).exists())
             result.add(url);
     }
 
@@ -1326,7 +1399,7 @@ public class DBeaverLauncher {
             File path = new File(location);
             URL url;
             if (path.isAbsolute())
-                url = path.toURL();
+                url = LauncherUtils.toURL(path);
             else {
                 // dev path is relative, combine with base location
                 char lastChar = location.charAt(location.length() - 1);
@@ -1353,12 +1426,12 @@ public class DBeaverLauncher {
         } else {
             // search in the root location
             url = getInstallLocation();
-            String pluginsLocation = new File(url.getFile(), "plugins").toString(); //$NON-NLS-1$
+            String pluginsLocation = new File(LauncherUtils.toFile(url), "plugins").toString(); //$NON-NLS-1$
             String path = searchFor(framework, pluginsLocation);
             if (path == null)
                 throw new FileNotFoundException(String.format("Could not find framework under %s", pluginsLocation)); //$NON-NLS-1$
             if (url.getProtocol().equals("file")) //$NON-NLS-1$
-                url = new File(path).toURL();
+                url = LauncherUtils.toURL(new File(path));
             else
                 url = new URL(url.getProtocol(), url.getHost(), url.getPort(), path);
         }
@@ -1551,8 +1624,8 @@ public class DBeaverLauncher {
                 File toAdjust = LauncherUtils.toFileURL(spec);
                 toAdjust = resolveFile(toAdjust);
                 if (toAdjust.isDirectory())
-                    return LauncherUtils.adjustTrailingSlash(toAdjust.toURL(), trailingSlash);
-                return toAdjust.toURL();
+                    return LauncherUtils.adjustTrailingSlash(LauncherUtils.toURL(toAdjust), trailingSlash);
+                return LauncherUtils.toURL(toAdjust);
             }
             return new URL(spec);
         } catch (MalformedURLException e) {
@@ -1563,8 +1636,8 @@ public class DBeaverLauncher {
             try {
                 File toAdjust = new File(spec);
                 if (toAdjust.isDirectory())
-                    return LauncherUtils.adjustTrailingSlash(toAdjust.toURL(), trailingSlash);
-                return toAdjust.toURL();
+                    return LauncherUtils.adjustTrailingSlash(LauncherUtils.toURL(toAdjust), trailingSlash);
+                return LauncherUtils.toURL(toAdjust);
             } catch (MalformedURLException e1) {
                 return null;
             }
@@ -1581,7 +1654,7 @@ public class DBeaverLauncher {
             String installArea = System.getProperty(PROP_INSTALL_AREA);
             if (installArea != null) {
                 if (installArea.startsWith(FILE_SCHEME))
-                    toAdjust = new File(installArea.substring(5), toAdjust.getPath());
+                    toAdjust = new File(LauncherUtils.toFileURL(installArea), toAdjust.getPath());
                 else if (new File(installArea).exists())
                     toAdjust = new File(installArea, toAdjust.getPath());
             }
@@ -1661,7 +1734,7 @@ public class DBeaverLauncher {
 
         // TODO a little dangerous here.  Basically we have to assume that it is a file URL.
         if (install.getProtocol().equals("file")) { //$NON-NLS-1$
-            File installDir = new File(install.getFile());
+            File installDir = LauncherUtils.toFile(install);
             if (LauncherUtils.canWrite(installDir))
                 return installDir.getAbsolutePath() + File.separator + CONFIG_DIR;
         }
@@ -1685,7 +1758,7 @@ public class DBeaverLauncher {
         URL installURL = getInstallLocation();
         if (installURL == null)
             return null;
-        File installDir = new File(installURL.getFile());
+        File installDir = LauncherUtils.toFile(installURL);
         String installDirHash = getInstallDirHash();
 
         if (protectBase && Constants.OS_MACOSX.equals(os)) {
@@ -1755,7 +1828,7 @@ public class DBeaverLauncher {
         URL installURL = getInstallLocation();
         if (installURL == null)
             return ""; //$NON-NLS-1$
-        File installDir = new File(installURL.getFile());
+        File installDir = LauncherUtils.toFile(installURL);
         int hashCode;
         try {
             hashCode = installDir.getCanonicalPath().hashCode();
@@ -1786,7 +1859,7 @@ public class DBeaverLauncher {
             return properties;
         }
         //java.io used because url may contain spaces and other non escaped chars, and Path.of(URL.toURI()) would fail
-        File eclipseProduct = new File(installURL.getFile(), PRODUCT_SITE_MARKER);
+        File eclipseProduct = new File(LauncherUtils.toFile(installURL), PRODUCT_SITE_MARKER);
         if (debug) {
             System.out.println("Loading product properties from " + eclipseProduct);
         }
@@ -1852,6 +1925,12 @@ public class DBeaverLauncher {
     public int run(String[] args) {
         int result;
         try {
+            if (DelegateMainLauncher.canHandle(args)) {
+                commands = args;
+                String[] passThruArgs = processCommandLine(Arrays.copyOf(args, args.length));
+                DelegateMainLauncher.run(passThruArgs);
+                return 0;
+            }
             basicRun(args);
             String exitCode = System.getProperty(PROP_EXITCODE);
             try {
@@ -2258,6 +2337,12 @@ public class DBeaverLauncher {
     }
 
     public static String getWorkingDirectory(String defaultWorkspaceLocation) {
+        String customDataPath = System.getenv(Constants.ENV_DATA_PATH);
+        if (customDataPath != null && !customDataPath.isBlank()) {
+            // Custom location
+            return Path.of(customDataPath).resolve(defaultWorkspaceLocation).toAbsolutePath().toString();
+        }
+
         String osName = (System.getProperty("os.name")).toUpperCase();
         String workingDirectory;
         if (osName.contains("WIN")) {
@@ -2306,7 +2391,7 @@ public class DBeaverLauncher {
             return null;
         }
 
-        File installDir = new File(installURL.getFile());
+        File installDir = LauncherUtils.toFile(installURL);
         File eclipseProduct = new File(installDir, PRODUCT_SITE_MARKER);
         if (eclipseProduct.exists()) {
             Properties props = new Properties();
@@ -2610,7 +2695,7 @@ public class DBeaverLauncher {
             try {
                 // create a file URL (via File) to normalize the form (e.g., put
                 // the leading / on if necessary)
-                path = new File(path).toURL().getFile();
+                path = LauncherUtils.toURL(new File(path)).getFile();
             } catch (MalformedURLException e1) {
                 // will never happen.  The path is straight from a URL.
             }
@@ -2724,16 +2809,12 @@ public class DBeaverLauncher {
         }
 
         if (splashHandler == null) {
-            splashHandler = new SplashHandler();
-        }
-        if (showSplash || endSplash != null) {
-            // Register the endSplashHandler to be run at VM shutdown. This hook will be
-            // removed once the splash screen has been taken down.
-            try {
-                Runtime.getRuntime().addShutdownHook(splashHandler);
-            } catch (Throwable ex) {
-                // Best effort to register the handler
-            }
+            splashHandler = new Thread(() -> {
+                // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
+                if (bridge != null && !splashDown) {
+                    bridge.updateSplash();
+                }
+            });
         }
 
         // if -endsplash is specified, use it and ignore any -showsplash command
@@ -2775,14 +2856,6 @@ public class DBeaverLauncher {
 
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
-
-        if (splashHandler != null) {
-            try {
-                Runtime.getRuntime().removeShutdownHook(splashHandler);
-            } catch (Throwable e) {
-                // OK to ignore this, happens when the VM is already shutting down
-            }
-        }
     }
 
     /*
@@ -2807,7 +2880,7 @@ public class DBeaverLauncher {
             for (String e : entries) {
                 String entry = resolve(e);
                 if (entry != null && entry.startsWith(FILE_SCHEME)) {
-                    File entryFile = new File(entry.substring(5).replace('/', File.separatorChar));
+                    File entryFile = LauncherUtils.toFileURL(entry);
                     entry = searchFor(entryFile.getName(), entryFile.getParent());
                     if (entry != null)
                         path.add(entry);
@@ -2877,7 +2950,7 @@ public class DBeaverLauncher {
         if (configURL == null)
             return null;
         // cache the splash in the equinox launcher sub-dir in the config area
-        File splash = new File(configURL.getPath(), PLUGIN_ID);
+        File splash = new File(LauncherUtils.toFile(configURL), PLUGIN_ID);
         //include the name of the jar in the cache location
         File jarFile = new File(jarPath);
         String cache = jarFile.getName();

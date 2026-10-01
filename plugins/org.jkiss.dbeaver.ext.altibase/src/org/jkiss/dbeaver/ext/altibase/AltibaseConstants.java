@@ -47,6 +47,12 @@ public class AltibaseConstants {
     public static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NAME_DATE = "DATE";
+    public static final String TYPE_NAME_NUMBER = "NUMBER";
+    public static final String TYPE_NAME_BYTE = "BYTE";
+    public static final String TYPE_NAME_VARBYTE = "VARBYTE";
+    public static final String TYPE_NAME_VARBIT = "VARBIT";
+    public static final String TYPE_NAME_NIBBLE = "NIBBLE";
+    public static final String TYPE_NAME_JSON = "JSON";
 
     public static final String OPERATION_MODIFY = "MODIFY";
     
@@ -140,4 +146,10 @@ public class AltibaseConstants {
     public static final long IDP_ATTR_RD_READONLY = 0x00000002;
     
     public static final String ALTER_REPL_PREFIX = "ALTER REPLICATION";
+
+    public static final String PROP_LOB_CACHE_THRESHOLD = "LOB_CACHE_THRESHOLD";
+    public static final int PROP_LOB_CACHE_THRESHOLD_DEFAULT = 8192;
+
+    public static final int ERR_LOB_LOCATOR_SPAN_TRANS = 69828;
+    public static final int ERR_TEMP_LOB_SEEK_FAILED = 201915;
 }

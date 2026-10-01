@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
 
@@ -37,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -63,7 +63,7 @@ public class PostgeDatabaseManagerTest extends DBeaverUnitTest {
 
     private Map<String, Object> options;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         //instances
         configuration = new DBPConnectionConfiguration();
@@ -88,7 +88,7 @@ public class PostgeDatabaseManagerTest extends DBeaverUnitTest {
         //when
         databaseManager.addObjectCreateActions(monitor, mock(DBCExecutionContext.class), actions, command, options);
         //then
-        assertFalse(actions.isEmpty());
+        Assertions.assertFalse(actions.isEmpty());
     }
 
     @Test
@@ -98,9 +98,9 @@ public class PostgeDatabaseManagerTest extends DBeaverUnitTest {
         when(command.getObject()).thenReturn(object);
         configuration.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, "false");
         //then
-        assertThrows(DBException.class,
+        Assertions.assertThrows(DBException.class,
             () -> databaseManager.addObjectCreateActions(monitor, mock(DBCExecutionContext.class), actions, command, options));
-        assertTrue(actions.isEmpty());
+        Assertions.assertTrue(actions.isEmpty());
     }
 
     @Test
@@ -109,8 +109,8 @@ public class PostgeDatabaseManagerTest extends DBeaverUnitTest {
         var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
         when(command.getObject()).thenReturn(object);
         //then
-        assertThrows(DBException.class,
+        Assertions.assertThrows(DBException.class,
             () -> databaseManager.addObjectCreateActions(monitor, mock(DBCExecutionContext.class), actions, command, options));
-        assertTrue(actions.isEmpty());
+        Assertions.assertTrue(actions.isEmpty());
     }
 }

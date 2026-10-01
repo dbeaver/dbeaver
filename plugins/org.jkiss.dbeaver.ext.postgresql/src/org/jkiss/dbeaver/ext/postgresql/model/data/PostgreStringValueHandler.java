@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -34,7 +35,7 @@ public class PostgreStringValueHandler extends JDBCStringValueHandler {
     public static final PostgreStringValueHandler INSTANCE = new PostgreStringValueHandler();
 
     @Override
-    public void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
+    public void bindParameter(@NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
         if (paramType.getTypeID() == Types.OTHER || ArrayUtils.contains(PostgreDataType.getOidTypes(), paramType.getTypeName())) {
             if (value == null) {
                 statement.setNull(paramIndex, paramType.getTypeID());

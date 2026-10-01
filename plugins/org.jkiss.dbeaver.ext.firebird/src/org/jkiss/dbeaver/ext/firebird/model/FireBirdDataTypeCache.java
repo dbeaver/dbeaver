@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,11 +53,6 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
         }
         // Load domain types
         List<FireBirdDataType> tmpObjectList = new ArrayList<>();
-
-        for (FireBirdFieldType fieldType : FireBirdFieldType.values()) {
-            FireBirdDataType dataType = new FireBirdDataType(dataSource, fieldType);
-            tmpObjectList.add(dataType);
-        }
 
         try {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load Firebird domain types")) {
@@ -114,6 +109,15 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
             if (!handleCacheReadError(e)) {
                 throw e;
             }
+        }
+
+        // Add built-in types, but only those actually supported by the server version.
+        for (FireBirdFieldType fieldType : FireBirdFieldType.values()) {
+            if (fieldType.getMinMajorVersion() > 0
+                && !dataSource.isServerVersionAtLeast(fieldType.getMinMajorVersion(), fieldType.getMinMinorVersion())) {
+                continue;
+            }
+            tmpObjectList.add(new FireBirdDataType(dataSource, fieldType));
         }
 
         mergeCache(tmpObjectList);

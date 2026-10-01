@@ -17,25 +17,24 @@
 package org.jkiss.dbeaver.ext.mysql.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
@@ -57,43 +56,13 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     private Button showAllDatabases;
     private boolean activated = false;
 
-    private final Image LOGO_MYSQL;
-    private final Image LOGO_MARIADB;
     private boolean needsPort;
 
-    public MySQLConnectionPage() {
-        LOGO_MYSQL = createImage("icons/mysql_logo.png");
-        LOGO_MARIADB = createImage("icons/mariadb_logo.png");
-    }
-
     @Override
-    public void dispose() {
-        super.dispose();
-        UIUtils.dispose(LOGO_MYSQL);
-        UIUtils.dispose(LOGO_MARIADB);
-    }
-
-    @Override
-    public Image getImage() {
-        // We set image only once at activation
-        // There is a bug in Eclipse which leads to SWTException after wizard image change
-        DBPDriver driver = getSite().getDriver();
-        DBPImage logoImage = driver.getLogoImage();
-        if (logoImage != null) {
-            return DBeaverIcons.getImage(logoImage);
-        }
-        if (driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
-            return LOGO_MARIADB;
-        } else {
-            return LOGO_MYSQL;
-        }
-    }
-
-    @Override
-    public void createControl(Composite composite) {
+    public void createControl(@NotNull Composite composite) {
         ModifyListener textListener = e -> {
             if (activated) {
-                updateUrl();
+                super.updateUrl(urlText);
                 site.updateButtons();
             }
         };
@@ -110,14 +79,10 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             GridData.FILL_HORIZONTAL
         );
 
-        SelectionAdapter typeSwitcher = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
-                updateUrl();
-            }
-        };
-        createConnectionModeSwitcher(serverGroup, typeSwitcher);
+        createConnectionModeSwitcher(serverGroup, SelectionListener.widgetSelectedAdapter(e -> {
+            super.setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
+            super.updateUrl(urlText);
+        }));
 
         UIUtils.createControlLabel(serverGroup, UIConnectionMessages.dialog_connection_url_label);
         urlText = new Text(serverGroup, SWT.BORDER);
@@ -127,6 +92,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         gd.widthHint = 355;
         urlText.setLayoutData(gd);
         urlText.addModifyListener(e -> site.updateButtons());
+        urlText.setData(URL_TEXT_DATA_ERROR_DECORATOR_KEY, new ControlDecoration(urlText, SWT.BOTTOM | SWT.LEFT));
 
         DBPDriver driver = getSite().getDriver();
         needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
@@ -176,16 +142,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
-    }
-
-    private void updateUrl() {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        saveSettings(dataSourceContainer);
-        if (typeURLRadio != null && typeURLRadio.getSelection()) {
-            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
-        } else {
-            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
-        }
     }
 
     @Override
@@ -238,14 +194,14 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
         }
-        setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
-        updateUrl();
+        super.setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
+        super.updateUrl(urlText);
 
         activated = true;
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (typeURLRadio != null) {
             connectionInfo.setConfigurationType(
@@ -273,6 +229,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {

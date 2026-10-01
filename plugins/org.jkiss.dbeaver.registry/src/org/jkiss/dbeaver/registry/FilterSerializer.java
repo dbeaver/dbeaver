@@ -93,9 +93,9 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
             }
             json.beginArray();
             for (FilterMapping filter : filterMappings) {
-                DBSObjectFilter defaultFilter = filter.defaultFilter;
-                if (shouldSerializeFilter(defaultFilter, serialiseCustomUserFilters)) {
-                    saveObjectFilter(json, filter.typeName, null, defaultFilter);
+                DBSObjectFilter globalFilter = filter.globalFilter;
+                if (shouldSerializeFilter(globalFilter, serialiseCustomUserFilters)) {
+                    saveObjectFilter(json, filter.typeName, null, globalFilter);
                 }
                 for (Map.Entry<String, DBSObjectFilter> cf : filter.customFilters.entrySet()) {
                     if (shouldSerializeFilter(cf.getValue(), serialiseCustomUserFilters)) {

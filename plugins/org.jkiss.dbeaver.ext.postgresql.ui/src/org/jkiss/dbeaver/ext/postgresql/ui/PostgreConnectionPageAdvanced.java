@@ -23,7 +23,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -43,6 +46,8 @@ import org.jkiss.utils.CommonUtils;
  * PostgreConnectionPageAdvanced
  */
 public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
+    private static final Log log = Log.getLog(PostgreConnectionPageAdvanced.class);
+
     private final PostgreConnectionPage mainPage;
 
     private Text roleText; //TODO: make it a combo and fill it with appropriate roles
@@ -267,7 +272,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionCfg = dataSource.getConnectionConfiguration();
 
         if (roleText != null) {

@@ -66,6 +66,70 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="risingwave"
+            label="RisingWave"
+            description="RisingWave database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/risingwave_icon.png"
+            iconBig="icons/risingwave_icon_big.png"
+            logoImage="icons/risingwave_logo.png"/>
+        <dataSourceType
+            id="edb"
+            label="EDB"
+            description="EDB database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/edb_icon.png"
+            iconBig="icons/edb_icon_big.png"
+            logoImage="icons/edb_logo.png"/>
+        <dataSourceType
+            id="materialize"
+            label="Materialize"
+            description="Materialize database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/materialize_icon.png"
+            iconBig="icons/materialize_icon_big.png"
+            logoImage="icons/materialize_logo.png"/>
+        <dataSourceType
+            id="cockroachdb"
+            label="CockroachDB"
+            description="CockroachDB database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/cockroach_icon.png"
+            iconBig="icons/cockroach_icon_big.png"
+            logoImage="icons/cockroach_logo.png"/>
+        <dataSourceType
+            id="yugabytedb"
+            label="YugabyteDB"
+            description="YugabyteDB distributed database"
+            dataSourceInformation="Distributed database supporting SQL and Cassandra-compatible APIs"
+            icon="icons/yugabyte_icon.png"
+            iconBig="icons/yugabyte_icon_big.png"
+            logoImage="icons/yugabyte_logo.png"/>
+        <dataSourceType
+            id="yellowbrick"
+            label="Yellowbrick"
+            description="Yellowbrick database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/yellowbrick_icon.png"
+            iconBig="icons/yellowbrick_icon_big.png"
+            logoImage="icons/yellowbrick_logo.png"/>
+        <dataSourceType
+            id="timescaledb"
+            label="TimescaleDB"
+            description="TimescaleDB time-series database"
+            dataSourceInformation="Time-series database for operational data"
+            icon="icons/timescale_icon.png"
+            iconBig="icons/timescale_icon_big.png"
+            logoImage="icons/timescale_logo.png"/>
+        <dataSourceType
+            id="redshift"
+            label="Amazon Redshift"
+            description="Amazon Redshift database"
+            dataSourceInformation="High-performance analytical database platform"
+            icon="icons/redshift_icon.svg"
+            iconBig="icons/redshift_icon_big.svg"
+            logoImage="icons/redshift_logo.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"
                 description="%datasource.postgresql.description"
@@ -305,9 +369,8 @@
 
                 <driver
                     id="postgres-jdbc"
+                    dataSourceType="postgresql"
                     label="PostgreSQL"
-                    icon="icons/postgresql_icon.png"
-                    iconBig="icons/postgresql_icon_big.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
@@ -324,7 +387,7 @@
                     dialect="postgresql">
                     <replace provider="generic" driver="postgresql"/>
                     <replace provider="postgresql" driver="postgresql"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/com.github.waffle:waffle-jna:RELEASE[3.5.1]" if="properties.gsslib=='sspi'" optional="true" bundle="!drivers.postgresql"/>
@@ -341,9 +404,8 @@
                 <!-- Bad driver: it must be declared in generic provider -->
                 <driver
                     id="postgresql"
+                    dataSourceType="postgresql"
                     label="PostgreSQL (Old)"
-                    icon="icons/postgresql_icon.png"
-                    iconBig="icons/postgresql_icon_big.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
@@ -356,6 +418,8 @@
 
                 <driver
                     id="postgres-greenplum-jdbc"
+                    dataSourceType="greenplum"
+                    categories="sql,analytic"
                     label="Greenplum"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
@@ -372,9 +436,8 @@
 
                 <driver
                     id="postgres-timescale-jdbc"
+                    dataSourceType="timescaledb"
                     label="TimescaleDB"
-                    icon="icons/timescale_icon.png"
-                    iconBig="icons/timescale_icon_big.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
@@ -386,7 +449,7 @@
                     description="%driver.timescale.description"
                     categories="timeseries"
                     dialect="postgresql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
                     <file type="license" path="licenses/external/pg.txt"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis" optional="true" bundle="drivers.postgresql"/>
@@ -398,9 +461,8 @@
 
                 <driver
                     id="yellowbrick-jdbc"
+                    dataSourceType="yellowbrick"
                     label="Yellowbrick"
-                    icon="icons/yellowbrick_icon.png"
-                    iconBig="icons/yellowbrick_icon_big.png"
                     class="io.yellowbrick.jdbc.YellowbrickDriver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
@@ -420,13 +482,12 @@
                     <property name="connectTimeout" value="20"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
-                <driver id="postgres-yellowbrick-jdbc"/>
+                <driver id="postgres-yellowbrick-jdbc" dataSourceType="yellowbrick"/>
 
                 <driver
                         id="postgres-yugabytedb-jdbc"
+                        dataSourceType="yugabytedb"
                         label="YugabyteDB"
-                        icon="icons/yugabyte_icon.png"
-                        iconBig="icons/yugabyte_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -438,7 +499,7 @@
                         description="%driver.yugabytedb.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
                     <file type="license" path="licenses/external/pg.txt"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="yugabytedb"/>
@@ -448,9 +509,8 @@
 
                 <driver
                         id="postgres-cockroach-jdbc"
+                        dataSourceType="cockroachdb"
                         label="CockroachDB"
-                        icon="icons/cockroach_icon.png"
-                        iconBig="icons/cockroach_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -462,9 +522,8 @@
                         description="%driver.cockroach.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"/>
                     <file type="license" path="licenses/external/pg.txt"/>
-                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="cockroach"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -472,9 +531,8 @@
 
                 <driver
                         id="postgres-materialize-jdbc"
+                        dataSourceType="materialize"
                         label="Materialize"
-                        icon="icons/materialize_icon.png"
-                        iconBig="icons/materialize_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -486,9 +544,8 @@
                         description="%driver.materialize.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]"/>
                     <file type="license" path="licenses/external/pg.txt"/>
-                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="materialize"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -496,9 +553,8 @@
 
                 <driver
                     id="postgres-redshift-jdbc"
+                    dataSourceType="redshift"
                     label="Redshift"
-                    icon="icons/redshift_icon.svg"
-                    iconBig="icons/redshift_icon_big.svg"
                     category="AWS"
                     class="com.amazon.redshift.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
@@ -517,7 +573,8 @@
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
 
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.2.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.2.6]" load-optional-dependencies="true"
+                          bundle="!drivers.redshift"/>
                     <file type="jar" path="maven:/com.fasterxml.jackson.core:jackson-core:RELEASE[2.16.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="jar" path="maven:/com.fasterxml.jackson.core:jackson-databind:RELEASE[2.16.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
 
@@ -531,9 +588,8 @@
 
                 <driver
                         id="postgres-edb-jdbc"
+                        dataSourceType="edb"
                         label="EDB"
-                        icon="icons/edb_icon.png"
-                        iconBig="icons/edb_icon_big.png"
                         class="com.edb.Driver"
                         sampleURL="jdbc:edb://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -554,9 +610,11 @@
 
                 <driver
                         id="postgres-gcloud-jdbc"
+                        dataSourceType="postgresql"
                         label="Google Cloud SQL - PostgreSQL"
 	                    icon="icons/google_cloud_sql_icon.png"
 	                    iconBig="icons/google_cloud_sql_icon_big.png"
+                        logoImage="icons/google_cloud_sql_logo.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql:///[{database}]?cloudSqlInstance={host}"
                         useURL="true"
@@ -568,7 +626,7 @@
                         description="%driver.gcloudpg.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,cloud">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/com.google.cloud.sql:postgres-socket-factory:RELEASE"/>
                     <file type="license" path="licenses/external/pg.txt"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -582,9 +640,8 @@
 
                 <driver
                         id="postgres-cratedb-jdbc"
+                        dataSourceType="cratedb"
                         label="CrateDB"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/cratedb_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/cratedb_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -596,7 +653,7 @@
                         description="%driver.cratedb.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
                     <file type="license" path="licenses/external/pg.txt"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="cratedb"/>
@@ -606,9 +663,8 @@
 
                 <driver
                         id="postgres-risingwave-jdbc"
+                        dataSourceType="risingwave"
                         label="RisingWave"
-                        icon="icons/risingwave_icon.png"
-                        iconBig="icons/risingwave_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
@@ -620,7 +676,7 @@
                         description="%driver.risingwave.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
                     <file type="license" path="licenses/external/pg.txt"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="risingwave"/>
@@ -751,9 +807,9 @@
                           desktop="true" hidden="true"/>
             </propertyGroup>
             <propertyGroup label="SSL Settings">
-                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
-                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
-                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured,file" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,file" length="MULTILINE"/>
+                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password,file" length="MULTILINE"/>
                 <property id="ssl.ca.cert" label="CA Certificate Path" type="string" description="Path to a CA certificate file"
                           desktop="true"/>
                 <property id="ssl.client.cert" label="Client Certificate Path" type="string" description="Path to a client certificate file"

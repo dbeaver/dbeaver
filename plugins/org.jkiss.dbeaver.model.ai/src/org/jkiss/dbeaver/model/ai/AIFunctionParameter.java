@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+/**
+ * Represents a parameter definition for an AI function/tool call
+ */
 public interface AIFunctionParameter {
 
     @NotNull

@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.ui.app.standalone.cli.DBeaverMixin;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import picocli.CommandLine;
 
+import java.util.List;
+
 /**
  * Command line processing.
  * Note:
@@ -65,11 +67,9 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
     @Override
     protected void preprocessCommandLineParameter(
         @NotNull CLICommandDescriptor descriptor,
-        @NotNull CommandLine.ParseResult cliCommand,
-        @NotNull CLIContextImpl context,
         boolean uiActivated
     ) {
-        super.preprocessCommandLineParameter(descriptor, cliCommand, context, uiActivated);
+        super.preprocessCommandLineParameter(descriptor, uiActivated);
         if (!uiActivated && descriptor.isExclusiveMode()) {
             if (DBeaverApplication.instance != null) {
                 DBeaverApplication.instance.setExclusiveMode(true);
@@ -82,9 +82,10 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
     protected CommandLine initCommandLine(
         @Nullable IInstanceController applicationInstanceController,
         @NotNull CLIContextImpl context,
-        @NotNull CLIRunMeta runMeta
+        @NotNull CLIRunMeta runMeta,
+        @NotNull List<CLICommandDescriptor> commandsToExecute
     ) {
-        CommandLine cmd = super.initCommandLine(applicationInstanceController, context, runMeta);
+        CommandLine cmd = super.initCommandLine(applicationInstanceController, context, runMeta, commandsToExecute);
         cmd.addMixin("dbeaver", new DBeaverMixin());
         return cmd;
     }

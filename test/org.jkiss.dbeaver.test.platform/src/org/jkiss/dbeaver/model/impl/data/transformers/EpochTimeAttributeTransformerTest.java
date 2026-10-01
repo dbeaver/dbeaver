@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,17 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+
 public class EpochTimeAttributeTransformerTest extends DBeaverUnitTest {
     private static final String NANOS = "nanoseconds";
     private static final String MILLIS = "milliseconds";
@@ -56,7 +57,7 @@ public class EpochTimeAttributeTransformerTest extends DBeaverUnitTest {
     private DBDAttributeBinding attributeBinding;
     private DBDValueHandler proxyHandler;
 
-    @Before
+    @BeforeEach
     public void init() {
         attributeBinding = new DBDAttributeBindingTestDouble(handler);
     }
@@ -93,48 +94,48 @@ public class EpochTimeAttributeTransformerTest extends DBeaverUnitTest {
     public void testMillisAndUTC() {
         setOptions(MILLIS, "UTC");
 
-        assertEquals("1970-01-01 00:00:00.000", getDisplayString(0));
-        assertEquals(0L, getValue("1970-01-01 00:00:00.000"));
+        Assertions.assertEquals("1970-01-01 00:00:00.000", getDisplayString(0));
+        Assertions.assertEquals(0L, getValue("1970-01-01 00:00:00.000"));
 
-        assertEquals("1970-01-01 00:00:00.042", getDisplayString(42));
-        assertEquals(42L, getValue("1970-01-01 00:00:00.042"));
+        Assertions.assertEquals("1970-01-01 00:00:00.042", getDisplayString(42));
+        Assertions.assertEquals(42L, getValue("1970-01-01 00:00:00.042"));
 
-        assertEquals("1969-12-31 23:59:59.999", getDisplayString(-1));
-        assertEquals(-1L, getValue("1969-12-31 23:59:59.999"));
+        Assertions.assertEquals("1969-12-31 23:59:59.999", getDisplayString(-1));
+        Assertions.assertEquals(-1L, getValue("1969-12-31 23:59:59.999"));
     }
 
     @Test
     public void testSecondsAndParis() {
         setOptions(SECONDS, "Europe/Paris");
 
-        assertEquals("1970-01-01 01:00:00", getDisplayString(0));
-        assertEquals(0L, getValue("1970-01-01 01:00:00"));
+        Assertions.assertEquals("1970-01-01 01:00:00", getDisplayString(0));
+        Assertions.assertEquals(0L, getValue("1970-01-01 01:00:00"));
 
-        assertEquals("1970-01-01 01:00:42", getDisplayString(42));
-        assertEquals(42L, getValue("1970-01-01 01:00:42"));
+        Assertions.assertEquals("1970-01-01 01:00:42", getDisplayString(42));
+        Assertions.assertEquals(42L, getValue("1970-01-01 01:00:42"));
 
-        assertEquals("1970-01-01 00:59:59", getDisplayString(-1));
-        assertEquals(-1L, getValue("1970-01-01 00:59:59"));
+        Assertions.assertEquals("1970-01-01 00:59:59", getDisplayString(-1));
+        Assertions.assertEquals(-1L, getValue("1970-01-01 00:59:59"));
     }
 
     @Test
     public void testNanosAndUTC() {
         setOptions(NANOS, "UTC");
 
-        assertEquals("1970-01-01 00:00:00.000000000", getDisplayString(0));
-        assertEquals(0L, getValue("1970-01-01 00:00:00.000000000"));
+        Assertions.assertEquals("1970-01-01 00:00:00.000000000", getDisplayString(0));
+        Assertions.assertEquals(0L, getValue("1970-01-01 00:00:00.000000000"));
 
-        assertEquals("1970-01-01 00:00:00.000000420", getDisplayString(420));
-        assertEquals(420L, getValue("1970-01-01 00:00:00.000000420"));
+        Assertions.assertEquals("1970-01-01 00:00:00.000000420", getDisplayString(420));
+        Assertions.assertEquals(420L, getValue("1970-01-01 00:00:00.000000420"));
 
-        assertEquals("1970-01-01 00:00:01.000000420", getDisplayString(1_000_000_420));
-        assertEquals(1_000_000_420L, getValue("1970-01-01 00:00:01.000000420"));
+        Assertions.assertEquals("1970-01-01 00:00:01.000000420", getDisplayString(1_000_000_420));
+        Assertions.assertEquals(1_000_000_420L, getValue("1970-01-01 00:00:01.000000420"));
 
-        assertEquals("1969-12-31 23:59:59.999999580", getDisplayString(-420));
-        assertEquals(-420L, getValue("1969-12-31 23:59:59.999999580"));
+        Assertions.assertEquals("1969-12-31 23:59:59.999999580", getDisplayString(-420));
+        Assertions.assertEquals(-420L, getValue("1969-12-31 23:59:59.999999580"));
 
-        assertEquals("1969-12-31 23:59:58.999999580", getDisplayString(-1_000_000_420));
-        assertEquals(-1_000_000_420L, getValue("1969-12-31 23:59:58.999999580"));
+        Assertions.assertEquals("1969-12-31 23:59:58.999999580", getDisplayString(-1_000_000_420));
+        Assertions.assertEquals(-1_000_000_420L, getValue("1969-12-31 23:59:58.999999580"));
     }
 
     private static class DBDAttributeBindingTestDouble extends DBDAttributeBinding {
@@ -199,6 +200,7 @@ public class EpochTimeAttributeTransformerTest extends DBeaverUnitTest {
             return null;
         }
 
+        @Nullable
         @Override
         public String getRowIdentifierStatus() {
             return null;

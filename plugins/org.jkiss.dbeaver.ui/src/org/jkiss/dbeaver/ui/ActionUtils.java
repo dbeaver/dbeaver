@@ -41,6 +41,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.keys.BindingService;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
@@ -57,11 +58,15 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Action utils
  */
 public class ActionUtils {
+
+    private static final String HOSTING_OBJECT_PROP_NAME = "org.jkiss.dbeaver.ui.hostingObject";
+
     private static final Log log = Log.getLog(ActionUtils.class);
 
     private static final Set<IPropertyChangeListener> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
@@ -116,6 +121,35 @@ public class ActionUtils {
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, DBPImage image) {
         return makeCommandContribution(serviceLocator, commandId, name, image, null, false);
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(@NotNull String text) {
+        return new ActionContributionItem(new EmptyAction(text));
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull Consumer<Event> callback
+    ) {
+        return new ActionContributionItem(new Action(text) {
+            @Override
+            public void runWithEvent(@NotNull Event event) {
+                callback.accept(event);
+            }
+        });
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull DBPImage image,
+        @NotNull Consumer<Event> callback
+    ) {
+        var item = makeContribution(text, callback);
+        item.getAction().setImageDescriptor(DBeaverIcons.getImageDescriptor(image));
+        return item;
     }
 
     public static ContributionItem makeActionContribution(
@@ -271,7 +305,14 @@ public class ActionUtils {
         IBindingService bindingService = serviceLocator.getService(IBindingService.class);
         if (bindingService != null) {
             TriggerSequence sequence = null;
-            Binding[] bindings = bindingService.getBindings();
+            Iterable<Binding> bindings;
+            if (bindingService instanceof BindingService s) {
+                bindings = s.getBindingManager().getActiveBindingsDisregardingContextFlat();
+            } else if (bindingService.getBindings() instanceof Binding[] bb) {
+                bindings = Arrays.asList(bb);
+            } else {
+                bindings = null;
+            }
             if (bindings != null) {
                 for (Binding b : bindings) {
                     ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
@@ -438,13 +479,18 @@ public class ActionUtils {
     }
 
     @NotNull
-    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Consumer<IAction> callback) {
         return new Action(text, DBeaverIcons.getImageDescriptor(icon)) {
             @Override
             public void run() {
-                callback.run();
+                callback.accept(this);
             }
         };
+    }
+
+    @NotNull
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+        return makeAction(text, icon, ignored -> callback.run());
     }
 
     @NotNull
@@ -460,6 +506,9 @@ public class ActionUtils {
     }
 
     public static void evaluatePropertyState(String propertyName) {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return;
+        }
         IEvaluationService service = PlatformUI.getWorkbench().getService(IEvaluationService.class);
         if (service != null) {
             try {
@@ -533,5 +582,14 @@ public class ActionUtils {
         } else {
             return label;
         }
+    }
+
+    public static void setHostingObject(@NotNull Menu menu, @NotNull Object obj) {
+        menu.setData(HOSTING_OBJECT_PROP_NAME, obj);
+    }
+
+    @Nullable
+    public static Object getHostingObject(@NotNull Menu menu) {
+        return menu.getData(HOSTING_OBJECT_PROP_NAME);
     }
 }

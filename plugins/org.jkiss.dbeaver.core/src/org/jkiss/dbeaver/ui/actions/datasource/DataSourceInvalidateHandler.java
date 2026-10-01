@@ -186,7 +186,6 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         {
             createButton(parent, IDialogConstants.RETRY_ID, "&Reconnect", true);
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-            createDetailsButton(parent);
         }
 
         @Override

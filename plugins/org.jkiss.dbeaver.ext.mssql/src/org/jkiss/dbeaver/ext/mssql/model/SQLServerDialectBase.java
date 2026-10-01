@@ -300,7 +300,7 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
     }
 
     @Override
-    public boolean isQuotedString(String string) {
+    public boolean isQuotedString(@NotNull String string) {
         if (string.length() >= 3 && string.charAt(0) == 'N') {
             // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql
             return super.isQuotedString(string.substring(1));
@@ -308,13 +308,15 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
         return super.isQuotedString(string);
     }
 
+    @NotNull
     @Override
-    public String getQuotedString(String string) {
+    public String getQuotedString(@NotNull String string) {
         return 'N' + super.getQuotedString(string);
     }
 
+    @NotNull
     @Override
-    public String getUnquotedString(String string) {
+    public String getUnquotedString(@NotNull String string) {
         if (string.length() >= 3 && string.charAt(0) == 'N') {
             // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql
             return super.getUnquotedString(string.substring(1));

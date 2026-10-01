@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,11 +71,6 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
         formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
         printTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_PRINT_TABLE_NAME), true);
         exportJsonAs = (String) site.getProperties().getOrDefault(PROP_EXPORT_JSON_VALUES, PROP_EXPORT_JSON_VALUES_AS_STRING);
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
     }
 
     @Override

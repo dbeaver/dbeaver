@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
-import java.util.List;
-
 public class FilterResetAllPinsAction extends AbstractResultSetViewerAction {
 
     public FilterResetAllPinsAction(ResultSetViewer resultSetViewer) {
@@ -35,11 +33,7 @@ public class FilterResetAllPinsAction extends AbstractResultSetViewerAction {
     }
 
     void execute(boolean refresh) {
-        List<DBDAttributeConstraint> constraints = getResultSetViewer().getDataFilter().getConstraints();
-        if (constraints == null) {
-            return;
-        }
-        for (DBDAttributeConstraint c : constraints) {
+        for (DBDAttributeConstraint c : getResultSetViewer().getDataFilter().getConstraints()) {
             c.removeOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED);
         }
         if (refresh) {

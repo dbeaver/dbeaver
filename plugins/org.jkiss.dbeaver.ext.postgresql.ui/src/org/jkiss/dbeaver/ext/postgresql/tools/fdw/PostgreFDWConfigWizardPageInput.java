@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.tools.fdw;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -96,9 +95,7 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
             };
 
             Composite buttonsPanel = UIUtils.createComposite(databasesGroup, 2);
-            UIUtils.createDialogButton(buttonsPanel, "Add database", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createDialogButton(buttonsPanel, "Add database", SelectionListener.widgetSelectedAdapter(e -> {
                     SelectDataSourceDialog dialog = new SelectDataSourceDialog(getShell(), selectorPanel.getProject(), null);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         DBPDataSourceContainer dataSource = dialog.getDataSource();
@@ -107,19 +104,15 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
                             refreshDataSources();
                         }
                     }
-                }
-            });
+                }));
 
-            Button delButton = UIUtils.createDialogButton(buttonsPanel, "Remove database", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            Button delButton = UIUtils.createDialogButton(buttonsPanel, "Remove database", SelectionListener.widgetSelectedAdapter(e -> {
                     DBNNode selectedNode = NavigatorUtils.getSelectedNode(selectorPanel.getSelection());
                     if (selectedNode instanceof DBNDatabaseNode) {
                         getWizard().removeAvailableDataSource(((DBNDatabaseNode) selectedNode).getDataSourceContainer());
                         refreshDataSources();
                     }
-                }
-            });
+                }));
             delButton.setEnabled(false);
             selectorPanel.addSelectionListener(event -> {
                 DBNNode selectedNode = NavigatorUtils.getSelectedNode(event.getSelection());

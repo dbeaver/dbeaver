@@ -72,6 +72,7 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
 
     @Override
     protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+        super.createButtonsForLeftButtonBar(parent);
         if (getWizard() instanceof AbstractNativeToolWizard<?, ?, ?> wizard && wizard.isNativeClientHomeRequired()) {
             createButton(parent, CLIENT_CONFIG_ID, TaskNativeUIMessages.tools_wizard_client_button, false);
         }

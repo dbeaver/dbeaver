@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -35,7 +36,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IStatefulEditor;
@@ -127,7 +127,7 @@ public class DataSourcePropertyTester extends PropertyTester {
                     if (context != null && context.isConnected()) {
                         if (receiver instanceof IPageChangeProvider pcp) {
                             Object selectedPage = pcp.getSelectedPage();
-                            if (!(selectedPage instanceof ISmartTransactionManager)) {
+                            if (!(selectedPage instanceof DBCSmartTransactionManager)) {
                                 return Boolean.FALSE.equals(expectedValue);
                             }
                         }

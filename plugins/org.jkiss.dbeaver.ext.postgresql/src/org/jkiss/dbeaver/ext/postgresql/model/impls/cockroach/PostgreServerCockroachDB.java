@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -41,41 +42,39 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
         super(dataSource);
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "CockroachDB";
     }
 
+    @Nullable
     @Override
-    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+    public PostgreTableBase createRelationOfClass(@NotNull PostgreSchema schema, @NotNull PostgreClass.RelKind kind, @NotNull JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.S) {
             return new CockroachSequence(schema, dbResult);
         }
         return super.createRelationOfClass(schema, kind, dbResult);
     }
 
+    @NotNull
     @Override
-    public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom)
-        throws DBException {
+    public PostgreTableBase createNewRelation(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreSchema schema,
+        @NotNull PostgreClass.RelKind kind,
+        @Nullable Object copyFrom
+    ) throws DBException {
         if (kind == PostgreClass.RelKind.S) {
             return new CockroachSequence(schema);
         }
         return super.createNewRelation(monitor, schema, kind, copyFrom);
     }
 
+    @NotNull
     @Override
     public PostgreSequence createSequence(@NotNull PostgreSchema schema) {
         return new CockroachSequence(schema);
-    }
-
-    @Override
-    public boolean supportsOids() {
-        return true;
-    }
-
-    @Override
-    public boolean supportsIndexes() {
-        return true;
     }
 
     @Override
@@ -91,11 +90,6 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     @Override
     public boolean supportsInheritance() {
         return false;
-    }
-
-    @Override
-    public boolean supportsTriggers() {
-        return true;
     }
 
     @Override
@@ -121,11 +115,6 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     @Override
     public boolean supportsTablespaces() {
         return false;
-    }
-
-    @Override
-    public boolean supportsSequences() {
-        return true;
     }
 
     @Override
@@ -183,8 +172,13 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
         return false;
     }
 
+    @NotNull
     @Override
-    public List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase table, boolean includeNestedObjects) throws DBException {
+    public List<PostgrePrivilege> readObjectPermissions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase table,
+        boolean includeNestedObjects
+    ) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load CockroachDB table grants")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                 try (JDBCResultSet resultSet = dbStat.executeQuery()) {
@@ -215,6 +209,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
         }
     }
 
+    @NotNull
     @Override
     public Map<String, String> getDataTypeAliases() {
         Map<String, String> aliasMap = new LinkedHashMap<>(super.getDataTypeAliases());
@@ -231,8 +226,12 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
         return false;
     }
 
+    @Nullable
     @Override
-    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+    public String readTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase table
+    ) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load CockroachDB table DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                 try (JDBCResultSet resultSet = dbStat.executeQuery()) {
@@ -301,7 +300,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean isHiddenRowidColumn(@NotNull PostgreAttribute attribute) {
+    public boolean isHiddenRowidColumn(@NotNull PostgreAttribute<?> attribute) {
         String defaultValue = attribute.getDefaultValue();
         if (CommonUtils.isNotEmpty(defaultValue)) {
             // Rowid column is a special case in Cockroach #14557

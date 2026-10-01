@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -61,7 +62,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         getObject().clearGrantsCache();
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {
@@ -79,9 +80,9 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         };
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
+    public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege) prevCommand;

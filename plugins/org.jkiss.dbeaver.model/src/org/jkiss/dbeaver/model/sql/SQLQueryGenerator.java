@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Contains methods used for query generation
@@ -97,10 +96,7 @@ public interface SQLQueryGenerator {
         boolean inlineCriteria,
         boolean subQuery
     ) throws DBException {
-        List<DBDAttributeConstraint> constraints = filter.getConstraints().stream()
-            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
-            .collect(Collectors.toList());
-        appendConditionString(filter, constraints, dataSource, conditionTable, query, inlineCriteria, subQuery);
+        appendConditionString(filter, filter.getConstraintsWithCondition(), dataSource, conditionTable, query, inlineCriteria, subQuery);
     }
 
     /**

@@ -108,3 +108,15 @@ UNION JOIN Production.ProductCategory
 ON ProductCategory.ProductCategoryID = ProductSubCategory.ProductCategoryID
 ORDER BY Product.ModifiedDate DESC;
 
+-- #40690 Inline ORDER BY inside aggregate functions
+SELECT string_agg(pmwg.match_id, ', ' ORDER BY pmwg.match_id) AS winstreak_matches
+FROM t;
+
+SELECT string_agg(DISTINCT name, ',' ORDER BY name DESC)
+FROM t;
+
+SELECT d.name, string_agg(e.name, ', ' ORDER BY e.name) AS employees
+FROM dept d JOIN emp e ON d.id = e.dept_id
+GROUP BY d.name
+ORDER BY d.name;
+

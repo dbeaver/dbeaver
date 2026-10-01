@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,16 @@ public class SMUser extends SMSubject {
     private String[] userTeams;
     private boolean enabled;
     private String authRole;
+    @NotNull
+    private String[] linkedAuthProviders = new String[0];
     @Nullable
     private Instant disableDate;
     @Nullable
     private String disabledBy;
     @Nullable
     private String disableReason;
+    @Nullable
+    private Instant lastLoginTime;
 
     public SMUser(
         @NotNull String userId,
@@ -97,6 +101,15 @@ public class SMUser extends SMSubject {
         this.userTeams = userTeams;
     }
 
+    @NotNull
+    public String[] getLinkedAuthProviders() {
+        return linkedAuthProviders;
+    }
+
+    public void setLinkedAuthProviders(@NotNull String[] linkedAuthProviders) {
+        this.linkedAuthProviders = linkedAuthProviders;
+    }
+
     @Property(viewable = true, order = 3)
     public boolean isEnabled() {
         return enabled;
@@ -128,5 +141,14 @@ public class SMUser extends SMSubject {
     @Nullable
     public String getDisableReason() {
         return enabled ? null : disableReason;
+    }
+
+    @Nullable
+    public Instant getLastLoginTime() {
+        return lastLoginTime;
+    }
+
+    public void setLastLoginTime(@Nullable Instant lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
     }
 }

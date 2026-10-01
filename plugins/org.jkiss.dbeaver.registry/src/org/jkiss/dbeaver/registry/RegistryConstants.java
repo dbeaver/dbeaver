@@ -45,6 +45,7 @@ public class RegistryConstants {
     public static final String TAG_TYPES = "types"; //$NON-NLS-1$
     public static final String TAG_TYPE = "type"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE = "datasource"; //$NON-NLS-1$
+    public static final String TAG_DATASOURCE_TYPE = "dataSourceType"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE_PATCH = "datasourcePatch"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE_ORIGIN = "datasourceOrigin"; //$NON-NLS-1$
     public static final String TAG_DRIVER_SUBSTITUTION = "driverSubstitution"; //$NON-NLS-1$
@@ -105,6 +106,7 @@ public class RegistryConstants {
     public static final String ATTR_ICON_BIG = "iconBig"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
+    public static final String ATTR_COLOR_DARK = "colorDark"; //$NON-NLS-1$
     public static final String ATTR_KEEP_ALIVE = "keepAlive"; //$NON-NLS-1$
     public static final String ATTR_CLOSE_IDLE_ENABLED = "closeIdleConnection";
     public static final String ATTR_CLOSE_IDLE = "closeIdle";
@@ -133,6 +135,7 @@ public class RegistryConstants {
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
     public static final String ATTR_OS = "os"; //$NON-NLS-1$
     public static final String ATTR_ARCH = "arch"; //$NON-NLS-1$
+    public static final String ATTR_EXCLUDE = "exclude"; //$NON-NLS-1$
     public static final String ATTR_MAIN = "main"; //$NON-NLS-1$
     public static final String ATTR_POSITION = "position"; //$NON-NLS-1$
     public static final String ATTR_OBJECT_TYPE = "objectType"; //$NON-NLS-1$
@@ -140,6 +143,8 @@ public class RegistryConstants {
     public static final String ATTR_SOURCE_TYPE = "sourceType"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDABLE = "embeddable"; //$NON-NLS-1$
     public static final String ATTR_DATA_SOURCE = "dataSource"; //$NON-NLS-1$
+    public static final String ATTR_DATA_SOURCE_TYPE = "dataSourceType"; //$NON-NLS-1$
+    public static final String ATTR_DATA_SOURCE_INFORMATION = "dataSourceInformation"; //$NON-NLS-1$
     public static final String ATTR_AUTH_MODEL = "auth-model"; //$NON-NLS-1$
 
     public static final String TAG_FOLDER = "folder"; //$NON-NLS-1$

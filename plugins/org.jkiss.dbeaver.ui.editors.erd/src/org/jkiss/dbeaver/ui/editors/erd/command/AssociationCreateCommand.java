@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.editors.erd.command;
 
 import org.eclipse.gef.commands.Command;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.erd.*;
@@ -52,20 +54,18 @@ public class AssociationCreateCommand extends Command {
     public AssociationCreateCommand() {
     }
 
+    @Nullable
     public ERDEntityAttribute getSourceAttribute() {
-        return CommonUtils.isEmpty(sourceAttributes) ? null : sourceAttributes.get(0);
+        return CommonUtils.isEmpty(sourceAttributes) ? null : sourceAttributes.getFirst();
     }
 
+    @Nullable
     public ERDEntityAttribute getTargetAttribute() {
-        return CommonUtils.isEmpty(targetAttributes) ? null : targetAttributes.get(0);
+        return CommonUtils.isEmpty(targetAttributes) ? null : targetAttributes.getFirst();
     }
 
-    public void setAttributes(List<ERDEntityAttribute> sourceAttributes, List<ERDEntityAttribute> targetAttributes) {
-        this.sourceAttributes = sourceAttributes;
-        this.targetAttributes = targetAttributes;
 
-    }
-    public void setAttributes(ERDEntityAttribute sourceAttribute, ERDEntityAttribute targetAttribute) {
+    public void setAttributes(@NotNull ERDEntityAttribute sourceAttribute, @NotNull ERDEntityAttribute targetAttribute) {
         this.sourceAttributes = Collections.singletonList(sourceAttribute);
         this.targetAttributes = Collections.singletonList(targetAttribute);
     }
@@ -100,27 +100,30 @@ public class AssociationCreateCommand extends Command {
         association = createAssociation(sourceEntity, targetEntity, true);
     }
 
+    @NotNull
     public ERDElement<?> getSourceEntity() {
         return sourceEntity;
     }
 
-    public void setSourceEntity(ERDElement<?> sourceEntity) {
+    public void setSourceEntity(@NotNull ERDElement<?> sourceEntity) {
         this.sourceEntity = sourceEntity;
     }
 
+    @NotNull
     public ERDElement<?> getTargetEntity() {
         return targetEntity;
     }
 
-    public void setTargetEntity(ERDElement<?> targetEntity) {
+    public void setTargetEntity(@NotNull ERDElement<?> targetEntity) {
         this.targetEntity = targetEntity;
     }
 
+    @Nullable
     public ERDAssociation getAssociation() {
         return association;
     }
 
-    public void setAssociation(ERDAssociation association) {
+    public void setAssociation(@Nullable ERDAssociation association) {
         this.association = association;
     }
 
@@ -140,11 +143,16 @@ public class AssociationCreateCommand extends Command {
         }
     }
 
-    protected ERDAssociation createAssociation(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, boolean reflect) {
+    @Nullable
+    protected ERDAssociation createAssociation(
+        @Nullable ERDElement<?> sourceEntity,
+        @Nullable ERDElement<?> targetEntity,
+        boolean reflect
+    ) {
         ERDAssociation association = null;
-        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity) {
-            DBSEntity srcEntityObject = ((ERDEntity)sourceEntity).getObject();
-            DBSEntity targetEntityObject = ((ERDEntity)targetEntity).getObject();
+        if (sourceEntity instanceof ERDEntity sourceERDEntity && targetEntity instanceof ERDEntity targetERDEntity) {
+            DBSEntity srcEntityObject = sourceERDEntity.getObject();
+            DBSEntity targetEntityObject = targetERDEntity.getObject();
 
             List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
             List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
@@ -180,23 +188,24 @@ public class AssociationCreateCommand extends Command {
                 return null;
             }
             vEntity.persistConfiguration();
-            if (sourceEntity != null && targetEntity != null) {
-                association = new ERDAssociation(vfk, (ERDEntity) sourceEntity, (ERDEntity) targetEntity, true);
-            }
+            association = new ERDAssociation(vfk, sourceERDEntity, targetERDEntity, true);
         } else {
             if (sourceEntity != null && targetEntity != null) {
                 association = new ERDAssociation(sourceEntity, targetEntity, true);
             }
         }
-        association.resolveAttributes();
+        if (association != null) {
+            association.resolveAttributes();
+        }
         return association;
     }
 
+    @Nullable
     public ERDEditorPart getEditor() {
         return editor;
     }
 
-    public void setEditor(ERDEditorPart editor) {
+    public void setEditor(@Nullable ERDEditorPart editor) {
         this.editor = editor;
     }
 

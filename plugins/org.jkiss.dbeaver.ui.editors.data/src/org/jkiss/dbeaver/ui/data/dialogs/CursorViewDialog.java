@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.dialogs;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -31,13 +32,13 @@ public class CursorViewDialog extends ValueViewDialog {
 
     private CursorViewComposite cursorViewComposite;
 
-    public CursorViewDialog(IValueController valueController) {
+    public CursorViewDialog(@NotNull IValueController valueController) {
         super(valueController);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogGroup = super.createDialogArea(parent);
         cursorViewComposite = new CursorViewComposite(dialogGroup, getValueController());
         cursorViewComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -46,20 +47,17 @@ public class CursorViewDialog extends ValueViewDialog {
     }
 
     @Override
-    public Object extractEditorValue()
-    {
+    public Object extractEditorValue() {
         return null;
     }
 
     @Override
-    public Control getControl()
-    {
+    public Control getControl() {
         return cursorViewComposite == null ? null : cursorViewComposite.getControl();
     }
 
     @Override
-    public void primeEditorValue(@Nullable Object value) throws DBException
-    {
+    public void primeEditorValue(@Nullable Object value) throws DBException {
         cursorViewComposite.refresh();
     }
 

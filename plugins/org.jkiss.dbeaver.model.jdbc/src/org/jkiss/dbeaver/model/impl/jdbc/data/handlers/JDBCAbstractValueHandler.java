@@ -88,8 +88,6 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
      * @param paramType     parameter type
      * @param paramIndex    parameter index (1-based)
      * @param value         parameter value
-     * @throws DBCException
-     * @throws SQLException
      */
     protected abstract void bindParameter(
         @NotNull JDBCSession session,

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ public class OracleUtils {
         OracleSchema schema = object.getContainer();
 
         final OracleDataSource dataSource = object.getDataSource();
+        final boolean separateConstraintIndexes = isSeparateConstraintIndexesDDL(object, options);
 
         monitor.subTask("Load sources for " + objectType + " '" + objectFullName + "'...");
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + objectFullName + "'")) {
@@ -101,7 +102,7 @@ public class OracleUtils {
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'EMIT_SCHEMA'," + CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) + ");\n" +
-                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'CONSTRAINTS',true);\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'CONSTRAINTS'," + !separateConstraintIndexes + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'REF_CONSTRAINTS'," + !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true) + ");\n" +
                             "end;");
                 } catch (SQLException e) {
@@ -115,6 +116,22 @@ public class OracleUtils {
 
             String ddl = fetchDDL(session, objectType, object.getName(), schema);
             if (ddl == null) return "-- EMPTY DDL";
+
+            if (monitor.isCanceled()) return ddl;
+
+            if (separateConstraintIndexes) {
+                // Constraints are excluded from the table DDL. Indexes are created before the constraints
+                // which use them - this preserves indexes created independently of their constraints
+                if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
+                    ddl += invokeDBMSMetadataGetDependentIndexDDL(session, schema, object, false);
+                }
+
+                if (monitor.isCanceled()) return ddl;
+
+                if (!CommonUtils.isEmpty(object.getConstraints(monitor))) {
+                    ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.CONSTRAINT);
+                }
+            }
 
             if (monitor.isCanceled()) return ddl;
 
@@ -132,9 +149,9 @@ public class OracleUtils {
 
             if (monitor.isCanceled()) return ddl;
 
-            if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
+            if (!separateConstraintIndexes && !CommonUtils.isEmpty(object.getIndexes(monitor))) {
                 // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
-                ddl += invokeDBMSMetadataGetDependentIndexDDL(session, schema, object);
+                ddl += invokeDBMSMetadataGetDependentIndexDDL(session, schema, object, true);
             }
 
             if (monitor.isCanceled()) return ddl;
@@ -240,29 +257,45 @@ public class OracleUtils {
         return ddl;
     }
 
-    private static String invokeDBMSMetadataGetDependentIndexDDL(JDBCSession session, OracleSchema schema, OracleTableBase object) {
+    private static boolean isSeparateConstraintIndexesDDL(@NotNull OracleTableBase object, Map<String, Object> options) {
+        return object instanceof OracleTablePhysical &&
+            CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES);
+    }
+
+    private static String invokeDBMSMetadataGetDependentIndexDDL(
+        JDBCSession session,
+        OracleSchema schema,
+        OracleTableBase object,
+        boolean skipConstraintIndexes
+    ) {
         String ddl = "";
-        final String query = """
+        String query = """
             SELECT DBMS_METADATA.GET_DDL('INDEX', i.index_name, i.owner) AS ddl
             FROM ALL_INDEXES i
             WHERE i.table_owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
               AND i.table_name = ?
               AND i.generated = 'N'
-              AND i.index_name NOT IN (
-                  SELECT c.index_name
-                  FROM ALL_CONSTRAINTS c
-                  WHERE c.owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
-                    AND c.table_name = ?
-                    AND c.constraint_type IN ('P', 'U')
-                    AND c.index_name IS NOT NULL
-              )
             """;
+        if (skipConstraintIndexes) {
+            query += """
+                  AND i.index_name NOT IN (
+                      SELECT c.index_name
+                      FROM ALL_CONSTRAINTS c
+                      WHERE c.owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
+                        AND c.table_name = ?
+                        AND c.constraint_type IN ('P', 'U')
+                        AND c.index_name IS NOT NULL
+                  )
+                """;
+        }
         try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
             String schemaName = schema == null ? null : schema.getName();
             dbStat.setString(1, schemaName);
             dbStat.setString(2, object.getName());
-            dbStat.setString(3, schemaName);
-            dbStat.setString(4, object.getName());
+            if (skipConstraintIndexes) {
+                dbStat.setString(3, schemaName);
+                dbStat.setString(4, object.getName());
+            }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 StringBuilder ddlBuilder = new StringBuilder();
                 while (dbResult.next()) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.sql.parser;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.Trie;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TrieLookupComparator;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -181,7 +181,7 @@ public class TrieTest extends DBeaverUnitTest {
         // check out the expected query results for each corresponding query
         var expected = makeExpectedResults();
 
-        Assert.assertEquals(expected, results);
+        Assertions.assertEquals(expected, results);
     }
 
     @Test
@@ -205,6 +205,6 @@ public class TrieTest extends DBeaverUnitTest {
         // expected results are the same as in {@link #trieLookup()} test, but all of them will include root extra values now
         expected.forEach(s -> s.addAll(rootValues));
 
-        Assert.assertEquals(expected, results);
+        Assertions.assertEquals(expected, results);
     }
 }

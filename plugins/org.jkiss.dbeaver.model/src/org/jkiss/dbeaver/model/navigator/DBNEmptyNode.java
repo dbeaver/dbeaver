@@ -78,11 +78,4 @@ public class DBNEmptyNode extends DBNNode
         return false;
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return "";
-    }
-
 }

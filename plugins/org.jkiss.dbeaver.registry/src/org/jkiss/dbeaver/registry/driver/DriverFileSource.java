@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class DriverFileSource implements DBPDriverFileSource
         private final String description;
         private final boolean optional;
 
-        FileInfo(IConfigurationElement config) {
+        FileInfo(@NotNull IConfigurationElement config) {
             this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
             this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
             this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);
@@ -69,7 +69,7 @@ public class DriverFileSource implements DBPDriverFileSource
     private final String instructions;
     private final List<FileInfo> files = new ArrayList<FileInfo>();
 
-    DriverFileSource(IConfigurationElement config) {
+    DriverFileSource(@NotNull IConfigurationElement config) {
         this.url = config.getAttribute(RegistryConstants.ATTR_URL);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.instructions = config.getAttribute("instructions");
@@ -78,7 +78,7 @@ public class DriverFileSource implements DBPDriverFileSource
         }
     }
 
-    public DriverFileSource(DriverFileSource copyFrom) {
+    public DriverFileSource(@NotNull DriverFileSource copyFrom) {
         this.url = copyFrom.url;
         this.name = copyFrom.name;
         this.instructions = copyFrom.instructions;

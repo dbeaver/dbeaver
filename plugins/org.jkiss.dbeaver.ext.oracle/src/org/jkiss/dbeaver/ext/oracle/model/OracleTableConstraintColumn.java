@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class OracleTableConstraintColumn extends AbstractTableConstraintColumn
 {
     private final AbstractTableConstraint<OracleTableBase, OracleTableConstraintColumn> constraint;
     private final OracleTableColumn tableColumn;
-    private final int ordinalPosition;
+    protected final int ordinalPosition;
 
     public OracleTableConstraintColumn(AbstractTableConstraint<OracleTableBase, OracleTableConstraintColumn> constraint, OracleTableColumn tableColumn, int ordinalPosition)
     {
@@ -46,7 +46,7 @@ public class OracleTableConstraintColumn extends AbstractTableConstraintColumn
         return tableColumn.getName();
     }
 
-    @NotNull
+    @Nullable
     @Override
     @Property(viewable = true, order = 1)
     public OracleTableColumn getAttribute()

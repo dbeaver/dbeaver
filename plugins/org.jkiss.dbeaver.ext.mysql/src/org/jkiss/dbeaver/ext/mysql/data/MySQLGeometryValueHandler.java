@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -38,9 +39,9 @@ public class MySQLGeometryValueHandler extends GISGeometryValueHandler {
         setLeadingSRID(true);
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public DBGeometry getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
+    public DBGeometry getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
         final DBGeometry geometry = super.getValueFromObject(session, type, object, copy, validateValue);
         if (geometry.getSRID() == 0) {
             if (type instanceof DBDAttributeBinding binding) {

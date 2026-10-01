@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     private boolean hasZone;
 
     @Override
-    public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
+    public void init(DBSTypedObject type, @NotNull Locale locale, @NotNull Map<String, Object> properties)
     {
         pattern = CommonUtils.toString(properties.get(PROP_PATTERN));
         final String timezone = CommonUtils.toString(properties.get(PROP_TIMEZONE));

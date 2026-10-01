@@ -28,6 +28,13 @@ import org.jkiss.utils.CommonUtils;
  */
 public class UITextUtils {
     /**
+     * The default maximum length for tooltips. Longer tooltips should be wrapped to multiple lines.
+     *
+     * @see org.jkiss.utils.StringUtils#wrap(String, int)
+     */
+    public static final int TOOLTIP_WRAP_LENGTH = 80;
+
+    /**
      * Shortens a supplied string so that it fits within the area specified by
      * the width argument. Strings that have been shorted have an "..." attached
      * to the end of the string. The width is computed using the

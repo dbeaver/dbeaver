@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,10 +49,16 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
     }
 
     @Override
-    protected DB2Index createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object from, @NotNull Map<String, Object> options) {
+    protected DB2Index createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object from,
+        @NotNull Map<String, Object> options
+    ) {
         DB2TableBase table = (DB2TableBase) container;
         return new DB2Index(
-            (DB2TableBase) table,
+            table,
             "INDEX",
             DBSIndexType.UNKNOWN,
             DB2UniqueRule.U);

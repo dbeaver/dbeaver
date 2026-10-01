@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,12 @@ public class PostgreConstants {
     public static final String DEFAULT_DATA_TYPE = "varchar";
     public static final String DEFAULT_USER = "postgres";
     public static final String USER_VARIABLE = "$user";
+    /**
+     * Name of the PUBLIC pseudo-role which exists in every database since cluster initialization.
+     * PUBLIC is not stored in pg_authid/pg_roles. It is manifested by 0 (zero) value in ACL objects
+     * and 'PUBLIC' string in information_schema views.
+     */
+    public static final String PUBLIC_ROLE_NAME = "public";
 
     public static final String PROP_CHOSEN_ROLE = DBConstants.INTERNAL_PROP_PREFIX + "chosen-role@";
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
@@ -160,6 +166,8 @@ public class PostgreConstants {
     public static final String DEFAULT_ARRAY_DELIMITER = " ";
     public static final String PG_PASS_HOSTNAME = "overriddenUsername";
     public static final Map<String, String> REPLACING_TIMEZONE = Map.of(
+        "Asia/Saigon", "Asia/Ho_Chi_Minh",
+        "Asia/Ho_Chi_Minh", "Asia/Saigon",
         "Europe/Kyiv", "Europe/Kiev",
         "Europe/Kiev", "Europe/Kyiv",
         "Asia/Calcutta", "Asia/Kolkata",

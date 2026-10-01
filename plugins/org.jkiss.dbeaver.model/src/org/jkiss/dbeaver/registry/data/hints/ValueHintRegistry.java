@@ -169,6 +169,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
         return null;
     }
 
+    @Nullable
     private ValueHintContextConfiguration findHintConfigFromVirtualObject(@Nullable DBVObject vObject, boolean forceCreate) {
         if (vObject != null) {
             Map<String, Object> dataHintsConfig = vObject.getProperty(HINT_CONFIG_PROPERTY);

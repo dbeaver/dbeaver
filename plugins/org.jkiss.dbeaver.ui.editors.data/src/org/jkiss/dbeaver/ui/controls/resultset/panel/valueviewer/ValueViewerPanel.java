@@ -31,13 +31,13 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAdaptable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
+import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -62,7 +63,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
 
     public static final String PANEL_ID = "value-view";
 
-    private static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
+    public static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
 
     private IResultSetPresentation presentation;
     private Composite viewPlaceholder;
@@ -70,6 +71,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
     private ResultSetValueController previewController;
     private IValueEditor valueEditor;
     private ReferenceValueEditor referenceValueEditor;
+    private boolean dictionaryView;
 
     private volatile boolean valueSaving;
     private IValueManager valueManager;
@@ -91,10 +93,16 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                 String hidePanelCmd = ActionUtils.findCommandDescription(
                     IResultSetCommands.CMD_TOGGLE_PANELS,
                     ValueViewerPanel.this.presentation.getController().getSite(),
-                    true);
+                    true
+                );
 
                 UIUtils.drawMessageOverControl(viewPlaceholder, e, ResultSetMessages.value_viewer_select_view_message, 0);
-                UIUtils.drawMessageOverControl(viewPlaceholder, e, NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd), 30);
+                UIUtils.drawMessageOverControl(
+                    viewPlaceholder,
+                    e,
+                    NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd),
+                    30
+                );
             }
         });
         CSSUtils.setExcludeFromStyling(viewPlaceholder);
@@ -166,22 +174,21 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
     }
 
     private void refreshValue(boolean force) {
-        DBDAttributeBinding attr = presentation.getCurrentAttribute();
-        ResultSetRow row = presentation.getController().getCurrentRow();
+        ResultSetCellLocation cellLocation = presentation.getCurrentCellLocation();
 
-        if (attr == null || row == null) {
+        if (cellLocation == null) {
             clearValue();
             return;
         }
-        int[] rowIndexes = presentation.getCurrentRowIndexes();
+
         boolean updateActions;
         if (previewController == null) {
             previewController = new ResultSetValueController(
                 presentation.getController(),
-                new ResultSetCellLocation(attr, row, rowIndexes),
+                cellLocation,
                 IValueController.EditType.PANEL,
-                viewPlaceholder)
-            {
+                viewPlaceholder
+            ) {
                 @Override
                 public void updateValue(@Nullable Object value, boolean updatePresentation) {
                     valueSaving = true;
@@ -197,10 +204,11 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
             force = true;
         } else {
             updateActions = force = (
-                force ||
-                previewController.getBinding() != attr ||
-                !CommonUtils.equalObjects(rowIndexes, previewController.getRowIndexes()));
-            previewController.setCellLocation(new ResultSetCellLocation(attr, row, rowIndexes));
+                force || previewController.getBinding() != cellLocation.getAttribute()
+                    || !CommonUtils.equalObjects(cellLocation.getRowIndexes(), previewController.getRowIndexes())
+                    || !CommonUtils.equalObjects(cellLocation.getValuePath(), previewController.getValuePath())
+            );
+            previewController.setCellLocation(cellLocation);
         }
         if (!force && (valueManager == null || valueEditor == null)) {
             force = true;
@@ -212,33 +220,53 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         }
     }
 
-    private void viewValue(boolean forceRefresh)
-    {
+    private void viewValue(boolean forceRefresh) {
         if (valueSaving) {
             return;
         }
         if (forceRefresh) {
-            cleanupPanel();
             IResultSetController controller = presentation.getController();
 
-            referenceValueEditor = new ReferenceValueEditor(controller, previewController, valueEditor);
+            ReferenceValueEditor newReferenceValueEditor = new ReferenceValueEditor(controller, previewController, valueEditor);
             final boolean showDictionaryView = controller.getPreferenceStore().getInt(ModelPreferences.DICTIONARY_MAX_ROWS) > 0
-                && referenceValueEditor.isReferenceValue();
+                && newReferenceValueEditor.isReferenceValue();
             if (showDictionaryView) {
                 previewController.setEditType(IValueController.EditType.INLINE);
             } else {
                 previewController.setEditType(IValueController.EditType.PANEL);
             }
 
-            // Create a new one
-            valueManager = previewController.getValueManager();
+            IValueManager newValueManager = previewController.getValueManager();
+            IValueEditor newValueEditor;
             try {
-                valueEditor = valueManager.createEditor(previewController);
+                newValueEditor = newValueManager.createEditor(previewController);
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError(ResultSetMessages.value_viewer_preview_error_title, ResultSetMessages.value_viewer_preview_error_message, e);
+                cleanupPanel();
+                valueManager = newValueManager;
+                referenceValueEditor = newReferenceValueEditor;
+                dictionaryView = showDictionaryView;
+                DBWorkbench.getPlatformUI()
+                    .showError(ResultSetMessages.value_viewer_preview_error_title, ResultSetMessages.value_viewer_preview_error_message, e);
                 return;
             }
-            if (valueEditor != null) {
+            boolean reuseValueEditor = valueEditor != null && valueEditor.getControl() != null
+                && !valueEditor.getControl().isDisposed() && newValueEditor != null
+                && valueEditor.getClass() == newValueEditor.getClass()
+                && valueEditor instanceof ContentPanelEditor contentPanelEditor
+                && !dictionaryView && !showDictionaryView
+                && contentPanelEditor.canReuseControl();
+            if (reuseValueEditor) {
+                newValueEditor.dispose();
+                valueManager = newValueManager;
+                referenceValueEditor = newReferenceValueEditor;
+            } else {
+                cleanupPanel();
+                valueManager = newValueManager;
+                valueEditor = newValueEditor;
+                referenceValueEditor = newReferenceValueEditor;
+                dictionaryView = showDictionaryView;
+            }
+            if (valueEditor != null && !reuseValueEditor) {
                 try {
                     if (showDictionaryView) {
                         Label valueLabel = new Label(viewPlaceholder, SWT.NONE);
@@ -254,9 +282,9 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                 if (control != null) {
                     singleLineEditor =
                         control instanceof Combo ||
-                        control instanceof CCombo ||
-                        control instanceof Button ||
-                        (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
+                            control instanceof CCombo ||
+                            control instanceof Button ||
+                            (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
                     UIUtils.addFocusTracker(controller.getSite(), VALUE_VIEW_CONTROL_ID, control);
                     controller.lockActionsByFocus(control);
 
@@ -326,15 +354,21 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         }
     }
 
-    private void handleTraverseEvent(TraverseEvent e) {
+    private void handleTraverseEvent(@NotNull TraverseEvent e) {
         if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
             e.doit = false;
-            UIUtils.asyncExec(() -> presentation.getControl().setFocus());
+            Control control = presentation.getControl();
+            if (control != null) {
+                UIUtils.asyncExec(() -> {
+                    if (!control.isDisposed()) {
+                        control.setFocus();
+                    }
+                });
+            }
         }
     }
 
-    public void saveValue()
-    {
+    public void saveValue() {
         if (valueEditor == null) {
             return;
         }
@@ -344,24 +378,24 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
             previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(ResultSetMessages.value_viewer_apply_error_title, ResultSetMessages.value_viewer_apply_error_message, e);
+            DBWorkbench.getPlatformUI()
+                .showError(ResultSetMessages.value_viewer_apply_error_title, ResultSetMessages.value_viewer_apply_error_message, e);
         } finally {
             valueSaving = false;
         }
     }
 
-    public void clearValue()
-    {
+    public void clearValue() {
         cleanupPanel();
         valueManager = null;
         valueEditor = null;
+        dictionaryView = false;
 
         presentation.getController().updateEditControls();
         viewPlaceholder.layout();
     }
 
-    private void cleanupPanel()
-    {
+    private void cleanupPanel() {
         disposeValueEditor();
         // Cleanup previous viewer
         UIUtils.disposeChildControls(viewPlaceholder);
@@ -412,21 +446,18 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
 
     class SaveValueAction extends Action {
         SaveValueAction() {
-            super(ResultSetMessages.controls_resultset_edit_save, Action.AS_DROP_DOWN_MENU);
+            super(WorkbenchMessages.Save, Action.AS_DROP_DOWN_MENU);
             setActionDefinitionId(ValueViewCommandHandler.CMD_SAVE_VALUE);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SAVE));
             setMenuCreator(new MenuCreator(widget -> {
                 MenuManager menuManager = new MenuManager();
                 menuManager.add(ActionUtils.makeCommandContribution(
                     presentation.getController().getSite(),
-                    ValueViewCommandHandler.CMD_SAVE_VALUE));
+                    ValueViewCommandHandler.CMD_SAVE_VALUE
+                ));
 
                 menuManager.add(
                     new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
-                        {
-                            //setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
-                        }
-
                         @Override
                         public boolean isChecked() {
                             return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
@@ -450,7 +481,8 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         public void run() {
             ActionUtils.runCommand(
                 ValueViewCommandHandler.CMD_SAVE_VALUE,
-                presentation.getController().getSite());
+                presentation.getController().getSite()
+            );
         }
 
     }

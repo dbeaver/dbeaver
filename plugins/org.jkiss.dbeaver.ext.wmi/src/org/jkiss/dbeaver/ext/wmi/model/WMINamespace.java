@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,12 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     private volatile List<WMIClass> associations;
     private volatile List<WMIClass> allClasses;
 
-    public WMINamespace(WMINamespace parent, WMIDataSource dataSource, String name, WMIService service)
-    {
+    public WMINamespace(
+        @Nullable WMINamespace parent,
+        @NotNull WMIDataSource dataSource,
+        @NotNull String name,
+        @Nullable WMIService service
+    ) {
         super(parent);
         this.dataSource = dataSource;
         this.name = name;
@@ -60,20 +64,17 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
+    public DBSObject getParentObject() {
         return parent != null ? parent : dataSource.getContainer();
     }
 
     @NotNull
     @Override
-    public WMIDataSource getDataSource()
-    {
+    public WMIDataSource getDataSource() {
         return dataSource;
     }
 
-    public WMIService getService() throws WMIException
-    {
+    public WMIService getService() throws WMIException {
         if (service == null) {
             this.service = parent.getService().openNamespace(this.name);
         }
@@ -83,14 +84,11 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public Collection<WMINamespace> getNamespaces(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Collection<WMINamespace> getNamespaces(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (namespaces == null) {
             synchronized (this) {
                 if (namespaces == null) {
@@ -102,9 +100,8 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
         return namespaces;
     }
 
-    List<WMINamespace> loadNamespaces(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    @NotNull
+    List<WMINamespace> loadNamespaces(@NotNull DBRProgressMonitor monitor) throws DBException {
         try {
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());
             getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SHALLOW);
@@ -123,9 +120,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Association
-    public Collection<WMIClass> getRootClasses(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Collection<WMIClass> getRootClasses(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (rooClasses == null) {
             synchronized (this) {
                 if (rooClasses == null) {
@@ -138,30 +133,23 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Association
-    public Collection<WMIClass> getClasses(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Collection<WMIClass> getClasses(@NotNull DBRProgressMonitor monitor) throws DBException {
         getRootClasses(monitor);
         return allClasses;
     }
 
-    public WMIClass getClass(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
+    @Nullable
+    public WMIClass getClass(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
         return DBUtils.findObject(getClasses(monitor), name);
     }
 
     @Association
-    public Collection<WMIClass> getAssociations(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Collection<WMIClass> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         getRootClasses(monitor);
         return associations;
     }
 
-    void loadClasses(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    void loadClasses(@NotNull DBRProgressMonitor monitor) throws DBException {
         boolean showSystemObjects = getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
 
         try {
@@ -174,7 +162,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
             List<WMIClass> rootClasses = new ArrayList<>();
             for (WMIObject object : sink.getObjectList()) {
                 WMIClass superClass = null;
-                String superClassName = (String)object.getValue(WMIConstants.CLASS_PROP_SUPER_CLASS);
+                String superClassName = (String) object.getValue(WMIConstants.CLASS_PROP_SUPER_CLASS);
                 if (superClassName != null) {
                     for (WMIClass c : allClasses) {
                         if (c.getName().equals(superClassName)) {
@@ -231,8 +219,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Override
-    public Collection<? extends WMIContainer> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends WMIContainer> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<WMIContainer> children = new ArrayList<>();
         children.addAll(getNamespaces(monitor));
         children.addAll(getClasses(monitor));
@@ -241,28 +228,24 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Override
-    public WMIContainer getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
-    {
+    public WMIContainer getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return DBUtils.findObject(getChildren(monitor), childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends WMIContainer> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
-    {
+    public Class<? extends WMIContainer> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return WMIContainer.class;
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException
-    {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         getNamespaces(monitor);
         getClasses(monitor);
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         if (!CommonUtils.isEmpty(namespaces)) {
             for (WMINamespace namespace : namespaces) {
                 namespace.close();
@@ -283,8 +266,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Override
-    protected WMIQualifiedObject getQualifiedObject()
-    {
+    protected WMIQualifiedObject getQualifiedObject() {
         return null;
     }
 }

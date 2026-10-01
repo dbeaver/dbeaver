@@ -38,6 +38,10 @@ public interface AIPromptGenerator {
         return false;
     }
 
+    default boolean supportsUIAndActionFunctions() {
+        return true;
+    }
+
     @NotNull
     default AIDatabaseContext.Builder configureDatabaseContext(@NotNull AIDatabaseContext.Builder contextBuilder) {
         return contextBuilder;

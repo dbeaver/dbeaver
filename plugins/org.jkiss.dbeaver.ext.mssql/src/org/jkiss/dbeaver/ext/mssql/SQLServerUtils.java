@@ -77,6 +77,10 @@ public class SQLServerUtils {
         return driver.getId().contains("azure");
     }
 
+    public static boolean isDriverFabric(@NotNull DBPDriver driver) {
+        return driver.getId().contains("fabric");
+    }
+
     public static boolean isDriverBabelfish(DBPDriver driver) {
         return driver.getId().contains("babelfish");
     }

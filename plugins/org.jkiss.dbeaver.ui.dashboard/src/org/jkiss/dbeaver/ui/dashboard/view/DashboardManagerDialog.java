@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -200,37 +200,20 @@ public class DashboardManagerDialog extends BaseDialog {
             for (DashboardProviderDescriptor dashboardProvider : dashboardProviderDescriptors) {
                 Button newChartButton = UIUtils.createPushButton(buttonBar,
                     NLS.bind(UIDashboardMessages.dialog_dashboard_manager_button_new, dashboardProvider.getLabel()),
-                    null, new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            createDashboard(dashboardProvider);
-                        }
-                    });
+                    null, SelectionListener.widgetSelectedAdapter(e -> createDashboard(dashboardProvider)));
                 newChartButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             }
 
-            copyButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_copy, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    copyDashboard();
-                }
-            });
+            copyButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_copy, null, SelectionListener.widgetSelectedAdapter(e ->
+                copyDashboard()));
             copyButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            editButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_edit, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    editDashboard();
-                }
-            });
+            editButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_edit, null, SelectionListener.widgetSelectedAdapter(e ->
+                editDashboard()));
             editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            deleteButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dialog_dashboard_manager_button_delete, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    deleteDashboard();
-                }
-            });
+            deleteButton = UIUtils.createPushButton(buttonBar, WorkbenchMessages.Workbench_delete, null, SelectionListener.widgetSelectedAdapter(e ->
+                deleteDashboard()));
             deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
@@ -312,7 +295,8 @@ public class DashboardManagerDialog extends BaseDialog {
     private void editDashboard() {
         DashboardItemConfigurationDialog editDialog = new DashboardItemConfigurationDialog(getShell(), selectedDashboard, false);
         if (editDialog.open() == IDialogConstants.OK_ID) {
-            DashboardRegistry.getInstance().saveSettings();
+            DashboardRegistry.getInstance().updateDashboardItem(selectedDashboard);
+
             refreshDashboards();
         }
     }

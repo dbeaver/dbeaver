@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -30,8 +31,6 @@ public final class OpenAIModels {
 
     private OpenAIModels() {
     }
-
-    public static final String DEFAULT_MODEL = "gpt-4o";
 
     public static final Map<String, AIModel> KNOWN_MODELS = AIUtils.modelMap(
         new AIModel("o1-pro", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
@@ -67,34 +66,22 @@ public final class OpenAIModels {
         new AIModel("text-embedding-ada-002", 65_536, Set.of(AIModelFeature.EMBEDDING))
     );
 
-    public static final Set<String> DEPRECATED_MODELS = Set.of(
-        "gpt-3.5-turbo-0301",
-        "gpt-3.5-turbo-0613",
-        "gpt-3.5-turbo-1106",
-        "gpt-3.5-turbo-16k",
-        "gpt-3.5-turbo-16k-0613",
-        "gpt-3.5-turbo-16k-1106"
-    );
-
     /**
-     * Returns the replacement model name for the given model name.
-     * If the model name is null or empty, returns the default model.
+     * Returns the effective model name for the given model name.
+     * If the model name is null or empty, returns null.
      * If the model name is known, returns it in lowercase.
-     * If the model name is deprecated, returns the default model.
      *
      * @param modelName the model name to check
-     * @return the replacement model name
+     * @return the effective model name
      */
+    @Nullable
     public static String getEffectiveModelName(@Nullable String modelName) {
-        if (modelName == null || modelName.isEmpty()) {
-            return DEFAULT_MODEL;
+        if (CommonUtils.isEmpty(modelName)) {
+            return null;
         }
         String lowerCaseModelName = modelName.toLowerCase(Locale.ROOT);
         if (KNOWN_MODELS.containsKey(lowerCaseModelName)) {
             return lowerCaseModelName;
-        }
-        if (DEPRECATED_MODELS.contains(lowerCaseModelName)) {
-            return DEFAULT_MODEL;
         }
         return modelName;
     }

@@ -16,8 +16,8 @@
  */
 package org.jkiss.utils.time;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -33,7 +33,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains("123456789"));
+        Assertions.assertTrue(result.contains("123456789"));
     }
 
     @Test
@@ -43,7 +43,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".123"));
+        Assertions.assertTrue(result.contains(".123"));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".123"));
+        Assertions.assertTrue(result.contains(".123"));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(0);
 
         String result = format.format(ts);
-        Assert.assertFalse(result.contains("."));
+        Assertions.assertFalse(result.contains("."));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class ExtendedDateFormatTest {
         Date date = new Date(1000000L);
 
         String result = format.format(date);
-        Assert.assertTrue(result.contains(".000"));
+        Assertions.assertTrue(result.contains(".000"));
     }
 
     @Test
@@ -81,9 +81,9 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.123456789";
 
         Date result = format.parse(dateStr);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(123456789, ts.getNanos());
+        Assertions.assertEquals(123456789, ts.getNanos());
     }
 
     @Test
@@ -92,9 +92,9 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.123";
 
         Date result = format.parse(dateStr);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(123000000, ts.getNanos());
+        Assertions.assertEquals(123000000, ts.getNanos());
     }
 
     @Test
@@ -103,7 +103,7 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.000";
 
         Date result = format.parse(dateStr);
-        Assert.assertNotNull(result);
+        Assertions.assertNotNull(result);
     }
 
     @Test
@@ -112,8 +112,8 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40";
 
         Date result = format.parse(dateStr);
-        Assert.assertNotNull(result);
-        Assert.assertFalse(result instanceof Timestamp);
+        Assertions.assertNotNull(result);
+        Assertions.assertFalse(result instanceof Timestamp);
     }
 
     @Test
@@ -123,7 +123,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(500000000);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".500"));
+        Assertions.assertTrue(result.contains(".500"));
     }
 
     @Test
@@ -132,9 +132,9 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.500";
 
         Date result = format.parse(dateStr);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(500000000, ts.getNanos());
+        Assertions.assertEquals(500000000, ts.getNanos());
     }
 
     @Test
@@ -144,7 +144,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".123000"));
+        Assertions.assertTrue(result.contains(".123000"));
     }
 
     @Test
@@ -154,7 +154,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".000000123"));
+        Assertions.assertTrue(result.contains(".000000123"));
     }
 
     @Test
@@ -164,7 +164,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(987654321);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".98"));
+        Assertions.assertTrue(result.contains(".98"));
     }
 
     @Test
@@ -174,7 +174,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".123"));
+        Assertions.assertTrue(result.contains(".123"));
     }
 
     @Test
@@ -183,7 +183,7 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.ABC";
 
         Date result = format.parse(dateStr);
-        Assert.assertNull(result);
+        Assertions.assertNull(result);
     }
 
     @Test
@@ -193,8 +193,8 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains("T"));
-        Assert.assertTrue(result.contains(".123"));
+        Assertions.assertTrue(result.contains("T"));
+        Assertions.assertTrue(result.contains(".123"));
     }
 
     @Test
@@ -203,9 +203,9 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 T 03:46:40.123";
 
         Date result = format.parse(dateStr);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(123000000, ts.getNanos());
+        Assertions.assertEquals(123000000, ts.getNanos());
     }
 
     @Test
@@ -215,7 +215,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".123456"));
+        Assertions.assertTrue(result.contains(".123456"));
     }
 
     @Test
@@ -224,9 +224,9 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.123456";
 
         Date result = format.parse(dateStr);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(123456000, ts.getNanos());
+        Assertions.assertEquals(123456000, ts.getNanos());
     }
 
     @Test
@@ -238,9 +238,9 @@ public class ExtendedDateFormatTest {
         String formatted = format.format(original);
         Date parsed = format.parse(formatted);
 
-        Assert.assertTrue(parsed instanceof Timestamp);
+        Assertions.assertTrue(parsed instanceof Timestamp);
         Timestamp result = (Timestamp) parsed;
-        Assert.assertEquals(original.getNanos(), result.getNanos());
+        Assertions.assertEquals(original.getNanos(), result.getNanos());
     }
 
     @Test
@@ -249,10 +249,10 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.12";
 
         Date result = format.parse(dateStr);
-        Assert.assertNotNull(result);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertNotNull(result);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(120000000, ts.getNanos());
+        Assertions.assertEquals(120000000, ts.getNanos());
     }
 
     @Test
@@ -262,7 +262,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(0);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".000"));
+        Assertions.assertTrue(result.contains(".000"));
     }
 
     @Test
@@ -271,7 +271,7 @@ public class ExtendedDateFormatTest {
         Date date = new Date(1234567890L);
 
         String result = format.format(date);
-        Assert.assertTrue(result.contains(".890000000"));
+        Assertions.assertTrue(result.contains(".890000000"));
     }
 
     @Test
@@ -280,7 +280,7 @@ public class ExtendedDateFormatTest {
         Date date = new Date(1234567890L);
 
         String result = format.format(date);
-        Assert.assertTrue(result.contains(".890"));
+        Assertions.assertTrue(result.contains(".890"));
     }
 
     @Test
@@ -289,7 +289,7 @@ public class ExtendedDateFormatTest {
         Date date = new Date(1000000L);
 
         String result = format.format(date);
-        Assert.assertFalse(result.contains("."));
+        Assertions.assertFalse(result.contains("."));
     }
 
 
@@ -300,7 +300,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".123"));
+        Assertions.assertTrue(result.contains(".123"));
     }
 
     @Test
@@ -309,9 +309,9 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.999";
 
         Date result = format.parse(dateStr);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(999000000, ts.getNanos());
+        Assertions.assertEquals(999000000, ts.getNanos());
     }
 
     @Test
@@ -321,7 +321,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(0);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".000"));
+        Assertions.assertTrue(result.contains(".000"));
     }
 
     @Test
@@ -330,7 +330,7 @@ public class ExtendedDateFormatTest {
         Date date = new Date(1000500L);
 
         String result = format.format(date);
-        Assert.assertTrue(result.contains(".500"));
+        Assertions.assertTrue(result.contains(".500"));
     }
 
     @Test
@@ -339,9 +339,9 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.001";
 
         Date result = format.parse(dateStr);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(1000000, ts.getNanos());
+        Assertions.assertEquals(1000000, ts.getNanos());
     }
 
     @Test
@@ -351,7 +351,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(456000000);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".456"));
+        Assertions.assertTrue(result.contains(".456"));
     }
 
     @Test
@@ -361,7 +361,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(0);
 
         String result = format.format(ts);
-        Assert.assertFalse(result.contains("."));
+        Assertions.assertFalse(result.contains("."));
     }
 
     @Test
@@ -373,9 +373,9 @@ public class ExtendedDateFormatTest {
         String formatted = format.format(original);
         Date parsed = format.parse(formatted);
 
-        Assert.assertTrue(parsed instanceof Timestamp);
+        Assertions.assertTrue(parsed instanceof Timestamp);
         Timestamp result = (Timestamp) parsed;
-        Assert.assertEquals(789000000, result.getNanos());
+        Assertions.assertEquals(789000000, result.getNanos());
     }
 
     @Test
@@ -385,8 +385,8 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123456789);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".123"));
-        Assert.assertFalse(result.contains("456"));
+        Assertions.assertTrue(result.contains(".123"));
+        Assertions.assertFalse(result.contains("456"));
     }
 
     @Test
@@ -395,9 +395,9 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.250";
 
         Date result = format.parse(dateStr);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp ts = (Timestamp) result;
-        Assert.assertEquals(250000000, ts.getNanos());
+        Assertions.assertEquals(250000000, ts.getNanos());
     }
 
     @Test
@@ -407,8 +407,8 @@ public class ExtendedDateFormatTest {
         ts.setNanos(567000000);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}"));
-        Assert.assertTrue(result.contains(".567"));
+        Assertions.assertTrue(result.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}"));
+        Assertions.assertTrue(result.contains(".567"));
     }
 
     @Test
@@ -418,14 +418,14 @@ public class ExtendedDateFormatTest {
         ts.setNanos(123000000);
         String formattedDate = format.format(ts);
 
-        Assert.assertNotNull(formattedDate);
-        Assert.assertTrue(formattedDate.contains("T"));
+        Assertions.assertNotNull(formattedDate);
+        Assertions.assertTrue(formattedDate.contains("T"));
 
         Date result = format.parse(formattedDate);
-        Assert.assertNotNull(result);
-        Assert.assertTrue(result instanceof Timestamp);
+        Assertions.assertNotNull(result);
+        Assertions.assertTrue(result instanceof Timestamp);
         Timestamp resultTs = (Timestamp) result;
-        Assert.assertEquals(123000000, resultTs.getNanos());
+        Assertions.assertEquals(123000000, resultTs.getNanos());
     }
 
     @Test
@@ -435,7 +435,7 @@ public class ExtendedDateFormatTest {
         ts.setNanos(999000000);
 
         String result = format.format(ts);
-        Assert.assertTrue(result.contains(".999"));
+        Assertions.assertTrue(result.contains(".999"));
     }
 
     @Test
@@ -444,6 +444,6 @@ public class ExtendedDateFormatTest {
         String dateStr = "1970-01-01 03:46:40.XYZ";
 
         Date result = format.parse(dateStr);
-        Assert.assertNull(result);
+        Assertions.assertNull(result);
     }
 }

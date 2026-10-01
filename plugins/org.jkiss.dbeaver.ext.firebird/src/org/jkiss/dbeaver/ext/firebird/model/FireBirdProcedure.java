@@ -72,14 +72,14 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
             if (!isProcedure && versionAtLeast3) {
                 sql = "SELECT\n" +
                         "COALESCE(FUNA.RDB$ARGUMENT_NAME, 'PARAM_' || FUNA.RDB$ARGUMENT_POSITION) AS COLUMN_NAME,\n" +
-                        "COALESCE(FUNA.RDB$FIELD_TYPE, F.RDB$FIELD_TYPE) AS DATA_TYPE,\n" +
-                        "COALESCE(FUNA.RDB$FIELD_SUB_TYPE, F.RDB$FIELD_SUB_TYPE) AS FIELD_SUB_TYPE,\n" +
-                        "COALESCE(FUNA.RDB$FIELD_PRECISION, F.RDB$FIELD_PRECISION) AS \"PRECISION\",\n" +
-                        "COALESCE(FUNA.RDB$FIELD_SCALE, F.RDB$FIELD_SCALE) AS \"SCALE\",\n" +
-                        "COALESCE(FUNA.RDB$FIELD_LENGTH, F.RDB$FIELD_LENGTH) AS \"LENGTH\",\n" +
-                        "COALESCE(FUNA.RDB$CHARACTER_LENGTH, F.RDB$CHARACTER_LENGTH) AS CHAR_LEN,\n" +
+                        "COALESCE(F.RDB$FIELD_TYPE, FUNA.RDB$FIELD_TYPE) AS DATA_TYPE,\n" +
+                        "COALESCE(F.RDB$FIELD_SUB_TYPE, FUNA.RDB$FIELD_SUB_TYPE) AS FIELD_SUB_TYPE,\n" +
+                        "COALESCE(F.RDB$FIELD_PRECISION, FUNA.RDB$FIELD_PRECISION) AS \"PRECISION\",\n" +
+                        "COALESCE(F.RDB$FIELD_SCALE, FUNA.RDB$FIELD_SCALE) AS \"SCALE\",\n" +
+                        "COALESCE(F.RDB$FIELD_LENGTH, FUNA.RDB$FIELD_LENGTH) AS \"LENGTH\",\n" +
+                        "COALESCE(F.RDB$CHARACTER_LENGTH, FUNA.RDB$CHARACTER_LENGTH) AS CHAR_LEN,\n" +
                         "COALESCE(FUNA.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE,\n" +
-                        "COALESCE(FUNA.RDB$CHARACTER_SET_ID, F.RDB$CHARACTER_SET_ID) AS CHARACTER_SET_ID,\n" +
+                        "COALESCE(F.RDB$CHARACTER_SET_ID, FUNA.RDB$CHARACTER_SET_ID) AS CHARACTER_SET_ID,\n" +
                         "COALESCE(FUNA.RDB$FIELD_NAME, F.RDB$FIELD_NAME) AS FIELD_NAME,\n" +
                         "FUNA.RDB$RELATION_NAME AS RELATION_NAME,\n" +
                         "CASE\n" +
@@ -87,9 +87,7 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         "   ELSE FUNA.RDB$ARGUMENT_POSITION\n" +
                         "END AS ORDINAL_POSITION,\n" +
                         "CASE\n" +
-                        "   WHEN COALESCE(FUNA.RDB$NULL_FLAG, F.RDB$NULL_FLAG) = 1 THEN TRUE\n" +
-                        "   WHEN FUNA.RDB$MECHANISM = 0 THEN TRUE\n" +
-                        "   WHEN FUNA.RDB$MECHANISM = 1 THEN TRUE\n" +
+                        "   WHEN COALESCE(F.RDB$NULL_FLAG, FUNA.RDB$NULL_FLAG) = 1 THEN TRUE\n" +
                         "   ELSE FALSE\n" +
                         "END AS NOT_NULL\n" +
                         "FROM\n" +

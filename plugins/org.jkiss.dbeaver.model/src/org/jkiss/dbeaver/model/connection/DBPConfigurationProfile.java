@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
@@ -48,7 +49,7 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
         this.project = project;
     }
 
-    public DBPConfigurationProfile(DBPConfigurationProfile source) {
+    public DBPConfigurationProfile(@NotNull DBPConfigurationProfile source) {
         this.project = source.project;
         this.profileId = source.profileId;
         this.profileName = source.profileName;
@@ -63,10 +64,7 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
         return project;
     }
 
-    public boolean isExternallyProvided() {
-        return project == null;
-    }
-
+    @NotNull
     public String getProfileId() {
         if (CommonUtils.isEmpty(profileId)) {
             return profileName;
@@ -74,35 +72,39 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
         return profileId;
     }
 
+    @Nullable
     public String getProfileSource() {
         return null;
     }
 
-    public void setProfileId(String profileId) {
+    public void setProfileId(@NotNull String profileId) {
         this.profileId = profileId;
     }
 
+    @NotNull
     public String getProfileName() {
         return profileName;
     }
 
-    public void setProfileName(String profileName) {
+    public void setProfileName(@NotNull String profileName) {
         this.profileName = profileName;
     }
 
+    @Nullable
     public String getProfileDescription() {
         return profileDescription;
     }
 
-    public void setProfileDescription(String profileDescription) {
+    public void setProfileDescription(@Nullable String profileDescription) {
         this.profileDescription = profileDescription;
     }
 
+    @NotNull
     public Map<String, String> getProperties() {
         return properties;
     }
 
-    public void setProperties(Map<String, String> properties) {
+    public void setProperties(@NotNull Map<String, String> properties) {
         this.properties = properties;
     }
 

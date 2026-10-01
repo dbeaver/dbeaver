@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,14 +78,14 @@ public class ParseSelectStmtTest extends DBeaverUnitTest {
                 
                 tokens.getTokens().forEach(t -> System.err.println(t.toString() + " - " + ll.getVocabulary().getSymbolicName(t.getType())));
             }
-            Assert.assertTrue(noErrors);
+            Assertions.assertTrue(noErrors);
             
 //            SyntaxModel model = new SyntaxModel(pp);
 //            var ierrs = model.introduce(SelectStatement.class);
 //            if (!ierrs.isEmpty()) {
 //                ierrs.printToStderr();
 //            }
-//            Assert.assertTrue(ierrs.isEmpty());
+//            Assertions.assertTrue(ierrs.isEmpty());
 //
 //            var result = model.map(tree, SelectStatement.class);
 //
@@ -96,7 +96,7 @@ public class ParseSelectStmtTest extends DBeaverUnitTest {
 //                result.getErrors().printToStderr();
 //                System.err.println();
 //            }
-//            Assert.assertTrue(result.isNoErrors());
+//            Assertions.assertTrue(result.isNoErrors());
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.editors.erd.editor;
 
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.erd.ERDAssociation;
 import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.model.erd.ERDEntityAttribute;
@@ -33,8 +34,8 @@ import org.jkiss.dbeaver.ui.editors.erd.part.*;
  *
  * @author Serge Rider
  */
-public class ERDEditPartFactory implements EditPartFactory
-{
+public class ERDEditPartFactory implements EditPartFactory {
+    @Nullable
     @Override
     public EditPart createEditPart(EditPart context, Object model) {
         EditPart part = null;

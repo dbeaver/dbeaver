@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import com.google.gson.stream.JsonWriter;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -178,6 +180,32 @@ class DBVModelSerializerModern implements DBVModelSerializer {
             json.endArray();
         }
 
+        serializeGroupRowStriping(json, entity.getGroupRowStriping());
+
+        json.endObject();
+    }
+
+    private static void serializeGroupRowStriping(
+        @NotNull JsonWriter json,
+        @Nullable DBVGroupRowStriping grs
+    ) throws IOException {
+        if (grs == null || !grs.hasValuableData()) {
+            return;
+        }
+        json.name(DBVGroupRowStriping.JSON_KEY);
+        json.beginObject();
+        JSONUtils.field(json, "enabled", true);
+        if (grs.isSortByGroupColumns()) {
+            JSONUtils.field(json, "sort-by-group-columns", true);
+        }
+        JSONUtils.field(json, "background1", grs.getBackgroundColor1());
+        JSONUtils.field(json, "background2", grs.getBackgroundColor2());
+        json.name("columns");
+        json.beginArray();
+        for (String col : grs.getColumnNames()) {
+            json.value(col);
+        }
+        json.endArray();
         json.endObject();
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,19 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected OracleSchema createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) {
-        return new OracleSchema((OracleDataSource) container, -1, "NEW_SCHEMA");
+    protected OracleSchema createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
+        return createSchema((OracleDataSource) container);
+    }
+
+    @NotNull
+    protected OracleSchema createSchema(@NotNull OracleDataSource dataSource) {
+        return new OracleSchema(dataSource, -1, "NEW_SCHEMA");
     }
 
     @Override

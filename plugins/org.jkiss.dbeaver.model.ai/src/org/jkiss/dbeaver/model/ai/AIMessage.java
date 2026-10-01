@@ -18,10 +18,15 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.SocketTimeoutException;
+import java.net.http.HttpTimeoutException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Represents a single AI message
@@ -94,23 +99,37 @@ public class AIMessage {
     ) {
         this.meta = meta;
         this.role = AIMessageType.FUNCTION;
-        String strResult = CommonUtils.toString(result.getValue());
-        this.content = functionCall.getFunctionName() + " was completed.\n" +
-            (CommonUtils.isEmpty(strResult) ? "Empty result" : strResult);
+        String resultValue = CommonUtils.toString(result.getValue());
+        StringBuilder strResult = new StringBuilder();
+        if (result.getException() != null) {
+            strResult.append(resultValue);
+        } else {
+            strResult.append(functionCall.getFunctionName()).append(" was completed.\n");
+            if (resultValue.isEmpty()) {
+                strResult.append("Empty result");
+            } else {
+                strResult.append(resultValue);
+            }
+        }
+        this.content = strResult.toString();
         this.time = time;
         this.functionCall = functionCall;
         this.functionResult = result;
         this.confirmation = null;
-        this.displayMessage = strResult;
-        this.error = null;
+        this.displayMessage = resultValue;
+        this.error = result.getException();
     }
 
     // Function call confirmation
     public AIMessage(@NotNull AIConfirmation confirmation) {
+        this(confirmation, LocalDateTime.now());
+    }
+
+    public AIMessage(@NotNull AIConfirmation confirmation, @NotNull LocalDateTime time) {
         this.meta = null;
         this.role = AIMessageType.CONFIRMATION;
         this.content = confirmation.getMessage();
-        this.time = LocalDateTime.now();
+        this.time = time;
         this.functionCall = null;
         this.functionResult = null;
         this.confirmation = confirmation;
@@ -121,11 +140,24 @@ public class AIMessage {
     public AIMessage(@NotNull Throwable error) {
         this(
             AIMessageType.ERROR,
-            CommonUtils.getAllExceptionMessages(error),
-            CommonUtils.getAllExceptionMessages(error),
+            getErrorMessage(error),
+            getErrorMessage(error),
             LocalDateTime.now(),
             null,
             error);
+    }
+
+    @NotNull
+    private static String getErrorMessage(@NotNull Throwable error) {
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof HttpTimeoutException || t instanceof SocketTimeoutException || t instanceof TimeoutException) {
+                return AIUtils.getSettingsAccessMessage(
+                    AIMessages.ai_error_request_timed_out,
+                    AIMessages.ai_error_request_timed_out_linked,
+                    AIMessages.ai_error_request_timed_out_admin);
+            }
+    }
+        return CommonUtils.getAllExceptionMessages(error);
     }
 
     public AIMessage(

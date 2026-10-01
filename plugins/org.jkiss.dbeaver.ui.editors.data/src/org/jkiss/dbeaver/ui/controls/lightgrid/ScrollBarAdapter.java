@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ScrollBar;
+import org.jkiss.code.NotNull;
 
 /**
  * Adapts a normal scrollbar to the IScrollBar proxy.
@@ -26,12 +27,11 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
  */
-class ScrollBarAdapter implements IGridScrollBar
-{
+class ScrollBarAdapter implements IGridScrollBar {
     /**
      * Delegates to this scrollbar.
      */
-    private ScrollBar scrollBar;
+    private final ScrollBar scrollBar;
     private boolean vertical;
 
     /**
@@ -39,8 +39,7 @@ class ScrollBarAdapter implements IGridScrollBar
      * 
      * @param scrollBar delegate
      */
-    public ScrollBarAdapter(ScrollBar scrollBar, boolean vertical)
-    {
+    public ScrollBarAdapter(@NotNull ScrollBar scrollBar, boolean vertical) {
         super();
         this.scrollBar = scrollBar;
         this.vertical = vertical;
@@ -65,12 +64,6 @@ class ScrollBarAdapter implements IGridScrollBar
     }
 
     @Override
-    public int getPageIncrement()
-    {
-        return scrollBar.getPageIncrement();
-    }
-
-    @Override
     public int getSelection()
     {
         return scrollBar.getSelection();
@@ -87,8 +80,6 @@ class ScrollBarAdapter implements IGridScrollBar
     {
         return scrollBar.getSize().x;
     }
-
-
 
     @Override
     public boolean getVisible()
@@ -115,12 +106,6 @@ class ScrollBarAdapter implements IGridScrollBar
     }
 
     @Override
-    public void setPageIncrement(int value)
-    {
-        scrollBar.setPageIncrement(value);
-    }
-
-    @Override
     public void setSelection(int selection)
     {
         scrollBar.setSelection(selection);
@@ -133,9 +118,14 @@ class ScrollBarAdapter implements IGridScrollBar
     }
 
     @Override
-    public void setValues(int selection, int minimum, int maximum, int thumb, int increment,
-                          int pageIncrement)
-    {
+    public void setValues(
+        int selection,
+        int minimum,
+        int maximum,
+        int thumb,
+        int increment,
+        int pageIncrement
+    ) {
         scrollBar.setValues(selection, minimum, maximum, thumb, increment, pageIncrement);
     }
 
@@ -146,18 +136,17 @@ class ScrollBarAdapter implements IGridScrollBar
     }
 
     @Override
-    public void handleMouseWheel(Event e)
-    {
+    public void handleMouseWheel(Event e) {
     }
 
     @Override
-    public void addSelectionListener(SelectionListener listener)
+    public void addSelectionListener(@NotNull SelectionListener listener)
     {
         scrollBar.addSelectionListener(listener);
     }
 
     @Override
-    public void removeSelectionListener(SelectionListener listener)
+    public void removeSelectionListener(@NotNull SelectionListener listener)
     {
         scrollBar.removeSelectionListener(listener);
     }

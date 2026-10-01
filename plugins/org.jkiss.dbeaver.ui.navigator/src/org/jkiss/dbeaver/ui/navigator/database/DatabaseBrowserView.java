@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,14 +67,14 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         return getDefaultRootNode();
     }
 
+    @NotNull
     protected DBNNode getDefaultRootNode() {
         DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(@NotNull Composite parent) {
         super.createPartControl(parent);
         getNavigatorTree().setFilterObjectType(getDefaultFilterType());
 
@@ -97,22 +97,19 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         return DatabaseNavigatorTreeFilterObjectType.table;
     }
 
-    public static String getSecondaryIdFromNode(DBNNode node) {
-        DBPProject project = null;
-        for (DBNNode dn = node; dn != null; dn = dn.getParentNode()) {
-            if (dn instanceof DBNProject) {
-                project = ((DBNProject) dn).getProject();
-                break;
-            }
-        }
-        if (project == null) {
-            throw new IllegalStateException("Navigator node " + node.getNodeUri() + " doesn't belong to a project");
+    @NotNull
+    public static String getSecondaryIdFromNode(@NotNull DBNNode node) {
+        String prefix = "";
+        DBPProject project = node.getOwnerProjectOrNull();
+        if (project != null) {
+            prefix = project.getName();
         }
         // We can't use colon in secondary ID
-        return project.getName() + "|" + node.getNodeUri().replace(":", "~");
+        return prefix + "|" + node.getNodeUri().replace(":", "~");
     }
 
-    public static DBNNode getNodeFromSecondaryId(String id) throws DBException {
+    @NotNull
+    public static DBNNode getNodeFromSecondaryId(@NotNull String id) throws DBException {
         int divPos = id.indexOf('|');
         if (divPos == -1) {
             throw new DBException("Bad secondary ID: " + id);
@@ -120,15 +117,19 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         String projectName = id.substring(0, divPos);
         String nodePath = id.substring(divPos + 1).replace("~", ":");
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-        DBNNode node = null;
-        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-        if (projectMeta != null) {
-            navigatorModel.ensureProjectLoaded(projectMeta);
+        DBPProject projectMeta = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+        DBNNode node;
+        {
+            if (projectMeta != null) {
+                navigatorModel.ensureProjectLoaded(projectMeta);
+            }
             node = UIUtils.runWithMonitor(monitor -> {
                 monitor.beginTask("Find navigator node", 1);
                 try {
                     monitor.subTask("Find node " + nodePath);
-                    return navigatorModel.getNodeByPath(monitor, projectMeta, nodePath);
+                    return projectMeta == null ?
+                        navigatorModel.getNodeByPath(monitor, nodePath) :
+                        navigatorModel.getNodeByPath(monitor, projectMeta, nodePath);
                 } finally {
                     monitor.done();
                 }

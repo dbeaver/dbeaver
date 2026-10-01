@@ -28,7 +28,7 @@ public record CopilotChunkDelta(
     String content,
     @Nullable
     @SerializedName("tool_calls")
-    List<CopilotChatResponse.ToolCall> toolCalls
+    List<CopilotChatResponseLegacy.ToolCall> toolCalls
 ) {
 
 }

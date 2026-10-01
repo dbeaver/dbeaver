@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
+
 import java.util.UUID;
 
 public abstract class AIConfirmation {
@@ -26,9 +28,11 @@ public abstract class AIConfirmation {
         this.id = UUID.randomUUID();
     }
 
+    @NotNull
     public UUID getId() {
         return id;
     }
 
+    @NotNull
     abstract String getMessage();
 }

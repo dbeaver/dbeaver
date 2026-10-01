@@ -33,14 +33,13 @@ import java.util.Properties;
 
 /**
  * Database username/password auth model.
- *
  * No-op model. Leaves all configuration as is.
  */
 public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNativeCredentials> implements DBAAuthModel<CREDENTIALS> {
 
     public static final String ID = "native";
 
-    public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative();
+    public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative<>();
 
     @NotNull
     public CREDENTIALS createCredentials() {
@@ -56,7 +55,7 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
     }
 
     protected void loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, CREDENTIALS credentials) {
-        DBPDataSourceProvider dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
+        DBPDataSourceProvider<?> dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
         if (dataSourceProvider instanceof DBAUserCredentialsProvider) {
             credentials.setUserName(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserName(configuration));
             credentials.setUserPassword(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserPassword(configuration));
@@ -84,28 +83,39 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull Properties connectProps
     ) throws DBException {
+        collectConnectionProperties(dataSource.getContainer(), credentials, configuration, connectProps, true);
+        return credentials;
+    }
+
+    @Override
+    public void collectConnectionProperties(
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @NotNull CREDENTIALS credentials,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connectProps,
+        boolean collectSecuredProps
+    ) {
         String userName = credentials.getUserName();
         String userPassword = credentials.getUserPassword();
 
-        if (isUserNameNeeded(dataSource)) {
+        if (isUserNameNeeded(dataSourceContainer)) {
             if (!CommonUtils.isEmpty(userName)) {
                 connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
             }
         }
-        if (isUserPasswordNeeded(dataSource)) {
-            if (!CommonUtils.isEmpty(userPassword) || (dataSource.getContainer().getDriver().isAllowsEmptyPassword() && !CommonUtils.isEmpty(userName))) {
+        if (isUserPasswordNeeded(dataSourceContainer) && collectSecuredProps) {
+            if (!CommonUtils.isEmpty(userPassword) || (dataSourceContainer.getDriver().isAllowsEmptyPassword()
+                && !CommonUtils.isEmpty(userName))) {
                 connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
             }
         }
-
-        return credentials;
     }
 
     public boolean isUserNameApplicable() {
         return true;
     }
 
-    protected boolean isUserNameNeeded(@NotNull DBPDataSource dataSource) {
+    protected boolean isUserNameNeeded(@NotNull DBPDataSourceContainer dataSourceContainer) {
         return true;
     }
 
@@ -113,7 +123,7 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         return true;
     }
 
-    protected boolean isUserPasswordNeeded(@NotNull DBPDataSource dataSource) {
+    protected boolean isUserPasswordNeeded(@NotNull DBPDataSourceContainer dataSourceContainer) {
         return true;
     }
 

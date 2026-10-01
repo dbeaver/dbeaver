@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -32,10 +34,11 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
 
     private static final Log log = Log.getLog(PostgreServerRisingWave.class);
 
-    public PostgreServerRisingWave(PostgreDataSource dataSource) {
+    public PostgreServerRisingWave(@NotNull PostgreDataSource dataSource) {
         super(dataSource);
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "RisingWave";
@@ -186,8 +189,9 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
         return false;
     }
 
+    @Nullable
     @Override
-    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) {
+    public String readTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase table) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load table DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE TABLE " +
                 table.getFullyQualifiedName(DBPEvaluationContext.DDL))
@@ -206,8 +210,9 @@ public class PostgreServerRisingWave extends PostgreServerExtensionBase {
         }
     }
 
+    @Nullable
     @Override
-    public String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) {
+    public String readViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreViewBase view) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, view, "Load view DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE " + view.getTableTypeName() + " " +
                 view.getFullyQualifiedName(DBPEvaluationContext.DDL))

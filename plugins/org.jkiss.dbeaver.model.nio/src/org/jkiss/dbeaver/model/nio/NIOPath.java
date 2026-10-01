@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,32 +32,51 @@ public abstract class NIOPath implements Path {
 
     protected NIOPath(@Nullable String path, FileSystem fileSystem) {
         this.fileSystem = fileSystem;
-        var separator = fileSystem.getSeparator();
+        String separator = fileSystem.getSeparator();
+        String preparedPath = path;
         if (CommonUtils.isNotEmpty(path) && path.endsWith(separator)) {
-            path = path.substring(0, path.length() - separator.length());
+            if (path.length() == separator.length()) {
+                // its root
+                preparedPath = null;
+            } else {
+                preparedPath = path.substring(0, path.length() - separator.length());
+            }
         }
-        this.path = path;
+        this.path = preparedPath;
     }
+
 
     @Override
     public boolean isAbsolute() {
-        return CommonUtils.isEmpty(path)  // root project path
-            || path.charAt(0) == '/';
+        return path == null // empty is just empty path
+            || (CommonUtils.isNotEmpty(path) && path.startsWith(getFileSystem().getSeparator()));
     }
 
     protected String resolveString(String otherPath) {
         return NIOUtils.resolve(getFileSystem().getSeparator(), path, otherPath);
     }
 
+    @Override
+    public int getNameCount() {
+        return pathParts().length;
+    }
+
+    @NotNull
     protected String[] pathParts() {
-        return CommonUtils.isEmpty(path) ? new String[0] : Arrays.stream(path.split(getFileSystem().getSeparator()))
+        return getParts(path);
+    }
+
+    @NotNull
+    protected String[] getParts(@Nullable String pathRepresentation) {
+        return CommonUtils.isEmpty(pathRepresentation) ? new String[0]
+            : Arrays.stream(pathRepresentation.split(getFileSystem().getSeparator()))
             .filter(CommonUtils::isNotEmpty)
             .toArray(String[]::new);
     }
 
-    @Override
-    public Path relativize(@NotNull Path other) {
-        throw new UnsupportedOperationException();
+    @NotNull
+    protected String toPathRepresentation(@NotNull String... parts) {
+        return String.join(getFileSystem().getSeparator(), parts);
     }
 
     @Override

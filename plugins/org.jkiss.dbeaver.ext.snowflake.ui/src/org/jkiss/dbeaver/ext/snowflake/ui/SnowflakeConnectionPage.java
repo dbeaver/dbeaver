@@ -17,11 +17,9 @@
 package org.jkiss.dbeaver.ext.snowflake.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -29,12 +27,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeUtils;
 import org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
-import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeUIActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -65,19 +64,9 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
     private Combo warehouseText;
     private Combo schemaText;
 
-    private static final ImageDescriptor logoImage = SnowflakeUIActivator.getImageDescriptor("icons/snowflake_logo.png"); //$NON-NLS-1$
-
     @Override
-    public void dispose()
+    public void createControl(@NotNull Composite composite)
     {
-        super.dispose();
-    }
-
-    @Override
-    public void createControl(Composite composite)
-    {
-        setImageDescriptor(logoImage);
-
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -150,12 +139,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.grabExcessHorizontalSpace = true;
             testLink.setLayoutData(gd);
-            testLink.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    site.testConnection();
-                }
-            });
+            testLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> site.testConnection()));
         }
 
         createAuthPanel(control, 1);
@@ -202,10 +186,14 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             dbText.setText(databaseName);
         }
         if (warehouseText != null) {
-            warehouseText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+            warehouseText.setText(CommonUtils.notEmpty(SnowflakeUtils.getWarehouse(connectionInfo)));
         }
         if (schemaText != null) {
-            schemaText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA)));
+            String schema = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA);
+            if (CommonUtils.isEmpty(schema)) {
+                schema = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA2);
+            }
+            schemaText.setText(CommonUtils.notEmpty(schema));
         }
     }
 
@@ -216,7 +204,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
@@ -273,6 +261,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
         });
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {

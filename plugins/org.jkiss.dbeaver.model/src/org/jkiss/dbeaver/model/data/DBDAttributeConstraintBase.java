@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ public class DBDAttributeConstraintBase {
         this.value = source.value;
         this.visible = source.visible;
         this.visualPosition = source.visualPosition;
+        this.entityAlias = source.entityAlias;
         this.options = source.options;
     }
 
@@ -161,11 +162,12 @@ public class DBDAttributeConstraintBase {
      * Attribute owner entity alias.
      * Null by default. Can be set by SQL generation routines after entity alias resolution.
      */
+    @Nullable
     public String getEntityAlias() {
         return entityAlias;
     }
 
-    public void setEntityAlias(String entityAlias) {
+    public void setEntityAlias(@Nullable String entityAlias) {
         this.entityAlias = entityAlias;
     }
 
@@ -178,7 +180,7 @@ public class DBDAttributeConstraintBase {
         this.options = options;
     }
 
-    public boolean hasOption(String option) {
+    public boolean hasOption(@NotNull String option) {
         if (options == null) {
             return false;
         }
@@ -190,7 +192,7 @@ public class DBDAttributeConstraintBase {
         return false;
     }
 
-    public <T> T getOption(String option) {
+    public <T> T getOption(@NotNull String option) {
         if (options == null) {
             return null;
         }
@@ -202,7 +204,7 @@ public class DBDAttributeConstraintBase {
         return null;
     }
 
-    public void setOption(String option, Object value) {
+    public void setOption(@NotNull String option, @Nullable Object value) {
         Object[] newOptions = { option, value };
         if (options == null) {
             options = newOptions;
@@ -217,7 +219,7 @@ public class DBDAttributeConstraintBase {
         }
     }
 
-    public boolean removeOption(String option) {
+    public boolean removeOption(@NotNull String option) {
         if (options == null) {
             return false;
         }
@@ -243,7 +245,7 @@ public class DBDAttributeConstraintBase {
         this.options = null;
     }
 
-    public boolean equalFilters(DBDAttributeConstraintBase obj, boolean compareOrders) {
+    public boolean equalFilters(@NotNull DBDAttributeConstraintBase obj, boolean compareOrders) {
         if (compareOrders) {
             if (this.orderPosition != obj.orderPosition ||
                 this.orderDescending != obj.orderDescending) {
@@ -252,9 +254,9 @@ public class DBDAttributeConstraintBase {
         }
         return
             CommonUtils.equalObjects(this.criteria, obj.criteria) &&
-                CommonUtils.equalObjects(this.operator, obj.operator) &&
-                CommonUtils.equalObjects(this.reverseOperator, obj.reverseOperator) &&
-                CommonUtils.equalObjects(this.value, obj.value);
+            CommonUtils.equalObjects(this.operator, obj.operator) &&
+            CommonUtils.equalObjects(this.reverseOperator, obj.reverseOperator) &&
+            CommonUtils.equalObjects(this.value, obj.value);
     }
 
     @Override
@@ -273,21 +275,17 @@ public class DBDAttributeConstraintBase {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof DBDAttributeConstraintBase) {
-            DBDAttributeConstraintBase source = (DBDAttributeConstraintBase) obj;
-            return
-                this.orderPosition == source.orderPosition &&
-                    this.orderDescending == source.orderDescending &&
-                    CommonUtils.equalObjects(this.criteria, source.criteria) &&
-                    CommonUtils.equalObjects(this.operator, source.operator) &&
-                    this.reverseOperator == source.reverseOperator &&
-                    CommonUtils.equalObjects(this.value, source.value) &&
-                    this.visible == source.visible &&
-                    this.visualPosition == source.visualPosition &&
-                    Arrays.equals(this.options, source.options);
-        } else {
-            return false;
-        }
+        return
+            obj instanceof DBDAttributeConstraintBase source &&
+            this.orderPosition == source.orderPosition &&
+            this.orderDescending == source.orderDescending &&
+            CommonUtils.equalObjects(this.criteria, source.criteria) &&
+            CommonUtils.equalObjects(this.operator, source.operator) &&
+            this.reverseOperator == source.reverseOperator &&
+            CommonUtils.equalObjects(this.value, source.value) &&
+            this.visible == source.visible &&
+            this.visualPosition == source.visualPosition &&
+            Arrays.equals(this.options, source.options);
     }
 
 }

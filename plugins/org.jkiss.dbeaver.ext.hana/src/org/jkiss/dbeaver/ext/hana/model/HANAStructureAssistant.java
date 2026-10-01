@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     protected JDBCDataSource getDataSource() {
         return dataSource;
@@ -192,8 +193,9 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
 
                     result.add(
                             new AbstractObjectReference<DBSObject>(objectName, schema, null, objectType.getTypeClass(), objectType) {
+                                @NotNull
                                 @Override
-                                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                                     DBSObject object = objectType.findObject(session.getProgressMonitor(), schema, objectName);
                                     if (object == null) {
                                         throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '" + schema.getName() + "'");
@@ -224,8 +226,9 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         }
         result.add(new AbstractObjectReference<>(schemaName, schema.getParentObject(), null, HANAObjectType.SCHEMA.getTypeClass(),
             HANAObjectType.SCHEMA) {
+            @NotNull
             @Override
-            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+            public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                 return schema;
             }
 
@@ -261,8 +264,9 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
 
                     result.add(new AbstractObjectReference<DBSObject>(objectName, schema, description, GenericTable.class,
                             RelationalObjectType.TYPE_TABLE) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
                                     getName());
                             if (object == null) {
@@ -302,8 +306,9 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
 
                     result.add(new AbstractObjectReference<GenericObjectContainer>(objectName, schema, description, GenericTable.class,
                             RelationalObjectType.TYPE_VIEW) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase object = getContainer().getTable(monitor, getName());
                             if (object == null) {
                                 throw new DBException("Can't find object '" + getName() + "' in '"
@@ -342,8 +347,9 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
 
                     result.add(new AbstractObjectReference<DBSObject>(objectName, schema, description, GenericProcedure.class,
                             RelationalObjectType.TYPE_PROCEDURE) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericProcedure object = ((GenericObjectContainer) getContainer()).getProcedure(monitor,
                                     getName());
                             if (object == null) {
@@ -384,8 +390,9 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
 
                     result.add(new AbstractObjectReference<DBSObject>(objectName, schema, description, GenericTableColumn.class,
                             RelationalObjectType.TYPE_TABLE_COLUMN) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
                                     getName());
                             if (object == null) {
@@ -431,8 +438,9 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
 
                     result.add(new AbstractObjectReference<DBSObject>(objectName, schema, description, GenericTableColumn.class,
                             RelationalObjectType.TYPE_TABLE_COLUMN) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
                                     getName());
                             if (object == null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,10 +66,11 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
+        final String tableName = DBUtils.getEntityScriptName(table, options);
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_foreign_key,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + tableName + " ADD " + getNestedDeclaration(monitor, table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
         );
     }
 
@@ -86,7 +87,12 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     @Override
-    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options) {
+    protected StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull TABLE_TYPE owner,
+        @NotNull DBECommandAbstract<OBJECT_TYPE> command,
+        @NotNull Map<String, Object> options
+    ) {
         return getNestedDeclarationScript(owner, command, options);
     }
 

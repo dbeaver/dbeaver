@@ -17,8 +17,11 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -106,6 +109,7 @@ public class OracleConstants {
     public static final String PROP_METADATA_USE_SYS_SCHEMA = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-sys-schema@";
     public static final String PROP_METADATA_USE_SIMPLE_CONSTRAINTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-simple-constraints@";
     public static final String PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-alternative-table-query@";
+    public static final String PROP_METADATA_READ_COLUMN_COMMENTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-read-column-comments@";
     public static final String PROP_SEARCH_METADATA_IN_SYNONYMS = "oracle.meta-search-in-synonyms"; //$NON-NLS-1$
     public static final String PROP_SEARCH_METADATA_IN_SEQUENCES = "oracle.meta-search-in-sequences"; //$NON-NLS-1$
     public static final String PROP_SHOW_DATE_AS_DATE = "oracle.show-date-as-date"; //$NON-NLS-1$
@@ -174,7 +178,7 @@ public class OracleConstants {
     static final String COLUMN_CREATED = "CREATED";
     static final String COLUMN_LAST_DDL_TIME = "LAST_DDL_TIME";
     static final String COLUMN_OBJECT_NAME = "OBJECT_NAME";
-    static final String COLUMN_OBJECT_TYPE = "OBJECT_TYPE";
+    public static final String COLUMN_OBJECT_TYPE = "OBJECT_TYPE";
     public static final String COLUMN_STATUS = "STATUS";
     static final String RESULT_STATUS_VALID = "VALID";
     static final String RESULT_YES_VALUE = "Y";
@@ -223,6 +227,7 @@ public class OracleConstants {
      * Oracle error codes
      */
     public static final int EC_INVALID_USERNAME_PASSWORD = 1017;
+    public static final int EC_INVALID_OLD_PASSWORD = 28008;
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
     public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;
@@ -234,10 +239,29 @@ public class OracleConstants {
     /**
      * Connection type
      */
-    public enum ConnectionType {
-        BASIC,
-        TNS,
-        CUSTOM
+    public static final class ConnectionType {
+        public static final String BASIC = "BASIC";
+        public static final String TNS = "TNS";
+        public static final String CUSTOM = "CUSTOM";
+
+        private ConnectionType() {
+        }
+
+        @NotNull
+        public static String fromString(@Nullable String value) {
+            return value == null || value.isEmpty() ? BASIC : value;
+        }
+
+        public static boolean isType(@Nullable String value, @NotNull String setting) {
+            return setting.equals(fromString(value));
+        }
+
+        public static boolean isType(
+            @NotNull DBPConnectionConfiguration configuration,
+            @NotNull String setting
+        ) {
+            return isType(configuration.getProviderProperty(PROP_CONNECTION_TYPE), setting);
+        }
     }
 
     public static final String XMLTYPE_CLASS_NAME = "oracle.xdb.XMLType";

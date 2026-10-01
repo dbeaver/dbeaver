@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
-    private String query;
+    protected String query;
     private OracleDDLFormat currentDDLFormat;
 
     public OracleMaterializedView(OracleSchema schema, String name)
@@ -174,7 +174,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
         if (query == null) {
             currentDDLFormat = OracleDDLFormat.getCurrentFormat(getDataSource());
@@ -292,6 +292,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
         return true;
     }
 
+    @Nullable
     @Override
     public TableAdditionalInfo getAdditionalInfo() {
         return additionalInfo;
@@ -300,12 +301,12 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     @Override
     @Association
     public Collection<OracleTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
+        return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
     }
 
     @Association
     public OracleTableIndex getIndex(DBRProgressMonitor monitor, String name) throws DBException {
-        return this.getContainer().indexCache.getObject(monitor, getContainer(), this, name);
+        return this.getContainer().getIndexCache().getObject(monitor, getContainer(), this, name);
     }
 
     @Override
@@ -324,10 +325,10 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().constraintCache.clearObjectCache(this);
-        getContainer().indexCache.clearObjectCache(this);
+        getContainer().getConstraintCache().clearObjectCache(this);
+        getContainer().getIndexCache().clearObjectCache(this);
 
-        return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
 }

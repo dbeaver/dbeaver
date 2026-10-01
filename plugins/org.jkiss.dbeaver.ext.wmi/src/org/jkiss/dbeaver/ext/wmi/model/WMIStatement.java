@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIException;
@@ -43,21 +44,24 @@ public class WMIStatement extends AbstractStatement<WMISession> {
     private long maxRows;
     private DBCExecutionSource source;
 
-    public WMIStatement(WMISession session, DBCStatementType type, String query) {
+    public WMIStatement(@NotNull WMISession session, @NotNull DBCStatementType type, @NotNull String query) {
         super(session);
         this.type = type;
         this.query = query;
+
+        if (isQMLoggingEnabled()) {
+            QMUtils.getDefaultHandler().handleStatementOpen(this);
+        }
     }
 
-    WMIService getService()
-    {
+    @NotNull
+    WMIService getService() {
         return getSession().getDataSource().getService();
     }
 
     @Nullable
     @Override
-    public String getQueryString()
-    {
+    public String getQueryString() {
         return query;
     }
 
@@ -68,7 +72,8 @@ public class WMIStatement extends AbstractStatement<WMISession> {
                 getSession().getProgressMonitor(),
                 getService(),
                 firstRow,
-                maxRows);
+                maxRows
+            );
             getService().executeQuery(query, sink, WMIConstants.WBEM_FLAG_SEND_STATUS);
             sink.waitForFinish();
             queryResult = sink.getObjectList();
@@ -85,7 +90,7 @@ public class WMIStatement extends AbstractStatement<WMISession> {
             return null;
         }
         try {
-            return new WMIResultSet(getSession(), null, queryResult);
+            return new WMIResultSet(getSession(), this, queryResult);
         } catch (WMIException e) {
             throw new DBCException(e, getSession().getExecutionContext());
         }
@@ -125,14 +130,12 @@ public class WMIStatement extends AbstractStatement<WMISession> {
 
     @Nullable
     @Override
-    public DBCExecutionSource getStatementSource()
-    {
+    public DBCExecutionSource getStatementSource() {
         return source;
     }
 
     @Override
-    public void setStatementSource(DBCExecutionSource source)
-    {
+    public void setStatementSource(DBCExecutionSource source) {
         this.source = source;
     }
 

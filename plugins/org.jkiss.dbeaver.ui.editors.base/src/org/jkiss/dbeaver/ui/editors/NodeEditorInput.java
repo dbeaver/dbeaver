@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     private volatile DBNNode node;
     private String nodePath;
+    private volatile DBException error;
 
     public NodeEditorInput(@NotNull DBNNode node) {
         this.node = node;
@@ -51,11 +52,16 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
     @Override
     public DBNNode getNavigatorNode() {
         if (node == null) {
+            if (error != null) {
+                log.debug("Suppressed error when loading navigator node '" + nodePath + "'", error);
+                return null;
+            }
             try {
                 final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
                 node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
             } catch (DBException e) {
                 log.debug("Cannot find navigator node '" + nodePath + "'", e);
+                error = e;
                 return null;
             }
             if (node == null) {

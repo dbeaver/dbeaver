@@ -45,7 +45,7 @@ fi
 # Define paths relative to the script location
 WORKSPACE_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 DBEAVER_COMMON_DIR="${WORKSPACE_DIR}/dbeaver-common"
-DBEAVER_JDBC_LIBSQL_DIR="${WORKSPACE_DIR}/dbeaver-jdbc-libsql"
+DATADAM_API_DIR="${WORKSPACE_DIR}/datadam-api"
 PRODUCT_DIR="${SCRIPT_DIR}/../product"
 AGGREGATE_DIR="${PRODUCT_DIR}/aggregate"
 
@@ -67,16 +67,13 @@ else
     log "DBeaver common directory already exists at $DBEAVER_COMMON_DIR"
 fi
 
-###############################################################################
-# DBeaver Jdbc-Libsql Repository Management
-###############################################################################
-
-# Clone or verify dbeaver-jdbc-libsql repository
-if [ ! -d "$DBEAVER_JDBC_LIBSQL_DIR" ]; then
-    log "Cloning dbeaver-jdbc-libsql repository..."
-    git clone https://github.com/dbeaver/dbeaver-jdbc-libsql.git "$DBEAVER_JDBC_LIBSQL_DIR"
+# Clone or verify datadam-api repository
+DATADAM_API_REF="${DATADAM_API_REF:-main}"
+if [ ! -d "$DATADAM_API_DIR/.git" ]; then
+    log "Cloning datadam-api repository ($DATADAM_API_REF)..."
+    git clone --depth 1 --branch "$DATADAM_API_REF" https://github.com/dbeaver/datadam-api.git "$DATADAM_API_DIR"
 else
-    log "DBeaver jdbc-libsql directory already exists at $DBEAVER_JDBC_LIBSQL_DIR"
+    log "DataDam API directory already exists at $DATADAM_API_DIR"
 fi
 
 ###############################################################################

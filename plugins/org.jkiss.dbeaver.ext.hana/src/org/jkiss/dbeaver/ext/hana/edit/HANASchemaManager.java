@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
         return true;
     }
 
+    @NotNull
     @Override
     protected String getBaseObjectName() {
         return "NEW_SCHEMA";
@@ -59,8 +60,8 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
     protected HANASchema createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        Object container,
-        Object copyFrom,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
         if (container instanceof HANADataSource) {

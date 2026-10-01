@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBInfoUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -46,11 +48,14 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
     private String userPassword;
     private boolean savePassword;
 
-    public DBAAuthProfile(DBPProject project) {
+    public DBAAuthProfile() {
+    }
+
+    public DBAAuthProfile(@NotNull DBPProject project) {
         super(project);
     }
 
-    public DBAAuthProfile(DBAAuthProfile source) {
+    public DBAAuthProfile(@NotNull DBAAuthProfile source) {
         super(source);
         this.authModelId = source.authModelId;
         this.userName = source.userName;
@@ -58,31 +63,35 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         this.savePassword = source.savePassword;
     }
 
+    @NotNull
     public String getSecretKeyId() {
         return RMProjectType.getPlainProjectId(getProject()) + PROFILE_KEY_PREFIX + getProfileId();
     }
 
+    @NotNull
     public String getAuthModelId() {
         return authModelId;
     }
 
-    public void setAuthModelId(String authModelId) {
+    public void setAuthModelId(@NotNull String authModelId) {
         this.authModelId = authModelId;
     }
 
+    @Nullable
     public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName) {
+    public void setUserName(@Nullable String userName) {
         this.userName = userName;
     }
 
+    @Nullable
     public String getUserPassword() {
         return userPassword;
     }
 
-    public void setUserPassword(String userPassword) {
+    public void setUserPassword(@Nullable String userPassword) {
         this.userPassword = userPassword;
     }
 
@@ -94,12 +103,13 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         this.savePassword = savePassword;
     }
 
+    @Nullable
     public DBPAuthModelDescriptor getAuthModel() {
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
         Map<String, Object> props = new LinkedHashMap<>();
 
         // Info fields (we don't use them anyhow)
@@ -126,7 +136,7 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
         String secretValue = secretController.getPrivateSecretValue(
             getSecretKeyId());
         if (secretValue == null) {
@@ -141,7 +151,7 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         setProperties(JSONUtils.deserializeStringMap(props, "properties"));
     }
 
-    private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
+    private void loadFromLegacySecret(@NotNull DBSSecretController secretController) throws DBException {
         // Auth profiles were not supported in legacy versions
     }
 

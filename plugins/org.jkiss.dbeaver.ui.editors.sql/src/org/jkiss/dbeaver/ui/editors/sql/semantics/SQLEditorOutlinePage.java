@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
@@ -1300,9 +1298,11 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     );
                 }
             } else {
-                String tableName = deleteStatement.getTableModel() == null || deleteStatement.getTableModel().getName() == null
-                    ? SQLConstants.QUESTION
-                    : deleteStatement.getTableModel().getName().getNameString();
+                SQLQueryRowsSourceModel source = deleteStatement.getRowsSource() instanceof SQLQueryRowsCorrelatedSourceModel aliased
+                    ? aliased.getSource() : deleteStatement.getRowsSource();
+                String tableName = source instanceof SQLQueryRowsTableDataModel table && table.getName() != null
+                    ? table.getName().getNameString()
+                    : SQLConstants.QUESTION;
                 String nodeName = SQLConstants.KEYWORD_DELETE + " " + SQLConstants.KEYWORD_FROM + " " + tableName;
                 // TODO add separate FROM node when Multi-Table Deletes would be supported
                 this.makeNode(
@@ -1311,9 +1311,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     OutlineQueryNodeKind.DELETE_SUBROOT,
                     nodeName,
                     UIIcon.ROW_DELETE,
-                    deleteStatement.getAliasedTableModel() != null
-                        ? deleteStatement.getAliasedTableModel()
-                        : deleteStatement.getTableModel(),
+                    deleteStatement.getRowsSource(),
                     deleteStatement
                 );
             }

@@ -1,27 +1,32 @@
-/*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Sebastian Davids: sdavids@gmx.de - see bug 25376
- *******************************************************************************/
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
 import org.eclipse.jface.text.templates.TemplateContextType;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 public abstract class SQLContextTypeAbstract extends TemplateContextType {
 
 
-    protected SQLContextTypeAbstract(String id, String name)
-    {
+    protected SQLContextTypeAbstract(@NotNull String id, @NotNull String name) {
         super(id, name);
         addGlobalResolvers();
         addDatabaseProposals();
@@ -38,8 +43,7 @@ public abstract class SQLContextTypeAbstract extends TemplateContextType {
         addResolver(new GlobalTemplateVariables.User());
     }
 
-    private void addDatabaseProposals()
-    {
+    private void addDatabaseProposals() {
         addResolver(new SQLEntityResolver());
         addResolver(new SQLContainerResolver<>(
             SQLContainerResolver.VAR_NAME_SCHEMA, "Schema", DBSSchema.class));
@@ -50,14 +54,12 @@ public abstract class SQLContextTypeAbstract extends TemplateContextType {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getId() + " [" + getName() + "]";
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return getId().hashCode() + getName().hashCode();
     }
 

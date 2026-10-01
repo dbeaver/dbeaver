@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 public class SQLiteSQLDialectTest extends DBeaverUnitTest {
@@ -30,18 +30,18 @@ public class SQLiteSQLDialectTest extends DBeaverUnitTest {
     @Test
     public void quoteInfinities() {
         final SQLiteSQLDialect dialect = new SQLiteSQLDialect();
-        Assert.assertEquals("'Infinity'", dialect.escapeScriptValue(mockAttribute, Float.POSITIVE_INFINITY, ""));
-        Assert.assertEquals("'-Infinity'", dialect.escapeScriptValue(mockAttribute, Float.NEGATIVE_INFINITY, ""));
-        Assert.assertEquals("'Infinity'", dialect.escapeScriptValue(mockAttribute, Double.POSITIVE_INFINITY, ""));
-        Assert.assertEquals("'-Infinity'", dialect.escapeScriptValue(mockAttribute, Double.NEGATIVE_INFINITY, ""));
+        Assertions.assertEquals("'Infinity'", dialect.escapeScriptValue(mockAttribute, Float.POSITIVE_INFINITY, ""));
+        Assertions.assertEquals("'-Infinity'", dialect.escapeScriptValue(mockAttribute, Float.NEGATIVE_INFINITY, ""));
+        Assertions.assertEquals("'Infinity'", dialect.escapeScriptValue(mockAttribute, Double.POSITIVE_INFINITY, ""));
+        Assertions.assertEquals("'-Infinity'", dialect.escapeScriptValue(mockAttribute, Double.NEGATIVE_INFINITY, ""));
     }
 
     @Test
     public void quoteNaNs() {
         final SQLiteSQLDialect dialect = new SQLiteSQLDialect();
-        Assert.assertEquals("'NaN'", dialect.escapeScriptValue(mockAttribute, Float.NaN, ""));
-        Assert.assertEquals("'NaN'", dialect.escapeScriptValue(mockAttribute, Float.POSITIVE_INFINITY - Float.POSITIVE_INFINITY, ""));
-        Assert.assertEquals("'NaN'", dialect.escapeScriptValue(mockAttribute, Double.NaN, ""));
-        Assert.assertEquals("'NaN'", dialect.escapeScriptValue(mockAttribute, Double.NEGATIVE_INFINITY * 0, ""));
+        Assertions.assertEquals("'NaN'", dialect.escapeScriptValue(mockAttribute, Float.NaN, ""));
+        Assertions.assertEquals("'NaN'", dialect.escapeScriptValue(mockAttribute, Float.POSITIVE_INFINITY - Float.POSITIVE_INFINITY, ""));
+        Assertions.assertEquals("'NaN'", dialect.escapeScriptValue(mockAttribute, Double.NaN, ""));
+        Assertions.assertEquals("'NaN'", dialect.escapeScriptValue(mockAttribute, Double.NEGATIVE_INFINITY * 0, ""));
     }
 }

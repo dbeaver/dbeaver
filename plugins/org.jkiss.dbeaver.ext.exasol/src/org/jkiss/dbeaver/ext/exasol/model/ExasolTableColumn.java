@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSDescriptionEditable;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
@@ -45,7 +45,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 
 public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
-    implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2, JDBCColumnKeyType, DBSTypedObjectExt4<ExasolDataType> {
+    implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2, JDBCColumnKeyType, DBSTypedObjectExt4<ExasolDataType>, DBSDescriptionEditable {
 
     private ExasolDataType dataType;
     private Boolean identity;
@@ -241,7 +241,8 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         return remarks;
     }
 
-    public void setDescription(String remarks) {
+    @Override
+    public void setDescription(@Nullable String remarks) {
         this.remarks = remarks;
     }
 

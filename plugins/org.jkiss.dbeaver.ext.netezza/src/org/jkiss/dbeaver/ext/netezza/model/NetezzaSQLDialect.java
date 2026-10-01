@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class NetezzaSQLDialect extends GenericSQLDialect {
 
@@ -100,7 +101,16 @@ public class NetezzaSQLDialect extends GenericSQLDialect {
         if (typeName.equals("INTERVAL")) {
             return null;
         }
+        if (typeName.equalsIgnoreCase("NCHAR") && typeName.indexOf('(') == -1 && column.getMaxLength() > 0) {
+            return "(" + column.getMaxLength() + ")";
+        }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
+    }
+
+    @Override
+    protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
+        super.loadDataTypesFromDatabase(dataSource);
+        addDataTypes(List.of("NCHAR", "NVARCHAR"));
     }
 
     @Override

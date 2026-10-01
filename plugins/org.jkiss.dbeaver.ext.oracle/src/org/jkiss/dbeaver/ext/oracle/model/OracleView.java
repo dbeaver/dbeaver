@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -93,7 +94,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
-    private String viewText;
+    protected String viewText;
     // Generated from ALL_VIEWS
     private String viewSourceText;
     private OracleDDLFormat currentDDLFormat;
@@ -165,6 +166,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
         this.viewText = source;
     }
 
+    @Nullable
     @Override
     public AdditionalInfo getAdditionalInfo() {
         return additionalInfo;
@@ -189,10 +191,6 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.VIEW);
-    }
-
-    public String getViewText() {
-        return viewText;
     }
 
     public void setViewText(String viewText) {

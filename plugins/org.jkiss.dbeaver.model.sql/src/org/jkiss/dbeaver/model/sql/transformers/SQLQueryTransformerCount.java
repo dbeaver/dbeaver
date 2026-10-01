@@ -73,10 +73,10 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         @NotNull SQLQuery query
     ) throws DBException {
         String queryText = null;
-
+        SQLDialect sqlDialect = dataSource.getSQLDialect();
         // Remove orderings (#4652)
         try {
-            Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
+            Statement statement = SQLSemanticProcessor.parseQuery(sqlDialect, query.getText());
             if (statement instanceof PlainSelect plainSelect) {
                 if (!CommonUtils.isEmpty(plainSelect.getOrderByElements())) {
                     plainSelect.setOrderByElements(null);

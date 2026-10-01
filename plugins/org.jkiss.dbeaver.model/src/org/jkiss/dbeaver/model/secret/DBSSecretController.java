@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,17 +89,25 @@ public interface DBSSecretController {
     void flushChanges() throws DBException;
 
     @NotNull
-    static DBSSecretController getProjectSecretController(DBPProject project) throws DBException {
+    static DBSSecretController getProjectSecretController(@NotNull DBPProject project) throws DBException {
         return getSessionSecretController(project.getWorkspaceSession());
     }
 
+    /**
+     * Global secret controller should be used ONLY in a desktop application (will throw an exception for headless apps).
+     */
     @NotNull
     static DBSSecretController getGlobalSecretController() throws DBException {
         return getSessionSecretController(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
     }
 
+    @Nullable
+    static DBSSecretController getGlobalSecretControllerOrNull() throws DBException {
+        return getSessionSecretControllerOrNull(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
+    }
+
     @NotNull
-    static DBSSecretController getSessionSecretController(SMSession spaceSession) throws DBException {
+    static DBSSecretController getSessionSecretController(@Nullable SMSession spaceSession) throws DBException {
         var secretController = getSessionSecretControllerOrNull(spaceSession);
         if (secretController != null) {
             return secretController;
@@ -108,7 +116,7 @@ public interface DBSSecretController {
     }
 
     @Nullable
-    static DBSSecretController getSessionSecretControllerOrNull(SMSession spaceSession) throws DBException {
+    static DBSSecretController getSessionSecretControllerOrNull(@Nullable SMSession spaceSession) throws DBException {
         SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
         if (secretKeeper != null) {
             return secretKeeper.getSecretController();

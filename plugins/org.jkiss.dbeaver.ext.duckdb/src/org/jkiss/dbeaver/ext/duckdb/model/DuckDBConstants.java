@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+
 public class DuckDBConstants {
     public static final String TYPE_GEOMETRY = "GEOMETRY";
     public static final String TYPE_BLOB = "BLOB";
@@ -24,5 +27,9 @@ public class DuckDBConstants {
     public static final String PROP_DD_TAG_STRING = "duckdb.dd.tag.string";
 
     private DuckDBConstants() {
+    }
+
+    public static boolean isGeometryType(@NotNull String typeName) {
+        return TYPE_GEOMETRY.equalsIgnoreCase(SQLUtils.stripColumnTypeModifiers(typeName));
     }
 }

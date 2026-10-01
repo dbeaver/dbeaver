@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * DBDContentClonable
+ * DBDValueCloneable
  */
 public interface DBDValueCloneable extends DBDValue {
 
@@ -29,7 +30,8 @@ public interface DBDValueCloneable extends DBDValue {
      * Makes exact copy of content object
      * @return copy  @param monitor
      */
-    DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
+    @NotNull
+    DBDValueCloneable cloneValue(@NotNull DBRProgressMonitor monitor)
         throws DBCException;
 
 }

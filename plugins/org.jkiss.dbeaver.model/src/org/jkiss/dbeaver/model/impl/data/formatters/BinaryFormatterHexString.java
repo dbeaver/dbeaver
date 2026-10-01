@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Hex formatter.
  * Formats binary data to hex with preceding x'0123456789ABCDEF'
@@ -27,26 +29,30 @@ public class BinaryFormatterHexString extends BinaryFormatterHex {
     private static final String HEX_PREFIX = "x'";
     private static final String HEX_POSTFIX = "'";
 
+    @NotNull
     @Override
     public String getId()
     {
         return "hex_string";
     }
 
+    @NotNull
     @Override
     public String getTitle()
     {
         return "Hex";
     }
 
+    @NotNull
     @Override
-    public String toString(byte[] bytes, int offset, int length)
+    public String toString(@NotNull byte[] bytes, int offset, int length)
     {
         return HEX_PREFIX + super.toString(bytes, offset, length) + HEX_POSTFIX;
     }
 
+    @NotNull
     @Override
-    public byte[] toBytes(String string)
+    public byte[] toBytes(@NotNull String string)
     {
         if (string.startsWith(HEX_PREFIX) || string.endsWith(HEX_POSTFIX)) {
             string = string.substring(HEX_PREFIX.length(), string.length() - HEX_PREFIX.length() - HEX_POSTFIX.length());

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,4 +107,18 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
             createCredentials() :
             loadCredentials(dataSource, configuration);
     }
+
+    /**
+     * Collects connection properties based on credentials and configuration.
+     * Doesn't have interactive logic (like resolving credentials from user input or external service).
+     * Just collects properties based on provided credentials and configuration.
+     * Does not collect secured properties (e.g. password) when collectSecuredProps is set to false.
+     */
+    void collectConnectionProperties(
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @NotNull CREDENTIALS credentials,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties properties,
+        boolean collectSecuredProps
+    ) throws DBException;
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.rcp.DBeaverNature;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -210,54 +211,58 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
         monitor.subTask(CoreMessages.dialog_project_import_wizard_monitor_load_driver + driverName);
 
-        DriverDescriptor driver = null;
+        DBPDriver curDriver = null;
         if (!isCustom) {
             // Get driver by ID
-            driver = dataSourceProvider.getDriver(driverId);
-            if (driver == null) {
+            curDriver = dataSourceProvider.getDriver(driverId);
+            if (curDriver == null) {
                 log.warn("Driver '" + driverId + "' not found in data source provider '" + dataSourceProvider.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
         }
-        if (driver == null) {
+        if (curDriver == null) {
             // Try to find existing driver by class name
-            List<DriverDescriptor> matchedDrivers = new ArrayList<>();
-            for (DriverDescriptor tmpDriver : dataSourceProvider.getEnabledDrivers()) {
+            List<DBPDriver> matchedDrivers = new ArrayList<>();
+            for (DBPDriver tmpDriver : dataSourceProvider.getEnabledDrivers()) {
                 if (CommonUtils.equalObjects(tmpDriver.getDriverClassName(), driverClass)) {
                     matchedDrivers.add(tmpDriver);
                 }
             }
             if (matchedDrivers.size() == 1) {
-                driver = matchedDrivers.get(0);
+                curDriver = matchedDrivers.getFirst();
             } else if (!matchedDrivers.isEmpty()) {
                 // Multiple drivers with the same class - tru to find driver with the same sample URL or with the same name
-                for (DriverDescriptor tmpDriver : matchedDrivers) {
+                for (DBPDriver tmpDriver : matchedDrivers) {
                     if (CommonUtils.equalObjects(tmpDriver.getSampleURL(), driverURL) || CommonUtils.equalObjects(tmpDriver.getName(), driverName)) {
-                        driver = tmpDriver;
+                        curDriver = tmpDriver;
                         break;
                     }
                 }
-                if (driver == null) {
+                if (curDriver == null) {
                     // Not found - lets use first one
                     log.warn("Ambiguous driver '" + driverName + "' - multiple drivers with class '" + driverClass + "' found. First one will be used"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    driver = matchedDrivers.get(0);
+                    curDriver = matchedDrivers.getFirst();
                 }
             }
         }
-        if (driver == null) {
+        if (curDriver == null) {
             // Create new driver
-            driver = dataSourceProvider.createDriver();
-            driver.setName(driverName);
-            driver.setCategory(driverCategory);
-            driver.setDescription(driverDescription);
-            driver.setDriverClassName(driverClass);
+            DriverDescriptor newDriver = dataSourceProvider.createDriver();
+            newDriver.setName(driverName);
+            newDriver.setCategory(driverCategory);
+            newDriver.setDescription(driverDescription);
+            newDriver.setDriverClassName(driverClass, true);
             if (!CommonUtils.isEmpty(driverDefaultPort)) {
-                driver.setDriverDefaultPort(driverDefaultPort);
+                newDriver.setDriverDefaultPort(driverDefaultPort);
             }
-            driver.setSampleURL(driverURL);
-            driver.setModified(true);
-            dataSourceProvider.addDriver(driver);
+            newDriver.setSampleURL(driverURL);
+            newDriver.setModified(true);
+            dataSourceProvider.addDriver(newDriver);
+            curDriver = newDriver;
         }
 
+        if (!(curDriver instanceof DriverDescriptor driver)) {
+            return null;
+        }
         // Parameters and properties
         for (Element libElement : XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_PARAMETER)) {
             driver.setDriverParameter(

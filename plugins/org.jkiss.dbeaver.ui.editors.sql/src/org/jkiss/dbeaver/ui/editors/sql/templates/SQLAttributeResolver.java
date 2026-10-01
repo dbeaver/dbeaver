@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -42,14 +41,12 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
 
     private static final Log log = Log.getLog(SQLAttributeResolver.class);
 
-    public SQLAttributeResolver()
-    {
+    public SQLAttributeResolver() {
         super("column", "Table column");
     }
 
     @Override
-    protected String[] resolveAll(final TemplateContext context)
-    {
+    protected String[] resolveAll(final TemplateContext context) {
         final DBCExecutionContext executionContext = ((DBPContextProvider) context).getExecutionContext();
         if (executionContext == null) {
             return super.resolveAll(context);
@@ -59,23 +56,18 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
         final String tableName = tableVariable == null ? null : tableVariable.getDefaultValue();
         if (!CommonUtils.isEmpty(tableName)) {
             final List<DBSEntityAttribute> attributes = new ArrayList<>();
-            DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        List<DBSEntity> entities = new ArrayList<>();
-                        SQLEntityResolver.resolveTables(monitor, executionContext, context, entities);
-                        if (!CommonUtils.isEmpty(entities)) {
-                            DBSEntity table = DBUtils.findObject(entities, tableName);
-                            if (table != null) {
-                                attributes.addAll(CommonUtils.safeCollection(table.getAttributes(monitor)));
-                            }
+            DBRRunnableWithProgress runnable = monitor -> {
+                try {
+                    List<DBSEntity> entities = new ArrayList<>();
+                    SQLEntityResolver.resolveTables(monitor, executionContext, context, entities);
+                    if (!CommonUtils.isEmpty(entities)) {
+                        DBSEntity table = DBUtils.findObject(entities, tableName);
+                        if (table != null) {
+                            attributes.addAll(CommonUtils.safeCollection(table.getAttributes(monitor)));
                         }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
             };
             RuntimeUtils.runTask(runnable, "Resolve attributes", 1000);
@@ -92,11 +84,10 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
     }
 
     @Override
-    public void resolve(TemplateVariable variable, TemplateContext context)
-    {
+    public void resolve(TemplateVariable variable, TemplateContext context) {
         super.resolve(variable, context);
-        if (variable instanceof SQLVariable) {
-            ((SQLVariable)variable).setResolver(this);
+        if (variable instanceof SQLVariable sqlVariable) {
+            sqlVariable.setResolver(this);
         }
     }
 

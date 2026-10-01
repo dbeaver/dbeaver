@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,11 @@ package org.jkiss.dbeaver.model.gis;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Geometry;
@@ -33,7 +37,7 @@ import java.util.Map;
 /**
  * Geometry value (LOB).
  */
-public class DBGeometry implements DBDValue {
+public class DBGeometry implements DBDValue, DBDValueCloneable {
 
     private final Object rawValue;
     private int srid;
@@ -78,6 +82,7 @@ public class DBGeometry implements DBDValue {
         return rawValue.toString();
     }
 
+    @Nullable
     @Override
     public Object getRawValue() {
         return rawValue;
@@ -113,6 +118,16 @@ public class DBGeometry implements DBDValue {
         if (rawValue instanceof Geometry) {
             ((Geometry) rawValue).setSRID(srid);
         }
+    }
+
+    @NotNull
+    public DBGeometry linearize() {
+        if (!WKGUtils.isCurve(rawValue)) {
+            return new DBGeometry(rawValue, srid, properties);
+        }
+        var wkgGeometry = WKGUtils.linearize((org.cugos.wkg.Geometry) rawValue);
+        var jtsGeometry = GisTransformUtils.getJtsGeometry(wkgGeometry);
+        return new DBGeometry(jtsGeometry, srid, properties);
     }
 
     public DBGeometry flipCoordinates() throws DBException {
@@ -187,6 +202,12 @@ public class DBGeometry implements DBDValue {
             }
         }
         return true;
+    }
+
+    @NotNull
+    @Override
+    public DBDValueCloneable cloneValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        return copy();
     }
 
     private static class InvertCoordinateFilter implements CoordinateFilter {

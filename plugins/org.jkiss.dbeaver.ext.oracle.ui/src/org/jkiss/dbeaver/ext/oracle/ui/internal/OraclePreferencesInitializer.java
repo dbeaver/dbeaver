@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.ui.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.ui.OracleUIConstants;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -27,7 +28,7 @@ public class OraclePreferencesInitializer extends AbstractPreferenceInitializer 
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = new BundlePreferenceStore(OracleUIActivator.getDefault().getBundle());
+        DBPPreferenceStore store = new BundlePreferenceStore(OracleUIConstants.PLUGIN_ID);
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PREF_EXPLAIN_TABLE_NAME, "");
@@ -39,6 +40,7 @@ public class OraclePreferencesInitializer extends AbstractPreferenceInitializer 
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_USE_META_OPTIMIZER, true);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS, false);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, true);
+        PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS, false);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, false);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES, false);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_SHOW_DATE_AS_DATE, false);

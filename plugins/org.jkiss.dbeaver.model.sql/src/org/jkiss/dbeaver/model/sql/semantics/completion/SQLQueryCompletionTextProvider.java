@@ -120,6 +120,12 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
 
     @NotNull
     @Override
+    public String visitGlobalPseudoColumn(@NotNull SQLGlobalPseudoColumnCompletionItem pseudoColumn) {
+        return this.convertCaseIfNeeded(pseudoColumn.columnInfo.symbol.getName());
+    }
+
+    @NotNull
+    @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
         String suffix = "";
         if (this.queryCompletionContext.getInspectionResult().expectingTableSourceIntroduction() &&

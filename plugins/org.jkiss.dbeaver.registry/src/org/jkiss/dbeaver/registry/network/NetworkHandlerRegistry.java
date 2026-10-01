@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,11 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -91,6 +94,10 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDriver driver) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
+            if (!DBWorkbench.getPlatform().getWorkspace().supportsRealmFeature(DBAPermissionRealm.FEATURE_SSH_TUNNELING)
+                && d.getType() == DBWHandlerType.TUNNEL) {
+                continue;
+            }
             if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver)) {
                 result.add(d);
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,7 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource extends AbstractDataSource implements DBSInstance, DBCExecutionContext, DBPAdaptable
-{
+public class WMIDataSource extends AbstractDataSource implements DBSInstance, DBCExecutionContext, DBPAdaptable {
     private WMINamespace rootNamespace;
     private final SQLDialect dialect;
     private final long id;
@@ -59,8 +58,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
 
     @NotNull
     @Override
-    public DBPDataSourceInfo getInfo()
-    {
+    public DBPDataSourceInfo getInfo() {
         return new WMIDataSourceInfo();
     }
 
@@ -73,7 +71,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     @NotNull
     @Override
     public DBCExecutionContext[] getAllContexts() {
-        return new DBCExecutionContext[] { this };
+        return new DBCExecutionContext[] {this};
     }
 
     @Override
@@ -94,32 +92,33 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     }
 
     @Override
-    public boolean isConnected()
-    {
+    public boolean isConnected() {
         return true;
     }
 
     @NotNull
     @Override
-    public DBCSession openSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String task)
-    {
+    public DBCSession openSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String task) {
         return new WMISession(monitor, purpose, task, this);
     }
 
     @Override
-    public void checkContextAlive(DBRProgressMonitor monitor) throws DBException {
+    public void checkContextAlive(DBRProgressMonitor monitor) {
         // do nothing
     }
 
     @NotNull
     @Override
-    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException
-    {
+    public DBCExecutionContext openIsolatedContext(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String purpose,
+        @Nullable DBCExecutionContext initFrom
+    ) {
         return this;
     }
 
     @Override
-    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) throws DBException {
+    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) {
         // nothing to do
     }
 
@@ -130,8 +129,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     }
 
     @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         final DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
         try {
             WMIService service = WMIService.connect(
@@ -140,7 +138,8 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
                 connectionInfo.getUserName(),
                 connectionInfo.getUserPassword(),
                 null,
-                connectionInfo.getDatabaseName());
+                connectionInfo.getDatabaseName()
+            );
             this.rootNamespace = new WMINamespace(null, this, connectionInfo.getDatabaseName(), service);
         } catch (UnsatisfiedLinkError e) {
             throw new DBException("Can't link with WMI native library", e);
@@ -175,8 +174,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     }
 
     @Override
-    public void shutdown(@NotNull DBRProgressMonitor monitor)
-    {
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
         this.close();
     }
 
@@ -187,19 +185,16 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     }
 
     @Association
-    public Collection<WMINamespace> getNamespaces()
-    {
+    public Collection<WMINamespace> getNamespaces() {
         return Collections.singletonList(rootNamespace);
     }
 
-    public WMIService getService()
-    {
+    public WMIService getService() {
         return rootNamespace.service;
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter)
-    {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSObjectContainer.class) {
             return adapter.cast(rootNamespace);
         }

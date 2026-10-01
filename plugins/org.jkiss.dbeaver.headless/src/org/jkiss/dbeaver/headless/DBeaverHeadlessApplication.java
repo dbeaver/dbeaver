@@ -30,8 +30,6 @@ import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.nio.file.Path;
-
 /**
  * Headless application
  */
@@ -63,11 +61,6 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
     public void stop() {
         log.debug("Starting headless test application");
         super.stop();
-    }
-
-    @Override
-    public @Nullable Path getDefaultWorkingFolder() {
-        return null;
     }
 
     @NotNull

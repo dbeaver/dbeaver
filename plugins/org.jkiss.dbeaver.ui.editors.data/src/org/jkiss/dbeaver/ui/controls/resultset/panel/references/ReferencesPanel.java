@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
@@ -80,12 +81,14 @@ public class ReferencesPanel extends ResultSetPanelBase {
                     if (!(event.getSelection() instanceof IResultSetSelection rss)) {
                         return;
                     }
-                    List<ResultSetRow> selectedItems = rss.getSelectedRows();
-                    if (CommonUtils.equalObjects(prevSelection, selectedItems)) {
-                        return;
-                    }
-                    this.prevSelection = selectedItems;
-                    getResultsContainer().refreshReferences(false);
+                    UIExecutionQueue.queueExec(() -> {
+                        List<ResultSetRow> selectedItems = rss.getSelectedRows();
+                        if (CommonUtils.equalObjects(prevSelection, selectedItems)) {
+                            return;
+                        }
+                        this.prevSelection = selectedItems;
+                        getResultsContainer().refreshReferences(false);
+                    });
                 }
             };
             sp.addSelectionChangedListener(selectionListener);

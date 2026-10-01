@@ -4,6 +4,14 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="mariadb"
+            label="MariaDB"
+            description="MariaDB database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/mariadb_icon.png"
+            iconBig="icons/mariadb_icon_big.png"
+            logoImage="icons/mariadb_logo.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
             description="MySQL connector"
@@ -153,12 +161,11 @@
                 </propertyGroup>
             </driver-properties>
             <drivers managable="true">
-                <driver id="mysql3"/>
+                <driver id="mysql3" dataSourceType="mysql"/>
                 <driver
                         id="mysql5"
+                        dataSourceType="mysql"
                         label="MySQL 5 (Legacy)"
-                        icon="icons/mysql_icon.png"
-                        iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -184,9 +191,8 @@
 
                 <driver
                         id="mysql8"
+                        dataSourceType="mysql"
                         label="MySQL"
-                        icon="icons/mysql_icon.png"
-                        iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -213,9 +219,8 @@
                 </driver>
                 <driver
                     id="mysql_ndb"
+                    dataSourceType="mysql"
                     label="NDB Cluster"
-                    icon="icons/mysql_icon.png"
-                    iconBig="icons/mysql_icon_big.png"
                     class="com.mysql.jdbc.Driver"
                     sampleURL="jdbc:mysql:loadbalance://{host}[:{port}]/[{database}]"
                     useURL="false"
@@ -237,9 +242,8 @@
 
                 <driver
                     id="mariaDB"
+                    dataSourceType="mariadb"
                     label="MariaDB"
-                    icon="icons/mariadb_icon.png"
-                    iconBig="icons/mariadb_icon_big.png"
                     class="org.mariadb.jdbc.Driver"
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"
@@ -250,7 +254,7 @@
                     description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.5.2]" bundle="!drivers.mariadb"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.5.10]" bundle="!drivers.mariadb"/>
                     <file type="license" path="licenses/external/lgpl-2.1.txt"/>
                     <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
 
@@ -258,34 +262,7 @@
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
                 </driver>
-                <driver
-                        id="starRocks"
-                        label="StarRocks"
-                        icon="icons/starRocks_icon.png"
-                        iconBig="icons/starRocks_icon_big.png"
-                        logoImage="icons/starRocks_logo.png"
-                        class="com.mysql.cj.jdbc.Driver"
-                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                        useURL="false"
-                        defaultPort="9030"
-                        defaultUser="root"
-                        webURL="https://docs.starrocks.io/docs/quick_start/shared-nothing/"
-                        description="Driver for MySQL 8 and StarRocks"
-                        categories="sql">
-
-                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.3.0]" bundle="!drivers.mysql"/>
-                    <file type="license" path="licenses/external/gnu3.txt"/>
-                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
-                    <property name="connectTimeout" value="20000"/>
-                    <parameter name="supports-partitions" value="false"/>
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-triggers" value="false"/>
-                    <parameter name="supports-events" value="false"/>
-                    <parameter name="supports-users" value="false"/>
-                    <parameter name="supports-charsets" value="false"/>
-                    <parameter name="supports-collations" value="false"/>
-                    <parameter name="supportsClients" value="false"/>
-                </driver>
+                <driver id="starRocks" dataSourceType="starrocks"/>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">
                         <property id="@dbeaver-show-all-dbs@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only." defaultValue="false"/>
@@ -297,7 +274,7 @@
             <nativeClients>
                 <client id="mariadb_client" label="MariaDB Binaries">
                     <dist os="win32" targetPath="clients/mariadb/win" remotePath="repo:/drivers/mariadb/client/win" resourcePath="clients/mariadb/win">
-                        <driver id="mariaDB"/>
+                        <driver id="mariaDB" dataSourceType="mariadb"/>
                         <file type="exec" name="mariadb.exe"/>
                         <file type="exec" name="mariadb-dump.exe"/>
                     </dist>
@@ -386,9 +363,9 @@
                           desktop="true" hidden="true"/>
             </propertyGroup>
             <propertyGroup label="SSL Settings">
-                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
-                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
-                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured,file" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured,file" length="MULTILINE"/>
+                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password,file" length="MULTILINE"/>
                 <property id="ssl.ca.cert" label="CA Certificate Path" type="string" description="Path to a CA certificate file"
                           desktop="true"/>
                 <property id="ssl.client.cert" label="Client Certificate Path" type="string" description="Path to a client certificate file"
@@ -404,10 +381,6 @@
             </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
         </handler>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.sqlCommand">
-        <command id="mysql.source" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">

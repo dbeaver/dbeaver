@@ -166,6 +166,19 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     @Nullable
+    public <T> T getExtraNode(@NotNull Class<T> nodeType) {
+        for (DBNNode node : extraNodes) {
+            if (nodeType.isAssignableFrom(node.getClass())) {
+                return nodeType.cast(node);
+            } else if (node instanceof DBNNodeExtension nodeExtension && nodeExtension.matchesType(nodeType)) {
+                return nodeType.cast(nodeExtension.resolveRealNode());
+            }
+        }
+        log.error("Cannot determine root model extender for type '" + nodeType + "'");
+        return null;
+    }
+
+    @Nullable
     @Override
     public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         if (this.getParentNode() != null) {
@@ -176,13 +189,6 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
             }
             return this;
         }
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return "";
     }
 
     @Nullable

@@ -34,7 +34,7 @@ public enum AltibaseDataTypeDomain {
     SMALLINT(JDBCType.SMALLINT),
     BIGINT(JDBCType.BIGINT),
     REAL(JDBCType.REAL),
-    NUMBER("NUMBER", Types.NUMERIC),
+    NUMBER(AltibaseConstants.TYPE_NAME_NUMBER, Types.NUMERIC),
     NUMERIC(JDBCType.NUMERIC),
     DOUBLE(JDBCType.DOUBLE),
     FLOAT(JDBCType.FLOAT),
@@ -44,15 +44,16 @@ public enum AltibaseDataTypeDomain {
 
     // binary
     BIT(JDBCType.BIT), // STRING, CHAR -> {0}
-    VARBIT("VARBIT", Types.BIT),
-    BYTE("BYTE", Types.BINARY),
-    VARBYTE("VARBYTE", Types.BINARY),
-    NIBBLE("NIBBLE", Types.VARCHAR),
+    VARBIT(AltibaseConstants.TYPE_NAME_VARBIT, Types.BIT),
+    BYTE(AltibaseConstants.TYPE_NAME_BYTE, Types.BINARY),
+    VARBYTE(AltibaseConstants.TYPE_NAME_VARBYTE, Types.BINARY),
+    NIBBLE(AltibaseConstants.TYPE_NAME_NIBBLE, Types.BINARY),
     BINARY(JDBCType.BINARY),
 
     CLOB(JDBCType.CLOB),
     BLOB(JDBCType.BLOB),
-    GEOMETRY(AltibaseConstants.TYPE_NAME_GEOMETRY, Types.BINARY); 
+    GEOMETRY(AltibaseConstants.TYPE_NAME_GEOMETRY, Types.BINARY),
+    JSON(AltibaseConstants.TYPE_NAME_JSON, Types.OTHER);
 
     private final String name;
     private final int jdbcTypeID;

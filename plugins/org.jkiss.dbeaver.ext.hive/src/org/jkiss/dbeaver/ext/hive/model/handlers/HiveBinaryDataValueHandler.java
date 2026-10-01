@@ -49,6 +49,7 @@ public class HiveBinaryDataValueHandler extends JDBCContentValueHandler implemen
         }
     }
 
+    @NotNull
     @Override
     public String makeQueryBind(@NotNull DBSAttributeBase attribute, @NotNull Object value) throws DBCException {
         return "unhex(?)";

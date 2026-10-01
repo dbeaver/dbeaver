@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,17 @@ public interface DBEObjectRenamer<OBJECT_TYPE extends DBSObject> extends DBEObje
      *
      * @param commandContext command context. Implementation should add new command to it.
      * @param object object
-     * @param options
      * @param newName new name. Not null only if UI somehow determine possible new name
      * @throws DBException on any error
      */
-    void renameObject(@NotNull DBECommandContext commandContext, @NotNull OBJECT_TYPE object, @NotNull Map<String, Object> options, @NotNull String newName)
-        throws DBException;
+    void renameObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull OBJECT_TYPE object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException;
 
-    default boolean canRenameObject(OBJECT_TYPE object) {
+    default boolean canRenameObject(@NotNull OBJECT_TYPE object) {
         return true;
     }
 

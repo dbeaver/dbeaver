@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
@@ -192,6 +193,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return false;
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "Redshift";
@@ -284,8 +286,12 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return false;
     }
 
+    @Nullable
     @Override
-    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+    public String readTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase table
+    ) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load Redshift table DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 RedshiftQueries.DDL_EXTRACT_VIEW + "\n" +
@@ -313,8 +319,14 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         }
     }
 
+    @NotNull
     @Override
-    public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException {
+    public PostgreTableBase createNewRelation(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreSchema schema,
+        @NotNull PostgreClass.RelKind kind,
+        @Nullable Object copyFrom
+    ) throws DBException {
         if (kind == PostgreClass.RelKind.r) {
             return new RedshiftTable(schema);
         } else if (kind == PostgreClass.RelKind.v) {
@@ -324,7 +336,12 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
 
-    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+    @Nullable
+    public PostgreTableBase createRelationOfClass(
+        @NotNull PostgreSchema schema,
+        @NotNull PostgreClass.RelKind kind,
+        @NotNull JDBCResultSet dbResult
+    ) {
         if (kind == PostgreClass.RelKind.r) {
             return new RedshiftTable(schema, dbResult);
         } else if (kind == PostgreClass.RelKind.v) {
@@ -338,11 +355,13 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return isRedshiftVersionAtLeast(1, 0, 6118);
     }
 
+    @NotNull
     @Override
     public String getProceduresSystemTable() {
         return supportsStoredProcedures() ? "pg_proc_info" : super.getProceduresSystemTable();
     }
 
+    @NotNull
     @Override
     public String getProceduresOidColumn() {
         return supportsStoredProcedures() ? "prooid" : super.getProceduresOidColumn();
@@ -364,7 +383,13 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
     @Override
-    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+    public boolean supportsStandardSearchPath() {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
         return new RedshiftSchemaCache();
     }
 
@@ -386,6 +411,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
         private final Map<String, String> esSchemaMap = new HashMap<>();
+        private final String minimalPrivilegeRequired = SQLUtils.quoteString(dataSource, PostgrePrivilegeType.USAGE.getName());
 
         @NotNull
         @Override
@@ -407,6 +433,25 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
             // 2. Rad standard schemas
             return super.prepareLookupStatement(session, database, object, objectName);
+        }
+
+        @Override
+        protected boolean addExtraCondition(@NotNull JDBCSession session, @NotNull StringBuilder query) {
+            return session.getExecutionContext() instanceof PostgreExecutionContext postgreExecutionContext
+                && addUserHasUsagePrivilege(postgreExecutionContext.getActiveUser(), query);
+        }
+
+        private boolean addUserHasUsagePrivilege(@Nullable String currentUserName, @NotNull StringBuilder query) {
+            query.append("WHERE has_schema_privilege(");
+            if (CommonUtils.isNotEmpty(currentUserName)) {
+                query.append(SQLUtils.quoteString(dataSource, currentUserName))
+                    .append(", ");
+            }
+            query
+                .append("nspname, ")
+                .append(minimalPrivilegeRequired)
+                .append(")\n");
+            return true;
         }
 
         @Override
@@ -433,14 +478,14 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
     
     @Override
-    public void configureDialect(PostgreDialect dialect) {
+    public void configureDialect(@NotNull PostgreDialect dialect) {
         dialect.addExtraKeywords(REDSHIFT_EXTRA_KEYWORDS);
         dialect.addKeywords(Arrays.asList(REDSHIFT_OTHER_TYPES_FUNCTION), DBPKeywordType.OTHER);
         dialect.addExtraFunctions(REDSHIFT_FUNCTIONS_CONDITIONAL);
     }
 
     @Override
-    public void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props) {
+    public void initDefaultSSLConfig(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Map<String, String> props) {
         // Do not populate default PG properties like "ssl"
     }
 
@@ -450,7 +495,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
     @Override
-    public int getParameterBindType(DBSTypedObject type, Object value) {
+    public int getParameterBindType(@NotNull DBSTypedObject type, @NotNull Object value) {
         if (value instanceof String) {
             return Types.VARCHAR;
         }

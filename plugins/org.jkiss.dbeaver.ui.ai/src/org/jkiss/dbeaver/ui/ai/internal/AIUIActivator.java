@@ -49,7 +49,7 @@ public class AIUIActivator extends AbstractUIPlugin {
         super.stop(context);
     }
 
-    public static AIUIActivator getDefault() {
+    public static AIUIActivator getInstance() {
         return plugin;
     }
 

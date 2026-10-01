@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,28 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
-    protected PostgreRole createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    public boolean canEditObject(@NotNull PostgreRole object) {
+        return !object.isPublicRole() && super.canEditObject(object);
+    }
+
+    @Override
+    public boolean canDeleteObject(@NotNull PostgreRole object) {
+        return !object.isPublicRole() && super.canDeleteObject(object);
+    }
+
+    @Override
+    public boolean canRenameObject(@NotNull PostgreRole object) {
+        return !object.isPublicRole();
+    }
+
+    @Override
+    protected PostgreRole createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return new PostgreRole((PostgreDatabase) container, "NewRole", "", true);
     }
 
@@ -152,6 +173,10 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
 
         if (role.getValidUntil() != null) {
             options.append(" VALID UNTIL ").append(SQLUtils.quoteString(role, TIMESTAMP_FORMATTER.format(role.getValidUntil())));
+        }
+        
+        if (create || command.hasProperty("connLimit")) { 
+            options.append(" CONNECTION LIMIT ").append(role.getConnLimit()); 
         }
 
         if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {

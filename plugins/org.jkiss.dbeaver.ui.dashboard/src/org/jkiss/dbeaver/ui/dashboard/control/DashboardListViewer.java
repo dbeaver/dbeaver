@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistryListener;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,16 +49,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardContainer {
+public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardContainer,
+    DashboardRegistryListener {
 
     @NotNull
     private final IWorkbenchSite site;
     @Nullable
     private final IWorkbenchPart part;
     @NotNull
-    private final DashboardConfigurationList configuration;
+    private DashboardConfigurationList configuration;
     @NotNull
-    private final DashboardConfiguration viewConfiguration;
+    private DashboardConfiguration viewConfiguration;
 
     private volatile boolean useSeparateConnection;
     @Nullable
@@ -68,15 +71,17 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
 
     private final Consumer<Object> dashboardsConfigChangedListener = a -> UIUtils.asyncExec(() -> {
         dashContainer.setRedraw(false);
-
         dashContainer.clear();
-        dashContainer.createDefaultDashboards();
-
+        refreshConfiguration();
+        updateDashboards();
         dashContainer.layout(true, true);
         dashContainer.setRedraw(true);
     });
+
     private SashForm dashDivider;
+
     private DashboardCatalogPanel catalogPanel;
+
     private boolean isCatalogPanelVisible;
 
     public DashboardListViewer(
@@ -89,13 +94,17 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         this.part = part;
         this.configuration = configuration;
         this.viewConfiguration = viewConfiguration;
-
+        if (!DBWorkbench.isDistributed()) {
+            DashboardRegistry.getInstance().addListener(this);
+        }
         initConnection();
     }
 
     public void dispose() {
         WorkspaceConfigEventManager.removeConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
-
+        if (!DBWorkbench.isDistributed()) {
+            DashboardRegistry.getInstance().removeListener(this);
+        }
         DBCExecutionContext context = isolatedContext;
         if (context != null) {
             if (context.isConnected()) {
@@ -144,8 +153,6 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         dashDivider.setWeights(650, 350);
         dashDivider.setMaximizedControl(dashContainer);
 
-        updateStatus();
-
     }
 
     @Override
@@ -160,21 +167,11 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     public void createDashboardsFromConfiguration() {
-        if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
-            dashContainer.createDefaultDashboards();
-            WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener); 
-        } else {
-            dashContainer.createDashboardsFromConfiguration();
-        }
+        updateDashboards();
+        WorkspaceConfigEventManager.addConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
         if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
             dashDivider.setMaximizedControl(null);
         }
-    }
-
-    private void updateStatus() {
-//        String status = dataSourceContainer.isConnected() ? "connected (" + dataSourceContainer.getConnectTime() + ")" : "disconnected";
-//        statusLabel.setImage(DBeaverIcons.getImage(dataSourceContainer.getDriver().getIcon()));
-//        statusLabel.setText(this.dataSourceContainer.getName() + ": " + status);
     }
 
     @Nullable
@@ -254,6 +251,45 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     @Override
+    public void reveal(Object element) {
+        DashboardItemContainer item = doFindItem(element);
+        if (item != null) {
+            dashContainer.showItem(item);
+        }
+    }
+
+    @Override
+    public Control getControl() {
+        return dashContainer;
+    }
+
+    public DashboardGroupContainer getDefaultGroup() {
+        return dashContainer;
+    }
+
+    /**
+     * Gets visibility flag
+     */
+    public boolean isVisible() {
+        return isCatalogPanelVisible;
+    }
+
+    @Override
+    public void handleItemCreate(@NotNull DashboardItemConfiguration item) {
+        // Added by user, do nothing
+    }
+
+    @Override
+    public void handleItemDelete(@NotNull DashboardItemConfiguration item) {
+        dashContainer.removeItem(item);
+    }
+
+    @Override
+    public void handleItemUpdate(@NotNull DashboardItemConfiguration oldItem, @NotNull DashboardItemConfiguration newItem) {
+        dashContainer.updateItem(oldItem, newItem);
+    }
+
+    @Override
     protected DashboardViewItem doFindInputItem(Object element) {
         return null;
     }
@@ -280,14 +316,6 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     }
 
     @Override
-    public void reveal(Object element) {
-        DashboardItemContainer item = doFindItem(element);
-        if (item != null) {
-            dashContainer.showItem(item);
-        }
-    }
-
-    @Override
     protected void setSelectionToWidget(List l, boolean reveal) {
         if (l.isEmpty()) {
             dashContainer.setSelection(null);
@@ -299,13 +327,18 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         }
     }
 
-    @Override
-    public Control getControl() {
-        return dashContainer;
+    private void updateDashboards() {
+        if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
+            dashContainer.createDefaultDashboards();
+        } else {
+            dashContainer.createDashboardsFromConfiguration();
+        }
     }
 
-    public DashboardGroupContainer getDefaultGroup() {
-        return dashContainer;
+    private void refreshConfiguration() {
+        configuration = new DashboardConfigurationList(dashContainer.getDataSourceContainer());
+        viewConfiguration = configuration.getDashboard(dashContainer.getView().getViewConfiguration().getDashboardId());
+        catalogPanel.refreshInput();
     }
 
     private void initConnection() {
@@ -353,13 +386,6 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
                 return Status.OK_STATUS;
             }
         }.schedule();
-    }
-
-    /**
-     * Gets visibility flag 
-     */
-    public boolean isVisible() {
-        return isCatalogPanelVisible;
     }
 
 }

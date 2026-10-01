@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -455,6 +455,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
+    @NotNull
     @Override
     public Map<Object, Object> getUserParams()
     {
@@ -760,7 +761,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         private final DBEObjectManager objectManager;
         private List<CommandInfo> commands = new ArrayList<>();
 
-        private CommandQueue(DBEObjectManager objectManager, CommandQueue parent, DBPObject object) {
+        private CommandQueue(@NotNull DBEObjectManager objectManager, @Nullable CommandQueue parent, @NotNull DBPObject object) {
             this.parent = parent;
             this.object = object;
             this.objectManager = objectManager;
@@ -781,6 +782,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             commands.add(info);
         }
 
+        @NotNull
         @Override
         public DBPObject getObject()
         {
@@ -793,6 +795,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             return parent;
         }
 
+        @Nullable
         @Override
         public Collection<DBECommandQueue> getSubQueues()
         {
@@ -808,24 +811,22 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         @NotNull
         @Override
         public Iterator<DBECommand<DBPObject>> iterator() {
-            return new Iterator<DBECommand<DBPObject>>() {
+            return new Iterator<>() {
                 private int index = -1;
+
                 @Override
-                public boolean hasNext()
-                {
+                public boolean hasNext() {
                     return index < commands.size() - 1;
                 }
 
                 @Override
-                public DBECommand<DBPObject> next()
-                {
+                public DBECommand<DBPObject> next() {
                     index++;
                     return (DBECommand<DBPObject>) commands.get(index).command;
                 }
 
                 @Override
-                public void remove()
-                {
+                public void remove() {
                     commands.remove(index);
                 }
             };

@@ -31,8 +31,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.statistics.StatisticCollectionMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.dbeaver.ui.statistics.internal.StatisticCollectionMessages;
 
 /**
  * PrefPageUsageStatistics

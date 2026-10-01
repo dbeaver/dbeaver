@@ -129,8 +129,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             ac.setHeadlessMode(true);
         }
 
-        DBRFeatureRegistry.getInstance().endTracking();
-
         super.dispose();
 
         if (workspace != null) {

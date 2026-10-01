@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.config.migration.wizards.squirrel;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigImages;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
@@ -31,7 +32,8 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,19 +53,19 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
     }
 
     @Override
-    protected void loadConnections(ImportData importData) throws DBException
+    protected void loadConnections(@NotNull ImportData importData) throws DBException
     {
-        File homeFolder = RuntimeUtils.getUserHomeDir();
-        File sqlConfigHome = new File(homeFolder, SQL_HOME_FOLDER);
-        if (!sqlConfigHome.exists()) {
+        Path homeFolder = RuntimeUtils.getUserHomePath();
+        Path sqlConfigHome = homeFolder.resolve(SQL_HOME_FOLDER);
+        if (!Files.exists(sqlConfigHome)) {
             throw new DBException(ImportConfigMessages.config_import_wizard_page_squirrel_label_installation_not_found);
         }
-        File driversFile = new File(sqlConfigHome, SQL_DRIVERS_FILE);
-        if (!driversFile.exists()) {
+        Path driversFile = sqlConfigHome.resolve(SQL_DRIVERS_FILE);
+        if (!Files.exists(driversFile)) {
             throw new DBException("SQL Squirrel drivers configuration file not found. Possibly corrupted installation.");
         }
-        File aliasesFile = new File(sqlConfigHome, SQL_ALIASES_FILE);
-        if (!aliasesFile.exists()) {
+        Path aliasesFile = sqlConfigHome.resolve(SQL_ALIASES_FILE);
+        if (!Files.exists(aliasesFile)) {
             throw new DBException("SQL Squirrel configuration file not found. Possibly version older than 2.3 is installed.");
         }
 
@@ -133,11 +135,11 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
 
     }
 
-    private static Pattern PATTERN_OPTIONAL = Pattern.compile("\\[|\\]");
-    private static Pattern PATTERN_HOST = Pattern.compile("<server>|<server_name>|<hostname>|<host_name>|<host>", Pattern.CASE_INSENSITIVE);
-    private static Pattern PATTERN_PORT = Pattern.compile("<port>|<port_number>|<(:?[0-9]+)>|(:[0-9]+)", Pattern.CASE_INSENSITIVE);
-    private static Pattern PATTERN_HOST_PORT = Pattern.compile("<server:port>", Pattern.CASE_INSENSITIVE);
-    private static Pattern PATTERN_DATABASE = Pattern.compile("dbname|<dbname>|<db-name>|<db_name>|<databaseName>|<database-name>|<database_name>|<database>|<full_db_path>|<pathname>|<alias>|<schema>|<default_schema>|<default-schema>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_OPTIONAL = Pattern.compile("\\[|\\]");
+    private static final Pattern PATTERN_HOST = Pattern.compile("<server>|<server_name>|<hostname>|<host_name>|<host>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_PORT = Pattern.compile("<port>|<port_number>|<(:?[0-9]+)>|(:[0-9]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_HOST_PORT = Pattern.compile("<server:port>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_DATABASE = Pattern.compile("dbname|<dbname>|<db-name>|<db_name>|<databaseName>|<database-name>|<database_name>|<database>|<full_db_path>|<pathname>|<alias>|<schema>|<default_schema>|<default-schema>", Pattern.CASE_INSENSITIVE);
 
     private void adaptSampleUrl(ImportDriverInfo driverInfo)
     {

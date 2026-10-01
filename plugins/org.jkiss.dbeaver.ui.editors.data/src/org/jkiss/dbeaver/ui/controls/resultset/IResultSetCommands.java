@@ -39,7 +39,9 @@ public interface IResultSetCommands {
     String CMD_ROW_EDIT = "org.jkiss.dbeaver.core.resultset.row.edit";
     String CMD_ROW_EDIT_INLINE = "org.jkiss.dbeaver.core.resultset.row.edit.inline";
     String CMD_ROW_ADD = "org.jkiss.dbeaver.core.resultset.row.add";
+    String CMD_ROW_ADD_BEFORE = "org.jkiss.dbeaver.core.resultset.row.add.before";
     String CMD_ROW_COPY = "org.jkiss.dbeaver.core.resultset.row.copy";
+    String CMD_ROW_COPY_BEFORE = "org.jkiss.dbeaver.core.resultset.row.copy.before";
     String CMD_ROW_COPY_FROM_ABOVE = "org.jkiss.dbeaver.core.resultset.row.copy.from.above";
     String CMD_ROW_COPY_FROM_BELOW = "org.jkiss.dbeaver.core.resultset.row.copy.from.below";
     String CMD_ROW_DELETE = "org.jkiss.dbeaver.core.resultset.row.delete";
@@ -56,6 +58,7 @@ public interface IResultSetCommands {
     String CMD_FILTER_MENU_DISTINCT = "org.jkiss.dbeaver.core.resultset.filterMenu.distinct";
     String CMD_FILTER_EDIT_SETTINGS = "org.jkiss.dbeaver.core.resultset.filterSettings";
     String CMD_FILTER_SAVE_SETTING = "org.jkiss.dbeaver.core.resultset.filterSave";
+    String CMD_FILTER_RESET_SETTING = "org.jkiss.dbeaver.core.resultset.filterReset";
     String CMD_FILTER_CLEAR_SETTING = "org.jkiss.dbeaver.core.resultset.filterClear";
     String CMD_REFERENCES_MENU = "org.jkiss.dbeaver.core.resultset.referencesMenu";
     String CMD_COPY_COLUMN_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyColumnNames";

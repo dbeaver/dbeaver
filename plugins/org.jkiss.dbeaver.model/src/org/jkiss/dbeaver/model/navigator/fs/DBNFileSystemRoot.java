@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -72,7 +73,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     @NotNull
     @Override
     public String getNodeType() {
-        return NodePathType.dbvfs.name() + ".folder";
+        return DBFUtils.DBVFS_NODE_TYPE + ".folder";
     }
 
     @NotNull

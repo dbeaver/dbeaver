@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,7 @@ package org.jkiss.dbeaver.ext.kingbase.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -33,7 +28,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -43,8 +37,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 
 public class KingbaseDatabase extends PostgreDatabase {
-
-    private DBRProgressMonitor monitor;
 
     private String characterType;
 
@@ -60,14 +52,12 @@ public class KingbaseDatabase extends PostgreDatabase {
             PostgreTablespace tablespace, 
             PostgreCharset encoding) throws DBException {
         super(monitor, dataSource, name, owner, templateName, tablespace, encoding);
-        this.monitor = monitor;
     }
 
     protected KingbaseDatabase(DBRProgressMonitor monitor, 
             KingbaseDataSource dataSource, 
             String databaseName) throws DBException {
         super(monitor, dataSource, databaseName);
-        this.monitor = monitor;
         readDatabaseInfo(monitor);
         checkInstanceConnection(monitor);
         
@@ -77,7 +67,6 @@ public class KingbaseDatabase extends PostgreDatabase {
             KingbaseDataSource dataSource, 
             ResultSet dbResult) throws DBException {
         super(monitor, dataSource, dbResult);
-        this.monitor = monitor;
         init(dbResult);
      
     }
@@ -112,10 +101,6 @@ public class KingbaseDatabase extends PostgreDatabase {
 
     public void setDatabaseCompatibleMode(String databaseCompatibleMode) {
         this.databaseCompatibleMode = databaseCompatibleMode;
-    }
-
-    public DBRProgressMonitor getMonitor() {
-        return monitor;
     }
 
     public void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -158,37 +143,12 @@ public class KingbaseDatabase extends PostgreDatabase {
         }
 
         @Override
-        protected PostgreLanguage fetchObject(@NotNull JDBCSession session, 
-                @NotNull PostgreDatabase owner, 
-                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected PostgreLanguage fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull PostgreDatabase owner,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException {
             return new PostgreLanguage(owner, dbResult);
-        }
-    }
-
-    public static class SchemaCache extends JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> {
-        @NotNull
-        @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, 
-                @NotNull PostgreDatabase database, 
-                @Nullable PostgreSchema object, 
-                @Nullable String objectName) throws SQLException {
-            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.*,d.description FROM sys_catalog.sys_namespace n\n"
-                + "LEFT OUTER JOIN sys_catalog.sys_description d ON d.objoid=n.oid AND " 
-                + "d.objsubid=0 AND d.classoid='sys_namespace'::regclass\n");
-            catalogQuery.append(" ORDER BY nspname");
-            JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
-            return dbStat;
-        }
-
-        @Override
-        protected PostgreSchema fetchObject(@NotNull JDBCSession session, 
-                @NotNull PostgreDatabase owner, 
-                @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            String name = JDBCUtils.safeGetString(resultSet, "nspname");
-            if (name == null) {
-                return null;
-            }
-            return owner.createSchemaImpl(owner, name, resultSet);
         }
     }
 

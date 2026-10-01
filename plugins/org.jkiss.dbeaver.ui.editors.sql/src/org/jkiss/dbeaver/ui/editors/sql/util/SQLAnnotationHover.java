@@ -161,7 +161,18 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
                     if (annoPosition != null) {
                         Interval annoInterval = new Interval(annoPosition.getOffset(), annoPosition.getOffset() + annoPosition.getLength());
                         if (annoInterval.properlyContains(hoverInterval)) {
-                            resultInterval = resultInterval == null ? annoInterval : resultInterval.union(annoInterval);
+
+                            // old behavior: combine all the annotation regions covering given position,
+                            //               including adjacent if they are hidden by the common largest,
+                            //               because there is no way to visually distinguish them
+                            // resultInterval = resultInterval == null ? annoInterval : resultInterval.union(annoInterval);
+                            //      outcome: brings all the annotations of the continuous underlined interval into the tooltip
+
+                            // new behavior: report the fact that the exact position is covered by any annotation
+                            resultInterval = hoverInterval;
+                            break;
+                            //      outcome: brings only annotations belonging to the immediate symbol under the cursor into the tooltip
+                            //               even if user cannot see where each of them begins and where ends
                         }
                     }
                 }

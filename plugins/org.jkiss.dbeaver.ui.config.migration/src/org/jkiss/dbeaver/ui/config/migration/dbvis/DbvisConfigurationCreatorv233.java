@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ package org.jkiss.dbeaver.ui.config.migration.dbvis;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
@@ -35,10 +35,12 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCreator {
     private static final Log log = Log.getLog(DbvisConfigurationCreatorv233.class);
@@ -59,13 +61,13 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
     @Override
     public ImportData create(
         @NotNull ImportData importData,
-        @NotNull File configFile
+        @NotNull Path configFile
     ) throws DBException {
         try {
             Map<String, DbvisSshServerConfiguration> sshServerConfigurations = new LinkedHashMap<>();
             DbvisSshServerConfiguration sshConfiguration = null;
-            File sshServersFile = new File(configFile.getParent(), SSH_CONFIG_FILE);
-            if (sshServersFile.exists()) {
+            Path sshServersFile = configFile.getParent().resolve(SSH_CONFIG_FILE);
+            if (Files.exists(sshServersFile)) {
                 Document sshConfigDocument = XMLUtils.parseDocument(sshServersFile);
                 Element sshServersElement = XMLUtils.getChildElement(sshConfigDocument.getDocumentElement(), "SshServers");
                 if (sshServersElement != null) {
@@ -128,15 +130,15 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 .append("_")
                                 .append(driverIdSegments[0])
                                 .append(".xml");
-                            File driverFile = new File(configFile.getParent(), builder.toString());
-                            if (driverFile.exists()) {
+                            Path driverFile = configFile.getParent().resolve(builder.toString());
+                            if (Files.exists(driverFile)) {
                                 Document driverTypeDocument = XMLUtils.parseDocument(driverFile);
                                 Element driverTypeDocumentElement = driverTypeDocument.getDocumentElement();
                                 String name = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Label");
                                 String sampleURL = XMLUtils.getChildElementBody(driverTypeDocumentElement, "URLFormat");
                                 String identifier = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Identifier");
                                 if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL)) {
-                                    DriverDescriptor driverDescriptor = getDriverByName(name);
+                                    DBPDriver driverDescriptor = getDriverByName(name);
                                     if (driverDescriptor != null) {
                                         driver = new ImportDriverInfo(identifier, driverDescriptor.getName(), sampleURL,
                                             driverDescriptor.getDriverClassName());
@@ -147,7 +149,7 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 }
                             } else {
                                 if (!CommonUtils.isEmpty(driverName)) {
-                                    DriverDescriptor driverDescriptor = getDriverByName(driverName);
+                                    DBPDriver driverDescriptor = getDriverByName(driverName);
                                     if (driverDescriptor != null) {
                                         driver = new ImportDriverInfo(driverDescriptor.getId(),
                                             driverDescriptor.getName(),
@@ -158,14 +160,14 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                         log.error("Driver descriptor not found for: " + driverName);
                                     }
                                 } else {
-                                    log.error("Driver descriptor not found by path: " + driverFile.getAbsolutePath());
+                                    log.error("Driver descriptor not found by path: " + driverFile.toAbsolutePath());
                                 }
                             }
                             Element sshServers = XMLUtils.getChildElement(dbElement, "SshServers");
                             if (sshServers != null) {
                                 for (Element sshServer : XMLUtils.getChildElementList(sshServers, "SshServer")) {
                                     String enabled = XMLUtils.getChildElementBody(sshServer, "Enabled");
-                                    if (enabled.equals("true")) {
+                                    if (Objects.equals(enabled, "true")) {
                                         sshConfiguration = sshServerConfigurations.get(sshServer.getAttribute("id"));
                                         break;
                                     }

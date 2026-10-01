@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.runtime.OSDescriptorMatch;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
@@ -136,9 +137,10 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         this.type = FileType.valueOf(typeStr);
 
         String osName = config.getAttribute(RegistryConstants.ATTR_OS);
-        this.system = osName == null ? null : new OSDescriptor(
+        this.system = osName == null ? null : new OSDescriptorMatch(
             osName,
-            config.getAttribute(RegistryConstants.ATTR_ARCH));
+            config.getAttribute(RegistryConstants.ATTR_ARCH),
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EXCLUDE), false));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
         this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED), false);
         this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);
@@ -233,7 +235,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         return system == null || system.matches(DBWorkbench.getPlatform().getLocalSystem());
     }
 
-    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
+    public void downloadLibraryFile(
+        @NotNull DBRProgressMonitor monitor,
+        boolean forceUpdate,
+        @NotNull String taskName
+    ) throws IOException, InterruptedException {
         final Path localFile = getLocalFile();
         if (localFile == null) {
             throw new IOException("No target file for '" + getPath() + "'");

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,16 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreTestUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
     private PostgreExecutionContext postgreExecutionContext;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         DBPDataSourceContainer dataSourceContainer = configureTestContainer("postgresql");
 
@@ -111,7 +112,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
                 ");" + lineBreak;
 
         String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
-        Assert.assertEquals(expectedDDL, tableDDL);
+        Assertions.assertEquals(expectedDDL, tableDDL);
     }
 
     @Test
@@ -134,7 +135,75 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
                 ");" + lineBreak;
 
         String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
-        Assert.assertEquals(expectedDDL, tableDDL);
+        Assertions.assertEquals(expectedDDL, tableDDL);
+    }
+
+    @Test
+    public void generateTableDDLWhenColumnCommentHasApostropheReturnCommaBeforeEveryComment() throws Exception {
+        PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema) {
+            @Override
+            public boolean isTablespaceSpecified() {
+                return false;
+            }
+        };
+        tableRegular.setName("test_table");
+        tableRegular.setPartition(false);
+        PostgreTestUtils.addColumn(tableRegular, "column1", "int4", 1).setDescription("PM's approver of record");
+        PostgreTestUtils.addColumn(tableRegular, "column2", "varchar", 2).setDescription("second comment");
+        PostgreTestUtils.addColumn(tableRegular, "column3", "int4", 3).setDescription("third comment");
+
+        String expectedDDL =
+                "CREATE TABLE test_schema.test_table (" + lineBreak +
+                "\tcolumn1 int4 NULL, -- PM's approver of record" + lineBreak +
+                "\tcolumn2 varchar NULL, -- second comment" + lineBreak +
+                "\tcolumn3 int4 NULL -- third comment" + lineBreak +
+                ");" + lineBreak +
+                lineBreak +
+                "-- Column comments" + lineBreak +
+                lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.column1 IS 'PM''s approver of record';" + lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.column2 IS 'second comment';" + lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.column3 IS 'third comment';" + lineBreak;
+
+        String tableDDL = tableRegular.getObjectDefinitionText(
+            monitor, Collections.singletonMap(DBPScriptObject.OPTION_INCLUDE_COMMENTS, true));
+        Assertions.assertEquals(expectedDDL, tableDDL);
+    }
+
+    @Test
+    public void generateTableDDLWhenColumnCommentContainsDashesReturnCommaBeforeFirstComment() throws Exception {
+        PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema) {
+            @Override
+            public boolean isTablespaceSpecified() {
+                return false;
+            }
+        };
+        tableRegular.setName("test_table");
+        tableRegular.setPartition(false);
+        PostgreTestUtils.addColumn(tableRegular, "first_col", "text", 1)
+            .setDescription("Text with apostrophe: owner's value");
+        PostgreTestUtils.addColumn(tableRegular, "second_col", "text", 2)
+            .setDescription("Text containing -- inside the comment and \"double quotes\"");
+        PostgreTestUtils.addColumn(tableRegular, "third_col", "text", 3).setDescription("Final column comment");
+
+        String expectedDDL =
+                "CREATE TABLE test_schema.test_table (" + lineBreak +
+                "\tfirst_col text NULL, -- Text with apostrophe: owner's value" + lineBreak +
+                "\tsecond_col text NULL, -- Text containing -- inside the comment and \"double quotes\"" + lineBreak +
+                "\tthird_col text NULL -- Final column comment" + lineBreak +
+                ");" + lineBreak +
+                lineBreak +
+                "-- Column comments" + lineBreak +
+                lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.first_col IS 'Text with apostrophe: owner''s value';"
+                    + lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.second_col IS "
+                    + "'Text containing -- inside the comment and \"double quotes\"';" + lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.third_col IS 'Final column comment';" + lineBreak;
+
+        String tableDDL = tableRegular.getObjectDefinitionText(
+            monitor, Collections.singletonMap(DBPScriptObject.OPTION_INCLUDE_COMMENTS, true));
+        Assertions.assertEquals(expectedDDL, tableDDL);
     }
 
     // Generation table/view comment statement tests
@@ -152,7 +221,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON TABLE test_schema.test_table_regular IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(expectedDDL, script);
+        Assertions.assertEquals(expectedDDL, script);
     }
 
     @Test
@@ -172,7 +241,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON FOREIGN TABLE test_schema.\"testForeignTable\" IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(expectedDDL, script);
+        Assertions.assertEquals(expectedDDL, script);
     }
 
     @Test
@@ -188,7 +257,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON VIEW test_schema.\"testView\" IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(expectedDDL, script);
+        Assertions.assertEquals(expectedDDL, script);
     }
 
     @Test
@@ -208,14 +277,14 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON MATERIALIZED VIEW test_schema.\"testMView\" IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(expectedDDL, script);
+        Assertions.assertEquals(expectedDDL, script);
     }
 
     // Other tests
 
     @Test
     public void generateChangeOwnerQuery_whenProvidedView_thenShouldGenerateQuerySuccessfully() {
-        Assert.assertEquals("ALTER TABLE " + testSchema.getName() + ".\"" + testView.getName() + "\" OWNER TO someOwner",
+        Assertions.assertEquals("ALTER TABLE " + testSchema.getName() + ".\"" + testView.getName() + "\" OWNER TO someOwner",
             testView.generateChangeOwnerQuery("someOwner", new HashMap<>()));
     }
 
@@ -229,7 +298,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
                                 "SCHEMA \"public\"" + lineBreak + "\t" +
                                 "VERSION null";
         String actualDDL = postgreExtension.getObjectDefinitionText(monitor, Collections.emptyMap());
-        Assert.assertEquals(expectedDDL, actualDDL);
+        Assertions.assertEquals(expectedDDL, actualDDL);
     }
 
 }

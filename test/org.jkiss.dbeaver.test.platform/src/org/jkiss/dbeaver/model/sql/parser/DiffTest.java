@@ -20,11 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.Diff;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.Pair;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.stream.IntStream;
 
 public class DiffTest  extends DBeaverUnitTest {
@@ -179,10 +182,10 @@ public class DiffTest  extends DBeaverUnitTest {
 
                 List<Diff.Range> diff = Diff.prepareDiff(a, b, Character::equals);
 
-                Assert.assertArrayEquals(b, this.applyForward(a, b, diff));
-                Assert.assertArrayEquals(a, this.applyBackward(a, b, diff));
-                Assert.assertArrayEquals(b, this.applyMatchAndInsertForB(a, b, diff));
-                Assert.assertArrayEquals(a, this.applyMatchAndRemoveForA(a, b, diff));
+                Assertions.assertArrayEquals(b, this.applyForward(a, b, diff));
+                Assertions.assertArrayEquals(a, this.applyBackward(a, b, diff));
+                Assertions.assertArrayEquals(b, this.applyMatchAndInsertForB(a, b, diff));
+                Assertions.assertArrayEquals(a, this.applyMatchAndRemoveForA(a, b, diff));
             }
         }
     }

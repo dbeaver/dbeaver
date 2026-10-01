@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPage;
 
+import java.util.Set;
+
 public class SMUserFilter {
     @Nullable
     private String userIdMask;
     @Nullable
     private Boolean enabledState;
+    @Nullable
+    private Set<String> authRoles;
+    private boolean includeLinkedProviders;
 
     @NotNull
     private DBPPage page;
@@ -51,6 +56,23 @@ public class SMUserFilter {
         return enabledState;
     }
 
+    @Nullable
+    public Set<String> getAuthRoles() {
+        return authRoles;
+    }
+
+    public void setAuthRoles(@Nullable Set<String> authRoles) {
+        this.authRoles = authRoles;
+    }
+
+    public boolean isIncludeLinkedProviders() {
+        return includeLinkedProviders;
+    }
+
+    public void setIncludeLinkedProviders(boolean includeLinkedProviders) {
+        this.includeLinkedProviders = includeLinkedProviders;
+    }
+
     @NotNull
     public DBPPage getPage() {
         return page;
@@ -73,6 +95,8 @@ public class SMUserFilter {
         return "SMUserFilter{" +
             "enabledState=" + enabledState +
             ", userIdMask='" + userIdMask + '\'' +
+            ", authRoles=" + authRoles +
+            ", includeLinkedProviders=" + includeLinkedProviders +
             ", page=" + page +
             '}';
     }

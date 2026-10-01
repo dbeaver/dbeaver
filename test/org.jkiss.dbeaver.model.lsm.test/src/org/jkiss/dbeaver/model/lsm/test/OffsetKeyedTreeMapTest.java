@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.function.*;
@@ -494,7 +494,7 @@ public class OffsetKeyedTreeMapTest extends DBeaverUnitTest {
     }
 
     private static <T> Supplier<Stream<T>> makeProportionalSeries(Supplier<Stream<Stream<T>>> sequences, Supplier<DoubleStream> proportionPercents) {
-        Assert.assertTrue(sequences.get().allMatch(s -> s.spliterator().hasCharacteristics(Spliterator.SIZED)));
+        Assertions.assertTrue(sequences.get().allMatch(s -> s.spliterator().hasCharacteristics(Spliterator.SIZED)));
         return () -> {
             long[] streamSize = sequences.get().mapToLong(Stream::count).toArray();
             return makeExactSeries(
@@ -511,7 +511,7 @@ public class OffsetKeyedTreeMapTest extends DBeaverUnitTest {
     }
 
     private static <T> void assertEntryStreamsEqual(Stream<Entry<T>> a, Stream<Entry<T>> b) {
-        Assert.assertTrue(
+        Assertions.assertTrue(
             zip(
                 a,
                 b,
@@ -691,13 +691,13 @@ public class OffsetKeyedTreeMapTest extends DBeaverUnitTest {
         public void appendAssertionIteratorNotNullAt(int pos) {
             this.append(this.makeOperation("assert interator not null at " + pos, false, s -> {
                 var it = s.treeBacked.nodesIteratorAt(pos);
-                Assert.assertNotNull(it.getCurrValue());
+                Assertions.assertNotNull(it.getCurrValue());
             }));
         }
 
         public void appendCheckFind(int pos) {
             this.append(this.makeOperation("check find at " + pos, false, s -> {
-                Assert.assertEquals(s.arrayBacked.find(pos), s.treeBacked.find(pos));
+                Assertions.assertEquals(s.arrayBacked.find(pos), s.treeBacked.find(pos));
             }));
         }
 
@@ -708,7 +708,7 @@ public class OffsetKeyedTreeMapTest extends DBeaverUnitTest {
         public Supplier<Stream<TestOperation>> makeCheckFindRandomOffset(OffsetGeneratorParameters offsetParams) {
             return this.makeOpsAtRandomOffsets(
                 offsetParams, "check find offset at random entry #" + offsetParams.indexFrom + "-#" + offsetParams.indexTo, true,  (s, entry, offset, index) -> {
-                    Assert.assertEquals(entry == null ? null : entry.data, s.treeBacked.find(offset));
+                    Assertions.assertEquals(entry == null ? null : entry.data, s.treeBacked.find(offset));
                 }
             );
         }
@@ -745,10 +745,10 @@ public class OffsetKeyedTreeMapTest extends DBeaverUnitTest {
             OffsetKeyedTreeMap.NodesIterator<Item> it2 = s.arrayBacked.nodesIteratorAt(offset);
             Item presentedValueAtOffset = it1.getCurrValue();
             Item expectedValueAtOffset = it2.getCurrValue();
-            Assert.assertEquals(entry == null ? null : entry.data, presentedValueAtOffset);
-            Assert.assertEquals(expectedValueAtOffset, presentedValueAtOffset);
+            Assertions.assertEquals(entry == null ? null : entry.data, presentedValueAtOffset);
+            Assertions.assertEquals(expectedValueAtOffset, presentedValueAtOffset);
             if (it1.getCurrValue() != null) {
-                Assert.assertEquals(offset, it1.getCurrOffset());
+                Assertions.assertEquals(offset, it1.getCurrOffset());
             }
             LinkedList<Entry<Item>> presentedEntries = new LinkedList<>();
             LinkedList<Entry<Item>> expectedEntries = new LinkedList<>();
@@ -756,7 +756,7 @@ public class OffsetKeyedTreeMapTest extends DBeaverUnitTest {
             do {
                 a = nextOp.test(it1);
                 b = nextOp.test(it2);
-                Assert.assertEquals(a, b);
+                Assertions.assertEquals(a, b);
                 presentedEntries.addLast(new Entry<>(it1.getCurrOffset(), it1.getCurrValue()));
                 expectedEntries.addLast(new Entry<>(it2.getCurrOffset(), it2.getCurrValue()));
             } while (a && b);

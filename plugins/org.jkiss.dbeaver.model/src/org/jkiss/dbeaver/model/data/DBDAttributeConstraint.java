@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,9 +78,10 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         this.attributeName = source.attributeName;
         this.attributeLabel = source.attributeLabel;
         this.originalVisualPosition = source.originalVisualPosition;
+        this.plainNameReference = source.plainNameReference;
     }
 
-    public static boolean isVisibleByDefault(DBDAttributeBinding binding) {
+    public static boolean isVisibleByDefault(@NotNull DBDAttributeBinding binding) {
         return !binding.isPseudoAttribute();
     }
 
@@ -146,7 +147,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         setVisualPosition(originalVisualPosition);
     }
 
-    public boolean equalFilters(DBDAttributeConstraintBase obj, boolean compareOrders) {
+    public boolean equalFilters(@NotNull DBDAttributeConstraintBase obj, boolean compareOrders) {
         return
             obj instanceof DBDAttributeConstraint &&
                 CommonUtils.equalObjects(this.attribute, ((DBDAttributeConstraint) obj).attribute) &&
@@ -160,14 +161,10 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof DBDAttributeConstraint) {
-            DBDAttributeConstraint source = (DBDAttributeConstraint) obj;
-            return
-                CommonUtils.equalObjects(this.attribute, source.attribute) &&
-                    super.equals(obj);
-        } else {
-            return false;
-        }
+        return
+            obj instanceof DBDAttributeConstraint source &&
+            CommonUtils.equalObjects(this.attribute, source.attribute) &&
+            super.equals(obj);
     }
 
     @Override
@@ -178,12 +175,12 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         return attributeName + " " + clause;
     }
 
-    public boolean matches(DBSAttributeBase attr, boolean matchByName) {
+    public boolean matches(@NotNull DBSAttributeBase attr, boolean matchByName) {
         return attribute == attr ||
             (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr, matchByName));
     }
 
-    public boolean equalVisibility(DBDAttributeConstraint constraint) {
+    public boolean equalVisibility(@NotNull DBDAttributeConstraint constraint) {
         return isVisible() == constraint.isVisible() && getVisualPosition() == constraint.getVisualPosition() &&
             Arrays.equals(getOptions(), constraint.getOptions());
     }

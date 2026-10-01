@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,14 +43,24 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     @Override
     public DBSObjectCache<? extends DBSObject, OracleProcedureStandalone> getObjectsCache(OracleProcedureStandalone object)
     {
-        return object.getSchema().proceduresCache;
+        return object.getSchema().getProceduresCache();
     }
 
     @Override
-    protected OracleProcedureStandalone createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected OracleProcedureStandalone createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
+        return createProcedure((OracleSchema) container);
+    }
+
+    @NotNull
+    protected OracleProcedureStandalone createProcedure(@NotNull OracleSchema schema) {
         return new OracleProcedureStandalone(
-            (OracleSchema) container,
+            schema,
             "NEW_PROCEDURE",
             DBSProcedureType.PROCEDURE);
     }

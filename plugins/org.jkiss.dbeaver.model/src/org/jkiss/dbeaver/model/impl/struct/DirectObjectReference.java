@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -33,8 +34,9 @@ public class DirectObjectReference extends AbstractObjectReference<DBSObject> {
         this.object = object;
     }
 
+    @NotNull
     @Override
-    public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return object;
     }
 }

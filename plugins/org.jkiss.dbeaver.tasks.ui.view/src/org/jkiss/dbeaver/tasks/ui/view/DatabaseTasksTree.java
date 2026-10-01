@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -54,7 +55,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.text.Collator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -89,10 +89,16 @@ public class DatabaseTasksTree {
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         taskColumnController = new ViewerColumnController<>(TaskUIViewMessages.db_tasks_tree_column_controller_tasks, taskViewer);
-        taskColumnController.setComparator(new ViewerColumnController.DefaultComparator(Collator.getInstance()) {
+        taskColumnController.setComparator(new ViewerColumnController.DefaultComparator() {
             @Override
             public int category(Object element) {
                 return element instanceof DBTTaskFolder ? 0 : 1;
+            }
+
+            @Nullable
+            @Override
+            protected Integer getPosition(@Nullable Object element) {
+                return element instanceof DBPObjectWithOrdinalPosition o ? o.getOrdinalPosition() : null;
             }
         });
         taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_name, SWT.LEFT, true, true, new TaskLabelProvider() {

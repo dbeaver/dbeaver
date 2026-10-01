@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         IFolderLayout treeFolder = layout.createFolder(
             FOLDER_NAVIGATION,
             IPageLayout.LEFT,
-            0.30f,
+            0.25f,
             editorArea);
         treeFolder.addView(DatabaseNavigatorView.VIEW_ID);
         treeFolder.addView(ProjectNavigatorView.VIEW_ID);
@@ -94,23 +94,23 @@ public class DBeaverPerspective implements IPerspectiveFactory
         IPlaceholderFolderLayout right = layout.createPlaceholderFolder(
             FOLDER_RIGHT,
             IPageLayout.RIGHT,
-            0.8f,
+            0.7f,
             editorArea);
-        IPlaceholderFolderLayout rightTop = layout.createPlaceholderFolder(
+        IFolderLayout rightTop = layout.createFolder(
             FOLDER_RIGHT_TOP,
             IPageLayout.TOP,
             0.5f,
             FOLDER_RIGHT);
+        rightTop.addView(IActionConstants.CHAT_VIEW_ID);
         rightTop.addPlaceholder(IPageLayout.ID_PROP_SHEET);
         rightTop.addPlaceholder(IActionConstants.HELP_VIEW_ID);
-        rightTop.addPlaceholder(IPageLayout.ID_OUTLINE);
 
-        IPlaceholderFolderLayout rightMiddle = layout.createPlaceholderFolder(
+        IPlaceholderFolderLayout rightBottom = layout.createPlaceholderFolder(
             FOLDER_RIGHT_TOP,
             IPageLayout.BOTTOM,
             0.5f,
             FOLDER_RIGHT);
-        //rightMiddle.addPlaceholder(IPageLayout.ID_OUTLINE);
+        rightBottom.addPlaceholder(IPageLayout.ID_OUTLINE);
 
     }
 

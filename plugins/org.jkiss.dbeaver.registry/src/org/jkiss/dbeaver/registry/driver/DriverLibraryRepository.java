@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,15 @@ public class DriverLibraryRepository extends DriverLibraryLocal
 {
     public static final String PATH_PREFIX = "repo:/";
 
-    public DriverLibraryRepository(DriverDescriptor driver, FileType type, String path) {
+    public DriverLibraryRepository(@NotNull DriverDescriptor driver, @NotNull FileType type, @NotNull String path) {
         super(driver, type, path);
     }
 
-    public DriverLibraryRepository(DriverDescriptor driver, IConfigurationElement config) {
+    public DriverLibraryRepository(@NotNull DriverDescriptor driver, @NotNull IConfigurationElement config) {
         super(driver, config);
     }
 
-    private DriverLibraryRepository(DriverDescriptor driver, DriverLibraryRepository copyFrom) {
+    private DriverLibraryRepository(@NotNull DriverDescriptor driver, @NotNull DriverLibraryRepository copyFrom) {
         super(driver, copyFrom);
     }
 
@@ -60,7 +60,7 @@ public class DriverLibraryRepository extends DriverLibraryLocal
 
     @Nullable
     @Override
-    public String getExternalURL(DBRProgressMonitor monitor) {
+    public String getExternalURL(@NotNull DBRProgressMonitor monitor) {
         String localPath = getLocalFilePath();
         String primarySource = DriverDescriptor.getDriversPrimarySource();
         if (!primarySource.endsWith("/") && !localPath.startsWith("/")) {

@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -36,12 +35,14 @@ import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.IElementFilter;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -153,9 +154,23 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
 
         this.selectedAuthModel = activeAuthModel;
         this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
-        this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
+
+        DBPDriver driver = null;
+        if (activeDataSource.getDriverSubstitution() != null) {
+            var driverSubstitution = activeDataSource.getDriverSubstitution();
+            var dataSourceProvider = DBWorkbench.getPlatform().getDataSourceProviderRegistry()
+                .getDataSourceProvider(driverSubstitution.getProviderId());
+            if (dataSourceProvider != null) {
+                driver = dataSourceProvider.getDriver(driverSubstitution.getDriverId());;
+            }
+        }
+        if (driver == null) {
+            driver = activeDataSource.getDriver();
+        }
+
+        this.allAuthModels = driver == DriverDescriptor.NULL_DRIVER ?
             DataSourceProviderRegistry.getInstance().getAllAuthModels() :
-            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
+            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(driver);
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
             o1.isDefaultModel() && !o2.isDefaultModel() ? -1 :
@@ -223,9 +238,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
         authModelComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         authModelCombo = new Combo(authModelComp, SWT.DROP_DOWN | SWT.READ_ONLY);
         authModelCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        authModelCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        authModelCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 try {
                     DBPAuthModelDescriptor newAuthModel = allAuthModels.get(authModelCombo.getSelectionIndex());
                     if (selectedAuthModel != newAuthModel) {
@@ -245,8 +258,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
                         : CommonUtils.notEmpty(selectedAuthModel.getDescription()));
                 }
                 UIUtils.resizeShell(authModelCombo.getShell());
-            }
-        });
+            }));
         UIUtils.createEmptyLabel(authModelComp, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (sharedConfigurator != null) {
             sharedConfigurator.createControl(authModelComp, this, this::refreshCredentials);

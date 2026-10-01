@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -76,7 +75,11 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
     }
 
     @Override
-    protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
+    protected void createObjectReferences(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        @NotNull ObjectCreateCommand createCommand
+    ) {
         if (createCommand.getObject().getTable() instanceof SQLiteTable table && table.isPersisted()) {
             SQLiteUtils.makeRecreateTableCommand(commandContext, table, createCommand);
         }

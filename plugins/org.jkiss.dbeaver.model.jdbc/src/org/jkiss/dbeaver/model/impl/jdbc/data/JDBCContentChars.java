@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -60,6 +61,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
         this.data = copyFrom.data;
     }
 
+    @NotNull
     @Override
     public InputStream getContentStream()
         throws IOException
@@ -72,6 +74,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
         }
     }
 
+    @NotNull
     @Override
     public Reader getContentReader()
         throws IOException
@@ -109,7 +112,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     @Override
     public boolean updateContents(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBDContentStorage storage)
+        @Nullable DBDContentStorage storage)
         throws DBException
     {
         if (storage == null) {
@@ -141,14 +144,16 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
         this.modified = false;
     }
 
+    @NotNull
     @Override
     public String getCharset()
     {
         return DBValueFormatting.getDefaultBinaryFileEncoding(executionContext.getDataSource());
     }
 
+    @NotNull
     @Override
-    public JDBCContentChars cloneStorage(DBRProgressMonitor monitor)
+    public JDBCContentChars cloneStorage(@NotNull DBRProgressMonitor monitor)
     {
         return cloneValue(monitor);
     }
@@ -170,6 +175,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
         }
     }
 
+    @Nullable
     @Override
     public Object getRawValue() {
         return data;
@@ -200,6 +206,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
         return data == null ? 0 : data.hashCode();
     }
 
+    @Nullable
     @Override
     public String getDisplayString(@NotNull DBDDisplayFormat format) {
         return data == null || format == DBDDisplayFormat.EDIT || data.length() > MAX_LENGTH_REMOVE_WHITESPACES
@@ -207,12 +214,14 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
                 : CommonUtils.compactWhiteSpaces(data);
     }
 
+    @NotNull
     @Override
-    public JDBCContentChars cloneValue(DBRProgressMonitor monitor)
+    public JDBCContentChars cloneValue(@NotNull DBRProgressMonitor monitor)
     {
         return new JDBCContentChars(this);
     }
 
+    @NotNull
     @Override
     public Object getCachedValue()
     {

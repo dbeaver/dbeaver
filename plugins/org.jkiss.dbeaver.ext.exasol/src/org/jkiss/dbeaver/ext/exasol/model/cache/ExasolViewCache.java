@@ -124,7 +124,7 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 			"WHERE table_schem = '%s' ";
 
 	private static final String SQL_VIEWS = "/*snapshot execution*/ select OWNER,OBJECT_ID,TABLE_CAT,TABLE_SCHEM,TABLE_NAME as COLUMN_TABLE,TABLE_TYPE,REMARKS,TYPE_CAT,TYPE_SCHEM,TYPE_NAME,SELF_REFERENCING_COL_NAME,REF_GENERATION from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'VIEW' " +
-            " union all select 'SYS',-1,' ',SCHEMA_name, object_name as column_table, object_type,object_comment,null, null,null,null,null from EXA_SYSCAT where SCHEMA_NAME = '%s' order by TABLE_NAME";
+            " union all select 'SYS',-1,' ',SCHEMA_name, object_name as column_table, object_type,object_comment,null, null,null,null,null from EXA_SYSCAT where SCHEMA_NAME = '%s' order by COLUMN_TABLE";
 
     public ExasolViewCache() {
         super("COLUMN_TABLE");

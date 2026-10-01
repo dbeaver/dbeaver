@@ -24,7 +24,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,19 +54,18 @@ import java.util.Map;
  */
 public class LockManagerViewer {
 
-    private Font boldFont;
-    private LockListControl lockTable;
-    private LockTableDetail blockedTable;
-    private LockTableDetail blockingTable;
-    private Label blockedLabel;
-    private Label blockingLabel;
+    private final LockListControl lockTable;
+    private final LockTableDetail blockedTable;
+    private final LockTableDetail blockingTable;
+    private final Label blockedLabel;
+    private final Label blockingLabel;
     private DBAServerLock curLock;
-    private LockGraphManager graphManager;
-    private LockGraphicalView gv;
+    private final LockGraphManager graphManager;
+    private final LockGraphicalView gv;
 
-    private AutoRefreshControl refreshControl;
+    private final AutoRefreshControl refreshControl;
 
-    private Action killAction = new Action(LocksUIMessages.actions_refresh_control_kill_waiting_session, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)) {
+    private final Action killAction = new Action(LocksUIMessages.actions_refresh_control_kill_waiting_session, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)) {
         @Override
         public void run() {
         	if (curLock != null) {
@@ -85,7 +84,6 @@ public class LockManagerViewer {
 
     public void dispose() {
         lockTable.disposeControl();
-        UIUtils.dispose(boldFont);
     }
 
     protected LockManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager) {
@@ -94,7 +92,6 @@ public class LockManagerViewer {
         refreshControl = new AutoRefreshControl(parent, lockManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(() -> refreshLocks(null)));
         this.graphManager = (LockGraphManager) lockManager;
 
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         SashForm sashMain = UIUtils.createPartDivider(part, composite, UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH));
@@ -117,7 +114,7 @@ public class LockManagerViewer {
 
         blockedLabel = new Label(cBlocked, SWT.NULL);
         blockedLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        blockedLabel.setFont(boldFont);
+        blockedLabel.setFont(BaseThemeSettings.instance.baseFontBold);
 
         blockedTable = new LockTableDetail(cBlocked, SWT.SHEET, part.getSite(), lockManager);
         blockedTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -126,7 +123,7 @@ public class LockManagerViewer {
 
         blockingLabel = new Label(cBlocking, SWT.NULL);
         blockingLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        blockingLabel.setFont(boldFont);
+        blockingLabel.setFont(BaseThemeSettings.instance.baseFontBold);
 
         blockingTable = new LockTableDetail(cBlocking, SWT.SHEET, part.getSite(), lockManager);
         blockingTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -134,8 +131,8 @@ public class LockManagerViewer {
         gv = new LockGraphicalView(this);
         gv.createPartControl(sashMain);
 
-        sashMain.setWeights(new int[]{3, 1});
-        sash.setWeights(new int[]{4, 1});
+        sashMain.setWeights(3, 1);
+        sash.setWeights(4, 1);
 
     }
 
@@ -214,7 +211,7 @@ public class LockManagerViewer {
 
     private class LockListControl extends LockTable {
 
-        private Class<DBAServerLock> locksType;
+        private final Class<DBAServerLock> locksType;
 
         LockListControl(SashForm sash, IWorkbenchSite site, DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager, Class<DBAServerLock> locksType) {
             super(sash, SWT.SHEET, site, lockManager);

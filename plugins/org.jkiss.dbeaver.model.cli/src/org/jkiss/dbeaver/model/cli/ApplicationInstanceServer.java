@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.cli;
 
+import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -26,17 +27,24 @@ import org.jkiss.dbeaver.utils.FileMutex;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
+import org.jkiss.utils.rest.RequestHandlerFactory;
 import org.jkiss.utils.rest.RestServer;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.InetSocketAddress;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
-import java.util.*;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Predicate;
 
 /**
  * DBeaver instance controller.
@@ -48,26 +56,33 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
 
     private static final Duration REGISTRY_LOCK_TIMEOUT = Duration.ofSeconds(5);
 
-    private final RestServer<T> server;
+    private final RestServer server;
 
-    protected ApplicationInstanceServer(Class<T> controllerClass) throws IOException {
+    protected ApplicationInstanceServer(@NotNull Class<T> controllerClass) throws IOException {
         String password = SecurityUtils.generatePassword(32);
         server = RestServer
             .builder(controllerClass, controllerClass.cast(this))
             .setFilter(address -> address.getAddress().isLoopbackAddress())
             .setLandingPage(GeneralUtils.getProductTitle())
-            .setHandlerFactory(
-                (cls, object, gson, filter, landingPage)
-                    -> new BearerRequestHandler<>(
-                        cls, object, gson, filter, landingPage, password
-                )
-            )
+            .setHandlerFactory(new RequestHandlerFactory() {
+                @NotNull
+                @Override
+                public <C> RestServer.RequestHandler<C> createHandler(
+                    @NotNull Class<C> cls,
+                    @NotNull C object,
+                    @NotNull Gson gson,
+                    @NotNull Predicate<InetSocketAddress> filter,
+                    @Nullable String landingPage
+                ) {
+                    return new BearerRequestHandler<>(cls, object, gson, filter, landingPage, password);
+                }
+            })
             .create();
 
         long startedAt = ProcessHandle.current()
             .info()
             .startInstant()
-            .map(java.time.Instant::toEpochMilli)
+            .map(Instant::toEpochMilli)
             .orElse(System.currentTimeMillis());
 
         InstanceServerProperties serverProperties = new InstanceServerProperties(
@@ -87,7 +102,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
             throw e;
         }
 
-        log.debug("Starting instance server at http://localhost:" + serverProperties.port());
+        log.debug("\tStarting instance server at http://localhost:" + serverProperties.port());
     }
 
     @Override
@@ -184,7 +199,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         try (Reader reader = Files.newBufferedReader(configPath)) {
             props.load(reader);
         }
-        return propertiesToMap(props);
+        return InstanceServerProperties.readAllFrom(props);
     }
 
     private static void storeRegistry(
@@ -227,25 +242,6 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         registry.entrySet().removeIf(entry -> isStaleProcessEntry(entry.getKey(), entry.getValue()));
     }
 
-    private static Map<Long, InstanceServerProperties> propertiesToMap(@NotNull Properties props) {
-        Set<String> keys = new HashSet<>(props.stringPropertyNames());
-        String prefix = InstanceServerProperties.PROPERTY_INSTANCE + ".";
-        Map<Long, InstanceServerProperties> registry = new LinkedHashMap<>();
-
-        for (String key : keys) {
-            Long pid = extractPid(key, prefix);
-            if (pid == null || registry.containsKey(pid)) {
-                continue;
-            }
-            InstanceServerProperties serverProperties = InstanceServerProperties.readFrom(props, pid);
-            if (serverProperties != null) {
-                registry.put(pid, serverProperties);
-            }
-        }
-
-        return registry;
-    }
-
     @NotNull
     private static Properties toProperties(@NotNull Map<Long, InstanceServerProperties> registry) {
         Properties props = new Properties();
@@ -253,23 +249,6 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
             entry.getValue().writeTo(props, entry.getKey());
         }
         return props;
-    }
-
-    @Nullable
-    private static Long extractPid(@NotNull String key, @NotNull String prefix) {
-        if (!key.startsWith(prefix)) {
-            return null;
-        }
-        int dot = key.indexOf('.', prefix.length());
-        if (dot < 0) {
-            return null;
-        }
-        String pidPart = key.substring(prefix.length(), dot);
-        try {
-            return Long.parseLong(pidPart);
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 
     private static boolean isStaleProcessEntry(long pid, @NotNull InstanceServerProperties serverProperties) {
@@ -281,7 +260,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         long actualStartedAt = handle.get()
             .info()
             .startInstant()
-            .map(java.time.Instant::toEpochMilli)
+            .map(Instant::toEpochMilli)
             .orElse(-1L);
 
         return actualStartedAt < 0 || actualStartedAt != serverProperties.startedAt();

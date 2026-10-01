@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
@@ -54,8 +55,12 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
 
     @Override
     protected GenericProcedure createDatabaseObject(
-        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
-        Object from, @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object from,
+        @NotNull Map<String, Object> options
+    ) {
         return new AltibaseProcedureStandAlone(
                 (GenericStructContainer) container,
                 "NEW_PROCEDURE",
@@ -79,8 +84,9 @@ public class AltibaseProcedureManager extends GenericProcedureManager  {
     }
     
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command,
-            Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor, @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Procedure name cannot be empty");
         }

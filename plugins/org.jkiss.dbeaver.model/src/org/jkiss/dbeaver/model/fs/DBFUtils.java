@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,8 +42,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +52,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DBFUtils {
 
     private static final Log log = Log.getLog(DBFUtils.class);
+
+    public static final String DBVFS_NODE_TYPE = "dbvfs";
     public static final String PRODUCT_FEATURE_MULTI_FS = "multi-fs";
     private static final String FILE_DATABASES_FOLDER = "File databases";
 
@@ -164,22 +166,6 @@ public class DBFUtils {
         return uri;
     }
 
-    @NotNull
-    public static Map<String, String> getQueryParameters(@Nullable String query) {
-        if (query == null || query.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        final Map<String, String> result = new LinkedHashMap<>();
-        final String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            final int idx = pair.indexOf("=");
-            final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8) : pair;
-            final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8) : null;
-            result.put(key, value);
-        }
-        return result;
-    }
-
     public static String getFileSystemId(FileSystem fs) {
         return fileSystemIdCache.get(fs);
     }
@@ -197,10 +183,10 @@ public class DBFUtils {
      */
     @Nullable
     public static DBPDataSourceContainer createTemporaryDataSourceContainer(
-        String connectionName,
-        DBPProject project,
-        DBPDriver driver,
-        DBPConnectionConfiguration configuration
+        @NotNull String connectionName,
+        @NotNull DBPProject project,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration configuration
     ) {
         DBPDataSourceRegistry registry = project.getDataSourceRegistry();
         String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(configuration.getDatabaseName()),
@@ -288,5 +274,15 @@ public class DBFUtils {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public static SMSessionContext getSessionContext(@NotNull DBFFileSystemContainer fsContainer) throws DBException {
+        if (fsContainer instanceof DBPProject project) {
+            return project.getSessionContext();
+        } else if (fsContainer instanceof DBPWorkspace workspace) {
+            return workspace.getAuthContext();
+        }
+        throw new DBException("File system container '" + fsContainer + "' doesn't support session context");
     }
 }
