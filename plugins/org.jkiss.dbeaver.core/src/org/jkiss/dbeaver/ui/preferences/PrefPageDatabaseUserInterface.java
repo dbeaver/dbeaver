@@ -21,6 +21,7 @@ import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.osgi.util.NLS;
@@ -39,6 +40,7 @@ import org.eclipse.ui.internal.themes.ColorsAndFontsPreferencePage;
 import org.eclipse.ui.internal.themes.FontDefinition;
 import org.eclipse.ui.internal.themes.ThemeElementCategory;
 import org.eclipse.ui.internal.themes.WorkbenchThemeManager;
+import org.eclipse.ui.internal.util.PrefUtil;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -498,6 +500,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         private class FontEntry {
             private static final ResourceBundle SWT_RESOURCE_BUNDLE = ResourceBundle.getBundle(ColorsAndFontsPreferencePage.class.getName());
 
+            private record DependentFont(FontData[] data, String preference, boolean isDefault) {
+            }
+
             @NotNull
             private final FontDefinition definition;
             @NotNull
@@ -509,6 +514,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             private FontData[] originalFontData;
             @Nullable
             private FontData[] pendingFontData;
+            @Nullable
+            private Map<String, DependentFont> dependentFonts;
 
             public FontEntry(@NotNull Composite container, @NotNull FontDefinition fontDef) {
                 this.definition = fontDef;
@@ -550,10 +557,29 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 if (this.previewRegistry == null) {
                     this.previewRegistry = fonts;
                     this.originalFontData = fonts.getFontData(this.definition.getId());
+                    this.dependentFonts = new HashMap<>();
+                    IPreferenceStore store = PrefUtil.getInternalPreferenceStore();
+                    // Preview/restyling can also update fonts that default to this one (such as the result grid).
+                    for (FontDefinition font : themeRegistry.getFonts()) {
+                        FontDefinition ancestor = font;
+                        while (ancestor.getDefaultsTo() != null) {
+                            if (this.definition.getId().equals(ancestor.getDefaultsTo())) {
+                                String key = createPreferenceKey(font);
+                                this.dependentFonts.put(font.getId(), new DependentFont(
+                                    fonts.getFontData(font.getId()), store.getString(key), store.isDefault(key)));
+                                break;
+                            }
+                            ancestor = findFontDefinition(ancestor.getDefaultsTo());
+                            if (ancestor == null) {
+                                break;
+                            }
+                        }
+                    }
                 }
                 this.pendingFontData = fontData;
                 fonts.put(this.definition.getId(), fontData);
                 eventBroker.send(WorkbenchThemeManager.Events.THEME_REGISTRY_MODIFIED, null);
+                this.restoreDependentFonts();
                 updateLayout(this.example, null);
             }
 
@@ -605,12 +631,42 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             public boolean rollback() {
                 if (this.previewRegistry != null && this.originalFontData != null) {
                     this.previewRegistry.put(this.definition.getId(), this.originalFontData);
+                    this.restoreDependentFonts();
                     this.previewRegistry = null;
                     this.originalFontData = null;
                     this.pendingFontData = null;
+                    this.dependentFonts = null;
                     return true;
                 }
                 return false;
+            }
+
+            private void restoreDependentFonts() {
+                if (this.previewRegistry == null || this.dependentFonts == null) {
+                    return;
+                }
+                IPreferenceStore store = PrefUtil.getInternalPreferenceStore();
+                boolean preferencesRestored = false;
+                for (Map.Entry<String, DependentFont> dependent : this.dependentFonts.entrySet()) {
+                    FontDefinition font = findFontDefinition(dependent.getKey());
+                    if (font != null) {
+                        String key = createPreferenceKey(font);
+                        DependentFont original = dependent.getValue();
+                        if (original.isDefault()) {
+                            if (!store.isDefault(key)) {
+                                store.setToDefault(key);
+                                preferencesRestored = true;
+                            }
+                        } else if (!original.preference().equals(store.getString(key))) {
+                            store.setValue(key, original.preference());
+                            preferencesRestored = true;
+                        }
+                        this.previewRegistry.put(font.getId(), original.data());
+                    }
+                }
+                if (preferencesRestored) {
+                    savePrefs();
+                }
             }
         }
 
