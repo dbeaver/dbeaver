@@ -225,8 +225,8 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     static void addColumnCommentAction(
-        List<DBEPersistAction> actionList,
-        SQLServerTableColumn column,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull SQLServerTableColumn column,
         @Nullable String description,
         boolean commentSet
     ) {
