@@ -59,23 +59,22 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
     @NotNull
     @Override
     public Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException {
-        DBWNetworkProfileUsageProvider provider = getUsageProvider();
-        return provider == null ? Map.of() : provider.findLocalProfileConflicts(profileName);
+        return getUsageProvider().findLocalProfileConflicts(profileName);
     }
 
     @NotNull
     @Override
     public List<ProjectConnections> findGlobalProfileConnections(@NotNull String profileName) throws DBException {
-        DBWNetworkProfileUsageProvider provider = getUsageProvider();
-        return provider == null ? List.of() : provider.findGlobalProfileConnections(profileName);
+        return getUsageProvider().findGlobalProfileConnections(profileName);
     }
 
-    @Nullable
+    @NotNull
     private DBWNetworkProfileUsageProvider getUsageProvider() {
         DBWNetworkProfileUsageProvider provider = RuntimeUtils.getObjectAdapter(
             platform.getWorkspace(), DBWNetworkProfileUsageProvider.class, true);
         if (provider == null) {
-            log.warn("Workspace does not provide network profile usage queries");
+            log.warn("Workspace does not provide network profile usage queries; using project registries");
+            return new LegacyNetworkProfileUsageProvider(platform.getWorkspace());
         }
         return provider;
     }
