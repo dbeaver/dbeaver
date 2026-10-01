@@ -104,6 +104,19 @@ public class DTUIMessages extends NLS {
 
     public static String database_producer_page_extract_settings_name_and_title;
     public static String database_producer_page_extract_settings_description;
+    public static String database_producer_page_extract_settings_query_database;
+    public static String database_producer_page_extract_settings_use_fetched_rows;
+    public static String database_producer_page_extract_settings_separate_connections;
+    public static String database_producer_page_extract_settings_separate_connections_hint;
+    public static String database_producer_page_extract_settings_count_rows;
+    public static String database_producer_page_extract_settings_count_rows_hint;
+    public static String database_producer_page_extract_settings_selected_rows;
+    public static String database_producer_page_extract_settings_selected_columns;
+    public static String database_producer_page_extract_settings_advanced;
+    public static String database_producer_page_extract_settings_parallel_extractions;
+    public static String database_producer_page_extract_settings_parallel_extractions_hint;
+    public static String database_producer_page_extract_settings_extract_in_batches;
+    public static String database_producer_page_extract_settings_rows_per_batch;
     public static String database_producer_page_extract_settings_threads_num_text_tooltip;
     public static String database_producer_page_extract_settings_new_connection_checkbox_tooltip;
     public static String database_producer_page_extract_settings_row_count_checkbox_tooltip;

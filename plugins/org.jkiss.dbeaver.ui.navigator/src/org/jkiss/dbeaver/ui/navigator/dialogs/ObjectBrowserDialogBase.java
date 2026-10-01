@@ -66,6 +66,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
     private DatabaseNavigatorTree navigatorTree;
 
     private static boolean showConnected;
+    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.connection;
 
     protected ObjectBrowserDialogBase(
         @NotNull Shell parentShell,
@@ -83,6 +84,10 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
 
     public static boolean isShowConnected() {
         return showConnected;
+    }
+
+    public void setFilterObjectType(@NotNull DatabaseNavigatorTreeFilterObjectType filterObjectType) {
+        this.filterObjectType = filterObjectType;
     }
 
     @Override
@@ -107,7 +112,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         gd.heightHint = 500;
         navigatorTree.setLayoutData(gd);
 
-        navigatorTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.connection);
+        navigatorTree.setFilterObjectType(filterObjectType);
 
         final TreeViewer treeViewer = navigatorTree.getViewer();
         ViewerFilter viewerFilter = createViewerFilter();
