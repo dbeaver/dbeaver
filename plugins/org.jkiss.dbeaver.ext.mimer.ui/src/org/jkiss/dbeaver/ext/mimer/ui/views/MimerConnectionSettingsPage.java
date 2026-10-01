@@ -36,7 +36,13 @@ import org.jkiss.utils.CommonUtils;
  * {@link MimerConstants#PROP_PROTOCOL}, since it changes the connection URL itself rather than
  * being a real JDBC property) and Program/Program password (Mimer SQL's {@code ENTER <program>
  * USING <password>} security layer - these <i>are</i> real JDBC properties the driver reads
- * directly, passed through via {@link DBPConnectionConfiguration#setProperty}).
+ * directly). The program name is a plain property ({@link DBPConnectionConfiguration#setProperty})
+ * - DBeaver auto-merges those into the JDBC connect properties for every data source. The
+ * password is a genuine secret, so it goes through {@link DBPConnectionConfiguration#setAuthProperty}
+ * instead, which routes it into DBeaver's secure credential storage rather than the plaintext
+ * connection configuration - auth properties are *not* auto-merged, so {@code
+ * org.jkiss.dbeaver.ext.mimer.model.MimerDataSource} explicitly injects it back into the JDBC
+ * {@code Properties} at connect time.
  *
  * @author Mimer Information Technology
  */
@@ -90,7 +96,7 @@ public class MimerConnectionSettingsPage extends ConnectionPageAbstract {
         boolean local = MimerConstants.PROTOCOL_LOCAL.equals(config.getProviderProperty(MimerConstants.PROP_PROTOCOL));
         protocolCombo.select(local ? 1 : 0);
         programText.setText(CommonUtils.notEmpty(config.getProperty(MimerConstants.PROP_PROGRAM)));
-        programPasswordText.setText(CommonUtils.notEmpty(config.getProperty(MimerConstants.PROP_PROGRAM_PASSWORD)));
+        programPasswordText.setText(CommonUtils.notEmpty(config.getAuthProperty(MimerConstants.PROP_PROGRAM_PASSWORD)));
     }
 
     @Override
@@ -107,7 +113,7 @@ public class MimerConnectionSettingsPage extends ConnectionPageAbstract {
         config.setProperty(MimerConstants.PROP_PROGRAM, program.isEmpty() ? null : program);
 
         String programPassword = programPasswordText.getText();
-        config.setProperty(MimerConstants.PROP_PROGRAM_PASSWORD, programPassword.isEmpty() ? null : programPassword);
+        config.setAuthProperty(MimerConstants.PROP_PROGRAM_PASSWORD, programPassword.isEmpty() ? null : programPassword);
     }
 
     @Override

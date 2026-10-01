@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 /**
  * @author Mimer Information Technology
@@ -82,6 +84,26 @@ public class MimerDataSource extends GenericDataSource {
     @Override
     protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
         return new MimerExecutionContext(instance, type);
+    }
+
+    /**
+     * The PROGRAM password ({@link MimerConstants#PROP_PROGRAM_PASSWORD}) is stored as an auth
+     * property (see {@code MimerConnectionSettingsPage}), not a plain connection property, so it
+     * goes through DBeaver's secure credential storage instead of sitting in plaintext in the
+     * connection configuration. Auth properties aren't auto-merged into the JDBC connect
+     * properties the way plain ones are (only {@link DBPConnectionConfiguration#getProperties()}
+     * is, by the inherited {@code super} call below), so it has to be injected explicitly here.
+     */
+    @Override
+    protected void fillConnectionProperties(
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull Properties connectProps
+    ) {
+        super.fillConnectionProperties(connectionInfo, connectProps);
+        String programPassword = connectionInfo.getAuthProperty(MimerConstants.PROP_PROGRAM_PASSWORD);
+        if (!CommonUtils.isEmpty(programPassword)) {
+            connectProps.setProperty(MimerConstants.PROP_PROGRAM_PASSWORD, programPassword);
+        }
     }
 
     /**
