@@ -16,6 +16,9 @@
  */
 package org.eclipse.swt.widgets;
 
+import com.sun.jna.Function;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.Kernel32;
 import org.eclipse.swt.internal.win32.OS;
 
 /**
@@ -25,11 +28,43 @@ public final class SWTThemeUtils {
 
     public static final char[] WINDOW_THEME_COMBO = "CFD\0".toCharArray();
     public static final char[] WINDOW_THEME_DEFAULT = Display.EXPLORER;
+    private static final int FLUSH_MENU_THEMES_ORDINAL = 136;
+
+    public static void updateShellsAndMenus(Display display, boolean dark) {
+        // SetPreferredAppMode updates SWT's defaults, but Windows keeps the old menu theme cached.
+        if (OS.IsDarkModeAvailable()) {
+            try {
+                flushMenuTheme();
+            } catch (Throwable ignored) {
+                // ignore
+            }
+        }
+        for (Shell shell : display.getShells()) {
+            shell.setDarkThemePreferred(dark);
+            if (shell.getMenuBar() != null) {
+                OS.DrawMenuBar(shell.handle);
+            }
+        }
+    }
+
+    private static void flushMenuTheme() {
+        var uxtheme = Kernel32.INSTANCE.LoadLibraryEx("uxtheme.dll", null, 0);
+        if (uxtheme != null) {
+            try {
+                Pointer flushMenuThemes = Kernel32.INSTANCE.GetProcAddress(uxtheme, FLUSH_MENU_THEMES_ORDINAL);
+                if (flushMenuThemes != null) {
+                    Function.getFunction(flushMenuThemes).invokeVoid(new Object[0]);
+                }
+            } finally {
+                Kernel32.INSTANCE.FreeLibrary(uxtheme);
+            }
+        }
+    }
 
     /**
      * Uses Windows-specific calls and constants to update native widgets look-and-feel
      */
-    public static void updateExplorerTheme(Control control, boolean dark) {
+    public static void updateWidgetTheme(Control control, boolean dark) {
         // TODO: do not style custom wigets and empty composites
         OS.AllowDarkModeForWindow(control.handle, dark);
         // For Tree and Table we shouldn't set any theme but EXPLORER.

@@ -146,7 +146,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     @Override
     public void preWindowOpen() {
         log.debug("Configure workbench window");
-        NativeThemeUtils.installTextThemeListener(Display.getCurrent());
+        NativeThemeUtils.installThemeListener(Display.getCurrent());
 
         // Show Product Config, if applicable
         showProductConfigDialog();

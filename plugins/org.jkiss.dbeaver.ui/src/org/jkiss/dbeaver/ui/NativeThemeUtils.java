@@ -16,13 +16,17 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.event.EventHandler;
 
 /**
  * This is a hack for SWT Light/Dark theme switch.
@@ -31,31 +35,52 @@ import org.osgi.framework.FrameworkUtil;
  */
 public final class NativeThemeUtils {
     private static final Log log = Log.getLog(NativeThemeUtils.class);
-    private static boolean textThemeListenerInstalled;
+    private static boolean themeListenerInstalled;
 
-    public static void installTextThemeListener(@NotNull Display display) {
-        if (!RuntimeUtils.isWindows() || textThemeListenerInstalled) {
+    public static void installThemeListener(@NotNull Display display) {
+        if (!RuntimeUtils.isWindows() || themeListenerInstalled) {
             return;
         }
-        textThemeListenerInstalled = true;
+        themeListenerInstalled = true;
         display.addListener(SWT.Skin, event -> {
             if (event.widget instanceof Control control) {
-                updateNativeTheme(control);
+                updateNativeWidgets(control);
             }
         });
+        IEventBroker eventBroker = PlatformUI.getWorkbench().getService(IEventBroker.class);
+        if (eventBroker != null) {
+            EventHandler themeListener = event -> display.asyncExec(() -> {
+                if (!display.isDisposed()) {
+                    updateNativeShellsAndMenus(display);
+                }
+            });
+            eventBroker.subscribe(IThemeEngine.Events.THEME_CHANGED, themeListener);
+            display.disposeExec(() -> eventBroker.unsubscribe(themeListener));
+        }
     }
 
-    public static void updateNativeTheme(@NotNull Control control) {
-        if (!RuntimeUtils.isWindows()) {
-            return;
-        }
+    private static void updateNativeShellsAndMenus(@NotNull Display display) {
         try {
-            Class<?> themeUtils = FrameworkUtil.getBundle(Control.class).loadClass(
-                "org.eclipse.swt.widgets.SWTThemeUtils");
-            themeUtils.getMethod("updateExplorerTheme", Control.class, boolean.class)
+            Class<?> themeUtils = getNativeUtilsClass();
+            themeUtils.getMethod("updateShellsAndMenus", Display.class, boolean.class)
+                .invoke(null, display, UIStyles.isDarkTheme());
+        } catch (Throwable e) {
+            log.debug("Error updating native shell and menu theme", e);
+        }
+    }
+
+    private static void updateNativeWidgets(@NotNull Control control) {
+        try {
+            Class<?> themeUtils = getNativeUtilsClass();
+            themeUtils.getMethod("updateWidgetTheme", Control.class, boolean.class)
                 .invoke(null, control, UIStyles.isDarkTheme());
-        } catch (ReflectiveOperationException e) {
+        } catch (Throwable e) {
             log.debug("Error updating native control theme", e);
         }
+    }
+
+    private static @NotNull Class<?> getNativeUtilsClass() throws ClassNotFoundException {
+        return FrameworkUtil.getBundle(Control.class).loadClass(
+            "org.eclipse.swt.widgets.SWTThemeUtils");
     }
 }
