@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPTermProvider;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -43,6 +44,7 @@ public class DBXTreeFolder extends DBXTreeNode {
     private static final Log log = Log.getLog(DBXTreeFolder.class);
     private String type;
     private String label;
+    private String labelTerm;
     private String description;
     private final String optionalItem;
 
@@ -82,6 +84,7 @@ public class DBXTreeFolder extends DBXTreeNode {
         super(source, parent, config, navigable, false, virtual, false, visibleIf, null);
         this.type = type;
         this.label = config.getAttribute("label");
+        this.labelTerm = config.getAttribute("labelTerm");
         this.description = config.getAttribute("description");
         this.optionalItem = config.getAttribute("optionalItem");
         this.isOptional = isOptional;
@@ -112,6 +115,7 @@ public class DBXTreeFolder extends DBXTreeNode {
         super(source, parent, folder);
         this.type = folder.type;
         this.label = folder.label;
+        this.labelTerm = folder.labelTerm;
         this.description = folder.description;
 
         this.optionalItem = folder.optionalItem;
@@ -132,6 +136,8 @@ public class DBXTreeFolder extends DBXTreeNode {
 
     public void setLabel(String label) {
         this.label = label;
+        // explicit tree-injection labels take precedence over provider terms
+        this.labelTerm = null;
     }
 
     public String getIdOrType() {
@@ -175,6 +181,17 @@ public class DBXTreeFolder extends DBXTreeNode {
     @NotNull
     @Override
     public String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale) {
+        if (CommonUtils.isNotEmpty(labelTerm) && dataSource instanceof DBPTermProvider termProvider && getChildren() != null) {
+            for (DBXTreeNode child : getChildren()) {
+                if (child instanceof DBXTreeItem item) {
+                    String term = termProvider.getObjectTypeTerm(item.getPath(), labelTerm, true);
+                    if (CommonUtils.isNotEmpty(term)) {
+                        return term;
+                    }
+                    break;
+                }
+            }
+        }
         if (locale == null) {
             return label;
         } else {
