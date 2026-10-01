@@ -151,7 +151,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
-    @Nullable
     private final AbstractUIJob themeUpdateJob;
     private SQLEditorControl editorControl;
 
@@ -166,8 +165,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         super();
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
-        boolean preserveThemeColors = DBWorkbench.getPlatform().getApplication().isStandalone();
-        themeUpdateJob = preserveThemeColors ? new AbstractUIJob("SQL editor theme update") {
+        themeUpdateJob = new AbstractUIJob("SQL editor theme update") {
             {
                 setSystem(true);
             }
@@ -178,23 +176,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 refreshSyntaxColors();
                 return Status.OK_STATUS;
             }
-        } : null;
+        };
         themeListener = new IPropertyChangeListener() {
-            long lastUpdateTime;
-
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
-                    if (themeUpdateJob != null) {
-                        switch (themeUpdateJob.getState()) {
-                            case Job.WAITING, Job.SLEEPING -> themeUpdateJob.cancel();
-                        }
-                        themeUpdateJob.schedule(500);
-                    } else if (lastUpdateTime == 0 || System.currentTimeMillis() - lastUpdateTime >= 500) {
-                        lastUpdateTime = System.currentTimeMillis();
-                        UIUtils.asyncExec(SQLEditorBase.this::refreshSyntaxColors);
+                    switch (themeUpdateJob.getState()) {
+                        case Job.WAITING, Job.SLEEPING -> themeUpdateJob.cancel();
                     }
+                    themeUpdateJob.schedule(1000);
                 }
             }
         };
@@ -749,9 +740,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     @Override
     public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
-        if (themeUpdateJob != null) {
-            themeUpdateJob.cancel();
-        }
+        themeUpdateJob.cancel();
         if (this.semanticMarkersManager != null) {
             this.semanticMarkersManager.dispose();
         }
