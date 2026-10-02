@@ -46,7 +46,7 @@ public interface AIAccountProperties extends AIEngineProperties {
     void setAccountAuthentication(boolean accountAuthentication);
 
     default boolean supportsDeviceAuthorization() {
-        return true;
+        return false;
     }
 
     boolean isAccountConnected();

@@ -88,6 +88,7 @@ public class OpenAIPropertiesTest extends DBeaverUnitTest {
         properties.setAuthentication(OpenAIProperties.AUTHENTICATION_CHATGPT_ACCOUNT);
 
         Assertions.assertInstanceOf(AIAccountProperties.class, properties);
+        Assertions.assertTrue(properties.supportsDeviceAuthorization());
         Assertions.assertInstanceOf(OpenAIAccountAuthenticator.class, properties.createAccountAuthenticator());
         Assertions.assertEquals(
             AIAccountProperties.ACCOUNT_CREDENTIAL_PROPERTY_IDS,

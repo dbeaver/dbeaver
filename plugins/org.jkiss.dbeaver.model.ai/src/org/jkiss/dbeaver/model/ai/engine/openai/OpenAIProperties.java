@@ -202,6 +202,11 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         setAuthentication(accountAuthentication ? AUTHENTICATION_CHATGPT_ACCOUNT : AUTHENTICATION_API_TOKEN);
     }
 
+    @Override
+    public boolean supportsDeviceAuthorization() {
+        return true;
+    }
+
     public void setAuthentication(@Nullable String authentication) {
         this.authentication = AUTHENTICATION_CHATGPT_ACCOUNT.equals(authentication)
             ? AUTHENTICATION_CHATGPT_ACCOUNT
