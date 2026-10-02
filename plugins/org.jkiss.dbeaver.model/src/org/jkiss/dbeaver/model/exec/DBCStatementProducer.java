@@ -23,8 +23,14 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 /** Creates and binds statements requiring driver-specific parameter handling. */
 public interface DBCStatementProducer {
 
+    /** Whether this producer should replace the standard statement creation path for the query. */
     boolean useAdapter(@NotNull SQLQuery query);
 
+    /**
+     * Called after {@link #useAdapter(SQLQuery)} returns true. Uses the effective (possibly transformed) queryText
+     * and returns a statement with its source set and parameters bound. The caller owns the returned statement;
+     * the producer must close it if preparation or binding fails before it can be returned.
+     */
     @NotNull
     DBCStatement createStatement(@Nullable DBCExecutionSource source, @NotNull DBCSession session, @NotNull SQLQuery query,
                                  @NotNull String queryText, boolean scrollable) throws DBCException;

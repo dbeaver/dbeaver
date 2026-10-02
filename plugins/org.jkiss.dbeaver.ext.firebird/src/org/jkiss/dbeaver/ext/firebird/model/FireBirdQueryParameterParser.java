@@ -31,10 +31,15 @@ import java.util.regex.Pattern;
 /** Creates a parser for each Firebird query. */
 public class FireBirdQueryParameterParser implements SQLQueryParameterParser {
     private static final Log log = Log.getLog(FireBirdQueryParameterParser.class);
+    private static final String KEYWORD_SEPARATOR = "(?:\\s|/\\*[^\\r\\n]*?\\*/)+";
+    // Recognizes EXECUTE BLOCK at the start, ignoring case and leading whitespace/comments.
+    // Between EXECUTE and BLOCK accepts whitespace or simple single-line /* ... */ comments (no nesting).
     private static final Pattern BLOCK = Pattern.compile(
-        "^(?:\\s|--[^\\r\\n]*|/\\*.*?\\*/)*EXECUTE\\s+BLOCK\\b", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        "^(?:\\s|--[^\\r\\n]*|/\\*.*?\\*/)*EXECUTE" + KEYWORD_SEPARATOR + "BLOCK\\b",
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     private static final Pattern PROCEDURE = Pattern.compile(
-        "^(?:\\s|--[^\\r\\n]*|/\\*.*?\\*/)*EXECUTE\\s+PROCEDURE\\b", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        "^(?:\\s|--[^\\r\\n]*|/\\*.*?\\*/)*EXECUTE" + KEYWORD_SEPARATOR + "PROCEDURE\\b",
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     @Nullable
     @Override
@@ -84,6 +89,11 @@ public class FireBirdQueryParameterParser implements SQLQueryParameterParser {
         @Override
         protected boolean isAnonymousParametersEnabled() {
             return block || super.isAnonymousParametersEnabled();
+        }
+
+        @Override
+        protected char getAnonymousParameterMark() {
+            return block ? '?' : super.getAnonymousParameterMark();
         }
 
         @Override

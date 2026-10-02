@@ -30,12 +30,13 @@ import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
 
-public class FireBirdQueryParameterFirebirdSQLQueryParameterParserTest extends DBeaverUnitTest {
+public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
     @NotNull
     private static final String BLOCK = """
         EXECUTE BLOCK (x INT = ?, y INT = ?)
@@ -95,7 +96,60 @@ public class FireBirdQueryParameterFirebirdSQLQueryParameterParserTest extends D
     }
 
     @Nullable
-    private static List<SQLQueryParameter> parse(@NotNull String query, boolean anonymousParametersEnabled) {
+    private List<SQLQueryParameter> parse(@NotNull String query, boolean anonymousParametersEnabled) {
+        return parse(query, anonymousParametersEnabled, "?");
+    }
+
+    @Test
+    public void usesFirebirdMarkerWhenUserConfiguredAnotherAnonymousMarker() {
+        List<SQLQueryParameter> parameters = parse(BLOCK, true, "@");
+        Assertions.assertNotNull(parameters);
+        Assertions.assertEquals(2, parameters.size());
+        Assertions.assertTrue(parameters.stream().allMatch(SQLQueryParameter::isNativeBinding));
+
+        parameters = parse("SELECT @, ? FROM RDB$DATABASE", true, "@");
+        Assertions.assertNotNull(parameters);
+        Assertions.assertEquals(List.of("@"), parameters.stream().map(SQLQueryParameter::getName).toList());
+        Assertions.assertFalse(parameters.getFirst().isNativeBinding());
+    }
+
+    @Nested
+    class ExecuteBlockRecognition {
+        @Test
+        void acceptsCaseWhitespaceAndLeadingComments() {
+            assertRecognized(" -- leading\n/* comment */ execute\t\nblock");
+        }
+
+        @Test
+        void acceptsSingleLineBlockCommentBetweenKeywords() {
+            assertRecognized("EXECUTE/*commentdsfsd*/BLOCK");
+            assertRecognized("EXECUTE /* comment */ BLOCK");
+        }
+
+        @Test
+        void doesNotRecognizeKeywordPrefixesOrTextInsideLiteralsAndComments() {
+            for (String sql : List.of("EXECUTE BLOCKED (x INT = ?)", "EXECUTEBLOCK (x INT = ?)",
+                "SELECT 'EXECUTE BLOCK (x INT = ?)' FROM RDB$DATABASE", "/* EXECUTE BLOCK */ SELECT ? FROM RDB$DATABASE")) {
+                Assertions.assertNull(parse(sql, false), sql);
+            }
+        }
+
+        @Test
+        void doesNotTreatProcedureWithCommentAsBlockOrOrdinaryNamedParameters() {
+            Assertions.assertNull(parse("EXECUTE/* comment */PROCEDURE demo(:arg, ?)", true));
+        }
+
+        private void assertRecognized(@NotNull String header) {
+            List<SQLQueryParameter> parameters = parse(header + " (x INT = ?) AS BEGIN END", false);
+            Assertions.assertNotNull(parameters, header);
+            Assertions.assertEquals(1, parameters.size(), header);
+            Assertions.assertTrue(parameters.getFirst().isNativeBinding(), header);
+        }
+    }
+
+    @Nullable
+    private List<SQLQueryParameter> parse(@NotNull String query, boolean anonymousParametersEnabled,
+                                          @NotNull String anonymousMarker) {
         FireBirdDataSource dataSource = Mockito.mock(FireBirdDataSource.class);
         DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
         DBPPreferenceStore preferences = Mockito.mock(DBPPreferenceStore.class);
@@ -109,6 +163,7 @@ public class FireBirdQueryParameterFirebirdSQLQueryParameterParserTest extends D
         Mockito.when(preferences.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED))
             .thenReturn(anonymousParametersEnabled);
         Mockito.when(preferences.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)).thenReturn(":");
+        Mockito.when(preferences.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)).thenReturn(anonymousMarker);
 
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, preferences);

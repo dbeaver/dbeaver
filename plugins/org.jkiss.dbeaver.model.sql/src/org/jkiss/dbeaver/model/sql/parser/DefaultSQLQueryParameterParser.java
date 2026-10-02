@@ -61,8 +61,10 @@ public class DefaultSQLQueryParameterParser {
         final SQLDialect sqlDialect = context.getDialect();
         IDocument document = context.getDocument();
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
-        // The scanner uses the preference directly; a dialect may opt in to anonymous parameters even when it is disabled.
-        boolean scanRawQuestionMarks = isAnonymousParametersEnabled() && !syntaxManager.isAnonymousParametersEnabled();
+        char anonymousMark = getAnonymousParameterMark();
+        // The scanner uses user preferences; a dialect may require a different marker or enable it independently.
+        boolean scanRawMarkers = isAnonymousParametersEnabled()
+            && (!syntaxManager.isAnonymousParametersEnabled() || anonymousMark != syntaxManager.getAnonymousParameterMark());
         List<SQLQueryParameter> parameters = null;
         TPRuleBasedScanner ruleScanner = context.getScanner();
         ruleScanner.setRange(document, queryOffset, queryLength);
@@ -108,20 +110,20 @@ public class DefaultSQLQueryParameterParser {
                         String paramName = document.get(tokenOffset, tokenLength);
                         int relativeOffset = tokenOffset - queryOffset;
                         int ordinal = parameters == null ? 0 : parameters.size();
-                        SQLQueryParameter parameter = paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark())) ?
+                        SQLQueryParameter parameter = paramName.equals(String.valueOf(anonymousMark)) ?
                             parseAnonymousParameter(paramName, relativeOffset, ordinal) :
                             parseNamedParameter(paramName, relativeOffset, tokenLength, ordinal);
                         parameters = addParameter(parameters, parameter);
                     } catch (BadLocationException e) {
                         log.warn("Can't extract query parameter", e);
                     }
-                } else if (scanRawQuestionMarks && tokenType != SQLTokenType.T_STRING
+                } else if (scanRawMarkers && tokenType != SQLTokenType.T_STRING
                     && tokenType != SQLTokenType.T_QUOTED && tokenLength > 0) {
                     // Anonymous markers may be ordinary tokens when the anonymous-parameters preference is disabled.
                     try {
                         String tokenText = document.get(tokenOffset, tokenLength);
-                        for (int i = tokenText.indexOf('?'); i >= 0; i = tokenText.indexOf('?', i + 1)) {
-                            SQLQueryParameter parameter = parseAnonymousParameter("?", tokenOffset + i - queryOffset,
+                        for (int i = tokenText.indexOf(anonymousMark); i >= 0; i = tokenText.indexOf(anonymousMark, i + 1)) {
+                            SQLQueryParameter parameter = parseAnonymousParameter(String.valueOf(anonymousMark), tokenOffset + i - queryOffset,
                                 parameters == null ? 0 : parameters.size());
                             parameters = addParameter(parameters, parameter);
                         }
@@ -212,6 +214,10 @@ public class DefaultSQLQueryParameterParser {
 
     protected boolean isAnonymousParametersEnabled() {
         return context.getSyntaxManager().isAnonymousParametersEnabled();
+    }
+
+    protected char getAnonymousParameterMark() {
+        return context.getSyntaxManager().getAnonymousParameterMark();
     }
 
     protected boolean isAnonymousParameterIgnored() {

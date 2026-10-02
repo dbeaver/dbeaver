@@ -77,6 +77,7 @@ public class FireBirdDataSource extends GenericDataSource
         super(monitor, container, metaModel, new FireBirdSQLDialect());
     }
 
+    @Nullable
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == SQLQueryParameterParser.class) {
