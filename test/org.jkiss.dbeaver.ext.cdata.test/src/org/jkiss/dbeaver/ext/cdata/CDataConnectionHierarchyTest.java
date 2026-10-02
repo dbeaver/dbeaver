@@ -323,6 +323,8 @@ public class CDataConnectionHierarchyTest extends DBeaverUnitTest {
     }
 
     @Test
+    // result navigation is stubbed here; the reader checks next()
+    @SuppressWarnings("PMD.CheckResultSet")
     public void readsUsingConfigurationConnectionAndClosesResources() throws Exception {
         Driver driver = Mockito.mock(Driver.class);
         Connection connection = Mockito.mock(Connection.class);

@@ -81,14 +81,12 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         }
     });
     private Text urlText;
-    private Composite generalFields;
     private Composite authenticationGroup;
     private Composite nativeAuthentication;
     private Label hierarchyStatus;
     private Link retryLink;
     private CDataConnectionEditor editor;
     private CDataConnectionHierarchy hierarchy;
-    private DBPDataSourceContainer loadedDataSource;
     private boolean loadingSettings;
     private final Set<String> editedUrlProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private final Set<String> pendingUrlProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -114,7 +112,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
                 propertiesChanged(null);
             }
         });
-        generalFields = UIUtils.createFormPlaceholder(general, 4, 4);
+        Composite generalFields = UIUtils.createFormPlaceholder(general, 4, 4);
         generalFields.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 4, 1));
         addControlToGroup(GROUP_CONNECTION, generalFields);
         hierarchyStatus = new Label(general, SWT.WRAP);
@@ -160,7 +158,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
     public void loadSettings() {
         loadingSettings = true;
         try {
-            loadedDataSource = site.getActiveDataSource();
+            final DBPDataSourceContainer loadedDataSource = site.getActiveDataSource();
             editedUrlProperties.clear();
             pendingUrlProperties.clear();
             super.loadSettings();

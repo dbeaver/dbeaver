@@ -300,7 +300,7 @@ public class CDataConnectionSecretsTest extends DBeaverUnitTest {
 
     @Test
     public void manualUrlSecretsOverridePreviouslyLoadedCredentialsIncludingEmptyValues() throws Exception {
-        for (String secret : java.util.List.of("typed-secret", "")) {
+        for (String secret : List.of("typed-secret", "")) {
             var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
             var configuration = new DBPConnectionConfiguration();
             configuration.setAuthProperty(CDataAuthModel.SECRET_PROPERTY_PREFIX + "OAuthClientSecret", "stored-secret");
