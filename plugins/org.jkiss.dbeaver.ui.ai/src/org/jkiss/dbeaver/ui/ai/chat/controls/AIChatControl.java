@@ -46,6 +46,8 @@ import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -64,6 +66,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.*;
@@ -642,19 +646,50 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return true;
     }
 
-    void updateDropEvent(@NotNull DropTargetEvent event) {
-        event.detail = DND.DROP_NONE;
-        for (TransferData dataType : event.dataTypes) {
-            if (TreeNodeTransfer.getInstance().isSupportedType(dataType)) {
-                if (canDescribeDroppedObjects(TreeNodeTransfer.getInstance().getDraggedNodes())) {
-                    event.currentDataType = dataType;
-                    event.detail = DND.DROP_COPY;
+    boolean canAttachDroppedFiles(@Nullable Collection<?> objects) {
+        if (objects == null || objects.isEmpty()) {
+            return false;
+        }
+        for (Object object : objects) {
+            if (!(object instanceof DBNNode node) || object instanceof DBNDatabaseNode || !(object instanceof DBNStreamData streamData)) {
+                return false;
+            }
+            if (!streamData.supportsStreamData()) {
+                // local workspace files are transferred by path
+                try {
+                    if (!Files.isRegularFile(Path.of(node.getNodeTargetName()))) {
+                        return false;
+                    }
+                } catch (InvalidPathException e) {
+                    return false;
                 }
-                return;
             }
         }
-        if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
-            event.detail = DND.DROP_COPY;
+        return true;
+    }
+
+    void updateDropEvent(@NotNull DropTargetEvent event) {
+        event.detail = DND.DROP_NONE;
+        Collection<DBNNode> draggedNodes = TreeNodeTransfer.getInstance().getDraggedNodes();
+        if (canDescribeDroppedObjects(draggedNodes)) {
+            for (TransferData dataType : event.dataTypes) {
+                if (TreeNodeTransfer.getInstance().isSupportedType(dataType)) {
+                    event.currentDataType = dataType;
+                    event.detail = DND.DROP_COPY;
+                    return;
+                }
+            }
+            return;
+        }
+        if (draggedNodes != null && !canAttachDroppedFiles(draggedNodes)) {
+            return;
+        }
+        for (TransferData dataType : event.dataTypes) {
+            if (FileTransfer.getInstance().isSupportedType(dataType)) {
+                event.currentDataType = dataType;
+                event.detail = DND.DROP_COPY;
+                return;
+            }
         }
     }
 

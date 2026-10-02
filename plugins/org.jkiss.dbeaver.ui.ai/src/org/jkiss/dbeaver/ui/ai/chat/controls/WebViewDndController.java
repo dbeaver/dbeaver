@@ -179,7 +179,7 @@ final class WebViewDndController {
     private boolean isDropSupported(@NotNull Object[] arguments) {
         Collection<DBNNode> draggedNodes = TreeNodeTransfer.getInstance().getDraggedNodes();
         if (draggedNodes != null) {
-            return chat.canDescribeDroppedObjects(draggedNodes);
+            return chat.canDescribeDroppedObjects(draggedNodes) || chat.canAttachDroppedFiles(draggedNodes);
         }
         return arguments.length > 0 && arguments[0] instanceof Object[] types
             && Arrays.asList(types).contains(BROWSER_FILE_TRANSFER_TYPE);
@@ -194,9 +194,7 @@ final class WebViewDndController {
         Font font = UIUtils.scaleFontSize(gc.getFont(), 2);
         gc.setFont(font);
 
-        var text = TreeNodeTransfer.getInstance().getDraggedNodes() != null
-            ? AIChatMessagesUI.ai_chat_drag_n_drop_objects_message
-            : AIChatMessagesUI.ai_chat_drag_n_drop_message;
+        var text = getDropMessage();
         var extent = gc.textExtent(text);
 
         Image icon = DBeaverIcons.getImage(UIIcon.IMPORT);
@@ -216,6 +214,13 @@ final class WebViewDndController {
             iconX, iconY, iconSize, iconSize);
 
         font.dispose();
+    }
+
+    @NotNull
+    private String getDropMessage() {
+        return chat.canDescribeDroppedObjects(TreeNodeTransfer.getInstance().getDraggedNodes())
+            ? AIChatMessagesUI.ai_chat_drag_n_drop_objects_message
+            : AIChatMessagesUI.ai_chat_drag_n_drop_message;
     }
 
     private void showDndOverlay() {
