@@ -516,7 +516,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.popup = new Composite(getShell(), SWT.NO_FOCUS);
         this.popup.setVisible(false);
         int style = getStyle();
-        int listStyle = SWT.SINGLE | SWT.FULL_SELECTION | SWT.NO_SCROLL | SWT.H_SCROLL;
+        int listStyle = SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL;
         if (items.size() > visibleItemCount) {
             listStyle |= SWT.V_SCROLL;
         }
@@ -711,16 +711,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
         this.popup.moveAbove(null);
         this.popup.setVisible(true);
-        // computeTrim reserves space for the horizontal bar even when the labels fit without scrolling.
-        int unusedHeight = Math.max(0, table.getClientArea().height - itemHeight);
-        if (unusedHeight > 0) {
-            popupBounds.height -= unusedHeight;
-            if (y < parentRect.y) {
-                popupBounds.y += unusedHeight;
-            }
-            this.popup.setBounds(popupBounds);
-            this.popup.layout(true, true);
-        }
         table.setBackground(this.dropDownBackground);
         getDisplay().addFilter(SWT.MouseDown, this.popupFilter);
         Composite openingPopup = this.popup;

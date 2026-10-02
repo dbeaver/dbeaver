@@ -57,16 +57,16 @@ public class OracleDataType extends OracleObject<DBSObject>
     public static final String TYPE_CODE_COLLECTION = "COLLECTION";
     public static final String TYPE_CODE_OBJECT = "OBJECT";
 
-    static class TypeDesc {
+    public static class TypeDesc {
         final DBPDataKind dataKind;
-        final int valueType;
+        public final int valueType;
         final int precision;
         final int minScale;
         final int maxScale;
         final int serverAtLeastMajor;
         final int serverAtLeastMinor;
 
-        private TypeDesc(@NotNull DBPDataKind dataKind, int valueType, int precision, int minScale, int maxScale) {
+        public TypeDesc(@NotNull DBPDataKind dataKind, int valueType, int precision, int minScale, int maxScale) {
             this(dataKind, valueType, precision, minScale, maxScale, -1, -1);
         }
 
@@ -153,16 +153,17 @@ public class OracleDataType extends OracleObject<DBSObject>
     private byte[] typeOID;
     private Object superType;
     private final AttributeCache attributeCache;
-    private final MethodCache methodCache;
-    private boolean flagPredefined;
+    protected MethodCache methodCache;
+    protected boolean flagPredefined;
     private boolean flagIncomplete;
     private boolean flagFinal;
     private boolean flagInstantiable;
     private TypeDesc typeDesc;
     private int valueType = java.sql.Types.OTHER;
-    private String sourceDeclaration;
-    private String sourceDefinition;
+    protected String sourceDeclaration;
+    protected String sourceDefinition;
     private OracleDataType componentType;
+    protected boolean hasMethods;
 
     public OracleDataType(DBSObject owner, String typeName, boolean persisted)
     {
@@ -186,7 +187,6 @@ public class OracleDataType extends OracleObject<DBSObject>
         this.flagInstantiable = JDBCUtils.safeGetBoolean(dbResult, "INSTANTIABLE", OracleConstants.YES);
         String superTypeOwner = JDBCUtils.safeGetString(dbResult, "SUPERTYPE_OWNER");
         boolean hasAttributes;
-        boolean hasMethods;
         if (!CommonUtils.isEmpty(superTypeOwner)) {
             this.superType = new OracleLazyReference(
                 superTypeOwner,
@@ -423,7 +423,7 @@ public class OracleDataType extends OracleObject<DBSObject>
                 if (superSchema == null) {
                     log.warn("Referenced schema '" + olr.schemaName + "' not found for super type '" + olr.objectName + "'");
                 } else {
-                    superType = superSchema.dataTypeCache.getObject(monitor, superSchema, olr.objectName);
+                    superType = superSchema.getDataTypeCache().getObject(monitor, superSchema, olr.objectName);
                     if (superType == null) {
                         log.warn("Referenced type '" + olr.objectName + "' not found in schema '" + olr.schemaName + "'");
                     } else {
@@ -595,9 +595,9 @@ public class OracleDataType extends OracleObject<DBSObject>
             type = new OracleDataType(typeSchema == null ? dataSource : typeSchema, typeName, true);
             type.flagPredefined = true;
             if (typeSchema == null) {
-                dataSource.dataTypeCache.cacheObject(type);
+                dataSource.getDataTypeCache().cacheObject(type);
             } else {
-                typeSchema.dataTypeCache.cacheObject(type);
+                typeSchema.getDataTypeCache().cacheObject(type);
             }
         }
         return type;
@@ -663,7 +663,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
     }
 
-    private class MethodCache extends JDBCObjectCache<OracleDataType, OracleDataTypeMethod> {
+    public class MethodCache extends JDBCObjectCache<OracleDataType, OracleDataTypeMethod> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataType owner) throws SQLException
