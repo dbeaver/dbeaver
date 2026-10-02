@@ -649,12 +649,17 @@ public class MimerUtils {
      * to each caller rather than folded in here.
      */
     @NotNull
-    public static String buildCommentDDL(@NotNull DBSObject context, @NotNull String keyword, @NotNull String name, @Nullable String comment) {
+    public static String buildCommentDDL(
+        @NotNull DBSObject context,
+        @NotNull String keyword,
+        @NotNull String name,
+        @Nullable String comment
+    ) {
         return "COMMENT ON " + keyword + " " + name + " IS " + SQLUtils.quoteString(context, CommonUtils.notEmpty(comment));
     }
 
     /**
-     * Appends the "Comment ..." persist action for a {@code COMMENT ON <keyword>` change - the
+     * Appends the "Comment ..." persist action for a {@code COMMENT ON <keyword>} change - the
      * {@link #buildCommentDDL} call plus wrapping {@link SQLDatabasePersistAction} that every
      * manager's {@code addObjectModifyActions} used to build by hand once it detected the
      * {@code "comment"} property had changed. {@code quotedName} must already be the fully
