@@ -123,7 +123,8 @@ public class DefaultSQLQueryParameterParser {
                     try {
                         String tokenText = document.get(tokenOffset, tokenLength);
                         for (int i = tokenText.indexOf(anonymousMark); i >= 0; i = tokenText.indexOf(anonymousMark, i + 1)) {
-                            SQLQueryParameter parameter = parseAnonymousParameter(String.valueOf(anonymousMark), tokenOffset + i - queryOffset,
+                            SQLQueryParameter parameter = parseAnonymousParameter(
+                                String.valueOf(anonymousMark), tokenOffset + i - queryOffset,
                                 parameters == null ? 0 : parameters.size());
                             parameters = addParameter(parameters, parameter);
                         }
@@ -198,7 +199,8 @@ public class DefaultSQLQueryParameterParser {
             return null;
         }
         String preparedName = SQLQueryParameter.stripVariablePattern(name);
-        if (preparedName.equals(name) && ArrayUtils.contains(context.getSyntaxManager().getNamedParameterPrefixes(), name.substring(0, 1))) {
+        if (preparedName.equals(name)
+            && ArrayUtils.contains(context.getSyntaxManager().getNamedParameterPrefixes(), name.substring(0, 1))) {
             preparedName = name.substring(1);
         }
         return new SQLQueryParameter(context.getSyntaxManager(), ordinal, preparedName, name, offset, length);

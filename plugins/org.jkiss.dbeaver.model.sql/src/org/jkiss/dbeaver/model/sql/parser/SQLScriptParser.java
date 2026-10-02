@@ -841,7 +841,8 @@ public class SQLScriptParser {
         return  parseParametersAndVariables(ctx, 0, selectedQueryText.length());
     }
 
-    public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, int queryOffset, int queryLength) {
+    @Nullable
+    public static List<SQLQueryParameter> parseParametersAndVariables(@NotNull SQLParserContext context, int queryOffset, int queryLength) {
         SQLQueryParameterParser parser = DBUtils.getAdapter(SQLQueryParameterParser.class, context.getDataSource());
         return parser == null ? new DefaultSQLQueryParameterParser(context, queryOffset, queryLength).parseParametersAndVariables() :
             parser.parseParametersAndVariables(context, queryOffset, queryLength);

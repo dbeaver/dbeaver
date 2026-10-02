@@ -95,11 +95,6 @@ public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
         Assertions.assertTrue(parameters.stream().noneMatch(SQLQueryParameter::isNativeBinding));
     }
 
-    @Nullable
-    private List<SQLQueryParameter> parse(@NotNull String query, boolean anonymousParametersEnabled) {
-        return parse(query, anonymousParametersEnabled, "?");
-    }
-
     @Test
     public void usesFirebirdMarkerWhenUserConfiguredAnotherAnonymousMarker() {
         List<SQLQueryParameter> parameters = parse(BLOCK, true, "@");
@@ -145,6 +140,11 @@ public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
             Assertions.assertEquals(1, parameters.size(), header);
             Assertions.assertTrue(parameters.getFirst().isNativeBinding(), header);
         }
+    }
+
+    @Nullable
+    private List<SQLQueryParameter> parse(@NotNull String query, boolean anonymousParametersEnabled) {
+        return parse(query, anonymousParametersEnabled, "?");
     }
 
     @Nullable

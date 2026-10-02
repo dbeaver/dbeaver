@@ -65,16 +65,20 @@ final class FireBirdStatementProducer implements DBCStatementProducer {
                 }
             }
             return statement;
-        } catch (DBCException | SQLException e) {
-            try {
-                statement.close();
-            } catch (DBException closeError) {
-                e.addSuppressed(closeError);
-            }
-            if (e instanceof SQLException sqlError) {
-                throw new JDBCException(sqlError, session.getExecutionContext());
-            }
-            throw (DBCException) e;
+        } catch (SQLException e) {
+            closeOnError(statement, e);
+            throw new JDBCException(e, session.getExecutionContext());
+        } catch (DBCException e) {
+            closeOnError(statement, e);
+            throw e;
+        }
+    }
+
+    private static void closeOnError(@NotNull DBCStatement statement, @NotNull Exception error) {
+        try {
+            statement.close();
+        } catch (DBException closeError) {
+            error.addSuppressed(closeError);
         }
     }
 }

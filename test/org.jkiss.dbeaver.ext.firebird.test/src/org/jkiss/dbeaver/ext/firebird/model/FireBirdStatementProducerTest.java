@@ -77,7 +77,6 @@ public class FireBirdStatementProducerTest extends DBeaverUnitTest {
         FireBirdDataSource dataSource = mockDataSource();
         DBCSession session = Mockito.mock(DBCSession.class);
         JDBCPreparedStatement statement = Mockito.mock(JDBCPreparedStatement.class);
-        DBCExecutionSource source = Mockito.mock(DBCExecutionSource.class);
         Mockito.when(session.getDataSource()).thenReturn(dataSource);
         String inlineMark = "${increment}";
         String sql = "EXECUTE BLOCK (x INT = ?) RETURNS (result INT) AS BEGIN result = x + " + inlineMark + "; SUSPEND; END";
@@ -98,6 +97,7 @@ public class FireBirdStatementProducerTest extends DBeaverUnitTest {
 
         Assertions.assertTrue(context.fillQueryParameters(query, () -> null, false));
         Assertions.assertEquals(executedSql, query.getText());
+        DBCExecutionSource source = Mockito.mock(DBCExecutionSource.class);
         DBCStatement actual = DBUtils.makeStatement(source, session, DBCStatementType.SCRIPT, query, 0, 0);
 
         Assertions.assertSame(statement, actual);
