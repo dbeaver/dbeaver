@@ -81,7 +81,7 @@ public class CDataDriverDescriptorTest extends DBeaverUnitTest {
         var registry = DataSourceProviderRegistry.getInstance();
         var type = registry.getDataSourceType("postgresql");
         Assertions.assertNotNull(type);
-        var icon = type.getIconBig();
+        final var icon = type.getIconBig();
         var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-postgresql",
             new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
                 CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", "APRN-VSDBVR"));

@@ -39,6 +39,21 @@ import java.util.List;
 
 public class CDataDriverCatalogTest extends DBeaverUnitTest {
     private static final long LAST_MODIFIED = 1_700_000_000_000L;
+    private static final String LEGACY_CATALOG = """
+        {
+          "schemaVersion": 2,
+          "drivers": [
+            {
+              "dataSource": "adwords",
+              "artifactId": "googleads-jdbc",
+              "driverName": "Google AdWords JDBC Driver",
+              "versionYear": 2026,
+              "tier": "PROFESSIONAL",
+              "purchaseUrl": "https://www.cdata.com/order/options.aspx?sku=DZRN-VSDBVR"
+            }
+          ]
+        }
+        """;
     private static final String CATALOG = """
         {
           "items": [
@@ -170,6 +185,64 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
         Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
         Mockito.verifyNoInteractions(downloadConnection);
+    }
+
+    @Test
+    public void keepLegacyCachedCatalogWhenOffline() throws Exception {
+        Files.writeString(cacheFile, LEGACY_CATALOG);
+        connectionFactory = method -> {
+            throw new IOException("Server unavailable");
+        };
+
+        var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals("adwords", drivers.getFirst().dataSource());
+        Assertions.assertEquals("googleads-jdbc", drivers.getFirst().artifactId());
+        Assertions.assertEquals("googleads", drivers.getFirst().jdbcName());
+        Assertions.assertEquals(CDataDriverTier.PROFESSIONAL, drivers.getFirst().tier());
+        Assertions.assertEquals(2026, drivers.getFirst().versionYear());
+        Assertions.assertEquals(LEGACY_CATALOG, Files.readString(cacheFile));
+        assertNoTemporaryFiles();
+    }
+
+    @Test
+    public void replaceLegacyCacheWithPublishedCatalog() throws Exception {
+        Files.writeString(cacheFile, LEGACY_CATALOG);
+        Files.setLastModifiedTime(cacheFile, FileTime.fromMillis(LAST_MODIFIED - 1000));
+
+        var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+
+        Assertions.assertEquals(3, drivers.size());
+        Assertions.assertEquals("google_ads", drivers.getFirst().dataTypeId());
+        Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
+        Mockito.verify(downloadConnection).disconnect();
+        assertNoTemporaryFiles();
+    }
+
+    @Test
+    public void rejectInvalidLegacyCache() throws Exception {
+        for (String invalidCatalog : List.of(
+            LEGACY_CATALOG.replace("googleads-jdbc", "../outside-jdbc"),
+            LEGACY_CATALOG.replace("googleads-jdbc", "googleads"),
+            LEGACY_CATALOG.replace("\"schemaVersion\": 2", "\"schemaVersion\": 3"),
+            LEGACY_CATALOG.replace("\"PROFESSIONAL\"", "null")
+        )) {
+            Files.writeString(cacheFile, invalidCatalog);
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+            Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
+        }
+    }
+
+    @Test
+    public void rejectDownloadedLegacyCatalog() throws Exception {
+        saveCachedCatalog(LAST_MODIFIED - 1000);
+        Mockito.when(downloadConnection.getInputStream()).thenReturn(
+            new ByteArrayInputStream(LEGACY_CATALOG.getBytes(StandardCharsets.UTF_8)));
+
+        Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+        Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
+        assertNoTemporaryFiles();
     }
 
     @Test

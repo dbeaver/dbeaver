@@ -152,7 +152,7 @@ public class CDataConnectionSecretsTest extends DBeaverUnitTest {
 
     @Test
     public void applyingPromptCredentialsPreservesConnectionSettingsAndSavedSnapshot() throws Exception {
-        var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+        final var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
         var saved = new DBPConnectionConfiguration();
         String url = "jdbc:cdata:test:Server=manual;AuthScheme=OAuth;CustomOption='quoted;value';";
         saved.setUrl(url);
@@ -180,7 +180,8 @@ public class CDataConnectionSecretsTest extends DBeaverUnitTest {
         hierarchy.saveCredentialValues("test", configuration);
         Assertions.assertEquals(Map.of("Server", "manual"), CDataConnectionUrl.parse(configuration.getUrl(), "test"));
         Assertions.assertTrue(configuration.getProperties().isEmpty());
-        Assertions.assertEquals("prompt-secret", configuration.getAuthProperty(CDataAuthModel.SECRET_PROPERTY_PREFIX + "OAuthClientSecret"));
+        Assertions.assertEquals("prompt-secret",
+            configuration.getAuthProperty(CDataAuthModel.SECRET_PROPERTY_PREFIX + "OAuthClientSecret"));
     }
 
     @Test
@@ -230,7 +231,7 @@ public class CDataConnectionSecretsTest extends DBeaverUnitTest {
 
     @Test
     public void migratesLegacyUrlAndDriverSecretsWithUrlPriority() throws Exception {
-        var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+        final var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
         var configuration = new DBPConnectionConfiguration();
         configuration.setUrl("jdbc:test:OAuthClientSecret=url-secret;SSHPassword=url-ssh;CustomOption=keep;");
         configuration.getProperties().put("oauthclientsecret", "properties-secret");
@@ -308,7 +309,7 @@ public class CDataConnectionSecretsTest extends DBeaverUnitTest {
             hierarchy.saveUrlConfiguration("test", configuration);
             Assertions.assertEquals(secret, configuration.getAuthProperty(CDataAuthModel.SECRET_PROPERTY_PREFIX + "OAuthClientSecret"));
             Assertions.assertEquals(Map.of("Server",
-            "manual", "CustomOption", "keep"), CDataConnectionUrl.parse(configuration.getUrl(), "test"));
+                "manual", "CustomOption", "keep"), CDataConnectionUrl.parse(configuration.getUrl(), "test"));
         }
     }
 

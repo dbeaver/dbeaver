@@ -147,8 +147,9 @@ public final class CDataLicenseActivator {
             if (Boolean.TRUE.equals(updateCurrentDriver)) {
                 driver.setCurrentLicense(verifiedLicense);
             }
-            // installation also succeeds when the driver's license validation is unavailable
-            CDataLicenseActivationReporter.report(driver.getDriverInfo(), resolvedDriver, request);
+            if (verifiedLicense.getStatus().isValid()) {
+                CDataLicenseActivationReporter.report(driver.getDriverInfo(), resolvedDriver, request);
+            }
             monitor.worked(1);
             return verifiedLicense;
         } catch (CDataLicenseActivationException e) {

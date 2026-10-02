@@ -37,11 +37,9 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class NewConnectionDriverSelectorContributor extends DataSourceMenuContributor
-{
+public class NewConnectionDriverSelectorContributor extends DataSourceMenuContributor {
     @Override
-    protected void fillContributionItems(final List<IContributionItem> menuItems)
-    {
+    protected void fillContributionItems(@NotNull final List<IContributionItem> menuItems) {
         IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
@@ -86,8 +84,7 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
         }
     }
 
-    private static class NewConnectionAction extends Action
-    {
+    private static class NewConnectionAction extends Action {
         private final IWorkbenchWindow window;
         private final DBPDriver driver;
         private final Runnable iconUpdateCallback;

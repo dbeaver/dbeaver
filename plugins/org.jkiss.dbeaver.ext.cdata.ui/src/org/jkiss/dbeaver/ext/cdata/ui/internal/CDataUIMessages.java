@@ -47,6 +47,7 @@ public final class CDataUIMessages extends NLS {
     public static String connection_credentials_unavailable;
     public static String connection_editor_fallback;
     public static String connection_editor_invalid_number;
+    public static String connection_editor_required_property;
     public static String connection_editor_auth_model;
     public static String connection_editor_properties;
     public static String connection_editor_retry;

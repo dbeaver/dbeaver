@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cdata;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionUrl;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverDescriptor;
@@ -124,7 +125,8 @@ public class CDataConnectionUrlTest extends DBeaverUnitTest {
         Assertions.assertThrows(DBException.class, () -> DBWUtils.updateConfigWithTunnelInfo(tunnel, configuration, "127.0.0.1", 15432));
     }
 
-    private DBWHandlerConfiguration addTunnel(DBPConnectionConfiguration configuration) {
+    @NotNull
+    private DBWHandlerConfiguration addTunnel(@NotNull DBPConnectionConfiguration configuration) {
         var registry = DataSourceProviderRegistry.getInstance();
         var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-tunnel",
             new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,

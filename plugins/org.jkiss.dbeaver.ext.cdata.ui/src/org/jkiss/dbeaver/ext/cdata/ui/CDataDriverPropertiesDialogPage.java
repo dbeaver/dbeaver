@@ -38,7 +38,9 @@ final class CDataDriverPropertiesDialogPage extends DriverPropertiesDialogPage {
     private final Map<String, Object> originalValues = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Set<String> editableProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
-    CDataDriverPropertiesDialogPage(ConnectionPageAbstract hostPage, Supplier<CDataConnectionHierarchy> hierarchySupplier) {
+    CDataDriverPropertiesDialogPage(
+        @NotNull ConnectionPageAbstract hostPage, @NotNull Supplier<CDataConnectionHierarchy> hierarchySupplier
+    ) {
         super(hostPage);
         this.hierarchySupplier = hierarchySupplier;
     }
@@ -55,19 +57,22 @@ final class CDataDriverPropertiesDialogPage extends DriverPropertiesDialogPage {
         if (hierarchy != null) {
             Map<String, Object> defaults = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             var credentialProperties = hierarchy.getCredentialProperties();
-            for (var property : hierarchy.getAdvancedSecretProperties()) {
+            var connectionProperties = hierarchy.getConnectionProperties();
+            for (var property : hierarchy.getAdvancedProperties()) {
                 if (!editableProperties.contains(property.name())) {
                     continue;
                 }
                 defaults.put(property.name(), property.defaultValue());
                 String value = hierarchy.getValue(property);
-                if (!value.isEmpty() || credentialProperties.contains(property)) {
+                if (connectionProperties.containsKey(property.name()) || credentialProperties.contains(property)) {
                     originalValues.remove(property.name());
                     originalValues.put(property.name(), value);
                 }
             }
             source.addDefaultValues(defaults);
             source.setValues(originalValues);
+            originalValues.clear();
+            originalValues.putAll(source.getPropertyValues());
         }
     }
 
@@ -78,11 +83,11 @@ final class CDataDriverPropertiesDialogPage extends DriverPropertiesDialogPage {
         if (hierarchy != null) {
             Map<String, Object> editedValues = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             editedValues.putAll(source.getPropertyValues());
-            for (var property : hierarchy.getAdvancedSecretProperties()) {
+            for (var property : hierarchy.getAdvancedProperties()) {
                 String name = property.name();
                 if (editableProperties.contains(name) && !Objects.equals(originalValues.get(name), editedValues.get(name))) {
                     String value = Objects.toString(editedValues.get(name), property.defaultValue());
-                    // an absent property after reset must override the secret retained by the main page
+                    // reset must also replace values retained from the URL or secure credentials
                     hierarchy.setValue(property, value, true);
                     configuration.getProperties().keySet().removeIf(name::equalsIgnoreCase);
                     configuration.getProperties().put(name, value);

@@ -49,6 +49,8 @@ public final class CDataDriverCatalog {
     private static final String CATALOG_URL = "https://dbeaver.io/product/cdata-drivers.json";
     private static final String CATALOG_URL_PROPERTY = "cdataDriversURL";
     private static final int CONNECTION_TIMEOUT = 10_000;
+    private static final int LEGACY_SCHEMA_VERSION = 2;
+    private static final String ARTIFACT_SUFFIX = "-jdbc";
     private static volatile List<CDataDriverInfo> drivers = List.of();
     private static final AbstractJob UPDATE_JOB = new AbstractJob("Load CData driver catalog") {
         @NotNull
@@ -116,7 +118,7 @@ public final class CDataDriverCatalog {
         List<CDataDriverInfo> cachedDrivers = List.of();
         if (Files.isRegularFile(cacheFile)) {
             try {
-                cachedDrivers = read(cacheFile);
+                cachedDrivers = read(cacheFile, true);
             } catch (IOException | IllegalStateException | IllegalArgumentException e) {
                 log.warn("Error reading cached CData driver catalog", e);
             }
@@ -161,7 +163,7 @@ public final class CDataDriverCatalog {
                         output.write(buffer, 0, count);
                     }
                 }
-                List<CDataDriverInfo> downloadedDrivers = read(temporary);
+                final List<CDataDriverInfo> downloadedDrivers = read(temporary, false);
                 Files.setLastModifiedTime(temporary, FileTime.fromMillis(connection.getLastModified()));
                 checkCanceled(monitor);
                 try {
@@ -179,12 +181,34 @@ public final class CDataDriverCatalog {
     }
 
     @NotNull
-    private static List<CDataDriverInfo> read(@NotNull Path file) throws IOException {
+    private static List<CDataDriverInfo> read(@NotNull Path file, boolean allowLegacyCache) throws IOException {
         try (Reader reader = Files.newBufferedReader(file)) {
-            return validate(JSONUtils.GSON.fromJson(reader, CatalogFile.class));
+            CatalogFile catalog = JSONUtils.GSON.fromJson(reader, CatalogFile.class);
+            if (allowLegacyCache && catalog != null && catalog.items == null && catalog.schemaVersion == LEGACY_SCHEMA_VERSION
+                && catalog.drivers != null) {
+                catalog.items = catalog.drivers.stream().map(CDataDriverCatalog::migrateDriver).toList();
+            }
+            return validate(catalog);
         } catch (JsonParseException e) {
             throw new IllegalStateException("Error reading CData driver catalog", e);
         }
+    }
+
+    @NotNull
+    private static CDataDriverInfo migrateDriver(@Nullable LegacyDriverInfo driver) {
+        if (driver == null) {
+            throw new IllegalStateException("CData driver catalog contains an empty entry");
+        }
+        requireText(driver.artifactId(), "artifactId");
+        requireText(driver.tier(), "tier");
+        if (!driver.artifactId().endsWith(ARTIFACT_SUFFIX) || driver.artifactId().length() == ARTIFACT_SUFFIX.length()) {
+            throw new IllegalStateException("Invalid legacy CData Maven artifact ID: " + driver.artifactId());
+        }
+        return new CDataDriverInfo(
+            driver.dataSource(), driver.artifactId().substring(0, driver.artifactId().length() - ARTIFACT_SUFFIX.length()),
+            driver.driverName(), driver.versionYear(), CDataDriverTier.valueOf(driver.tier()), driver.purchaseUrl(),
+            driver.dataSource(), null
+        );
     }
 
     private static void checkCanceled(@NotNull DBRProgressMonitor monitor) throws InterruptedException {
@@ -252,5 +276,17 @@ public final class CDataDriverCatalog {
 
     private static final class CatalogFile {
         private List<CDataDriverInfo> items;
+        private int schemaVersion;
+        private List<LegacyDriverInfo> drivers;
+    }
+
+    private record LegacyDriverInfo(
+        @NotNull String dataSource,
+        @NotNull String artifactId,
+        @NotNull String driverName,
+        int versionYear,
+        @NotNull String tier,
+        @NotNull String purchaseUrl
+    ) {
     }
 }

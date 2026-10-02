@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cdata;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionHierarchy;
 import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionHierarchy.Property;
@@ -210,6 +211,50 @@ public class CDataConnectionHierarchyTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void loadingEditedUrlReplacesFormValuesAndKeepsCredentials() throws Exception {
+        var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+        hierarchy.loadValues(Map.of("Server", "old-server", "Timeout", "90", "Password", "stored-secret", "User", "stored-user"));
+
+        hierarchy.loadUrl("test", "jdbc:test:Server=edited-server;CustomOption=keep;");
+
+        Assertions.assertEquals("edited-server", hierarchy.getValue(property(hierarchy, "Server")));
+        var configuration = new DBPConnectionConfiguration();
+        hierarchy.saveConfiguration("test", configuration);
+        Assertions.assertEquals("stored-secret", configuration.getUserPassword());
+        Assertions.assertEquals("stored-user", configuration.getUserName());
+        var properties = CDataConnectionUrl.parse(configuration.getUrl(), "test");
+        Assertions.assertEquals("edited-server", properties.get("Server"));
+        Assertions.assertEquals("keep", properties.get("CustomOption"));
+        Assertions.assertFalse(properties.containsKey("Timeout"));
+        Assertions.assertFalse(properties.containsKey("Password"));
+    }
+
+    @Test
+    public void loadingUrlChangesAuthenticationBranchAndUsesUrlCredentials() throws Exception {
+        var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+        hierarchy.loadValues(Map.of("Password", "old-secret", "User", "old-user"));
+
+        hierarchy.loadUrl("test", "jdbc:test:Edition=Cloud;AuthScheme=Token;Token=url-token;User=url-user;");
+
+        Assertions.assertEquals("Token", hierarchy.getValue(property(hierarchy, "AuthScheme")));
+        var configuration = new DBPConnectionConfiguration();
+        hierarchy.saveConfiguration("test", configuration);
+        Assertions.assertEquals("url-user", configuration.getUserName());
+        Assertions.assertEquals("url-token", CDataConnectionUrl.parse(configuration.getUrl(), "test").get("Token"));
+        Assertions.assertNull(configuration.getUserPassword());
+    }
+
+    @Test
+    public void loadingMalformedUrlKeepsCurrentFormValues() throws Exception {
+        var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+        hierarchy.loadValues(Map.of("Server", "keep-server", "Password", "keep-secret"));
+        var properties = hierarchy.getConnectionProperties();
+
+        Assertions.assertThrows(DBException.class, () -> hierarchy.loadUrl("test", "jdbc:test:Server='broken"));
+        Assertions.assertEquals(properties, hierarchy.getConnectionProperties());
+    }
+
+    @Test
     public void rejectsMalformedHierarchy() {
         Assertions.assertThrows(DBException.class, () -> CDataConnectionHierarchy.parse("{}"));
         Assertions.assertThrows(DBException.class, () -> CDataConnectionHierarchy.parse("not json"));
@@ -217,7 +262,7 @@ public class CDataConnectionHierarchyTest extends DBeaverUnitTest {
 
     @Test
     public void keepsPasswordInCredentialsAndPreservesDriverProperties() throws Exception {
-        var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+        final var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
         var configuration = new DBPConnectionConfiguration();
         configuration.setUrl("jdbc:test:Password=url-secret;CustomOption=keep;");
         configuration.setUserName("test-user");
@@ -254,7 +299,7 @@ public class CDataConnectionHierarchyTest extends DBeaverUnitTest {
 
     @Test
     public void readingConfigurationDoesNotModifyIt() throws Exception {
-        var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+        final var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
         var configuration = new DBPConnectionConfiguration();
         String url = "jdbc:test:Password='dummy;secret';";
         configuration.setUrl(url);
@@ -322,7 +367,8 @@ public class CDataConnectionHierarchyTest extends DBeaverUnitTest {
         Assertions.assertEquals("edited-host", configuration.getHostName());
     }
 
-    private Property property(CDataConnectionHierarchy hierarchy, String name) {
+    @NotNull
+    private Property property(@NotNull CDataConnectionHierarchy hierarchy, @NotNull String name) {
         return hierarchy.getBasicProperties().stream().filter(property -> property.name().equals(name)).findFirst().orElseThrow();
     }
 }

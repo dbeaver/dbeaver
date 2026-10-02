@@ -283,6 +283,17 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
     }
 
     private void changeConnectionMode() {
+        if (!isCustomURL() && hierarchy != null) {
+            try {
+                hierarchy.loadUrl(getDriver().getDriverInfo().jdbcName(), urlText.getText());
+                editor.setHierarchy(hierarchy);
+            } catch (DBException e) {
+                selectUrlMode(true);
+                setErrorMessage(CDataUIMessages.connection_editor_invalid_url);
+                site.updateButtons();
+                return;
+            }
+        }
         updateConnectionMode();
         propertiesChanged(null);
     }
@@ -304,7 +315,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         }
     }
 
-    private void showHierarchyStatus(String message, boolean retry) {
+    private void showHierarchyStatus(@NotNull String message, boolean retry) {
         hierarchyStatus.setText(message);
         UIUtils.setControlVisible(hierarchyStatus, !message.isEmpty());
         UIUtils.setControlVisible(retryLink, retry);

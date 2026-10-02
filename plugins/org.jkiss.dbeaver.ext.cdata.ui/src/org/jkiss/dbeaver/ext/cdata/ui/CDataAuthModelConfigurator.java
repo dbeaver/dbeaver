@@ -64,7 +64,7 @@ public class CDataAuthModelConfigurator extends DatabaseNativeAuthModelConfigura
         panel.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, columns, 1));
         Composite general = UIUtils.createFormPlaceholder(panel, 2, 1);
         UIUtils.setControlVisible(general, false);
-        Composite credentials = UIUtils.createFormPlaceholder(panel, 2, 1);
+        final Composite credentials = UIUtils.createFormPlaceholder(panel, 2, 1);
         savePasswordCheck = UIUtils.createCheckbox(panel,
             UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password, false);
         savePasswordCheck.setEnabled(canEditCredentialsPerPolicy);
@@ -163,6 +163,7 @@ public class CDataAuthModelConfigurator extends DatabaseNativeAuthModelConfigura
         changeListener.run();
     }
 
+    @NotNull
     private CDataDriverDescriptor getDriver() {
         return (CDataDriverDescriptor) dataSource.getDriver();
     }

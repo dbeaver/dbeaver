@@ -54,8 +54,8 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.FrameworkUtil;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /** Data source type gallery used by the new connection wizard. */
 public class DataSourceTypeViewer extends Viewer {

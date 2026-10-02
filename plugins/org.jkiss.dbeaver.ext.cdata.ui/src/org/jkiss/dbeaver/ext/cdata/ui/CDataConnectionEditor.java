@@ -76,7 +76,7 @@ final class CDataConnectionEditor {
         updatePasswordEnabled(authentication);
     }
 
-    private void updatePasswordEnabled(Composite parent) {
+    private void updatePasswordEnabled(@NotNull Composite parent) {
         for (Control control : parent.getChildren()) {
             if (Boolean.TRUE.equals(control.getData("secret"))) {
                 control.setEnabled(passwordEnabled);
@@ -164,7 +164,7 @@ final class CDataConnectionEditor {
         UIUtils.setControlVisible(passwordOptionsControl, hasPassword);
     }
 
-    private void updateScrollSize(Composite content) {
+    private void updateScrollSize(@NotNull Composite content) {
         ScrolledComposite scroll = UIUtils.getParentOfType(content, ScrolledComposite.class);
         if (scroll != null && scroll.getContent() != null) {
             scroll.setMinSize(scroll.getContent().computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -172,7 +172,7 @@ final class CDataConnectionEditor {
     }
 
     @Nullable
-    private Control createField(Composite parent, Property property) {
+    private Control createField(@NotNull Composite parent, @NotNull Property property) {
         if (!property.visible()) {
             return null;
         }
@@ -224,7 +224,7 @@ final class CDataConnectionEditor {
         return input;
     }
 
-    private void changed(Property property, String value) {
+    private void changed(@NotNull Property property, @NotNull String value) {
         hierarchy.setValue(property, value, false);
         changeListener.accept(property);
         if (!property.rules().isEmpty() && !rebuildPending) {
@@ -245,7 +245,14 @@ final class CDataConnectionEditor {
             return null;
         }
         Map<String, String> properties = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        hierarchy.getBasicProperties().forEach(property -> properties.put(property.name(), hierarchy.getValue(property)));
+        List<Property> activeProperties = credentialsPromptMode ? hierarchy.getCredentialProperties() : hierarchy.getBasicProperties();
+        for (Property property : activeProperties) {
+            String value = hierarchy.getValue(property);
+            if (property.visible() && property.required() && (!property.password() || passwordEnabled) && value.isBlank()) {
+                return NLS.bind(CDataUIMessages.connection_editor_required_property, property.label());
+            }
+            properties.put(property.name(), value);
+        }
         for (var group : hierarchy.getAdvancedGroups()) {
             for (Property property : group.properties()) {
                 String value = properties.get(property.name());

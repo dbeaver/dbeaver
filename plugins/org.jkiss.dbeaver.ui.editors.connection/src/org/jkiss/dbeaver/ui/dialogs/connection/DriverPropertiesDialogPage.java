@@ -152,8 +152,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(@NotNull Composite parent) {
         Composite ph = UIUtils.createPlaceholder(parent, 1);
         if (parent.getLayout() instanceof GridLayout) {
             ph.setLayoutData(new GridData(GridData.FILL_BOTH));

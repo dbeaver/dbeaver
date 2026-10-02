@@ -55,12 +55,13 @@ public class CDataHierarchyTestDriver implements Driver {
             throw new SQLException("Configuration connection failed");
         }
         ClassLoader loader = getClass().getClassLoader();
-        ResultSet result = (ResultSet) Proxy.newProxyInstance(loader, new Class<?>[] {ResultSet.class}, (proxy, method, args) ->
-            switch (method.getName()) {
+        ResultSet result = (ResultSet) Proxy.newProxyInstance(loader, new Class<?>[] {ResultSet.class}, (proxy, method, args) -> {
+            return switch (method.getName()) {
                 case "next" -> true;
                 case "getString" -> "{\"basic\":[],\"advanced\":[]}";
                 default -> null;
-            });
+            };
+        });
         Statement statement = (Statement) Proxy.newProxyInstance(loader, new Class<?>[] {Statement.class}, (proxy, method, args) ->
             method.getName().equals("executeQuery") ? result : null);
         return (Connection) Proxy.newProxyInstance(loader, new Class<?>[] {Connection.class}, (proxy, method, args) ->

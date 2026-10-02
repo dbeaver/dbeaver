@@ -36,6 +36,7 @@ import java.util.TreeSet;
 
 public final class CDataConnectionHierarchy {
     private static final String PROMPT_SECRETS_PROPERTY = "cdata.promptSecrets";
+
     public record Property(
         @NotNull String name,
         @NotNull String label,
@@ -63,7 +64,7 @@ public final class CDataConnectionHierarchy {
     private final Set<String> urlPropertyNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private final Set<String> promptSecretNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
-    private CDataConnectionHierarchy(List<Property> basic, List<Group> advanced) {
+    private CDataConnectionHierarchy(@NotNull List<Property> basic, @NotNull List<Group> advanced) {
         this.basic = basic;
         this.advanced = advanced;
         collectNames(basic, basicNames);
@@ -161,6 +162,19 @@ public final class CDataConnectionHierarchy {
         configuration.setUrl(CDataConnectionUrl.build(source, properties));
     }
 
+    public void loadUrl(@NotNull String source, @NotNull String url) throws DBException {
+        var urlProperties = CDataConnectionUrl.parse(url, source);
+        Map<String, String> properties = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        getConnectionProperties().forEach((name, value) -> {
+            if (name.equalsIgnoreCase("User") || secretNames.contains(name)) {
+                properties.put(name, value);
+            }
+        });
+        properties.putAll(urlProperties);
+        loadValues(properties);
+        urlPropertyNames.addAll(urlProperties.keySet());
+    }
+
     public void saveUrlConfiguration(@NotNull String source, @NotNull DBPConnectionConfiguration configuration) throws DBException {
         var urlProperties = CDataConnectionUrl.parse(configuration.getUrl() == null ? "" : configuration.getUrl(), source);
         Map<String, String> properties = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -182,7 +196,7 @@ public final class CDataConnectionHierarchy {
         }
     }
 
-    private void saveCredentials(DBPConnectionConfiguration configuration, Map<String, String> properties) {
+    private void saveCredentials(@NotNull DBPConnectionConfiguration configuration, @NotNull Map<String, String> properties) {
         Map<String, String> driverProperties = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         driverProperties.putAll(configuration.getProperties());
         for (Property property : getAdvancedSecretProperties()) {
@@ -253,10 +267,15 @@ public final class CDataConnectionHierarchy {
     }
 
     @NotNull
-    public List<Property> getAdvancedSecretProperties() {
+    public List<Property> getAdvancedProperties() {
         return advanced.stream().flatMap(group -> group.properties().stream())
-            .filter(property -> property.password() && !basicNames.contains(property.name()))
+            .filter(property -> !basicNames.contains(property.name()))
             .toList();
+    }
+
+    @NotNull
+    public List<Property> getAdvancedSecretProperties() {
+        return getAdvancedProperties().stream().filter(Property::password).toList();
     }
 
     public boolean isSecretProperty(@NotNull String name) {
@@ -292,7 +311,7 @@ public final class CDataConnectionHierarchy {
         savePromptSecretNames(configuration);
     }
 
-    private void savePromptSecretNames(DBPConnectionConfiguration configuration) {
+    private void savePromptSecretNames(@NotNull DBPConnectionConfiguration configuration) {
         // retain field names after Save password removes their values, so the connection prompt can request them
         if (promptSecretNames.isEmpty()) {
             configuration.removeProviderProperty(PROMPT_SECRETS_PROPERTY);
@@ -301,7 +320,9 @@ public final class CDataConnectionHierarchy {
         }
     }
 
-    private void collectSection(List<Property> properties, List<Property> result, boolean authentication, boolean authSection) {
+    private void collectSection(
+        @NotNull List<Property> properties, @NotNull List<Property> result, boolean authentication, boolean authSection
+    ) {
         for (Property property : properties) {
             boolean authProperty = authentication || property.name().equalsIgnoreCase("AuthScheme")
                 || property.name().equalsIgnoreCase("User") || property.name().equalsIgnoreCase("Password");
@@ -360,21 +381,21 @@ public final class CDataConnectionHierarchy {
         return result;
     }
 
-    private void collectActive(List<Property> properties, List<Property> result) {
+    private void collectActive(@NotNull List<Property> properties, @NotNull List<Property> result) {
         for (Property property : properties) {
             result.add(property);
             collectActive(property.rules().getOrDefault(getValue(property), List.of()), result);
         }
     }
 
-    private static void collectNames(List<Property> properties, Set<String> names) {
+    private static void collectNames(@NotNull List<Property> properties, @NotNull Set<String> names) {
         for (Property property : properties) {
             names.add(property.name());
             property.rules().values().forEach(children -> collectNames(children, names));
         }
     }
 
-    private static void collectSecretNames(List<Property> properties, Set<String> names) {
+    private static void collectSecretNames(@NotNull List<Property> properties, @NotNull Set<String> names) {
         for (Property property : properties) {
             if (property.password()) {
                 names.add(property.name());
@@ -383,7 +404,8 @@ public final class CDataConnectionHierarchy {
         }
     }
 
-    private static List<Property> parseProperties(JsonArray array) {
+    @NotNull
+    private static List<Property> parseProperties(@NotNull JsonArray array) {
         List<Property> properties = new ArrayList<>();
         for (JsonElement element : array) {
             JsonObject json = element.getAsJsonObject();
@@ -411,7 +433,8 @@ public final class CDataConnectionHierarchy {
         return List.copyOf(properties);
     }
 
-    private static String string(JsonObject json, String key) {
+    @NotNull
+    private static String string(@NotNull JsonObject json, @NotNull String key) {
         JsonElement value = json.get(key);
         return value == null || value.isJsonNull() ? "" : value.getAsString();
     }
