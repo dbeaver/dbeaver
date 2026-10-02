@@ -208,7 +208,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 UIUtils.asyncExec(() -> {
                     themeRefreshPending = false;
                     if (!isDisposed()) {
-                        NativeThemeUtils.updateNativeTheme(itemsViewer.getControl());
                         itemsViewer.refresh();
                     }
                 });
