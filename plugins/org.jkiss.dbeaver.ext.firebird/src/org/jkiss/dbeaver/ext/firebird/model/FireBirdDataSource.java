@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatementProducer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.parser.SQLQueryParameterParser;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.IntKeyMap;
 
@@ -47,6 +49,8 @@ public class FireBirdDataSource extends GenericDataSource
 	implements DBCQueryPlanner {
 
     private static final Log log = Log.getLog(FireBirdDataSource.class);
+    private static final SQLQueryParameterParser PARAMETER_PARSER = new FireBirdQueryParameterParser();
+    private static final DBCStatementProducer STATEMENT_PRODUCER = new FireBirdStatementProducer();
 
     private static class MetaFieldInfo {
         int type;
@@ -71,6 +75,16 @@ public class FireBirdDataSource extends GenericDataSource
         throws DBException
     {
         super(monitor, container, metaModel, new FireBirdSQLDialect());
+    }
+
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter == SQLQueryParameterParser.class) {
+            return adapter.cast(PARAMETER_PARSER);
+        } else if (adapter == DBCStatementProducer.class) {
+            return adapter.cast(STATEMENT_PRODUCER);
+        }
+        return super.getAdapter(adapter);
     }
 
     public String getMetaFieldValue(String name, int type) {
