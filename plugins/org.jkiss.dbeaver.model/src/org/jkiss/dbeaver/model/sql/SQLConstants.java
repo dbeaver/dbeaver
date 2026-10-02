@@ -85,6 +85,7 @@ public class SQLConstants {
 
     public static final String KEYWORD_AS = "AS";
     public static final String KEYWORD_USING = "USING";
+    public static final String KEYWORD_WITH = "WITH";
 
     public static final String DATA_TYPE_VARCHAR = "varchar";
     public static final String DATA_TYPE_NVARCHAR = "nvarchar";

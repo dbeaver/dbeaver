@@ -572,6 +572,100 @@ public final class SQLUtils {
     }
 
     /**
+     * Returns the keyword of the statement defined by the query.
+     * Unlike {@link #getFirstKeyword(SQLDialect, String)} it skips the leading {@code WITH} clause
+     * with common table expressions, because such a clause may precede both read-only and modifying
+     * statements.
+     *
+     * @return statement keyword or an empty string if it cannot be detected
+     */
+    @NotNull
+    public static String getStatementKeyword(@NotNull SQLDialect dialect, @NotNull String query) {
+        String keyword = getFirstKeyword(dialect, query);
+        if (!SQLConstants.KEYWORD_WITH.equalsIgnoreCase(keyword)) {
+            return keyword;
+        }
+        String cleanQuery = stripComments(dialect, query);
+        int statementPos = findStatementPosAfterCTE(dialect, cleanQuery);
+        if (statementPos < 0) {
+            return keyword;
+        }
+        return getFirstKeyword(dialect, cleanQuery.substring(statementPos));
+    }
+
+    /**
+     * Finds the position of the statement which follows the {@code WITH} clause with common table
+     * expressions. Every CTE query is enclosed in a bracket preceded by {@code AS}, so the statement
+     * starts right after the closing bracket of the last CTE.
+     *
+     * @return position of the statement start or -1 if the clause cannot be recognized
+     */
+    private static int findStatementPosAfterCTE(@NotNull SQLDialect dialect, @NotNull String query) {
+        char escapeChar = dialect.getStringEscapeCharacter();
+        String[][] stringQuotes = dialect.getStringQuoteStrings();
+        String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
+        int brackets = 0;
+        int cteQueryPos = -1;
+        int statementPos = -1;
+        int pos = 0;
+        while (pos < query.length()) {
+            String[] quote = quoteStartingAt(query, pos, stringQuotes);
+            if (quote != null) {
+                pos = skipQuoted(query, pos, quote, escapeChar);
+                continue;
+            }
+            if (identifierQuotes != null) {
+                quote = quoteStartingAt(query, pos, identifierQuotes);
+                if (quote != null) {
+                    // Identifiers escape a quote by doubling it, so escapeChar must not consume the closing quote
+                    pos = skipQuoted(query, pos, quote, (char) 0);
+                    continue;
+                }
+            }
+            char ch = query.charAt(pos);
+            if (ch == '(') {
+                brackets++;
+            } else if (ch == ')' && brackets > 0) {
+                brackets--;
+                if (brackets == 0 && cteQueryPos >= 0) {
+                    statementPos = pos + 1;
+                    cteQueryPos = -1;
+                }
+            } else if (
+                brackets == 0 &&
+                cteQueryPos < 0 &&
+                isKeywordAt(query, pos, SQLConstants.KEYWORD_AS))
+            {
+                int bracketPos = skipWhitespaces(query, pos + SQLConstants.KEYWORD_AS.length());
+                if (bracketPos < query.length() && query.charAt(bracketPos) == '(') {
+                    cteQueryPos = bracketPos;
+                }
+            }
+            pos++;
+        }
+        return statementPos;
+    }
+
+    private static boolean isKeywordAt(@NotNull String query, int pos, @NotNull String keyword) {
+        if (!query.regionMatches(true, pos, keyword, 0, keyword.length())) {
+            return false;
+        }
+        int endPos = pos + keyword.length();
+        if (endPos >= query.length()) {
+            return true;
+        }
+        char ch = query.charAt(endPos);
+        return !Character.isLetterOrDigit(ch) && ch != '_' && ch != '$';
+    }
+
+    private static int skipWhitespaces(@NotNull String query, int pos) {
+        while (pos < query.length() && Character.isWhitespace(query.charAt(pos))) {
+            pos++;
+        }
+        return pos;
+    }
+
+    /**
      * Removes \\r characters from query.
      * Actually this is done specially for Oracle due to some bug in it's driver
      * @return normalized query.
