@@ -21,12 +21,15 @@ import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.event.EventHandler;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * This is a hack for SWT Light/Dark theme switch.
@@ -76,6 +79,18 @@ public final class NativeThemeUtils {
                 .invoke(null, control, UIStyles.isDarkTheme());
         } catch (Throwable e) {
             log.debug("Error updating native control theme", e);
+        }
+    }
+
+    public static void installTreeSelectionFix(@NotNull Tree tree) {
+        if (!RuntimeUtils.isWindows()) {
+            return;
+        }
+        try {
+            getNativeUtilsClass().getMethod("installTreeSelectionFix", Tree.class, BooleanSupplier.class)
+                .invoke(null, tree, (BooleanSupplier) UIStyles::isDarkTheme);
+        } catch (Throwable e) {
+            log.debug("Error installing native tree selection fix", e);
         }
     }
 
