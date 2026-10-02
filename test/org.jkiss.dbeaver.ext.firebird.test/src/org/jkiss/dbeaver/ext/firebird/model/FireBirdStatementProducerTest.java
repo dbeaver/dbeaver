@@ -21,10 +21,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
-import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -106,6 +103,47 @@ public class FireBirdStatementProducerTest extends DBeaverUnitTest {
         Assertions.assertSame(statement, actual);
         Mockito.verify(statement).setString(1, "7");
         Mockito.verify(statement, Mockito.never()).setString(2, "3");
+    }
+
+    @Test
+    public void ignoreExecutesCurrentAndSubsequentQueriesWithoutBinding() throws Exception {
+        FireBirdDataSource dataSource = mockDataSource();
+        DBCSession session = Mockito.mock(DBCSession.class);
+        DBCStatement statement = Mockito.mock(DBCStatement.class);
+        String sql = "EXECUTE BLOCK (x INT = ?) AS BEGIN END";
+        Mockito.when(session.getDataSource()).thenReturn(dataSource);
+        Mockito.when(session.prepareStatement(DBCStatementType.SCRIPT, sql, false, false, false)).thenReturn(statement);
+        SQLParametersProvider ignore = (scriptContext, query, parameters, receiver, useDefaults) -> null;
+        SQLScriptContext context = new SQLScriptContext(null, () -> null, null, new StringWriter(), ignore);
+
+        for (int i = 0; i < 2; i++) {
+            SQLQuery query = nativeQuery(dataSource, sql);
+            Assertions.assertTrue(context.fillQueryParameters(query, () -> null, false));
+            Assertions.assertEquals(sql, query.getText());
+            Assertions.assertEquals(List.of(), query.getParameters());
+            Assertions.assertSame(statement, DBUtils.makeStatement(null, session, DBCStatementType.SCRIPT, query, 0, 0));
+        }
+    }
+
+    @Test
+    public void cancelDoesNotDiscardParameters() {
+        FireBirdDataSource dataSource = mockDataSource();
+        SQLParametersProvider cancel = (scriptContext, query, parameters, receiver, useDefaults) -> false;
+        SQLScriptContext context = new SQLScriptContext(null, () -> null, null, new StringWriter(), cancel);
+        SQLQuery query = nativeQuery(dataSource, "EXECUTE BLOCK (x INT = ?) AS BEGIN END");
+
+        Assertions.assertFalse(context.fillQueryParameters(query, () -> null, false));
+        Assertions.assertFalse(context.isIgnoreParameters());
+        Assertions.assertEquals(1, query.getParameters().size());
+    }
+
+    @NotNull
+    private static SQLQuery nativeQuery(@NotNull FireBirdDataSource dataSource, @NotNull String sql) {
+        SQLQuery query = new SQLQuery(dataSource, sql);
+        SQLQueryParameter parameter = new SQLQueryParameter(new SQLSyntaxManager(), 0, "?", "?");
+        parameter.setNativeBinding(true);
+        query.setParameters(List.of(parameter));
+        return query;
     }
 
     @NotNull
