@@ -19,11 +19,14 @@ package org.jkiss.dbeaver.ext.cdata.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService;
+import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionUrl;
 import org.jkiss.dbeaver.ext.cdata.model.CDataIcons;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriverLicense;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
@@ -37,14 +40,17 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriverWithLicense, DBPDriverWithLazyIcon {
+    private static final Log log = Log.getLog(CDataDriverDescriptor.class);
     private static final long ICON_RETRY_NANOS = TimeUnit.MINUTES.toNanos(5);
 
     private final CDataDriverInfo driverInfo;
     private DBPDataSourceType dataSourceType;
+    private final Set<Runnable> licenseChangeListeners = new CopyOnWriteArraySet<>();
     private final Object licenseActivationLock = new Object();
     private final AtomicBoolean activationDialogInProgress = new AtomicBoolean();
     private final AtomicBoolean activationProcessInProgress = new AtomicBoolean();
@@ -72,6 +78,12 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     @NotNull
     public CDataDriverInfo getDriverInfo() {
         return driverInfo;
+    }
+
+    @NotNull
+    @Override
+    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
+        return CDataConnectionUrl.getConnectionUrl(driverInfo.jdbcName(), connectionInfo);
     }
 
     @NotNull
@@ -203,8 +215,23 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         return currentLicense.getStatus();
     }
 
+    public void addLicenseChangeListener(@NotNull Runnable listener) {
+        licenseChangeListeners.add(listener);
+    }
+
+    public void removeLicenseChangeListener(@NotNull Runnable listener) {
+        licenseChangeListeners.remove(listener);
+    }
+
     void setCurrentLicense(@NotNull CDataDriverLicense currentLicense) {
         this.currentLicense = currentLicense;
+        for (Runnable listener : licenseChangeListeners) {
+            try {
+                listener.run();
+            } catch (RuntimeException e) {
+                log.debug("Unable to notify CData license change listener", e);
+            }
+        }
     }
 
     @Override

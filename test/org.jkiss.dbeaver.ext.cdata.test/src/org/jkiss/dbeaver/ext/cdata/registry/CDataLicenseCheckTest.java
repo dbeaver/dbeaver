@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -128,6 +129,7 @@ public class CDataLicenseCheckTest extends DBeaverUnitTest {
         Files.delete(driver.licensePath());
         Assertions.assertEquals(CDataLicenseStatus.NOT_INSTALLED,
             CDataLicenseValidator.validate(new VoidProgressMonitor(), driver).getStatus());
+        Assertions.assertFalse(Files.exists(driver.jarPath().resolveSibling("legacy-check")));
     }
 
     @Test
@@ -149,6 +151,70 @@ public class CDataLicenseCheckTest extends DBeaverUnitTest {
             CDataLicenseValidator.validate(new VoidProgressMonitor(), driver).getStatus());
     }
 
+    @Test
+    public void fallBackToDriverInformation() throws Exception {
+        CDataResolvedDriver driver = createDriver();
+        Path folder = driver.jarPath().getParent();
+        Files.writeString(folder.resolve("license-information.txt"), "Trial license, 20 days remaining");
+        for (String output : List.of("unsupported command", "CData driver help", "", "{}")) {
+            for (boolean failed : List.of(false, true)) {
+                Files.writeString(folder.resolve("license-check.json"), output);
+                if (failed) {
+                    Files.createFile(folder.resolve("fail-check"));
+                }
+                CDataDriverLicense license = CDataLicenseValidator.validate(new VoidProgressMonitor(), driver);
+                Assertions.assertEquals(CDataLicenseStatus.TRIAL_ACTIVE, license.getStatus());
+                Assertions.assertEquals(20, license.getRemainingDays());
+                Assertions.assertEquals("test-node", license.getLicenseId());
+                Assertions.assertTrue(Files.deleteIfExists(folder.resolve("legacy-check")));
+                Files.deleteIfExists(folder.resolve("fail-check"));
+            }
+        }
+    }
+
+    @Test
+    public void preserveLegacyLicenseStatusAndInstalledFile() throws Exception {
+        CDataResolvedDriver driver = createDriver();
+        Path folder = driver.jarPath().getParent();
+        Files.writeString(folder.resolve("license-check.json"), "unsupported command");
+        Files.writeString(folder.resolve("license-information.txt"), "No License");
+        Assertions.assertEquals(CDataLicenseStatus.NOT_INSTALLED,
+            CDataLicenseValidator.validate(new VoidProgressMonitor(), driver).getStatus());
+
+        Files.writeString(driver.licensePath(), "installed-license");
+        for (var entry : Map.of(
+            "No License", CDataLicenseStatus.VALIDATION_UNAVAILABLE,
+            "Single Developer License", CDataLicenseStatus.PURCHASED_ACTIVE,
+            "Trial license has expired", CDataLicenseStatus.TRIAL_EXPIRED,
+            "License machine mismatch", CDataLicenseStatus.MACHINE_MISMATCH
+        ).entrySet()) {
+            Files.delete(folder.resolve("legacy-check"));
+            Files.writeString(folder.resolve("license-information.txt"), entry.getKey());
+            Assertions.assertEquals(entry.getValue(),
+                CDataLicenseValidator.validate(new VoidProgressMonitor(), driver).getStatus());
+            Assertions.assertEquals("installed-license", Files.readString(driver.licensePath()));
+        }
+    }
+
+    @Test
+    public void doNotFallBackFromRecognizedLicenseCheck() throws Exception {
+        CDataResolvedDriver driver = createDriver();
+        Path folder = driver.jarPath().getParent();
+        Files.writeString(driver.licensePath(), "installed-license");
+        Files.writeString(folder.resolve("license-information.txt"), "Single Developer License");
+        Files.createFile(folder.resolve("fail-check"));
+        for (var entry : Map.of(
+            response(false, "Trial", LocalDate.now().minusDays(1)), CDataLicenseStatus.TRIAL_EXPIRED,
+            "{\"active\":false}", CDataLicenseStatus.INVALID_KEY,
+            response(true, "Developer", LocalDate.now().plusDays(30)), CDataLicenseStatus.VALIDATION_UNAVAILABLE
+        ).entrySet()) {
+            Files.writeString(folder.resolve("license-check.json"), entry.getKey());
+            Assertions.assertEquals(entry.getValue(),
+                CDataLicenseValidator.validate(new VoidProgressMonitor(), driver).getStatus());
+            Assertions.assertFalse(Files.exists(folder.resolve("legacy-check")));
+        }
+    }
+
     @NotNull
     private CDataResolvedDriver createDriver() throws Exception {
         Path folder = Files.createDirectories(tempDirectory.resolve("driver with spaces"));
@@ -166,7 +232,7 @@ public class CDataLicenseCheckTest extends DBeaverUnitTest {
             input.transferTo(output);
             output.closeEntry();
         }
-        return new CDataResolvedDriver(jar, "unused.Driver", folder.resolve("cdata.jdbc.test.lic"));
+        return new CDataResolvedDriver(jar, CDataLicenseCheckProcess.class.getName(), folder.resolve("cdata.jdbc.test.lic"));
     }
 
     @NotNull

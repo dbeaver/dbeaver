@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 public final class CDataLicenseCheckProcess {
     private CDataLicenseCheckProcess() {
@@ -34,5 +35,11 @@ public final class CDataLicenseCheckProcess {
         if (Files.exists(Path.of("fail-check"))) {
             System.exit(2);
         }
+    }
+
+    @NotNull
+    public static Map<String, String> getInformation(@NotNull String connectionString) throws IOException {
+        Files.createFile(Path.of("legacy-check"));
+        return Map.of("License", Files.readString(Path.of("license-information.txt")), "NodeId", "test-node");
     }
 }

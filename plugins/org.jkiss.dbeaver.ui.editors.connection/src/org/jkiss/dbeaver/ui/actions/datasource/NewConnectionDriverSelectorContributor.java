@@ -19,41 +19,42 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DataSourceTypeViewer;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.function.Predicate;
 
 public class NewConnectionDriverSelectorContributor extends DataSourceMenuContributor
 {
-    private static final Log log = Log.getLog(NewConnectionDriverSelectorContributor.class);
-
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems)
     {
         IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
-        if (DBWorkbench.isDistributed()) {
-            allDrivers.removeIf(Predicate.not(driver -> driver.getDefaultDriverLoader().isDriverInstalled()));
-        }
+        allDrivers.removeIf(Predicate.not(DataSourceTypeViewer::isDriverAvailable));
         List<DBPDriver> commercialDrivers = allDrivers.stream()
             .filter(DBPDriverWithLicense.class::isInstance)
             .toList();
         allDrivers.removeAll(commercialDrivers);
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 10);
         for (DBPDriver driver : recentDrivers) {
-            menuItems.add(new ActionContributionItem(new NewConnectionAction(window, driver)));
+            NewConnectionAction action = new NewConnectionAction(window, driver);
+            action.loadIcon();
+            menuItems.add(new ActionContributionItem(action));
         }
         MenuManager allDriversMenu = new MenuManager("Other");
         for (DBPDriver driver : allDrivers) {
@@ -62,6 +63,7 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
             }
             allDriversMenu.add(new NewConnectionAction(window, driver));
         }
+        allDriversMenu.addMenuListener(NewConnectionDriverSelectorContributor::loadDriverIcons);
         menuItems.add(allDriversMenu);
         if (!commercialDrivers.isEmpty()) {
             menuItems.add(new Separator());
@@ -71,19 +73,43 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
             for (DBPDriver driver : commercialDrivers) {
                 commercialDriversMenu.add(new NewConnectionAction(window, driver));
             }
+            commercialDriversMenu.addMenuListener(NewConnectionDriverSelectorContributor::loadDriverIcons);
             menuItems.add(commercialDriversMenu);
+        }
+    }
+
+    private static void loadDriverIcons(@NotNull IMenuManager menu) {
+        for (IContributionItem item : menu.getItems()) {
+            if (item instanceof ActionContributionItem contribution && contribution.getAction() instanceof NewConnectionAction action) {
+                action.loadIcon();
+            }
         }
     }
 
     private static class NewConnectionAction extends Action
     {
-        private IWorkbenchWindow window;
-        private DBPDriver driver;
+        private final IWorkbenchWindow window;
+        private final DBPDriver driver;
+        private final Runnable iconUpdateCallback;
 
-        public NewConnectionAction(IWorkbenchWindow window, DBPDriver driver) {
+        public NewConnectionAction(@NotNull IWorkbenchWindow window, @NotNull DBPDriver driver) {
             super(driver.getName(), DBeaverIcons.getImageDescriptor(driver.getIcon()));
             this.window = window;
             this.driver = driver;
+            WeakReference<NewConnectionAction> actionReference = new WeakReference<>(this);
+            iconUpdateCallback = () -> UIUtils.asyncExec(() -> {
+                NewConnectionAction action = actionReference.get();
+                if (action != null) {
+                    action.setImageDescriptor(DBeaverIcons.getImageDescriptor(action.driver.getIcon()));
+                }
+            });
+        }
+
+        private void loadIcon() {
+            if (driver instanceof DBPDriverWithLazyIcon lazyIcon) {
+                lazyIcon.loadIcon(iconUpdateCallback);
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(driver.getIcon()));
+            }
         }
 
         @Override

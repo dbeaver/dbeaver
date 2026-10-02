@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import org.jkiss.dbeaver.ext.cdata.model.CDataIcons;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBIconComposite;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -27,9 +31,51 @@ import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 
 public class CDataDriverDescriptorTest extends DBeaverUnitTest {
+    @Test
+    public void notifyLicenseChangesAndRemoveListener() {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-license-listeners",
+            new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", "APRN-VSDBVR"));
+        var notifications = new AtomicInteger();
+        Runnable failingListener = () -> {
+            throw new IllegalStateException("test listener failure");
+        };
+        Runnable listener = () -> {
+            Assertions.assertEquals(CDataLicenseStatus.TRIAL_ACTIVE, driver.getLicenseStatus());
+            notifications.incrementAndGet();
+        };
+        driver.addLicenseChangeListener(failingListener);
+        driver.addLicenseChangeListener(listener);
+
+        driver.setCurrentLicense(new CDataDriverLicense(CDataLicenseStatus.TRIAL_ACTIVE, null, null));
+
+        Assertions.assertEquals(1, notifications.get());
+        driver.removeLicenseChangeListener(failingListener);
+        driver.removeLicenseChangeListener(listener);
+        driver.setCurrentLicense(new CDataDriverLicense(CDataLicenseStatus.PURCHASED_ACTIVE, null, null));
+        Assertions.assertEquals(1, notifications.get());
+    }
+
+    @Test
+    public void connectedIconPreservesOriginalDriverIcon() {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-connected-icon",
+            new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", "APRN-VSDBVR"));
+        var icon = (DBIconComposite) driver.getIcon();
+
+        var connectedIcon = (DBIconComposite) DBNModel.getStateOverlayImage(icon, DBSObjectState.ACTIVE);
+
+        Assertions.assertNull(connectedIcon.getTopLeft());
+        Assertions.assertSame(DBIcon.OVER_SUCCESS, connectedIcon.getBottomRight());
+        Assertions.assertSame(CDataIcons.CDATA_OVERLAY, icon.getBottomRight());
+    }
+
     @Test
     public void aggregateWithExistingDataSourceType() {
         var registry = DataSourceProviderRegistry.getInstance();
