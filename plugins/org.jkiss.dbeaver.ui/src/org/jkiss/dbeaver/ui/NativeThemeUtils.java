@@ -52,7 +52,11 @@ public final class NativeThemeUtils {
         }
         themeListenerInstalled = true;
         display.addListener(SWT.Skin, event -> {
-            if (event.widget instanceof Control control && ArrayUtils.contains(RESKIN_WIDGET_TYPES, control.getClass())) {
+            // Skin all standard widget + all scrollable widgets
+            if (event.widget instanceof Control control &&
+                ((control instanceof Scrollable sc && (sc.getVerticalBar() != null || sc.getHorizontalBar() != null)) ||
+                ArrayUtils.contains(RESKIN_WIDGET_TYPES, control.getClass()))
+            ) {
                 updateNativeWidgets(control);
             }
         });
