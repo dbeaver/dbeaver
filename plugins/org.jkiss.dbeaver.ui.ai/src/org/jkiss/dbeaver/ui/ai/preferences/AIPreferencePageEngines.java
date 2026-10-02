@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.*;
@@ -385,6 +386,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     }
 
     private void createProfilesColumns() {
+        Dialog.applyDialogFont(profilesViewer.getTable());
+        Font defaultProfileFont = UIUtils.makeBoldFont(profilesViewer.getTable().getFont());
+        profilesViewer.getTable().addDisposeListener(event -> defaultProfileFont.dispose());
         TableViewerColumn nameColumn = new TableViewerColumn(profilesViewer, SWT.LEFT);
         nameColumn.getColumn().setText(AIUIMessages.ai_engines_page_column_name);
         nameColumn.getColumn().setWidth(200);
@@ -416,7 +420,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                     return null;
                 }
                 if (profile == settings.getDefaultConfigurationOrNull()) {
-                    return BaseThemeSettings.instance.baseFontBold;
+                    return defaultProfileFont;
                 }
                 return super.getFont(element);
             }
