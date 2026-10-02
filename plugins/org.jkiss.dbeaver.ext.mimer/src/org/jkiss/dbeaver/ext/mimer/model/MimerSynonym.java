@@ -61,6 +61,7 @@ public class MimerSynonym extends GenericSynonym implements DBPScriptObject, DBP
         this.persisted = false;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, order = 2)
     public String getTargetSchema() {
         return targetSchema;
@@ -70,6 +71,7 @@ public class MimerSynonym extends GenericSynonym implements DBPScriptObject, DBP
         this.targetSchema = targetSchema;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, order = 3)
     public String getTargetName() {
         return targetName;

@@ -39,10 +39,11 @@ public class MimerRoutinePrivilegeManager extends AbstractMimerPrivilegeManager<
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerProcedure, MimerRoutinePrivilege> getObjectsCache(MimerRoutinePrivilege object) {
+    public DBSObjectCache<MimerProcedure, MimerRoutinePrivilege> getObjectsCache(@NotNull MimerRoutinePrivilege object) {
         return object.getProcedure().getPrivilegeCache();
     }
 
+    @NotNull
     @Override
     protected MimerRoutinePrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

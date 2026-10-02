@@ -117,19 +117,21 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 2, listProvider = OptionListProvider.class)
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(@NotNull String type) {
         this.type = type;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getCreator() {
         return creator;
@@ -156,12 +158,13 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
      * value emits the matching {@code SET DATABANK} statement on save; reverts to the sentinel on
      * the next refresh. Same statement family as the "Set Online State" navigator action.
      */
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 5, listProvider = OnlineTransitionListProvider.class)
     public String getOnlineTransition() {
         return onlineTransition;
     }
 
-    public void setOnlineTransition(String onlineTransition) {
+    public void setOnlineTransition(@NotNull String onlineTransition) {
         this.onlineTransition = onlineTransition;
     }
 
@@ -182,48 +185,53 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
      * each file's name/sizes are managed on its own {@link MimerDatabankFile} node instead
      * ({@code ALTER DATABANK "n" ALTER FILE '...' ...}).
      */
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.fileNameEditable", visibleIf = SingleFileValidator.class, order = 6)
     public String getFile() {
         return file;
     }
 
-    public void setFile(String file) {
+    public void setFile(@NotNull String file) {
         this.file = file;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.singleFile", visibleIf = SingleFileValidator.class, order = 7)
     public String getFileSize() {
         return fileSize;
     }
 
-    public void setFileSize(String fileSize) {
+    public void setFileSize(@NotNull String fileSize) {
         this.fileSize = fileSize;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.singleFile", visibleIf = SingleFileValidator.class, order = 8)
     public String getMinSize() {
         return minSize;
     }
 
-    public void setMinSize(String minSize) {
+    public void setMinSize(@NotNull String minSize) {
         this.minSize = minSize;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.singleFile", visibleIf = SingleFileValidator.class, order = 9)
     public String getGoalSize() {
         return goalSize;
     }
 
-    public void setGoalSize(String goalSize) {
+    public void setGoalSize(@NotNull String goalSize) {
         this.goalSize = goalSize;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.singleFile", visibleIf = SingleFileValidator.class, order = 10)
     public String getMaxSize() {
         return maxSize;
     }
 
-    public void setMaxSize(String maxSize) {
+    public void setMaxSize(@NotNull String maxSize) {
         this.maxSize = maxSize;
     }
 
@@ -272,7 +280,7 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
      */
     public static class SingleFileValidator implements IPropertyValueValidator<MimerDatabank, Object> {
         @Override
-        public boolean isValidValue(MimerDatabank object, Object value) {
+        public boolean isValidValue(@NotNull MimerDatabank object, @NotNull Object value) {
             return !object.getDataSource().supportsMultiFileDatabanks();
         }
     }
@@ -320,6 +328,7 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return dataSource.getContainer();
@@ -331,20 +340,24 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
         return dataSource;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerDatabankFile> getFiles(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerDatabankFile> getFiles(@NotNull DBRProgressMonitor monitor) throws DBException {
         return fileCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerDatabank, MimerDatabankFile> getFileCache() {
         return fileCache;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerDatabankShadow> getShadows(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerDatabankShadow> getShadows(@NotNull DBRProgressMonitor monitor) throws DBException {
         return shadowCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerDatabank, MimerDatabankShadow> getShadowCache() {
         return shadowCache;
     }
@@ -355,21 +368,25 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
      * using it (there's no generic "uses" side for a databank - nothing it depends on in that
      * sense).
      */
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
     /** {@code GRANT TABLE|SEQUENCE ON DATABANK} grants - see {@link MimerDatabankPrivilege}. */
+    @NotNull
     @Association
     public Collection<MimerDatabankPrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilegeCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerDatabank, MimerDatabankPrivilege> getPrivilegeCache() {
         return privilegeCache;
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         fileCache.clearCache();
@@ -483,8 +500,9 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
             return false;
         }
 
+        @NotNull
         @Override
-        public Object[] getPossibleValues(MimerDatabank object) {
+        public Object[] getPossibleValues(@NotNull MimerDatabank object) {
             return MimerUtils.onlineTransitionsFor(object.isOnline());
         }
     }
@@ -499,8 +517,9 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
             return false;
         }
 
+        @NotNull
         @Override
-        public Object[] getPossibleValues(MimerDatabank object) {
+        public Object[] getPossibleValues(@NotNull MimerDatabank object) {
             return OPTIONS;
         }
     }
@@ -518,6 +537,7 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerDatabankFile fetchObject(@NotNull JDBCSession session, @NotNull MimerDatabank owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerDatabankFile(owner, resultSet);
@@ -537,6 +557,7 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerDatabankShadow fetchObject(@NotNull JDBCSession session, @NotNull MimerDatabank owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerDatabankShadow(owner, resultSet);
@@ -560,6 +581,7 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerDatabank owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);

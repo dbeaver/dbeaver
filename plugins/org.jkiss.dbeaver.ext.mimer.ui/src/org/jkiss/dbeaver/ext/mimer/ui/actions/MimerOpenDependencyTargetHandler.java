@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy;
 import org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses;
@@ -54,8 +55,9 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
  */
 public class MimerOpenDependencyTargetHandler extends AbstractHandler {
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) {
+    public Object execute(@NotNull ExecutionEvent event) {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNodes(selection).stream().findFirst().orElse(null);
         if (!(node instanceof DBNDatabaseNode dbNode)) {
@@ -64,8 +66,9 @@ public class MimerOpenDependencyTargetHandler extends AbstractHandler {
         DBSObject row = dbNode.getObject();
 
         AbstractJob job = new AbstractJob("Resolve dependency target") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 DBSObject target = resolve(row, monitor);
                 if (target == null) {
                     UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
@@ -83,7 +86,7 @@ public class MimerOpenDependencyTargetHandler extends AbstractHandler {
     }
 
     @Nullable
-    private static DBSObject resolve(@Nullable DBSObject row, DBRProgressMonitor monitor) {
+    private static DBSObject resolve(@Nullable DBSObject row, @NotNull DBRProgressMonitor monitor) {
         if (row instanceof MimerObjectUsedBy usedBy) {
             return usedBy.getObject(monitor);
         }

@@ -86,6 +86,7 @@ public class MimerCreateStructuredTypePage extends BaseObjectEditPage implements
         this.type = type;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return type;
@@ -113,7 +114,7 @@ public class MimerCreateStructuredTypePage extends BaseObjectEditPage implements
         return group;
     }
 
-    private void createAttributesGrid(Composite group) {
+    private void createAttributesGrid(@NotNull Composite group) {
         GridData labelGd = new GridData(GridData.FILL_HORIZONTAL);
         labelGd.horizontalSpan = 2;
         UIUtils.createControlLabel(group, "Attributes").setLayoutData(labelGd);
@@ -135,8 +136,9 @@ public class MimerCreateStructuredTypePage extends BaseObjectEditPage implements
         UIUtils.createTableColumn(attributeTable, SWT.NONE, "Default").setWidth(100);
 
         attributeTableEditor = new CustomTableEditor(attributeTable) {
+            @NotNull
             @Override
-            protected Control createEditor(Table table, int index, TableItem item) {
+            protected Control createEditor(@NotNull Table table, int index, @NotNull TableItem item) {
                 AttributeRow row = (AttributeRow) item.getData();
                 if (index == 1) {
                     // Plain, un-editable-suffix combo - size is a separate column rather than
@@ -159,7 +161,7 @@ public class MimerCreateStructuredTypePage extends BaseObjectEditPage implements
             }
 
             @Override
-            protected void saveEditorValue(Control control, int index, TableItem item) {
+            protected void saveEditorValue(@NotNull Control control, int index, @NotNull TableItem item) {
                 AttributeRow row = (AttributeRow) item.getData();
                 if (control instanceof CCombo combo) {
                     row.dataType = combo.getText();

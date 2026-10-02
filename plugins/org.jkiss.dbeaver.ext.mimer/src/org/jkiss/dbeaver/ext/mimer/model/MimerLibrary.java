@@ -98,6 +98,7 @@ public class MimerLibrary implements DBSObject, DBPSaveableObject {
         this.name = name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getCreator() {
         return creator;
@@ -107,6 +108,7 @@ public class MimerLibrary implements DBSObject, DBPSaveableObject {
      * A free-form value on the server ({@code CLR} today - see the class Javadoc), so kept as a
      * plain string here rather than a fixed enum.
      */
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getLanguage() {
         return language;
@@ -120,6 +122,7 @@ public class MimerLibrary implements DBSObject, DBPSaveableObject {
      * The absolute file path to the library file - must already exist on the server before
      * {@code CREATE LIBRARY} is run (the statement doesn't create it).
      */
+    @NotNull
     @Property(viewable = true, order = 4)
     public String getFileName() {
         return fileName;
@@ -137,6 +140,7 @@ public class MimerLibrary implements DBSObject, DBPSaveableObject {
         return "CREATE LIBRARY \"" + name.replace("\"", "\"\"") + "\" FILE '" + fileName.replace("'", "''") + "' LANGUAGE " + language;
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
@@ -158,6 +162,7 @@ public class MimerLibrary implements DBSObject, DBPSaveableObject {
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return dataSource.getContainer();
@@ -187,6 +192,7 @@ public class MimerLibrary implements DBSObject, DBPSaveableObject {
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerLibrary owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);

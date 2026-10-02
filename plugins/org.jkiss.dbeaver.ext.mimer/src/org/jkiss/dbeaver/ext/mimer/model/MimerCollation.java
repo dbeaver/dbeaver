@@ -107,21 +107,25 @@ public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptOb
         this.name = name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getSchemaName() {
         return schema.getName();
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getCharacterSetName() {
         return characterSetName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 4)
     public String getCharacterSetSchema() {
         return characterSetSchema;
     }
 
+    @NotNull
     @Property(viewable = true, order = 5)
     public String getPadAttribute() {
         return padAttribute;
@@ -218,11 +222,13 @@ public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptOb
         this.comment = comment;
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
@@ -238,6 +244,7 @@ public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptOb
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return schema;
@@ -273,6 +280,7 @@ public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptOb
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerCollation owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -286,6 +294,7 @@ public class MimerCollation implements DBSObject, DBPSaveableObject, DBPScriptOb
             return MimerObjectUses.prepareUsesStatement(session, owner.getSchemaName(), owner.getName(), "COLLATION");
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerCollation owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

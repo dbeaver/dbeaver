@@ -62,7 +62,7 @@ public class PrefPageMimer extends TargetPrefPage {
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
+    protected boolean hasDataSourceSpecificOptions(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         return false;
     }
 
@@ -188,6 +188,7 @@ public class PrefPageMimer extends TargetPrefPage {
         store.setToDefault(MimerConstants.PREF_GIS_GRID_POINT_TEXT);
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;

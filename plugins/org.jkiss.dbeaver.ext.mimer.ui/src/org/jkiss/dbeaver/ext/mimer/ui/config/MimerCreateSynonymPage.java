@@ -62,6 +62,7 @@ public class MimerCreateSynonymPage extends BaseObjectEditPage implements MimerC
         this.synonym = synonym;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return synonym;

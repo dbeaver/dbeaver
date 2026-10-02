@@ -53,7 +53,7 @@ public class MimerGroupMemberManager extends AbstractMimerPrivilegeManager<Mimer
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerGroup, MimerGroupMember> getObjectsCache(MimerGroupMember object) {
+    public DBSObjectCache<MimerGroup, MimerGroupMember> getObjectsCache(@NotNull MimerGroupMember object) {
         return object.getGroup().getMemberCache();
     }
 
@@ -63,6 +63,7 @@ public class MimerGroupMemberManager extends AbstractMimerPrivilegeManager<Mimer
         return "NEW_MEMBER";
     }
 
+    @NotNull
     @Override
     protected MimerGroupMember createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

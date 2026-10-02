@@ -73,7 +73,7 @@ public class MimerUdtMethodSpecManager extends SQLObjectEditor<MimerUdtMethodSpe
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerUserDefinedType, MimerUdtMethodSpec> getObjectsCache(MimerUdtMethodSpec object) {
+    public DBSObjectCache<MimerUserDefinedType, MimerUdtMethodSpec> getObjectsCache(@NotNull MimerUdtMethodSpec object) {
         return object.getType().getMethodSpecCache();
     }
 
@@ -83,6 +83,7 @@ public class MimerUdtMethodSpecManager extends SQLObjectEditor<MimerUdtMethodSpe
         return "NEW_METHOD";
     }
 
+    @NotNull
     @Override
     protected MimerUdtMethodSpec createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

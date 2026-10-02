@@ -65,7 +65,7 @@ public class MimerCollationManager extends SQLObjectEditor<MimerCollation, Mimer
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerCollation> getObjectsCache(MimerCollation object) {
+    public DBSObjectCache<? extends DBSObject, MimerCollation> getObjectsCache(@NotNull MimerCollation object) {
         return object.getSchema().getCollationCache();
     }
 
@@ -75,6 +75,7 @@ public class MimerCollationManager extends SQLObjectEditor<MimerCollation, Mimer
         return "NEW_COLLATION";
     }
 
+    @NotNull
     @Override
     protected MimerCollation createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

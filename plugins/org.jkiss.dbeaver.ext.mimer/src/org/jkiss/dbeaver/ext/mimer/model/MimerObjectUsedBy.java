@@ -65,11 +65,13 @@ public class MimerObjectUsedBy implements DBSObject {
         return objectName + " (" + objectType + ")";
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getObjectSchema() {
         return objectSchema;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getObjectType() {
         return objectType;
@@ -102,6 +104,7 @@ public class MimerObjectUsedBy implements DBSObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return owner;

@@ -101,6 +101,7 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
         this.name = name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getDataType() {
         return MimerUtils.formatDomainDataType(dataType, charLength, numPrecision, numScale);
@@ -116,6 +117,7 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
         this.dataType = dataType;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getDefaultValue() {
         return defaultValue;
@@ -195,6 +197,7 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
     /**
      * {@code USAGE} privileges granted on this domain - see {@link MimerDomainPrivilege}.
      */
+    @NotNull
     @Association
     public Collection<MimerDomainPrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilegeCache.getAllObjects(monitor, this);
@@ -205,11 +208,13 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
         return privilegeCache;
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
@@ -225,6 +230,7 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return schema;
@@ -263,6 +269,7 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerDomainPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerDomain owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerDomainPrivilege(owner, resultSet);
@@ -293,6 +300,7 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerDomain owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -306,6 +314,7 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
             return MimerObjectUses.prepareUsesStatement(session, owner.getSchema().getName(), owner.getName(), "DOMAIN");
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerDomain owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

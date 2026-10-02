@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mimer.ui.editors;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mimer.model.MimerModule;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
@@ -40,7 +41,7 @@ public class MimerModuleSourceViewEditor extends SQLSourceViewer<MimerModule> {
     }
 
     @Override
-    protected void setSourceText(DBRProgressMonitor monitor, String sourceText) {
+    protected void setSourceText(@NotNull DBRProgressMonitor monitor, @NotNull String sourceText) {
         getInputPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
     }
 }

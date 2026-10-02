@@ -50,6 +50,7 @@ public class MimerCreateSequencePrivilegePage extends BaseObjectEditPage impleme
         this.privilege = privilege;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return privilege;
@@ -77,7 +78,7 @@ public class MimerCreateSequencePrivilegePage extends BaseObjectEditPage impleme
         Button grantableCheck = UIUtils.createCheckbox(composite, "With Grant Option", null, false, 2);
         grantableCheck.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(@NotNull SelectionEvent e) {
                 grantable = grantableCheck.getSelection();
             }
         });

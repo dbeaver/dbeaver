@@ -56,25 +56,30 @@ public class MimerView extends GenericView {
         super(container, tableName, tableType, dbResult);
     }
 
+    @NotNull
     @Association
-    public Collection<MimerObjectPrivilege> getPrivileges(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerObjectPrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilegeCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public MimerObjectPrivilege.PrivilegeCache getPrivilegeCache() {
         return privilegeCache;
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         privilegeCache.clearCache();
@@ -90,6 +95,7 @@ public class MimerView extends GenericView {
             return MimerObjectUsedBy.prepareUsedByStatement(session, owner.getSchema().getName(), owner.getName(), "VIEW");
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerView owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -103,6 +109,7 @@ public class MimerView extends GenericView {
             return MimerObjectUses.prepareUsesStatement(session, owner.getSchema().getName(), owner.getName(), "VIEW");
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerView owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

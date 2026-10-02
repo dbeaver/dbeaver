@@ -69,7 +69,7 @@ public class MimerTableTriggerManager extends SQLObjectEditor<MimerTableTrigger,
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public DBSObjectCache<? extends DBSObject, MimerTableTrigger> getObjectsCache(MimerTableTrigger object) {
+    public DBSObjectCache<? extends DBSObject, MimerTableTrigger> getObjectsCache(@NotNull MimerTableTrigger object) {
         return (DBSObjectCache<? extends DBSObject, MimerTableTrigger>) (DBSObjectCache<?, ?>)
             object.getContainer().getContainer().getTableTriggerCache();
     }
@@ -80,6 +80,7 @@ public class MimerTableTriggerManager extends SQLObjectEditor<MimerTableTrigger,
         return "NEW_TRIGGER";
     }
 
+    @NotNull
     @Override
     protected MimerTableTrigger createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

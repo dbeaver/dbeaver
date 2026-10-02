@@ -39,10 +39,11 @@ public class MimerSequencePrivilegeManager extends AbstractMimerPrivilegeManager
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerSequence, MimerSequencePrivilege> getObjectsCache(MimerSequencePrivilege object) {
+    public DBSObjectCache<MimerSequence, MimerSequencePrivilege> getObjectsCache(@NotNull MimerSequencePrivilege object) {
         return object.getSequence().getPrivilegeCache();
     }
 
+    @NotNull
     @Override
     protected MimerSequencePrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

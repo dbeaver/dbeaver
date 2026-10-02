@@ -73,7 +73,7 @@ public class MimerSchemaManager extends SQLObjectEditor<MimerSchema, MimerDataSo
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerSchema> getObjectsCache(MimerSchema object) {
+    public DBSObjectCache<? extends DBSObject, MimerSchema> getObjectsCache(@NotNull MimerSchema object) {
         return object.getDataSource().getSchemaCache();
     }
 
@@ -83,6 +83,7 @@ public class MimerSchemaManager extends SQLObjectEditor<MimerSchema, MimerDataSo
         return "NEW_SCHEMA";
     }
 
+    @NotNull
     @Override
     protected MimerSchema createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

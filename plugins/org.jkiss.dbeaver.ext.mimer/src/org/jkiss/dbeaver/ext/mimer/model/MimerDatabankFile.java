@@ -105,7 +105,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.fileName = name;
     }
 
@@ -119,39 +119,43 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
         return online;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.fileEditable", order = 4)
     public String getFileSize() {
         return fileSize;
     }
 
-    public void setFileSize(String fileSize) {
+    public void setFileSize(@NotNull String fileSize) {
         this.fileSize = fileSize;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.fileEditable", order = 5)
     public String getMinSize() {
         return minSize;
     }
 
-    public void setMinSize(String minSize) {
+    public void setMinSize(@NotNull String minSize) {
         this.minSize = minSize;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.fileEditable", order = 6)
     public String getGoalSize() {
         return goalSize;
     }
 
-    public void setGoalSize(String goalSize) {
+    public void setGoalSize(@NotNull String goalSize) {
         this.goalSize = goalSize;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatableExpr = "object.fileEditable", order = 7)
     public String getMaxSize() {
         return maxSize;
     }
 
-    public void setMaxSize(String maxSize) {
+    public void setMaxSize(@NotNull String maxSize) {
         this.maxSize = maxSize;
     }
 
@@ -171,6 +175,7 @@ public class MimerDatabankFile implements DBSObject, DBPNamedObject2, DBPSaveabl
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return databank;

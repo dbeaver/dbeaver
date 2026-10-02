@@ -59,7 +59,7 @@ public class MimerUdtMethod extends GenericProcedure implements DBPScriptObject 
     public MimerUdtMethod(
         @NotNull MimerUserDefinedType type,
         @NotNull String methodName,
-        String specificName,
+        @NotNull String specificName,
         @NotNull String methodKind
     ) {
         super(type.getSchema(), methodName, specificName, null, DBSProcedureType.FUNCTION, GenericFunctionResultType.NO_TABLE);
@@ -72,6 +72,7 @@ public class MimerUdtMethod extends GenericProcedure implements DBPScriptObject 
         return type;
     }
 
+    @NotNull
     @Property(viewable = true, order = 7)
     public String getMethodKind() {
         return methodKind;
@@ -101,16 +102,19 @@ public class MimerUdtMethod extends GenericProcedure implements DBPScriptObject 
         return MimerUtils.readSourceDefinition(monitor, this, getContainer().getName(), getUniqueName(), methodKind, "SPECIFIC_NAME");
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         usedByCache.clearCache();
@@ -125,6 +129,7 @@ public class MimerUdtMethod extends GenericProcedure implements DBPScriptObject 
             return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), owner.methodKind);
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerUdtMethod owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -138,6 +143,7 @@ public class MimerUdtMethod extends GenericProcedure implements DBPScriptObject 
             return MimerObjectUses.prepareUsesStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), owner.methodKind);
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerUdtMethod owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

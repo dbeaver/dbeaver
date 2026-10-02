@@ -69,10 +69,11 @@ public class MimerIdentGroupMembership implements DBSObject, DBPSaveableObject, 
         return groupName;
     }
 
-    public void setGroupName(String groupName) {
+    public void setGroupName(@NotNull String groupName) {
         this.groupName = groupName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getGrantor() {
         return grantor;
@@ -103,6 +104,7 @@ public class MimerIdentGroupMembership implements DBSObject, DBPSaveableObject, 
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return ident;

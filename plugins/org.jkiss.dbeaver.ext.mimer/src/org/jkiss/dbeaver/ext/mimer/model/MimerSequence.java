@@ -82,12 +82,13 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
         setIncrementBy(1L);
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, order = 6, listProvider = DataTypeListProvider.class)
     public String getDataType() {
         return dataType;
     }
 
-    public void setDataType(String dataType) {
+    public void setDataType(@NotNull String dataType) {
         this.dataType = dataType;
     }
 
@@ -100,12 +101,13 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
         this.cycle = cycle;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, order = 8)
     public String getDatabank() {
         return databank;
     }
 
-    public void setDatabank(String databank) {
+    public void setDatabank(@NotNull String databank) {
         this.databank = databank;
     }
 
@@ -140,6 +142,7 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
     /**
      * {@code USAGE} privileges granted on this sequence - see {@link MimerSequencePrivilege}.
      */
+    @NotNull
     @Association
     public Collection<MimerSequencePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilegeCache.getAllObjects(monitor, this);
@@ -150,11 +153,13 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
         return privilegeCache;
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
@@ -193,24 +198,28 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
      * fall through to {@code GenericSequence}'s own {@code lastValue} entry ("Value") instead of
      * this class's own.
      */
+    @NotNull
     @Override
     @Property(id = "restartWith", viewable = true, editable = true, updatable = true, order = 2)
     public Long getLastValue() {
         return toLong(super.getLastValue());
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 3)
     public Long getMinValue() {
         return toLong(super.getMinValue());
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 4)
     public Long getMaxValue() {
         return toLong(super.getMaxValue());
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 5)
     public Long getIncrementBy() {
@@ -294,8 +303,9 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
             return false;
         }
 
+        @NotNull
         @Override
-        public Object[] getPossibleValues(MimerSequence object) {
+        public Object[] getPossibleValues(@NotNull MimerSequence object) {
             return TYPES;
         }
     }
@@ -332,6 +342,7 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerSequencePrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerSequence owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerSequencePrivilege(owner, resultSet);
@@ -345,6 +356,7 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
             return MimerObjectUsedBy.prepareUsedByStatement(session, owner.getParentObject().getName(), owner.getName(), "SEQUENCE");
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerSequence owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -358,6 +370,7 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
             return MimerObjectUses.prepareUsesStatement(session, owner.getParentObject().getName(), owner.getName(), "SEQUENCE");
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerSequence owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

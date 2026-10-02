@@ -83,6 +83,7 @@ public class MimerTableColumnManager extends GenericTableColumnManager {
      * time instead, precisely so a blank field here never carries a stale value over if the type
      * is changed to something else (e.g. {@code INTEGER}) before saving.
      */
+    @NotNull
     @Override
     protected GenericTableColumn createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

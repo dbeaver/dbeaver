@@ -66,7 +66,7 @@ public class MimerGroupManager extends SQLObjectEditor<MimerGroup, MimerDataSour
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerDataSource, MimerGroup> getObjectsCache(MimerGroup object) {
+    public DBSObjectCache<MimerDataSource, MimerGroup> getObjectsCache(@NotNull MimerGroup object) {
         return object.getDataSource().getGroupCache();
     }
 
@@ -76,6 +76,7 @@ public class MimerGroupManager extends SQLObjectEditor<MimerGroup, MimerDataSour
         return "NEW_GROUP";
     }
 
+    @NotNull
     @Override
     protected MimerGroup createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

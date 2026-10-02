@@ -97,10 +97,11 @@ public abstract class AbstractMimerObjectPrivilege<O extends DBSObject> implemen
         return grantee;
     }
 
-    public void setGrantee(String grantee) {
+    public void setGrantee(@NotNull String grantee) {
         this.grantee = grantee;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getGrantor() {
         return grantor;
@@ -131,6 +132,7 @@ public abstract class AbstractMimerObjectPrivilege<O extends DBSObject> implemen
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return owner;

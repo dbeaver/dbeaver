@@ -56,6 +56,7 @@ public class MimerCreateStatementPage extends BaseObjectEditPage implements Mime
         this.statement = statement;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return statement;

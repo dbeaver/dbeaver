@@ -93,6 +93,7 @@ public class MimerDatabankPrivilege extends AbstractMimerMultiTypePrivilege<Mime
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerDatabankPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerDatabank owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerDatabankPrivilege(owner, resultSet);

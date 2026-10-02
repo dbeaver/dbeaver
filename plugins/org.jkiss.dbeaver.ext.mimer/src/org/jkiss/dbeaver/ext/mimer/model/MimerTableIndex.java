@@ -76,10 +76,10 @@ public class MimerTableIndex extends GenericTableIndex implements MimerCommentab
     public MimerTableIndex(
         @NotNull GenericTableBase table,
         boolean nonUnique,
-        String qualifier,
+        @NotNull String qualifier,
         long cardinality,
-        String indexName,
-        DBSIndexType indexType,
+        @NotNull String indexName,
+        @NotNull DBSIndexType indexType,
         boolean persisted
     ) {
         super(table, nonUnique, qualifier, cardinality, indexName, resolveIndexType(table, indexName, indexType, persisted), persisted);
@@ -88,8 +88,8 @@ public class MimerTableIndex extends GenericTableIndex implements MimerCommentab
     @NotNull
     private static DBSIndexType resolveIndexType(
         @NotNull GenericTableBase table,
-        String indexName,
-        DBSIndexType indexType,
+        @Nullable String indexName,
+        @NotNull DBSIndexType indexType,
         boolean persisted
     ) {
         if (!(table.getDataSource() instanceof MimerDataSource ds) || !ds.supportsClusteredIndexes()) {

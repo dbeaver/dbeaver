@@ -44,7 +44,7 @@ public class MimerObjectPrivilegeManager extends AbstractMimerPrivilegeManager<M
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerObjectPrivilege> getObjectsCache(MimerObjectPrivilege object) {
+    public DBSObjectCache<? extends DBSObject, MimerObjectPrivilege> getObjectsCache(@NotNull MimerObjectPrivilege object) {
         GenericTableBase table = object.getTable();
         if (table instanceof MimerTable mimerTable) {
             return mimerTable.getPrivilegeCache();
@@ -55,6 +55,7 @@ public class MimerObjectPrivilegeManager extends AbstractMimerPrivilegeManager<M
         return null;
     }
 
+    @NotNull
     @Override
     protected MimerObjectPrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

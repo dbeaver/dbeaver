@@ -97,7 +97,7 @@ public class MimerDatabankFileManager extends SQLObjectEditor<MimerDatabankFile,
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerDatabank, MimerDatabankFile> getObjectsCache(MimerDatabankFile object) {
+    public DBSObjectCache<MimerDatabank, MimerDatabankFile> getObjectsCache(@NotNull MimerDatabankFile object) {
         return object.getDatabank().getFileCache();
     }
 
@@ -107,6 +107,7 @@ public class MimerDatabankFileManager extends SQLObjectEditor<MimerDatabankFile,
         return "NEW_FILE";
     }
 
+    @NotNull
     @Override
     protected MimerDatabankFile createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

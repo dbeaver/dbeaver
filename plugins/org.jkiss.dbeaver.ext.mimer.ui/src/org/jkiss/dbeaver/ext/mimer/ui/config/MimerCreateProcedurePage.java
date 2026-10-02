@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -100,11 +101,12 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
         String type = "";
     }
 
-    public MimerCreateProcedurePage(MimerProcedure procedure) {
+    public MimerCreateProcedurePage(@NotNull MimerProcedure procedure) {
         super(procedure);
         this.procedure = procedure;
     }
 
+    @Nullable
     @Override
     public DBSProcedureType getPredefinedProcedureType() {
         return null;
@@ -114,13 +116,14 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
      * Pre-selects the combo from whichever folder ("Procedures" vs "Functions") was actually
      * clicked - see {@code MimerProcedureManager#detectProcedureType}.
      */
+    @NotNull
     @Override
     public DBSProcedureType getDefaultProcedureType() {
         return procedure.getProcedureType();
     }
 
     @Override
-    protected void createExtraControls(Composite group) {
+    protected void createExtraControls(@NotNull Composite group) {
         Text specificText = UIUtils.createLabelText(group, "Specific name", "");
         specificText.setMessage(MimerUIMessages.page_create_procedure_specific_name_placeholder);
         specificText.addModifyListener(e -> specificName = specificText.getText());
@@ -175,7 +178,7 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
      * gap - not fixed here since it was never reported as broken for them, and their captured
      * values already default to something reasonable even if a change were missed.
      */
-    private void createExternalRoutineControls(Composite group) {
+    private void createExternalRoutineControls(@NotNull Composite group) {
         Combo languageCombo = UIUtils.createLabelCombo(group, "Language", SWT.DROP_DOWN | SWT.READ_ONLY);
         languageCombo.add("SQL");
         languageCombo.add("CLR");
@@ -229,7 +232,7 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
      * inline cell editing. Direction is only editable for a procedure - a function parameter's
      * mode is always implicitly {@code IN}.
      */
-    private void createParametersGrid(Composite group) {
+    private void createParametersGrid(@NotNull Composite group) {
         UIUtils.createControlLabel(group, "Parameters").setLayoutData(spanBothColumns());
 
         Composite paramGroup = new Composite(group, SWT.NONE);
@@ -246,8 +249,9 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
         UIUtils.createTableColumn(paramTable, SWT.NONE, "Type").setWidth(140);
 
         new CustomTableEditor(paramTable) {
+            @Nullable
             @Override
-            protected Control createEditor(Table table, int index, TableItem item) {
+            protected Control createEditor(@NotNull Table table, int index, @NotNull TableItem item) {
                 ParamRow row = (ParamRow) item.getData();
                 if (index == 1) {
                     if (getProcedureType() == DBSProcedureType.FUNCTION) {
@@ -275,7 +279,7 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
             }
 
             @Override
-            protected void saveEditorValue(Control control, int index, TableItem item) {
+            protected void saveEditorValue(@NotNull Control control, int index, @NotNull TableItem item) {
                 ParamRow row = (ParamRow) item.getData();
                 if (control instanceof CCombo combo) {
                     if (index == 1) {
@@ -329,7 +333,7 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
     }
 
     @Override
-    protected void updateProcedureType(DBSProcedureType type) {
+    protected void updateProcedureType(@NotNull DBSProcedureType type) {
         updateReturnTypeVisibility(type == DBSProcedureType.FUNCTION);
         updatePageState();
     }
@@ -359,6 +363,7 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
         return true;
     }
 
+    @NotNull
     private String[] loadDataTypeNames() {
         try {
             Set<String> names = new LinkedHashSet<>();

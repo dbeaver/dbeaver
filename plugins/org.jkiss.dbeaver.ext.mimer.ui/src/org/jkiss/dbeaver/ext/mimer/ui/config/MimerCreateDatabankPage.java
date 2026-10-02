@@ -59,6 +59,7 @@ public class MimerCreateDatabankPage extends BaseObjectEditPage implements Mimer
         this.databank = databank;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return databank;
@@ -108,7 +109,7 @@ public class MimerCreateDatabankPage extends BaseObjectEditPage implements Mimer
         Button removableCheck = UIUtils.createCheckbox(group, "Removable", null, false, 2);
         removableCheck.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+            public void widgetSelected(@NotNull org.eclipse.swt.events.SelectionEvent e) {
                 removable = removableCheck.getSelection();
             }
         });

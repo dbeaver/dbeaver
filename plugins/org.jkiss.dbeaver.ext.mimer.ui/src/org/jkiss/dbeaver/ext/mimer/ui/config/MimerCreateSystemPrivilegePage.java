@@ -56,6 +56,7 @@ public class MimerCreateSystemPrivilegePage extends BaseObjectEditPage implement
         this.ident = ident;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return privilege;

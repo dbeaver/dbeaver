@@ -51,10 +51,11 @@ public class MimerDatabankPrivilegeManager extends AbstractMimerPrivilegeManager
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerDatabank, MimerDatabankPrivilege> getObjectsCache(MimerDatabankPrivilege object) {
+    public DBSObjectCache<MimerDatabank, MimerDatabankPrivilege> getObjectsCache(@NotNull MimerDatabankPrivilege object) {
         return object.getDatabank().getPrivilegeCache();
     }
 
+    @NotNull
     @Override
     protected MimerDatabankPrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

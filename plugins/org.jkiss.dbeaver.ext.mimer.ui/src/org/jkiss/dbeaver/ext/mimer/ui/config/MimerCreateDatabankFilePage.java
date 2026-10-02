@@ -51,6 +51,7 @@ public class MimerCreateDatabankFilePage extends BaseObjectEditPage implements M
         this.file = file;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return file;

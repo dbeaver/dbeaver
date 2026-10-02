@@ -71,6 +71,7 @@ public class MimerSchemaIndex implements DBSObject {
         return indexName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getTableName() {
         return tableName;
@@ -137,6 +138,7 @@ public class MimerSchemaIndex implements DBSObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return schema;
@@ -148,6 +150,7 @@ public class MimerSchemaIndex implements DBSObject {
         return (MimerDataSource) schema.getDataSource();
     }
 
+    @NotNull
     @Association
     public Collection<MimerSchemaIndexColumn> getColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
         return columnCache.getAllObjects(monitor, this);
@@ -167,6 +170,7 @@ public class MimerSchemaIndex implements DBSObject {
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerSchemaIndexColumn fetchObject(@NotNull JDBCSession session, @NotNull MimerSchemaIndex index, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerSchemaIndexColumn(index, resultSet);

@@ -24,6 +24,8 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
@@ -42,8 +44,9 @@ import java.util.List;
  */
 public class MimerShadowAddPagesHandler extends AbstractHandler {
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) {
+    public Object execute(@NotNull ExecutionEvent event) {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         final List<DBNDatabaseNode> nodes = MimerOnlineActionUtils.collectNodes(selection, MimerDatabankShadow.class);
         if (nodes.isEmpty()) {
@@ -77,8 +80,9 @@ public class MimerShadowAddPagesHandler extends AbstractHandler {
     }
 
     private static class PositiveIntegerValidator implements IInputValidator {
+        @Nullable
         @Override
-        public String isValid(String newText) {
+        public String isValid(@NotNull String newText) {
             int value;
             try {
                 value = Integer.parseInt(newText.trim());

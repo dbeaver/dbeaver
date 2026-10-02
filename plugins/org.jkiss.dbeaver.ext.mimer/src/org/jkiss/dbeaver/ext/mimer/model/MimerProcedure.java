@@ -107,12 +107,12 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
     private MimerExternalRoutineInfo externalInfo;
 
     public MimerProcedure(
-        GenericStructContainer container,
-        String procedureName,
-        String specificName,
-        String description,
-        DBSProcedureType procedureType,
-        GenericFunctionResultType functionResultType
+        @NotNull GenericStructContainer container,
+        @NotNull String procedureName,
+        @NotNull String specificName,
+        @NotNull String description,
+        @NotNull DBSProcedureType procedureType,
+        @NotNull GenericFunctionResultType functionResultType
     ) {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
     }
@@ -169,7 +169,7 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
     }
 
     @Override
-    public void setObjectDefinitionText(String source) {
+    public void setObjectDefinitionText(@NotNull String source) {
         setSource(source);
     }
 
@@ -293,30 +293,35 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
         }
     }
 
+    @NotNull
     @Association
-    public Collection<MimerRoutinePrivilege> getPrivileges(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerRoutinePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilegeCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerProcedure, MimerRoutinePrivilege> getPrivilegeCache() {
         return privilegeCache;
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
+    public void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
         MimerUtils.loadProcedureColumns(this, monitor);
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         privilegeCache.clearCache();
@@ -351,6 +356,7 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerRoutinePrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerProcedure owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerRoutinePrivilege(owner, resultSet);
@@ -365,6 +371,7 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
             return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), objectType);
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerProcedure owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -379,6 +386,7 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
             return MimerObjectUses.prepareUsesStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), objectType);
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerProcedure owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

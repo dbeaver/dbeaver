@@ -85,10 +85,11 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getCreator() {
         return creator;
@@ -133,6 +134,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return dataSource.getContainer();
@@ -144,11 +146,13 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
         return dataSource;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerGroupMember> getMembers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerGroupMember> getMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return memberCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerGroup, MimerGroupMember> getMemberCache() {
         return memberCache;
     }
@@ -157,6 +161,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
      * Table/view privileges granted to this group, across every table - see {@link
      * MimerIdentTablePrivilege}.
      */
+    @NotNull
     @Association
     public Collection<MimerIdentTablePrivilege> getTablePrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tablePrivilegeCache.getAllObjects(monitor, this);
@@ -165,6 +170,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
     /**
      * Column-restricted privileges granted to this group - see {@link MimerIdentColumnPrivilege}.
      */
+    @NotNull
     @Association
     public Collection<MimerIdentColumnPrivilege> getColumnPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return columnPrivilegeCache.getAllObjects(monitor, this);
@@ -174,6 +180,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
      * Non-table object privileges (EXECUTE/SEQUENCE/TABLE/USAGE) granted to this group - see
      * {@link MimerIdentObjectPrivilege}.
      */
+    @NotNull
     @Association
     public Collection<MimerIdentObjectPrivilege> getObjectPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objectPrivilegeCache.getAllObjects(monitor, this);
@@ -182,6 +189,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
     /**
      * Groups this group is itself a member of (nested group membership).
      */
+    @NotNull
     @Association
     public Collection<MimerIdentGroupMembership> getGroupMemberships(@NotNull DBRProgressMonitor monitor) throws DBException {
         return groupMembershipCache.getAllObjects(monitor, this);
@@ -196,6 +204,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
      * System-level (not per-object) privileges granted to this group - see {@link
      * MimerSystemPrivilege}.
      */
+    @NotNull
     @Association
     public Collection<MimerSystemPrivilege> getSystemPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return systemPrivilegeCache.getAllObjects(monitor, this);
@@ -206,6 +215,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
         return systemPrivilegeCache;
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         memberCache.clearCache();
@@ -241,6 +251,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerGroupMember fetchObject(@NotNull JDBCSession session, @NotNull MimerGroup owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerGroupMember(owner, resultSet);
@@ -260,6 +271,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerIdentTablePrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerGroup owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerIdentTablePrivilege(owner, resultSet);
@@ -279,6 +291,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerIdentColumnPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerGroup owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerIdentColumnPrivilege(owner, resultSet);
@@ -298,6 +311,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerIdentObjectPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerGroup owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerIdentObjectPrivilege(owner, resultSet);
@@ -317,6 +331,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerIdentGroupMembership fetchObject(@NotNull JDBCSession session, @NotNull MimerGroup owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerIdentGroupMembership(owner, resultSet);
@@ -336,6 +351,7 @@ public class MimerGroup implements DBSObject, DBPNamedObject2, DBPSaveableObject
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerSystemPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerGroup owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerSystemPrivilege(owner, resultSet);

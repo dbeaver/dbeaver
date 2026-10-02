@@ -62,7 +62,7 @@ public class MimerUserAuthorizationManager extends SQLObjectEditor<MimerUserAuth
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerUser, MimerUserAuthorization> getObjectsCache(MimerUserAuthorization object) {
+    public DBSObjectCache<MimerUser, MimerUserAuthorization> getObjectsCache(@NotNull MimerUserAuthorization object) {
         return object.getUser().getAuthorizationCache();
     }
 
@@ -72,6 +72,7 @@ public class MimerUserAuthorizationManager extends SQLObjectEditor<MimerUserAuth
         return "NEW_OS_USER";
     }
 
+    @NotNull
     @Override
     protected MimerUserAuthorization createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

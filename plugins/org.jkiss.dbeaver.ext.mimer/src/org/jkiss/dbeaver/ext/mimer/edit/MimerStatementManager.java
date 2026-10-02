@@ -67,7 +67,7 @@ public class MimerStatementManager extends SQLObjectEditor<MimerStatement, Mimer
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerStatement> getObjectsCache(MimerStatement object) {
+    public DBSObjectCache<? extends DBSObject, MimerStatement> getObjectsCache(@NotNull MimerStatement object) {
         return object.getSchema().getStatementCache();
     }
 
@@ -77,6 +77,7 @@ public class MimerStatementManager extends SQLObjectEditor<MimerStatement, Mimer
         return "NEW_STATEMENT";
     }
 
+    @NotNull
     @Override
     protected MimerStatement createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

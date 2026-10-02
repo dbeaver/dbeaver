@@ -98,12 +98,12 @@ public class MimerDataTypeCache extends GenericDataTypeCache {
 
     private final Set<String> seenTypeNames = new HashSet<>();
 
-    public MimerDataTypeCache(GenericStructContainer owner) {
+    public MimerDataTypeCache(@NotNull GenericStructContainer owner) {
         super(owner);
     }
 
     @Override
-    public void beforeCacheLoading(@NotNull JDBCSession session, GenericStructContainer owner) throws DBException {
+    public void beforeCacheLoading(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws DBException {
         super.beforeCacheLoading(session, owner);
         seenTypeNames.clear();
     }

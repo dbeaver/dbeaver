@@ -48,6 +48,7 @@ public class MimerCreateUserAuthorizationPage extends BaseObjectEditPage impleme
         this.authorization = authorization;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return authorization;

@@ -57,7 +57,7 @@ public class MimerTableTrigger extends GenericTableTrigger implements DBSObjectW
     private String comment;
     private final UsesCache usesCache = new UsesCache();
 
-    public MimerTableTrigger(@NotNull GenericTableBase container, String name, String description) {
+    public MimerTableTrigger(@NotNull GenericTableBase container, @NotNull String name, @NotNull String description) {
         super(container, name, description);
     }
 
@@ -87,7 +87,7 @@ public class MimerTableTrigger extends GenericTableTrigger implements DBSObjectW
     }
 
     @Override
-    public void setObjectDefinitionText(String source) {
+    public void setObjectDefinitionText(@NotNull String source) {
         setSource(source);
     }
 
@@ -108,6 +108,7 @@ public class MimerTableTrigger extends GenericTableTrigger implements DBSObjectW
         this.comment = comment;
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
@@ -120,6 +121,7 @@ public class MimerTableTrigger extends GenericTableTrigger implements DBSObjectW
             return MimerObjectUses.prepareUsesStatement(session, owner.getTable().getSchema().getName(), owner.getName(), "TRIGGER");
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerTableTrigger owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

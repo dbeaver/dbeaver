@@ -46,6 +46,7 @@ public abstract class AbstractMimerIdentPrivilegeSummary implements DBSObject {
         this.grantable = "YES".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(dbResult, "IS_GRANTABLE"));
     }
 
+    @NotNull
     @Property(viewable = true, order = 90)
     public String getGrantor() {
         return grantor;
@@ -67,6 +68,7 @@ public abstract class AbstractMimerIdentPrivilegeSummary implements DBSObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return ident;

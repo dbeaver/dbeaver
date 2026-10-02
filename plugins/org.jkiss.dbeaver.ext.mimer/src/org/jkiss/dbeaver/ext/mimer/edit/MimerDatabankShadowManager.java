@@ -76,7 +76,7 @@ public class MimerDatabankShadowManager extends SQLObjectEditor<MimerDatabankSha
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerDatabank, MimerDatabankShadow> getObjectsCache(MimerDatabankShadow object) {
+    public DBSObjectCache<MimerDatabank, MimerDatabankShadow> getObjectsCache(@NotNull MimerDatabankShadow object) {
         return object.getDatabank().getShadowCache();
     }
 
@@ -86,6 +86,7 @@ public class MimerDatabankShadowManager extends SQLObjectEditor<MimerDatabankSha
         return "NEW_SHADOW";
     }
 
+    @NotNull
     @Override
     protected MimerDatabankShadow createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

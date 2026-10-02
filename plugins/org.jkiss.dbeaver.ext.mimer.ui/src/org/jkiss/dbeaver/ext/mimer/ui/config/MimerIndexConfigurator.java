@@ -92,6 +92,7 @@ public class MimerIndexConfigurator implements DBEObjectConfigurator<MimerTableI
         boolean showIgnoreNulls = tableBase.getDataSource() instanceof MimerDataSource ds && ds.supportsClusteredIndexes();
         boolean showInclude = tableBase.getDataSource() instanceof MimerDataSource ds2 && ds2.supportsIndexInclude();
         return new UITask<MimerTableIndex>() {
+            @Nullable
             @Override
             protected MimerTableIndex runTask() {
                 MimerCreateIndexPage editPage = new MimerCreateIndexPage(

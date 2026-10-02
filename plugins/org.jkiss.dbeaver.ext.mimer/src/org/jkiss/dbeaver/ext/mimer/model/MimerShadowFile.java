@@ -67,6 +67,7 @@ public class MimerShadowFile implements DBSObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return shadow;

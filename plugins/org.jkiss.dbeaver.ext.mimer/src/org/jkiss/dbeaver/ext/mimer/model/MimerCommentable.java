@@ -32,5 +32,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface MimerCommentable extends DBSObject {
 
+    @NotNull
     String getComment(@NotNull DBRProgressMonitor monitor) throws DBException;
 }

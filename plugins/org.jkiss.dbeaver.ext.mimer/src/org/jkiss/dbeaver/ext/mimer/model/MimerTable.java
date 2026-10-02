@@ -71,8 +71,9 @@ public class MimerTable extends GenericTable {
         super(container, tableName, tableType, dbResult);
     }
 
+    @NotNull
     @Association
-    public Collection<MimerObjectPrivilege> getPrivileges(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerObjectPrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilegeCache.getAllObjects(monitor, this);
     }
 
@@ -100,7 +101,7 @@ public class MimerTable extends GenericTable {
         return databanks.isEmpty() ? null : String.join(", ", databanks);
     }
 
-    public void setDatabank(String databank) {
+    public void setDatabank(@NotNull String databank) {
         this.pendingDatabank = databank;
     }
 
@@ -112,6 +113,7 @@ public class MimerTable extends GenericTable {
      * org.jkiss.dbeaver.ext.mimer.edit.MimerIndexManager} for where the chosen type becomes
      * {@code CREATE [UNIQUE] CLUSTERED INDEX ...}.
      */
+    @NotNull
     @Override
     public Collection<DBSIndexType> getTableIndexTypes() {
         if (getDataSource() instanceof MimerDataSource ds && ds.supportsClusteredIndexes()) {
@@ -120,10 +122,12 @@ public class MimerTable extends GenericTable {
         return super.getTableIndexTypes();
     }
 
+    @NotNull
     public MimerObjectPrivilege.PrivilegeCache getPrivilegeCache() {
         return privilegeCache;
     }
 
+    @NotNull
     @Association
     public synchronized Collection<MimerAccessPath> getAccessPaths(@NotNull DBRProgressMonitor monitor) {
         loadAccessPaths(monitor);
@@ -198,6 +202,7 @@ public class MimerTable extends GenericTable {
      * addition to whatever {@code EXT_OBJECT_OBJECT_USED} itself reports (views, triggers,
      * foreign keys, ...).
      */
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
@@ -208,11 +213,13 @@ public class MimerTable extends GenericTable {
      * to whatever {@code EXT_OBJECT_OBJECT_USING} itself reports (domains used by its columns,
      * sequences used by column defaults, ...).
      */
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         privilegeCache.clearCache();
@@ -233,8 +240,9 @@ public class MimerTable extends GenericTable {
             return true;
         }
 
+        @NotNull
         @Override
-        public Object[] getPossibleValues(MimerTable object) {
+        public Object[] getPossibleValues(@NotNull MimerTable object) {
             if (!(object.getDataSource() instanceof MimerDataSource ds)) {
                 return new Object[0];
             }
@@ -270,6 +278,7 @@ public class MimerTable extends GenericTable {
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerTable owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -295,6 +304,7 @@ public class MimerTable extends GenericTable {
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerTable owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

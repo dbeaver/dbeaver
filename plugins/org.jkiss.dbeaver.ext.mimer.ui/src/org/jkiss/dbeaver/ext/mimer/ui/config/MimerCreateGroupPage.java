@@ -44,6 +44,7 @@ public class MimerCreateGroupPage extends BaseObjectEditPage implements MimerCre
         this.group = group;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return group;

@@ -143,6 +143,7 @@ public class MimerTableIndexColumn extends GenericTableIndexColumn {
         return super.isAscending();
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getSortOrder() {
         return isAscending() ? "Ascending" : "Descending";
@@ -156,6 +157,7 @@ public class MimerTableIndexColumn extends GenericTableIndexColumn {
      * column (still in the create dialog) this just reflects {@link #getAlgorithm()} instead -
      * nothing to look up yet.
      */
+    @Nullable
     @Property(viewable = true, order = 4)
     public String getAlgorithm(@NotNull DBRProgressMonitor monitor) {
         if (!getIndex().isPersisted()) {

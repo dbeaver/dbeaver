@@ -110,6 +110,7 @@ public class MimerModule implements DBSObject, DBPScriptObject, DBPSaveableObjec
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return schema;
@@ -145,7 +146,7 @@ public class MimerModule implements DBSObject, DBPScriptObject, DBPSaveableObjec
     }
 
     @Override
-    public void setObjectDefinitionText(String source) {
+    public void setObjectDefinitionText(@NotNull String source) {
         this.source = source;
     }
 
@@ -166,16 +167,19 @@ public class MimerModule implements DBSObject, DBPScriptObject, DBPSaveableObjec
         this.comment = comment;
     }
 
+    @NotNull
     @Association
     public Collection<MimerModuleRoutine> getRoutines(@NotNull DBRProgressMonitor monitor) throws DBException {
         return routineCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerModuleRoutine> getProceduresOnly(@NotNull DBRProgressMonitor monitor) throws DBException {
         return filterByType(monitor, DBSProcedureType.PROCEDURE);
     }
 
+    @NotNull
     @Association
     public Collection<MimerModuleRoutine> getFunctionsOnly(@NotNull DBRProgressMonitor monitor) throws DBException {
         return filterByType(monitor, DBSProcedureType.FUNCTION);
@@ -214,6 +218,7 @@ public class MimerModule implements DBSObject, DBPScriptObject, DBPSaveableObjec
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerModuleRoutine fetchObject(@NotNull JDBCSession session, @NotNull MimerModule module, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String routineName = JDBCUtils.safeGetString(resultSet, "ROUTINE_NAME");

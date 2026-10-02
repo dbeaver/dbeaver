@@ -66,6 +66,7 @@ public class MimerCreateSequencePage extends BaseObjectEditPage implements Mimer
         this.sequence = sequence;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return sequence;
@@ -112,7 +113,7 @@ public class MimerCreateSequencePage extends BaseObjectEditPage implements Mimer
         Button cycleCheck = UIUtils.createCheckbox(group, "Cycle", null, false, 2);
         cycleCheck.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+            public void widgetSelected(@NotNull org.eclipse.swt.events.SelectionEvent e) {
                 cycle = cycleCheck.getSelection();
             }
         });
@@ -161,7 +162,8 @@ public class MimerCreateSequencePage extends BaseObjectEditPage implements Mimer
         sequence.setDatabank(CommonUtils.isEmptyTrimmed(databank) ? null : databank.trim());
     }
 
-    private static Long parseLong(String s, Long defaultValue) {
+    @NotNull
+    private static Long parseLong(@NotNull String s, @NotNull Long defaultValue) {
         if (CommonUtils.isEmptyTrimmed(s)) {
             return defaultValue;
         }

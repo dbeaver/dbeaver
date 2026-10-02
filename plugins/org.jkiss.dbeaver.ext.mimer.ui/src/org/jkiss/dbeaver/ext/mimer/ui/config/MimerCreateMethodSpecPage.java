@@ -91,6 +91,7 @@ public class MimerCreateMethodSpecPage extends BaseObjectEditPage implements Mim
             : "";
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return spec;
@@ -156,7 +157,7 @@ public class MimerCreateMethodSpecPage extends BaseObjectEditPage implements Mim
         return group;
     }
 
-    private void createParametersGrid(Composite group) {
+    private void createParametersGrid(@NotNull Composite group) {
         GridData labelGd = new GridData(GridData.FILL_HORIZONTAL);
         labelGd.horizontalSpan = 2;
         UIUtils.createControlLabel(group, "Parameters").setLayoutData(labelGd);
@@ -177,8 +178,9 @@ public class MimerCreateMethodSpecPage extends BaseObjectEditPage implements Mim
         UIUtils.createTableColumn(paramTable, SWT.NONE, "Size").setWidth(70);
 
         paramTableEditor = new CustomTableEditor(paramTable) {
+            @NotNull
             @Override
-            protected Control createEditor(Table table, int index, TableItem item) {
+            protected Control createEditor(@NotNull Table table, int index, @NotNull TableItem item) {
                 ParamRow row = (ParamRow) item.getData();
                 if (index == 1) {
                     // Read-only selection; size is collected via its own column instead - typing
@@ -199,7 +201,7 @@ public class MimerCreateMethodSpecPage extends BaseObjectEditPage implements Mim
             }
 
             @Override
-            protected void saveEditorValue(Control control, int index, TableItem item) {
+            protected void saveEditorValue(@NotNull Control control, int index, @NotNull TableItem item) {
                 ParamRow row = (ParamRow) item.getData();
                 if (control instanceof CCombo combo) {
                     row.type = combo.getText();

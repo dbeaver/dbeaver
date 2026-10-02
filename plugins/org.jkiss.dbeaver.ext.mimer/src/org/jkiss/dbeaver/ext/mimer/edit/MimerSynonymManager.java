@@ -64,7 +64,7 @@ public class MimerSynonymManager extends SQLObjectEditor<MimerSynonym, MimerSche
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public DBSObjectCache<? extends DBSObject, MimerSynonym> getObjectsCache(MimerSynonym object) {
+    public DBSObjectCache<? extends DBSObject, MimerSynonym> getObjectsCache(@NotNull MimerSynonym object) {
         // GenericObjectContainer#getSynonymCache() is parameterized on the base GenericSynonym,
         // not MimerSynonym - safe to narrow since MimerMetaModel#createSynonymImpl is the only
         // thing that ever populates it, and it only ever constructs MimerSynonym instances.
@@ -78,6 +78,7 @@ public class MimerSynonymManager extends SQLObjectEditor<MimerSynonym, MimerSche
         return "NEW_SYNONYM";
     }
 
+    @NotNull
     @Override
     protected MimerSynonym createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

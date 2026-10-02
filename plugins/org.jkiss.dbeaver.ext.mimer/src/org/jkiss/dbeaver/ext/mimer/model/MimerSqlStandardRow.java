@@ -230,6 +230,7 @@ public class MimerSqlStandardRow implements DBSObject, DBPPropertySource {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return owner;

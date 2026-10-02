@@ -49,7 +49,7 @@ public class MimerSQLPlanXMLViewProvider extends SQLPlanSaveProvider {
     }
 
     @Override
-    protected void showPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
+    protected void showPlan(@NotNull Viewer viewer, @NotNull SQLQuery query, @NotNull DBCPlan plan) {
         ((MimerSQLPlanXMLViewer) viewer).showPlan(plan);
     }
 }

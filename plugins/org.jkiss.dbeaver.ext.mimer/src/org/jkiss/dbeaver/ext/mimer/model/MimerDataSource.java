@@ -81,8 +81,9 @@ public class MimerDataSource extends GenericDataSource {
      * GenericExecutionContext} - see that class for why "Execute -&gt; Set Active Schema" needs
      * a Mimer-specific fallback.
      */
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new MimerExecutionContext(instance, type);
     }
 
@@ -282,44 +283,53 @@ public class MimerDataSource extends GenericDataSource {
         return all;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerUser> getUsers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerUser> getUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return userCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerDataSource, MimerUser> getUserCache() {
         return userCache;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerGroup> getGroups(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerGroup> getGroups(@NotNull DBRProgressMonitor monitor) throws DBException {
         return groupCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerDataSource, MimerGroup> getGroupCache() {
         return groupCache;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerProgram> getPrograms(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerProgram> getPrograms(@NotNull DBRProgressMonitor monitor) throws DBException {
         return programCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerDataSource, MimerProgram> getProgramCache() {
         return programCache;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerDatabank> getDatabanks(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerDatabank> getDatabanks(@NotNull DBRProgressMonitor monitor) throws DBException {
         return databankCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerDataSource, MimerDatabank> getDatabankCache() {
         return databankCache;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerShadow> getShadows(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerShadow> getShadows(@NotNull DBRProgressMonitor monitor) throws DBException {
         return shadowCache.getAllObjects(monitor, this);
     }
 
@@ -328,11 +338,13 @@ public class MimerDataSource extends GenericDataSource {
      * procedure/function's body can be implemented in, see {@link MimerLibrary}. Mimer SQL
      * 11.1+ only.
      */
+    @NotNull
     @Association
-    public Collection<MimerLibrary> getLibraries(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerLibrary> getLibraries(@NotNull DBRProgressMonitor monitor) throws DBException {
         return libraryCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerDataSource, MimerLibrary> getLibraryCache() {
         return libraryCache;
     }
@@ -346,24 +358,27 @@ public class MimerDataSource extends GenericDataSource {
      * FIPS_DOCUMENTATION.SQL_FEATURES} throws "table ... not found"), so only the SQL:1999/2003
      * set is modeled here.
      */
+    @NotNull
     @Association
-    public Collection<MimerSqlStandardRow> getSqlFeatures(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerSqlStandardRow> getSqlFeatures(@NotNull DBRProgressMonitor monitor) throws DBException {
         return sqlFeaturesCache.getAllObjects(monitor, this);
     }
 
     /**
      * {@code INFORMATION_SCHEMA.SQL_SIZING} - implementation-defined size limits.
      */
+    @NotNull
     @Association
-    public Collection<MimerSqlStandardRow> getSqlSizing(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerSqlStandardRow> getSqlSizing(@NotNull DBRProgressMonitor monitor) throws DBException {
         return sqlSizingCache.getAllObjects(monitor, this);
     }
 
     /**
      * {@code INFORMATION_SCHEMA.SQL_LANGUAGES} - supported host language bindings.
      */
+    @NotNull
     @Association
-    public Collection<MimerSqlStandardRow> getSqlLanguages(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerSqlStandardRow> getSqlLanguages(@NotNull DBRProgressMonitor monitor) throws DBException {
         return sqlLanguagesCache.getAllObjects(monitor, this);
     }
 
@@ -372,8 +387,9 @@ public class MimerDataSource extends GenericDataSource {
      * from JDBC metadata DBeaver already cached at connect time ({@link #getInfo()}). No {@code
      * SYSTEM.*} access; Mimer SQL exposes no host-OS / platform value through JDBC metadata.
      */
+    @NotNull
     @Association
-    public Collection<MimerInfoRow> getServerInfoRows(DBRProgressMonitor monitor) {
+    public Collection<MimerInfoRow> getServerInfoRows(@NotNull DBRProgressMonitor monitor) {
         List<MimerInfoRow> rows = new ArrayList<>(3);
         rows.add(new MimerInfoRow(this, "Product name", getInfo().getDatabaseProductName()));
         rows.add(new MimerInfoRow(this, "Product version", getInfo().getDatabaseProductVersion()));
@@ -393,8 +409,9 @@ public class MimerDataSource extends GenericDataSource {
      * (DBeaver doesn't cache it); it's simply omitted if the pre-JDBC-4.1 driver doesn't
      * implement {@code getJDBCMajorVersion()}.
      */
+    @NotNull
     @Association
-    public Collection<MimerInfoRow> getDriverInfoRows(DBRProgressMonitor monitor) {
+    public Collection<MimerInfoRow> getDriverInfoRows(@NotNull DBRProgressMonitor monitor) {
         List<MimerInfoRow> rows = new ArrayList<>(5);
         rows.add(new MimerInfoRow(this, "Driver name", getInfo().getDriverName()));
         rows.add(new MimerInfoRow(this, "Driver version", getInfo().getDriverVersion()));
@@ -412,6 +429,7 @@ public class MimerDataSource extends GenericDataSource {
         return rows;
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
@@ -442,6 +460,7 @@ public class MimerDataSource extends GenericDataSource {
                 "ORDER BY IDENT_NAME");
         }
 
+        @NotNull
         @Override
         protected MimerUser fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerUser(dataSource, resultSet);
@@ -459,6 +478,7 @@ public class MimerDataSource extends GenericDataSource {
                 "ORDER BY IDENT_NAME");
         }
 
+        @NotNull
         @Override
         protected MimerProgram fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerProgram(dataSource, resultSet);
@@ -480,6 +500,7 @@ public class MimerDataSource extends GenericDataSource {
                 "ORDER BY IDENT_NAME");
         }
 
+        @NotNull
         @Override
         protected MimerGroup fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerGroup(dataSource, resultSet);
@@ -505,6 +526,7 @@ public class MimerDataSource extends GenericDataSource {
                 "ORDER BY D.DATABANK_NAME");
         }
 
+        @NotNull
         @Override
         protected MimerDatabank fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerDatabank(dataSource, resultSet);
@@ -521,6 +543,7 @@ public class MimerDataSource extends GenericDataSource {
                 "ORDER BY SHADOW_NAME");
         }
 
+        @NotNull
         @Override
         protected MimerShadow fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerShadow(dataSource, resultSet);
@@ -537,6 +560,7 @@ public class MimerDataSource extends GenericDataSource {
                 "ORDER BY LIBRARY_NAME");
         }
 
+        @NotNull
         @Override
         protected MimerLibrary fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerLibrary(dataSource, resultSet);
@@ -550,6 +574,7 @@ public class MimerDataSource extends GenericDataSource {
             return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SQL_FEATURES");
         }
 
+        @NotNull
         @Override
         protected MimerSqlStandardRow fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerSqlStandardRow(dataSource, resultSet);
@@ -563,6 +588,7 @@ public class MimerDataSource extends GenericDataSource {
             return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SQL_SIZING");
         }
 
+        @NotNull
         @Override
         protected MimerSqlStandardRow fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerSqlStandardRow(dataSource, resultSet);
@@ -576,6 +602,7 @@ public class MimerDataSource extends GenericDataSource {
             return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SQL_LANGUAGES");
         }
 
+        @NotNull
         @Override
         protected MimerSqlStandardRow fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerSqlStandardRow(dataSource, resultSet);

@@ -46,7 +46,7 @@ public class MimerSystemPrivilegeManager extends AbstractMimerPrivilegeManager<M
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerSystemPrivilege> getObjectsCache(MimerSystemPrivilege object) {
+    public DBSObjectCache<? extends DBSObject, MimerSystemPrivilege> getObjectsCache(@NotNull MimerSystemPrivilege object) {
         DBSObject ident = object.getParentObject();
         if (ident instanceof MimerUser user) {
             return user.getSystemPrivilegeCache();
@@ -64,6 +64,7 @@ public class MimerSystemPrivilegeManager extends AbstractMimerPrivilegeManager<M
         return MimerConstants.SYSTEM_PRIVILEGE_TYPES[1];
     }
 
+    @NotNull
     @Override
     protected MimerSystemPrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

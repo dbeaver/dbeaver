@@ -77,12 +77,13 @@ public class MimerProcedureManager extends SQLObjectEditor<MimerProcedure, Gener
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
-    public DBSObjectCache<? extends DBSObject, MimerProcedure> getObjectsCache(MimerProcedure object) {
+    public DBSObjectCache<? extends DBSObject, MimerProcedure> getObjectsCache(@NotNull MimerProcedure object) {
         GenericStructContainer container = object.getContainer();
         List<MimerProcedure> procedures = (List<MimerProcedure>) (List<?>) ((GenericObjectContainer) container).getProcedureCache();
         return new ListCache<>(procedures);
     }
 
+    @NotNull
     @Override
     protected MimerProcedure createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

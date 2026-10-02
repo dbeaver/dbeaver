@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mimer.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -64,7 +65,11 @@ public class MimerSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+    public void initDriverSettings(
+        @NotNull JDBCSession session,
+        @NotNull JDBCDataSource dataSource,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(Arrays.asList(
             "BUILTIN", "DATABANK", "IDENT", "SHADOW", "MODULE", "DOMAIN", "SYNONYM",
@@ -114,6 +119,7 @@ public class MimerSQLDialect extends GenericSQLDialect {
         return EXEC_KEYWORDS;
     }
 
+    @NotNull
     @Override
     public String[][] getBlockBoundStrings() {
         return MIMER_BEGIN_END_BLOCK;
@@ -133,6 +139,7 @@ public class MimerSQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @NotNull
     @Override
     public String getDualTableName() {
         return "SYSTEM.ONEROW";
@@ -159,6 +166,7 @@ public class MimerSQLDialect extends GenericSQLDialect {
     //   Data Transfer feature can pass back an already-fully-built type string, and appending
     //   anything more would land after the COLLATE clause instead of before it.
     // - TINYINT never accepts a length.
+    @Nullable
     @Override
     public String getColumnTypeModifiers(
         @NotNull DBPDataSource dataSource,

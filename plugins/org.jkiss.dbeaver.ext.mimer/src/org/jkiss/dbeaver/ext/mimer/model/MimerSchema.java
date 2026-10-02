@@ -104,20 +104,24 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
         this.persisted = persisted;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerDomain> getDomains(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerDomain> getDomains(@NotNull DBRProgressMonitor monitor) throws DBException {
         return domainCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerSchema, MimerDomain> getDomainCache() {
         return domainCache;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerModule> getModules(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerModule> getModules(@NotNull DBRProgressMonitor monitor) throws DBException {
         return moduleCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerSchema, MimerModule> getModuleCache() {
         return moduleCache;
     }
@@ -127,30 +131,36 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
      * #getStructuredTypes} for the filtered views the "Distinct Types"/"Structured Types"
      * folders actually bind to.
      */
+    @NotNull
     @Association
-    public Collection<MimerUserDefinedType> getUserDefinedTypes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerUserDefinedType> getUserDefinedTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return userDefinedTypeCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerSchema, MimerUserDefinedType> getUserDefinedTypeCache() {
         return userDefinedTypeCache;
     }
 
+    @NotNull
     @Association
-    public List<MimerUserDefinedType> getDistinctTypes(DBRProgressMonitor monitor) throws DBException {
+    public List<MimerUserDefinedType> getDistinctTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return filterByCategory(monitor, "DISTINCT");
     }
 
+    @NotNull
     @Association
-    public List<MimerUserDefinedType> getStructuredTypes(DBRProgressMonitor monitor) throws DBException {
+    public List<MimerUserDefinedType> getStructuredTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return filterByCategory(monitor, "STRUCTURED");
     }
 
+    @NotNull
     @Association
-    public Collection<MimerStatement> getStatements(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerStatement> getStatements(@NotNull DBRProgressMonitor monitor) throws DBException {
         return statementCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerSchema, MimerStatement> getStatementCache() {
         return statementCache;
     }
@@ -160,16 +170,19 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
      * MimerSchemaIndex} for why this is a separate, lightweight class rather than resolving to
      * the richer per-table {@link MimerTableIndex} objects.
      */
+    @NotNull
     @Association
-    public Collection<MimerSchemaIndex> getAllIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerSchemaIndex> getAllIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return schemaIndexCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
-    public Collection<MimerCollation> getCollations(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerCollation> getCollations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return collationCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerSchema, MimerCollation> getCollationCache() {
         return collationCache;
     }
@@ -203,6 +216,7 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
         this.comment = comment;
     }
 
+    @NotNull
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         domainCache.clearCache();
@@ -229,6 +243,7 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
      * column list used the same way in {@link MimerTable#loadAccessPaths} for the analogous
      * {@code EXT_ACCESS_PATHS} columns.
      */
+    @NotNull
     synchronized IndexExtInfo getIndexExtInfo(@NotNull DBRProgressMonitor monitor, @NotNull String tableName, @NotNull String indexName) throws DBException {
         if (!(getDataSource() instanceof MimerDataSource ds) || !ds.supportsClusteredIndexes()) {
             return IndexExtInfo.NONE;
@@ -285,6 +300,7 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerDomain fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerDomain(schema, resultSet);
@@ -304,6 +320,7 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerModule fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerModule(schema, resultSet);
@@ -325,6 +342,7 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerUserDefinedType fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerUserDefinedType(schema, resultSet);
@@ -344,6 +362,7 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerStatement fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerStatement(schema, resultSet);
@@ -367,6 +386,7 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerSchemaIndex fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerSchemaIndex(schema, resultSet);
@@ -386,6 +406,7 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerCollation fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerCollation(schema, resultSet);

@@ -42,7 +42,7 @@ public class MimerIdentGroupMembershipManager extends AbstractMimerPrivilegeMana
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerIdentGroupMembership> getObjectsCache(MimerIdentGroupMembership object) {
+    public DBSObjectCache<? extends DBSObject, MimerIdentGroupMembership> getObjectsCache(@NotNull MimerIdentGroupMembership object) {
         DBSObject ident = object.getIdent();
         if (ident instanceof MimerUser user) {
             return user.getGroupMembershipCache();
@@ -60,6 +60,7 @@ public class MimerIdentGroupMembershipManager extends AbstractMimerPrivilegeMana
         return "NEW_GROUP";
     }
 
+    @NotNull
     @Override
     protected MimerIdentGroupMembership createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

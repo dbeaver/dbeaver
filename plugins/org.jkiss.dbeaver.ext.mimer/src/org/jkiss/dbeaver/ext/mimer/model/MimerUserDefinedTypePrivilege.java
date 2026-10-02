@@ -42,7 +42,7 @@ public class MimerUserDefinedTypePrivilege extends AbstractMimerObjectPrivilege<
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         setGrantee(name);
     }
 

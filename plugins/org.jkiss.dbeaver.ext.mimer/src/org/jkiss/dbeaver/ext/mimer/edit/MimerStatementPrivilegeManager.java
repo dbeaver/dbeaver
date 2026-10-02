@@ -38,10 +38,11 @@ public class MimerStatementPrivilegeManager extends AbstractMimerPrivilegeManage
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerStatement, MimerStatementPrivilege> getObjectsCache(MimerStatementPrivilege object) {
+    public DBSObjectCache<MimerStatement, MimerStatementPrivilege> getObjectsCache(@NotNull MimerStatementPrivilege object) {
         return object.getStatement().getPrivilegeCache();
     }
 
+    @NotNull
     @Override
     protected MimerStatementPrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

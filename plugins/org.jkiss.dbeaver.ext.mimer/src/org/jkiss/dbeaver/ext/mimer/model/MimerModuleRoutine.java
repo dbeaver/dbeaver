@@ -56,7 +56,7 @@ public class MimerModuleRoutine extends GenericProcedure {
     public MimerModuleRoutine(
         @NotNull MimerModule module,
         @NotNull String procedureName,
-        String specificName,
+        @NotNull String specificName,
         @NotNull DBSProcedureType procedureType
     ) {
         super(module.getSchema(), procedureName, specificName, null, procedureType, null);
@@ -89,6 +89,7 @@ public class MimerModuleRoutine extends GenericProcedure {
      * with no error shown anywhere - so the row would look correct but clicking it would do
      * nothing.
      */
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return module;
@@ -99,16 +100,19 @@ public class MimerModuleRoutine extends GenericProcedure {
         MimerUtils.loadProcedureColumns(this, monitor);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         usedByCache.clearCache();
@@ -124,6 +128,7 @@ public class MimerModuleRoutine extends GenericProcedure {
             return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), objectType);
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerModuleRoutine owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -138,6 +143,7 @@ public class MimerModuleRoutine extends GenericProcedure {
             return MimerObjectUses.prepareUsesStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), objectType);
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerModuleRoutine owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

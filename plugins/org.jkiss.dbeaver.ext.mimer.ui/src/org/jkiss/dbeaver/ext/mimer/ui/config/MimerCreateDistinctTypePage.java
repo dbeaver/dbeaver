@@ -64,6 +64,7 @@ public class MimerCreateDistinctTypePage extends BaseObjectEditPage implements M
         this.type = type;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return type;

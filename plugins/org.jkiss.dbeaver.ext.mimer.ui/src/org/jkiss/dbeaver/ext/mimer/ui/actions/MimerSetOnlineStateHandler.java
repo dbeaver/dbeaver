@@ -22,6 +22,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDatabank;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow;
@@ -46,8 +48,9 @@ import java.util.List;
  */
 public class MimerSetOnlineStateHandler extends AbstractHandler {
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) {
+    public Object execute(@NotNull ExecutionEvent event) {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         List<DBNDatabaseNode> shadowNodes = MimerOnlineActionUtils.collectNodes(selection, MimerDatabankShadow.class);
@@ -113,13 +116,13 @@ public class MimerSetOnlineStateHandler extends AbstractHandler {
         return null;
     }
 
-    private static boolean isOnline(DBSObject object) {
+    private static boolean isOnline(@NotNull DBSObject object) {
         return object instanceof MimerDatabank databank
             ? databank.isOnline()
             : ((MimerDatabankShadow) object).isOnline();
     }
 
-    private static void setOnline(DBSObject object, boolean online) {
+    private static void setOnline(@NotNull DBSObject object, boolean online) {
         if (object instanceof MimerDatabank databank) {
             databank.setOnline(online);
         } else {

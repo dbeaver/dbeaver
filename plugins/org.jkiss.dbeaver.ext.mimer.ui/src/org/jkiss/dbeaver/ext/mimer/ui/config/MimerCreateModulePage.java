@@ -53,6 +53,7 @@ public class MimerCreateModulePage extends BaseObjectEditPage implements MimerCr
         this.module = module;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return module;

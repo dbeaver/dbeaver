@@ -90,15 +90,17 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
      * {@code ALTER SHADOW "n" INTO '<file>'} (see {@link #buildAlterFileNameDDL}), Mimer SQL's
      * way of pointing the data dictionary at a moved/renamed shadow file.
      */
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 2)
     public String getFileName() {
         return fileName;
     }
 
-    public void setFileName(String fileName) {
+    public void setFileName(@NotNull String fileName) {
         this.fileName = fileName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getCreator() {
         return creator;
@@ -122,12 +124,13 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
      * options gated on the current {@link #isOnline() state}. Same treatment as
      * {@link MimerDatabank#getOnlineTransition()}, keyword {@code SHADOW}.
      */
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 5, listProvider = OnlineTransitionListProvider.class)
     public String getOnlineTransition() {
         return onlineTransition;
     }
 
-    public void setOnlineTransition(String onlineTransition) {
+    public void setOnlineTransition(@NotNull String onlineTransition) {
         this.onlineTransition = onlineTransition;
     }
 
@@ -152,6 +155,7 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return databank;
@@ -173,6 +177,7 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
      * which physical file it uses. Synthesised from the loaded {@link #getFileName() file name}
      * (single-file, matching DbVisualizer's model) - see {@link MimerShadowFile}.
      */
+    @NotNull
     @Association
     public Collection<MimerShadowFile> getFiles(@NotNull DBRProgressMonitor monitor) {
         return List.of(new MimerShadowFile(this, fileName, online));
@@ -216,8 +221,9 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
             return false;
         }
 
+        @NotNull
         @Override
-        public Object[] getPossibleValues(MimerDatabankShadow object) {
+        public Object[] getPossibleValues(@NotNull MimerDatabankShadow object) {
             return MimerUtils.onlineTransitionsFor(object.isOnline());
         }
     }

@@ -61,6 +61,7 @@ public class MimerCreateGroupMembershipPage extends BaseObjectEditPage implement
         this.membership = membership;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return membership;
@@ -88,7 +89,7 @@ public class MimerCreateGroupMembershipPage extends BaseObjectEditPage implement
         Button grantableCheck = UIUtils.createCheckbox(composite, "With Grant Option", null, false, 2);
         grantableCheck.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(@NotNull SelectionEvent e) {
                 grantable = grantableCheck.getSelection();
             }
         });

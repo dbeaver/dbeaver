@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mimer.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
@@ -34,10 +35,10 @@ public class MimerTableConstraint extends GenericUniqueKey implements DBSTableCh
     private String checkClause;
 
     public MimerTableConstraint(
-        GenericTableBase table,
-        String name,
+        @NotNull GenericTableBase table,
+        @NotNull String name,
         @Nullable String remarks,
-        DBSEntityConstraintType constraintType,
+        @NotNull DBSEntityConstraintType constraintType,
         boolean persisted,
         @Nullable String checkClause
     ) {
@@ -53,7 +54,7 @@ public class MimerTableConstraint extends GenericUniqueKey implements DBSTableCh
     }
 
     @Override
-    public void setCheckConstraintDefinition(String expression) {
+    public void setCheckConstraintDefinition(@NotNull String expression) {
         this.checkClause = expression;
     }
 }

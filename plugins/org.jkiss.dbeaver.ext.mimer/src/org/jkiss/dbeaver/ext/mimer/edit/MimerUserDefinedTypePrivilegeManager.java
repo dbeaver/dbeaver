@@ -38,10 +38,13 @@ public class MimerUserDefinedTypePrivilegeManager extends AbstractMimerPrivilege
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerUserDefinedType, MimerUserDefinedTypePrivilege> getObjectsCache(MimerUserDefinedTypePrivilege object) {
+    public DBSObjectCache<MimerUserDefinedType, MimerUserDefinedTypePrivilege> getObjectsCache(
+        @NotNull MimerUserDefinedTypePrivilege object
+    ) {
         return object.getType().getPrivilegeCache();
     }
 
+    @NotNull
     @Override
     protected MimerUserDefinedTypePrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

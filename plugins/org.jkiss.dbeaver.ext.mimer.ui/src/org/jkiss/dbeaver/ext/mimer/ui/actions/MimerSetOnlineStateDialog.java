@@ -56,8 +56,9 @@ public class MimerSetOnlineStateDialog extends BaseDialog {
         this.states = states;
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite area = super.createDialogArea(parent);
         Composite group = new Composite(area, SWT.NONE);
         group.setLayout(new GridLayout(2, false));

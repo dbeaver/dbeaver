@@ -65,10 +65,11 @@ public class MimerGroupMember implements DBSObject, DBPNamedObject2, DBPSaveable
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.memberName = name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getGrantor() {
         return grantor;
@@ -99,6 +100,7 @@ public class MimerGroupMember implements DBSObject, DBPNamedObject2, DBPSaveable
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return group;

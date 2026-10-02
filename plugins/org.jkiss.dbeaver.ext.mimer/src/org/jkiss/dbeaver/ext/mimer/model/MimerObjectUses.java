@@ -77,16 +77,19 @@ public class MimerObjectUses implements DBSObject {
         return objectName + " (" + objectType + ")";
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getObjectSchema() {
         return objectSchema;
     }
 
     /** The bare name of the used object (without the {@code " (TYPE)"} suffix {@link #getName} adds). */
+    @NotNull
     public String getObjectName() {
         return objectName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getObjectType() {
         return objectType;
@@ -116,6 +119,7 @@ public class MimerObjectUses implements DBSObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return owner;

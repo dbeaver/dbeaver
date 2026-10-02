@@ -767,8 +767,8 @@ public class MimerUtils {
     public static String formatDomainDataType(
         @NotNull String dataType,
         long charLength,
-        Integer numPrecision,
-        Integer numScale
+        @Nullable Integer numPrecision,
+        @Nullable Integer numScale
     ) {
         if (CommonUtils.isEmpty(dataType)) {
             return "";

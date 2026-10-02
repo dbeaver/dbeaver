@@ -96,7 +96,7 @@ public class MimerIndexManager extends GenericIndexManager {
     }
 
     @Override
-    protected void appendIndexModifiers(GenericTableIndex index, StringBuilder decl) {
+    protected void appendIndexModifiers(@NotNull GenericTableIndex index, @NotNull StringBuilder decl) {
         super.appendIndexModifiers(index, decl);
         if (index.getIndexType() == DBSIndexType.CLUSTERED) {
             decl.append(" CLUSTERED");
@@ -114,7 +114,11 @@ public class MimerIndexManager extends GenericIndexManager {
      * clustering, unlike Ignore Nulls/Include/Algorithm.
      */
     @Override
-    protected void appendIndexColumnModifiers(DBRProgressMonitor monitor, StringBuilder decl, DBSTableIndexColumn indexColumn) {
+    protected void appendIndexColumnModifiers(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder decl,
+        @NotNull DBSTableIndexColumn indexColumn
+    ) {
         if (indexColumn instanceof MimerTableIndexColumn mimerColumn) {
             if (!CommonUtils.isEmpty(mimerColumn.getCollation())) {
                 decl.append(" COLLATE ").append(mimerColumn.getCollation());

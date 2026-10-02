@@ -73,7 +73,7 @@ public class MimerUserDefinedTypeManager extends SQLObjectEditor<MimerUserDefine
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerUserDefinedType> getObjectsCache(MimerUserDefinedType object) {
+    public DBSObjectCache<? extends DBSObject, MimerUserDefinedType> getObjectsCache(@NotNull MimerUserDefinedType object) {
         return object.getSchema().getUserDefinedTypeCache();
     }
 
@@ -83,6 +83,7 @@ public class MimerUserDefinedTypeManager extends SQLObjectEditor<MimerUserDefine
         return "NEW_TYPE";
     }
 
+    @NotNull
     @Override
     protected MimerUserDefinedType createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

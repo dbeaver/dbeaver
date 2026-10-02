@@ -21,6 +21,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege;
@@ -50,8 +52,9 @@ import java.util.List;
  */
 public class MimerAddPrivilegesHandler extends AbstractHandler {
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) {
+    public Object execute(@NotNull ExecutionEvent event) {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         final List<DBNDatabaseNode> nodes = MimerOnlineActionUtils.collectNodes(selection, GenericTableBase.class);
         if (nodes.isEmpty()) {

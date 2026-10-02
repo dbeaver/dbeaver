@@ -68,6 +68,7 @@ public class MimerCreateTriggerPage extends BaseObjectEditPage implements MimerC
         this.timing = isView ? INSTEAD_OF : TIMINGS[1];
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return trigger;

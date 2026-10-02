@@ -72,10 +72,11 @@ public class MimerUserAuthorization implements DBSObject, DBPNamedObject2, DBPSa
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.osUser = name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getAuthorizationType() {
         return authorizationType;
@@ -101,6 +102,7 @@ public class MimerUserAuthorization implements DBSObject, DBPNamedObject2, DBPSa
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return user;

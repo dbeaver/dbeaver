@@ -50,6 +50,7 @@ public class MimerCreateProgramPage extends BaseObjectEditPage implements MimerC
         this.program = program;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return program;

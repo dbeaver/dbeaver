@@ -177,9 +177,9 @@ public class MimerCreateIndexPage extends EditIndexPage {
     private boolean suppressNameSync;
 
     public MimerCreateIndexPage(
-        String title,
-        DBSTableIndex index,
-        Collection<DBSIndexType> indexTypes,
+        @NotNull String title,
+        @NotNull DBSTableIndex index,
+        @NotNull Collection<DBSIndexType> indexTypes,
         boolean supportUniqueIndexes,
         boolean showIgnoreNulls,
         boolean showInclude
@@ -191,6 +191,7 @@ public class MimerCreateIndexPage extends EditIndexPage {
         this.clusteredTypePosition = this.indexTypes.indexOf(DBSIndexType.CLUSTERED);
     }
 
+    @NotNull
     private static List<String> buildAlgorithmLabels() {
         List<String> labels = new ArrayList<>();
         labels.add("Simple");
@@ -198,6 +199,7 @@ public class MimerCreateIndexPage extends EditIndexPage {
         return labels;
     }
 
+    @NotNull
     private static List<String> buildAlgorithmValues() {
         List<String> values = new ArrayList<>();
         values.add(null);
@@ -212,7 +214,7 @@ public class MimerCreateIndexPage extends EditIndexPage {
     }
 
     @Override
-    protected void createContentsBeforeColumns(Composite panel) {
+    protected void createContentsBeforeColumns(@NotNull Composite panel) {
         createNameField(panel);
         super.createContentsBeforeColumns(panel);
         wireIndexTypeCombo(panel);

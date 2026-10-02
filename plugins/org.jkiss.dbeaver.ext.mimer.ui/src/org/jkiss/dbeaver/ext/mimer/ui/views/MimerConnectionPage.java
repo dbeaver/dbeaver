@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mimer.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
  */
 public class MimerConnectionPage extends GenericConnectionPage {
 
+    @NotNull
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{

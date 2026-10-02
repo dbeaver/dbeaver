@@ -66,7 +66,7 @@ public class MimerProgramManager extends SQLObjectEditor<MimerProgram, MimerData
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerDataSource, MimerProgram> getObjectsCache(MimerProgram object) {
+    public DBSObjectCache<MimerDataSource, MimerProgram> getObjectsCache(@NotNull MimerProgram object) {
         return object.getDataSource().getProgramCache();
     }
 
@@ -76,6 +76,7 @@ public class MimerProgramManager extends SQLObjectEditor<MimerProgram, MimerData
         return "NEW_PROGRAM";
     }
 
+    @NotNull
     @Override
     protected MimerProgram createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

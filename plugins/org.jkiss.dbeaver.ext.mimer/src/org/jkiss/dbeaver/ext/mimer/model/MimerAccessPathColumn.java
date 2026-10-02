@@ -99,6 +99,7 @@ public class MimerAccessPathColumn implements DBSObject, DBPStatefulObject {
         return ordinalPosition;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getColumnSource() {
         return columnSource;
@@ -109,11 +110,13 @@ public class MimerAccessPathColumn implements DBSObject, DBPStatefulObject {
         return key;
     }
 
+    @NotNull
     @Property(viewable = true, order = 5)
     public String getAlgorithm() {
         return algorithm;
     }
 
+    @Nullable
     @Property(viewable = true, order = 6)
     public String getCollation() {
         if (CommonUtils.isEmpty(collationName)) {
@@ -133,6 +136,7 @@ public class MimerAccessPathColumn implements DBSObject, DBPStatefulObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return accessPath;

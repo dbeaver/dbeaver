@@ -52,6 +52,7 @@ public class MimerCreateLibraryPage extends BaseObjectEditPage implements MimerC
         this.library = library;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return library;

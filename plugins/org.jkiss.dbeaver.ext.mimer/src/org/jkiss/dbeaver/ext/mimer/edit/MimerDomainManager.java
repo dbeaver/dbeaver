@@ -70,7 +70,7 @@ public class MimerDomainManager extends SQLObjectEditor<MimerDomain, MimerSchema
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerDomain> getObjectsCache(MimerDomain object) {
+    public DBSObjectCache<? extends DBSObject, MimerDomain> getObjectsCache(@NotNull MimerDomain object) {
         return object.getSchema().getDomainCache();
     }
 
@@ -80,6 +80,7 @@ public class MimerDomainManager extends SQLObjectEditor<MimerDomain, MimerSchema
         return "NEW_DOMAIN";
     }
 
+    @NotNull
     @Override
     protected MimerDomain createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

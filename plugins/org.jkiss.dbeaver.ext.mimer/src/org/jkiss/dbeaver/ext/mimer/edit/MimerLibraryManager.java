@@ -66,7 +66,7 @@ public class MimerLibraryManager extends SQLObjectEditor<MimerLibrary, MimerData
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, MimerLibrary> getObjectsCache(MimerLibrary object) {
+    public DBSObjectCache<? extends DBSObject, MimerLibrary> getObjectsCache(@NotNull MimerLibrary object) {
         return object.getDataSource().getLibraryCache();
     }
 
@@ -76,6 +76,7 @@ public class MimerLibraryManager extends SQLObjectEditor<MimerLibrary, MimerData
         return "NEW_LIBRARY";
     }
 
+    @NotNull
     @Override
     protected MimerLibrary createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

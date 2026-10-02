@@ -45,6 +45,7 @@ public class MimerCreateSchemaPage extends BaseObjectEditPage implements MimerCr
         this.schema = schema;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return schema;

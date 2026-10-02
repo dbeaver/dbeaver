@@ -80,7 +80,7 @@ public class MimerDatabankManager extends SQLObjectEditor<MimerDatabank, MimerDa
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerDataSource, MimerDatabank> getObjectsCache(MimerDatabank object) {
+    public DBSObjectCache<MimerDataSource, MimerDatabank> getObjectsCache(@NotNull MimerDatabank object) {
         return object.getDataSource().getDatabankCache();
     }
 
@@ -90,6 +90,7 @@ public class MimerDatabankManager extends SQLObjectEditor<MimerDatabank, MimerDa
         return "NEW_DATABANK";
     }
 
+    @NotNull
     @Override
     protected MimerDatabank createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

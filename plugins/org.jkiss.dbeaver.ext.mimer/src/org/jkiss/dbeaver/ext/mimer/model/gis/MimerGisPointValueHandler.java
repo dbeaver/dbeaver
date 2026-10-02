@@ -161,7 +161,7 @@ class MimerGisPointValueHandler extends ProxyValueHandler {
 
     @NotNull
     @Override
-    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+    public String getValueDisplayString(@NotNull DBSTypedObject column, @NotNull Object value, @NotNull DBDDisplayFormat format) {
         // Global preference (Preferences -> Mimer SQL, independent of the "auto map" one above)
         // - if off, always fall through to the plain binary display below.
         if (!MimerGisUtils.isGridPointTextEnabled()) {

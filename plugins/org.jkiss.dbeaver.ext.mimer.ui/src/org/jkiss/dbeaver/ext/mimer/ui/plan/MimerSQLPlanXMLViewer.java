@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,16 +52,19 @@ public class MimerSQLPlanXMLViewer extends Viewer {
         text.setText(sourceData == null ? "" : CommonUtils.toString(sourceData));
     }
 
+    @NotNull
     @Override
     public Control getControl() {
         return text;
     }
 
+    @Nullable
     @Override
     public Object getInput() {
         return null;
     }
 
+    @Nullable
     @Override
     public ISelection getSelection() {
         return null;
@@ -72,12 +76,12 @@ public class MimerSQLPlanXMLViewer extends Viewer {
     }
 
     @Override
-    public void setInput(Object input) {
+    public void setInput(@NotNull Object input) {
         // no-op - content is set explicitly by showPlan()
     }
 
     @Override
-    public void setSelection(ISelection selection, boolean reveal) {
+    public void setSelection(@NotNull ISelection selection, boolean reveal) {
         // no-op
     }
 }

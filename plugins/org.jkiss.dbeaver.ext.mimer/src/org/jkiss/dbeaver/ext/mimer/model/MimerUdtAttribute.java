@@ -76,6 +76,7 @@ public class MimerUdtAttribute implements DBSObject {
         return ordinalPosition;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getDataType() {
         return dataType;
@@ -86,11 +87,13 @@ public class MimerUdtAttribute implements DBSObject {
         return nullable;
     }
 
+    @NotNull
     @Property(viewable = true, order = 5)
     public String getDefaultValue() {
         return defaultValue;
     }
 
+    @Nullable
     @Property(viewable = true, order = 6)
     public String getCollation() {
         if (CommonUtils.isEmpty(collationName)) {
@@ -110,6 +113,7 @@ public class MimerUdtAttribute implements DBSObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return type;

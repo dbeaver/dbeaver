@@ -53,16 +53,19 @@ public class MimerIdentTablePrivilege extends AbstractMimerIdentPrivilegeSummary
         return tableSchema + "." + tableName + " (" + privilegeType + ")";
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getTableSchema() {
         return tableSchema;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getTableName() {
         return tableName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 4)
     public String getPrivilegeType() {
         return privilegeType;

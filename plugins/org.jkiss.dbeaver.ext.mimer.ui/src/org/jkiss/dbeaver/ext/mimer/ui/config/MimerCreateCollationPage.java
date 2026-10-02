@@ -59,6 +59,7 @@ public class MimerCreateCollationPage extends BaseObjectEditPage implements Mime
         this.collation = collation;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return collation;

@@ -63,21 +63,25 @@ public class MimerIdentObjectPrivilege extends AbstractMimerIdentPrivilegeSummar
         return objectName + " (" + objectType + "/" + privilegeType + ")";
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getObjectSchema() {
         return objectSchema;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getObjectName() {
         return objectName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 4)
     public String getObjectType() {
         return objectType;
     }
 
+    @NotNull
     @Property(viewable = true, order = 5)
     public String getPrivilegeType() {
         return privilegeType;

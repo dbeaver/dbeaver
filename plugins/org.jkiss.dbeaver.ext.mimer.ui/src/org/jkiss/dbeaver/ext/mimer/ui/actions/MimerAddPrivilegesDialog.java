@@ -100,6 +100,7 @@ public class MimerAddPrivilegesDialog extends BaseDialog {
         return area;
     }
 
+    @NotNull
     @Override
     protected Control createContents(@NotNull Composite parent) {
         Control contents = super.createContents(parent);

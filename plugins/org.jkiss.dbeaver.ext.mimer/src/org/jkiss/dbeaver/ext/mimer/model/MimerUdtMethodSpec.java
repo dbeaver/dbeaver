@@ -138,6 +138,7 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
         this.methodName = methodName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getSpecificName() {
         return specificName;
@@ -158,11 +159,13 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
         return CommonUtils.isEmpty(specificName) ? getName() : specificName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getMethodKind() {
         return methodKind;
     }
 
+    @NotNull
     @Property(viewable = true, order = 4)
     public String getReturnDataType() {
         return returnDataType;
@@ -181,6 +184,7 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
         this.deterministic = deterministic;
     }
 
+    @NotNull
     @Property(viewable = true, order = 6)
     public String getAccessOption() {
         return accessOption;
@@ -210,6 +214,7 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
      * shares can expand a pending spec row without a reflection error - an empty folder rather
      * than a broken one.
      */
+    @NotNull
     @Association
     public List<DBSObject> getParameters(@NotNull DBRProgressMonitor monitor) {
         return Collections.emptyList();
@@ -279,7 +284,7 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
     }
 
     @Override
-    public void setObjectDefinitionText(String source) {
+    public void setObjectDefinitionText(@NotNull String source) {
         this.source = source;
     }
 
@@ -315,6 +320,7 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return type;
@@ -326,11 +332,13 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
         return type.getDataSource();
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUsedBy> getUsedBy(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usedByCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
@@ -344,6 +352,7 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
                 session, owner.getType().getSchema().getName(), owner.uniqueName(), owner.methodKind);
         }
 
+        @NotNull
         @Override
         protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerUdtMethodSpec owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
@@ -358,6 +367,7 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
                 session, owner.getType().getSchema().getName(), owner.uniqueName(), owner.methodKind);
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerUdtMethodSpec owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

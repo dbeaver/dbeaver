@@ -66,6 +66,7 @@ public class MimerCreateDomainPage extends BaseObjectEditPage implements MimerCr
         this.domain = domain;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return domain;

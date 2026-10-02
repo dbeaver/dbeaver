@@ -143,7 +143,7 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
     }
 
     @Override
-    public void setObjectDefinitionText(String source) {
+    public void setObjectDefinitionText(@NotNull String source) {
         this.source = source;
     }
 
@@ -190,20 +190,24 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
         this.comment = comment;
     }
 
+    @NotNull
     @Association
-    public Collection<MimerStatementPrivilege> getPrivileges(DBRProgressMonitor monitor) throws DBException {
+    public Collection<MimerStatementPrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilegeCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerStatement, MimerStatementPrivilege> getPrivilegeCache() {
         return privilegeCache;
     }
 
+    @NotNull
     @Association
     public Collection<MimerObjectUses> getUses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return usesCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) {
         privilegeCache.clearCache();
@@ -223,6 +227,7 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return schema;
@@ -259,6 +264,7 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerStatementPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerStatement statement, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerStatementPrivilege(statement, resultSet);
@@ -272,6 +278,7 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
             return MimerObjectUses.prepareUsesStatement(session, owner.getSchema().getName(), owner.getName(), "STATEMENT");
         }
 
+        @NotNull
         @Override
         protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerStatement owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);

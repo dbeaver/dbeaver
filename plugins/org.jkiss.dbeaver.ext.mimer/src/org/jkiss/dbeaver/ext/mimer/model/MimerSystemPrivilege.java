@@ -74,10 +74,11 @@ public class MimerSystemPrivilege implements DBSObject, DBPNamedObject2, DBPSave
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.privilegeType = name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getGrantor() {
         return grantor;
@@ -108,6 +109,7 @@ public class MimerSystemPrivilege implements DBSObject, DBPNamedObject2, DBPSave
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return ident;

@@ -39,10 +39,11 @@ public class MimerColumnPrivilegeManager extends AbstractMimerPrivilegeManager<M
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerTableColumn, MimerColumnPrivilege> getObjectsCache(MimerColumnPrivilege object) {
+    public DBSObjectCache<MimerTableColumn, MimerColumnPrivilege> getObjectsCache(@NotNull MimerColumnPrivilege object) {
         return object.getColumn().getPrivilegeCache();
     }
 
+    @NotNull
     @Override
     protected MimerColumnPrivilege createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

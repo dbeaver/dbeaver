@@ -54,16 +54,19 @@ public class MimerShadow implements DBSObject {
         return name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getDatabankName() {
         return databankName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getFileName() {
         return fileName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 4)
     public String getCreator() {
         return creator;
@@ -85,6 +88,7 @@ public class MimerShadow implements DBSObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return dataSource.getContainer();

@@ -83,24 +83,27 @@ public abstract class AbstractMimerMultiTypePrivilege<O extends DBSObject> imple
         return grantee + " (" + privilegeType + ")";
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getGrantee() {
         return grantee;
     }
 
-    public void setGrantee(String grantee) {
+    public void setGrantee(@NotNull String grantee) {
         this.grantee = grantee;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getPrivilegeType() {
         return privilegeType;
     }
 
-    public void setPrivilegeType(String privilegeType) {
+    public void setPrivilegeType(@NotNull String privilegeType) {
         this.privilegeType = privilegeType;
     }
 
+    @NotNull
     @Property(viewable = true, order = 4)
     public String getGrantor() {
         return grantor;
@@ -131,6 +134,7 @@ public abstract class AbstractMimerMultiTypePrivilege<O extends DBSObject> imple
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return owner;

@@ -46,7 +46,7 @@ public class MimerProgramPrivilege extends AbstractMimerObjectPrivilege<MimerPro
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         setGrantee(name);
     }
 

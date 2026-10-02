@@ -105,6 +105,7 @@ final class MimerOnlineActionUtils {
         @NotNull Runnable onSuccessUi
     ) {
         AbstractJob job = new AbstractJob(jobName) {
+            @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(jobName, statements.size());

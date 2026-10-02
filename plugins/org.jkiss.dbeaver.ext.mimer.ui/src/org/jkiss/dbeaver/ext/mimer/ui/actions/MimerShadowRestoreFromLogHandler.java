@@ -21,6 +21,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
@@ -40,8 +42,9 @@ import java.util.List;
  */
 public class MimerShadowRestoreFromLogHandler extends AbstractHandler {
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) {
+    public Object execute(@NotNull ExecutionEvent event) {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         final List<DBNDatabaseNode> nodes = MimerOnlineActionUtils.collectNodes(selection, MimerDatabankShadow.class);
         if (nodes.isEmpty()) {

@@ -103,6 +103,7 @@ public class MimerAccessPath implements DBSObject {
         return name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getType() {
         return type;
@@ -120,6 +121,7 @@ public class MimerAccessPath implements DBSObject {
      * tell key columns apart from merely-reachable ones at all (see this class's own Javadoc) -
      * hidden entirely pre-11.1 rather than shown redundantly listing every column.
      */
+    @NotNull
     @Property(viewable = true, order = 4, visibleIf = KeyColumnsSupportValidator.class)
     public String getKeyColumns() {
         return columns.stream()
@@ -145,6 +147,7 @@ public class MimerAccessPath implements DBSObject {
         return "INDEX".equalsIgnoreCase(type) || "UNIQUE INDEX".equalsIgnoreCase(type);
     }
 
+    @NotNull
     @Association
     public List<MimerAccessPathColumn> getColumns() {
         return columns;
@@ -161,6 +164,7 @@ public class MimerAccessPath implements DBSObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return table;

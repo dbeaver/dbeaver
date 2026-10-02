@@ -51,6 +51,7 @@ public class MimerCreateObjectPrivilegePage extends BaseObjectEditPage implement
         this.privilege = privilege;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return privilege;
@@ -88,7 +89,7 @@ public class MimerCreateObjectPrivilegePage extends BaseObjectEditPage implement
         Button grantableCheck = UIUtils.createCheckbox(composite, "With Grant Option", null, false, 2);
         grantableCheck.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+            public void widgetSelected(@NotNull org.eclipse.swt.events.SelectionEvent e) {
                 grantable = grantableCheck.getSelection();
             }
         });

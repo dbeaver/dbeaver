@@ -105,6 +105,7 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
         this.name = name;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getCategory() {
         return category;
@@ -116,6 +117,7 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
      * create dialog's pre-formatted type text (e.g. {@code "VARCHAR(20)"}) verbatim, same
      * convention as {@code MimerDomain#setDataType}.
      */
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getDataType() {
         return dataType;
@@ -155,21 +157,25 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
         return schema;
     }
 
+    @NotNull
     @Association
     public Collection<MimerUdtAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return attributeCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
     public List<DBSObject> getConstructorMethodsAndSpecs(@NotNull DBRProgressMonitor monitor) throws DBException {
         return methodsAndSpecsByKind(monitor, "CONSTRUCTOR METHOD");
     }
 
+    @NotNull
     @Association
     public List<DBSObject> getInstanceMethodsAndSpecs(@NotNull DBRProgressMonitor monitor) throws DBException {
         return methodsAndSpecsByKind(monitor, "INSTANCE METHOD");
     }
 
+    @NotNull
     @Association
     public List<DBSObject> getStaticMethodsAndSpecs(@NotNull DBRProgressMonitor monitor) throws DBException {
         return methodsAndSpecsByKind(monitor, "STATIC METHOD");
@@ -199,19 +205,23 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
         return result;
     }
 
+    @NotNull
     public DBSObjectCache<MimerUserDefinedType, MimerUdtMethodSpec> getMethodSpecCache() {
         return methodSpecCache;
     }
 
+    @NotNull
     public DBSObjectCache<MimerUserDefinedType, MimerUdtMethod> getMethodCache() {
         return methodCache;
     }
 
+    @NotNull
     @Association
     public Collection<MimerUserDefinedTypePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilegeCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     public DBSObjectCache<MimerUserDefinedType, MimerUserDefinedTypePrivilege> getPrivilegeCache() {
         return privilegeCache;
     }
@@ -270,6 +280,7 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public DBSObject getParentObject() {
         return schema;
@@ -281,6 +292,7 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
         return (MimerDataSource) schema.getDataSource();
     }
 
+    @NotNull
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         attributeCache.clearCache();
@@ -308,6 +320,7 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerUdtAttribute fetchObject(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerUdtAttribute(type, resultSet);
@@ -334,6 +347,7 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerUdtMethod fetchObject(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String methodName = JDBCUtils.safeGetString(resultSet, "ROUTINE_NAME");
@@ -371,6 +385,7 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
             return dbStat;
         }
 
+        @NotNull
         @Override
         protected MimerUdtMethodSpec fetchObject(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerUdtMethodSpec(type, resultSet);
@@ -398,6 +413,7 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
             return stmt;
         }
 
+        @NotNull
         @Override
         protected MimerUserDefinedTypePrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MimerUserDefinedTypePrivilege(type, resultSet);

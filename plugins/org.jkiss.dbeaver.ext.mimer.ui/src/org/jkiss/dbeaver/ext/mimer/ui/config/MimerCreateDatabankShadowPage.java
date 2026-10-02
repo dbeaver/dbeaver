@@ -48,6 +48,7 @@ public class MimerCreateDatabankShadowPage extends BaseObjectEditPage implements
         this.shadow = shadow;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return shadow;

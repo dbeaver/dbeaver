@@ -61,6 +61,7 @@ public class MimerCreateUserPage extends BaseObjectEditPage implements MimerCrea
         this.user = user;
     }
 
+    @NotNull
     @Override
     public DBSObject getObject() {
         return user;
@@ -89,7 +90,7 @@ public class MimerCreateUserPage extends BaseObjectEditPage implements MimerCrea
             "Check this to skip that (WITHOUT SCHEMA).");
         withoutSchemaCheck.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+            public void widgetSelected(@NotNull org.eclipse.swt.events.SelectionEvent e) {
                 withoutSchema = withoutSchemaCheck.getSelection();
             }
         });
@@ -103,7 +104,7 @@ public class MimerCreateUserPage extends BaseObjectEditPage implements MimerCrea
         groupList.setItems(loadGroupNames());
         groupList.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
             @Override
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+            public void widgetSelected(@NotNull org.eclipse.swt.events.SelectionEvent e) {
                 selectedGroups = java.util.Arrays.asList(groupList.getSelection());
             }
         });

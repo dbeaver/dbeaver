@@ -54,21 +54,25 @@ public class MimerIdentColumnPrivilege extends AbstractMimerIdentPrivilegeSummar
         return tableSchema + "." + tableName + "." + columnName + " (" + privilegeType + ")";
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public String getTableSchema() {
         return tableSchema;
     }
 
+    @NotNull
     @Property(viewable = true, order = 3)
     public String getTableName() {
         return tableName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 4)
     public String getColumnName() {
         return columnName;
     }
 
+    @NotNull
     @Property(viewable = true, order = 5)
     public String getPrivilegeType() {
         return privilegeType;

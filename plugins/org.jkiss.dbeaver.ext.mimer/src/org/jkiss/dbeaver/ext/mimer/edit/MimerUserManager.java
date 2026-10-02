@@ -71,7 +71,7 @@ public class MimerUserManager extends SQLObjectEditor<MimerUser, MimerDataSource
 
     @Nullable
     @Override
-    public DBSObjectCache<MimerDataSource, MimerUser> getObjectsCache(MimerUser object) {
+    public DBSObjectCache<MimerDataSource, MimerUser> getObjectsCache(@NotNull MimerUser object) {
         return object.getDataSource().getUserCache();
     }
 
@@ -81,6 +81,7 @@ public class MimerUserManager extends SQLObjectEditor<MimerUser, MimerDataSource
         return "NEW_USER";
     }
 
+    @NotNull
     @Override
     protected MimerUser createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,

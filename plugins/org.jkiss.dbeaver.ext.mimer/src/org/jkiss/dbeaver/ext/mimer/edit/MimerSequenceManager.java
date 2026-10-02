@@ -71,6 +71,7 @@ public class MimerSequenceManager extends GenericSequenceManager {
             options, "sequence", command.getObject().getName(), executionContext));
     }
 
+    @NotNull
     @Override
     protected MimerSequence createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
