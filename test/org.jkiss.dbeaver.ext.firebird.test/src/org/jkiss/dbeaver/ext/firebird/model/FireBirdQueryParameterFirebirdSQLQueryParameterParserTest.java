@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 
 import java.util.List;
 
-public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
+public class FireBirdQueryParameterFirebirdSQLQueryParameterParserTest extends DBeaverUnitTest {
     @NotNull
     private static final String BLOCK = """
         EXECUTE BLOCK (x INT = ?, y INT = ?)

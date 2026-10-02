@@ -39,14 +39,14 @@ public class FireBirdQueryParameterParser implements SQLQueryParameterParser {
     @Nullable
     @Override
     public List<SQLQueryParameter> parseParametersAndVariables(@NotNull SQLParserContext context, int offset, int length) {
-        return new Parser(context, offset, length).parseParametersAndVariables();
+        return new FirebirdSQLQueryParameterParser(context, offset, length).parseParametersAndVariables();
     }
 
-    private static class Parser extends DefaultSQLQueryParameterParser {
+    private static class FirebirdSQLQueryParameterParser extends DefaultSQLQueryParameterParser {
         private final boolean block;
         private final boolean procedure;
 
-        private Parser(@NotNull SQLParserContext context, int offset, int length) {
+        private FirebirdSQLQueryParameterParser(@NotNull SQLParserContext context, int offset, int length) {
             super(context, offset, length);
             boolean isBlock = false;
             boolean isProcedure = false;
