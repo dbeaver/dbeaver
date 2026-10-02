@@ -18,13 +18,33 @@ package org.jkiss.dbeaver.ext.cdata.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DatabaseURL;
+import org.jkiss.dbeaver.model.StringTemplate;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 public final class CDataConnectionUrl {
+    private static final String PROPERTIES_TEMPLATE = "{separator}[{param:{prop}={value}{separator}}...]";
+    private static final DatabaseURL.Pattern PROPERTIES_PATTERN;
+
+    static {
+        try {
+            PROPERTIES_PATTERN = DatabaseURL.getUrlPattern(PROPERTIES_TEMPLATE, param -> switch (param.name()) {
+                case "prop" -> "[^;=]*[^;=\\p{javaWhitespace}]\\p{javaWhitespace}*";
+                case "value" -> "\\p{javaWhitespace}*+(?:\"(?:[^\"]++|\"\")*+\"|'(?:[^']++|'')*+'|(?!['\"])[^;]*)"
+                    + "(?=\\p{javaWhitespace}*(?:;|\\z))";
+                case "separator" -> "[;\\p{javaWhitespace}]*";
+                default -> throw new IllegalArgumentException("Unknown CData URL template parameter");
+            });
+        } catch (StringTemplate.StringTemplateFormatException exception) {
+            throw new ExceptionInInitializerError(exception);
+        }
+    }
+
     private CDataConnectionUrl() {
     }
 
@@ -42,59 +62,23 @@ public final class CDataConnectionUrl {
         } else {
             throw new DBException("The JDBC URL does not match this CData driver");
         }
+        var entries = PROPERTIES_PATTERN.tryRecognizeHierarchical(properties, true);
+        if (entries == null) {
+            throw new DBException("Invalid CData connection property syntax");
+        }
         Map<String, String> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        int position = 0;
-        while (position < properties.length()) {
-            char current = properties.charAt(position);
-            if (current == ';' || Character.isWhitespace(current)) {
-                position++;
-                continue;
-            }
-            int equals = properties.indexOf('=', position);
-            int separator = properties.indexOf(';', position);
-            if (equals < 0 || separator >= 0 && separator < equals) {
-                throw new DBException("Invalid CData connection property syntax");
-            }
-            String name = properties.substring(position, equals).trim();
-            if (name.isEmpty()) {
-                throw new DBException("Empty CData connection property name");
-            }
-            position = equals + 1;
-            while (position < properties.length() && Character.isWhitespace(properties.charAt(position))) {
-                position++;
-            }
-            StringBuilder value = new StringBuilder();
-            char quote = position < properties.length() ? properties.charAt(position) : 0;
-            if (quote == '\'' || quote == '"') {
-                position++;
-                boolean closed = false;
-                while (position < properties.length()) {
-                    current = properties.charAt(position++);
-                    if (current == quote) {
-                        if (position < properties.length() && properties.charAt(position) == quote) {
-                            position++;
-                        } else {
-                            closed = true;
-                            break;
-                        }
-                    }
-                    value.append(current);
-                }
-                while (position < properties.length() && Character.isWhitespace(properties.charAt(position))) {
-                    position++;
-                }
-                if (!closed || position < properties.length() && properties.charAt(position) != ';') {
-                    throw new DBException("Invalid quoted CData connection property");
-                }
+        // template captures are enumerated backwards; preserve the last value for duplicate properties
+        var propertyEntries = entries.getGroups().getOrDefault("param", List.of()).reversed();
+        for (var entry : propertyEntries) {
+            String name = entry.getFirstParamValue("prop").trim();
+            String value = entry.getFirstParamValue("value").stripLeading();
+            if (!value.isEmpty() && (value.charAt(0) == '\'' || value.charAt(0) == '"')) {
+                String quote = value.substring(0, 1);
+                value = value.substring(1, value.length() - 1).replace(quote + quote, quote);
             } else {
-                int end = properties.indexOf(';', position);
-                if (end < 0) {
-                    end = properties.length();
-                }
-                value.append(properties.substring(position, end).trim());
-                position = end;
+                value = value.trim();
             }
-            result.put(name, value.toString());
+            result.put(name, value);
         }
         return result;
     }

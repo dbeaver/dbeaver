@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -212,6 +212,14 @@ public class DatabaseURL {
         return new Pattern(getUrlTemplate(sampleURL));
     }
 
+    @NotNull
+    public static Pattern getUrlPattern(
+        @NotNull String sampleURL,
+        @NotNull StringTemplate.IParameterPatternSupplier parameterPatternSupplier
+    ) throws StringTemplate.StringTemplateFormatException {
+        return new Pattern(StringTemplate.parseTemplate(sampleURL, parameterPatternSupplier, true));
+    }
+
     public static class Pattern {
         @NotNull
         private final StringTemplate template;
@@ -250,6 +258,11 @@ public class DatabaseURL {
         @Nullable
         public StringTemplate.ParamEntries tryRecognizeHierarchical(@NotNull String urlString) {
             return this.template.extractAllParametersTree(urlString);
+        }
+
+        @Nullable
+        public StringTemplate.ParamEntries tryRecognizeHierarchical(@NotNull String urlString, boolean matchEntireString) {
+            return this.template.extractAllParametersTree(urlString, matchEntireString);
         }
     }
 }

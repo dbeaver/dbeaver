@@ -35,9 +35,41 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.List;
 import java.util.Map;
 
 public class CDataConnectionUrlTest extends DBeaverUnitTest {
+    @Test
+    public void parsesTemplatePropertiesWithEmptyValuesAndSeparators() throws Exception {
+        Assertions.assertEquals(Map.of("Server", "last", "Empty", "", "Quoted", "", "Option", "a=b", "Параметр", "значение"),
+            CDataConnectionUrl.parse(
+                "JDBC:CDATA:POSTGRESQL: ; Server = first ;Empty=;Quoted='';Option=a=b;Параметр=значение;;server=last", "postgresql"));
+        Assertions.assertTrue(CDataConnectionUrl.parse("jdbc:postgresql: ; \t ;", "postgresql").isEmpty());
+    }
+
+    @Test
+    public void preservesQuotedWhitespaceAndEscapedQuotes() throws Exception {
+        Assertions.assertEquals(Map.of("Password", " a\"b;c ", "Other", "a'b;c", "Space", " "),
+            CDataConnectionUrl.parse("jdbc:postgresql:Password= \" a\"\"b;c \" \t;Other='a''b;c';Space=' ';", "postgresql"));
+    }
+
+    @Test
+    public void roundTripsLongQuotedValues() throws Exception {
+        Map<String, String> properties = Map.of("Token", "abc;\"'".repeat(4096));
+        Assertions.assertEquals(properties, CDataConnectionUrl.parse(CDataConnectionUrl.build("test", properties), "test"));
+    }
+
+    @Test
+    public void rejectsUnparsedTailAndBlankPropertyNames() {
+        for (String properties : List.of(
+            "Server=host;bad", "Server=host; =secret;", "Password= 'secret", "Password=\"secret\"junk"
+        )) {
+            DBException error = Assertions.assertThrows(DBException.class,
+                () -> CDataConnectionUrl.parse("jdbc:postgresql:" + properties, "postgresql"));
+            Assertions.assertFalse(error.getMessage().contains("secret"));
+        }
+    }
+
     @Test
     public void mapsEffectiveEndpointForSshForwarding() throws Exception {
         var configuration = new DBPConnectionConfiguration();
