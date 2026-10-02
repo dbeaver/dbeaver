@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.event.EventHandler;
 
@@ -37,13 +37,22 @@ public final class NativeThemeUtils {
     private static final Log log = Log.getLog(NativeThemeUtils.class);
     private static boolean themeListenerInstalled;
 
+    private static final Class<?>[] RESKIN_WIDGET_TYPES = new Class[] {
+        Button.class,
+        Label.class,
+        Combo.class,
+        Text.class,
+        Tree.class,
+        Table.class,
+    };
+
     public static void installThemeListener(@NotNull Display display) {
         if (!RuntimeUtils.isWindows() || themeListenerInstalled) {
             return;
         }
         themeListenerInstalled = true;
         display.addListener(SWT.Skin, event -> {
-            if (event.widget instanceof Control control) {
+            if (event.widget instanceof Control control && ArrayUtils.contains(RESKIN_WIDGET_TYPES, control.getClass())) {
                 updateNativeWidgets(control);
             }
         });
