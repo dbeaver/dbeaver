@@ -31,9 +31,9 @@ import java.util.regex.Pattern;
 /** Creates a parser for each Firebird query. */
 public class FireBirdQueryParameterParser implements SQLQueryParameterParser {
     private static final Log log = Log.getLog(FireBirdQueryParameterParser.class);
-    private static final String KEYWORD_SEPARATOR = "(?:\\s|/\\*[^\\r\\n]*?\\*/)+";
+    private static final String KEYWORD_SEPARATOR = "(?:\\s|--[^\\r\\n]*(?:\\r\\n|[\\r\\n])|/\\*.*?\\*/)+";
     // Recognizes EXECUTE BLOCK at the start, ignoring case and leading whitespace/comments.
-    // Between EXECUTE and BLOCK accepts whitespace or simple single-line /* ... */ comments (no nesting).
+    // Between EXECUTE and BLOCK accepts whitespace and SQL comments (no nested block comments).
     private static final Pattern BLOCK = Pattern.compile(
         "^(?:\\s|--[^\\r\\n]*|/\\*.*?\\*/)*EXECUTE" + KEYWORD_SEPARATOR + "BLOCK\\b",
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL);

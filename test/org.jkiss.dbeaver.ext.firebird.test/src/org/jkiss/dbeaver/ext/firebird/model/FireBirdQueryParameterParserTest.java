@@ -122,6 +122,13 @@ public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
         }
 
         @Test
+        void acceptsLineAndMultilineBlockCommentsBetweenKeywords() {
+            assertRecognized("EXECUTE -- ? inside comment\nBLOCK");
+            assertRecognized("EXECUTE -- comment\r\nBLOCK");
+            assertRecognized("EXECUTE /* multi\nline ? comment */ BLOCK");
+        }
+
+        @Test
         void doesNotRecognizeKeywordPrefixesOrTextInsideLiteralsAndComments() {
             for (String sql : List.of("EXECUTE BLOCKED (x INT = ?)", "EXECUTEBLOCK (x INT = ?)",
                 "SELECT 'EXECUTE BLOCK (x INT = ?)' FROM RDB$DATABASE", "/* EXECUTE BLOCK */ SELECT ? FROM RDB$DATABASE")) {
@@ -132,6 +139,7 @@ public class FireBirdQueryParameterParserTest extends DBeaverUnitTest {
         @Test
         void doesNotTreatProcedureWithCommentAsBlockOrOrdinaryNamedParameters() {
             Assertions.assertNull(parse("EXECUTE/* comment */PROCEDURE demo(:arg, ?)", true));
+            Assertions.assertNull(parse("EXECUTE -- comment\nPROCEDURE demo(:arg, ?)", true));
         }
 
         private void assertRecognized(@NotNull String header) {
