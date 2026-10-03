@@ -16,7 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.gbase8s.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 public class GBase8sDialect extends GenericSQLDialect {
@@ -24,6 +29,18 @@ public class GBase8sDialect extends GenericSQLDialect {
 
     public GBase8sDialect() {
         super("GBase 8s", "gbase8s");
+    }
+
+    @Override
+    public void initDriverSettings(
+        @NotNull JDBCSession session,
+        @NotNull JDBCDataSource dataSource,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
+        super.initDriverSettings(session, dataSource, metaData);
+        if (GBase8sUtils.isMySQLSqlMode(dataSource.getContainer())) {
+            setIdentifierQuoteString(new String[][]{{"`", "`"}});
+        }
     }
 
     /**
