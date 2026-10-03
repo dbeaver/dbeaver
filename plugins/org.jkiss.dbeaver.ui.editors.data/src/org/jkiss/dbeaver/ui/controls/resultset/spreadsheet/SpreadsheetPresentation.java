@@ -110,6 +110,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         DBDValueHint.HintType.STRING, DBDValueHint.HintType.ACTION, DBDValueHint.HintType.IMAGE);
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
+    private static final int MAX_FULL_ARRAY_PREVIEW_ITEMS = 100;
+    private static final int MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH = 1000;
 
     private Spreadsheet spreadsheet;
 
@@ -2442,6 +2444,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             info.value = cellValue;
             info.text = formatValue(colElement, rowElement, info.value);
+            if (attr != null && cellValue instanceof DBDCollection collection &&
+                !collection.isNull() && !collection.isEmpty() && !spreadsheet.isCellExpanded(rowElement, colElement)
+            ) {
+                info.fullTextProvider = () -> {
+                    try {
+                        return formatArrayPreview(attr, collection);
+                    } catch (Exception e) {
+                        // The compact preview is still available if the full value cannot be formatted.
+                        return null;
+                    }
+                };
+            }
             info.state = STATE_NONE;
 
             if (attr != null && cellValue != DBDVoid.INSTANCE) {
@@ -2626,7 +2640,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return attr.getValueRenderer().getValueDisplayString(
                     attr.getAttribute(),
                     value,
-                    getValueRenderFormat(attr, value));
+                    getValueRenderFormat(value));
             } catch (Exception e) {
                 return new DBDValueError(e);
             }
@@ -2941,9 +2955,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (row == null) {
                 return null;
             }
-            CellInformation cellInfo = getCellInfo(colElement, rowElement, false);
             int hintOptions = options;
-            if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
+            if (spreadsheet.isCellExpanded(rowElement, colElement)) {
                 hintOptions |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
             if (controller.isRecordMode()) {
@@ -3190,7 +3203,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @NotNull
-    private DBDDisplayFormat getValueRenderFormat(@NotNull DBDAttributeBinding attr, @Nullable Object value) {
+    private DBDDisplayFormat getValueRenderFormat(@Nullable Object value) {
         if (value instanceof Number && useNativeNumbersFormat) {
             return DBDDisplayFormat.NATIVE;
         }
@@ -3217,6 +3230,69 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return value instanceof DBDCollection collection
             && !collection.isNull()
             && (collection.isEmpty() || spreadsheet.isCellExpanded(row, column));
+    }
+
+    /**
+     * Produces a complete preview using the database-specific renderer when the collection is small enough to display.
+     */
+    @Nullable
+    private String formatArrayPreview(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull DBDCollection collection
+    ) {
+        int[] remainingItems = {MAX_FULL_ARRAY_PREVIEW_ITEMS};
+        int[] remainingTextLength = {MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH};
+        boolean[] hasNumbers = {false};
+        Set<DBDCollection> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (!isArrayPreviewBounded(collection, remainingItems, remainingTextLength, hasNumbers, visited)) {
+            return null;
+        }
+
+        String preview = attribute.getValueRenderer().getValueDisplayString(
+            attribute.getAttribute(),
+            collection,
+            hasNumbers[0] && useNativeNumbersFormat ? DBDDisplayFormat.NATIVE : gridValueFormat);
+        return preview.length() <= MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH ? preview : null;
+    }
+
+    /**
+     * Checks nested collection limits and cycles without invoking value handlers before the complete value is rendered.
+     */
+    private static boolean isArrayPreviewBounded(
+        @NotNull DBDCollection collection,
+        @NotNull int[] remainingItems,
+        @NotNull int[] remainingTextLength,
+        @NotNull boolean[] hasNumbers,
+        @NotNull Set<DBDCollection> visited
+    ) {
+        if (!visited.add(collection)) {
+            return false;
+        }
+        try {
+            for (int i = 0; i < collection.getItemCount(); i++) {
+                if (--remainingItems[0] < 0) {
+                    return false;
+                }
+                Object item = collection.getItem(i);
+                if (item instanceof DBDCollection nested) {
+                    if (!isArrayPreviewBounded(nested, remainingItems, remainingTextLength, hasNumbers, visited)) {
+                        return false;
+                    }
+                } else {
+                    if (item instanceof Number) {
+                        hasNumbers[0] = true;
+                    }
+                    if (item instanceof CharSequence text &&
+                        (remainingTextLength[0] -= text.length()) < 0
+                    ) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } finally {
+            visited.remove(collection);
+        }
     }
 
     private boolean isComplexValuesExpansionEnabled() {
