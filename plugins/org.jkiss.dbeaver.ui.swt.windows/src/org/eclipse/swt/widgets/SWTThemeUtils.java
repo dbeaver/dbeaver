@@ -27,6 +27,7 @@ import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.internal.win32.MENUITEMINFO;
 import org.eclipse.swt.internal.win32.OS;
 import org.eclipse.swt.internal.win32.RECT;
+import org.jkiss.code.NotNull;
 
 import java.util.function.BooleanSupplier;
 
@@ -41,7 +42,7 @@ public final class SWTThemeUtils {
     // Windows TREEITEMSTATES.HOTSELECTED is not exposed by SWT's OS constants.
     private static final int TREIS_HOTSELECTED = 6;
 
-    public static void updateShellsAndMenus(Display display, boolean dark) {
+    public static void updateShellsAndMenus(@NotNull Display display, boolean dark) {
         // SetPreferredAppMode updates SWT's defaults, but Windows keeps the old menu theme cached.
         if (OS.IsDarkModeAvailable()) {
             try {
@@ -62,7 +63,7 @@ public final class SWTThemeUtils {
         }
     }
 
-    private static void updateMenuBarTheme(Menu menuBar) {
+    private static void updateMenuBarTheme(@NotNull Menu menuBar) {
         Display display = menuBar.getDisplay();
         if (menuBar.foreground != display.menuBarForegroundPixel || menuBar.background != display.menuBarBackgroundPixel) {
             menuBar.initThemeColors();
@@ -93,7 +94,7 @@ public final class SWTThemeUtils {
         menuBar.update();
     }
 
-    private static void updateMenusTheme(Menu [] menus) {
+    private static void updateMenusTheme(@NotNull Menu [] menus) {
         for (Menu menu : menus) {
             if (menu == null || menu.isDisposed()) {
                 continue;
@@ -126,7 +127,7 @@ public final class SWTThemeUtils {
     /**
      * Uses Windows-specific calls and constants to update native widgets look-and-feel
      */
-    public static void updateWidgetTheme(Control control, boolean dark) {
+    public static void updateWidgetTheme(@NotNull Control control, boolean dark) {
         // TODO: do not style custom wigets and empty composites
         OS.AllowDarkModeForWindow(control.handle, dark);
         // For Tree and Table we shouldn't set any theme but EXPLORER.
@@ -142,21 +143,27 @@ public final class SWTThemeUtils {
         }
     }
 
-    public static void installTreeSelectionFix(Tree tree, BooleanSupplier isDarkTheme) {
+    public static void installTreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
         tree.addListener(SWT.EraseItem, new TreeSelectionFix(tree, isDarkTheme)::eraseItem);
     }
 
+    /**
+     * Workaround for SWT's Windows Tree painting: Windows draws the first column, while SWT draws
+     * the remaining columns, producing different hover and selection backgrounds in dark theme.
+     * TODO: Fix SWT Tree to use the same native TreeView state across all columns and preserve
+     * the hovered state when drawing subsequent columns, then remove this workaround.
+     */
     private static final class TreeSelectionFix {
         private final Tree tree;
         private final BooleanSupplier isDarkTheme;
         private TreeItem hotItem;
 
-        private TreeSelectionFix(Tree tree, BooleanSupplier isDarkTheme) {
+        private TreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
             this.tree = tree;
             this.isDarkTheme = isDarkTheme;
         }
 
-        private void eraseItem(Event event) {
+        private void eraseItem(@NotNull Event event) {
             if (!isDarkTheme.getAsBoolean() || tree.getColumnCount() < 2) {
                 return;
             }
@@ -220,7 +227,7 @@ public final class SWTThemeUtils {
         }
     }
 
-    private static char[] getDarkThemeIdByWidgetType(Control control) {
+    private static @NotNull char[] getDarkThemeIdByWidgetType(@NotNull Control control) {
         // Combo is an exception?
         return control instanceof Combo ? WINDOW_THEME_COMBO : WINDOW_THEME_DEFAULT;
     }

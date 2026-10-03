@@ -1,0 +1,34 @@
+diff --git a/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Tree.java b/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Tree.java
+--- a/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Tree.java
++++ b/bundles/org.eclipse.swt/Eclipse SWT/win32/org/eclipse/swt/widgets/Tree.java
+@@ -7853,17 +7853,10 @@
+ 							OS.DeleteObject (pen);
+ 						}
+ 
+-						/* Windows 7 and 10 always draw a nearly invisible vertical line between the columns, even if lines are disabled.
+-						   This line uses no fixed color constant, but calculates it from the background color.
+-						   The method getSlightlyDifferentColor gives us a color, that is near enough to the windows algorithm. */
+-						long pen = OS.CreatePen (OS.PS_SOLID, getGridLineWidthInPixels(), getSlightlyDifferentColor(getHeaderBackgroundPixel()));
+-						long oldPen = OS.SelectObject (nmcd.hdc, pen);
+-						OS.Polyline(nmcd.hdc, new int[] {rects[i].right-1, rects[i].top, rects[i].right-1, rects[i].bottom}, 2);
+-						OS.SelectObject (nmcd.hdc, oldPen);
+-						OS.DeleteObject (pen);
+-
+-						pen = OS.CreatePen (OS.PS_SOLID, getGridLineWidthInPixels(), OS.GetSysColor(OS.COLOR_3DFACE));
+-						oldPen = OS.SelectObject (nmcd.hdc, pen);
++						int lineColor = display.tableHeaderLinePixel != -1 ? display.tableHeaderLinePixel
++							: getSlightlyDifferentColor(getHeaderBackgroundPixel());
++						long pen = OS.CreatePen (OS.PS_SOLID, getGridLineWidthInPixels(), lineColor);
++						long oldPen = OS.SelectObject (nmcd.hdc, pen);
+ 						/* To differentiate headers, always draw header column separator. */
+ 						OS.Polyline(nmcd.hdc, new int[] {rects[i].right-1, rects[i].top, rects[i].right-1, rects[i].bottom}, 2);
+ 						/* To differentiate header & content area, always draw the line separator between header & first row. */
+@@ -7903,7 +7896,7 @@
+ 							RECT textRect = new RECT();
+ 							textRect.left = x;
+ 							textRect.top = rects[i].top;
+-							textRect.right = rects[i].right;
++							textRect.right = rects[i].right - (x - rects[i].left);
+ 							textRect.bottom = rects[i].bottom;
+ 							OS.DrawText (nmcd.hdc, buffer, buffer.length, textRect, flags);
+ 						}
