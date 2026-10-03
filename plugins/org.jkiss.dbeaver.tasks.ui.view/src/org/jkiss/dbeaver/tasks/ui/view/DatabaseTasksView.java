@@ -28,12 +28,14 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.*;
+import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -61,6 +63,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -103,6 +106,27 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     @Nullable
     public DatabaseTasksTree getTasksTree() {
         return tasksTree;
+    }
+
+    public void selectTask(@NotNull DBTTask task) {
+        if (tasksTree == null) {
+            return;
+        }
+        NavigatorHandlerProjectSetActive.setActiveProject(task.getProject());
+        TreeViewer viewer = tasksTree.getViewer();
+        // A previous search must not hide the task being revealed from another view.
+        for (Composite parent = viewer.getTree().getParent(); parent != null; parent = parent.getParent()) {
+            if (parent instanceof FilteredTree filteredTree) {
+                if (filteredTree.getFilterControl() != null) {
+                    filteredTree.getFilterControl().setText("");
+                }
+                filteredTree.getPatternFilter().setPattern("");
+                break;
+            }
+        }
+        refresh();
+        viewer.setSelection(new StructuredSelection(task), true);
+        setFocus();
     }
 
     public TreeViewer getTaskRunViewer() {
@@ -518,14 +542,13 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private abstract class TaskRunLabelProvider extends ColumnLabelProvider {
         @Override
-        public final void update(ViewerCell cell) {
+        public final void update(@NotNull ViewerCell cell) {
             DBTTaskRun taskRun = (DBTTaskRun) cell.getElement();
-            if (taskRun != null && !taskRun.isRunSuccess()) {
-                cell.setBackground(tasksTree.getColorError());
-            } else {
-                cell.setBackground(null);
-            }
             update(cell, taskRun);
+            Color background = taskRun != null && taskRun.isFinished() && !taskRun.isRunSuccess()
+                ? BaseThemeSettings.instance.colorError : null;
+            cell.setBackground(background);
+            cell.setForeground(background == null ? null : UIStyles.getContrastColor(background));
         }
 
         protected abstract void update(ViewerCell cell, DBTTaskRun task);
@@ -555,23 +578,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                         return;
                     }
                 }
-                if (Files.exists(runLog)) {
-                    try {
-                        IEditorPart editorPart = EditorUtils.openExternalFileEditor(runLog.toFile(), getSite().getWorkbenchWindow());
-                        // Set UTF8 encoding
-                        if (editorPart instanceof ITextEditor) {
-                            IDocumentProvider prov = ((ITextEditor) editorPart).getDocumentProvider();
-                            if (prov instanceof TextFileDocumentProvider) {
-                                ((TextFileDocumentProvider) prov).setEncoding(editorPart.getEditorInput(), StandardCharsets.UTF_8.name());
-                                prov.resetDocument(editorPart.getEditorInput());
-                            }
-                        }
-                    } catch (Exception e) {
-                        DBWorkbench.getPlatformUI().showError("Open log error", "Error while opening task execution log", e);
-                    }
-                } else {
-                    UIUtils.showMessageBox(getSite().getShell(), "Log file not found", "Can't find log file '" + runLog.toAbsolutePath() + "'", SWT.ICON_ERROR);
-                }
+                openRunLog(runLog, getSite().getWorkbenchWindow());
             }
         }
 
@@ -597,6 +604,27 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             });
 
             return Objects.requireNonNull(path[0]);
+        }
+    }
+
+    public static void openRunLog(@NotNull Path runLog, @NotNull IWorkbenchWindow window) {
+        if (Files.exists(runLog)) {
+            try {
+                IEditorPart editorPart = EditorUtils.openExternalFileEditor(runLog.toFile(), window);
+                // Task logs are written in UTF-8 regardless of the workspace's text encoding.
+                if (editorPart instanceof ITextEditor textEditor) {
+                    IDocumentProvider provider = textEditor.getDocumentProvider();
+                    if (provider instanceof TextFileDocumentProvider textProvider) {
+                        textProvider.setEncoding(editorPart.getEditorInput(), StandardCharsets.UTF_8.name());
+                        provider.resetDocument(editorPart.getEditorInput());
+                    }
+                }
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Open log error", "Error while opening task execution log", e);
+            }
+        } else {
+            UIUtils.showMessageBox(window.getShell(), "Log file not found",
+                "Can't find log file '" + runLog.toAbsolutePath() + "'", SWT.ICON_ERROR);
         }
     }
 

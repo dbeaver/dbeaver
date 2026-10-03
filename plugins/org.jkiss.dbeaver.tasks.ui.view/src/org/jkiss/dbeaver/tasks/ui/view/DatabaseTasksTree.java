@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
@@ -73,13 +74,10 @@ public class DatabaseTasksTree {
     private boolean groupByCategory = false;
 
     private final DateFormat dateFormat;
-    private final Color colorError, colorErrorForeground;
 
     public DatabaseTasksTree(Composite composite, boolean selector) {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
-        colorError = BaseThemeSettings.instance.colorError;
-        colorErrorForeground = UIStyles.getContrastColor(colorError);
         
         taskViewer = DialogUtils.createFilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
@@ -260,10 +258,6 @@ public class DatabaseTasksTree {
 
     DateFormat getDateFormat() {
         return dateFormat;
-    }
-
-    Color getColorError() {
-        return colorError;
     }
 
     ViewerColumnController getColumnController() {
@@ -744,36 +738,40 @@ public class DatabaseTasksTree {
     }
 
     private abstract class TaskLabelProvider extends ColumnLabelProvider {
+        @Nullable
         @Override
-        public final void update(ViewerCell cell) {
-            Object element = cell.getElement();
-            if (element instanceof DBTTask) {
-                DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                if (lastRun != null && !lastRun.isRunSuccess()) {
-                    cell.setBackground(colorError);
-                    cell.setForeground(colorErrorForeground);
-                } else {
-                    cell.setBackground(null);
-                    cell.setForeground(null);
-                }
-            }
-            cell.setText(CommonUtils.notEmpty(getCellText(element)));
-            DBPImage cellImage = getCellImage(element);
-            if (cellImage != null) {
-                cell.setImage(DBeaverIcons.getImage(cellImage));
-            }
-
+        public Color getForeground(@NotNull Object element) {
+            Color background = getBackground(element);
+            return background == null ? null : UIStyles.getContrastColor(background);
         }
 
-        protected DBPImage getCellImage(Object element) {
+        @Nullable
+        @Override
+        public Color getBackground(@NotNull Object element) {
+            DBTTaskRun lastRun = element instanceof DBTTask task ? task.getLastRun() : null;
+            return lastRun != null && lastRun.isFinished() && !lastRun.isRunSuccess()
+                ? BaseThemeSettings.instance.colorError : null;
+        }
+
+        @Nullable
+        @Override
+        public Image getImage(@NotNull Object element) {
+            DBPImage cellImage = getCellImage(element);
+            return cellImage == null ? null : DBeaverIcons.getImage(cellImage);
+        }
+
+        @Nullable
+        protected DBPImage getCellImage(@NotNull Object element) {
             return null;
         }
 
-        protected abstract String getCellText(Object element);
+        @Nullable
+        protected abstract String getCellText(@NotNull Object element);
 
+        @NotNull
         @Override
-        public String getText(Object element) {
-            return getCellText(element);
+        public String getText(@NotNull Object element) {
+            return CommonUtils.notEmpty(getCellText(element));
         }
     }
 

@@ -298,6 +298,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                 try {
                     group.join(0, new ProxyProgressMonitor(monitor));
                 } catch (InterruptedException | OperationCanceledException e) {
+                    monitor.getNestedMonitor().setCanceled(true);
                     group.cancel();
                     return;
                 }
@@ -318,6 +319,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                                 break;
                             }
                         } catch (InterruptedException | OperationCanceledException e) {
+                            monitor.getNestedMonitor().setCanceled(true);
                             break;
                         }
                     }
@@ -325,7 +327,10 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                         break;
                     }
                     final IStatus result = job.getResult();
-                    if (result.getException() != null) {
+                    if (result != null && result.matches(IStatus.CANCEL)) {
+                        monitor.getNestedMonitor().setCanceled(true);
+                    }
+                    if (result != null && result.getException() != null) {
                         recordException(result.getException());
                     }
                     totalStatistics.accumulate(job.getTotalStatistics());

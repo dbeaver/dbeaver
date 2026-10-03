@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.tasks.ui.handlers;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskEvent;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.model.task.DBTTaskRunStorage;
+import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.IOException;
@@ -37,6 +42,9 @@ public class TaskClearHistoryHandler implements DBRRunnableWithProgress {
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         final DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (project == null) {
+            return;
+        }
         final DBTTaskManager manager = project.getTaskManager();
 
         try {
@@ -47,23 +55,33 @@ public class TaskClearHistoryHandler implements DBRRunnableWithProgress {
             monitor.worked(1);
 
             monitor.subTask("Delete task run records");
-            Files.walkFileTree(manager.getStatisticsFolder(), new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    log.trace("Deleting " + file);
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
+            DBTTaskRunStorage storage = DBTTaskRunStorage.getInstance();
+            if (storage != null) {
+                storage.deleteRuns(project.getId(), null, null);
+            }
+            if (Files.exists(manager.getStatisticsFolder())) {
+                Files.walkFileTree(manager.getStatisticsFolder(), new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        log.trace("Deleting " + file);
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
 
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    log.trace("Deleting " + dir);
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        log.trace("Deleting " + dir);
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+            for (DBTTask task : manager.getAllTasks()) {
+                task.refreshRunStatistics();
+                TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_UPDATE));
+            }
             monitor.worked(1);
-        } catch (IOException e) {
+        } catch (IOException | DBException e) {
             throw new InvocationTargetException(e);
         } finally {
             monitor.done();
