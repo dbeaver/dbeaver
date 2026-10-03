@@ -295,8 +295,9 @@
             label="CSV"
             description="CSV files"
             dataSourceInformation="Tabular data stored in comma-separated text files"
-            icon="icons/csv_icon.png"
-            iconBig="icons/csv_icon_big.png"/>
+            icon="icons/csv_icon.svg"
+            iconBig="icons/csv_icon_big.svg"
+            logoImage="icons/csv_logo.svg"/>
         <dataSourceType
             id="teradata"
             label="Teradata"
