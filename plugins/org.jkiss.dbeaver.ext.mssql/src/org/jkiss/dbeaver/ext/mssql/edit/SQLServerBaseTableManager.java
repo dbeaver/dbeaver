@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -54,20 +55,26 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
     @Override
     protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull NestedObjectCommand<OBJECT, PropertyHandler> command, @NotNull Map<String, Object> options) throws DBException {
         final OBJECT table = command.getObject();
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
-            boolean isUpdate = SQLServerUtils.isCommentSet(
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            final String description = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_DESCRIPTION), null);
+            boolean commentSet = SQLServerUtils.isCommentSet(
                 monitor,
                 table.getDatabase(),
                 SQLServerObjectClass.OBJECT_OR_COLUMN,
                 table.getObjectId(),
                 0);
-            actionList.add(
-                new SQLDatabasePersistAction(
-                    "Add table comment",
-                    "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                        " 'MS_Description', " + SQLUtils.quoteString(table, table.getDescription()) + "," +
-                        " 'schema', " + SQLUtils.quoteString(table, table.getSchema().getName()) + "," +
-                        " '" + (table.isView() ? "view" : "table") + "', " + SQLUtils.quoteString(table, table.getName())));
+            if (!CommonUtils.isEmpty(description) || commentSet) {
+                actionList.add(
+                    new SQLDatabasePersistAction(
+                        "Set table comment",
+                        "EXEC " + SQLServerUtils.getSystemTableName(
+                            table.getDatabase(),
+                            SQLServerUtils.getCommentProcedureName(description, commentSet)) +
+                            " '" + SQLServerConstants.PROP_MS_DESCRIPTION + "'" +
+                            SQLServerUtils.getCommentValueArgument(table.getDataSource(), description) + "," +
+                            " 'schema', " + SQLUtils.quoteString(table, table.getSchema().getName()) + "," +
+                            " '" + (table.isView() ? "view" : "table") + "', " + SQLUtils.quoteString(table, table.getName())));
+            }
         }
 
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {

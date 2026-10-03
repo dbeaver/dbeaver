@@ -76,7 +76,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         @NotNull List<DBEPersistAction> actionList,
         @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options) {
-        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
+        if (command.getProperties().size() > 1 || !command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
             appendTableModifiers(monitor, command.getObject(), command, query, true, options);
@@ -186,7 +186,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
             // Column comments for the newly created table
             for (SQLServerTableColumn column : CommonUtils.safeCollection(tableBase.getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
-                    SQLServerTableColumnManager.addColumnCommentAction(actionList, column, false);
+                    SQLServerTableColumnManager.addColumnCommentAction(actionList, column, column.getDescription(), false);
                 }
             }
         }

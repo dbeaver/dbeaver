@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
@@ -91,7 +92,7 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
 
     @Override
     protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
-        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
+        if (command.getProperties().size() > 1 || !command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             createOrReplaceProcedureQuery(executionContext, actionList, command.getObject(), false);
         }
     }
@@ -145,7 +146,8 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
     @Override
     protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<SQLServerProcedure, PropertyHandler> command, @NotNull Map<String, Object> options) throws DBException {
         final SQLServerProcedure procedure = command.getObject();
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            final String description = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_DESCRIPTION), null);
             SQLServerDatabase database = procedure.getContainer().getDatabase();
             if (procedure.getDatabase() == null) {
                 return;
@@ -156,17 +158,23 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
             } else {
                 procedureType = "procedure";
             }
-            boolean isUpdate = SQLServerUtils.isCommentSet(
+            boolean commentSet = SQLServerUtils.isCommentSet(
                 monitor,
                 database,
                 SQLServerObjectClass.OBJECT_OR_COLUMN,
                 procedure.getObjectId(),
                 0);
+            if (CommonUtils.isEmpty(description) && !commentSet) {
+                return;
+            }
             actions.add(
                 new SQLDatabasePersistAction(
-                    "Add procedure comment",
-                    "EXEC " + SQLServerUtils.getSystemTableName(database, isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                        " 'MS_Description', " + SQLUtils.quoteString(procedure, procedure.getDescription()) + "," +
+                    "Set procedure comment",
+                    "EXEC " + SQLServerUtils.getSystemTableName(
+                        database,
+                        SQLServerUtils.getCommentProcedureName(description, commentSet)) +
+                        " '" + SQLServerConstants.PROP_MS_DESCRIPTION + "'" +
+                        SQLServerUtils.getCommentValueArgument(procedure.getDataSource(), description) + "," +
                         " 'schema', " + SQLUtils.quoteString(procedure, procedure.getContainer().getName()) + "," +
                         "'" + procedureType + "' ," + SQLUtils.quoteString(procedure, procedure.getName())));
         }
