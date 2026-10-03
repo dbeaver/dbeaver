@@ -23,8 +23,6 @@ public class DDTrackingUIMessages extends NLS {
 
     public static String sync_preference_page_title;
     public static String sync_preference_page_access_key_group;
-    public static String sync_preference_page_server_url_label;
-    public static String sync_preference_page_default_button;
     public static String sync_preference_page_account_label;
     public static String sync_preference_page_log_in_button;
     public static String sync_preference_page_log_out_button;
@@ -48,7 +46,6 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_no_configurations_found;
     public static String sync_preference_page_select_configuration;
     public static String sync_preference_page_log_in_first;
-    public static String sync_preference_page_url_not_configured;
     public static String sync_preference_page_encryption_not_configured;
     public static String sync_preference_page_login_failed;
     public static String sync_preference_page_cannot_forget_keys;
