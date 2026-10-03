@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.*;
 import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContext;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
@@ -987,6 +988,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
 
         return SQLScriptParser.extractScriptQueries(parserContext, startOffset, length, scriptMode, keepDelimiters, parseParameters);
+    }
+
+    @NotNull
+    public SQLCompletionRequest createCompletionRequest(@NotNull IDocument document, int offset, boolean simpleMode) {
+        return new SQLCompletionRequest(getCompletionContext(), document, offset, extractQueryAtPos(offset), simpleMode);
     }
 
     public SQLCompletionContext getCompletionContext() {
