@@ -42,7 +42,9 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 /**
  * JDBCExecutionContext.
@@ -64,6 +66,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
     private transient volatile boolean txnIsolationLevelReadInProgress;
+    private final CopyOnWriteArrayList<DBCTransactionListener> transactionListeners = new CopyOnWriteArrayList<>();
 
     private StatementLock statementLock = NoOpLock.INSTANCE;
 
@@ -192,6 +195,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     protected void disconnect(boolean removeContext) {
+        notifyTransactionListeners(DBCTransactionListener::transactionContextClosed);
+        synchronized (this) {
+            transactionListeners.clear();
+        }
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
@@ -412,6 +419,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         } finally {
             QMUtils.getDefaultHandler().handleTransactionAutocommit(this, autoCommit);
         }
+        notifyTransactionListeners(listener -> listener.autoCommitChanged(this.autoCommit));
     }
 
     @Override
@@ -465,6 +473,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 QMUtils.getDefaultHandler().handleTransactionCommit(this);
             }
         }
+        notifyTransactionListeners(DBCTransactionListener::transactionCommitted);
     }
 
     @Override
@@ -494,11 +503,52 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);
             }
         }
+        notifyTransactionListeners(listener -> listener.transactionRolledBack(savepoint));
     }
 
     @Override
     public boolean isSupportsTransactions() {
         return instance.getDataSource().getInfo().supportsTransactions();
+    }
+
+    @NotNull
+    @Override
+    public DBCDDLTransactionBehavior getDDLTransactionBehavior() {
+        try {
+            return DBCDDLTransactionBehavior.resolve(this.getConnection().getMetaData());
+        } catch (SQLException | DBCException e) {
+            log.debug("Error determining DDL transaction behavior", e);
+            return DBCDDLTransactionBehavior.TRANSACTIONAL;
+        }
+    }
+
+    @Override
+    public boolean supportsTransactionListeners() {
+        return true;
+    }
+
+    @Override
+    public synchronized void addTransactionListener(@NotNull DBCTransactionListener listener) {
+        transactionListeners.addIfAbsent(listener);
+    }
+
+    @Override
+    public synchronized void removeTransactionListener(@NotNull DBCTransactionListener listener) {
+        transactionListeners.remove(listener);
+    }
+
+    private void notifyTransactionListeners(@NotNull Consumer<DBCTransactionListener> notification) {
+        DBCTransactionListener[] listeners;
+        synchronized (this) {
+            listeners = transactionListeners.toArray(DBCTransactionListener[]::new);
+        }
+        for (DBCTransactionListener listener : listeners) {
+            try {
+                notification.accept(listener);
+            } catch (RuntimeException e) {
+                log.debug("Error notifying transaction listener", e);
+            }
+        }
     }
 
     @Override
