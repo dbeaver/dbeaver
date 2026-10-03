@@ -1039,6 +1039,7 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.toolbar" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.toolbar.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.accessibility" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.accessibility.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.general.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.user.interface" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.user.interface.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.dataformat.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.qm.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.main.meta" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.main.meta.label"/>
