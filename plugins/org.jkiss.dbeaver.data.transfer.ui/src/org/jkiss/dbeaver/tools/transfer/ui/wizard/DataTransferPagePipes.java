@@ -221,11 +221,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private TableViewer createTargetTable(@NotNull Composite panel, boolean fillVertical) {
         TableViewer viewer = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.V_SCROLL);
         Table table = viewer.getTable();
-        GridData gd = new GridData(SWT.FILL, fillVertical ? SWT.FILL : SWT.TOP, true, fillVertical);
-        if (fillVertical) {
-            gd.heightHint = 0;
-            gd.minimumHeight = 3 * table.getItemHeight();
-        }
+        GridData gd = fillVertical ? new GridData(GridData.FILL_BOTH) : new GridData(SWT.FILL, SWT.TOP, true, false);
         if (!isDataImport()) {
             gd.widthHint = 0;
         }
@@ -410,7 +406,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         }
         inputTable.setLayoutData(inputData);
 
-        inputsTable = new TableViewer(inputTable, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
+        inputsTable = new TableViewer(inputTable, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL);
         GridData gd = new GridData(GridData.FILL_BOTH);
         Table table = inputsTable.getTable();
         gd.heightHint = 5 * table.getItemHeight();
@@ -502,7 +498,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             TableViewerColumn dataSourceColumn = new TableViewerColumn(inputsTable, SWT.LEFT);
             dataSourceColumn.getColumn().setText(DTUIMessages.data_transfer_wizard_data_source);
             dataSourceColumn.setLabelProvider(labelProvider);
-            TableViewerColumn columnsColumn = new TableViewerColumn(inputsTable, SWT.LEFT);
+            TableViewerColumn columnsColumn = new TableViewerColumn(inputsTable, SWT.RIGHT);
             columnsColumn.getColumn().setText(DTMessages.data_transfer_wizard_settings_group_preview_columns);
             columnsColumn.setLabelProvider(labelProvider);
         }

@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -79,8 +80,6 @@ class ConfigureColumnsDialog extends BaseDialog {
         viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTree().setLinesVisible(false);
         viewer.getTree().setHeaderVisible(true);
-        viewer.getTree().setLayoutData(gd);
-
 
         viewer.setContentProvider(new TreeContentProvider() {
             @Override
@@ -131,6 +130,7 @@ class ConfigureColumnsDialog extends BaseDialog {
             });
             column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_type_column_name);
         }
+        viewer.getTree().addControlListener(ControlListener.controlResizedAdapter(e -> packColumns()));
 
         errorLabel = new CLabel(group, SWT.NONE);
         errorLabel.setText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_text);
@@ -156,11 +156,17 @@ class ConfigureColumnsDialog extends BaseDialog {
             }
             viewer.setCheckedElements(checked.toArray());
 
-            UIUtils.packColumns(viewer.getTree(), true, new float[] {0.75f, 0.25f});
+            packColumns();
             updateCompletion();
         });
 
         return group;
+    }
+
+    private void packColumns() {
+        if (!viewer.getTree().isDisposed()) {
+            UIUtils.packColumns(viewer.getTree(), true, new float[] {0.65f, 0.25f});
+        }
     }
 
     @Override
