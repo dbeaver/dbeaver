@@ -43,6 +43,15 @@ public final class CDataUIMessages extends NLS {
     public static String auth_native_url_builder_job;
     public static String auth_native_url_builder_error;
     public static String auth_native_url_builder_exit_code;
+    public static String connection_editor_loading;
+    public static String connection_credentials_unavailable;
+    public static String connection_editor_fallback;
+    public static String connection_editor_invalid_number;
+    public static String connection_editor_required_property;
+    public static String connection_editor_auth_model;
+    public static String connection_editor_properties;
+    public static String connection_editor_retry;
+    public static String connection_editor_invalid_url;
     public static String license_group_title;
     public static String license_status;
     public static String license_manage;

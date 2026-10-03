@@ -30,6 +30,23 @@ import java.util.stream.Collectors;
 
 public class StringTemplateTest extends DBeaverUnitTest {
 
+    @Test
+    public void matchesEntirePlainTemplateWhenRequested() throws Exception {
+        var template = StringTemplate.parseTemplate("jdbc:test:{host}");
+        Assertions.assertNotNull(template.extractAllParametersTree("jdbc:test:localhost", true));
+        Assertions.assertNull(template.extractAllParametersTree("jdbc:test:localhost;invalid", true));
+        Assertions.assertNotNull(template.extractAllParametersTree("jdbc:test:localhost;invalid"));
+    }
+
+    @Test
+    public void stopsRepeatingEmptyMatches() throws Exception {
+        var template = StringTemplate.parseTemplate("[{group:{value}}...]", param -> "[^;]*", true);
+        var entries = template.extractAllParametersTree("", true);
+        Assertions.assertNotNull(entries);
+        Assertions.assertEquals(1, entries.getGroups().get("group").size());
+        Assertions.assertEquals("", entries.getGroups().get("group").getFirst().getFirstParamValue("value"));
+    }
+
     static final String[] ALL_URL_TEMPLATES = new String[] {
         "jdbc:Altibase://{host}:{port}/{database}",
         "jdbc:athena://Region={region};",

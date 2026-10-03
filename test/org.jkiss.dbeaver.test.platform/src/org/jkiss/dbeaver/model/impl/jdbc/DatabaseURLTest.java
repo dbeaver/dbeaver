@@ -27,6 +27,32 @@ import java.util.Map;
 
 public class DatabaseURLTest extends DBeaverUnitTest {
     @Test
+    public void preservesDefaultHierarchicalUrlRecognition() throws DBException {
+        var pattern = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS);
+        var entries = pattern.tryRecognizeHierarchical("jdbc:mysql://localhost/demo?option=a%20b&other=c d", true);
+        Assertions.assertNotNull(entries);
+        Assertions.assertEquals(Map.of("option", "a%20b", "other", "c d"), DatabaseURL.Generic.extractExtraParams(entries));
+    }
+
+    @Test
+    public void recognizesRepeatedPropertiesUsingCustomPatterns() throws DBException {
+        var pattern = DatabaseURL.getUrlPattern("jdbc:test:[{param:{prop}={value};}...]", param -> switch (param.name()) {
+            case "prop" -> "[^=;]+";
+            case "value" -> "[^;]*";
+            default -> throw new IllegalArgumentException(param.name());
+        });
+        var entries = pattern.tryRecognizeHierarchical("jdbc:test:Host=::1;Empty=;Path=/tmp/данные;", true);
+        Assertions.assertNotNull(entries);
+        var groups = entries.getGroups().get("param").reversed();
+        Assertions.assertEquals("::1", groups.get(0).getFirstParamValue("value"));
+        Assertions.assertEquals("", groups.get(1).getFirstParamValue("value"));
+        Assertions.assertEquals("/tmp/данные", groups.get(2).getFirstParamValue("value"));
+        Assertions.assertNull(pattern.tryRecognizeHierarchical("jdbc:test:Host=::1;invalid", true));
+        Assertions.assertNotNull(pattern.tryRecognizeHierarchical("jdbc:test:Host=::1;invalid"));
+        Assertions.assertNotNull(pattern.tryRecognizeHierarchical("jdbc:test:", true));
+    }
+
+    @Test
     public void testMatchPattern() throws DBException {
         assertRecognition(
             "jdbc:postgresql://{host}[:{port}]/[{database}]",
