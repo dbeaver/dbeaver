@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        editor.setModel(controller.getExecutionContext(), value);
+        editor.setModel(controller.getExecutionContext(), value, controller.getOriginalValue());
     }
 
     @Override
@@ -51,7 +51,7 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
         final boolean isDialog = valueController.getEditType() == IValueController.EditType.EDITOR;
         editor = new ComplexObjectEditor(controller, this, isDialog ? SWT.BORDER : SWT.NONE);
 
-        editor.setModel(controller.getExecutionContext(), controller.getValue());
+        editor.setModel(controller.getExecutionContext(), controller.getValue(), controller.getOriginalValue());
         return editor.getTree();
     }
 
