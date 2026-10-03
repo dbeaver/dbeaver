@@ -59,9 +59,6 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
-            if (!OpenAIAccountAuthenticator.isSupported()) {
-                throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
-            }
             return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModels(openAIProperties).stream()
                 .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
                     model,
@@ -163,9 +160,6 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     @NotNull
     protected OpenAIClientResponses createClient() throws DBException {
         if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
-            if (!OpenAIAccountAuthenticator.isSupported()) {
-                throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
-            }
             if (!openAIProperties.isChatGptAccountConnected()) {
                 throw new DBException("OpenAI ChatGPT account is not connected");
             }

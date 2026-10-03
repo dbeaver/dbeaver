@@ -33,6 +33,11 @@ public class DDAIEngineProperties extends OpenAIProperties {
     private static final String DATADAM_API_TOKEN = "datadam.token";
     private static final int DEFAULT_CONTEXT_WINDOW_SIZE = 128_000;
 
+    @Override
+    public boolean supportsDeviceAuthorization() {
+        return false;
+    }
+
     @NotNull
     @Override
     public String getBaseUrl() {
