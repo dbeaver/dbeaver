@@ -17,17 +17,25 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -136,6 +144,64 @@ public class OpenAIPropertiesTest extends DBeaverUnitTest {
         Assertions.assertTrue(gson.fromJson("{}", OpenAIProperties.class).getCustomHeaders().isEmpty());
         restored.setCustomHeaders(Map.of());
         Assertions.assertTrue(restored.getCustomHeaders().isEmpty());
+    }
+
+    @Test
+    public void customHeadersShouldBeExcludedFromNonSecureConfiguration() {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setCustomHeaders(Map.of("Authorization", "secret", "X-Api-Key", "another-secret"));
+        properties.setBaseUrl("http://localhost:8000/v1/");
+
+        String json = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder().create().toJson(properties);
+
+        Assertions.assertFalse(JsonParser.parseString(json).getAsJsonObject().has("openai.headers"));
+        Assertions.assertFalse(json.contains("secret"));
+        Assertions.assertEquals("http://localhost:8000/v1/", JsonParser.parseString(json).getAsJsonObject().get("gpt.base_url").getAsString());
+    }
+
+    @Test
+    public void customHeaderSecretsShouldBeRestoredClearedAndDeletedPerProfile() throws DBException {
+        Map<String, String> secrets = new HashMap<>();
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
+            .thenAnswer(invocation -> secrets.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> {
+            secrets.put(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(controller).setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.nullable(String.class));
+
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+            DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            controllers.when(DBSSecretController::getGlobalSecretControllerOrNull).thenReturn(controller);
+            AIConfigurationProfile work = new AIConfigurationProfile();
+            work.setProfileId("work");
+            AIConfigurationProfile personal = new AIConfigurationProfile();
+            personal.setProfileId("personal");
+            OpenAIProperties properties = new OpenAIProperties();
+            Map<String, String> headers = Map.of("Authorization", "secret", "X-Empty", "");
+            properties.setCustomHeaders(headers);
+            properties.saveSecrets(work);
+            properties.setCustomHeaders(Map.of("X-Api-Key", "personal-secret"));
+            properties.saveSecrets(personal);
+
+            OpenAIProperties restored = new OpenAIProperties();
+            restored.resolveSecrets(work);
+            Assertions.assertEquals(headers, restored.getCustomHeaders());
+            OpenAIProperties restoredPersonal = new OpenAIProperties();
+            restoredPersonal.resolveSecrets(personal);
+            Assertions.assertEquals(Map.of("X-Api-Key", "personal-secret"), restoredPersonal.getCustomHeaders());
+
+            restored.setCustomHeaders(Map.of());
+            restored.saveSecrets(work);
+            OpenAIProperties cleared = new OpenAIProperties();
+            cleared.resolveSecrets(work);
+            Assertions.assertTrue(cleared.getCustomHeaders().isEmpty());
+
+            restoredPersonal.deleteSecrets(personal);
+            OpenAIProperties deleted = new OpenAIProperties();
+            deleted.resolveSecrets(personal);
+            Assertions.assertTrue(deleted.getCustomHeaders().isEmpty());
+        }
     }
 
     @Test
