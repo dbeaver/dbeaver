@@ -298,49 +298,69 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             }
 
             monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
-
-            if (group != null) {
-                try {
-                    group.join(0, new ProxyProgressMonitor(monitor));
-                } catch (InterruptedException | OperationCanceledException e) {
-                    group.cancel();
-                    return;
-                }
-            }
-
+            boolean canceled = false;
+            boolean interrupted = false;
             try {
-                for (DataTransferJob job : jobs) {
-                    if (group == null) {
-                        try {
-                            while (true) {
-                                // Try to join with monitor checks
-                                if (!job.join(1000, monitor.getNestedMonitor())) {
-                                    if (monitor.isCanceled()) {
-                                        break;
+                if (group != null) {
+                    try {
+                        group.join(0, new ProxyProgressMonitor(monitor));
+                    } catch (InterruptedException | OperationCanceledException e) {
+                        group.cancel();
+                        canceled = true;
+                        interrupted = e instanceof InterruptedException;
+                    }
+                }
+
+                if (!canceled) {
+                    for (DataTransferJob job : jobs) {
+                        if (group == null) {
+                            try {
+                                while (true) {
+                                    // Try to join with monitor checks
+                                    if (!job.join(1000, monitor.getNestedMonitor())) {
+                                        if (monitor.isCanceled()) {
+                                            canceled = true;
+                                            break;
+                                        }
+                                        continue;
                                     }
-                                    continue;
+                                    break;
                                 }
-                                break;
+                            } catch (InterruptedException | OperationCanceledException e) {
+                                canceled = true;
+                                interrupted = e instanceof InterruptedException;
                             }
-                        } catch (InterruptedException | OperationCanceledException e) {
+                        }
+                        if (canceled || monitor.isCanceled()) {
+                            canceled = true;
                             break;
                         }
+                        final IStatus result = job.getResult();
+                        if (result.getException() != null) {
+                            recordException(result.getException());
+                        }
+                        totalStatistics.accumulate(job.getTotalStatistics());
                     }
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    final IStatus result = job.getResult();
-                    if (result.getException() != null) {
-                        recordException(result.getException());
-                    }
-                    totalStatistics.accumulate(job.getTotalStatistics());
                 }
-                if (monitor.isCanceled()) {
-                    monitor.subTask("Canceling ");
-                    // Cancel all nested jobs
+                if (canceled || monitor.isCanceled()) {
                     for (DataTransferJob job : jobs) {
                         job.cancel();
                     }
+                    // Wait without the canceled monitor before accessing any consumer state.
+                    for (DataTransferJob job : jobs) {
+                        while (true) {
+                            try {
+                                job.join();
+                                break;
+                            } catch (InterruptedException e) {
+                                interrupted = true;
+                            }
+                        }
+                    }
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                    return;
                 }
 
                 monitor.done();
