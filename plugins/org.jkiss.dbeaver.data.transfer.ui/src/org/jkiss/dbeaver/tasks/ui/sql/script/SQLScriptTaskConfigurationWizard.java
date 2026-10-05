@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tasks.ui.sql.script;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -50,7 +51,10 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
         try {
             settings.loadConfiguration(task);
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Configuration error", "Unable to load task configuration", e);
+            DBWorkbench.getPlatformUI().showError(
+                DTUIMessages.sql_script_task_configuration_wizard_configuration_error_title,
+                DTUIMessages.sql_script_task_configuration_wizard_configuration_error_message,
+                e);
         }
     }
 
@@ -103,14 +107,20 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
             }
             container.disableButtonsOnProgress();
             try {
-                pageLog.getLogWriter().println("Executing '" + task.getName() + "'...");
+                pageLog.getLogWriter().println(NLS.bind(DTUIMessages.sql_script_task_configuration_wizard_executing, task.getName()));
                 TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, pageLog.getLogWriter());
                 executor.executeTask();
-                pageLog.getLogWriter().println("Done.");
+                Throwable error = executor.getError();
+                if (error != null) {
+                    pageLog.getLogWriter().println(NLS.bind(DTUIMessages.sql_script_task_configuration_wizard_failed, error.getMessage()));
+                    DBWorkbench.getPlatformUI().showError(DTUIMessages.sql_script_task_configuration_wizard_task_run_error_title, error.getMessage(), error);
+                    return false;
+                }
+                pageLog.getLogWriter().println(DTUIMessages.sql_script_task_configuration_wizard_done);
                 container.setCompleteMarkAfterProgress();
             } catch (Exception e) {
-                pageLog.getLogWriter().println("Failed: " + e.getMessage());
-                DBWorkbench.getPlatformUI().showError("Task run error", e.getMessage(), e);
+                pageLog.getLogWriter().println(NLS.bind(DTUIMessages.sql_script_task_configuration_wizard_failed, e.getMessage()));
+                DBWorkbench.getPlatformUI().showError(DTUIMessages.sql_script_task_configuration_wizard_task_run_error_title, e.getMessage(), e);
                 return false;
             } finally {
                 container.enableButtonsAfterProgress();

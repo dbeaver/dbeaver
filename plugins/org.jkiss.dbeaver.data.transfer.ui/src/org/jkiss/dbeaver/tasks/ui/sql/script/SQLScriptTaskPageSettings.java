@@ -413,9 +413,6 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
     }
 
     private void updateSelectedScripts() {
-        DBPProject project = sqlWizard.getProject();
-        DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
-
         Set<DBPDataSourceContainer> dataSources = new LinkedHashSet<>();
         for (DBNNode element : selectedScripts) {
             if (element instanceof DBNResource res) {
@@ -429,7 +426,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         if (!dataSources.isEmpty()) {
             List<DBNDataSource> checkedDataSources = new ArrayList<>();
             for (DBPDataSourceContainer ds : dataSources) {
-                DBNDataSource dsNode = projectNode.getDatabases().getDataSource(ds);
+                DBNDataSource dsNode = getDataSourceNode(ds);
                 if (dsNode != null) {
                     checkedDataSources.add(dsNode);
                 }
@@ -519,7 +516,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         }
 
         for (DBPDataSourceContainer dataSource : settings.getDataSources()) {
-            DBNDataSource dsNode = projectNode.getDatabases().getDataSource(dataSource);
+            DBNDataSource dsNode = getDataSourceNode(dataSource);
             if (dsNode != null) {
                 selectedDataSources.add(dsNode);
             }
@@ -529,6 +526,12 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             scriptsViewer.setInput(selectedScripts);
             dataSourceViewer.setInput(selectedDataSources);
         });
+    }
+
+    private DBNDataSource getDataSourceNode(DBPDataSourceContainer dataSource) {
+        DBPProject dataSourceProject = dataSource.getProject();
+        DBNProject dataSourceProjectNode = dataSourceProject.getNavigatorModel().getRoot().getProjectNode(dataSourceProject);
+        return dataSourceProjectNode == null ? null : dataSourceProjectNode.getDatabases().getDataSource(dataSource);
     }
 
     public void saveSettings() {

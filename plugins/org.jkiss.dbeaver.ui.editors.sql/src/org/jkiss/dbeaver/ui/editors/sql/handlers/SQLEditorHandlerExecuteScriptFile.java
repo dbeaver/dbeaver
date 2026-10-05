@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.sql.SQLTaskConstants;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.SimpleDatabaseEditorContext;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -100,18 +102,24 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
 
         DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject());
         if (!(project instanceof RCPProject rcpProject)) {
-            DBWorkbench.getPlatformUI().showError("Execute SQL script", "Can't determine project of script '" + script.getName() + "'");
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.execute_script_file_error_title,
+                NLS.bind(SQLEditorMessages.execute_script_file_project_not_found, script.getName()));
             return;
         }
 
         DBTTaskManager taskManager = project.getTaskManager();
         DBTTaskType taskType = taskManager.getRegistry().getTaskType(SQLTaskConstants.TASK_SCRIPT_EXECUTE);
         if (taskType == null) {
-            DBWorkbench.getPlatformUI().showError("Execute SQL script", "SQL script execution task type is not available");
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.execute_script_file_error_title,
+                SQLEditorMessages.execute_script_file_task_type_not_available);
             return;
         }
         if (!TaskUIRegistry.getInstance().supportsConfigurator(taskType)) {
-            DBWorkbench.getPlatformUI().showError("Execute SQL script", "Task '" + taskType.getName() + "' has no configuration UI");
+            DBWorkbench.getPlatformUI().showError(
+                SQLEditorMessages.execute_script_file_error_title,
+                NLS.bind(SQLEditorMessages.execute_script_file_no_configuration_ui, taskType.getName()));
             return;
         }
 
@@ -125,7 +133,7 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
 
         try {
 
-            DBTTask task = taskManager.createTemporaryTask(taskType, "Execute SQL script '" + script.getName() + "'");
+            DBTTask task = taskManager.createTemporaryTask(taskType, NLS.bind(SQLEditorMessages.execute_script_file_task_name, script.getName()));
             task.setProperties(config);
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(taskType);
             TaskConfigurationWizard<?> wizard = configurator.createTaskConfigWizard(task);
@@ -134,7 +142,10 @@ public class SQLEditorHandlerExecuteScriptFile extends AbstractHandler {
         } catch (Exception e) {
             log.debug("Error opening execute script task for '" + script.getName() + "'", e);
             DBWorkbench.getPlatformUI()
-                .showError("Execute SQL script", "Error opening execute script task for '" + script.getName() + "'", e);
+                .showError(
+                    SQLEditorMessages.execute_script_file_error_title,
+                    NLS.bind(SQLEditorMessages.execute_script_file_open_error, script.getName()),
+                    e);
         }
     }
 
