@@ -620,11 +620,11 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         });
     }
 
-    boolean canDescribeDroppedObjects() {
+    private boolean canDescribeDroppedObjects() {
         return !isBusy() && !isWaitingForResponse() && ActionUtils.findCommand(AIChatController.CMD_DESCRIBE_OBJECT) != null;
     }
 
-    boolean canDescribeDroppedObjects(@Nullable Collection<?> objects) {
+    protected boolean canDescribeDroppedObjects(@Nullable Collection<?> objects) {
         if (objects == null || objects.isEmpty() || !canDescribeDroppedObjects()) {
             return false;
         }
@@ -646,7 +646,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return true;
     }
 
-    boolean canAttachDroppedFiles(@Nullable Collection<?> objects) {
+    protected boolean canAttachDroppedFiles(@Nullable Collection<?> objects) {
         if (objects == null || objects.isEmpty()) {
             return false;
         }
@@ -668,7 +668,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return true;
     }
 
-    void updateDropEvent(@NotNull DropTargetEvent event) {
+    protected void updateDropEvent(@NotNull DropTargetEvent event) {
         event.detail = DND.DROP_NONE;
         Collection<DBNNode> draggedNodes = TreeNodeTransfer.getInstance().getDraggedNodes();
         if (canDescribeDroppedObjects(draggedNodes)) {
@@ -693,7 +693,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         }
     }
 
-    void describeDroppedObjects(@NotNull Collection<?> objects) {
+    protected void describeDroppedObjects(@NotNull Collection<?> objects) {
         if (!canDescribeDroppedObjects(objects)) {
             return;
         }
