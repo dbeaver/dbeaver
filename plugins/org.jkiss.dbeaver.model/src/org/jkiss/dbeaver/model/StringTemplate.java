@@ -463,8 +463,7 @@ public class StringTemplate {
     private StringTemplate(
         @NotNull String templateString,
         @NotNull TemplateNode root,
-        @Nullable IParameterPatternSupplier parameterPatternSupplier,
-        boolean useParameterPatternsForGroups
+        @Nullable IParameterPatternSupplier parameterPatternSupplier
     ) {
         this.templateString = templateString;
         this.root = root;
@@ -474,7 +473,7 @@ public class StringTemplate {
         this.groupsInfo = templateInfo.getSecond().toGroupInfo("");
         this.isNotPlain = templateInfo.getFirst().hasNamedGroups || this.paramInfoByName.values().stream().anyMatch(p -> !p.isSingleton);
         this.pattern = prepareRegexPattern(root, this.paramInfoByName, parameterPatternSupplier);
-        this.parameterPatterns = parameterPatternSupplier == null || !useParameterPatternsForGroups
+        this.parameterPatterns = parameterPatternSupplier == null
             ? Collections.emptyMap() : this.paramInfoByName.values().stream()
             .collect(Collectors.toMap(ParameterInfo::name, param -> Pattern.compile(parameterPatternSupplier.getParamRegex(param))));
     }
@@ -1538,19 +1537,9 @@ public class StringTemplate {
     public static StringTemplate parseTemplate(
         @NotNull String templateString, @Nullable IParameterPatternSupplier paramPatternSupplier
     ) throws StringTemplateFormatException {
-        // preserve the default value pattern used by existing hierarchical templates
-        return parseTemplate(templateString, paramPatternSupplier, false);
-    }
-
-    @NotNull
-    public static StringTemplate parseTemplate(
-        @NotNull String templateString,
-        @Nullable IParameterPatternSupplier paramPatternSupplier,
-        boolean useParameterPatternsForGroups
-    ) throws StringTemplateFormatException {
         List<TemplateSyntaxNode> syntaxNodes = parseTemplate(new Lexer(templateString), TemplateFragmentKind.DEFAULT);
         TemplateNode root = prepareTemplateNode(null, syntaxNodes);
-        return new StringTemplate(templateString, root, paramPatternSupplier, useParameterPatternsForGroups);
+        return new StringTemplate(templateString, root, paramPatternSupplier);
     }
 
     /**

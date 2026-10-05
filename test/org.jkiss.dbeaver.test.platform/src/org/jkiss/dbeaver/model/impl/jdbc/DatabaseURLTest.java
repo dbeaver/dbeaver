@@ -23,12 +23,56 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DatabaseURLTest extends DBeaverUnitTest {
     @Test
+    public void recognizesQueryDelimitersAndEmptyValuesInBothGenericPatterns() {
+        String url = "jdbc:mysql://localhost/demo?empty=&custom.option[0]=a%20b&expression=a=b=c&path=/tmp/данные; x&other=last";
+        Map<String, String> expected = Map.of(
+            "empty", "", "custom.option[0]", "a%20b", "expression", "a=b=c", "path", "/tmp/данные; x", "other", "last");
+        var grouped = DatabaseURL.Generic.getUrlPatternWithParamGroups().tryRecognizeHierarchical(url, true);
+        Assertions.assertNotNull(grouped);
+        Assertions.assertEquals(expected, DatabaseURL.Generic.extractExtraParams(grouped));
+
+        var flat = DatabaseURL.Generic.getUrlPatternWithParams().tryRecognizeHierarchical(url, true);
+        Assertions.assertNotNull(flat);
+        var names = flat.getParameters().get(DatabaseURL.Generic.PARAM_PROP);
+        var values = flat.getParameters().get(DatabaseURL.Generic.PARAM_VALUE);
+        Map<String, String> properties = new HashMap<>();
+        for (int index = 0; index < names.size(); index++) {
+            properties.put(names.get(index), values.get(index));
+        }
+        Assertions.assertEquals(expected, properties);
+    }
+
+    @Test
+    public void rejectsMalformedGenericQueryParameters() {
+        for (var pattern : List.of(DatabaseURL.Generic.getUrlPatternWithParams(), DatabaseURL.Generic.getUrlPatternWithParamGroups())) {
+            for (String query : List.of("=value", "valid=value&broken", "valid=value&=missing")) {
+                Assertions.assertNull(pattern.tryRecognizeHierarchical("jdbc:mysql://localhost/demo?" + query, true));
+            }
+            Assertions.assertNotNull(pattern.tryRecognizeHierarchical("jdbc:mysql://localhost/demo", true));
+        }
+    }
+
+    @Test
+    public void extractsConfigurationWithGenericPattern() {
+        var configuration = DatabaseURL.extractConfigurationFromUrl(
+            DatabaseURL.Generic.getUrlPattern(), "jdbc:mysql://username:password@localhost:3306/demo?empty=");
+        Assertions.assertNotNull(configuration);
+        Assertions.assertEquals("localhost", configuration.getHostName());
+        Assertions.assertEquals("3306", configuration.getHostPort());
+        Assertions.assertEquals("demo", configuration.getDatabaseName());
+        Assertions.assertEquals("username", configuration.getUserName());
+        Assertions.assertEquals("password", configuration.getUserPassword());
+    }
+
+    @Test
     public void preservesDefaultHierarchicalUrlRecognition() throws DBException {
-        var pattern = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS);
+        var pattern = DatabaseURL.Generic.getUrlPatternWithParamGroups();
         var entries = pattern.tryRecognizeHierarchical("jdbc:mysql://localhost/demo?option=a%20b&other=c d", true);
         Assertions.assertNotNull(entries);
         Assertions.assertEquals(Map.of("option", "a%20b", "other", "c d"), DatabaseURL.Generic.extractExtraParams(entries));

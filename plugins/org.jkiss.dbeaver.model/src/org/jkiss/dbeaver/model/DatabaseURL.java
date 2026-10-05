@@ -34,17 +34,49 @@ public class DatabaseURL {
 
     public static class Generic {
 
-        public static final String TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
+        private static final String TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
 
-        public static final String TEMPLATE_WITH_PARAMS =
+        private static final String TEMPLATE_WITH_PARAMS =
             "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}][?{prop}={value}[&{prop}={value}...]]";
 
-        public static final String TEMPLATE_WITH_PARAM_GROUPS =
+        private static final String TEMPLATE_WITH_PARAM_GROUPS =
             "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}][?{param:{prop}={value}}[&{param:{prop}={value}}...]]";
 
         public static final String PARAM_GROUP = "param";
         public static final String PARAM_PROP = "prop";
         public static final String PARAM_VALUE = "value";
+
+        private static final Pattern URL_PATTERN = createPattern(TEMPLATE);
+        private static final Pattern URL_PATTERN_WITH_PARAMS = createPattern(TEMPLATE_WITH_PARAMS);
+        private static final Pattern URL_PATTERN_WITH_PARAM_GROUPS = createPattern(TEMPLATE_WITH_PARAM_GROUPS);
+
+        @NotNull
+        private static Pattern createPattern(@NotNull String template) {
+            try {
+                return DatabaseURL.getUrlPattern(template, param -> switch (param.name()) {
+                    case PARAM_PROP -> "[^&=]+";
+                    case PARAM_VALUE -> "[^&]*";
+                    default -> getPropertyRegex(param.name());
+                });
+            } catch (StringTemplate.StringTemplateFormatException exception) {
+                throw new ExceptionInInitializerError(exception);
+            }
+        }
+
+        @NotNull
+        public static Pattern getUrlPattern() {
+            return URL_PATTERN;
+        }
+
+        @NotNull
+        public static Pattern getUrlPatternWithParams() {
+            return URL_PATTERN_WITH_PARAMS;
+        }
+
+        @NotNull
+        public static Pattern getUrlPatternWithParamGroups() {
+            return URL_PATTERN_WITH_PARAM_GROUPS;
+        }
 
         @NotNull
         public static Map<String, String> extractExtraParams(@NotNull StringTemplate.ParamEntries root) {
@@ -155,13 +187,17 @@ public class DatabaseURL {
 
     @Nullable
     public static DBPConnectionConfiguration extractConfigurationFromUrl(@NotNull String sampleUrl, @NotNull String targetUrl) {
-        Map<String, String> params;
         try {
-            params = getUrlTemplate(sampleUrl).extractSingletonParametersMap(targetUrl);
+            return extractConfigurationFromUrl(getUrlPattern(sampleUrl), targetUrl);
         } catch (DBException e) {
             log.debug("Failed to extract configuration from the url", e);
             return null;
         }
+    }
+
+    @Nullable
+    public static DBPConnectionConfiguration extractConfigurationFromUrl(@NotNull Pattern pattern, @NotNull String targetUrl) {
+        Map<String, String> params = pattern.tryRecognize(targetUrl);
         if (params == null || params.isEmpty()) {
             return null;
         }
@@ -217,7 +253,7 @@ public class DatabaseURL {
         @NotNull String sampleURL,
         @NotNull StringTemplate.IParameterPatternSupplier parameterPatternSupplier
     ) throws StringTemplate.StringTemplateFormatException {
-        return new Pattern(StringTemplate.parseTemplate(sampleURL, parameterPatternSupplier, true));
+        return new Pattern(StringTemplate.parseTemplate(sampleURL, parameterPatternSupplier));
     }
 
     public static class Pattern {
