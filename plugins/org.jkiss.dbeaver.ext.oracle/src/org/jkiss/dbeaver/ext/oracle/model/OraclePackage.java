@@ -62,8 +62,8 @@ public class OraclePackage extends OracleSchemaObject
     private Date created;
     private Date lastDDLTime;
     private boolean temporary;
-    private String sourceDeclaration;
-    private String sourceDefinition;
+    protected String sourceDeclaration;
+    protected String sourceDefinition;
 
     public OraclePackage(OracleSchema schema, ResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_NAME), true);
