@@ -54,63 +54,56 @@ final class DiagnosticInfoSanitizer {
     private static final String CONNECTION_VALUE =
         "(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++";
 
-    private static final Pattern QUOTED_JDBC_URL = Pattern.compile("(?i)(?<=\")jdbc:[^\\r\\n\"]+|(?<=')jdbc:[^\\r\\n']+");
-    private static final Pattern JDBC_URL = Pattern.compile("(?i)\\bjdbc:[a-z0-9_.-]+:" + CONNECTION_VALUE);
-    private static final Pattern SSH_CONNECTION = Pattern.compile(
-        "(?i)(?<![\\w.@])(?:ssh://" + CONNECTION_VALUE + "|[\\w.*-]+@" + SSH_HOST + ")(?![\\w@])"
+    // Complete connection strings and IPv4-mapped IPv6 addresses take precedence over their embedded addresses.
+    private final Pattern sensitiveValuesPattern = Pattern.compile(
+        "(?<jdbc>(?<quotedJdbc>(?<=\")jdbc:[^\\r\\n\"]+|(?<=')jdbc:[^\\r\\n']+)"
+            + "|\\bjdbc:[a-z0-9_.-]+:" + CONNECTION_VALUE + ")"
+            + "|(?<ssh>(?<![\\w.@])(?:ssh://" + CONNECTION_VALUE + "|[\\w.*-]+@" + SSH_HOST + ")(?![\\w@]))"
+            + "|(?<ipv6>(?<![\\w:.%])" + IPV6_ADDRESS + "(?![\\w:%]|\\.\\d))"
+            + "|(?<ipv4>(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d))",
+        Pattern.CASE_INSENSITIVE
     );
-    private static final Pattern SSH_CONTEXT_HOST = Pattern.compile(
-        "(?i)(?:\\bSSH(?:SessionController)?\\b[^\\r\\n]*?\\b(?:host(?:name)?|to)"
-            + "|\\bConnecting to)[\\h=:]+[\"']?(" + SSH_HOST + ")"
-    );
-    private static final Pattern SSH_HOST_PROPERTY = Pattern.compile(
-        "(?i)\\b(?:ssh[._]?host(?:name)?|localHost|remoteHost)\\h*=\\h*[\"']?(" + SSH_HOST + ")"
-    );
-    private static final Pattern SSH_LOCAL_FORWARD = Pattern.compile("(?i)\\bport forward(?:ing)?\\h+(" + SSH_HOST + ")");
-    private static final Pattern SSH_REMOTE_FORWARD = Pattern.compile("(?i)<-\\h*(" + SSH_HOST + ")");
-    private static final Pattern IPV6 = Pattern.compile("(?i)(?<![\\w:.%])" + IPV6_ADDRESS + "(?![\\w:%]|\\.\\d)");
-    private static final Pattern IPV4 = Pattern.compile("(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d)");
 
-    private final Map<ValueType, Map<String, String>> placeholders = new EnumMap<>(ValueType.class);
+    private final Map<SensitiveValue, String> placeholders = new HashMap<>();
+    private final Map<ValueType, Integer> placeholderCounts = new EnumMap<>(ValueType.class);
 
     @NotNull
     String sanitize(@NotNull String text) {
-        // Replace complete connection strings before addresses contained in them.
-        text = replace(text, QUOTED_JDBC_URL, ValueType.JDBC_URL, 0);
-        text = replace(text, JDBC_URL, ValueType.JDBC_URL, 0);
-        text = replace(text, SSH_CONNECTION, ValueType.SSH, 0);
-        // IPv4-mapped IPv6 addresses must be treated as a single IPv6 value.
-        text = replace(text, IPV6, ValueType.IPV6, 0);
-        text = replace(text, IPV4, ValueType.IPV4, 0);
-        text = replace(text, SSH_CONTEXT_HOST, ValueType.SSH_HOST, 1);
-        text = replace(text, SSH_HOST_PROPERTY, ValueType.SSH_HOST, 1);
-        text = replace(text, SSH_LOCAL_FORWARD, ValueType.SSH_HOST, 1);
-        return replace(text, SSH_REMOTE_FORWARD, ValueType.SSH_HOST, 1);
-    }
-
-    @NotNull
-    private String replace(@NotNull String text, @NotNull Pattern pattern, @NotNull ValueType type, int group) {
-        Matcher matcher = pattern.matcher(text);
+        Matcher matcher = sensitiveValuesPattern.matcher(text);
         StringBuilder result = new StringBuilder();
         int end = 0;
         while (matcher.find()) {
-            int valueEnd = matcher.end(group);
-            if (pattern == JDBC_URL || pattern == SSH_CONNECTION) {
+            ValueType type;
+            if (matcher.group("jdbc") != null) {
+                type = ValueType.JDBC_URL;
+            } else if (matcher.group("ssh") != null) {
+                type = ValueType.SSH;
+            } else if (matcher.group("ipv6") != null) {
+                type = ValueType.IPV6;
+            } else {
+                type = ValueType.IPV4;
+            }
+            int valueEnd = matcher.end();
+            if (type == ValueType.SSH || type == ValueType.JDBC_URL && matcher.group("quotedJdbc") == null) {
                 // Sentence punctuation is not part of a connection string.
-                while (valueEnd > matcher.start(group) && (text.charAt(valueEnd - 1) == '.' || text.charAt(valueEnd - 1) == ',')) {
+                while (valueEnd > matcher.start() && (text.charAt(valueEnd - 1) == '.' || text.charAt(valueEnd - 1) == ',')) {
                     valueEnd--;
                 }
             }
-            String value = text.substring(matcher.start(group), valueEnd);
-            Map<String, String> values = placeholders.computeIfAbsent(type, key -> new HashMap<>());
-            String placeholder = values.computeIfAbsent(value, key -> "[" + type + "_" + values.size() + "]");
-            result.append(text, end, matcher.start(group)).append(placeholder);
+            SensitiveValue value = new SensitiveValue(type, text.substring(matcher.start(), valueEnd));
+            String placeholder = placeholders.computeIfAbsent(value, key -> {
+                int index = placeholderCounts.merge(key.type(), 1, Integer::sum) - 1;
+                return "[" + key.type() + "_" + index + "]";
+            });
+            result.append(text, end, matcher.start()).append(placeholder);
             end = valueEnd;
         }
         return end == 0 ? text : result.append(text, end, text.length()).toString();
     }
 
+    private record SensitiveValue(@NotNull ValueType type, @NotNull String value) {}
+
     private enum ValueType {
-        JDBC_URL, SSH, SSH_HOST, IPV6, IPV4
+        JDBC_URL, SSH, IPV6, IPV4
     }
 }
