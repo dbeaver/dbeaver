@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
+import com.google.gson.Gson;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
@@ -23,8 +25,11 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
+import java.net.http.HttpRequest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class OpenAIPropertiesTest extends DBeaverUnitTest {
 
@@ -64,6 +69,97 @@ public class OpenAIPropertiesTest extends DBeaverUnitTest {
             credentials.getFirst().getHideExpression()
         );
         Assertions.assertNotNull(propertySource.getProperty(AIConstants.AI_GLOBAL_PROPERTY));
+    }
+
+    @Test
+    public void defaultEndpointShouldRequireToken() {
+        OpenAIProperties properties = new OpenAIProperties();
+        for (String baseUrl : Arrays.asList(null, "", "https://api.openai.com/v1", OpenAIClientResponses.OPENAI_ENDPOINT)) {
+            properties.setBaseUrl(baseUrl);
+            for (String token : Arrays.asList(null, "", "  ")) {
+                properties.setToken(token);
+                Assertions.assertFalse(properties.isValidConfiguration());
+            }
+            properties.setToken("secret");
+            Assertions.assertTrue(properties.isValidConfiguration());
+        }
+    }
+
+    @Test
+    public void customEndpointShouldAllowMissingToken() {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setBaseUrl("http://localhost:8000/v1/");
+        for (String token : Arrays.asList(null, "", "  ")) {
+            properties.setToken(token);
+            Assertions.assertTrue(properties.isValidConfiguration());
+        }
+        properties.setBaseUrl(null);
+        Assertions.assertFalse(properties.isValidConfiguration());
+    }
+
+    @Test
+    public void customEndpointShouldNotBypassAccountAuthentication() {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setBaseUrl("http://localhost:8000/v1/");
+        properties.setAuthentication(OpenAIProperties.AUTHENTICATION_CHATGPT_ACCOUNT);
+
+        Assertions.assertFalse(properties.isValidConfiguration());
+    }
+
+    @Test
+    public void invalidCustomHeadersShouldInvalidateConfiguration() {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setBaseUrl("http://localhost:8000/v1/");
+        properties.setCustomHeaders(Map.of("X Api Key", "secret"));
+        Assertions.assertFalse(properties.isValidConfiguration());
+
+        properties.setCustomHeaders(Map.of("Host", "localhost"));
+        Assertions.assertFalse(properties.isValidConfiguration());
+
+        properties.setCustomHeaders(Map.of("X-Api-Key", "secret\r\nother"));
+        Assertions.assertFalse(properties.isValidConfiguration());
+
+        properties.setCustomHeaders(Map.of("X-Api-Key", "secret"));
+        Assertions.assertTrue(properties.isValidConfiguration());
+    }
+
+    @Test
+    public void customHeadersShouldSurviveSerialization() {
+        OpenAIProperties properties = new OpenAIProperties();
+        Map<String, String> headers = Map.of("X-Api-Key", "secret", "X-Empty", "");
+        properties.setCustomHeaders(headers);
+        Gson gson = new Gson();
+
+        OpenAIProperties restored = gson.fromJson(gson.toJson(properties), OpenAIProperties.class);
+
+        Assertions.assertEquals(headers, restored.getCustomHeaders());
+        Assertions.assertTrue(gson.fromJson("{}", OpenAIProperties.class).getCustomHeaders().isEmpty());
+        restored.setCustomHeaders(Map.of());
+        Assertions.assertTrue(restored.getCustomHeaders().isEmpty());
+    }
+
+    @Test
+    public void engineShouldPassHeadersToResponsesAndLegacyClientsWithoutToken() throws DBException {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setBaseUrl("http://localhost:8000/v1/");
+        properties.setCustomHeaders(Map.of("X-Api-Key", "secret"));
+        OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties);
+        HttpRequest request = HttpRequest.newBuilder(URI.create(properties.getBaseUrl())).GET().build();
+
+        try (OpenAIClientResponses client = engine.createClient(); OpenAIClientChat backupClient = client.createBackupClient()) {
+            for (OpenAiClientBase currentClient : List.of(client, backupClient)) {
+                HttpRequest filtered = currentClient.applyFilters(request);
+                Assertions.assertTrue(filtered.headers().firstValue("Authorization").isEmpty());
+                Assertions.assertEquals("secret", filtered.headers().firstValue("X-Api-Key").orElseThrow());
+            }
+        }
+    }
+
+    @Test
+    public void engineShouldRejectDefaultEndpointWithoutToken() {
+        OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(new OpenAIProperties());
+
+        Assertions.assertThrows(DBException.class, engine::createClient);
     }
 
 }

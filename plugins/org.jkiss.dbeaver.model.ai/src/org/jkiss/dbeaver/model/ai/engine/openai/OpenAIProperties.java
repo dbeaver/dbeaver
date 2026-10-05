@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+
 public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
     protected static final String GPT_BASE_URL = "gpt.base_url";
     protected static final String GPT_TOKEN = "gpt.token";
@@ -50,6 +52,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @SecureProperty
     @SerializedName(GPT_TOKEN)
     private String token;
+
+    @Nullable
+    @SerializedName("openai.headers")
+    private Map<String, String> customHeaders;
 
     @Nullable
     @SerializedName(GPT_MODEL)
@@ -102,6 +108,16 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     public void setToken(@Nullable String token) {
         this.token = token;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getCustomHeaders() {
+        return customHeaders == null ? Map.of() : Map.copyOf(customHeaders);
+    }
+
+    public void setCustomHeaders(@NotNull Map<String, String> customHeaders) {
+        this.customHeaders = Map.copyOf(customHeaders);
     }
 
     @Nullable
@@ -206,7 +222,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     public boolean isValidConfiguration() {
         return isChatGptAccountAuthentication()
             ? OpenAIAccountAuthenticator.isSupported() && isChatGptAccountConnected()
-            : !CommonUtils.isEmpty(token);
+            : OpenAIBaseProperties.super.isValidConfiguration();
     }
 
     @Nullable
