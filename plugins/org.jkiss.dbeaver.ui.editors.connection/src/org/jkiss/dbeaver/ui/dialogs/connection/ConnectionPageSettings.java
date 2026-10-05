@@ -68,8 +68,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -827,8 +827,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         page.createControl(panel);
                         Dialog.applyDialogFont(panel);
                         UIUtils.configureScrolledComposite(panel, page.getControl());
-                        panel.layout(true, true);
-                        panel.setMinSize(panel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
                     } finally {
@@ -877,6 +875,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 //        if (isTemporaryConnection()) {
 //            return false;
 //        }
+        if (wizard.getPageSettings() != this) {
+            return true;
+        }
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
@@ -887,9 +888,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 }
             }
         }
-        return wizard.getPageSettings() != this ||
-            this.connectionEditor != null &&
-                (this.connectionEditor.isExternalConfigurationProvided() || this.connectionEditor.isComplete());
+        return this.connectionEditor != null &&
+            (this.connectionEditor.isExternalConfigurationProvided() || this.connectionEditor.isComplete());
     }
 
     @Override

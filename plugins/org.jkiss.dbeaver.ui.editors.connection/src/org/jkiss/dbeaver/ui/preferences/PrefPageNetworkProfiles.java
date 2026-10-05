@@ -396,6 +396,9 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         super.performDefaults();
 
         profilesTable.removeAll();
+        for (HandlerBlock handlerBlock : configurations.values()) {
+            handlerBlock.loadedConfigs.clear();
+        }
         {
             DBSSecretController secretController;
             try {
@@ -421,7 +424,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                     HandlerBlock handlerBlock = configurations.get(nhd);
                     DBWHandlerConfiguration configuration = profile.getConfiguration(nhd);
                     if (configuration != null) {
-                        handlerBlock.loadedConfigs.put(profile, configuration);
+                        handlerBlock.loadedConfigs.put(profile, new DBWHandlerConfiguration(configuration));
                     }
                 }
             }
