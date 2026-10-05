@@ -4,7 +4,10 @@
     <meta charset="UTF-8"/>
     <meta name="color-scheme" content="{{COLOR_SCHEME}}"/>
     <!-- https://github.com/dbeaver/pro/issues/9933 -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; connect-src 'none'; frame-src 'none'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"/>
+    <!-- NOTE: connect-src must allow the swt: scheme. SWT's WebKit BrowserFunction bridge performs a synchronous
+         XHR POST to swt://browserfunction/... for every JavaScript-to-Java call; restricting connect-src to 'none'
+         makes all such calls (execute/copy buttons, settings access, etc.) fail with a silent NetworkError. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; connect-src swt:; frame-src 'none'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"/>
     <link id="theme-stylesheet" rel="stylesheet" href="styles.css">
 </head>
 <body>
