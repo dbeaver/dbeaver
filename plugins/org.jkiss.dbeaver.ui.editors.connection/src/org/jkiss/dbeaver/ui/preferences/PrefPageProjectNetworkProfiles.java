@@ -176,7 +176,8 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         // A linked preferences dialog may have created a profile since this editor was loaded.
         for (DBWNetworkProfile profile : getNetworkProfiles()) {
             if (!originalProfiles.containsKey(profile.getProfileName()) && getProfilesRegistry().getProfiles().stream()
-                .anyMatch(registered -> registered.getProfileName().equals(profile.getProfileName()))) {
+                .anyMatch(registered -> registered.getProfileName().equals(profile.getProfileName()))
+            ) {
                 showDuplicateNameError(profile.getProfileName());
                 return false;
             }
@@ -205,7 +206,8 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         boolean changed = !deletedProfiles.isEmpty();
         for (DBWNetworkProfile profile : allProfiles) {
             if (!profile.equalConfigurations(originalProfiles.get(profile.getProfileName()))
-                || deletedProfiles.containsKey(profile.getProfileName())) {
+                || deletedProfiles.containsKey(profile.getProfileName())
+            ) {
                 // The registry must not share mutable configurations with the still-open preferences dialog.
                 DBWNetworkProfile savedProfile = new DBWNetworkProfile(profile);
                 persistProfileSecrets(savedProfile);
