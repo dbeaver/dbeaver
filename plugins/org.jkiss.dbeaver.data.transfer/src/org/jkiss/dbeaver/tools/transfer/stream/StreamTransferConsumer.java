@@ -375,10 +375,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 this.outputBuffer = new StringWriter(2048);
                 this.writer = new PrintWriter(this.outputBuffer, true);
             } else {
-                openOutputStreams(session.getProgressMonitor());
-                if (outputFile != null) {
-                    // Conflict resolution may rename the file; keep the recorded path in sync.
-                    outputFiles.set(outputFiles.size() - 1, outputFile);
+                try {
+                    openOutputStreams(session.getProgressMonitor());
+                } finally {
+                    if (outputFile != null) {
+                        // Conflict resolution may rename the file; keep the recorded path in sync.
+                        outputFiles.set(outputFiles.size() - 1, outputFile);
+                    }
                 }
             }
         } catch (IOException e) {
