@@ -155,6 +155,11 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     @NotNull
     protected abstract C create(@NotNull DataBindingContext context, @NotNull Composite parent);
 
+    boolean isInitiallyVisible(@Nullable UIRowBuilderImpl row) {
+        return (row == null || row.visible == null || row.visible.get())
+            && (visible == null || visible.get());
+    }
+
     @Nullable
     protected Point preferredSize(@NotNull C control) {
         return null;
@@ -162,7 +167,6 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
     protected void bind(@NotNull DataBindingContext context, @NotNull C control, @Nullable UIRowBuilderImpl row) {
         if (row != null && row.visible != null || visible != null) {
-            // FIXME: Initially non-visible controls occupy space
             var binding = UIObservables.and(row != null ? row.visible : null, visible);
             var delegate = delegate(binding);
             delegate.addValueChangeListener(event -> {

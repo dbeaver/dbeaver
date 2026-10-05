@@ -1204,6 +1204,12 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
+                if (monitor.isCanceled()) {
+                    // A driver may return successfully after ignoring interruption during initialization.
+                    // Throw so the connection failure path releases the partially initialized data source.
+                    throw new DBException("Connection has been canceled");
+                }
+
                 if (dataSource != null) {
                     DBPDataSourceInfo info = dataSource.getInfo();
                     log.debug(
