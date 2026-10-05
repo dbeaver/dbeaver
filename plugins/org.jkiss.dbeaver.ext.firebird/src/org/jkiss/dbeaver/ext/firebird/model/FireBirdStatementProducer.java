@@ -61,6 +61,7 @@ final class FireBirdStatementProducer implements DBCStatementProducer {
                 if (value == null || value.isEmpty() || SQLConstants.NULL_VALUE.equalsIgnoreCase(value)) {
                     prepared.setNull(index++, Types.NULL);
                 } else {
+                    value = stripQuotes(value);
                     prepared.setString(index++, value);
                 }
             }
@@ -72,6 +73,16 @@ final class FireBirdStatementProducer implements DBCStatementProducer {
             closeOnError(statement, e);
             throw e;
         }
+    }
+
+    @NotNull
+    private String stripQuotes(@NotNull String value) {
+        if (value.length() >= 2 && (value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'')) {
+            value = value.substring(1, value.length() - 1)
+                //replace escaped ' Ex: ('')-> (')
+                .replace("''", "'");
+        }
+        return value;
     }
 
     private static void closeOnError(@NotNull DBCStatement statement, @NotNull Exception error) {

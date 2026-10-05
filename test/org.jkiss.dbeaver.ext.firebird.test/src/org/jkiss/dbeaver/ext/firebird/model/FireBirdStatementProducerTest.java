@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.StringWriter;
+import java.sql.Types;
 import java.util.List;
 
 public class FireBirdStatementProducerTest extends DBeaverUnitTest {
@@ -103,6 +104,44 @@ public class FireBirdStatementProducerTest extends DBeaverUnitTest {
         Assertions.assertSame(statement, actual);
         Mockito.verify(statement).setString(1, "7");
         Mockito.verify(statement, Mockito.never()).setString(2, "3");
+    }
+
+    @Test
+    public void bindsQuotedStringsAsValuesAfterCheckingForNull() throws Exception {
+        FireBirdDataSource dataSource = mockDataSource();
+        DBCSession session = Mockito.mock(DBCSession.class);
+        String sql = "EXECUTE BLOCK (x VARCHAR(20) = ?) AS BEGIN END";
+        Mockito.when(session.getDataSource()).thenReturn(dataSource);
+
+        for (String[] inputAndValue : new String[][] {
+            {"'Alice'", "Alice"}, {"''", ""}, {"'O''Brien'", "O'Brien"}, {"'NULL'", "NULL"}, {"Alice", "Alice"}
+        }) {
+            JDBCPreparedStatement statement = Mockito.mock(JDBCPreparedStatement.class);
+            Mockito.when(session.prepareStatement(DBCStatementType.QUERY, sql, false, false, false)).thenReturn(statement);
+            SQLQuery query = nativeQuery(dataSource, sql);
+            query.getParameters().getFirst().setValue(inputAndValue[0]);
+
+            Assertions.assertSame(statement, DBUtils.makeStatement(null, session, DBCStatementType.SCRIPT, query, 0, 0));
+            Mockito.verify(statement).setString(1, inputAndValue[1]);
+        }
+    }
+
+    @Test
+    public void bindsBlankAndUnquotedNullAsSqlNull() throws Exception {
+        FireBirdDataSource dataSource = mockDataSource();
+        DBCSession session = Mockito.mock(DBCSession.class);
+        String sql = "EXECUTE BLOCK (x VARCHAR(20) = ?) AS BEGIN END";
+        Mockito.when(session.getDataSource()).thenReturn(dataSource);
+
+        for (String value : new String[] {null, "", "NULL", "null"}) {
+            JDBCPreparedStatement statement = Mockito.mock(JDBCPreparedStatement.class);
+            Mockito.when(session.prepareStatement(DBCStatementType.QUERY, sql, false, false, false)).thenReturn(statement);
+            SQLQuery query = nativeQuery(dataSource, sql);
+            query.getParameters().getFirst().setValue(value);
+
+            Assertions.assertSame(statement, DBUtils.makeStatement(null, session, DBCStatementType.SCRIPT, query, 0, 0));
+            Mockito.verify(statement).setNull(1, Types.NULL);
+        }
     }
 
     @Test
