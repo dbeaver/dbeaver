@@ -34,12 +34,17 @@ import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * DTTaskHandlerTransfer
@@ -348,6 +353,56 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             } finally {
                 monitor.done();
             }
+
+            if (settings.getNodeSettings(settings.getConsumer()) instanceof StreamConsumerSettings streamSettings) {
+                processBatchEvents(monitor, streamSettings);
+            }
+        }
+
+        private void processBatchEvents(@NotNull DBRProgressMonitor monitor, @NotNull StreamConsumerSettings streamSettings) {
+            List<StreamTransferConsumer> consumers = dataPipes.stream()
+                .map(DataTransferPipe::getConsumer)
+                .filter(StreamTransferConsumer.class::isInstance)
+                .map(StreamTransferConsumer.class::cast)
+                .toList();
+            if (consumers.isEmpty()) {
+                return;
+            }
+            Throwable transferError = error;
+            DataTransferRegistry registry = DataTransferRegistry.getInstance();
+            for (Map.Entry<String, Map<String, Object>> entry : streamSettings.getEventProcessors().entrySet()) {
+                DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
+                if (descriptor == null) {
+                    log.debug("Can't find event processor '" + entry.getKey() + "'");
+                    continue;
+                }
+                try {
+                    if (descriptor.create() instanceof IDataTransferBatchEventProcessor<?> processor) {
+                        processStreamBatch(processor, monitor, consumers, transferError, entry.getValue());
+                    }
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        "Transfer event processor",
+                        "Error executing data transfer event processor '" + descriptor.getLabel() + "'",
+                        e
+                    );
+                    log.error("Error executing event processor '" + descriptor.getLabel() + "'", e);
+                    recordException(e);
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private void processStreamBatch(
+            @NotNull IDataTransferBatchEventProcessor<?> processor,
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull List<StreamTransferConsumer> consumers,
+            @Nullable Throwable transferError,
+            @NotNull Map<String, Object> processorSettings
+        ) throws DBException {
+            // These processors are selected from stream consumer settings.
+            ((IDataTransferBatchEventProcessor<StreamTransferConsumer>) processor)
+                .processBatch(monitor, consumers, transferError, task, processorSettings);
         }
 
         private void recordException(@NotNull Throwable e) {
