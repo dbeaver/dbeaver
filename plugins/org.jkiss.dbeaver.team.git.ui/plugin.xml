@@ -120,7 +120,8 @@
             id="git"
             label="Git version control"
             description="Provides Git version control integration for projects."
-            enabledByDefault="false"/>
+            enabledByDefault="false"
+            enablementTester="org.jkiss.dbeaver.team.git.ui.app.config.GitProductConfigFeatureTester"/>
     </extension>
 
     <extension point="org.eclipse.ui.activities">
