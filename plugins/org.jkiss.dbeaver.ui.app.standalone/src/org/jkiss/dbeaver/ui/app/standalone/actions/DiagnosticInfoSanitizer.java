@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.app.standalone.actions;
 
 import org.jkiss.code.NotNull;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -51,59 +50,54 @@ final class DiagnosticInfoSanitizer {
         + ")(?:%[\\w-]+(?:\\.[\\w-]+)*)?";
     private static final String SSH_HOST = "(?:\\[" + IPV6_ADDRESS + "\\]|" + IPV6_ADDRESS
         + "|[\\w*](?:[\\w.*-]*[\\w*])?)(?::\\d+)?";
-    private static final String CONNECTION_VALUE =
-        "(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++";
 
     // Complete connection strings and IPv4-mapped IPv6 addresses take precedence over their embedded addresses.
     private final Pattern sensitiveValuesPattern = Pattern.compile(
-        "(?<jdbc>(?<quotedJdbc>(?<=\")jdbc:[^\\r\\n\"]+|(?<=')jdbc:[^\\r\\n']+)"
-            + "|\\bjdbc:[a-z0-9_.-]+:" + CONNECTION_VALUE + ")"
-            + "|(?<ssh>(?<![\\w.@])(?:ssh://" + CONNECTION_VALUE + "|[\\w.*-]+@" + SSH_HOST + ")(?![\\w@]))"
-            + "|(?<ipv6>(?<![\\w:.%])" + IPV6_ADDRESS + "(?![\\w:%]|\\.\\d))"
-            + "|(?<ipv4>(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d))",
+        "(?<JDBC>(?<=\")jdbc:[^\\r\\n\"]+|(?<=')jdbc:[^\\r\\n']+"
+            + "|\\bjdbc:[a-z0-9_.-]+:(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++)"
+            + "|(?<SSH>(?<![\\w.@])(?:ssh://"
+            + "(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++"
+            + "|[\\w.*-]+@" + SSH_HOST + ")(?![\\w@]))"
+            + "|(?<IPV6>(?<![\\w:.%])" + IPV6_ADDRESS + "(?![\\w:%]|\\.\\d))"
+            + "|(?<IPV4>(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d))",
         Pattern.CASE_INSENSITIVE
     );
 
     private final Map<SensitiveValue, String> placeholders = new HashMap<>();
-    private final Map<ValueType, Integer> placeholderCounts = new EnumMap<>(ValueType.class);
+    private final Map<String, Integer> placeholderCounts = new HashMap<>();
 
     @NotNull
     String sanitize(@NotNull String text) {
         Matcher matcher = sensitiveValuesPattern.matcher(text);
+        var groupNames = sensitiveValuesPattern.namedGroups().keySet();
         StringBuilder result = new StringBuilder();
         int end = 0;
         while (matcher.find()) {
-            ValueType type;
-            if (matcher.group("jdbc") != null) {
-                type = ValueType.JDBC_URL;
-            } else if (matcher.group("ssh") != null) {
-                type = ValueType.SSH;
-            } else if (matcher.group("ipv6") != null) {
-                type = ValueType.IPV6;
-            } else {
-                type = ValueType.IPV4;
-            }
-            int valueEnd = matcher.end();
-            if (type == ValueType.SSH || type == ValueType.JDBC_URL && matcher.group("quotedJdbc") == null) {
-                // Sentence punctuation is not part of a connection string.
-                while (valueEnd > matcher.start() && (text.charAt(valueEnd - 1) == '.' || text.charAt(valueEnd - 1) == ',')) {
-                    valueEnd--;
+            for (String groupName : groupNames) {
+                if (matcher.group(groupName) == null) {
+                    continue;
                 }
+                int valueEnd = matcher.end();
+                boolean quoted = matcher.start() > 0
+                    && (text.charAt(matcher.start() - 1) == '"' || text.charAt(matcher.start() - 1) == '\'');
+                if (groupName.equals("SSH") || groupName.equals("JDBC") && !quoted) {
+                    // Sentence punctuation is not part of a connection string.
+                    while (valueEnd > matcher.start() && (text.charAt(valueEnd - 1) == '.' || text.charAt(valueEnd - 1) == ',')) {
+                        valueEnd--;
+                    }
+                }
+                SensitiveValue value = new SensitiveValue(groupName, text.substring(matcher.start(), valueEnd));
+                String placeholder = placeholders.computeIfAbsent(value, key -> {
+                    int index = placeholderCounts.merge(key.groupName(), 1, Integer::sum) - 1;
+                    return "[" + key.groupName() + "_" + index + "]";
+                });
+                result.append(text, end, matcher.start()).append(placeholder);
+                end = valueEnd;
+                break;
             }
-            SensitiveValue value = new SensitiveValue(type, text.substring(matcher.start(), valueEnd));
-            String placeholder = placeholders.computeIfAbsent(value, key -> {
-                int index = placeholderCounts.merge(key.type(), 1, Integer::sum) - 1;
-                return "[" + key.type() + "_" + index + "]";
-            });
-            result.append(text, end, matcher.start()).append(placeholder);
-            end = valueEnd;
         }
         return end == 0 ? text : result.append(text, end, text.length()).toString();
     }
 
-    private record SensitiveValue(@NotNull ValueType type, @NotNull String value) {}
-
-    private enum ValueType {
-        JDBC_URL, SSH, IPV6, IPV4
-    }
+    private record SensitiveValue(@NotNull String groupName, @NotNull String value) {}
 }
