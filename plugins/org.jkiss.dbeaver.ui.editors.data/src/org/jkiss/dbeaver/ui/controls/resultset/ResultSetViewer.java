@@ -2915,10 +2915,18 @@ public class ResultSetViewer extends Viewer
      */
     public boolean isInsertable()
     {
+        return isManipulationSupported(DBSDataManipulator.FEATURE_DATA_INSERT);
+    }
+
+    public boolean isDeletable() {
+        return isManipulationSupported(DBSDataManipulator.FEATURE_DATA_DELETE);
+    }
+
+    private boolean isManipulationSupported(@NotNull String feature) {
         return
             getReadOnlyStatus() == null &&
             model.getSingleSource() instanceof DBSDataManipulator manipulator &&
-            manipulator.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_INSERT) &&
+            manipulator.isFeatureSupported(feature) &&
             model.getVisibleAttributeCount() > 0;
     }
 
