@@ -73,7 +73,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
     }
 
     @Override
-    protected boolean matchesResultNode(DBNNode node) {
+    protected boolean matchesResultNode(@NotNull DBNNode node) {
         return (nodeFilter == null || nodeFilter.test(node)) && super.matchesResultNode(node);
     }
 

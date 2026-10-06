@@ -228,8 +228,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 getWizard().getProject(),
                 "container.data-transfer.database-consumer",
                 DTMessages.data_transfer_db_consumer_target_container,
-                DTMessages.data_transfer_db_consumer_choose_container)
-            {
+                DTMessages.data_transfer_db_consumer_choose_container) {
                 @Nullable
                 @Override
                 protected DBNNode selectContainer(@NotNull DBNNode rootNode, @Nullable DBNNode selectedNode) {

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -24,7 +25,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class DataImportPropertyTester extends PropertyTester {
     @Override
-    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+    public boolean test(
+        @Nullable Object receiver,
+        @NotNull String property,
+        @NotNull Object[] args,
+        @Nullable Object expectedValue
+    ) {
         if (!(receiver instanceof DBSObject object)) {
             return false;
         }
