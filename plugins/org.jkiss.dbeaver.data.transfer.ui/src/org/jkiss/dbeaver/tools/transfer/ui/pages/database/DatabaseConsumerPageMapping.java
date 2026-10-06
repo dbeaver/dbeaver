@@ -279,6 +279,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             if (!status.isOK()) {
                                 return;
                             }
+                            if (!isContainerSelectable(node)) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    DTUIMessages.database_consumer_page_mapping_title_mapping_error,
+                                    DTUIMessages.database_consumer_page_mapping_error_message_import_not_supported
+                                );
+                                return;
+                            }
                             settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
                         });
                     } catch (DBException e) {
