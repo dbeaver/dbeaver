@@ -2917,7 +2917,8 @@ public class ResultSetViewer extends Viewer
     {
         return
             getReadOnlyStatus() == null &&
-            model.getSingleSource() instanceof DBSDataManipulator &&
+            model.getSingleSource() instanceof DBSDataManipulator manipulator &&
+            manipulator.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_INSERT) &&
             model.getVisibleAttributeCount() > 0;
     }
 
