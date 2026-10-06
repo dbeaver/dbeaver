@@ -269,14 +269,14 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     @Override
     public void handleContextClose(@NotNull DBCExecutionContext context) {
-        QMMConnectionInfo session = getConnectionInfo(context);
-        if (session != null) {
-            session.close();
-            if (session.isLoggingEnabled()) {
-                tryFireMetaEvent(session, QMEventAction.END, session.getCloseTime(), context);
-            }
-        }
         synchronized (connectionMap) {
+            QMMConnectionInfo session = getConnectionInfo(context);
+            if (session != null) {
+                session.close();
+                if (session.isLoggingEnabled()) {
+                    tryFireMetaEvent(session, QMEventAction.END, session.getCloseTime(), context);
+                }
+            }
             closedConnections.add(context.getContextId());
         }
     }
