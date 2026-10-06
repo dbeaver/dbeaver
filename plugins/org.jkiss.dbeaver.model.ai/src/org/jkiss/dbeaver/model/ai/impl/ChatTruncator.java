@@ -177,7 +177,7 @@ public final class ChatTruncator {
         }
         ArrayList<AIMessage> out = new ArrayList<>(in.size());
         for (AIMessage m : in) {
-            if (m != null && !m.getContent().isBlank()) {
+            if (m != null && (!m.getContent().isBlank() || !m.getImages().isEmpty())) {
                 out.add(m);
             }
         }

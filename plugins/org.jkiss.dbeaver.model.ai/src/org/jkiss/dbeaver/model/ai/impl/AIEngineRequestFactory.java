@@ -69,6 +69,9 @@ public class AIEngineRequestFactory {
         @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
+        if (messages.stream().anyMatch(message -> !message.getImages().isEmpty()) && !engine.supportsImageInput(monitor)) {
+            throw new DBException("The selected AI model does not support images. Select a model with image input support.");
+        }
         AIPromptGenerator promptGenerator = functionContext.getPrompt();
         AIDatabaseContext databaseContext = functionContext.getContext();
         String systemPrompt = promptGenerator.build(assistant, databaseContext);

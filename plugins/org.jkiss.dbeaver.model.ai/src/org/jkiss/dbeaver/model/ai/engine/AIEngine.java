@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,19 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
     PROPS getProperties();
 
     int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException;
+
+    default boolean supportsImageInput(@NotNull DBRProgressMonitor monitor) throws DBException {
+        try {
+            return getModels(monitor).stream()
+                .filter(model -> model.name().equals(getProperties().getModel()))
+                .findFirst()
+                .map(AIModel::imageInputSupported)
+                .orElse(true);
+        } catch (DBException exception) {
+            org.jkiss.dbeaver.Log.getLog(AIEngine.class).debug("Cannot determine image input capability", exception);
+            return true;
+        }
+    }
 
     @Override
     void close() throws DBException;

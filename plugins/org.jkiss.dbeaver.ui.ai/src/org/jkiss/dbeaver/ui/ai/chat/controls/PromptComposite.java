@@ -25,9 +25,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -39,17 +43,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIChatConversation;
 import org.jkiss.dbeaver.model.ai.AIChatListener;
 import org.jkiss.dbeaver.model.ai.AIChatMessage;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatIcons;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
-import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class PromptComposite extends Composite {
 
@@ -58,17 +68,34 @@ public class PromptComposite extends Composite {
     private final StyledText promptText;
     private final Button sendButton;
     private final Button attachButton;
+    private final AIImageAttachmentsComposite imageAttachments;
+    private final List<AIImageAttachment> images = new ArrayList<>();
+    private final Map<UUID, Draft> drafts = new HashMap<>();
+    private UUID draftConversationId;
+    private int loadingImages;
 
     public PromptComposite(@NotNull AIChatControl chat, @NotNull Composite parent) {
         super(parent, SWT.NONE);
         this.chat = chat;
+        draftConversationId = chat.getActiveConversation().getId();
 
         IWorkbenchPartSite site = chat.getController().getSite();
 
         chat.getChatSession().addListener(new AIChatListener() {
             @Override
-            public void messageAdded(@NotNull AIChatConversation conversation, @NotNull AIChatMessage message) {
-                UIUtils.asyncExec(() -> setPromptText(""));
+            public void conversationChanged(@NotNull AIChatConversation conversation) {
+                UIUtils.asyncExec(() -> {
+                    if (isDisposed()) {
+                        return;
+                    }
+                    drafts.put(draftConversationId, new Draft(getPromptText(), List.copyOf(images)));
+                    draftConversationId = conversation.getId();
+                    Draft draft = drafts.getOrDefault(draftConversationId, new Draft("", List.of()));
+                    setPromptText(draft.text());
+                    images.clear();
+                    images.addAll(draft.images());
+                    refreshImages();
+                });
             }
 
             @Override
@@ -77,8 +104,12 @@ public class PromptComposite extends Composite {
                     return;
                 }
                 UIUtils.asyncExec(() -> {
+                    if (isDisposed()) {
+                        return;
+                    }
+                    imageAttachments.setEnabled(!busy);
                     promptText.setEnabled(!busy);
-                    sendButton.setEnabled(!busy);
+                    sendButton.setEnabled(!busy && loadingImages == 0);
                     attachButton.setEnabled(!busy);
 
                     if (!busy) {
@@ -90,7 +121,7 @@ public class PromptComposite extends Composite {
                             @NotNull
                             @Override
                             protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
-                                if (chat.getActiveConversation().isActive()) {
+                                if (!isDisposed() && chat.getActiveConversation().isActive()) {
                                     sendButton.setImage(null);
                                     sendButton.setImage(DBeaverIcons.getImage(UIIcon.CLOSE));
                                     sendButton.setToolTipText(AIChatMessagesUI.ai_chat_cancel_button_tip);
@@ -105,6 +136,16 @@ public class PromptComposite extends Composite {
         });
 
         setLayout(GridLayoutFactory.fillDefaults().margins(1, 1).numColumns(3).create());
+        imageAttachments = new AIImageAttachmentsComposite(this, index -> {
+            if (!chat.getChatSession().isBusy()) {
+                images.remove(index);
+                refreshImages();
+            }
+        });
+        GridData attachmentData = new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1);
+        attachmentData.exclude = true;
+        imageAttachments.setLayoutData(attachmentData);
+        imageAttachments.setVisible(false);
         Composite leftControls = UIUtils.createComposite(this, 1);
         String shortcut1 = ActionUtils.findCommandDescription(AIChatController.CMD_ATTACH, site, true);
         attachButton = UIUtils.createPushButton(
@@ -123,10 +164,10 @@ public class PromptComposite extends Composite {
         promptBorder.setLayoutData(new GridData(GridData.FILL_BOTH));
         promptBorder.setLayout(FillLayoutFactory.fillDefaults().margins(2, 2).create());
 
-        promptText = new StyledText(promptBorder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+        promptText = new AIPromptStyledText(promptBorder, this::pasteImages);
         promptText.setLayoutData(new GridData(GridData.FILL_BOTH));
         promptText.addKeyListener(new PromptKeyAdapter(chat));
-        StyledTextUtils.enableDND(promptText);
+        chat.enableDragAndDrop(promptText);
         promptText.addTraverseListener(e -> {
             if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
                 e.doit = true;
@@ -170,14 +211,101 @@ public class PromptComposite extends Composite {
             );
         }
 
-        setTabList(new Control[]{promptBorder, leftControls, rightControls});
+        setTabList(new Control[]{promptBorder, leftControls, rightControls, imageAttachments});
     }
+
+    @NotNull
+    public List<AIImageAttachment> getImages() {
+        return List.copyOf(images);
+    }
+
+    public void addImages(@NotNull List<AIImageAttachment> attachments) {
+        if (isDisposed() || chat.getChatSession().isBusy()) {
+            return;
+        }
+        int bytes = images.stream().mapToInt(image -> image.data().length()).sum()
+            + attachments.stream().mapToInt(image -> image.data().length()).sum();
+        if (images.size() + attachments.size() > AIImageAttachment.MAX_IMAGES
+            || bytes > (AIImageAttachment.MAX_IMAGE_BYTES + 2) / 3 * 4) {
+            DBWorkbench.getPlatformUI().showError(AIChatMessagesUI.ai_chat_image_error, AIChatMessagesUI.ai_chat_image_limit);
+            return;
+        }
+        images.addAll(attachments);
+        refreshImages();
+        setFocusOnPrompt();
+    }
+
+    public boolean isLoadingImages() {
+        return loadingImages > 0;
+    }
+
+    public void imageLoadingStarted() {
+        loadingImages++;
+        sendButton.setEnabled(false);
+    }
+
+    public void imageLoadingFinished() {
+        loadingImages--;
+        if (!chat.getChatSession().isBusy() && loadingImages == 0) {
+            sendButton.setEnabled(true);
+        }
+    }
+
+    public void draftSubmitted() {
+        setPromptText("");
+        images.clear();
+        drafts.remove(draftConversationId);
+        refreshImages();
+    }
+
+    private void refreshImages() {
+        imageAttachments.setImages(images);
+        ((GridData) imageAttachments.getLayoutData()).exclude = images.isEmpty();
+        imageAttachments.setVisible(!images.isEmpty());
+        getParent().layout(true, true);
+    }
+
+    private boolean pasteImages() {
+        if (chat.getChatSession().isBusy()) {
+            return false;
+        }
+        Clipboard clipboard = new Clipboard(getDisplay());
+        try {
+            Object png = clipboard.getContents(AIImageClipboardTransfer.INSTANCE);
+            if (png instanceof byte[] bytes) {
+                chat.attachImage(AIImageAttachment.fromBytes(AIChatMessagesUI.ai_chat_image_clipboard_name, bytes));
+                return true;
+            }
+            Object contents = clipboard.getContents(ImageTransfer.getInstance());
+            if (contents instanceof ImageData image) {
+                chat.attachImage(image);
+                return true;
+            }
+            Object files = clipboard.getContents(FileTransfer.getInstance());
+            if (files instanceof String[] paths) {
+                List<Path> imageFiles = java.util.Arrays.stream(paths).map(Path::of).filter(AIChatControl::isImageFile).toList();
+                if (!imageFiles.isEmpty()) {
+                    chat.attachFiles(imageFiles);
+                    return true;
+                }
+            }
+        } catch (Exception exception) {
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_image_error, AIChatMessagesUI.ai_chat_image_load_error, exception);
+            return true;
+        } finally {
+            clipboard.dispose();
+        }
+        return false;
+    }
+
+    private record Draft(@NotNull String text, @NotNull List<AIImageAttachment> images) { }
 
     public void submitPrompt() {
         if (chat.getActiveConversation().isActive()) {
             // Cancel?
             chat.cancelPrompt();
-        } else {
+        } else if (!isLoadingImages()) {
             String text = getPromptText();
             chat.submitPrompt(text);
         }

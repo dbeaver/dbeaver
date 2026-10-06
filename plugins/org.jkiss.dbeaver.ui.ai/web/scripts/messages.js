@@ -10,6 +10,23 @@ function createContent(args) {
     }
 
     holder.appendChild(body);
+    if (Array.isArray(args.images) && args.images.length > 0) {
+        const images = document.createElement('div');
+        images.className = 'message-images';
+        args.images.forEach((image, index) => {
+            const link = document.createElement('a');
+            link.className = 'message-image';
+            link.href = '#';
+            link.title = image.name;
+            link.textContent = image.name;
+            link.addEventListener('click', event => {
+                event.preventDefault();
+                openImage(args.id, index);
+            });
+            images.appendChild(link);
+        });
+        holder.appendChild(images);
+    }
 
     if (args.role == 'assistant' && typeof args.meta === 'object') {
         const meta = document.createElement('p');

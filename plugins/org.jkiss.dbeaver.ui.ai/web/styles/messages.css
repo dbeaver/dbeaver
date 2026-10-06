@@ -236,3 +236,18 @@
 .message table:not(.code-table) td {
     color: var(--text-color);
 }
+
+
+.message-images {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.message-image {
+    max-width: 100%;
+    color: var(--hyperlink-color);
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
