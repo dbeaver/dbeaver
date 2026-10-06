@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
@@ -63,6 +64,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -229,6 +231,22 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             {
                 @Nullable
                 @Override
+                protected DBNNode selectContainer(@NotNull DBNNode rootNode, @Nullable DBNNode selectedNode) {
+                    return ObjectBrowserDialog.selectObject(
+                        getShell(),
+                        DTMessages.data_transfer_db_consumer_choose_container,
+                        rootNode,
+                        selectedNode,
+                        new Class[] {DBSInstance.class, DBSObjectContainer.class},
+                        new Class[] {DBSObjectContainer.class},
+                        new Class[] {DBSSchema.class},
+                        null,
+                        node -> !(node instanceof DBNDatabaseNode databaseNode) || isImportSupported(databaseNode.getDataSource())
+                    );
+                }
+
+                @Nullable
+                @Override
                 protected DBNNode getSelectedNode() {
                     DBSObjectContainer container = settings.getContainer();
                     DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
@@ -250,6 +268,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 @Override
                 protected void setSelectedNode(@NotNull DBNDatabaseNode node) {
+                    if (!isImportSupported(node.getDataSource())) {
+                        return;
+                    }
                     try {
                         node.initializeNode(null, status -> {
                             if (!status.isOK()) {
@@ -1744,6 +1765,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     protected void updatePageCompletion() {
         super.updatePageCompletion();
         updateChooseContainerButton();
+    }
+
+    private boolean isImportSupported(@Nullable DBPDataSource dataSource) {
+        return dataSource == null || !Boolean.FALSE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_DATA_IMPORT));
     }
 
     private void updateChooseContainerButton() {

@@ -151,7 +151,10 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         CommonUtils.singletonOrEmpty(selNode),
                         new Class[]{DBSInstance.class, DBSObjectContainer.class, tableClass},
                         new Class[]{tableClass},
-                        null);
+                        null,
+                        isExport ? null : object -> object instanceof DBSDataManipulator manipulator
+                            && (manipulator.getDataSource() == null || !Boolean.FALSE.equals(
+                                manipulator.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_DATA_IMPORT))));
                     if (tables != null) {
                         for (DBNNode node : tables) {
                             if (node instanceof DBNDatabaseNode dbNode) {
