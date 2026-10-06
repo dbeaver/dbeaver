@@ -132,6 +132,12 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
 
     @Override
     public boolean performOk() {
+        // Validate every scope before any page writes profiles, credentials, or connection changes.
+        for (PrefPageProjectNetworkProfiles page : networkProfilesPages.values()) {
+            if (!page.validateChanges()) {
+                return false;
+            }
+        }
         if (!super.performOk()) {
             return false;
         }
