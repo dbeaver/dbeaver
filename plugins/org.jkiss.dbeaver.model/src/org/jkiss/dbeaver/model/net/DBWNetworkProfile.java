@@ -57,6 +57,14 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         super(project);
     }
 
+    public DBWNetworkProfile(@NotNull DBWNetworkProfile source) {
+        super(source);
+        this.secretSubject = source.secretSubject;
+        for (DBWHandlerConfiguration configuration : source.configurations) {
+            this.configurations.add(new DBWHandlerConfiguration(configuration));
+        }
+    }
+
     @NotNull
     private final List<DBWHandlerConfiguration> configurations = new ArrayList<>();
 

@@ -69,6 +69,11 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     protected abstract DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile);
     protected abstract boolean deleteProfile(@NotNull DBWNetworkProfile profile);
 
+    @NotNull
+    protected DBWNetworkProfile getEditableProfile(@NotNull DBWNetworkProfile profile) {
+        return profile;
+    }
+
     private static class HandlerBlock {
         private final IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
         private final Composite blockControl;
@@ -211,6 +216,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     }
 
     private void createAndShowProfile(@Nullable DBWNetworkProfile sourceProfile) {
+        saveHandlerSettings();
         DBWNetworkProfile newProfile = createNewProfile(sourceProfile);
         if (newProfile == null) {
             return;
@@ -255,7 +261,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     /**
      * Saves state of UI controls to handler configuration
      */
-    private void saveHandlerSettings() {
+    protected void saveHandlerSettings() {
         if (selectedProfile == null) {
             return;
         }
@@ -385,7 +391,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         for (HandlerBlock handlerBlock : configurations.values()) {
             DBWHandlerConfiguration configuration = handlerBlock.loadedConfigs.get(profile);
             if (configuration != null) {
-                profile.updateConfiguration(configuration);
+                profile.updateConfiguration(new DBWHandlerConfiguration(configuration));
             }
         }
     }
@@ -418,6 +424,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                     }
                 }
 
+                profile = getEditableProfile(profile);
                 createProfileTableItem(profile);
 
                 for (NetworkHandlerDescriptor nhd : allHandlers) {
@@ -429,7 +436,15 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                 }
             }
 
-            int profileIndex = profiles.indexOf(selectedProfile);
+            int profileIndex = -1;
+            if (selectedProfile != null) {
+                for (int i = 0; i < profiles.size(); i++) {
+                    if (profiles.get(i).getProfileId().equals(selectedProfile.getProfileId())) {
+                        profileIndex = i;
+                        break;
+                    }
+                }
+            }
             if (profileIndex < 0 && !profiles.isEmpty()) {
                 selectedProfile = profiles.getFirst();
                 profilesTable.select(0);
@@ -447,37 +462,36 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     public boolean performOk() {
         saveHandlerSettings();
 
-        List<DBWNetworkProfile> allProfiles = new ArrayList<>();
-        for (TableItem item : profilesTable.getItems()) {
-            DBWNetworkProfile profile = (DBWNetworkProfile) item.getData();
+        List<DBWNetworkProfile> allProfiles = getNetworkProfiles();
+        for (DBWNetworkProfile profile : allProfiles) {
             saveSettings(profile);
-            allProfiles.add(profile);
         }
         updateNetworkProfiles(allProfiles);
 
         return super.performOk();
     }
 
+    @NotNull
+    protected List<DBWNetworkProfile> getNetworkProfiles() {
+        List<DBWNetworkProfile> profiles = new ArrayList<>();
+        if (profilesTable != null) {
+            for (TableItem item : profilesTable.getItems()) {
+                profiles.add((DBWNetworkProfile) item.getData());
+            }
+        }
+        return profiles;
+    }
+
     @Override
     public void applyData(Object data) {
         String profileId = CommonUtils.toString(data);
-        DBWNetworkProfile profile = null;
-        for (DBWNetworkProfile p : getDefaultNetworkProfiles()) {
-            if (p.getProfileId().equals(profileId)) {
-                profile = p;
+        final TableItem[] items = profilesTable.getItems();
+        for (int i = 0; i < items.length; i++) {
+            DBWNetworkProfile profile = (DBWNetworkProfile) items[i].getData();
+            if (profile.getProfileId().equals(profileId)) {
+                profilesTable.select(i);
+                profilesTable.notifyListeners(SWT.Selection, new Event());
                 break;
-            }
-        }
-
-        if (profile != null) {
-            final TableItem[] items = profilesTable.getItems();
-
-            for (int i = 0; i < items.length; i++) {
-                if (items[i].getData() == profile) {
-                    profilesTable.select(i);
-                    profilesTable.notifyListeners(SWT.Selection, new Event());
-                    break;
-                }
             }
         }
     }
