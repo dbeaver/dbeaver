@@ -132,8 +132,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -3060,6 +3060,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (checkSession) {
             try {
                 boolean finalNewTab = newTab;
+                final boolean wasDisconnected = container != null && !container.isConnected();
                 DBRProgressListener connectListener = status -> {
                     if (!status.isOK() || container == null || !container.isConnected()) {
                         DBWorkbench.getPlatformUI().showError(
@@ -3069,8 +3070,17 @@ public class SQLEditor extends SQLEditorBase implements
                         );
                         return;
                     }
-                    updateExecutionContext(() -> UIUtils.syncExec(() ->
-                        processQueries(queries, forceScript, finalNewTab, export, false, queryListener, context)));
+                    updateExecutionContext(() -> UIUtils.syncExec(() -> {
+                        // Driver-specific parameter parsers were unavailable before connecting.
+                        if (wasDisconnected && getDataSource() != null) {
+                            for (SQLScriptElement query : queries) {
+                                if (query instanceof SQLQuery sqlQuery) {
+                                    sqlQuery.setParameters(parseQueryParameters(sqlQuery));
+                                }
+                            }
+                        }
+                        processQueries(queries, forceScript, finalNewTab, export, false, queryListener, context);
+                    }));
                 };
                 if (!checkSession(connectListener)) {
                     return false;

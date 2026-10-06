@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
@@ -50,7 +51,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
-import java.util.regex.Matcher;
 
 /**
  * SQL parser
@@ -841,163 +841,11 @@ public class SQLScriptParser {
         return  parseParametersAndVariables(ctx, 0, selectedQueryText.length());
     }
 
-    public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, int queryOffset, int queryLength) {
-        final SQLDialect sqlDialect = context.getDialect();
-        IDocument document = context.getDocument();
-        if (queryOffset + queryLength > document.getLength()) {
-            // This may happen during parameters parsing. Query may be trimmed or modified
-            queryLength = document.getLength() - queryOffset;
-        }
-        SQLSyntaxManager syntaxManager = context.getSyntaxManager();
-        boolean supportParamsInEmbeddedCode =
-            context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED);
-        boolean execQuery = false;
-        boolean ddlQuery = false;
-        boolean insideDollarQuote = false;
-        List<SQLQueryParameter> parameters = null;
-        TPRuleBasedScanner ruleScanner = context.getScanner();
-        ruleScanner.setRange(document, queryOffset, queryLength);
-
-        boolean firstKeyword = true;
-        if (syntaxManager.isParametersEnabled()) {
-            for (; ; ) {
-                TPToken token = ruleScanner.nextToken();
-                final int tokenOffset = ruleScanner.getTokenOffset();
-                final int tokenLength = ruleScanner.getTokenLength();
-                if (token.isEOF() || tokenOffset > queryOffset + queryLength) {
-                    break;
-                }
-                // Handle only parameters which are not in SQL blocks
-                SQLTokenType tokenType = token instanceof TPTokenDefault
-                                         ? (SQLTokenType) ((TPTokenDefault) token).getData()
-                                         : null;
-                if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
-                    continue;
-                }
-                if (firstKeyword) {
-                    // Detect query type
-                    try {
-                        String tokenText = document.get(tokenOffset, tokenLength);
-                        if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
-                            // DDL doesn't support parameters
-                            ddlQuery = true;
-                        } else {
-                            execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
-                        }
-                    } catch (BadLocationException e) {
-                        log.warn(e);
-                    }
-                    firstKeyword = false;
-                }
-
-                if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
-                    insideDollarQuote = !insideDollarQuote;
-                }
-
-                if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
-                    try {
-                        String paramName = document.get(tokenOffset, tokenLength);
-                        if (!supportParamsInEmbeddedCode && (ddlQuery || insideDollarQuote)) {
-                            continue;
-                        }
-                        if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
-                            // Skip ? parameters for stored procedures (they have special meaning? [DB2])
-                            continue;
-                        }
-
-                        if (parameters == null) {
-                            parameters = new ArrayList<>();
-                        }
-
-                        String preparedParamName = SQLQueryParameter.stripVariablePattern(paramName);
-                        String paramMark = paramName.substring(0, 1);
-                        if (preparedParamName.equals(paramName)) {
-                            if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
-                                preparedParamName = paramName.substring(1);
-                            } else {
-                                preparedParamName = paramName;
-                            }
-                        }
-                        
-                        SQLQueryParameter parameter = new SQLQueryParameter(
-                            syntaxManager,
-                            parameters.size(),
-                            preparedParamName,
-                            paramName,
-                            tokenOffset - queryOffset,
-                            tokenLength
-                        );
-
-                        parameter.setPrevious(getPreviousParameter(parameters, parameter));
-                        parameters.add(parameter);
-                    } catch (BadLocationException e) {
-                        log.warn("Can't extract query parameter", e);
-                    }
-                }
-            }
-        }
-
-        if (syntaxManager.isVariablesEnabled()) {
-            try {
-                // Find variables in strings, comments, etc
-                // Use regex
-                String query = document.get(queryOffset, queryLength);
-
-                Matcher matcher = SQLQueryParameter.getVariablePattern().matcher(query);
-                int position = 0;
-                while (matcher.find(position)) {
-                    {
-                        int start = matcher.start();
-                        int orderPos = 0;
-                        SQLQueryParameter param = null;
-                        if (parameters != null) {
-                            for (SQLQueryParameter p : parameters) {
-                                if (p.getTokenOffset() == start) {
-                                    param = p;
-                                    break;
-                                } else if (p.getTokenOffset() < start) {
-                                    orderPos++;
-                                }
-                            }
-                        }
-
-                        if (param == null) {
-                            String paramName = SQLQueryParameter.getVariableName(matcher);
-                            param = new SQLQueryParameter(
-                                syntaxManager,
-                                orderPos,
-                                paramName,
-                                paramName,
-                                start,
-                                matcher.end() - matcher.start()
-                            );
-                            if (parameters == null) {
-                                parameters = new ArrayList<>();
-                            }
-                            param.setPrevious(getPreviousParameter(parameters, param));
-                            parameters.add(param.getOrdinalPosition(), param);
-                        }
-                    }
-                    position = matcher.end();
-                }
-            } catch (BadLocationException e) {
-                log.warn("Error parsing variables", e);
-            }
-        }
-
-        return parameters;
-    }
-
-    private static SQLQueryParameter getPreviousParameter(List<SQLQueryParameter> parameters, SQLQueryParameter parameter) {
-        String varName = parameter.getVarName();
-        if (parameter.isNamed()) {
-            for (int i = parameters.size(); i > 0; i--) {
-                if (parameters.get(i - 1).getVarName().equals(varName)) {
-                    return parameters.get(i - 1);
-                }
-            }
-        }
-        return null;
+    @Nullable
+    public static List<SQLQueryParameter> parseParametersAndVariables(@NotNull SQLParserContext context, int queryOffset, int queryLength) {
+        SQLQueryParameterParser parser = DBUtils.getAdapter(SQLQueryParameterParser.class, context.getDataSource());
+        return parser == null ? new DefaultSQLQueryParameterParser(context, queryOffset, queryLength).parseParametersAndVariables() :
+            parser.parseParametersAndVariables(context, queryOffset, queryLength);
     }
 
     public static List<SQLScriptElement> extractScriptQueries(
