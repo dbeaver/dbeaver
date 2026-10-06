@@ -26,8 +26,6 @@ import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -53,7 +51,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -82,13 +79,6 @@ class ProfileModelComposite extends Composite {
 
         profileSelector = new SelectorControl(AIChatMessagesUI.ai_chat_profile_label, this::showProfiles);
         modelSelector = new SelectorControl(AIChatMessagesUI.ai_chat_model_label, () -> showModels(false));
-
-        if (RuntimeUtils.isWindows()) {
-            Font selectorFont = UIUtils.modifyFontSize(getFont(), -1);
-            profileSelector.setSelectorFont(selectorFont);
-            modelSelector.setSelectorFont(selectorFont);
-            addDisposeListener(event -> selectorFont.dispose());
-        }
 
         setLayout(new SelectorLayout());
         setTabList(new Control[]{profileSelector, modelSelector});
@@ -449,10 +439,6 @@ class ProfileModelComposite extends Composite {
             });
         }
 
-        void setSelectorFont(@NotNull Font font) {
-            textLabel.setFont(font);
-        }
-
         void setSelectorEnabled(boolean enabled) {
             setEnabled(enabled);
             textLabel.setEnabled(enabled);
@@ -470,20 +456,15 @@ class ProfileModelComposite extends Composite {
         }
 
         void fitText(@NotNull String text) {
-            GC gc = new GC(textLabel);
-            try {
-                int available = textLabel.getSize().x;
-                if (gc.textExtent(text).x <= available) {
-                    return;
-                }
-                int end = text.length();
-                while (end > 0 && gc.textExtent(text.substring(0, end) + "...").x > available) {
-                    end = text.offsetByCodePoints(end, -1);
-                }
-                setSelectorText(text.substring(0, end) + "...");
-            } finally {
-                gc.dispose();
+            int available = textLabel.getSize().x;
+            if (text.isEmpty() || textLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x <= available) {
+                return;
             }
+            int end = text.length();
+            do {
+                end = text.offsetByCodePoints(end, -1);
+                setSelectorText(text.substring(0, end) + "...");
+            } while (end > 0 && textLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x > available);
         }
     }
 
