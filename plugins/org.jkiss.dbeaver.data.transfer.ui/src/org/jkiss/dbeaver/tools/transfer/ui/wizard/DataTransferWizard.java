@@ -664,14 +664,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         @Override
         protected void runTask() throws DBException {
             DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
-            handlerTransfer.executeWithSettings(
+            executeTaskWithHistory(() -> handlerTransfer.executeWithSettings(
                 this,
                 getCurrentTask(),
                 Locale.getDefault(),
                 log,
                 null,
                 this,
-                settings);
+                settings));
         }
 
     }

@@ -269,14 +269,16 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     @Override
     public void handleContextClose(@NotNull DBCExecutionContext context) {
-        QMMConnectionInfo session = getConnectionInfo(context);
-        if (session != null) {
-            session.close();
-            if (session.isLoggingEnabled()) {
-                tryFireMetaEvent(session, QMEventAction.END, session.getCloseTime(), context);
+        synchronized (connectionMap) {
+            QMMConnectionInfo session = getConnectionInfo(context);
+            if (session != null) {
+                session.close();
+                if (session.isLoggingEnabled()) {
+                    tryFireMetaEvent(session, QMEventAction.END, session.getCloseTime(), context);
+                }
             }
+            closedConnections.add(context.getContextId());
         }
-        closedConnections.add(context.getContextId());
     }
 
     @Override
@@ -427,9 +429,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             final List<QMMetaEvent> events;
             List<Long> sessionsToClose;
-            synchronized (QMMCollectorImpl.this) {
+            synchronized (connectionMap) {
                 events = obtainEvents();
-                sessionsToClose = closedConnections;
+                sessionsToClose = new ArrayList<>(closedConnections);
                 closedConnections.clear();
             }
             if (!events.isEmpty()) {
@@ -458,9 +460,8 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             synchronized (connectionMap) {
                 for (Long sessionId : sessionsToClose) {
                     final QMMConnectionInfo session = connectionMap.get(sessionId);
-                    if (session != null && !session.isClosed()) {
-                        // It is possible (rarely) that session was reopened before event dispatcher run
-                        // In that case just ignore it
+                    if (session != null && session.isClosed()) {
+                        // A session reopened before dispatch must remain in the cache.
                         connectionMap.remove(sessionId);
                     }
                 }

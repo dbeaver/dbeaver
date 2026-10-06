@@ -150,6 +150,7 @@ public class UIStyles {
         return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(defSWT) : UIUtils.getSharedColor(fgRGB);
     }
 
+
     /**
      * Calculate the Contrast color based on Luma(brightness)
      * https://en.wikipedia.org/wiki/Luma_(video)

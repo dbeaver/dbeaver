@@ -166,7 +166,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         String getToolTipText(QMEvent event) {
-            return timestampFormat.format(event.getObject().getOpenTime());
+            return timestampFormat.format(QMUtils.getObjectEventTime(event));
         }
 
         @Nullable
