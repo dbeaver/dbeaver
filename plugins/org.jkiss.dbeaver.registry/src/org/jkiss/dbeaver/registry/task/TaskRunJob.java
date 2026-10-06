@@ -153,7 +153,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         } catch (Exception e) {
             taskError = e;
             executionHistory.recordError(e);
-            taskRun.setErrorMessage(e.getMessage());
+            taskRun.setErrorMessage(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             log.error("Error preparing run log for " + getExecutionDescription(), e);
         } finally {
             executionHistory.recordCancellation(monitor.isCanceled() || activeMonitor.isCanceled());
