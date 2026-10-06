@@ -85,6 +85,11 @@ public class RequestBuilder {
         return new RequestBuilder(dataSource, builder.build(), builder.getChildren());
     }
 
+    public RequestBuilder dialect(@NotNull SQLDialect dialect) {
+        when(dataSource.getSQLDialect()).thenReturn(dialect);
+        return this;
+    }
+
     @NotNull
     public RequestResult prepare() throws DBException {
         final DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
