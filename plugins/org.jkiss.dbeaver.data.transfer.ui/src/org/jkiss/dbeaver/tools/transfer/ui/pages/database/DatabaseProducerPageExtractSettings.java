@@ -74,8 +74,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         UIPanelBuilder.build(composite, pb -> pb
             .margins(0, 0)
-            .row(rb -> rb
-                .titledPanel("Extraction", buildExtractionPanel())));
+            .row(rb -> rb.panel(buildExtractionPanel())));
 
         if (getWizard().getCurrentTask() != null) {
             Composite buttonsPanel = UIUtils.createComposite(composite, 1);
@@ -97,11 +96,11 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
     @NotNull
     private Consumer<UIPanelBuilder> buildQueryDatabaseOnlyPanel() {
-        var useFetchedData = UIObservable.of(true);
+        var queryDatabase = UIObservable.of(true);
 
         return pb -> pb
-            .row(rb -> rb.panel(buildQueryDatabasePanel(useFetchedData)))
-            .row(buildAdvancedRow(useFetchedData));
+            .row(rb -> rb.panel(buildQueryDatabasePanel(queryDatabase)))
+            .row(buildAdvancedRow(queryDatabase));
     }
 
     @NotNull
@@ -111,12 +110,19 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         return pb -> pb
             .row(rb -> rb
-                .radioButton("Query the database", queryDatabase)
-                .radioButton("Use fetched rows", useFetchedData))
-            .row(rb -> rb
-                .panel(buildQueryDatabasePanel(queryDatabase))
-                .panel(buildUseFetchedRowsPanel(useFetchedData)))
-            .row(buildAdvancedRow(queryDatabase));
+                .radioButton(DTUIMessages.database_producer_page_extract_settings_query_database, queryDatabase)
+                .radioButton(DTUIMessages.database_producer_page_extract_settings_use_fetched_rows, useFetchedData))
+            .indent(p -> p
+                .row(rb -> rb
+                    .visible(queryDatabase)
+                    .panel(buildQueryDatabasePanel(queryDatabase)))
+                .row(rb -> rb
+                    .visible(useFetchedData)
+                    .panel(buildUseFetchedRowsPanel(useFetchedData))))
+            .indent(p -> p.row(rb -> {
+                rb.visible(queryDatabase);
+                buildAdvancedRow(queryDatabase).accept(rb);
+            }));
     }
 
     @NotNull
@@ -124,12 +130,14 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         return pb -> pb
             .row(rb -> rb
                 .enabled(enabled)
-                .checkBox(DTMessages.data_transfer_wizard_output_checkbox_new_connection, bb -> bb
+                .checkBox(DTUIMessages.database_producer_page_extract_settings_separate_connections,
+                    DTUIMessages.database_producer_page_extract_settings_separate_connections_hint, bb -> bb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip)
                     .selected(openNewConnections)))
             .row(rb -> rb
                 .enabled(enabled)
-                .checkBox(DTMessages.data_transfer_wizard_output_checkbox_select_row_count, bb -> bb
+                .checkBox(DTUIMessages.database_producer_page_extract_settings_count_rows,
+                    DTUIMessages.database_producer_page_extract_settings_count_rows_hint, bb -> bb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_row_count_checkbox_tooltip)
                     .selected(fetchRowCount)));
     }
@@ -141,39 +149,44 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         return pb -> pb
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
-                .checkBox("Selected rows only", selectedRowsOnly))
+                .checkBox(DTUIMessages.database_producer_page_extract_settings_selected_rows, selectedRowsOnly))
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
-                .checkBox("Selected columns only", selectedColumnsOnly));
+                .checkBox(DTUIMessages.database_producer_page_extract_settings_selected_columns, selectedColumnsOnly));
     }
 
     @NotNull
     private Consumer<UIRowBuilder> buildAdvancedRow(@NotNull UIObservable<Boolean> queryDatabase) {
         return rb -> rb
-            .expandablePanel("Advanced", false, pb -> pb
+            .expandablePanel(DTUIMessages.database_producer_page_extract_settings_advanced, false, pb -> pb
                 .align(UIAlignX.FILL).grow()
                 .accept(buildAdvancedPanel(queryDatabase)));
     }
 
     @NotNull
     private Consumer<UIPanelBuilder> buildAdvancedPanel(@NotNull UIObservable<Boolean> queryDatabase) {
-        var canChangeThreads = UIObservables.predicate(() -> getWizard().getSettings().getDataPipes().size() > 1);
+        var canChangeThreads = UIObservable.of(getWizard().getSettings().getDataPipes().size() > 1);
 
         return pb -> pb
-            .row(DTMessages.data_transfer_wizard_output_label_max_threads, rb -> rb
-                .enabled(UIObservables.and(queryDatabase, canChangeThreads))
-                .intTextField(threadCount, tb -> tb
-                    .tooltip(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip)))
             .row(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_label, rb -> rb
                 .enabled(queryDatabase)
                 .intTextField(fetchSize, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_tooltip)))
+            .row(DTUIMessages.database_producer_page_extract_settings_parallel_extractions, rb -> rb
+                .enabled(UIObservables.and(queryDatabase, canChangeThreads))
+                .intTextField(threadCount, tb -> tb
+                    .tooltip(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip)))
             .row(rb -> rb
-                .checkBox(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches, bb -> bb
-                    .tooltip(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
-                    .selected(extractInSegments))
+                .visible(UIObservables.and(queryDatabase, UIObservable.of(!canChangeThreads.get())))
+                .label(DTUIMessages.database_producer_page_extract_settings_parallel_extractions_hint))
+            .row(rb -> rb
                 .enabled(queryDatabase)
-                .intTextField(segmentSize, tb -> tb.enabled(extractInSegments)));
+                .checkBox(DTUIMessages.database_producer_page_extract_settings_extract_in_batches, bb -> bb
+                    .tooltip(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
+                    .selected(extractInSegments)))
+            .indent(p -> p.row(DTUIMessages.database_producer_page_extract_settings_rows_per_batch, rb -> rb
+                .enabled(UIObservables.and(queryDatabase, extractInSegments))
+                .intTextField(segmentSize)));
     }
 
     @Override
