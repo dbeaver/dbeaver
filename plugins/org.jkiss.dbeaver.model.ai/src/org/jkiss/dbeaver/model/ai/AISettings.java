@@ -164,7 +164,7 @@ public class AISettings implements DBPAdaptable {
     }
 
     @NotNull
-    public AIConfigurationProfile copyConfiguration(@NotNull AIConfigurationProfile source) throws DBException {
+    public synchronized AIConfigurationProfile copyConfiguration(@NotNull AIConfigurationProfile source) throws DBException {
         return copyConfiguration(
             source,
             generateProfileId(source.getEngineDescriptor()),
@@ -173,7 +173,15 @@ public class AISettings implements DBPAdaptable {
     }
 
     @NotNull
-    public AIConfigurationProfile copyConfiguration(
+    public synchronized AIConfigurationProfile copyConfiguration(
+        @NotNull AIConfigurationProfile source,
+        @NotNull String id
+    ) throws DBException {
+        return copyConfiguration(source, id, generateProfileName(source.getProfileName()));
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(
         @NotNull AIConfigurationProfile source,
         @NotNull String id,
         @NotNull String name

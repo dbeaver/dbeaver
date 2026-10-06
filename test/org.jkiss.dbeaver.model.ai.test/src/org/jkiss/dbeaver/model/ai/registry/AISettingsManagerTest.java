@@ -182,5 +182,9 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(OpenAIConstants.OPENAI_ENGINE + "_1", copy.getProfileId());
         Assertions.assertEquals("Profile (2)", copy.getProfileName());
+
+        AIConfigurationProfile copyWithProvidedId = settings.copyConfiguration(source, "provided-copy-id");
+        Assertions.assertEquals("provided-copy-id", copyWithProvidedId.getProfileId());
+        Assertions.assertEquals("Profile (3)", copyWithProvidedId.getProfileName());
     }
 }
