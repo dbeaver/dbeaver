@@ -156,7 +156,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
         assert rootNode != null;
         DBNNode selectedNode = getSelectedNode();
         DBNNode node = selectContainer(rootNode.getDatabases(), selectedNode);
-        if (node != null) {
+        if (node != null && isContainerSelectable(node)) {
             try {
                 checkValidContainerNode(node);
                 setSelectedNode((DBNDatabaseNode) node);
@@ -181,6 +181,10 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
             new Class[] {DBSObjectContainer.class},
             new Class[] {DBSSchema.class}
         );
+    }
+
+    protected boolean isContainerSelectable(@NotNull DBNNode node) {
+        return true;
     }
 
     public void checkValidContainerNode(DBNNode node) throws DBException {
@@ -255,6 +259,10 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
                 }
             }
             if (historyItem.containerNode != null) {
+                if (!isContainerSelectable(historyItem.containerNode)) {
+                    setContainerInfo((DBNDatabaseNode) getSelectedNode());
+                    return;
+                }
                 setSelectedNode(historyItem.containerNode);
                 moveHistoryItemToBeginning(historyItem);
             } else {

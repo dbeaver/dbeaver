@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -29,6 +30,10 @@ public class DataImportPropertyTester extends PropertyTester {
         }
         DBSObject publicObject = DBUtils.getPublicObject(object);
         DBPDataSource dataSource = publicObject == null ? null : publicObject.getDataSource();
+        return supportsImport(dataSource);
+    }
+
+    public static boolean supportsImport(@Nullable DBPDataSource dataSource) {
         return dataSource == null || !Boolean.FALSE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_DATA_IMPORT));
     }
 }

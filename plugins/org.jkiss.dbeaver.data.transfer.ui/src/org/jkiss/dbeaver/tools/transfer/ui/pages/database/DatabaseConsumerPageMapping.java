@@ -39,10 +39,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -58,6 +55,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.*;
@@ -241,8 +239,15 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         new Class[] {DBSObjectContainer.class},
                         new Class[] {DBSSchema.class},
                         null,
-                        node -> !(node instanceof DBNDatabaseNode databaseNode) || isImportSupported(databaseNode.getDataSource())
+                        node -> node instanceof DBNDataSource || isContainerSelectable(node),
+                        object -> DataImportPropertyTester.supportsImport(object.getDataSource())
                     );
+                }
+
+                @Override
+                protected boolean isContainerSelectable(@NotNull DBNNode node) {
+                    return !(node instanceof DBNDatabaseNode databaseNode)
+                        || DataImportPropertyTester.supportsImport(databaseNode.getDataSource());
                 }
 
                 @Nullable
@@ -268,9 +273,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 @Override
                 protected void setSelectedNode(@NotNull DBNDatabaseNode node) {
-                    if (!isImportSupported(node.getDataSource())) {
-                        return;
-                    }
                     try {
                         node.initializeNode(null, status -> {
                             if (!status.isOK()) {
@@ -1765,10 +1767,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     protected void updatePageCompletion() {
         super.updatePageCompletion();
         updateChooseContainerButton();
-    }
-
-    private boolean isImportSupported(@Nullable DBPDataSource dataSource) {
-        return dataSource == null || !Boolean.FALSE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_DATA_IMPORT));
     }
 
     private void updateChooseContainerButton() {

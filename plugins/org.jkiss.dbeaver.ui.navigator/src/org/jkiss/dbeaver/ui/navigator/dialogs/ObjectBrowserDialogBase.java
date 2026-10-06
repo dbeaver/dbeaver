@@ -123,6 +123,9 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
             for (DBNNode node : selectedNodes) {
                 if (matchesResultNode(node)) {
                     selectedObjects.add(node);
+                } else {
+                    selectedObjects.clear();
+                    break;
                 }
             }
 
@@ -142,6 +145,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
                         selectedObjects.add((DBNNode) node);
                     } else {
                         selectedObjects.clear();
+                        break;
                     }
                 } else if (node instanceof TreeNodeSpecial) {
                     specialNode = (TreeNodeSpecial) node;

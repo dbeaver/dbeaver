@@ -73,14 +73,6 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         this.nameFilter = nameFilter;
     }
 
-    public void setResultFilter(@Nullable Predicate<DBSObject> resultFilter) {
-        this.resultFilter = resultFilter;
-    }
-
-    public void setNodeFilter(@Nullable Predicate<DBNNode> nodeFilter) {
-        this.nodeFilter = nodeFilter;
-    }
-
     @Override
     protected boolean matchesResultNode(DBNNode node) {
         return (nodeFilter == null || nodeFilter.test(node)) && super.matchesResultNode(node);
@@ -118,7 +110,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         return new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                if (nodeFilter != null && element instanceof DBNNode node && !(node instanceof DBNDataSource) && !nodeFilter.test(node)) {
+                if (nodeFilter != null && element instanceof DBNNode node && !nodeFilter.test(node)) {
                     return false;
                 }
                 if (isShowConnected()) {
@@ -207,7 +199,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         @Nullable Class<?>[] leafTypes,
         @Nullable Predicate<String> nameFilter
     ) {
-        return selectObject(parentShell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes, nameFilter, null);
+        return selectObject(parentShell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes, nameFilter, null, null);
     }
 
     @Nullable
@@ -220,7 +212,8 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         @Nullable Class<?>[] resultTypes,
         @Nullable Class<?>[] leafTypes,
         @Nullable Predicate<String> nameFilter,
-        @Nullable Predicate<DBNNode> nodeFilter
+        @Nullable Predicate<DBNNode> nodeFilter,
+        @Nullable Predicate<DBSObject> resultFilter
     ) {
         ObjectBrowserDialog scDialog = new ObjectBrowserDialog(
             parentShell,
@@ -235,7 +228,8 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         if (nameFilter != null) {
             scDialog.setNameFilter(nameFilter);
         }
-        scDialog.setNodeFilter(nodeFilter);
+        scDialog.nodeFilter = nodeFilter;
+        scDialog.resultFilter = resultFilter;
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
@@ -278,7 +272,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
             resultTypes,
             leafTypes
         );
-        scDialog.setResultFilter(resultFilter);
+        scDialog.resultFilter = resultFilter;
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {

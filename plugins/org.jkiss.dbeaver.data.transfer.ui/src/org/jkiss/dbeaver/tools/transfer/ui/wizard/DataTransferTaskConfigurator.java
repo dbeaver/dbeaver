@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -153,8 +154,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         new Class[]{tableClass},
                         null,
                         isExport ? null : object -> object instanceof DBSDataManipulator manipulator
-                            && (manipulator.getDataSource() == null || !Boolean.FALSE.equals(
-                                manipulator.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_DATA_IMPORT))));
+                            && DataImportPropertyTester.supportsImport(manipulator.getDataSource()));
                     if (tables != null) {
                         for (DBNNode node : tables) {
                             if (node instanceof DBNDatabaseNode dbNode) {
