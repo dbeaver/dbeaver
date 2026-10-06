@@ -67,6 +67,21 @@ public interface DBTTaskRunStorage {
         int limit
     ) throws DBException;
 
+    /**
+     * Returns the requested prefix of matching runs in filter order from a single query.
+     * The default delegates to {@link #findRuns(DBRProgressMonitor, Filter, int, int)} for compatibility.
+     * Providers that cap page sizes must override this method to honor the requested window size;
+     * a window must not be assembled from multiple page queries.
+     */
+    @NotNull
+    default List<DBTTaskRunRecord> findRunWindow(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Filter filter,
+        int limit
+    ) throws DBException {
+        return findRuns(monitor, filter, 0, limit);
+    }
+
     /** Deletes matching runs. Null task/run IDs select all tasks/runs in the project. Never deletes log files. */
     void deleteRuns(@NotNull String projectId, @Nullable String taskId, @Nullable String runId) throws DBException;
 }
