@@ -59,6 +59,33 @@ public class DatabaseURLTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void recognizesEncodedDatabaseNamesAndQueryProperties() {
+        for (String database : List.of("my%20db", "my%2fdb%3Fname%26value", "%D0%B1%D0%B0%D0%B7%D0%B0")) {
+            String url = "jdbc:mysql://host/" + database + "?option=value&empty=";
+            for (boolean matchEntireString : List.of(false, true)) {
+                var grouped = DatabaseURL.Generic.getUrlPatternWithParamGroups().tryRecognizeHierarchical(url, matchEntireString);
+                Assertions.assertNotNull(grouped);
+                Assertions.assertEquals(database, grouped.getFirstParamValue("database"));
+                Assertions.assertEquals(Map.of("option", "value", "empty", ""), DatabaseURL.Generic.extractExtraParams(grouped));
+
+                var flat = DatabaseURL.Generic.getUrlPatternWithParams().tryRecognizeHierarchical(url, matchEntireString);
+                Assertions.assertNotNull(flat);
+                Assertions.assertEquals(database, flat.getFirstParamValue("database"));
+                var names = flat.getParameters().get(DatabaseURL.Generic.PARAM_PROP);
+                var values = flat.getParameters().get(DatabaseURL.Generic.PARAM_VALUE);
+                Map<String, String> properties = new HashMap<>();
+                for (int index = 0; index < names.size(); index++) {
+                    properties.put(names.get(index), values.get(index));
+                }
+                Assertions.assertEquals(Map.of("option", "value", "empty", ""), properties);
+            }
+            var configuration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.Generic.getUrlPattern(), url);
+            Assertions.assertNotNull(configuration);
+            Assertions.assertEquals(database, configuration.getDatabaseName());
+        }
+    }
+
+    @Test
     public void extractsConfigurationWithGenericPattern() {
         var configuration = DatabaseURL.extractConfigurationFromUrl(
             DatabaseURL.Generic.getUrlPattern(), "jdbc:mysql://username:password@localhost:3306/demo?empty=");

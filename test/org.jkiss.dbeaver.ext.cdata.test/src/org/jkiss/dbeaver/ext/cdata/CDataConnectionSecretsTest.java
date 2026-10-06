@@ -274,6 +274,36 @@ public class CDataConnectionSecretsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void explicitAdvancedSecretEditsOverrideExistingUrlValues() throws Exception {
+        for (String secret : List.of("new-secret", "")) {
+            var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+            var configuration = new DBPConnectionConfiguration();
+            configuration.setUrl("jdbc:test:SSHPassword=old-secret;CustomOption=keep;");
+            hierarchy.loadConfiguration("test", configuration);
+            hierarchy.setValue(hierarchy.getAdvancedSecretProperties().getFirst(), secret, true);
+            configuration.getProperties().put("sshpassword", secret);
+            hierarchy.saveUrlConfiguration("test", configuration);
+            Assertions.assertEquals(secret, configuration.getAuthProperty(CDataAuthModel.SECRET_PROPERTY_PREFIX + "SSHPassword"));
+            Assertions.assertTrue(configuration.getProperties().isEmpty());
+            Assertions.assertEquals(Map.of("CustomOption", "keep"), CDataConnectionUrl.parse(configuration.getUrl(), "test"));
+            Assertions.assertEquals(!secret.isEmpty(), configuration.getProviderProperties().containsKey("cdata.promptSecrets"));
+        }
+    }
+
+    @Test
+    public void uneditedAdvancedSecretsInUrlOverrideLegacyDriverProperties() throws Exception {
+        var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
+        var configuration = new DBPConnectionConfiguration();
+        configuration.setUrl("jdbc:test:SSHPassword=url-secret;CustomOption=keep;");
+        configuration.getProperties().put("sshpassword", "properties-secret");
+        hierarchy.loadConfiguration("test", configuration);
+        hierarchy.saveUrlConfiguration("test", configuration);
+        Assertions.assertEquals("url-secret", configuration.getAuthProperty(CDataAuthModel.SECRET_PROPERTY_PREFIX + "SSHPassword"));
+        Assertions.assertTrue(configuration.getProperties().isEmpty());
+        Assertions.assertEquals(Map.of("CustomOption", "keep"), CDataConnectionUrl.parse(configuration.getUrl(), "test"));
+    }
+
+    @Test
     public void retainsProtectionForStoredSecretsMissingFromNewMetadata() throws Exception {
         var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
         var configuration = new DBPConnectionConfiguration();

@@ -56,6 +56,7 @@ public class DatabaseURL {
                 return DatabaseURL.getUrlPattern(template, param -> switch (param.name()) {
                     case PARAM_PROP -> "[^&=]+";
                     case PARAM_VALUE -> "[^&]*";
+                    case DBConstants.PROP_DATABASE -> "(?:[\\w\\-_.~]|%[0-9a-fA-F]{2})+";
                     default -> getPropertyRegex(param.name());
                 });
             } catch (StringTemplate.StringTemplateFormatException exception) {

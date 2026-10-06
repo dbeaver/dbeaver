@@ -181,7 +181,11 @@ public final class CDataConnectionHierarchy {
         properties.putAll(urlProperties);
         configuration.getProperties().forEach((name, value) -> {
             if (secretNames.contains(name) && !basicNames.contains(name)) {
-                properties.putIfAbsent(name, value);
+                if (advancedEdits.contains(name)) {
+                    properties.put(name, value);
+                } else {
+                    properties.putIfAbsent(name, value);
+                }
             }
         });
         var formProperties = getConnectionProperties();
