@@ -21,11 +21,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -39,7 +43,7 @@ import java.util.Map;
 /**
  * Clickhouse table manager
  */
-public class ClickhouseTableManager extends GenericTableManager {
+public class ClickhouseTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTableBase> {
 
     private static final Log log = Log.getLog(ClickhouseTableManager.class);
 
@@ -47,6 +51,35 @@ public class ClickhouseTableManager extends GenericTableManager {
     protected String getDropTableType(GenericTableBase table) {
         // Both tables and views must be deleted with DROP TABLE
         return "TABLE";
+    }
+
+    @Override
+    public void renameObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull GenericTableBase object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
+    }
+
+    @Override
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        GenericTableBase table = command.getObject();
+        GenericDataSource dataSource = table.getDataSource();
+        GenericStructContainer container = table.getParentObject();
+        if (container != null) {
+            actions.add(new SQLDatabasePersistAction(
+                "Rename table",
+                "RENAME TABLE " + DBUtils.getFullyQualifiedName(dataSource, container.getName(), command.getOldName()) +
+                    " TO " + DBUtils.getFullyQualifiedName(dataSource, container.getName(), command.getNewName())));
+        }
     }
 
     @Override
