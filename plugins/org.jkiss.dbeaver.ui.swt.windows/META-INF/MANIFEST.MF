@@ -1,7 +1,8 @@
 Manifest-Version: 1.0
 Fragment-Host: org.eclipse.swt
 Require-Bundle: com.sun.jna,
- com.sun.jna.platform
+ com.sun.jna.platform,
+ org.jkiss.utils
 Bundle-Name: SWT Windows extensions
 Bundle-Vendor: DBeaver Corp
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.swt.windows;singleton:=true
@@ -13,6 +14,5 @@ Bundle-ActivationPolicy: lazy
 SWT-WS: win32
 SWT-OS: win32
 Eclipse-PlatformFilter: (& (osgi.ws=win32) (osgi.os=win32) )
-Export-Package: org.eclipse.swt.browser,
-    org.jkiss.dbeaver.ui.swt.windows
+Export-Package: org.eclipse.swt.browser
 Automatic-Module-Name: org.jkiss.dbeaver.ui.swt.windows

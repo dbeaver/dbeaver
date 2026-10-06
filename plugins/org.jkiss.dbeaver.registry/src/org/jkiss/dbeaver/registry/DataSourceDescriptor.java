@@ -2097,6 +2097,9 @@ public class DataSourceDescriptor
 
         if (networkHandler == null) {
             DBAAuthModel<?> authModel = actualConfig.getAuthModel();
+            if (!authModel.isCredentialsPromptRequired()) {
+                return true;
+            }
             if (authModel.getClass() != AuthModelDatabaseNative.class) {
                 boolean savedPasswordState = dataSourceContainer.isSavePassword();
                 DBPConnectionConfiguration savedConnectionInfo = new DBPConnectionConfiguration(connConfig);
