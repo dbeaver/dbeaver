@@ -14,19 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.net;
 
-package org.jkiss.dbeaver.ext.mssql.auth;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
+import java.util.List;
+import java.util.Map;
 
 /**
- * SQL Server abstract auth model.
+ * Queries persisted project configurations for global network profile management.
  */
-public abstract class SQLServerAuthModelAbstract extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+public interface DBWNetworkProfileUsageProvider {
+    @NotNull
+    Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException;
 
-    @Override
-    public boolean isCredentialsPromptRequired() {
-        return isUserNameApplicable() || isUserPasswordApplicable();
+    @NotNull
+    List<ProjectConnections> findGlobalProfileConnections(@NotNull String profileName) throws DBException;
+
+    record ProjectConnections(@NotNull String projectId, String projectName, @NotNull Map<String, String> connections) {
     }
 }
