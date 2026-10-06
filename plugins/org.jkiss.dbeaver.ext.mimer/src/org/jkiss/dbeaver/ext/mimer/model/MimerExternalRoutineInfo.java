@@ -28,7 +28,12 @@ import org.jkiss.code.Nullable;
  *
  * @author Mimer Information Technology
  */
-public record MimerExternalRoutineInfo(boolean external, @Nullable String language, @Nullable String externalName, @Nullable String library) {
+public record MimerExternalRoutineInfo(
+    boolean external,
+    @Nullable String language,
+    @Nullable String externalName,
+    @Nullable String library
+) {
 
     public static final MimerExternalRoutineInfo NOT_EXTERNAL = new MimerExternalRoutineInfo(false, null, null, null);
 }

@@ -391,7 +391,11 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
 
         @NotNull
         @Override
-        protected MimerUserAuthorization fetchObject(@NotNull JDBCSession session, @NotNull MimerUser user, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerUserAuthorization fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUser user,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerUserAuthorization(user, resultSet);
         }
     }
@@ -411,7 +415,11 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
 
         @NotNull
         @Override
-        protected MimerIdentTablePrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerUser user, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerIdentTablePrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUser user,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerIdentTablePrivilege(user, resultSet);
         }
     }

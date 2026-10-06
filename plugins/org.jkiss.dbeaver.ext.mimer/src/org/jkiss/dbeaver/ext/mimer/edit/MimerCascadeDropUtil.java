@@ -73,6 +73,8 @@ final class MimerCascadeDropUtil {
     }
 
     /**
+     * Builds the drop action, appending {@code CASCADE} to {@code dropPrefix} when the Cascade option is ticked.
+     *
      * @param dropPrefix everything up to but not including the optional {@code CASCADE} keyword,
      *                   e.g. {@code DROP TABLE "s"."t"}.
      * @param typeLabel  lowercase object-type word for the confirmation text and preference key,

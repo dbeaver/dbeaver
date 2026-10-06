@@ -34,7 +34,8 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerUserDefinedTypePrivilegeManager extends AbstractMimerPrivilegeManager<MimerUserDefinedTypePrivilege, MimerUserDefinedType> {
+public class MimerUserDefinedTypePrivilegeManager
+    extends AbstractMimerPrivilegeManager<MimerUserDefinedTypePrivilege, MimerUserDefinedType> {
 
     @Nullable
     @Override

@@ -163,7 +163,9 @@ public class MimerIndexManager extends GenericIndexManager {
         decl.append(" (");
         boolean firstColumn = true;
         for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(index.getAttributeReferences(new VoidProgressMonitor()))) {
-            if (!firstColumn) decl.append(",");
+            if (!firstColumn) {
+                decl.append(",");
+            }
             firstColumn = false;
             decl.append(DBUtils.getQuotedIdentifier(indexColumn));
             appendIndexColumnModifiers(monitor, decl, indexColumn);
@@ -186,7 +188,9 @@ public class MimerIndexManager extends GenericIndexManager {
                 decl.append(" INCLUDE (");
                 boolean firstIncluded = true;
                 for (GenericTableColumn includedColumn : includedColumns) {
-                    if (!firstIncluded) decl.append(",");
+                    if (!firstIncluded) {
+                        decl.append(",");
+                    }
                     firstIncluded = false;
                     decl.append(DBUtils.getQuotedIdentifier(includedColumn));
                 }

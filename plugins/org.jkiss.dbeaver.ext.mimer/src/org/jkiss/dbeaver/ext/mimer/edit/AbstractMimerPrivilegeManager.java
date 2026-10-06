@@ -101,6 +101,8 @@ public abstract class AbstractMimerPrivilegeManager<P extends DBSObject & MimerG
     }
 
     /**
+     * The "Persist Changes" preview label for the REVOKE action, the counterpart of {@link #getGrantActionLabel()}.
+     *
      * @see #getGrantActionLabel()
      */
     @NotNull
