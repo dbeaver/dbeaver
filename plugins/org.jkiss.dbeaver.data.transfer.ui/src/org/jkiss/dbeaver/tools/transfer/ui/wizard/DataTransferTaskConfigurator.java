@@ -153,8 +153,8 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         new Class[]{DBSInstance.class, DBSObjectContainer.class, tableClass},
                         new Class[]{tableClass},
                         null,
-                        isExport ? null : object -> object instanceof DBSDataManipulator manipulator
-                            && DataImportPropertyTester.supportsImport(manipulator.getDataSource()));
+                        isExport ? null : node -> !(node instanceof DBNDatabaseNode databaseNode)
+                            || DataImportPropertyTester.supportsImport(databaseNode.getDataSource()));
                     if (tables != null) {
                         for (DBNNode node : tables) {
                             if (node instanceof DBNDatabaseNode dbNode) {

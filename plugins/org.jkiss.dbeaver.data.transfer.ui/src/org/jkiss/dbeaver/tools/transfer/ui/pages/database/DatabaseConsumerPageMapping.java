@@ -39,7 +39,10 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -239,8 +242,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         new Class[] {DBSObjectContainer.class},
                         new Class[] {DBSSchema.class},
                         null,
-                        node -> node instanceof DBNDataSource || isContainerSelectable(node),
-                        object -> DataImportPropertyTester.supportsImport(object.getDataSource())
+                        this::isContainerSelectable
                     );
                 }
 

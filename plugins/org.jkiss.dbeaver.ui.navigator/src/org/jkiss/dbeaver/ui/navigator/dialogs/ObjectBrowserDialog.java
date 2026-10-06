@@ -46,7 +46,6 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
     private final Class<?>[] allowedTypes;
     private final Class<?>[] resultTypes;
     private final Class<?>[] leafTypes;
-    private Predicate<DBSObject> resultFilter;
     private Predicate<DBNNode> nodeFilter;
     private Predicate<String> nameFilter;
 
@@ -154,9 +153,6 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
 
     @Override
     protected boolean matchesType(Object object, boolean result) {
-        if (result && resultFilter != null && (!(object instanceof DBSObject dbObject) || !resultFilter.test(dbObject))) {
-            return false;
-        }
         for (Class<?> ot : result ? resultTypes : allowedTypes) {
             if (ot.isAssignableFrom(object.getClass())) {
                 return true;
@@ -199,7 +195,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         @Nullable Class<?>[] leafTypes,
         @Nullable Predicate<String> nameFilter
     ) {
-        return selectObject(parentShell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes, nameFilter, null, null);
+        return selectObject(parentShell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes, nameFilter, null);
     }
 
     @Nullable
@@ -212,8 +208,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         @Nullable Class<?>[] resultTypes,
         @Nullable Class<?>[] leafTypes,
         @Nullable Predicate<String> nameFilter,
-        @Nullable Predicate<DBNNode> nodeFilter,
-        @Nullable Predicate<DBSObject> resultFilter
+        @Nullable Predicate<DBNNode> nodeFilter
     ) {
         ObjectBrowserDialog scDialog = new ObjectBrowserDialog(
             parentShell,
@@ -229,7 +224,6 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
             scDialog.setNameFilter(nameFilter);
         }
         scDialog.nodeFilter = nodeFilter;
-        scDialog.resultFilter = resultFilter;
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
@@ -260,7 +254,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         @NotNull Class<?>[] allowedTypes,
         @Nullable Class<?>[] resultTypes,
         @Nullable Class<?>[] leafTypes,
-        @Nullable Predicate<DBSObject> resultFilter
+        @Nullable Predicate<DBNNode> nodeFilter
     ) {
         ObjectBrowserDialog scDialog = new ObjectBrowserDialog(
             parentShell,
@@ -272,7 +266,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
             resultTypes,
             leafTypes
         );
-        scDialog.resultFilter = resultFilter;
+        scDialog.nodeFilter = nodeFilter;
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {
