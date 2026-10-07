@@ -2358,7 +2358,12 @@ public class ResultSetViewer extends Viewer
         if (!newRow) {
             String status = DBExecUtils.getAttributeReadOnlyStatus(attr, checkKey);
             DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
-            if (rowIdentifier != null && rowIdentifier.getEntity() instanceof DBSDataManipulator dataManipulator &&
+            DBSObject dataContainer = rowIdentifier == null ? getDataContainer() : rowIdentifier.getEntity();
+            DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
+            if (rowIdentifier == null && entityAttribute != null) {
+                dataContainer = entityAttribute.getParentObject();
+            }
+            if (dataContainer instanceof DBSDataManipulator dataManipulator &&
                 !dataManipulator.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
                 return status;
             }
