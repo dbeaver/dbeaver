@@ -21,21 +21,27 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UITextUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 
 import java.util.List;
 import java.util.function.IntConsumer;
 
 final class AIImageAttachmentsComposite extends ScrolledComposite {
+    private static final int MAX_LINK_WIDTH = 180;
+    private static final int MAX_VISIBLE_ROWS = 2;
+
     private final Composite attachments;
     private final IntConsumer removeImage;
 
@@ -45,8 +51,16 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
         setBackgroundMode(SWT.INHERIT_DEFAULT);
         setExpandHorizontal(true);
         setExpandVertical(true);
+        setShowFocusedControl(true);
         attachments = new Composite(this, SWT.NONE);
-        attachments.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(6, 2).create());
+        RowLayout layout = new RowLayout(SWT.HORIZONTAL);
+        layout.marginLeft = 0;
+        layout.marginRight = 0;
+        layout.marginTop = 0;
+        layout.marginBottom = 0;
+        layout.spacing = 6;
+        layout.center = true;
+        attachments.setLayout(layout);
         setContent(attachments);
         addListener(SWT.Resize, event -> updateContentSize());
     }
@@ -57,33 +71,62 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
         }
         for (int index = 0; index < images.size(); index++) {
             AIImageAttachment image = images.get(index);
-            Link link = new Link(attachments, SWT.NONE);
-            link.setText("<a>" + LegacyActionTools.escapeMnemonics(image.name()) + "</a>");
+            Composite attachment = new Composite(attachments, SWT.NONE);
+            attachment.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(2, 0).create());
+            Link link = new Link(attachment, SWT.NONE);
             link.setToolTipText(image.name());
-            GridData linkData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-            linkData.widthHint = 1;
-            link.setLayoutData(linkData);
+            link.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
             link.addSelectionListener(SelectionListener.widgetSelectedAdapter(event ->
                 AIImageAttachmentViewer.open(getShell(), image)));
             int imageIndex = index;
-            Button remove = new Button(attachments, SWT.PUSH);
-            remove.setImage(DBeaverIcons.getImage(UIIcon.CLOSE));
-            remove.setToolTipText(AIChatMessagesUI.ai_chat_image_remove + ": " + image.name());
-            remove.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-            remove.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
-                if (isEnabled()) {
-                    removeImage.accept(imageIndex);
-                }
-            }));
+            ToolBar toolbar = new ToolBar(attachment, SWT.FLAT);
+            toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+            UIUtils.createToolItem(toolbar, AIChatMessagesUI.ai_chat_image_remove + ": " + image.name(), UIIcon.CLOSE,
+                SelectionListener.widgetSelectedAdapter(event -> {
+                    if (isEnabled()) {
+                        removeImage.accept(imageIndex);
+                    }
+                }));
         }
-        attachments.layout(true, true);
-        int rowHeight = images.isEmpty() ? 0 : attachments.getChildren()[1].computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-        ((GridData) getLayoutData()).heightHint = Math.min(images.size(), 3) * (rowHeight + 2);
         setOrigin(0, 0);
         updateContentSize();
     }
 
     private void updateContentSize() {
-        setMinSize(attachments.computeSize(Math.max(1, getClientArea().width), SWT.DEFAULT));
+        int width = Math.max(1, getClientArea().width);
+        int rowHeight = 0;
+        RowLayout layout = (RowLayout) attachments.getLayout();
+        for (Control control : attachments.getChildren()) {
+            Composite attachment = (Composite) control;
+            Link link = (Link) attachment.getChildren()[0];
+            ToolBar toolbar = (ToolBar) attachment.getChildren()[1];
+            int linkWidth = Math.max(1, Math.min(MAX_LINK_WIDTH, width - toolbar.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 2));
+            updateLinkText(link, linkWidth);
+            attachment.layout(true, true);
+            rowHeight = Math.max(rowHeight, attachment.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+        }
+        Point size = attachments.computeSize(width, SWT.DEFAULT, true);
+        setMinSize(size);
+        int height = Math.max(0, Math.min(size.y, MAX_VISIBLE_ROWS * (rowHeight + layout.spacing) - layout.spacing));
+        if (getLayoutData() instanceof GridData layoutData && layoutData.heightHint != height) {
+            layoutData.heightHint = height;
+            requestLayout();
+        }
+        attachments.layout(true, true);
+    }
+
+    private void updateLinkText(@NotNull Link link, int width) {
+        String name = link.getToolTipText();
+        int textWidth = width;
+        // account for native link sizing so abbreviated names stay on one line
+        while (true) {
+            String text = UITextUtils.getShortText(link, name, textWidth);
+            link.setText("<a>" + LegacyActionTools.escapeMnemonics(text) + "</a>");
+            int preferredWidth = link.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+            if (preferredWidth <= width || textWidth == 1) {
+                break;
+            }
+            textWidth = Math.max(1, textWidth - preferredWidth + width);
+        }
     }
 }
