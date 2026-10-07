@@ -123,7 +123,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         return client;
     }
 
-    private static void setupHostKeyVerification(
+    static void setupHostKeyVerification(
         @NotNull SSHClient client,
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration actualHostConfiguration
@@ -135,9 +135,8 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
             client.getTransport().getConfig().setVerifyHostKeyCertificates(false);
         } else {
             loadKnownHosts(client, SSHUtils.getKnownSshHostsFileOrDefault(), actualHostConfiguration);
+            loadDefaultKnownHosts(client, OpenSSHKnownHosts.detectSSHDir());
         }
-
-        loadDefaultKnownHosts(client, OpenSSHKnownHosts.detectSSHDir());
     }
 
     static void loadDefaultKnownHosts(@NotNull SSHClient client, @Nullable File sshDirectory) throws DBException {

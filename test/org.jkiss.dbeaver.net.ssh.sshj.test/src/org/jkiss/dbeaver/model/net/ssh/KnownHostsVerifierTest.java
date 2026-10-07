@@ -18,15 +18,22 @@ package org.jkiss.dbeaver.model.net.ssh;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.Base64DecodingException;
+import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
@@ -134,6 +141,42 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
             Assertions.assertTrue(error.getMessage().contains("readable"));
             Assertions.assertTrue(error.getMessage().contains("valid OpenSSH host keys"));
             return error;
+        }
+    }
+
+    @Test
+    public void bypassSkipsUnreadableKnownHostsFiles() throws Exception {
+        assertKnownHostsSkipped(false, true);
+    }
+
+    @Test
+    public void headlessModeSkipsUnreadableKnownHostsFiles() throws Exception {
+        assertKnownHostsSkipped(true, false);
+    }
+
+    private void assertKnownHostsSkipped(boolean headless, boolean bypass) throws Exception {
+        Path knownHostsFile = Files.createDirectory(temporaryDirectory.resolve("known_hosts"));
+        Files.writeString(temporaryDirectory.resolve("known_hosts2"), "example.test ssh-rsa not.base64\n");
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(platform.getApplication().isHeadlessMode()).thenReturn(headless);
+        DBWHandlerConfiguration configuration = Mockito.mock(DBWHandlerConfiguration.class);
+        Mockito.when(configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)).thenReturn(bypass);
+
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(DBWorkbench.class);
+             MockedStatic<SSHUtils> sshUtils = Mockito.mockStatic(SSHUtils.class);
+             MockedStatic<OpenSSHKnownHosts> knownHosts = Mockito.mockStatic(OpenSSHKnownHosts.class);
+             SSHClient client = Mockito.spy(new SSHClient())) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            sshUtils.when(SSHUtils::getKnownSshHostsFileOrDefault).thenReturn(knownHostsFile.toFile());
+            knownHosts.when(OpenSSHKnownHosts::detectSSHDir).thenReturn(temporaryDirectory.toFile());
+
+            SSHJSessionController.setupHostKeyVerification(client, configuration, HOST);
+
+            Mockito.verify(client).addHostKeyVerifier(Mockito.isA(PromiscuousVerifier.class));
+            Assertions.assertFalse(client.getTransport().getConfig().isVerifyHostKeyCertificates());
+            sshUtils.verifyNoInteractions();
+            knownHosts.verifyNoInteractions();
+            Mockito.verify(client, Mockito.never()).loadKnownHosts(Mockito.any(File.class));
         }
     }
 }
