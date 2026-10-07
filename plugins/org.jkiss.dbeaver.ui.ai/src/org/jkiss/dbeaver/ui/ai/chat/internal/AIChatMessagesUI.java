@@ -42,6 +42,7 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_clear_history_partial_confirm_message;
     public static String ai_chat_empty_hint;
     public static String ai_chat_drag_n_drop_message;
+    public static String ai_chat_drag_n_drop_objects_message;
     public static String ai_chat_default_conversation_name;
     public static String ai_chat_attach_button_tip;
     public static String ai_chat_confirm_title;

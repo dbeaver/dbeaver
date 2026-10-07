@@ -92,24 +92,23 @@ public final class AIFunctionSettings {
 
         public boolean isFunctionEnabled(@NotNull AIFunctionDescriptor function) {
             if (function.isEnabledByDefault()) {
-                return !disabledFunctions.contains(function.getId());
+                return functionIds(function).stream().noneMatch(disabledFunctions::contains);
             } else {
-                return enabledFunctions.contains(function.getId());
+                return functionIds(function).stream().anyMatch(enabledFunctions::contains);
             }
         }
 
         public void setFunctionEnabled(@NotNull AIFunctionDescriptor function, boolean enabled) {
+            Set<String> functionIds = functionIds(function);
+            enabledFunctions.removeAll(functionIds);
+            disabledFunctions.removeAll(functionIds);
             if (function.isEnabledByDefault()) {
-                if (enabled) {
-                    disabledFunctions.remove(function.getId());
-                } else {
+                if (!enabled) {
                     disabledFunctions.add(function.getId());
                 }
             } else {
                 if (enabled) {
                     enabledFunctions.add(function.getId());
-                } else {
-                    enabledFunctions.remove(function.getId());
                 }
             }
         }
@@ -134,12 +133,15 @@ public final class AIFunctionSettings {
 
         @NotNull
         public AIFunctionAllowMode getFunctionAllowMode(@NotNull AIFunctionDescriptor function) {
-            String functionId = function.getId();
-            if (alwaysAllowedFunctions.contains(functionId) || function.isOmitConfirmation()) {
+            Set<String> functionIds = functionIds(function);
+            if (function.isOmitConfirmation()) {
                 return AIFunctionAllowMode.ALWAYS_ALLOW;
             }
-            if (askFunctions.contains(functionId)) {
+            if (functionIds.stream().anyMatch(askFunctions::contains)) {
                 return AIFunctionAllowMode.ASK;
+            }
+            if (functionIds.stream().anyMatch(alwaysAllowedFunctions::contains)) {
+                return AIFunctionAllowMode.ALWAYS_ALLOW;
             }
             return function.getDefaultAllowMode();
         }
@@ -151,16 +153,27 @@ public final class AIFunctionSettings {
             if (function.isOmitConfirmation()) {
                 return;
             }
-            String functionId = function.getId();
-            alwaysAllowedFunctions.remove(functionId);
-            askFunctions.remove(functionId);
+            Set<String> functionIds = functionIds(function);
+            alwaysAllowedFunctions.removeAll(functionIds);
+            askFunctions.removeAll(functionIds);
 
             if (allowMode != function.getDefaultAllowMode()) {
                 switch (allowMode) {
-                    case ALWAYS_ALLOW -> getAlwaysAllowedFunctions().add(functionId);
-                    case ASK -> getAskFunctions().add(functionId);
+                    case ALWAYS_ALLOW -> getAlwaysAllowedFunctions().add(function.getId());
+                    case ASK -> getAskFunctions().add(function.getId());
                 }
             }
+        }
+
+        @NotNull
+        private static Set<String> functionIds(@NotNull AIFunctionDescriptor function) {
+            Set<String> ids = new LinkedHashSet<>();
+            ids.add(function.getId());
+            String legacyId = function.getLegacyId();
+            if (legacyId != null) {
+                ids.add(legacyId);
+            }
+            return ids;
         }
     }
 
