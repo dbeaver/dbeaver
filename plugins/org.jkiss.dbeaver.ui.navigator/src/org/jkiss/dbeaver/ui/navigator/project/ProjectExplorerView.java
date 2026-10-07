@@ -157,14 +157,14 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                 new ColumnLabelProvider() {
                     @Override
                     public String getText(Object element) {
-                        if (element instanceof DBNDatabaseNode) {
-                            return ((DBNDatabaseNode) element).getDataSourceContainer().getName();
-                        } else if (element instanceof DBNResource) {
-                            Collection<DBPDataSourceContainer> containers = ((DBNResource) element).getAssociatedDataSources();
+                        if (element instanceof DBNDatabaseNode dbnNode) {
+                            return dbnNode.getDataSourceContainer().getName();
+                        } else if (element instanceof DBNResource dbnResource) {
+                            Collection<DBPDataSourceContainer> containers = dbnResource.getAssociatedDataSources();
                             if (!CommonUtils.isEmpty(containers)) {
                                 StringBuilder text = new StringBuilder();
                                 for (DBPDataSourceContainer container : containers) {
-                                    if (text.length() > 0) {
+                                    if (!text.isEmpty()) {
                                         text.append(", ");
                                     }
                                     text.append(container.getName());

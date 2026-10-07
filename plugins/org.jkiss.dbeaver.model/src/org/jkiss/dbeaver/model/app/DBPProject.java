@@ -139,17 +139,17 @@ public interface DBPProject extends DBFFileSystemContainer, SMAuthSpace, DBAPerm
      * Finds resources that match the supplied {@code properties} map.
      */
     @NotNull
-    String[] findResources(@NotNull Map<String, ?> properties) throws DBException;
+    String[] findResources(@NotNull Map<String, String> properties) throws DBException;
 
     @Nullable
-    Map<String, Object> getResourceProperties(@NotNull String resourcePath);
+    Map<String, String> getResourceProperties(@NotNull String resourcePath);
 
-    void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, Object> newProps);
+    void setResourceProperties(@NotNull String resourcePath, @NotNull Map<String, String> newProps);
 
     @Nullable
-    Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);
+    String getResourceProperty(@NotNull String resourcePath, @NotNull String propName);
 
-    void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
+    void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable String propValue);
 
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 

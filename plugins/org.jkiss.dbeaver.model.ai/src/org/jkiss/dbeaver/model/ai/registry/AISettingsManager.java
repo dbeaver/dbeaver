@@ -57,6 +57,7 @@ public class AISettingsManager {
             AI_CONFIGURATION_FILE_NAME, o -> {
                 // reset current context for settings to be lazily reloaded when needed
                 this.getSettingsHolder().reset();
+                this.notifyProfilesChanged();
                 this.raiseChangedEvent(this); // consider detailed event info
             });
     }
@@ -84,6 +85,12 @@ public class AISettingsManager {
     private void raiseChangedEvent(AISettingsManager registry) {
         for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
             listener.onSettingsUpdate(registry);
+        }
+    }
+
+    public void notifyProfilesChanged() {
+        for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
+            listener.onProfilesUpdate(this);
         }
     }
 

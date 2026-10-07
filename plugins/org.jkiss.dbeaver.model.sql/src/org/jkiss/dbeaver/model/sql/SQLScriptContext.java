@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -302,6 +302,7 @@ public class SQLScriptContext implements DBCScriptContext {
         boolean useDefaults
     ) {
         if (ignoreParameters) {
+            clearFoundQueryParameters(query);
             return true;
         }
 
@@ -322,6 +323,7 @@ public class SQLScriptContext implements DBCScriptContext {
             );
             if (paramsResult == null) {
                 ignoreParameters = true;
+                clearFoundQueryParameters(query);
                 return true;
             } else if (!paramsResult) {
                 return false;
@@ -345,9 +347,15 @@ public class SQLScriptContext implements DBCScriptContext {
             }
         }
 
-        SQLUtils.fillQueryParameters(query, parameters);
+        SQLUtils.fillQueryParameters(query, parameters.stream().filter(p -> !p.isNativeBinding()).toList());
 
         return true;
+    }
+
+    private void clearFoundQueryParameters(@NotNull SQLQuery query) {
+        if (!CommonUtils.isEmpty(query.getParameters())) {
+            query.setParameters(List.of());
+        }
     }
 
     public Map<String, Object> getAllParameters() {

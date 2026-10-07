@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatIcons;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -125,6 +126,7 @@ public class PromptComposite extends Composite {
         promptText = new StyledText(promptBorder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         promptText.setLayoutData(new GridData(GridData.FILL_BOTH));
         promptText.addKeyListener(new PromptKeyAdapter(chat));
+        StyledTextUtils.enableDND(promptText);
         promptText.addTraverseListener(e -> {
             if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
                 e.doit = true;

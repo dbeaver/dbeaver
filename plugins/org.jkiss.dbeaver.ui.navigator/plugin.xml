@@ -359,6 +359,7 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <or>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.fs.DBNPathBase"/>
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
                                 <test property="org.jkiss.dbeaver.core.object.projectResourceViewable"/>
                             </adapt>
@@ -1119,6 +1120,10 @@
                 value="240, 240, 240">
             <description>%colorDefinition.org.jkiss.dbeaver.ui.navigator.node.statistics.background.description</description>
         </colorDefinition>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ui.navigator.keyword.pref.navigator" label="%keyword.org.jkiss.dbeaver.ui.navigator.keyword.pref.navigator.label"/>
     </extension>
 
 </plugin>

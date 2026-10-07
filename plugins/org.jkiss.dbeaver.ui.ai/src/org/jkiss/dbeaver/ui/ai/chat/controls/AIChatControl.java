@@ -22,6 +22,7 @@ import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
@@ -44,21 +45,29 @@ import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
+import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.*;
@@ -123,6 +132,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             promptComposite = null;
         }
 
+        ProfileModelComposite profileModelComposite = new ProfileModelComposite(this, this);
+
         List<Control> tabList = new ArrayList<>();
         tabList.add(messageListComposite);
         if (promptComposite != null) {
@@ -131,6 +142,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         if (contextComposite != null) {
             tabList.add(contextComposite);
         }
+        tabList.add(profileModelComposite);
         setTabList(tabList.toArray(new Control[0]));
 
         WidgetElement.applyStyles(this, true);
@@ -606,6 +618,95 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                 return FileTransfer.getInstance().isSupportedType(event.currentDataType);
             }
         });
+    }
+
+    private boolean canDescribeDroppedObjects() {
+        return !isBusy() && !isWaitingForResponse() && ActionUtils.findCommand(AIChatController.CMD_DESCRIBE_OBJECT) != null;
+    }
+
+    protected boolean canDescribeDroppedObjects(@Nullable Collection<?> objects) {
+        if (objects == null || objects.isEmpty() || !canDescribeDroppedObjects()) {
+            return false;
+        }
+        DBSObject firstObject = null;
+        for (Object object : objects) {
+            if (!(object instanceof DBNDatabaseNode node)) {
+                return false;
+            }
+            DBSObject databaseObject = node.getObject();
+            if (!AIUtils.isEligible(databaseObject) || databaseObject.getDataSource() == null) {
+                return false;
+            }
+            if (firstObject != null && (databaseObject.getDataSource() != firstObject.getDataSource()
+                || databaseObject.getClass() != firstObject.getClass())) {
+                return false;
+            }
+            firstObject = databaseObject;
+        }
+        return true;
+    }
+
+    protected boolean canAttachDroppedFiles(@Nullable Collection<?> objects) {
+        if (objects == null || objects.isEmpty()) {
+            return false;
+        }
+        for (Object object : objects) {
+            if (!(object instanceof DBNNode node) || object instanceof DBNDatabaseNode || !(object instanceof DBNStreamData streamData)) {
+                return false;
+            }
+            if (!streamData.supportsStreamData()) {
+                // local workspace files are transferred by path
+                try {
+                    if (!Files.isRegularFile(Path.of(node.getNodeTargetName()))) {
+                        return false;
+                    }
+                } catch (InvalidPathException e) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    protected void updateDropEvent(@NotNull DropTargetEvent event) {
+        event.detail = DND.DROP_NONE;
+        Collection<DBNNode> draggedNodes = TreeNodeTransfer.getInstance().getDraggedNodes();
+        if (canDescribeDroppedObjects(draggedNodes)) {
+            for (TransferData dataType : event.dataTypes) {
+                if (TreeNodeTransfer.getInstance().isSupportedType(dataType)) {
+                    event.currentDataType = dataType;
+                    event.detail = DND.DROP_COPY;
+                    return;
+                }
+            }
+            return;
+        }
+        if (draggedNodes != null && !canAttachDroppedFiles(draggedNodes)) {
+            return;
+        }
+        for (TransferData dataType : event.dataTypes) {
+            if (FileTransfer.getInstance().isSupportedType(dataType)) {
+                event.currentDataType = dataType;
+                event.detail = DND.DROP_COPY;
+                return;
+            }
+        }
+    }
+
+    protected void describeDroppedObjects(@NotNull Collection<?> objects) {
+        if (!canDescribeDroppedObjects(objects)) {
+            return;
+        }
+        List<DBNDatabaseNode> nodes = objects.stream()
+            .map(DBNDatabaseNode.class::cast)
+            .toList();
+        ActionUtils.runCommand(
+            AIChatController.CMD_DESCRIBE_OBJECT,
+            new StructuredSelection(nodes),
+            null,
+            Map.of(AIChatController.CONTEXT_CHAT_CONTROL, this),
+            controller.getSite()
+        );
     }
 
     @NotNull

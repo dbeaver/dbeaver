@@ -33,7 +33,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -59,6 +58,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
@@ -91,6 +91,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -148,7 +149,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPDataSourceTask,
     DBPDataSourceAcquirer,
     IResultSetProvider,
-    ISmartTransactionManager,
+    DBCSmartTransactionManager,
     IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
@@ -1249,9 +1250,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         StyledText textWidget = getViewer().getTextWidget();
         textWidget.addVerifyKeyListener(e -> {
-            if ((e.keyCode == SWT.ARROW_RIGHT || e.keyCode == SWT.TAB || e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR)
-                && suggestionTextPainter.hasContentToShow()
-            ) {
+            ProposalActivationKey activationKey = ProposalActivationKey.fromPreferences(getActivePreferenceStore());
+            boolean acceptsSuggestion = e.keyCode == SWT.ARROW_RIGHT
+                || e.keyCode == SWT.TAB && activationKey.acceptsTab()
+                || (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) && activationKey.acceptsEnter();
+            if (acceptsSuggestion && suggestionTextPainter.hasContentToShow()) {
                 e.doit = false;
                 suggestionTextPainter.applyHint();
             }
@@ -3057,6 +3060,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (checkSession) {
             try {
                 boolean finalNewTab = newTab;
+                final boolean wasDisconnected = container != null && !container.isConnected();
                 DBRProgressListener connectListener = status -> {
                     if (!status.isOK() || container == null || !container.isConnected()) {
                         DBWorkbench.getPlatformUI().showError(
@@ -3066,8 +3070,17 @@ public class SQLEditor extends SQLEditorBase implements
                         );
                         return;
                     }
-                    updateExecutionContext(() -> UIUtils.syncExec(() ->
-                        processQueries(queries, forceScript, finalNewTab, export, false, queryListener, context)));
+                    updateExecutionContext(() -> UIUtils.syncExec(() -> {
+                        // Driver-specific parameter parsers were unavailable before connecting.
+                        if (wasDisconnected && getDataSource() != null) {
+                            for (SQLScriptElement query : queries) {
+                                if (query instanceof SQLQuery sqlQuery) {
+                                    sqlQuery.setParameters(parseQueryParameters(sqlQuery));
+                                }
+                            }
+                        }
+                        processQueries(queries, forceScript, finalNewTab, export, false, queryListener, context);
+                    }));
                 };
                 if (!checkSession(connectListener)) {
                     return false;
@@ -3466,6 +3479,13 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
+        // Native toolbar items must be restyled after the datasource marker is set.
+        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+            CSSUtils.applyStyles(topBar);
+        }
+        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+            CSSUtils.applyStyles(bottomBar);
+        }
 
         // Repaint the workbench editor tab folder so the custom tab renderer
         // picks up the new connection color immediately after a connection change
@@ -3489,9 +3509,10 @@ public class SQLEditor extends SQLEditorBase implements
         firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
 
         if (getSite() != null) {
-            IWorkbenchPage page = getSite().getWorkbenchWindow().getActivePage();
+            IWorkbenchWindow window = getSite().getWorkbenchWindow();
+            IWorkbenchPage page = window.getActivePage();
             if (page != null && page.getActiveEditor() == this) {
-                DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
+                UIExecutionQueue.queueExec(() -> DataSourceToolbarUtils.refreshSelectorToolbar(window));
             }
         }
 

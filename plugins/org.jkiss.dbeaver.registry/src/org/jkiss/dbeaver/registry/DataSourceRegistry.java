@@ -628,6 +628,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        persistDataSourceUpdates(List.of(container));
+    }
+
+    protected void persistDataSourceUpdates(@NotNull List<? extends DBPDataSourceContainer> containers) {
         saveDataSources();
     }
 

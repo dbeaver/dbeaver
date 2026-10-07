@@ -91,6 +91,7 @@ public class UIIcon {
     public static final DBIcon ARROW_TOP = new DBIcon("arrow_top", "misc/arrow_top.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_UP = new DBIcon("arrow_up", "misc/arrow_up.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_DOWN = new DBIcon("arrow_down", "misc/arrow_down.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DOWNLOAD = new DBIcon("download", "misc/download.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_BOTTOM = new DBIcon("arrow_bottom", "misc/arrow_bottom.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_LEFT = new DBIcon("arrow_left", "misc/arrow_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_LEFT_ALL = new DBIcon("arrow_left_all", "misc/arrow_left_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$

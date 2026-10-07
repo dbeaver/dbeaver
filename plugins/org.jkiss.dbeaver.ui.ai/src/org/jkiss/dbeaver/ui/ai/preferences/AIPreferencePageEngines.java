@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.*;
@@ -90,7 +91,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
 
     public AIPreferencePageEngines() {
         this.settings = AISettingsManager.getInstance().getSettings();
-        this.settings.resolveSecrets();
         this.selectedProfile = settings.getDefaultConfigurationOrNull();
     }
 
@@ -132,6 +132,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         flushSelectedProfile();
         reloadEngines();
         AISettingsManager.getInstance().saveSettings(this.settings);
+        AISettingsManager.getInstance().notifyProfilesChanged();
         try {
             store.save();
         } catch (IOException e) {
@@ -275,6 +276,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 table.setHeaderVisible(false);
             });
         }
+        UIUtils.asyncExec(() -> {
+            if (partDivider.isDisposed()) {
+                return;
+            }
+            settings.resolveSecrets();
+            loadSelectedProfileSettings();
+            relayoutPage();
+        });
 
         return composite;
     }
@@ -324,6 +333,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             DBWorkbench.getPlatformUI().showError(
                 AIUIMessages.ai_engines_page_create_error_title, AIUIMessages.ai_engines_page_create_error_message, e);
         }
+        UIUtils.packColumns(profilesViewer.getTable(), true);
     }
 
     private void duplicateProfile() {
@@ -376,6 +386,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     }
 
     private void createProfilesColumns() {
+        Dialog.applyDialogFont(profilesViewer.getTable());
+        Font defaultProfileFont = UIUtils.makeBoldFont(profilesViewer.getTable().getFont());
+        profilesViewer.getTable().addDisposeListener(event -> defaultProfileFont.dispose());
         TableViewerColumn nameColumn = new TableViewerColumn(profilesViewer, SWT.LEFT);
         nameColumn.getColumn().setText(AIUIMessages.ai_engines_page_column_name);
         nameColumn.getColumn().setWidth(200);
@@ -407,7 +420,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                     return null;
                 }
                 if (profile == settings.getDefaultConfigurationOrNull()) {
-                    return BaseThemeSettings.instance.baseFontBold;
+                    return defaultProfileFont;
                 }
                 return super.getFont(element);
             }
@@ -446,7 +459,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             }
             return;
         }
-        settingsScroll.setMinSize(settingsPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        UIUtils.refreshScrolledComposite(settingsScroll);
     }
 
     private int updateSashWeights() {
@@ -507,6 +520,13 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor, this::handleConfiguratorChange);
         }
 
+        loadSelectedProfileSettings();
+    }
+
+    private void loadSelectedProfileSettings() {
+        if (selectedProfile == null || activeEngineConfiguratorPage == null) {
+            return;
+        }
         try {
             activeEngineConfiguratorPage.loadSettings(selectedProfile.getConfiguration());
         } catch (DBException e) {

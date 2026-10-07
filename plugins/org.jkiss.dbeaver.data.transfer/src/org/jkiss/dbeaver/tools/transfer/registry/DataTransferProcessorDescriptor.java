@@ -44,6 +44,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     private final DataTransferNodeDescriptor node;
     private final String id;
     private final String shortId;
+    private final String aiFormatId;
     private final ObjectType processorType;
     private final List<ObjectType> sourceTypes = new ArrayList<>();
     private final String name;
@@ -63,6 +64,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         this.node = node;
         this.id = config.getAttribute("id");
         this.shortId = config.getAttribute("shortId");
+        this.aiFormatId = config.getAttribute("aiFormatId");
         this.processorType = new ObjectType(config.getAttribute("class"));
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
@@ -89,6 +91,17 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     @Nullable
     public String getShortId() {
         return shortId;
+    }
+
+    @NotNull
+    public String getAIFormatId() {
+        if (!CommonUtils.isEmpty(aiFormatId)) {
+            return aiFormatId;
+        }
+        if (!CommonUtils.isEmpty(shortId)) {
+            return shortId;
+        }
+        return getProcessorFileExtension();
     }
 
     @NotNull

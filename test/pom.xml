@@ -17,6 +17,7 @@
         <module>org.jkiss.dbeaver.test.platform</module>
         <module>org.jkiss.dbeaver.launcher.test</module>
         <module>org.jkiss.dbeaver.ext.altibase.test</module>
+        <module>org.jkiss.dbeaver.ext.cdata.test</module>
         <module>org.jkiss.dbeaver.ext.clickhouse.test</module>
         <module>org.jkiss.dbeaver.ext.firebird.test</module>
         <module>org.jkiss.dbeaver.ext.generic.test</module>
@@ -30,7 +31,7 @@
         <module>org.jkiss.dbeaver.ext.timeplus.test</module>
         <module>org.jkiss.dbeaver.model.lsm.test</module>
         <module>org.jkiss.dbeaver.model.navigator.test</module>
-        <module>org.jkiss.dbeaver.model.tracking.test</module>
+        <module>org.jkiss.dbeaver.model.datadam.test</module>
         <module>org.jkiss.dbeaver.model.ai.test</module>
         <module>org.jkiss.dbeaver.model.sql.test</module>
         <module>org.jkiss.dbeaver.data.transfer.test</module>

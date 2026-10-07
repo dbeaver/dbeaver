@@ -119,10 +119,18 @@ public class SQLPragmaExport implements SQLPragmaHandler {
         boolean searchSimilar
     ) {
         DataTransferProcessorDescriptor processor = registry.getProcessor(PROCESSOR_ID_PREFIX + type);
-        if (processor != null || !searchSimilar) {
+        if (!searchSimilar) {
             return processor;
         }
 
+        for (DataTransferProcessorDescriptor descriptor : consumerNode.getProcessors()) {
+            if (type.equalsIgnoreCase(descriptor.getAIFormatId())) {
+                return descriptor;
+            }
+        }
+        if (processor != null) {
+            return processor;
+        }
         for (DataTransferProcessorDescriptor descriptor : consumerNode.getProcessors()) {
             if (type.equalsIgnoreCase(descriptor.getShortId())) {
                 return descriptor;

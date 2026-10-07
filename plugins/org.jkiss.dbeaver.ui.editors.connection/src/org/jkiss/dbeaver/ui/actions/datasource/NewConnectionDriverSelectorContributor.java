@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -45,6 +47,10 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
         if (DBWorkbench.isDistributed()) {
             allDrivers.removeIf(Predicate.not(driver -> driver.getDefaultDriverLoader().isDriverInstalled()));
         }
+        List<DBPDriver> commercialDrivers = allDrivers.stream()
+            .filter(DBPDriverWithLicense.class::isInstance)
+            .toList();
+        allDrivers.removeAll(commercialDrivers);
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 10);
         for (DBPDriver driver : recentDrivers) {
             menuItems.add(new ActionContributionItem(new NewConnectionAction(window, driver)));
@@ -57,6 +63,16 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
             allDriversMenu.add(new NewConnectionAction(window, driver));
         }
         menuItems.add(allDriversMenu);
+        if (!commercialDrivers.isEmpty()) {
+            menuItems.add(new Separator());
+            MenuManager commercialDriversMenu = new MenuManager(
+                ((DBPDriverWithLicense) commercialDrivers.getFirst()).getVendorName()
+            );
+            for (DBPDriver driver : commercialDrivers) {
+                commercialDriversMenu.add(new NewConnectionAction(window, driver));
+            }
+            menuItems.add(commercialDriversMenu);
+        }
     }
 
     private static class NewConnectionAction extends Action

@@ -46,11 +46,11 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
-    public static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
-    public static final SimpleDateFormat DEFAULT_DATETIME_TZ_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_TZ_FORMAT + "''");
-    public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
-    public static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
-    public static final SimpleDateFormat DEFAULT_TIME_TZ_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_TZ_FORMAT + "''");
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_DATETIME_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''"));
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_DATETIME_TZ_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_TZ_FORMAT + "''"));
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_DATE_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''"));
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_TIME_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''"));
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_TIME_TZ_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_TZ_FORMAT + "''"));
 
     public JDBCDateTimeValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
@@ -213,11 +213,11 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Nullable
     protected Format getNativeValueFormat(DBSTypedObject type) {
         return switch (type.getTypeID()) {
-            case Types.TIMESTAMP -> DEFAULT_DATETIME_FORMAT;
-            case Types.TIMESTAMP_WITH_TIMEZONE -> DEFAULT_DATETIME_FORMAT;
-            case Types.TIME -> DEFAULT_TIME_FORMAT;
-            case Types.TIME_WITH_TIMEZONE -> DEFAULT_TIME_TZ_FORMAT;
-            case Types.DATE -> DEFAULT_DATE_FORMAT;
+            case Types.TIMESTAMP -> DEFAULT_DATETIME_FORMAT.get();
+            case Types.TIMESTAMP_WITH_TIMEZONE -> DEFAULT_DATETIME_FORMAT.get();
+            case Types.TIME -> DEFAULT_TIME_FORMAT.get();
+            case Types.TIME_WITH_TIMEZONE -> DEFAULT_TIME_TZ_FORMAT.get();
+            case Types.DATE -> DEFAULT_DATE_FORMAT.get();
             default -> null;
         };
     }
