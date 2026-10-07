@@ -34,21 +34,28 @@ import org.jkiss.dbeaver.model.ai.impl.DummyTokenCounter;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatHistoryMapper;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatMessage;
-import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class AIImageAttachmentTest {
     private static final String PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN1cAAAAASUVORK5CYII=";
@@ -140,39 +147,80 @@ public class AIImageAttachmentTest {
 
     @Test
     public void addsCopilotVisionHeaderForBothApisOnlyWhenImagesArePresent() throws Exception {
-        var session = new CopilotSessionToken("test-token", null);
-        List<HttpRequest> requests = new ArrayList<>();
-        List<HttpClient> transports = new ArrayList<>();
-        try (var clients = Mockito.mockConstruction(MonitoredHttpClient.class, (client, context) -> {
-            transports.add((HttpClient) context.arguments().getFirst());
-            Mockito.when(client.send(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
-                requests.add(invocation.getArgument(1));
-                return "{}";
-            });
-        }); var chatClient = new CopilotClientChat("https://github.com");
-            var responsesClient = new CopilotClientResponses("https://github.com") { }) {
-            for (boolean withImages : List.of(false, true)) {
-                AIMessage message = AIMessage.userMessage("Describe");
-                if (withImages) {
-                    message = message.withImages(List.of(image()));
-                }
-                final var chat = CopilotChatRequest.builder().withModel("test-model")
-                    .withMessages(CopilotMessage.from(message)).withTools(List.of()).build();
-                var responses = new OAIResponsesRequest();
-                responses.model = "test-model";
-                responses.input = List.of(OAIMessageFactory.fromAIMessage(message));
-                requests.clear();
-                chatClient.chat(new VoidProgressMonitor(), session, chat);
-                responsesClient.chat(new VoidProgressMonitor(), session, new Pair<>(responses, chat));
-                Assertions.assertEquals(2, requests.size());
-                for (HttpRequest request : requests) {
-                    Assertions.assertEquals(withImages ? List.of("true") : List.of(),
-                        request.headers().allValues("Copilot-Vision-Request"));
+        try (ServerSocket server = new ServerSocket(0, 4, InetAddress.getByName("127.0.0.1"))) {
+            server.setSoTimeout(5000);
+            var requests = CompletableFuture.supplyAsync(() -> captureCopilotRequests(server));
+            var session = new CopilotSessionToken("test-token",
+                new CopilotSessionToken.Endpoints("http://127.0.0.1:" + server.getLocalPort()));
+            try (var chatClient = new CopilotClientChat("https://github.com");
+                var responsesClient = new CopilotClientResponses("https://github.com") { }) {
+                var monitor = new VoidProgressMonitor() {
+                    @Override
+                    public boolean isCanceled() {
+                        return false;
+                    }
+                };
+                chatClient.setTimeout(5);
+                responsesClient.setTimeout(5);
+                for (boolean withImages : List.of(false, true)) {
+                    AIMessage message = AIMessage.userMessage("Describe");
+                    if (withImages) {
+                        message = message.withImages(List.of(image()));
+                    }
+                    final var chat = CopilotChatRequest.builder().withModel("test-model")
+                        .withMessages(CopilotMessage.from(message)).withTools(List.of()).build();
+                    var responses = new OAIResponsesRequest();
+                    responses.model = "test-model";
+                    responses.input = List.of(OAIMessageFactory.fromAIMessage(message));
+                    chatClient.chat(monitor, session, chat);
+                    responsesClient.chat(monitor, session, new Pair<>(responses, chat));
                 }
             }
-        } finally {
-            transports.forEach(HttpClient::close);
+            List<Map<String, String>> headers = requests.get(10, TimeUnit.SECONDS);
+            Assertions.assertEquals(4, headers.size());
+            for (int index = 0; index < headers.size(); index++) {
+                Assertions.assertEquals(index < 2 ? null : "true", headers.get(index).get("Copilot-Vision-Request"));
+                Assertions.assertEquals(index % 2 == 0 ? "/chat/completions" : "/v1/responses", headers.get(index).get("path"));
+            }
         }
+    }
+
+    @NotNull
+    private static List<Map<String, String>> captureCopilotRequests(@NotNull ServerSocket server) {
+        List<Map<String, String>> requests = new ArrayList<>();
+        try {
+            for (int index = 0; index < 4; index++) {
+                try (Socket socket = server.accept()) {
+                    socket.setSoTimeout(5000);
+                    ByteArrayOutputStream header = new ByteArrayOutputStream();
+                    int ending = 0;
+                    while (ending != 0x0d0a0d0a) {
+                        int value = socket.getInputStream().read();
+                        if (value < 0 || header.size() >= 8192) {
+                            throw new IOException("Incomplete HTTP request header");
+                        }
+                        header.write(value);
+                        ending = (ending << 8) | value;
+                    }
+                    String[] lines = header.toString(StandardCharsets.US_ASCII).split("\r\n");
+                    Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                    headers.put("path", lines[0].split(" ")[1]);
+                    for (int line = 1; line < lines.length; line++) {
+                        String[] parts = lines[line].split(":", 2);
+                        headers.put(parts[0], parts[1].trim());
+                    }
+                    int length = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+                    Assertions.assertEquals(length, socket.getInputStream().readNBytes(length).length);
+                    requests.add(headers);
+                    socket.getOutputStream().write(("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n"
+                        + "Content-Length: 2\r\nConnection: close\r\n\r\n{}").getBytes(StandardCharsets.US_ASCII));
+                    socket.getOutputStream().flush();
+                }
+            }
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        }
+        return requests;
     }
 
     @Test
