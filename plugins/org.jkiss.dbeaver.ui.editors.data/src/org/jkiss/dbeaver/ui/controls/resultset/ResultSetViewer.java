@@ -2357,6 +2357,11 @@ public class ResultSetViewer extends Viewer
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
             String status = DBExecUtils.getAttributeReadOnlyStatus(attr, checkKey);
+            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+            if (rowIdentifier != null && rowIdentifier.getEntity() instanceof DBSDataManipulator dataManipulator &&
+                !dataManipulator.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
+                return status;
+            }
             if (status != null && checkKey) {
                 DBCExecutionContext executionContext = getExecutionContext();
                 if (executionContext != null) {
@@ -2916,9 +2921,17 @@ public class ResultSetViewer extends Viewer
     public boolean isInsertable()
     {
         return
-            getReadOnlyStatus() == null &&
-            model.getSingleSource() instanceof DBSDataManipulator &&
+            supportsDataManipulation(DBSDataManipulator.FEATURE_DATA_INSERT) &&
             model.getVisibleAttributeCount() > 0;
+    }
+
+    public boolean isDeletable() {
+        return supportsDataManipulation(DBSDataManipulator.FEATURE_DATA_DELETE) && model.getVisibleAttributeCount() > 0;
+    }
+
+    private boolean supportsDataManipulation(@NotNull String feature) {
+        return !DATA_EDIT_DISABLED && getReadOnlyStatus() == null &&
+            model.getSingleSource() instanceof DBSDataManipulator dataManipulator && dataManipulator.isFeatureSupported(feature);
     }
 
     public boolean isRefreshInProgress() {
@@ -4832,6 +4845,9 @@ public class ResultSetViewer extends Viewer
 
     @NotNull
     public ResultSetRow addNewRow(@NotNull RowPlacement placement, boolean copyCurrent, boolean updatePresentation) {
+        if (!isInsertable()) {
+            throw new IllegalStateException("Result set does not support row insertion");
+        }
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
             throw new IllegalStateException("Can't add/copy rows in disconnected results");
@@ -5169,6 +5185,9 @@ public class ResultSetViewer extends Viewer
             }
         }
         if (rowsToDelete.isEmpty()) {
+            return;
+        }
+        if (!isDeletable() && (!isInsertable() || rowsToDelete.stream().anyMatch(row -> row.getState() != ResultSetRow.STATE_ADDED))) {
             return;
         }
 

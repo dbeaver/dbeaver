@@ -134,9 +134,13 @@ public class ResultSetPropertyTester extends PropertyTester
                     }
                 } else if ("add".equals(expectedValue)) {
                     return rsv.isInsertable();
-                } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
+                } else if ("copy".equals(expectedValue)) {
                     ResultSetRow currentRow = rsv.getCurrentRow();
                     return currentRow != null && rsv.isInsertable();
+                } else if ("delete".equals(expectedValue)) {
+                    ResultSetRow currentRow = rsv.getCurrentRow();
+                    return currentRow != null && (rsv.isDeletable() ||
+                        currentRow.getState() == ResultSetRow.STATE_ADDED && rsv.isInsertable());
                 } else {
                     return false;
                 }
