@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.function.ThrowableSupplier;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.List;
@@ -59,8 +61,17 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
         @NotNull ThrowableSupplier<T, IOException> loader
     ) throws DBException {
         final T verifier;
+        final boolean skippedEntries;
         try {
             verifier = loader.get();
+            if (knownHostsFile.exists()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(knownHostsFile))) {
+                    // SSHJ silently drops lines when parsing throws SSHException or SSHRuntimeException.
+                    skippedEntries = reader.lines().count() != verifier.entries().size();
+                }
+            } else {
+                skippedEntries = false;
+            }
         } catch (IOException | RuntimeException e) {
             throw new DBException(
                 "Could not load SSH known hosts file '" + knownHostsFile.getAbsolutePath() +
@@ -69,7 +80,7 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
             );
         }
         // SSHJ may preserve malformed lines instead of throwing a decoding exception.
-        if (verifier.entries().stream().anyMatch(entry ->
+        if (skippedEntries || verifier.entries().stream().anyMatch(entry ->
             entry instanceof BadHostEntry && !entry.getLine().isBlank() && !entry.getLine().stripLeading().startsWith("#")
         )) {
             throw new DBException(

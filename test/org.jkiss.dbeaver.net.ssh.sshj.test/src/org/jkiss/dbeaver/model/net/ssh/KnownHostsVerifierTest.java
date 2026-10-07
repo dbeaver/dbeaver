@@ -56,6 +56,14 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void malformedHashedHostnameIsNotSilentlyIgnored() throws Exception {
+        PublicKey key = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPublic();
+        String entry = new OpenSSHKnownHosts.HostEntry(null, HOST.hostname(), KeyType.RSA, key).getLine();
+
+        assertInvalidEntry("|1|invalid" + entry.substring(entry.indexOf(' ')) + "\n");
+    }
+
+    @Test
     public void malformedLegacyEntryPreservesCause() throws Exception {
         Path knownHosts = writeKnownHosts("example.test 2048 invalid 3\n");
 
