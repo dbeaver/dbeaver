@@ -73,6 +73,21 @@ public interface IValueController
     Object getValue();
 
     /**
+     * Returns the committed value of the edited cell before the pending changes were made.
+     * <p>
+     * It is used to highlight the elements which differ from the committed value while the
+     * value is not committed yet. Editors are recreated on every focus change, so the highlighting
+     * cannot be derived from the editor state and must be re-calculated from the original value.
+     *
+     * @return original (committed) value or {@code null} if the value has no pending changes
+     *         or cannot be compared with the original one
+     */
+    @Nullable
+    default Object getOriginalValue() {
+        return null;
+    }
+
+    /**
      * Updates value
      * @param value value
      * @param updatePresentation    refresh UI

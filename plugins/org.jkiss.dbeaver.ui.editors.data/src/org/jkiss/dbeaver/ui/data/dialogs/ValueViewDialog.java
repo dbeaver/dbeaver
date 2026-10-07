@@ -315,6 +315,11 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
         }
 
         @Override
+        public Object getOriginalValue() {
+            return valueController.getOriginalValue();
+        }
+
+        @Override
         public void updateValue(Object value, boolean updatePresentation) {
             valueController.updateValue(value, updatePresentation);
         }
