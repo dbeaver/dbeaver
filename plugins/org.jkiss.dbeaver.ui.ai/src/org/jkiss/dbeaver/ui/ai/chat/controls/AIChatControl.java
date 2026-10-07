@@ -507,7 +507,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         List<Path> imageFiles = files.stream().filter(AIChatControl::isImageFile).toList();
         if (!imageFiles.isEmpty() && promptComposite != null) {
             UUID conversationId = activeConversation.getId();
-            promptComposite.imageLoadingStarted();
+            promptComposite.imageLoadingStarted(conversationId);
             new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
                 @NotNull
                 @Override
@@ -533,8 +533,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                             attachments.add(AIImageAttachment.fromBytes(file.getFileName().toString(), bytes));
                         }
                         UIUtils.asyncExec(() -> {
-                            if (!isDisposed() && conversationId.equals(activeConversation.getId())) {
-                                promptComposite.addImages(attachments);
+                            if (!isDisposed()) {
+                                promptComposite.addImages(conversationId, attachments);
                             }
                         });
                         return Status.OK_STATUS;
@@ -549,7 +549,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                     } finally {
                         UIUtils.asyncExec(() -> {
                             if (!isDisposed()) {
-                                promptComposite.imageLoadingFinished();
+                                promptComposite.imageLoadingFinished(conversationId);
                             }
                         });
                     }

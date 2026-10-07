@@ -24,6 +24,7 @@ import java.util.Set;
 public record AIImageAttachment(@NotNull String name, @NotNull String mediaType, @NotNull String data) {
     public static final int MAX_IMAGE_BYTES = 20 * 1024 * 1024;
     public static final int MAX_IMAGES = 10;
+    public static final int DEFAULT_TOKEN_ESTIMATE = 4096;
     private static final Set<String> MEDIA_TYPES = Set.of("image/png", "image/jpeg", "image/gif", "image/webp");
 
     public AIImageAttachment {

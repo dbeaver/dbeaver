@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClientChat;
@@ -71,10 +72,10 @@ public class AIImageAttachmentTest {
     }
 
     @Test
-    public void retainsImageOnlyPromptsInTruncatedHistory() {
+    public void retainsImageOnlyPromptsInTruncatedHistory() throws DBException {
         AIMessage message = AIMessage.userMessage("").withImages(List.of(image()));
         ChatTruncator truncator = ChatTruncator.builder().maxTokens(100).reserveForSystem(20)
-            .reserveForReply(20).reserveForOverhead(10).tokenCounter(new DummyTokenCounter()).build();
+            .reserveForReply(20).reserveForOverhead(10).tokenCounter(new DummyTokenCounter()).imageTokenCounter(image -> 30).build();
         List<AIMessage> truncated = truncator.tryTruncate(List.of(
             AIMessage.systemMessage("System context ".repeat(100)), message));
         Assertions.assertNotNull(truncated);

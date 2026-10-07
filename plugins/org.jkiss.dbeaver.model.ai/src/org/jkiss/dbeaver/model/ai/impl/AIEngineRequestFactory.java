@@ -133,12 +133,14 @@ public class AIEngineRequestFactory {
 
         // Truncate chat to fit the window
 
+        Map<AIImageAttachment, Integer> imageTokenCounts = new IdentityHashMap<>();
         ChatTruncator chatTruncator = ChatTruncator.builder()
             .maxTokens(maxContextWindowSize)
             .reserveForSystem(systemPromptTokenBudget)
             .reserveForReply(REPLY_TOKEN_RESERVE)
             .reserveForOverhead(OVERHEAD_TOKEN_RESERVE)
             .tokenCounter(tokenCounter)
+            .imageTokenCounter(image -> imageTokenCounts.computeIfAbsent(image, engine::estimateImageTokens))
             .build();
 
         List<AIMessage> allMessages = new ArrayList<>(1 + messages.size());

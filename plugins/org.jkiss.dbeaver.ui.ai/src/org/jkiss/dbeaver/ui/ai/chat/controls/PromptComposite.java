@@ -72,7 +72,7 @@ public class PromptComposite extends Composite {
     private final List<AIImageAttachment> images = new ArrayList<>();
     private final Map<UUID, Draft> drafts = new HashMap<>();
     private UUID draftConversationId;
-    private int loadingImages;
+    private final Map<UUID, Integer> loadingImages = new HashMap<>();
 
     public PromptComposite(@NotNull AIChatControl chat, @NotNull Composite parent) {
         super(parent, SWT.NONE);
@@ -85,16 +85,7 @@ public class PromptComposite extends Composite {
             @Override
             public void conversationChanged(@NotNull AIChatConversation conversation) {
                 UIUtils.asyncExec(() -> {
-                    if (isDisposed()) {
-                        return;
-                    }
-                    drafts.put(draftConversationId, new Draft(getPromptText(), List.copyOf(images)));
-                    draftConversationId = conversation.getId();
-                    Draft draft = drafts.getOrDefault(draftConversationId, new Draft("", List.of()));
-                    setPromptText(draft.text());
-                    images.clear();
-                    images.addAll(draft.images());
-                    refreshImages();
+                    restoreDraft(conversation.getId());
                 });
             }
 
@@ -109,7 +100,7 @@ public class PromptComposite extends Composite {
                     }
                     imageAttachments.setEnabled(!busy);
                     promptText.setEnabled(!busy);
-                    sendButton.setEnabled(!busy && loadingImages == 0);
+                    sendButton.setEnabled(!busy && !isLoadingImages());
                     attachButton.setEnabled(!busy);
 
                     if (!busy) {
@@ -220,35 +211,71 @@ public class PromptComposite extends Composite {
     }
 
     public void addImages(@NotNull List<AIImageAttachment> attachments) {
-        if (isDisposed() || chat.getChatSession().isBusy()) {
+        if (!chat.getChatSession().isBusy()) {
+            addImages(draftConversationId, attachments);
+        }
+    }
+
+    public void addImages(@NotNull UUID conversationId, @NotNull List<AIImageAttachment> attachments) {
+        if (isDisposed()) {
             return;
         }
-        int bytes = images.stream().mapToInt(image -> image.data().length()).sum()
+        boolean currentDraft = conversationId.equals(draftConversationId);
+        Draft draft = drafts.getOrDefault(conversationId, new Draft("", List.of()));
+        List<AIImageAttachment> targetImages = currentDraft ? images : draft.images();
+        int bytes = targetImages.stream().mapToInt(image -> image.data().length()).sum()
             + attachments.stream().mapToInt(image -> image.data().length()).sum();
-        if (images.size() + attachments.size() > AIImageAttachment.MAX_IMAGES
+        if (targetImages.size() + attachments.size() > AIImageAttachment.MAX_IMAGES
             || bytes > (AIImageAttachment.MAX_IMAGE_BYTES + 2) / 3 * 4) {
             DBWorkbench.getPlatformUI().showError(AIChatMessagesUI.ai_chat_image_error, AIChatMessagesUI.ai_chat_image_limit);
             return;
         }
-        images.addAll(attachments);
-        refreshImages();
-        setFocusOnPrompt();
+        if (currentDraft) {
+            images.addAll(attachments);
+            refreshImages();
+            setFocusOnPrompt();
+        } else {
+            List<AIImageAttachment> combined = new ArrayList<>(targetImages);
+            combined.addAll(attachments);
+            drafts.put(conversationId, new Draft(draft.text(), List.copyOf(combined)));
+        }
     }
 
     public boolean isLoadingImages() {
-        return loadingImages > 0;
+        return loadingImages.getOrDefault(chat.getActiveConversation().getId(), 0) > 0;
     }
 
-    public void imageLoadingStarted() {
-        loadingImages++;
-        sendButton.setEnabled(false);
+    public void imageLoadingStarted(@NotNull UUID conversationId) {
+        loadingImages.merge(conversationId, 1, Integer::sum);
+        updateSendButton();
     }
 
-    public void imageLoadingFinished() {
-        loadingImages--;
-        if (!chat.getChatSession().isBusy() && loadingImages == 0) {
-            sendButton.setEnabled(true);
+    public void imageLoadingFinished(@NotNull UUID conversationId) {
+        loadingImages.computeIfPresent(conversationId, (id, count) -> count > 1 ? count - 1 : null);
+        updateSendButton();
+    }
+
+    private void updateSendButton() {
+        if (!chat.getChatSession().isBusy()) {
+            sendButton.setEnabled(!isLoadingImages());
         }
+    }
+
+    private void restoreDraft(@NotNull UUID conversationId) {
+        if (isDisposed()) {
+            return;
+        }
+        if (draftConversationId.equals(conversationId)) {
+            return;
+        }
+        drafts.put(draftConversationId, new Draft(getPromptText(), List.copyOf(images)));
+        draftConversationId = conversationId;
+        Draft draft = drafts.getOrDefault(draftConversationId, new Draft("", List.of()));
+        setPromptText(draft.text());
+        images.clear();
+        images.addAll(draft.images());
+        refreshImages();
+        updateSendButton();
     }
 
     public void draftSubmitted() {
