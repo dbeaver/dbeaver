@@ -271,6 +271,16 @@ public class PromptComposite extends Composite {
         }
         Clipboard clipboard = new Clipboard(getDisplay());
         try {
+            // finder also offers file icons as clipboard images
+            Object files = clipboard.getContents(FileTransfer.getInstance());
+            if (files instanceof String[] paths && paths.length > 0) {
+                List<Path> imageFiles = java.util.Arrays.stream(paths).map(Path::of).filter(AIChatControl::isImageFile).toList();
+                if (!imageFiles.isEmpty()) {
+                    chat.attachFiles(imageFiles);
+                    return true;
+                }
+                return false;
+            }
             Object png = clipboard.getContents(AIImageClipboardTransfer.INSTANCE);
             if (png instanceof byte[] bytes) {
                 chat.attachImage(AIImageAttachment.fromBytes(AIChatMessagesUI.ai_chat_image_clipboard_name, bytes));
@@ -280,14 +290,6 @@ public class PromptComposite extends Composite {
             if (contents instanceof ImageData image) {
                 chat.attachImage(image);
                 return true;
-            }
-            Object files = clipboard.getContents(FileTransfer.getInstance());
-            if (files instanceof String[] paths) {
-                List<Path> imageFiles = java.util.Arrays.stream(paths).map(Path::of).filter(AIChatControl::isImageFile).toList();
-                if (!imageFiles.isEmpty()) {
-                    chat.attachFiles(imageFiles);
-                    return true;
-                }
             }
         } catch (Exception exception) {
             DBWorkbench.getPlatformUI().showError(
