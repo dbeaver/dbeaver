@@ -347,6 +347,9 @@ public final class AIUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSCatalog catalog
     ) {
+        if (context.isObjectExcluded(catalog)) {
+            return false;
+        }
         switch (context.getScope()) {
             case CURRENT_DATABASE, CURRENT_SCHEMA -> {
                 DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
@@ -372,6 +375,9 @@ public final class AIUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSSchema schema
     ) {
+        if (context.isObjectExcluded(schema)) {
+            return false;
+        }
         switch (context.getScope()) {
             case CURRENT_DATABASE -> {
                 if (schema.getParentObject() instanceof DBSCatalog parentCatalog) {
@@ -412,6 +418,9 @@ public final class AIUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObject object
     ) {
+        if (context.isObjectExcluded(object)) {
+            return false;
+        }
         if (object instanceof DBPDataSource || object instanceof DBPDataSourceContainer) {
             return true;
         }
