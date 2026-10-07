@@ -49,6 +49,8 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      * Document data source result set representation.
      */
     String FEATURE_DOCUMENT_DATA_SOURCE = "datasource.document-data-source";
+    /** False if this data source does not support data transfer imports. */
+    String FEATURE_DATA_IMPORT = "datasource.data-import";
 
 
 
