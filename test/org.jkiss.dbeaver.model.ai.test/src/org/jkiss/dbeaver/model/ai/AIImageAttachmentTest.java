@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatMessageContent;
 import org.jkiss.dbeaver.model.ai.impl.ChatTruncator;
 import org.jkiss.dbeaver.model.ai.impl.DummyTokenCounter;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatHistoryMapper;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatMessage;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class AIImageAttachmentTest {
     private static final String PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN1cAAAAASUVORK5CYII=";
@@ -77,6 +79,30 @@ public class AIImageAttachmentTest {
             AIMessage.systemMessage("System context ".repeat(100)), message));
         Assertions.assertNotNull(truncated);
         Assertions.assertTrue(truncated.stream().anyMatch(item -> item.getImages().equals(message.getImages())));
+    }
+
+    @Test
+    public void namesImageOnlyConversationsAfterTheFirstAttachment() {
+        for (String content : List.of("", " \t\n")) {
+            AIChatConversation conversation = new AIChatConversation(
+                UUID.randomUUID(), "New conversation", new AIPromptGenerateSql(), List.of(), null, 0, null);
+            AIImageAttachment firstImage = image();
+            AIImageAttachment secondImage = AIImageAttachment.fromBytes("second.png", firstImage.getBytes());
+            AIMessage message = AIMessage.userMessage(content).withImages(List.of(firstImage, secondImage));
+            conversation.addMessage(message);
+            Assertions.assertEquals(firstImage.name(), conversation.getCaption());
+            Assertions.assertEquals(content, message.getContent());
+            conversation.addMessage(AIMessage.userMessage("Follow-up question"));
+            Assertions.assertEquals(firstImage.name(), conversation.getCaption());
+        }
+    }
+
+    @Test
+    public void prefersPromptTextOverImageNameForConversationCaption() {
+        AIChatConversation conversation = new AIChatConversation(
+            UUID.randomUUID(), "New conversation", new AIPromptGenerateSql(), List.of(), null, 0, null);
+        conversation.addMessage(AIMessage.userMessage("Describe this image").withImages(List.of(image())));
+        Assertions.assertEquals("Describe this image", conversation.getCaption());
     }
 
     @Test

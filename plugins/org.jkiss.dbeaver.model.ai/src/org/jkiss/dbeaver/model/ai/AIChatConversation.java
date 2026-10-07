@@ -164,6 +164,9 @@ public class AIChatConversation {
             } else {
                 newCaption = message.getContent();
             }
+            if (newCaption.isBlank() && !message.getImages().isEmpty()) {
+                newCaption = message.getImages().getFirst().name();
+            }
             this.caption = StringUtils.truncateToSpace(newCaption, MAX_CAPTION_LENGTH);
         }
         AIChatMessage chatMessage = new AIChatMessage(nextMessageId, message);
