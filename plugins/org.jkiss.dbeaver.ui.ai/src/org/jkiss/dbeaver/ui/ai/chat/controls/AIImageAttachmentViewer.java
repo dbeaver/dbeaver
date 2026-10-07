@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.ai.chat.controls;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Point;
@@ -52,6 +53,11 @@ final class AIImageAttachmentViewer {
                     + "justify-content:center;height:100vh'><img style='max-width:100%;max-height:100%' src='"
                     + image.toDataUrl() + "'></body></html>");
                 return area;
+            }
+
+            @Override
+            protected void createButtonsForButtonBar(@NotNull Composite parent) {
+                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
             }
 
             @NotNull
