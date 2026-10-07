@@ -143,12 +143,10 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         @Nullable File defaultSshDirectory,
         @NotNull SSHHostConfiguration actualHostConfiguration
     ) throws DBException {
-        KnownHostsVerifier verifier = KnownHostsVerifier.create(knownHostsFile, actualHostConfiguration);
-        if (defaultSshDirectory != null) {
-            // Check previously trusted secondary keys before asking the user to accept an unknown host.
-            client.addHostKeyVerifier(KnownHostsVerifier.load(new File(defaultSshDirectory, SECONDARY_KNOWN_HOSTS_FILE_NAME)));
-        }
-        client.addHostKeyVerifier(verifier);
+        File secondaryKnownHostsFile = defaultSshDirectory == null
+            ? null
+            : new File(defaultSshDirectory, SECONDARY_KNOWN_HOSTS_FILE_NAME);
+        client.addHostKeyVerifier(KnownHostsVerifier.create(knownHostsFile, secondaryKnownHostsFile, actualHostConfiguration));
     }
 
     private static class FilterLoggerFactory implements LoggerFactory {

@@ -21,6 +21,7 @@ import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
@@ -32,10 +33,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.List;
 
 public class KnownHostsVerifier extends OpenSSHKnownHosts {
     private final SSHHostConfiguration actualHostConfiguration;
+    @Nullable
+    private OpenSSHKnownHosts secondaryKnownHosts;
 
     public KnownHostsVerifier(@NotNull File khFile, @NotNull SSHHostConfiguration actualHostConfiguration) throws IOException {
         super(khFile);
@@ -48,6 +52,19 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
         @NotNull SSHHostConfiguration actualHostConfiguration
     ) throws DBException {
         return load(knownHostsFile, () -> new KnownHostsVerifier(knownHostsFile, actualHostConfiguration));
+    }
+
+    @NotNull
+    static KnownHostsVerifier create(
+        @NotNull File knownHostsFile,
+        @Nullable File secondaryKnownHostsFile,
+        @NotNull SSHHostConfiguration actualHostConfiguration
+    ) throws DBException {
+        KnownHostsVerifier verifier = create(knownHostsFile, actualHostConfiguration);
+        if (secondaryKnownHostsFile != null) {
+            verifier.secondaryKnownHosts = load(secondaryKnownHostsFile);
+        }
+        return verifier;
     }
 
     @NotNull
@@ -96,17 +113,31 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
         if (hostname.equals(DBConstants.HOST_LOCALHOST) || hostname.equals(DBConstants.HOST_LOCALHOST_IP)) {
             return true;
         } else {
+            if (secondaryKnownHosts != null) {
+                if (secondaryKnownHosts.verify(hostname, port, key)) {
+                    return true;
+                }
+                String algorithm = KeyType.fromKey(key).toString();
+                if (secondaryKnownHosts.findExistingAlgorithms(hostname, port).contains(algorithm) &&
+                    !super.findExistingAlgorithms(hostname, port).contains(algorithm)
+                ) {
+                    // A known secondary key has changed; do not treat it as a new host in the primary file.
+                    return false;
+                }
+            }
             return super.verify(hostname, port, key);
         }
     }
 
     @Override
     public List<String> findExistingAlgorithms(String hostname, int port) {
-        if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
-            return super.findExistingAlgorithms(actualHostConfiguration.hostname(), actualHostConfiguration.port());
-        } else {
-            return super.findExistingAlgorithms(hostname, port);
+        String actualHostname = hostname.equals(DBConstants.HOST_LOCALHOST) ? actualHostConfiguration.hostname() : hostname;
+        int actualPort = hostname.equals(DBConstants.HOST_LOCALHOST) ? actualHostConfiguration.port() : port;
+        List<String> algorithms = new ArrayList<>(super.findExistingAlgorithms(actualHostname, actualPort));
+        if (secondaryKnownHosts != null) {
+            algorithms.addAll(secondaryKnownHosts.findExistingAlgorithms(actualHostname, actualPort));
         }
+        return algorithms.stream().distinct().toList();
     }
 
     @Override

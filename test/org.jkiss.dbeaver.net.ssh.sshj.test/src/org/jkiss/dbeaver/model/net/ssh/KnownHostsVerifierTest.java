@@ -142,7 +142,7 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void secondaryHostKeysAreLoadedBeforeInteractiveVerification() throws Exception {
+    public void secondaryHostKeysAreLoadedWithoutInteractiveVerification() throws Exception {
         PublicKey key = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPublic();
         String entry = new OpenSSHKnownHosts.HostEntry(null, HOST.hostname(), KeyType.RSA, key).getLine();
         Path secondary = Files.writeString(temporaryDirectory.resolve("known_hosts2"), entry + "\n");
@@ -151,10 +151,9 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
 
         SSHJSessionController.loadKnownHosts(client, primary.toFile(), temporaryDirectory.toFile(), HOST);
 
-        Assertions.assertEquals(2, client.verifiers.size());
+        Assertions.assertEquals(1, client.verifiers.size());
         Assertions.assertTrue(client.verifiers.get(0).verify(HOST.hostname(), HOST.port(), key));
-        Assertions.assertFalse(client.verifiers.get(0) instanceof KnownHostsVerifier);
-        Assertions.assertInstanceOf(KnownHostsVerifier.class, client.verifiers.get(1));
+        Assertions.assertInstanceOf(KnownHostsVerifier.class, client.verifiers.get(0));
         Assertions.assertEquals("", Files.readString(primary));
         Assertions.assertEquals(entry + "\n", Files.readString(secondary));
     }
@@ -168,7 +167,7 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
 
         SSHJSessionController.loadKnownHosts(client, primary.toFile(), temporaryDirectory.toFile(), HOST);
 
-        Assertions.assertTrue(client.verifiers.get(1).verify(HOST.hostname(), HOST.port(), key));
+        Assertions.assertTrue(client.verifiers.get(0).verify(HOST.hostname(), HOST.port(), key));
         Assertions.assertFalse(Files.exists(temporaryDirectory.resolve("known_hosts2")));
     }
 
@@ -185,6 +184,42 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
         Assertions.assertTrue(error.getMessage().contains(secondary.toAbsolutePath().toString()));
         Assertions.assertTrue(error.getMessage().contains("Correct or remove the invalid entries"));
         Assertions.assertTrue(client.verifiers.isEmpty());
+    }
+
+    @Test
+    public void algorithmsFromBothHostFilesAreAdvertised() throws Exception {
+        PublicKey primaryKey = KeyPairGenerator.getInstance("EC").generateKeyPair().getPublic();
+        PublicKey secondaryKey = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPublic();
+        String primaryEntry = new OpenSSHKnownHosts.HostEntry(null, HOST.hostname(), KeyType.fromKey(primaryKey), primaryKey).getLine();
+        String secondaryEntry = new OpenSSHKnownHosts.HostEntry(null, HOST.hostname(), KeyType.RSA, secondaryKey).getLine();
+        Path primary = writeKnownHosts(primaryEntry + "\n");
+        Files.writeString(temporaryDirectory.resolve("known_hosts2"), secondaryEntry + "\n");
+        RecordingSSHClient client = new RecordingSSHClient();
+
+        SSHJSessionController.loadKnownHosts(client, primary.toFile(), temporaryDirectory.toFile(), HOST);
+
+        Assertions.assertEquals(1, client.verifiers.size());
+        Assertions.assertEquals(
+            List.of(KeyType.fromKey(primaryKey).toString(), KeyType.RSA.toString()),
+            client.verifiers.get(0).findExistingAlgorithms(HOST.hostname(), HOST.port())
+        );
+        Assertions.assertTrue(client.verifiers.get(0).verify(HOST.hostname(), HOST.port(), primaryKey));
+        Assertions.assertTrue(client.verifiers.get(0).verify(HOST.hostname(), HOST.port(), secondaryKey));
+    }
+
+    @Test
+    public void changedSecondaryKeyIsRejectedWithoutInteractiveConfirmation() throws Exception {
+        PublicKey trustedKey = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPublic();
+        PublicKey changedKey = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPublic();
+        String entry = new OpenSSHKnownHosts.HostEntry(null, HOST.hostname(), KeyType.RSA, trustedKey).getLine();
+        Path primary = writeKnownHosts("");
+        Files.writeString(temporaryDirectory.resolve("known_hosts2"), entry + "\n");
+        RecordingSSHClient client = new RecordingSSHClient();
+
+        SSHJSessionController.loadKnownHosts(client, primary.toFile(), temporaryDirectory.toFile(), HOST);
+
+        Assertions.assertFalse(client.verifiers.get(0).verify(HOST.hostname(), HOST.port(), changedKey));
+        Assertions.assertEquals("", Files.readString(primary));
     }
 
     private void assertInvalidEntry(@NotNull String content) throws Exception {
