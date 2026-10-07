@@ -69,7 +69,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         client.getConnection().getKeepAlive().setKeepAliveInterval(keepAliveInterval);
         client.getTransport().getConfig().setLoggerFactory(new FilterLoggerFactory());
 
-        setupHostKeyVerification(client, configuration, host);
+        setupHostKeyVerification(client, configuration, host, DBWorkbench.getPlatform().getApplication().isHeadlessMode());
 
         monitor.subTask(String.format("Instantiate tunnel to %s:%d", host.hostname(), host.port()));
 
@@ -126,11 +126,10 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
     static void setupHostKeyVerification(
         @NotNull SSHClient client,
         @NotNull DBWHandlerConfiguration configuration,
-        @NotNull SSHHostConfiguration actualHostConfiguration
+        @NotNull SSHHostConfiguration actualHostConfiguration,
+        boolean headless
     ) throws DBException {
-        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() ||
-            configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)
-        ) {
+        if (headless || configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)) {
             client.addHostKeyVerifier(new PromiscuousVerifier());
             client.getTransport().getConfig().setVerifyHostKeyCertificates(false);
         } else {

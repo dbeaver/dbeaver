@@ -17,22 +17,20 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.Base64DecodingException;
-import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.MockedStatic;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -52,29 +50,29 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
 
     @Test
     public void malformedConfiguredFileReportsPathAndPreservesCause() throws Exception {
-        Path knownHosts = Files.writeString(temporaryDirectory.resolve("custom_known_hosts"), "example.test ssh-rsa not.base64\n");
+        Path knownHosts = Files.writeString(temporaryDirectory.resolve("custom_known_hosts"), "example.test 2048 invalid 3\n");
 
         DBException error = assertLoadingError(knownHosts, HOST);
 
-        Assertions.assertInstanceOf(Base64DecodingException.class, error.getCause());
+        Assertions.assertInstanceOf(NumberFormatException.class, error.getCause());
     }
 
     @Test
     public void malformedDefaultFileReportsPathAndPreservesCause() throws Exception {
-        Path knownHosts = Files.writeString(temporaryDirectory.resolve("known_hosts"), "example.test ssh-rsa not.base64\n");
+        Path knownHosts = Files.writeString(temporaryDirectory.resolve("known_hosts"), "example.test 2048 invalid 3\n");
 
         DBException error = assertLoadingError(knownHosts, null);
 
-        Assertions.assertInstanceOf(Base64DecodingException.class, error.getCause());
+        Assertions.assertInstanceOf(NumberFormatException.class, error.getCause());
     }
 
     @Test
     public void malformedSecondaryFileReportsItsOwnPath() throws Exception {
-        Path knownHosts = Files.writeString(temporaryDirectory.resolve("known_hosts2"), "example.test ssh-rsa not.base64\n");
+        Path knownHosts = Files.writeString(temporaryDirectory.resolve("known_hosts2"), "example.test 2048 invalid 3\n");
 
         DBException error = assertLoadingError(knownHosts, null);
 
-        Assertions.assertInstanceOf(Base64DecodingException.class, error.getCause());
+        Assertions.assertInstanceOf(NumberFormatException.class, error.getCause());
     }
 
     @Test
@@ -145,38 +143,40 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
     }
 
     @Test
+    @ResourceLock(Resources.SYSTEM_PROPERTIES)
     public void bypassSkipsUnreadableKnownHostsFiles() throws Exception {
         assertKnownHostsSkipped(false, true);
     }
 
     @Test
+    @ResourceLock(Resources.SYSTEM_PROPERTIES)
     public void headlessModeSkipsUnreadableKnownHostsFiles() throws Exception {
         assertKnownHostsSkipped(true, false);
     }
 
     private void assertKnownHostsSkipped(boolean headless, boolean bypass) throws Exception {
-        Path knownHostsFile = Files.createDirectory(temporaryDirectory.resolve("known_hosts"));
-        Files.writeString(temporaryDirectory.resolve("known_hosts2"), "example.test ssh-rsa not.base64\n");
-        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(platform.getApplication().isHeadlessMode()).thenReturn(headless);
+        Path sshDirectory = Files.createDirectory(temporaryDirectory.resolve(".ssh"));
+        Files.createDirectory(sshDirectory.resolve("known_hosts"));
+        Files.writeString(sshDirectory.resolve("known_hosts2"), "example.test 2048 invalid 3\n");
         DBWHandlerConfiguration configuration = Mockito.mock(DBWHandlerConfiguration.class);
         Mockito.when(configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)).thenReturn(bypass);
 
-        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(DBWorkbench.class);
-             MockedStatic<SSHUtils> sshUtils = Mockito.mockStatic(SSHUtils.class);
-             MockedStatic<OpenSSHKnownHosts> knownHosts = Mockito.mockStatic(OpenSSHKnownHosts.class);
-             SSHClient client = Mockito.spy(new SSHClient())) {
-            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
-            sshUtils.when(SSHUtils::getKnownSshHostsFileOrDefault).thenReturn(knownHostsFile.toFile());
-            knownHosts.when(OpenSSHKnownHosts::detectSSHDir).thenReturn(temporaryDirectory.toFile());
+        String originalUserHome = System.getProperty("user.home");
+        try (SSHClient client = Mockito.spy(new SSHClient())) {
+            System.setProperty("user.home", temporaryDirectory.toString());
 
-            SSHJSessionController.setupHostKeyVerification(client, configuration, HOST);
+            SSHJSessionController.setupHostKeyVerification(client, configuration, HOST, headless);
 
             Mockito.verify(client).addHostKeyVerifier(Mockito.isA(PromiscuousVerifier.class));
+            Mockito.verify(client, Mockito.times(1)).addHostKeyVerifier(Mockito.any(HostKeyVerifier.class));
             Assertions.assertFalse(client.getTransport().getConfig().isVerifyHostKeyCertificates());
-            sshUtils.verifyNoInteractions();
-            knownHosts.verifyNoInteractions();
             Mockito.verify(client, Mockito.never()).loadKnownHosts(Mockito.any(File.class));
+        } finally {
+            if (originalUserHome == null) {
+                System.clearProperty("user.home");
+            } else {
+                System.setProperty("user.home", originalUserHome);
+            }
         }
     }
 }
