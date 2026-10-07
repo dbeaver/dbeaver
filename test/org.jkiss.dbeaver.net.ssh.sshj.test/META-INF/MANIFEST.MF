@@ -9,4 +9,7 @@ Bundle-Vendor: DBeaver Corp
 Fragment-Host: org.jkiss.dbeaver.net.ssh.sshj
 Bundle-ActivationPolicy: lazy
 Require-Bundle: junit-jupiter-api,
- org.jkiss.dbeaver.test.platform
+ org.jkiss.dbeaver.test.platform,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.net.ssh,
+ org.jkiss.bundle.sshj
