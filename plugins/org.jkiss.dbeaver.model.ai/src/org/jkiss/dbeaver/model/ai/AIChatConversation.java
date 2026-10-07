@@ -26,12 +26,13 @@ import org.jkiss.utils.StringUtils;
 import org.jkiss.utils.UUIDv7;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * AI chat conversation.
@@ -113,7 +114,7 @@ public class AIChatConversation {
         this.caption = StringUtils.truncateToSpace(caption, MAX_CAPTION_LENGTH);
         this.promptGenerator = promptGenerator;
         this.container = container;
-        this.messages = new ArrayList<>(messages);
+        this.messages = new CopyOnWriteArrayList<>(messages);
         this.time = messages.isEmpty() ? LocalDateTime.now() : messages.getLast().message().getTime();
         this.nextMessageId = nextMessageId;
         this.profile = profile;
@@ -152,14 +153,12 @@ public class AIChatConversation {
     }
 
     public void restoreImages(@NotNull Map<Integer, List<AIImageAttachment>> images) {
-        List<AIChatMessage> restored = messages.stream().map(message -> {
+        // replaceAll publishes one snapshot and leaves history intact if validation fails
+        messages.replaceAll(message -> {
             List<AIImageAttachment> attachments = images.get(message.id());
             return attachments == null ? message
                 : new AIChatMessage(message.id(), message.message().withImages(attachments), message.pending());
-        }).toList();
-        for (int index = 0; index < restored.size(); index++) {
-            messages.set(index, restored.get(index));
-        }
+        });
         imagesLoaded = true;
     }
 
@@ -200,7 +199,7 @@ public class AIChatConversation {
     }
 
     public boolean removeMessage(@NotNull AIChatMessage message) {
-        return this.messages.remove(message);
+        return messages.removeIf(current -> sameMessage(current, message));
     }
 
     public void clearMessages() {
@@ -208,10 +207,17 @@ public class AIChatConversation {
     }
 
     public void clearMessagesAfter(@NotNull AIChatMessage message) {
-        int index = messages.indexOf(message);
-        while (messages.size() > index) {
-            messages.removeLast();
-        }
+        AtomicBoolean removing = new AtomicBoolean();
+        messages.removeIf(current -> {
+            if (sameMessage(current, message)) {
+                removing.set(true);
+            }
+            return removing.get();
+        });
+    }
+
+    private static boolean sameMessage(@NotNull AIChatMessage current, @NotNull AIChatMessage target) {
+        return current == target || !current.pending() && !target.pending() && current.id() == target.id();
     }
 
     public void addPendingDeclinedFunctionCallMessages(@NotNull List<AIMessage> messages) {

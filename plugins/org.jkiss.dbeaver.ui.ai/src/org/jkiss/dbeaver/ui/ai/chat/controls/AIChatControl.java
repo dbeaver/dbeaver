@@ -331,8 +331,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public void submitPrompt(@NotNull AIMessage promptMessage) {
-
-        AIContextSettings customSettings = activeConversation.getCustomSettings();
+        AIChatConversation submittedConversation = activeConversation;
+        AIContextSettings customSettings = submittedConversation.getCustomSettings();
         AIContextSettings settings = customSettings != null ? customSettings : getCompletionSettings();
         if (settings != null && !AIUIUtils.confirmMetaTransfer(settings)) {
             return;
@@ -343,15 +343,15 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         }
         waitingForResponse = true;
 
-        AIChatMessage chatMessage = activeConversation.addMessage(promptMessage);
-        chatSession.notifyMessageAdd(activeConversation, chatMessage);
+        AIChatMessage chatMessage = submittedConversation.addMessage(promptMessage);
+        chatSession.notifyMessageAdd(submittedConversation, chatMessage);
         if (promptComposite != null && promptMessage.getRole() == AIMessageType.USER
             && promptMessage.getContent().equals(promptComposite.getPromptText().trim())
             && promptMessage.getImages().equals(promptComposite.getImages())) {
             promptComposite.draftSubmitted();
         }
 
-        activeConversation.startConversation();
+        submittedConversation.startConversation();
         chatSession.setBusy(true);
 
         new AbstractJob("Execute prompt") {
@@ -362,7 +362,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                     CompletableFuture<AIChatConversation> future = chatSession.submitConversation(
                         monitor,
                         settings,
-                        activeConversation,
+                        submittedConversation,
                         null
                     );
                     future.whenComplete((conversation, throwable) -> {
@@ -371,6 +371,9 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                     });
                     return Status.OK_STATUS;
                 } catch (Exception e) {
+                    submittedConversation.promptProcessed(true);
+                    waitingForResponse = false;
+                    chatSession.setBusy(false);
                     return GeneralUtils.makeExceptionStatus(e);
                 }
             }

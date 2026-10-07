@@ -312,10 +312,9 @@ public class AIChatSession {
     }
 
     public void notifyMessageRemove(@NotNull AIChatConversation conversation, @NotNull AIChatMessage message) {
-        final int index = conversation.getMessages().indexOf(message);
-        if (index >= 0) {
-            notifyMessagesRemove(conversation, conversation.getMessages().subList(index, index + 1));
-        }
+        notifyMessagesRemove(conversation, conversation.getMessages().stream()
+            .filter(current -> current.id() == message.id())
+            .toList());
         conversation.removeMessage(message);
     }
 
@@ -334,10 +333,9 @@ public class AIChatSession {
     }
 
     public void notifyMessagesRemove(@NotNull AIChatConversation conversation, @NotNull AIChatMessage afterInclusive) {
-        final int index = conversation.getMessages().indexOf(afterInclusive);
-        if (index >= 0) {
-            notifyMessagesRemove(conversation, conversation.getMessages().subList(index, conversation.getMessages().size()));
-        }
+        notifyMessagesRemove(conversation, conversation.getMessages().stream()
+            .dropWhile(current -> current.id() != afterInclusive.id())
+            .toList());
     }
 
     private void notifyMessagesRemove(@NotNull AIChatConversation conversation, @NotNull List<AIChatMessage> view) {
@@ -420,7 +418,11 @@ public class AIChatSession {
         @Nullable AIContextSettings settings,
         @Nullable AIConfirmation confirmation
     ) throws DBException {
-        loadConversationImages(monitor, conversation);
+        try {
+            loadConversationImages(monitor, conversation);
+        } catch (DBException exception) {
+            return finishConversationWithError(conversation, chatListener, exception);
+        }
         String sessionId = sessionIdProvider.getSessionId(monitor);
         AIConfigurationProfile configurationProfile = conversation.getProfile();
         if (configurationProfile == null) {
