@@ -95,6 +95,31 @@ public class AIImageAttachmentTest {
     }
 
     @Test
+    public void rejectsMalformedBase64BeforeStoringAttachments() {
+        for (String data : List.of("=", "A", "A===", "AA=A", "AA==\n", "AA-_", "AA'", "AA\"", "AA<script>")) {
+            IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class,
+                () -> new AIImageAttachment("invalid.png", "image/png", data));
+            Assertions.assertEquals("Invalid Base64 image data.", exception.getMessage());
+        }
+    }
+
+    @Test
+    public void acceptsPaddedAndUnpaddedBase64WithExactByteSizes() {
+        for (String data : List.of("AA==", "AA", "AAA=", "AAA", "AAAA")) {
+            byte[] bytes = Base64.getDecoder().decode(data);
+            AIImageAttachment attachment = new AIImageAttachment("valid.png", "image/png", data);
+            Assertions.assertEquals(bytes.length, attachment.getByteSize());
+            Assertions.assertArrayEquals(bytes, attachment.getBytes());
+        }
+    }
+
+    @Test
+    public void rejectsMalformedBase64WhenRestoringJsonAttachments() {
+        String stored = JSONUtils.GSON.toJson(Map.of("name", "invalid.png", "mediaType", "image/png", "data", "="));
+        Assertions.assertThrows(RuntimeException.class, () -> JSONUtils.GSON.fromJson(stored, AIImageAttachment.class));
+    }
+
+    @Test
     public void retainsImagesWhenTruncatingText() {
         List<AIImageAttachment> attachments = new ArrayList<>(List.of(image()));
         AIMessage message = AIMessage.userMessage("Describe this image").withImages(attachments);

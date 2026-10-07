@@ -134,6 +134,7 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
                 return Status.OK_STATUS;
             }
         };
+        thumbnailJob.setRule(AIImageThumbnail.DECODING_RULE);
         thumbnailJob.setSystem(true);
         thumbnailJob.schedule();
     }

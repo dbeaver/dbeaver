@@ -20,13 +20,9 @@ function createContent(args) {
             link.title = image.name;
             link.setAttribute('role', 'button');
             link.tabIndex = -1;
-            const preview = document.createElement('img');
-            preview.src = image.src;
-            preview.alt = '';
-            preview.loading = 'lazy';
-            preview.decoding = 'async';
-            preview.draggable = false;
-            link.appendChild(preview);
+            if (image.src) {
+                link.appendChild(createImagePreview(image.src));
+            }
             const name = document.createElement('span');
             name.className = 'message-image-name';
             name.textContent = image.name;
@@ -52,6 +48,25 @@ function createContent(args) {
     }
 
     return holder;
+}
+
+function createImagePreview(source) {
+    const preview = document.createElement('img');
+    preview.src = source;
+    preview.alt = '';
+    preview.loading = 'lazy';
+    preview.decoding = 'async';
+    preview.draggable = false;
+    return preview;
+}
+
+function setMessageImage(args) {
+    const message = document.getElementById(args.id);
+    const link = message?.querySelectorAll('.message-image')[args.index];
+    if (link) {
+        link.querySelector('img')?.remove();
+        link.prepend(createImagePreview(args.src));
+    }
 }
 
 function addMessage(args) {

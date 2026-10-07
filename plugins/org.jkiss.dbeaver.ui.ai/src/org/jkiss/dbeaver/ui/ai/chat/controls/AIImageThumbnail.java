@@ -16,23 +16,49 @@
  */
 package org.jkiss.dbeaver.ui.ai.chat.controls;
 
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIImageDimensions;
 import org.jkiss.dbeaver.ui.swt.ImageConverter;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
 final class AIImageThumbnail {
+    // canceled jobs retain the rule until their decoder has actually returned
+    static final ISchedulingRule DECODING_RULE = new ISchedulingRule() {
+        @Override
+        public boolean contains(@NotNull ISchedulingRule rule) {
+            return rule == this;
+        }
+
+        @Override
+        public boolean isConflicting(@NotNull ISchedulingRule rule) {
+            return rule == this;
+        }
+    };
     private static final long MAX_DECODED_PIXELS = 16_000_000;
     private static final int MAX_WEBP_FRAMES = 64;
 
     private AIImageThumbnail() {
+    }
+
+    @NotNull
+    static String toDataUrl(@NotNull byte[] bytes, int size) throws IOException {
+        ImageLoader loader = new ImageLoader();
+        loader.data = new ImageData[]{read(bytes, size)};
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        loader.save(output, SWT.IMAGE_PNG);
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(output.toByteArray());
     }
 
     @NotNull
@@ -87,7 +113,7 @@ final class AIImageThumbnail {
 
     private static void checkPixels(long pixels) throws IOException {
         if (pixels <= 0 || pixels > MAX_DECODED_PIXELS) {
-            throw new IOException("Image is too large to create a thumbnail safely.");
+            throw new IOException("Image exceeds the safe display limit of 16 million pixels. Resize it or attach a smaller image.");
         }
     }
 

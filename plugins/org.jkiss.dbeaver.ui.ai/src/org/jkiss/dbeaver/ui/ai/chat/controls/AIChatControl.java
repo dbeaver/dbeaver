@@ -715,7 +715,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     void enableDragAndDrop(@NotNull Control control) {
-        int operations = DND.DROP_COPY | DND.DROP_DEFAULT;
+        int operations = DND.DROP_DEFAULT | DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
         DropTarget dropTarget = new DropTarget(control, operations);
         dropTarget.setTransfer(FileTransfer.getInstance(), ImageTransfer.getInstance(), TextTransfer.getInstance());
         dropTarget.addDropListener(new DropTargetAdapter() {
@@ -758,8 +758,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             private void handleDragEvent(@NotNull DropTargetEvent event) {
                 if (!isDropSupported(event)) {
                     event.detail = DND.DROP_NONE;
-                } else {
-                    event.detail = DND.DROP_COPY;
+                } else if (!TextTransfer.getInstance().isSupportedType(event.currentDataType) || event.detail == DND.DROP_DEFAULT) {
+                    event.detail = (event.operations & DND.DROP_COPY) != 0 ? DND.DROP_COPY : DND.DROP_NONE;
                 }
             }
 

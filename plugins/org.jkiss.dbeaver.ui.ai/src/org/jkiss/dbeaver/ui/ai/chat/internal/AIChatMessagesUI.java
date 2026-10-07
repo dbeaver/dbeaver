@@ -101,6 +101,7 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_image_remove;
     public static String ai_chat_image_error;
     public static String ai_chat_image_load_error;
+    public static String ai_chat_image_view_error;
     public static String ai_chat_image_limit;
     public static String ai_chat_image_loading;
     public static String ai_chat_image_clipboard_name;

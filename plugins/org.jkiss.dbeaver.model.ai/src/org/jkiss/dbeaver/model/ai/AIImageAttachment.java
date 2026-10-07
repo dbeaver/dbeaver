@@ -32,7 +32,16 @@ public record AIImageAttachment(@NotNull String name, @NotNull String mediaType,
         if (!MEDIA_TYPES.contains(mediaType)) {
             throw new IllegalArgumentException("Unsupported image format. Use PNG, JPEG, GIF or WebP.");
         }
-        if (data.isEmpty() || data.length() > (MAX_IMAGE_BYTES + 2) / 3 * 4 || getByteSize(data) > MAX_IMAGE_BYTES) {
+        if (data.isEmpty() || data.length() > (MAX_IMAGE_BYTES + 2) / 3 * 4) {
+            throw new IllegalArgumentException("Image must contain data and be no larger than 20 MB.");
+        }
+        byte[] decoded;
+        try {
+            decoded = Base64.getDecoder().decode(data);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Invalid Base64 image data.", exception);
+        }
+        if (decoded.length == 0 || decoded.length > MAX_IMAGE_BYTES) {
             throw new IllegalArgumentException("Image must contain data and be no larger than 20 MB.");
         }
     }
