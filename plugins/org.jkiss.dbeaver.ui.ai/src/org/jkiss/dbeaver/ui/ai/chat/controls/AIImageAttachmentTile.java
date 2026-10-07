@@ -73,6 +73,7 @@ final class AIImageAttachmentTile extends Composite {
             gc.drawLine(6, 6, CLOSE_SIZE - 6, CLOSE_SIZE - 6);
             gc.drawLine(6, CLOSE_SIZE - 6, CLOSE_SIZE - 6, 6);
         });
+        remove.moveAbove(preview);
         setLayoutData(new RowData(PREVIEW_SIZE + CLOSE_SIZE / 2, PREVIEW_SIZE + TOP_PADDING));
         setTabList(new Control[]{preview, remove});
         addDisposeListener(event -> UIUtils.dispose(thumbnail));

@@ -18,7 +18,19 @@ function createContent(args) {
             link.className = 'message-image';
             link.href = '#';
             link.title = image.name;
-            link.textContent = image.name;
+            link.setAttribute('role', 'button');
+            link.tabIndex = -1;
+            const preview = document.createElement('img');
+            preview.src = image.src;
+            preview.alt = '';
+            preview.loading = 'lazy';
+            preview.decoding = 'async';
+            preview.draggable = false;
+            link.appendChild(preview);
+            const name = document.createElement('span');
+            name.className = 'message-image-name';
+            name.textContent = image.name;
+            link.appendChild(name);
             link.addEventListener('click', event => {
                 event.preventDefault();
                 openImage(args.id, index);

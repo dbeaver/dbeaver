@@ -143,7 +143,7 @@ final class WebViewMessageRenderer {
         }
 
         args.put("images", message.message().getImages().stream()
-            .map(image -> Map.of("name", image.name())).toList());
+            .map(image -> Map.of("name", image.name(), "src", image.toDataUrl())).toList());
         args.put("id", message.id());
         args.put("role", message.message().getRole().name().toLowerCase(Locale.ROOT));
         args.put("icon", iconPath);
