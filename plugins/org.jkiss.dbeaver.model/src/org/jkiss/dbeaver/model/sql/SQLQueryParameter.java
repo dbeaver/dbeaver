@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class SQLQueryParameter {
     private boolean variableSet;
     private final int tokenOffset;
     private final int tokenLength;
+    private boolean nativeBinding;
     private SQLQueryParameter previous;
 
     public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, String originalName) {
@@ -64,7 +65,15 @@ public class SQLQueryParameter {
     }
 
     public boolean isNamed() {
-        return !String.valueOf(syntaxManager.getAnonymousParameterMark()).equals(name);
+        return !nativeBinding && !String.valueOf(syntaxManager.getAnonymousParameterMark()).equals(name);
+    }
+
+    public boolean isNativeBinding() {
+        return nativeBinding;
+    }
+
+    public void setNativeBinding(boolean nativeBinding) {
+        this.nativeBinding = nativeBinding;
     }
 
     public int getTokenOffset() {

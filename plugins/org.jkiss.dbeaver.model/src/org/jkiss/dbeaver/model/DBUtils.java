@@ -1656,11 +1656,7 @@ public final class DBUtils {
             queryText = sqlQuery.getText();
         }
 
-        DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?
-            createStatement(session, queryText, doScrollable) :
-            makeStatement(session, queryText, doScrollable);
-        dbStat.setStatementSource(executionSource);
-
+        DBCStatement dbStat = getStatement(executionSource, session, statementType, sqlQuery, queryText, doScrollable);
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
             if (limitTransformer == null) {
                 if (isShouldSetLimit) {
@@ -1675,6 +1671,26 @@ public final class DBUtils {
         }
 
         return dbStat;
+    }
+
+    @NotNull
+    private static DBCStatement getStatement(
+        @Nullable DBCExecutionSource executionSource,
+        @NotNull DBCSession session,
+        @NotNull DBCStatementType statementType,
+        @NotNull SQLQuery sqlQuery,
+        @NotNull String queryText,
+        boolean doScrollable
+    ) throws DBCException {
+        DBCStatementProducer producer = getAdapter(DBCStatementProducer.class, session.getDataSource());
+        if (producer != null && producer.useAdapter(sqlQuery)) {
+            return producer.createStatement(executionSource, session, sqlQuery, queryText, doScrollable);
+        } else {
+            DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ? createStatement(session, queryText, doScrollable) :
+                makeStatement(session, queryText, doScrollable);
+            dbStat.setStatementSource(executionSource);
+            return dbStat;
+        }
     }
 
     @NotNull
