@@ -137,7 +137,10 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
             loadKnownHosts(client, SSHUtils.getKnownSshHostsFileOrDefault(), actualHostConfiguration);
         }
 
-        File sshDirectory = OpenSSHKnownHosts.detectSSHDir();
+        loadDefaultKnownHosts(client, OpenSSHKnownHosts.detectSSHDir());
+    }
+
+    static void loadDefaultKnownHosts(@NotNull SSHClient client, @Nullable File sshDirectory) throws DBException {
         if (sshDirectory != null) {
             // Load separately to report the failing path instead of SSHJ's generic "Could not load known_hosts" error.
             for (String fileName : DEFAULT_KNOWN_HOSTS_FILE_NAMES) {

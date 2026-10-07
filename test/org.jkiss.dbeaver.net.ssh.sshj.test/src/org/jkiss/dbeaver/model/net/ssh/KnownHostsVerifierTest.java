@@ -28,9 +28,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class KnownHostsVerifierTest extends DBeaverUnitTest {
     private static final SSHHostConfiguration HOST = new SSHHostConfiguration(
@@ -76,7 +79,9 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
 
     @Test
     public void unreadableDefaultFileReportsPathAndPreservesCause() throws Exception {
-        DBException error = assertLoadingError(temporaryDirectory, null);
+        Path knownHosts = Files.createDirectory(temporaryDirectory.resolve("known_hosts"));
+
+        DBException error = assertLoadingError(knownHosts, null);
 
         Assertions.assertInstanceOf(IOException.class, error.getCause());
     }
@@ -86,9 +91,29 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
         Path knownHosts = temporaryDirectory.resolve("known_hosts");
         try (SSHClient client = new SSHClient()) {
             Assertions.assertDoesNotThrow(() -> SSHJSessionController.loadKnownHosts(client, knownHosts.toFile(), HOST));
-            Assertions.assertDoesNotThrow(() -> SSHJSessionController.loadKnownHosts(client, knownHosts.toFile(), null));
+            Assertions.assertDoesNotThrow(() -> SSHJSessionController.loadDefaultKnownHosts(client, temporaryDirectory.toFile()));
         }
         Assertions.assertFalse(Files.exists(knownHosts));
+        Assertions.assertFalse(Files.exists(temporaryDirectory.resolve("known_hosts2")));
+    }
+
+    @Test
+    public void defaultFilesAreLoadedInExistingOrder() throws Exception {
+        List<Path> loadedFiles = new ArrayList<>();
+        try (SSHClient client = new SSHClient() {
+            @Override
+            public void loadKnownHosts(@NotNull File location) throws IOException {
+                loadedFiles.add(location.toPath());
+                super.loadKnownHosts(location);
+            }
+        }) {
+            SSHJSessionController.loadDefaultKnownHosts(client, temporaryDirectory.toFile());
+        }
+
+        Assertions.assertEquals(
+            List.of(temporaryDirectory.resolve("known_hosts"), temporaryDirectory.resolve("known_hosts2")),
+            loadedFiles
+        );
     }
 
     @NotNull
@@ -97,9 +122,13 @@ public class KnownHostsVerifierTest extends DBeaverUnitTest {
         @Nullable SSHHostConfiguration host
     ) throws IOException {
         try (SSHClient client = new SSHClient()) {
-            DBException error = Assertions.assertThrows(DBException.class, () ->
-                SSHJSessionController.loadKnownHosts(client, knownHosts.toFile(), host)
-            );
+            DBException error = Assertions.assertThrows(DBException.class, () -> {
+                if (host != null) {
+                    SSHJSessionController.loadKnownHosts(client, knownHosts.toFile(), host);
+                } else {
+                    SSHJSessionController.loadDefaultKnownHosts(client, knownHosts.getParent().toFile());
+                }
+            });
 
             Assertions.assertTrue(error.getMessage().contains(knownHosts.toAbsolutePath().toString()));
             Assertions.assertTrue(error.getMessage().contains("readable"));
