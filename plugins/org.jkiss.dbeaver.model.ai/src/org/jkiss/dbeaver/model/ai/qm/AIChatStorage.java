@@ -21,9 +21,11 @@ package org.jkiss.dbeaver.model.ai.qm;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,6 +36,19 @@ public interface AIChatStorage {
 
     @NotNull
     List<QMAIConversationHistory> findConversations(@NotNull String sessionId) throws DBException;
+
+    @NotNull
+    default List<QMAIConversationHistory> findConversationSummaries(@NotNull String sessionId) throws DBException {
+        return findConversations(sessionId);
+    }
+
+    @NotNull
+    default Map<Integer, List<AIImageAttachment>> findConversationImages(
+        @NotNull String sessionId,
+        @NotNull UUID conversationId
+    ) throws DBException {
+        return Map.of();
+    }
 
     void saveConversation(
         @NotNull String sessionId,

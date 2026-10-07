@@ -90,6 +90,11 @@ public class PromptComposite extends Composite {
             }
 
             @Override
+            public void conversationRemoved(@NotNull AIChatConversation conversation) {
+                UIUtils.asyncExec(() -> discardDraft(conversation.getId()));
+            }
+
+            @Override
             public void busyChanged(boolean busy) {
                 if (chat.isDisposed()) {
                     return;
@@ -220,13 +225,18 @@ public class PromptComposite extends Composite {
         if (isDisposed()) {
             return;
         }
+        if (!chat.getChatSession().hasConversation(conversationId)
+            && !conversationId.equals(chat.getActiveConversation().getId())) {
+            return;
+        }
         boolean currentDraft = conversationId.equals(draftConversationId);
         Draft draft = drafts.getOrDefault(conversationId, new Draft("", List.of()));
         List<AIImageAttachment> targetImages = currentDraft ? images : draft.images();
-        int bytes = targetImages.stream().mapToInt(image -> image.data().length()).sum()
-            + attachments.stream().mapToInt(image -> image.data().length()).sum();
-        if (targetImages.size() + attachments.size() > AIImageAttachment.MAX_IMAGES
-            || bytes > (AIImageAttachment.MAX_IMAGE_BYTES + 2) / 3 * 4) {
+        List<AIImageAttachment> combined = new ArrayList<>(targetImages);
+        combined.addAll(attachments);
+        try {
+            AIImageAttachment.validateImages(combined);
+        } catch (IllegalArgumentException exception) {
             DBWorkbench.getPlatformUI().showError(AIChatMessagesUI.ai_chat_image_error, AIChatMessagesUI.ai_chat_image_limit);
             return;
         }
@@ -235,8 +245,6 @@ public class PromptComposite extends Composite {
             refreshImages();
             setFocusOnPrompt();
         } else {
-            List<AIImageAttachment> combined = new ArrayList<>(targetImages);
-            combined.addAll(attachments);
             drafts.put(conversationId, new Draft(draft.text(), List.copyOf(combined)));
         }
     }
@@ -246,11 +254,17 @@ public class PromptComposite extends Composite {
     }
 
     public void imageLoadingStarted(@NotNull UUID conversationId) {
+        if (isDisposed()) {
+            return;
+        }
         loadingImages.merge(conversationId, 1, Integer::sum);
         updateSendButton();
     }
 
     public void imageLoadingFinished(@NotNull UUID conversationId) {
+        if (isDisposed()) {
+            return;
+        }
         loadingImages.computeIfPresent(conversationId, (id, count) -> count > 1 ? count - 1 : null);
         updateSendButton();
     }
@@ -268,7 +282,9 @@ public class PromptComposite extends Composite {
         if (draftConversationId.equals(conversationId)) {
             return;
         }
-        drafts.put(draftConversationId, new Draft(getPromptText(), List.copyOf(images)));
+        if (chat.getChatSession().hasConversation(draftConversationId)) {
+            drafts.put(draftConversationId, new Draft(getPromptText(), List.copyOf(images)));
+        }
         draftConversationId = conversationId;
         Draft draft = drafts.getOrDefault(draftConversationId, new Draft("", List.of()));
         setPromptText(draft.text());
@@ -276,6 +292,19 @@ public class PromptComposite extends Composite {
         images.addAll(draft.images());
         refreshImages();
         updateSendButton();
+    }
+
+    private void discardDraft(@NotNull UUID conversationId) {
+        if (isDisposed()) {
+            return;
+        }
+        drafts.remove(conversationId);
+        loadingImages.remove(conversationId);
+        if (conversationId.equals(draftConversationId)) {
+            setPromptText("");
+            images.clear();
+            refreshImages();
+        }
     }
 
     public void draftSubmitted() {

@@ -22,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowData;
@@ -38,7 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -118,15 +117,7 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
                         return Status.CANCEL_STATUS;
                     }
                     try {
-                        ImageData[] decoded = new ImageLoader().load(new ByteArrayInputStream(request.image().getBytes()));
-                        if (decoded.length == 0) {
-                            continue;
-                        }
-                        ImageData source = decoded[0];
-                        double scale = Math.min(1, (double) (AIImageAttachmentTile.PREVIEW_SIZE * 2)
-                            / Math.max(source.width, source.height));
-                        ImageData thumbnail = source.scaledTo(Math.max(1, (int) Math.round(source.width * scale)),
-                            Math.max(1, (int) Math.round(source.height * scale)));
+                        ImageData thumbnail = AIImageThumbnail.read(request.image().getBytes(), AIImageAttachmentTile.PREVIEW_SIZE * 2);
                         if (monitor.isCanceled()) {
                             return Status.CANCEL_STATUS;
                         }
@@ -136,7 +127,7 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
                                 request.tile().setThumbnail(thumbnail);
                             }
                         });
-                    } catch (SWTException | IllegalArgumentException exception) {
+                    } catch (IOException | SWTException | IllegalArgumentException exception) {
                         log.debug("Cannot create image attachment thumbnail", exception);
                     }
                 }

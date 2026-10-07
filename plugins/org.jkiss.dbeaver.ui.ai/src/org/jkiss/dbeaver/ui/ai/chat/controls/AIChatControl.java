@@ -208,6 +208,46 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         //promptComposite.setPromptText(conversation.getInitialPrompt());
 
         chatSession.notifyListeners(AIChatListener::conversationChanged, conversation);
+        loadConversationImages(conversation);
+    }
+
+    private void loadConversationImages(@NotNull AIChatConversation conversation) {
+        if (conversation.areImagesLoaded()) {
+            return;
+        }
+        UUID conversationId = conversation.getId();
+        if (promptComposite != null) {
+            promptComposite.imageLoadingStarted(conversationId);
+        }
+        new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    chatSession.loadConversationImages(monitor, conversation);
+                    UIUtils.asyncExec(() -> {
+                        if (!isDisposed() && activeConversation == conversation) {
+                            chatSession.notifyListeners(AIChatListener::conversationChanged, conversation);
+                        }
+                    });
+                    return Status.OK_STATUS;
+                } catch (DBException exception) {
+                    UIUtils.asyncExec(() -> {
+                        if (!isDisposed() && activeConversation == conversation) {
+                            DBWorkbench.getPlatformUI().showError(
+                                AIChatMessagesUI.ai_chat_image_error, AIChatMessagesUI.ai_chat_image_load_error, exception);
+                        }
+                    });
+                    return Status.CANCEL_STATUS;
+                } finally {
+                    UIUtils.asyncExec(() -> {
+                        if (!isDisposed() && promptComposite != null) {
+                            promptComposite.imageLoadingFinished(conversationId);
+                        }
+                    });
+                }
+            }
+        }.schedule();
     }
 
     @NotNull

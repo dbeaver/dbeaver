@@ -28,6 +28,7 @@ import org.jkiss.utils.UUIDv7;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -71,6 +72,7 @@ public class AIChatConversation {
      */
     private int nextMessageId;
     private State state = State.NONE;
+    private volatile boolean imagesLoaded = true;
     private CompletableFuture<AIChatConversation> finishFuture;
 
     public AIChatConversation(
@@ -139,6 +141,26 @@ public class AIChatConversation {
     @NotNull
     public List<AIChatMessage> getMessages() {
         return messages.stream().filter(message -> !message.pending()).toList();
+    }
+
+    public boolean areImagesLoaded() {
+        return imagesLoaded;
+    }
+
+    public void setImagesLoaded(boolean imagesLoaded) {
+        this.imagesLoaded = imagesLoaded;
+    }
+
+    public void restoreImages(@NotNull Map<Integer, List<AIImageAttachment>> images) {
+        List<AIChatMessage> restored = messages.stream().map(message -> {
+            List<AIImageAttachment> attachments = images.get(message.id());
+            return attachments == null ? message
+                : new AIChatMessage(message.id(), message.message().withImages(attachments), message.pending());
+        }).toList();
+        for (int index = 0; index < restored.size(); index++) {
+            messages.set(index, restored.get(index));
+        }
+        imagesLoaded = true;
     }
 
     @Nullable

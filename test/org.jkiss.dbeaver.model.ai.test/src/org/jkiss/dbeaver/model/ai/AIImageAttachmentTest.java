@@ -76,6 +76,25 @@ public class AIImageAttachmentTest {
     }
 
     @Test
+    public void enforcesImageCountInTheModel() {
+        Assertions.assertEquals(AIImageAttachment.MAX_IMAGES, AIMessage.userMessage("")
+            .withImages(java.util.Collections.nCopies(AIImageAttachment.MAX_IMAGES, image())).getImages().size());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> AIMessage.userMessage("")
+            .withImages(java.util.Collections.nCopies(AIImageAttachment.MAX_IMAGES + 1, image())));
+    }
+
+    @Test
+    public void enforcesDecodedSizeIncludingBase64Padding() {
+        String data = "A".repeat((AIImageAttachment.MAX_IMAGE_BYTES + 2) / 3 * 4);
+        AIImageAttachment boundary = new AIImageAttachment("boundary.png", "image/png", data.substring(0, data.length() - 1) + "=");
+        Assertions.assertEquals(AIImageAttachment.MAX_IMAGE_BYTES, boundary.getByteSize());
+        Assertions.assertEquals(List.of(boundary), AIMessage.userMessage("").withImages(List.of(boundary)).getImages());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new AIImageAttachment("large.png", "image/png", data));
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> AIMessage.userMessage("").withImages(List.of(boundary, image())));
+    }
+
+    @Test
     public void retainsImagesWhenTruncatingText() {
         List<AIImageAttachment> attachments = new ArrayList<>(List.of(image()));
         AIMessage message = AIMessage.userMessage("Describe this image").withImages(attachments);
@@ -150,7 +169,7 @@ public class AIImageAttachmentTest {
     public void addsCopilotVisionHeaderForBothApisOnlyWhenImagesArePresent() throws Exception {
         try (var executor = Executors.newSingleThreadExecutor();
             ServerSocket server = new ServerSocket(0, 4, InetAddress.getByName("127.0.0.1"))) {
-            // Leave time for class loading while the full EE test reactor runs concurrently.
+            // leave time for class loading while the full EE test reactor runs concurrently.
             server.setSoTimeout(30_000);
             var requests = CompletableFuture.supplyAsync(() -> captureCopilotRequests(server), executor);
             var session = new CopilotSessionToken("test-token",

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.Set;
 
 public record AIImageAttachment(@NotNull String name, @NotNull String mediaType, @NotNull String data) {
@@ -31,8 +32,23 @@ public record AIImageAttachment(@NotNull String name, @NotNull String mediaType,
         if (!MEDIA_TYPES.contains(mediaType)) {
             throw new IllegalArgumentException("Unsupported image format. Use PNG, JPEG, GIF or WebP.");
         }
-        if (data.isEmpty() || data.length() > (MAX_IMAGE_BYTES + 2) / 3 * 4) {
+        if (data.isEmpty() || data.length() > (MAX_IMAGE_BYTES + 2) / 3 * 4 || getByteSize(data) > MAX_IMAGE_BYTES) {
             throw new IllegalArgumentException("Image must contain data and be no larger than 20 MB.");
+        }
+    }
+
+    public int getByteSize() {
+        return getByteSize(data);
+    }
+
+    private static int getByteSize(@NotNull String data) {
+        int padding = data.endsWith("==") ? 2 : data.endsWith("=") ? 1 : 0;
+        return data.length() * 3 / 4 - padding;
+    }
+
+    public static void validateImages(@NotNull List<AIImageAttachment> images) {
+        if (images.size() > MAX_IMAGES || images.stream().mapToLong(AIImageAttachment::getByteSize).sum() > MAX_IMAGE_BYTES) {
+            throw new IllegalArgumentException("Attach no more than 10 images with a total size of 20 MB or less.");
         }
     }
 

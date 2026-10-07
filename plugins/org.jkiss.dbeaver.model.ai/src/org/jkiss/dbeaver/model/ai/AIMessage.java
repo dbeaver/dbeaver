@@ -242,7 +242,9 @@ public class AIMessage {
             throw new IllegalArgumentException("Only user messages can contain image attachments.");
         }
         AIMessage message = new AIMessage(role, content, displayMessage, time, meta, error);
-        message.images = List.copyOf(images);
+        List<AIImageAttachment> attachments = List.copyOf(images);
+        AIImageAttachment.validateImages(attachments);
+        message.images = attachments;
         return message;
     }
 

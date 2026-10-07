@@ -118,7 +118,7 @@ public class QMAIChatHistoryMapper {
             profile = null;
         }
 
-        return new AIChatConversation(
+        AIChatConversation conversation = new AIChatConversation(
             UUID.fromString(history.getId()),
             history.getCaption(),
             generator,
@@ -127,6 +127,8 @@ public class QMAIChatHistoryMapper {
             history.getNextMessageId(),
             profile
         );
+        conversation.setImagesLoaded(history.areImagesLoaded());
+        return conversation;
     }
 
     @NotNull
