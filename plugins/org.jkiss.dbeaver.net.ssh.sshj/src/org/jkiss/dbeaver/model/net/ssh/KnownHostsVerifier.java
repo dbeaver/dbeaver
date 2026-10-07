@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2026 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,91 +21,21 @@ import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.function.ThrowableSupplier;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.ArrayList;
 import java.util.List;
 
 public class KnownHostsVerifier extends OpenSSHKnownHosts {
     private final SSHHostConfiguration actualHostConfiguration;
-    @Nullable
-    private OpenSSHKnownHosts secondaryKnownHosts;
 
     public KnownHostsVerifier(@NotNull File khFile, @NotNull SSHHostConfiguration actualHostConfiguration) throws IOException {
         super(khFile);
         this.actualHostConfiguration = actualHostConfiguration;
-    }
-
-    @NotNull
-    static KnownHostsVerifier create(
-        @NotNull File knownHostsFile,
-        @NotNull SSHHostConfiguration actualHostConfiguration
-    ) throws DBException {
-        return load(knownHostsFile, () -> new KnownHostsVerifier(knownHostsFile, actualHostConfiguration));
-    }
-
-    @NotNull
-    static KnownHostsVerifier create(
-        @NotNull File knownHostsFile,
-        @Nullable File secondaryKnownHostsFile,
-        @NotNull SSHHostConfiguration actualHostConfiguration
-    ) throws DBException {
-        KnownHostsVerifier verifier = create(knownHostsFile, actualHostConfiguration);
-        if (secondaryKnownHostsFile != null) {
-            verifier.secondaryKnownHosts = load(secondaryKnownHostsFile);
-        }
-        return verifier;
-    }
-
-    @NotNull
-    static OpenSSHKnownHosts load(@NotNull File knownHostsFile) throws DBException {
-        return load(knownHostsFile, () -> new OpenSSHKnownHosts(knownHostsFile));
-    }
-
-    @NotNull
-    private static <T extends OpenSSHKnownHosts> T load(
-        @NotNull File knownHostsFile,
-        @NotNull ThrowableSupplier<T, IOException> loader
-    ) throws DBException {
-        final T verifier;
-        final boolean skippedEntries;
-        try {
-            verifier = loader.get();
-            if (knownHostsFile.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(knownHostsFile))) {
-                    // SSHJ silently drops lines when parsing throws SSHException or SSHRuntimeException.
-                    skippedEntries = reader.lines().count() != verifier.entries().size();
-                }
-            } else {
-                skippedEntries = false;
-            }
-        } catch (IOException | RuntimeException e) {
-            throw new DBException(
-                "Could not load SSH known hosts file '" + knownHostsFile.getAbsolutePath() +
-                    "'. Check that the file is readable and contains valid OpenSSH host keys.",
-                e
-            );
-        }
-        // SSHJ may preserve malformed lines instead of throwing a decoding exception.
-        if (skippedEntries || verifier.entries().stream().anyMatch(entry ->
-            entry instanceof BadHostEntry && !entry.getLine().isBlank() && !entry.getLine().stripLeading().startsWith("#")
-        )) {
-            throw new DBException(
-                "SSH known hosts file '" + knownHostsFile.getAbsolutePath() +
-                    "' contains invalid host key entries. Correct or remove the invalid entries and try again."
-            );
-        }
-        return verifier;
     }
 
     @Override
@@ -113,31 +43,17 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
         if (hostname.equals(DBConstants.HOST_LOCALHOST) || hostname.equals(DBConstants.HOST_LOCALHOST_IP)) {
             return true;
         } else {
-            if (secondaryKnownHosts != null) {
-                if (secondaryKnownHosts.verify(hostname, port, key)) {
-                    return true;
-                }
-                String algorithm = KeyType.fromKey(key).toString();
-                if (secondaryKnownHosts.findExistingAlgorithms(hostname, port).contains(algorithm) &&
-                    !super.findExistingAlgorithms(hostname, port).contains(algorithm)
-                ) {
-                    // A known secondary key has changed; do not treat it as a new host in the primary file.
-                    return false;
-                }
-            }
             return super.verify(hostname, port, key);
         }
     }
 
     @Override
     public List<String> findExistingAlgorithms(String hostname, int port) {
-        String actualHostname = hostname.equals(DBConstants.HOST_LOCALHOST) ? actualHostConfiguration.hostname() : hostname;
-        int actualPort = hostname.equals(DBConstants.HOST_LOCALHOST) ? actualHostConfiguration.port() : port;
-        List<String> algorithms = new ArrayList<>(super.findExistingAlgorithms(actualHostname, actualPort));
-        if (secondaryKnownHosts != null) {
-            algorithms.addAll(secondaryKnownHosts.findExistingAlgorithms(actualHostname, actualPort));
+        if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
+            return super.findExistingAlgorithms(actualHostConfiguration.hostname(), actualHostConfiguration.port());
+        } else {
+            return super.findExistingAlgorithms(hostname, port);
         }
-        return algorithms.stream().distinct().toList();
     }
 
     @Override
