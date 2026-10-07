@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
@@ -24,13 +25,13 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import javax.imageio.ImageIO;
 
 class AIImageDimensionsTest {
     @Test
@@ -72,7 +73,8 @@ class AIImageDimensionsTest {
         Assertions.assertEquals(48169, OpenAiUtils.estimateImageTokens("gpt-4o-mini", invalid));
     }
 
-    private static byte[] webp(String type, byte[] payload) {
+    @NotNull
+    private static byte[] webp(@NotNull String type, @NotNull byte[] payload) {
         return ByteBuffer.allocate(20 + payload.length + (payload.length & 1)).order(ByteOrder.LITTLE_ENDIAN)
             .put("RIFF".getBytes(StandardCharsets.US_ASCII)).putInt(12 + payload.length)
             .put("WEBP".getBytes(StandardCharsets.US_ASCII)).put(type.getBytes(StandardCharsets.US_ASCII))

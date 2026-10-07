@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessage;
@@ -80,6 +81,7 @@ class ChatImageTruncatorTest {
         Assertions.assertNull(builder(5000).build().tryTruncate(List.of(latest)));
     }
 
+    @NotNull
     private static ChatTruncator.Builder builder(int maxTokens) {
         return ChatTruncator.builder().maxTokens(maxTokens).reserveForSystem(20).reserveForReply(20)
             .reserveForOverhead(10).tokenCounter(new DummyTokenCounter());

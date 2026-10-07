@@ -70,6 +70,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -523,7 +524,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                                 return Status.CANCEL_STATUS;
                             }
                             byte[] bytes;
-                            try (java.io.InputStream input = java.nio.file.Files.newInputStream(file)) {
+                            try (InputStream input = Files.newInputStream(file)) {
                                 bytes = input.readNBytes(AIImageAttachment.MAX_IMAGE_BYTES + 1);
                             }
                             totalBytes += bytes.length;

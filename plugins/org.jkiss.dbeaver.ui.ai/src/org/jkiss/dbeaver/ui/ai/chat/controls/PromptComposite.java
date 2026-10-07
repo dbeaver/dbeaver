@@ -79,7 +79,7 @@ public class PromptComposite extends Composite {
         this.chat = chat;
         draftConversationId = chat.getActiveConversation().getId();
 
-        IWorkbenchPartSite site = chat.getController().getSite();
+        final IWorkbenchPartSite site = chat.getController().getSite();
 
         chat.getChatSession().addListener(new AIChatListener() {
             @Override

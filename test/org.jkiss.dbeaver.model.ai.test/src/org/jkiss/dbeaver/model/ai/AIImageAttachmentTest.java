@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
@@ -33,10 +34,15 @@ import org.jkiss.dbeaver.model.ai.impl.DummyTokenCounter;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatHistoryMapper;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatMessage;
+import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -135,37 +141,37 @@ public class AIImageAttachmentTest {
     @Test
     public void addsCopilotVisionHeaderForBothApisOnlyWhenImagesArePresent() throws Exception {
         var session = new CopilotSessionToken("test-token", null);
-        var chatMethod = CopilotClientChat.class.getDeclaredMethod(
-            "createCompletionRequest", CopilotChatRequest.class, CopilotSessionToken.class);
-        chatMethod.setAccessible(true);
-        var responsesConstructor = CopilotClientResponses.class.getDeclaredConstructor(String.class);
-        responsesConstructor.setAccessible(true);
-        var responsesClient = responsesConstructor.newInstance("https://github.com");
-        var responsesMethod = CopilotClientResponses.class.getDeclaredMethod(
-            "createCompletionRequest", OAIResponsesRequest.class, CopilotSessionToken.class);
-        responsesMethod.setAccessible(true);
-        var chatClient = new CopilotClientChat("https://github.com");
-        try {
+        List<HttpRequest> requests = new ArrayList<>();
+        List<HttpClient> transports = new ArrayList<>();
+        try (var clients = Mockito.mockConstruction(MonitoredHttpClient.class, (client, context) -> {
+            transports.add((HttpClient) context.arguments().getFirst());
+            Mockito.when(client.send(Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
+                requests.add(invocation.getArgument(1));
+                return "{}";
+            });
+        }); var chatClient = new CopilotClientChat("https://github.com");
+            var responsesClient = new CopilotClientResponses("https://github.com") { }) {
             for (boolean withImages : List.of(false, true)) {
                 AIMessage message = AIMessage.userMessage("Describe");
                 if (withImages) {
                     message = message.withImages(List.of(image()));
                 }
-                var chat = CopilotChatRequest.builder().withModel("test-model")
+                final var chat = CopilotChatRequest.builder().withModel("test-model")
                     .withMessages(CopilotMessage.from(message)).withTools(List.of()).build();
                 var responses = new OAIResponsesRequest();
                 responses.model = "test-model";
                 responses.input = List.of(OAIMessageFactory.fromAIMessage(message));
-                for (HttpRequest request : List.of(
-                    (HttpRequest) chatMethod.invoke(chatClient, chat, session),
-                    (HttpRequest) responsesMethod.invoke(responsesClient, responses, session))) {
+                requests.clear();
+                chatClient.chat(new VoidProgressMonitor(), session, chat);
+                responsesClient.chat(new VoidProgressMonitor(), session, new Pair<>(responses, chat));
+                Assertions.assertEquals(2, requests.size());
+                for (HttpRequest request : requests) {
                     Assertions.assertEquals(withImages ? List.of("true") : List.of(),
                         request.headers().allValues("Copilot-Vision-Request"));
                 }
             }
         } finally {
-            chatClient.close();
-            responsesClient.close();
+            transports.forEach(HttpClient::close);
         }
     }
 
@@ -190,6 +196,7 @@ public class AIImageAttachmentTest {
         Assertions.assertFalse(new AIModel("text-model", 100, Set.of(AIModelFeature.CHAT), 0, false).imageInputSupported());
     }
 
+    @NotNull
     private static AIAssistant unusedAssistant() {
         return (AIAssistant) java.lang.reflect.Proxy.newProxyInstance(AIAssistant.class.getClassLoader(),
             new Class<?>[]{AIAssistant.class}, (proxy, method, arguments) -> {
@@ -197,6 +204,7 @@ public class AIImageAttachmentTest {
             });
     }
 
+    @NotNull
     private static AIImageAttachment image() {
         return AIImageAttachment.fromBytes("test.png", Base64.getDecoder().decode(PNG));
     }

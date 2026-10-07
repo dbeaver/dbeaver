@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Iterator;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 public record AIImageDimensions(int width, int height) {
     @NotNull

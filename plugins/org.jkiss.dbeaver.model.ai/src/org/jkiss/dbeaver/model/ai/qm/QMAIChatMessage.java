@@ -49,6 +49,7 @@ public record QMAIChatMessage(
     ) {
         this(id, content, displayMessage, role, functionCall, functionResult, timestamp, deleted, meta, null);
     }
+
     @NotNull
     @Override
     public String toString() {
