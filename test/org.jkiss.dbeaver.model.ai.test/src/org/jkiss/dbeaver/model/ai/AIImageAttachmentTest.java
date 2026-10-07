@@ -67,7 +67,7 @@ public class AIImageAttachmentTest {
         Assertions.assertArrayEquals(Base64.getDecoder().decode(PNG), image.getBytes());
         Assertions.assertEquals("data:image/png;base64," + PNG, image.toDataUrl());
         Assertions.assertThrows(IllegalArgumentException.class,
-            () -> AIImageAttachment.fromBytes("fake.png", "not an image".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+            () -> AIImageAttachment.fromBytes("fake.png", "not an image".getBytes(StandardCharsets.UTF_8)));
         Assertions.assertThrows(IllegalArgumentException.class,
             () -> AIImageAttachment.fromBytes("empty.png", new byte[0]));
         Assertions.assertThrows(IllegalArgumentException.class,
