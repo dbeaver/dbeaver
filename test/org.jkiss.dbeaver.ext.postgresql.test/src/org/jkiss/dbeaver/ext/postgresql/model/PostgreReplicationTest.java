@@ -544,6 +544,46 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void savingSubscriptionConnectionReplacementExecutesAlterConnection() throws Exception {
+        PostgreSubscription subscription = new PostgreSubscription(database, "subscription");
+        subscription.setPersisted(true);
+        assertEquals("", subscription.getConnectionInfo());
+        PostgreExecutionContext context = mock(PostgreExecutionContext.class);
+        when(context.isConnected()).thenReturn(true);
+        PostgreDataSource subscriber = mock(PostgreDataSource.class);
+        DBPDataSourceInfo info = mock(DBPDataSourceInfo.class);
+        when(info.supportsTransactionsForDDL()).thenReturn(true);
+        when(subscriber.getInfo()).thenReturn(info);
+        when(context.getDataSource()).thenReturn(subscriber);
+        when(context.getAdapter(DBCTransactionManager.class)).thenReturn(context);
+        when(context.isSupportsTransactions()).thenReturn(true);
+        when(context.isAutoCommit()).thenReturn(false);
+        JDBCSession session = mock(JDBCSession.class);
+        when(context.openSession(eq(monitor), eq(DBCExecutionPurpose.META_DDL), anyString())).thenReturn(session);
+        when(session.getDataSource()).thenReturn(dataSource);
+        when(session.getExecutionContext()).thenReturn(context);
+        when(session.isLoggingEnabled()).thenReturn(true);
+        JDBCStatement statement = mock(JDBCStatement.class);
+        when(session.prepareStatement(any(), anyString(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(statement);
+        TestCommandContext commands = new TestCommandContext(context, false);
+        PropertySourceEditable source = new PropertySourceEditable(commands, subscription, subscription);
+        source.collectProperties();
+        assertFalse(commands.isDirty());
+        source.setPropertyValue(monitor, "connectionInfo", "host=publisher dbname=replication user=replicator password=O'Brien");
+        assertTrue(commands.isDirty());
+        commands.saveChanges(monitor, Map.of());
+        verify(session).prepareStatement(DBCStatementType.SCRIPT,
+            "ALTER SUBSCRIPTION subscription CONNECTION 'host=publisher dbname=replication user=replicator password=O''Brien'",
+            false, false, false);
+        InOrder execution = inOrder(session, statement, context);
+        execution.verify(session).enableLogging(false);
+        execution.verify(statement).executeStatement();
+        execution.verify(session).enableLogging(true);
+        execution.verify(context).commit(session);
+        assertFalse(commands.isDirty());
+    }
+
+    @Test
     public void persistedSubscriptionAppliesNewSettingsBeforeEnablingReplication() throws Exception {
         PostgreSubscription subscription = newSubscription();
         subscription.setPersisted(true);
