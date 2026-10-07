@@ -377,11 +377,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
             SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
             if (CommonUtils.isEmpty(prevKeyWord)) {
-                allowedKeywords = new HashSet<>();
-                Collections.addAll(allowedKeywords, sqlDialect.getQueryKeywords());
-                Collections.addAll(allowedKeywords, sqlDialect.getDMLKeywords());
-                Collections.addAll(allowedKeywords, sqlDialect.getDDLKeywords());
-                Collections.addAll(allowedKeywords, sqlDialect.getExecuteKeywords());
+                allowedKeywords = new HashSet<>(sqlDialect.getCompletionStatementKeywords());
+                if (CommonUtils.isEmpty(request.getWordPart())) {
+                    matchedKeywords = new ArrayList<>(allowedKeywords);
+                    matchedKeywords.sort(String.CASE_INSENSITIVE_ORDER);
+                }
             } else if (ArrayUtils.contains(sqlDialect.getQueryKeywords(), prevKeyWord.toUpperCase(Locale.ENGLISH))) {
                 // SELECT ..
                 // Limit with FROM if we already have some expression

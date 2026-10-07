@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -133,6 +134,30 @@ public class EditorContributionDescriptor extends AbstractContextDescriptor impl
             return supportsProvider;
         }
         return supportedDrivers.contains(dataSource.getDriver().getId());
+    }
+
+    boolean supportsExactDataSource(@NotNull DBPDataSourceContainer dataSource) {
+        if (supportedDataSources.isEmpty()) {
+            return false;
+        }
+        DBPDataSourceProviderDescriptor provider = dataSource.getDriver().getProviderDescriptor();
+        return provider != null && supportedDataSources.contains(provider.getId());
+    }
+
+    boolean supportsInheritedDataSource(@NotNull DBPDataSourceContainer dataSource) {
+        if (supportedDataSources.isEmpty()) {
+            return false;
+        }
+        DBPDataSourceProviderDescriptor provider = dataSource.getDriver().getProviderDescriptor();
+        if (provider == null || supportedDataSources.contains(provider.getId())) {
+            return false;
+        }
+        for (DBPDataSourceProviderDescriptor parent = provider.getParentProvider(); parent != null; parent = parent.getParentProvider()) {
+            if (supportedDataSources.contains(parent.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

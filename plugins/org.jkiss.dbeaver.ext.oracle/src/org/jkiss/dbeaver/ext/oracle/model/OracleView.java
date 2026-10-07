@@ -94,7 +94,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
-    private String viewText;
+    protected String viewText;
     // Generated from ALL_VIEWS
     private String viewSourceText;
     private OracleDDLFormat currentDDLFormat;

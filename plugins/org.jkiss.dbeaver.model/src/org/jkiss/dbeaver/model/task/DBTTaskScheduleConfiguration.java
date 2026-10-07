@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.jkiss.code.NotNull;
+
+import java.util.*;
 
 /**
  * Scheduled task configuration
@@ -63,4 +62,22 @@ public class DBTTaskScheduleConfiguration {
     public int executionMinute;
 
     public final Map<String, Object> properties = new HashMap<>();
+
+    public DBTTaskScheduleConfiguration() {
+    }
+
+    public DBTTaskScheduleConfiguration(@NotNull DBTTaskScheduleConfiguration source) {
+        taskName = source.taskName;
+        taskDescription = source.taskDescription;
+        frequency = source.frequency;
+        startTime = source.startTime == null ? null : (Date) source.startTime.clone();
+        endTime = source.endTime == null ? null : (Date) source.endTime.clone();
+        recurrence = source.recurrence;
+        days = source.days == null ? null : new ArrayList<>(source.days);
+        months = source.months == null ? null : new ArrayList<>(source.months);
+        repetitionInterval = source.repetitionInterval;
+        maxDuration = source.maxDuration;
+        executionMinute = source.executionMinute;
+        properties.putAll(source.properties);
+    }
 }
