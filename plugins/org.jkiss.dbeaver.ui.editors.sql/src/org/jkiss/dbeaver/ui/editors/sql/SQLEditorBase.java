@@ -22,6 +22,9 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -148,6 +151,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
+    private final AbstractUIJob themeUpdateJob;
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
@@ -161,26 +165,27 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         super();
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
-        themeListener = new IPropertyChangeListener() {
-            long lastUpdateTime = 0;
+        themeUpdateJob = new AbstractUIJob("SQL editor theme update") {
+            {
+                setSystem(true);
+            }
 
+            @NotNull
+            @Override
+            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+                refreshSyntaxColors();
+                return Status.OK_STATUS;
+            }
+        };
+        themeListener = new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
-                    if (lastUpdateTime > 0 && System.currentTimeMillis() - lastUpdateTime < 500) {
-                        // Do not update too often (theme change may trigger this hundreds of times)
-                        return;
+                    switch (themeUpdateJob.getState()) {
+                        case Job.WAITING, Job.SLEEPING -> themeUpdateJob.cancel();
                     }
-                    lastUpdateTime = System.currentTimeMillis();
-                    UIUtils.asyncExec(() -> {
-                        ISourceViewer sourceViewer = getSourceViewer();
-                        if (sourceViewer != null) {
-                            reloadSyntaxRules();
-                            // Reconfigure to let comments/strings colors to take effect
-                            sourceViewer.configure(getSourceViewerConfiguration());
-                        }
-                    });
+                    themeUpdateJob.schedule(1000);
                 }
             }
         };
@@ -193,6 +198,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         completionContext = new SQLEditorCompletionContext(this);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
+    }
+
+    private void refreshSyntaxColors() {
+        ISourceViewer sourceViewer = getSourceViewer();
+        if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
+            reloadSyntaxRules();
+            // Reconfigure to let comments/strings colors to take effect
+            sourceViewer.configure(getSourceViewerConfiguration());
+        }
     }
 
     @Override
@@ -726,6 +740,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     @Override
     public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
+        themeUpdateJob.cancel();
         if (this.semanticMarkersManager != null) {
             this.semanticMarkersManager.dispose();
         }

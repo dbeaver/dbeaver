@@ -76,8 +76,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
                 .toList();
         }
         String baseUrl = properties.getBaseUrl();
-        boolean defaultEndpoint = CommonUtils.isEmpty(baseUrl)
-            || OpenAIClientResponses.OPENAI_ENDPOINT.equals(baseUrl.endsWith("/") ? baseUrl : baseUrl + "/");
+        boolean defaultEndpoint = OpenAIBaseProperties.isDefaultBaseUrl(baseUrl);
         return openAiService.getInstance().getModels(monitor)
             .stream()
             .map(model -> defaultEndpoint ? OpenAIModels.KNOWN_MODELS.getOrDefault(
@@ -178,14 +177,14 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             return new OpenAIAccountClient(openAIProperties);
         }
         String token = properties.getToken();
-        if (token == null || token.isEmpty()) {
+        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(token)) {
             throw new DBException("OpenAI API token is not set");
         }
         String baseUrl = properties.getBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
-        return OpenAIClientResponses.createClient(baseUrl, token);
+        return OpenAIClientResponses.createClient(baseUrl, token, properties.getCustomHeaders());
     }
 
     @Nullable

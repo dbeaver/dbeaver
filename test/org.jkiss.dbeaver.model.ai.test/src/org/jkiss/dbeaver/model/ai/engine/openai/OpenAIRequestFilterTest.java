@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,13 +25,15 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Map;
 
 public class OpenAIRequestFilterTest extends DBeaverUnitTest {
 
     private static final URI ENDPOINT = URI.create("http://localhost:8000/v1/responses");
 
     @Test
-    public void filterShouldKeepRequestTimeout() {
+    public void filterShouldKeepRequestTimeout() throws DBException {
         //given
         var timeout = Duration.ofSeconds(42);
         var request = newRequestBuilder().timeout(timeout).build();
@@ -41,7 +44,7 @@ public class OpenAIRequestFilterTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void filterShouldKeepRequestVersion() {
+    public void filterShouldKeepRequestVersion() throws DBException {
         //given
         var request = newRequestBuilder().version(HttpClient.Version.HTTP_1_1).build();
         //when
@@ -51,7 +54,7 @@ public class OpenAIRequestFilterTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void filterShouldKeepUriMethodAndBody() {
+    public void filterShouldKeepUriMethodAndBody() throws DBException {
         //given
         var body = "{\"model\":\"test\"}";
         var request = newRequestBuilder().POST(HttpRequest.BodyPublishers.ofString(body)).build();
@@ -64,7 +67,7 @@ public class OpenAIRequestFilterTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void filterShouldAddAuthorizationHeader() {
+    public void filterShouldAddAuthorizationHeader() throws DBException {
         //given
         var request = newRequestBuilder().build();
         //when
@@ -74,7 +77,7 @@ public class OpenAIRequestFilterTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void filterShouldSetContentTypeOnlyWhenRequested() {
+    public void filterShouldSetContentTypeOnlyWhenRequested() throws DBException {
         //given
         var request = newRequestBuilder().build();
         var filter = new OpenAIRequestFilter("token");
@@ -84,6 +87,73 @@ public class OpenAIRequestFilterTest extends DBeaverUnitTest {
         //then
         Assertions.assertEquals("application/json", withContentType.headers().firstValue("Content-Type").orElseThrow());
         Assertions.assertTrue(withoutContentType.headers().firstValue("Content-Type").isEmpty());
+    }
+
+    @Test
+    public void filterShouldOmitAuthorizationWithoutToken() throws DBException {
+        for (String token : Arrays.asList(null, "", "  ")) {
+            var result = new OpenAIRequestFilter(token).filter(newRequestBuilder().build(), true);
+            Assertions.assertTrue(result.headers().firstValue("Authorization").isEmpty());
+            Assertions.assertEquals("application/json", result.headers().firstValue("Content-Type").orElseThrow());
+        }
+    }
+
+    @Test
+    public void customHeadersShouldOverrideDefaultsAndPreserveOtherHeaders() throws DBException {
+        var request = newRequestBuilder().header("X-Existing", "existing").header("X-Custom", "old").build();
+        var filter = new OpenAIRequestFilter("token", Map.of(
+            "authorization", "Custom secret",
+            "content-type", "application/custom+json",
+            "x-custom", "new"
+        ));
+
+        var result = filter.filter(request, true);
+
+        Assertions.assertEquals(Arrays.asList("Custom secret"), result.headers().allValues("Authorization"));
+        Assertions.assertEquals(Arrays.asList("application/custom+json"), result.headers().allValues("Content-Type"));
+        Assertions.assertEquals(Arrays.asList("new"), result.headers().allValues("X-Custom"));
+        Assertions.assertEquals("existing", result.headers().firstValue("X-Existing").orElseThrow());
+    }
+
+    @Test
+    public void customAuthorizationShouldWorkWithoutApiToken() throws DBException {
+        var filter = new OpenAIRequestFilter(null, Map.of("Authorization", "Basic secret"));
+
+        var result = filter.filter(newRequestBuilder().build(), false);
+
+        Assertions.assertEquals("Basic secret", result.headers().firstValue("Authorization").orElseThrow());
+    }
+
+    @Test
+    public void filterShouldReportInvalidOrRestrictedCustomHeader() {
+        for (String name : Arrays.asList("X Api Key", "Host", "host", "Content-Length", "Connection")) {
+            var filter = new OpenAIRequestFilter(null, Map.of(name, "secret"));
+
+            DBException error = Assertions.assertThrows(DBException.class, () -> filter.filter(newRequestBuilder().build(), false));
+
+            Assertions.assertTrue(error.getMessage().contains(name));
+            Assertions.assertFalse(error.getMessage().contains("secret"));
+            Assertions.assertNull(error.getCause());
+        }
+    }
+
+    @Test
+    public void filterShouldReportInvalidHeaderValueWithoutExposingCredentials() {
+        var filter = new OpenAIRequestFilter(null, Map.of("X-Api-Key", "secret\r\nother"));
+
+        DBException error = Assertions.assertThrows(DBException.class, () -> filter.filter(newRequestBuilder().build(), false));
+
+        Assertions.assertTrue(error.getMessage().contains("X-Api-Key"));
+        Assertions.assertFalse(error.getMessage().contains("secret"));
+        Assertions.assertNull(error.getCause());
+    }
+
+    @Test
+    public void headerValidationShouldUseHttpClientRules() {
+        Assertions.assertNull(OpenAIRequestFilter.findInvalidHeader(Map.of("Authorization", "Basic secret", "X-Empty", "")));
+        Assertions.assertEquals("X Api Key", OpenAIRequestFilter.findInvalidHeader(Map.of("X Api Key", "secret")));
+        Assertions.assertEquals("Host", OpenAIRequestFilter.findInvalidHeader(Map.of("Host", "localhost")));
+        Assertions.assertEquals("X-Api-Key", OpenAIRequestFilter.findInvalidHeader(Map.of("X-Api-Key", "secret\r\nother")));
     }
 
     private static HttpRequest.Builder newRequestBuilder() {

@@ -183,8 +183,8 @@ public class OpenAiUtils {
 
     public static boolean isTemperatureNotSupported(@Nullable String message) {
         return message != null
-            && message.contains("Unsupported parameter")
-            && message.contains("temperature");
+            && ((message.contains("Unsupported parameter") && message.contains("temperature"))
+                || message.contains("`temperature` is deprecated"));
     }
 
     public static boolean processErrors(

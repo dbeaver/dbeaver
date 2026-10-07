@@ -11,7 +11,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.ui.app.standalone.rpc,
  org.jkiss.dbeaver.ui.app.standalone.update
-Require-Bundle: org.eclipse.e4.ui.css.core,
+Require-Bundle: org.eclipse.e4.core.services,
+ org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.ui.workbench,
