@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class AIImageAttachmentTest {
@@ -147,9 +148,11 @@ public class AIImageAttachmentTest {
 
     @Test
     public void addsCopilotVisionHeaderForBothApisOnlyWhenImagesArePresent() throws Exception {
-        try (ServerSocket server = new ServerSocket(0, 4, InetAddress.getByName("127.0.0.1"))) {
-            server.setSoTimeout(5000);
-            var requests = CompletableFuture.supplyAsync(() -> captureCopilotRequests(server));
+        try (var executor = Executors.newSingleThreadExecutor();
+            ServerSocket server = new ServerSocket(0, 4, InetAddress.getByName("127.0.0.1"))) {
+            // Leave time for class loading while the full EE test reactor runs concurrently.
+            server.setSoTimeout(30_000);
+            var requests = CompletableFuture.supplyAsync(() -> captureCopilotRequests(server), executor);
             var session = new CopilotSessionToken("test-token",
                 new CopilotSessionToken.Endpoints("http://127.0.0.1:" + server.getLocalPort()));
             try (var chatClient = new CopilotClientChat("https://github.com");
@@ -160,8 +163,8 @@ public class AIImageAttachmentTest {
                         return false;
                     }
                 };
-                chatClient.setTimeout(5);
-                responsesClient.setTimeout(5);
+                chatClient.setTimeout(30);
+                responsesClient.setTimeout(30);
                 for (boolean withImages : List.of(false, true)) {
                     AIMessage message = AIMessage.userMessage("Describe");
                     if (withImages) {
@@ -176,7 +179,7 @@ public class AIImageAttachmentTest {
                     responsesClient.chat(monitor, session, new Pair<>(responses, chat));
                 }
             }
-            List<Map<String, String>> headers = requests.get(10, TimeUnit.SECONDS);
+            List<Map<String, String>> headers = requests.get(30, TimeUnit.SECONDS);
             Assertions.assertEquals(4, headers.size());
             for (int index = 0; index < headers.size(); index++) {
                 Assertions.assertEquals(index < 2 ? null : "true", headers.get(index).get("Copilot-Vision-Request"));
@@ -191,7 +194,7 @@ public class AIImageAttachmentTest {
         try {
             for (int index = 0; index < 4; index++) {
                 try (Socket socket = server.accept()) {
-                    socket.setSoTimeout(5000);
+                    socket.setSoTimeout(30_000);
                     ByteArrayOutputStream header = new ByteArrayOutputStream();
                     int ending = 0;
                     while (ending != 0x0d0a0d0a) {
