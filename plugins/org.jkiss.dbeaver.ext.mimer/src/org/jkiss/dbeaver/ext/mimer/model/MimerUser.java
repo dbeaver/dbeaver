@@ -439,7 +439,11 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
 
         @NotNull
         @Override
-        protected MimerIdentColumnPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerUser user, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerIdentColumnPrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUser user,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerIdentColumnPrivilege(user, resultSet);
         }
     }
@@ -463,7 +467,11 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
 
         @NotNull
         @Override
-        protected MimerIdentObjectPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerUser user, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerIdentObjectPrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUser user,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerIdentObjectPrivilege(user, resultSet);
         }
     }
@@ -487,7 +495,11 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
 
         @NotNull
         @Override
-        protected MimerIdentGroupMembership fetchObject(@NotNull JDBCSession session, @NotNull MimerUser user, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerIdentGroupMembership fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUser user,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerIdentGroupMembership(user, resultSet);
         }
     }
@@ -507,7 +519,11 @@ public class MimerUser implements DBSObject, DBPNamedObject2, DBPSaveableObject,
 
         @NotNull
         @Override
-        protected MimerSystemPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerUser user, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerSystemPrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUser user,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerSystemPrivilege(user, resultSet);
         }
     }

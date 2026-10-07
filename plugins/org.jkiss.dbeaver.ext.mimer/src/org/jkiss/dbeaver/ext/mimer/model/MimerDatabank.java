@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mimer.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -31,7 +32,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
@@ -58,7 +58,8 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, DBPImageProvider, MimerCommentable {
+public class MimerDatabank
+    implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, DBPImageProvider, MimerCommentable {
 
     private final MimerDataSource dataSource;
     private final FileCache fileCache = new FileCache();
@@ -539,7 +540,11 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
 
         @NotNull
         @Override
-        protected MimerDatabankFile fetchObject(@NotNull JDBCSession session, @NotNull MimerDatabank owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerDatabankFile fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDatabank owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerDatabankFile(owner, resultSet);
         }
     }
@@ -559,7 +564,11 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
 
         @NotNull
         @Override
-        protected MimerDatabankShadow fetchObject(@NotNull JDBCSession session, @NotNull MimerDatabank owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerDatabankShadow fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDatabank owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerDatabankShadow(owner, resultSet);
         }
     }
@@ -583,7 +592,11 @@ public class MimerDatabank implements DBSObject, DBPNamedObject2, DBPSaveableObj
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerDatabank owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDatabank owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }

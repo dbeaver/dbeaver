@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mimer.edit;
 
-import org.jkiss.dbeaver.ext.mimer.model.MimerDatabank;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
+import org.jkiss.dbeaver.ext.mimer.model.MimerDatabank;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;

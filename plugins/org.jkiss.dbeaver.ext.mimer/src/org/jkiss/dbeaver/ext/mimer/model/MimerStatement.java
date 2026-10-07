@@ -252,7 +252,10 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
     static class PrivilegeCache extends JDBCObjectCache<MimerStatement, MimerStatementPrivilege> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerStatement statement) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerStatement statement
+        ) throws SQLException {
             JDBCPreparedStatement stmt = session.prepareStatement(
                 "SELECT GRANTEE, GRANTOR, IS_GRANTABLE\n" +
                 "FROM INFORMATION_SCHEMA.EXT_OBJECT_PRIVILEGES\n" +
@@ -266,7 +269,11 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
 
         @NotNull
         @Override
-        protected MimerStatementPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerStatement statement, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerStatementPrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerStatement statement,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerStatementPrivilege(statement, resultSet);
         }
     }
@@ -280,7 +287,11 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerStatement owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerStatement owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }

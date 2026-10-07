@@ -306,7 +306,10 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
     static class AttributeCache extends JDBCObjectCache<MimerUserDefinedType, MimerUdtAttribute> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerUserDefinedType type
+        ) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT ATTRIBUTE_NAME, ORDINAL_POSITION, IS_NULLABLE, ATTRIBUTE_DEFAULT,\n" +
                 "       DATA_TYPE, ATTRIBUTE_UDT_SCHEMA, ATTRIBUTE_UDT_NAME,\n" +
@@ -322,7 +325,11 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
 
         @NotNull
         @Override
-        protected MimerUdtAttribute fetchObject(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerUdtAttribute fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUserDefinedType type,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerUdtAttribute(type, resultSet);
         }
     }
@@ -335,7 +342,10 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
     static class MethodCache extends JDBCObjectCache<MimerUserDefinedType, MimerUdtMethod> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerUserDefinedType type
+        ) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT ROUTINE_NAME, SPECIFIC_NAME, ROUTINE_TYPE\n" +
                 "FROM INFORMATION_SCHEMA.ROUTINES\n" +
@@ -349,7 +359,11 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
 
         @NotNull
         @Override
-        protected MimerUdtMethod fetchObject(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerUdtMethod fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUserDefinedType type,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             String methodName = JDBCUtils.safeGetString(resultSet, "ROUTINE_NAME");
             String specificName = JDBCUtils.safeGetString(resultSet, "SPECIFIC_NAME");
             String methodKind = JDBCUtils.safeGetStringTrimmed(resultSet, "ROUTINE_TYPE");
@@ -366,7 +380,10 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
     static class MethodSpecCache extends JDBCObjectCache<MimerUserDefinedType, MimerUdtMethodSpec> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerUserDefinedType type
+        ) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT MS.SPECIFIC_SCHEMA, MS.SPECIFIC_NAME, MS.METHOD_NAME, MS.IS_STATIC, MS.IS_CONSTRUCTOR,\n" +
                 "       MS.DATA_TYPE, MS.RETURN_UDT_SCHEMA, MS.RETURN_UDT_NAME,\n" +
@@ -387,7 +404,11 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
 
         @NotNull
         @Override
-        protected MimerUdtMethodSpec fetchObject(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerUdtMethodSpec fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUserDefinedType type,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerUdtMethodSpec(type, resultSet);
         }
     }
@@ -401,7 +422,10 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
     static class PrivilegeCache extends JDBCObjectCache<MimerUserDefinedType, MimerUserDefinedTypePrivilege> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerUserDefinedType type
+        ) throws SQLException {
             JDBCPreparedStatement stmt = session.prepareStatement(
                 "SELECT GRANTEE, GRANTOR, IS_GRANTABLE\n" +
                 "FROM INFORMATION_SCHEMA.EXT_OBJECT_PRIVILEGES\n" +
@@ -415,7 +439,11 @@ public class MimerUserDefinedType implements DBSObject, DBPRefreshableObject, DB
 
         @NotNull
         @Override
-        protected MimerUserDefinedTypePrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerUserDefinedType type, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerUserDefinedTypePrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUserDefinedType type,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerUserDefinedTypePrivilege(type, resultSet);
         }
     }

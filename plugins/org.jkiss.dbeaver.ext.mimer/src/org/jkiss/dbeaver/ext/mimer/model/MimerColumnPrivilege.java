@@ -87,7 +87,11 @@ public class MimerColumnPrivilege extends AbstractMimerMultiTypePrivilege<MimerT
 
         @NotNull
         @Override
-        protected MimerColumnPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerTableColumn owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerColumnPrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerTableColumn owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerColumnPrivilege(owner, resultSet);
         }
     }

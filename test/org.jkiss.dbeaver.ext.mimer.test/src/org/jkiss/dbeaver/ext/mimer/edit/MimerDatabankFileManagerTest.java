@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.mimer.edit;
 
+import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDatabank;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDatabankFile;
-import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;

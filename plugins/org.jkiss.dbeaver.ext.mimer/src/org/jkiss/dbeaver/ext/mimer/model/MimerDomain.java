@@ -271,7 +271,11 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
 
         @NotNull
         @Override
-        protected MimerDomainPrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerDomain owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerDomainPrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDomain owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerDomainPrivilege(owner, resultSet);
         }
     }
@@ -302,7 +306,11 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerDomain owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDomain owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }
@@ -316,7 +324,11 @@ public class MimerDomain implements DBSObject, DBPScriptObject, DBPSaveableObjec
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerDomain owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDomain owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }

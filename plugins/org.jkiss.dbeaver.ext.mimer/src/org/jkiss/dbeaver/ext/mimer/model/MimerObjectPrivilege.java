@@ -100,7 +100,11 @@ public class MimerObjectPrivilege extends AbstractMimerMultiTypePrivilege<Generi
 
         @NotNull
         @Override
-        protected MimerObjectPrivilege fetchObject(@NotNull JDBCSession session, @NotNull GenericTableBase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectPrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull GenericTableBase owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectPrivilege(owner, resultSet);
         }
     }

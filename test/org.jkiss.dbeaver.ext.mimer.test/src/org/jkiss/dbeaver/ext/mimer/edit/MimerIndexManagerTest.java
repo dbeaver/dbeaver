@@ -204,7 +204,8 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
     public void columnCollationAppearsBeforeAlgorithmAndDescModifier() throws Exception {
         when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
         when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(mimerIndexColumn("notes", false, MimerConstants.INDEX_ALGORITHM_WORD_SEARCH, "\"INFORMATION_SCHEMA\".\"ENGLISH_1\"")))
+        doReturn(List.of(mimerIndexColumn(
+            "notes", false, MimerConstants.INDEX_ALGORITHM_WORD_SEARCH, "\"INFORMATION_SCHEMA\".\"ENGLISH_1\"")))
             .when(index).getAttributeReferences(any());
 
         String ddl = createDDL();

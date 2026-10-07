@@ -97,7 +97,11 @@ public class MimerView extends GenericView {
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerView owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerView owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }
@@ -111,7 +115,11 @@ public class MimerView extends GenericView {
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerView owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerView owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }

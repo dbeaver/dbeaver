@@ -70,8 +70,12 @@ public class MimerAddPrivilegesDialog extends BaseDialog {
         group.setLayout(new GridLayout(2, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createLabelText(group, tableNames.size() > 1 ? "Tables" : "Table", String.join(", ", tableNames), SWT.BORDER | SWT.READ_ONLY)
-            .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createLabelText(
+            group,
+            tableNames.size() > 1 ? "Tables" : "Table",
+            String.join(", ", tableNames),
+            SWT.BORDER | SWT.READ_ONLY
+        ).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Combo privilegeCombo = UIUtils.createLabelCombo(group, "Privilege", SWT.DROP_DOWN | SWT.READ_ONLY);
         for (String type : MimerObjectPrivilege.PRIVILEGE_TYPES) {

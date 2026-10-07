@@ -347,14 +347,21 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
     static class UsedByCache extends JDBCObjectCache<MimerUdtMethodSpec, MimerObjectUsedBy> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerUdtMethodSpec owner) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerUdtMethodSpec owner
+        ) throws SQLException {
             return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(
                 session, owner.getType().getSchema().getName(), owner.uniqueName(), owner.methodKind);
         }
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerUdtMethodSpec owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUdtMethodSpec owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }
@@ -362,14 +369,21 @@ public class MimerUdtMethodSpec implements DBSObject, DBPSaveableObject, DBPStat
     static class UsesCache extends JDBCObjectCache<MimerUdtMethodSpec, MimerObjectUses> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerUdtMethodSpec owner) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerUdtMethodSpec owner
+        ) throws SQLException {
             return MimerObjectUses.prepareUsesStatementBySpecificName(
                 session, owner.getType().getSchema().getName(), owner.uniqueName(), owner.methodKind);
         }
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerUdtMethodSpec owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUdtMethodSpec owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }

@@ -126,12 +126,21 @@ public class MimerUdtMethod extends GenericProcedure implements DBPScriptObject 
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerUdtMethod owner) throws SQLException {
-            return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), owner.methodKind);
+            return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(
+                session,
+                owner.getSchema().getName(),
+                owner.getUniqueName(),
+                owner.methodKind
+            );
         }
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerUdtMethod owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUdtMethod owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }
@@ -140,12 +149,21 @@ public class MimerUdtMethod extends GenericProcedure implements DBPScriptObject 
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerUdtMethod owner) throws SQLException {
-            return MimerObjectUses.prepareUsesStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), owner.methodKind);
+            return MimerObjectUses.prepareUsesStatementBySpecificName(
+                session,
+                owner.getSchema().getName(),
+                owner.getUniqueName(),
+                owner.methodKind
+            );
         }
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerUdtMethod owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerUdtMethod owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }

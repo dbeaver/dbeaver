@@ -186,7 +186,10 @@ public class MimerModule implements DBSObject, DBPScriptObject, DBPSaveableObjec
     }
 
     @NotNull
-    private Collection<MimerModuleRoutine> filterByType(@NotNull DBRProgressMonitor monitor, @NotNull DBSProcedureType type) throws DBException {
+    private Collection<MimerModuleRoutine> filterByType(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSProcedureType type
+    ) throws DBException {
         List<MimerModuleRoutine> result = new ArrayList<>();
         for (MimerModuleRoutine routine : routineCache.getAllObjects(monitor, this)) {
             if (routine.getProcedureType() == type) {
@@ -220,7 +223,11 @@ public class MimerModule implements DBSObject, DBPScriptObject, DBPSaveableObjec
 
         @NotNull
         @Override
-        protected MimerModuleRoutine fetchObject(@NotNull JDBCSession session, @NotNull MimerModule module, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerModuleRoutine fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerModule module,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             String routineName = JDBCUtils.safeGetString(resultSet, "ROUTINE_NAME");
             String specificName = JDBCUtils.safeGetString(resultSet, "SPECIFIC_NAME");
             DBSProcedureType type = "FUNCTION".equalsIgnoreCase(JDBCUtils.safeGetStringTrimmed(resultSet, "ROUTINE_TYPE"))

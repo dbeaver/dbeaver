@@ -74,14 +74,16 @@ public class MimerTableColumnTest extends DBeaverUnitTest {
     public void unfilledPlaceholdersAreStrippedFromAPendingColumnsTypeName() {
         Assertions.assertEquals("INTERVAL DAY", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(p)"));
         Assertions.assertEquals("INTERVAL DAY TO HOUR", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(p) TO HOUR"));
-        Assertions.assertEquals("INTERVAL DAY TO SECOND", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(p) TO SECOND(s)"));
+        Assertions.assertEquals(
+            "INTERVAL DAY TO SECOND", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(p) TO SECOND(s)"));
         Assertions.assertEquals("INTERVAL SECOND", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL SECOND(p,s)"));
     }
 
     @Test
     public void aRealTypedInPrecisionIsLeftUntouched() {
         Assertions.assertEquals("INTERVAL DAY(5)", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(5)"));
-        Assertions.assertEquals("INTERVAL DAY(7) TO SECOND(9)", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(7) TO SECOND(9)"));
+        Assertions.assertEquals(
+            "INTERVAL DAY(7) TO SECOND(9)", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(7) TO SECOND(9)"));
         Assertions.assertEquals("INTERVAL SECOND(2, 1)", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL SECOND(2, 1)"));
     }
 

@@ -172,7 +172,11 @@ public class MimerSchemaIndex implements DBSObject {
 
         @NotNull
         @Override
-        protected MimerSchemaIndexColumn fetchObject(@NotNull JDBCSession session, @NotNull MimerSchemaIndex index, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerSchemaIndexColumn fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSchemaIndex index,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerSchemaIndexColumn(index, resultSet);
         }
     }

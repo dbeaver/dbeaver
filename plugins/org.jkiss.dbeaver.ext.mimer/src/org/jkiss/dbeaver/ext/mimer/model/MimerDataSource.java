@@ -448,7 +448,10 @@ public class MimerDataSource extends GenericDataSource {
     static class UserCache extends JDBCObjectCache<MimerDataSource, MimerUser> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             // DISTINCT, and no IDENT_LOGIN in the SELECT list - EXT_IDENTS has one row per
             // (IDENT_NAME, IDENT_LOGIN) pair, so a user with 2+ OS-user authorizations would
             // otherwise show up as duplicate rows here (see MimerUserAuthorization, which owns
@@ -462,7 +465,11 @@ public class MimerDataSource extends GenericDataSource {
 
         @NotNull
         @Override
-        protected MimerUser fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerUser fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerUser(dataSource, resultSet);
         }
     }
@@ -470,7 +477,10 @@ public class MimerDataSource extends GenericDataSource {
     static class ProgramCache extends JDBCObjectCache<MimerDataSource, MimerProgram> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             return session.prepareStatement(
                 "SELECT IDENT_NAME, IDENT_CREATOR, HAS_PASSWORD\n" +
                 "FROM INFORMATION_SCHEMA.EXT_IDENTS\n" +
@@ -480,7 +490,11 @@ public class MimerDataSource extends GenericDataSource {
 
         @NotNull
         @Override
-        protected MimerProgram fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerProgram fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerProgram(dataSource, resultSet);
         }
     }
@@ -488,7 +502,10 @@ public class MimerDataSource extends GenericDataSource {
     static class GroupCache extends JDBCObjectCache<MimerDataSource, MimerGroup> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             // PUBLIC's presence in EXT_IDENTS varies by server, so it's excluded here and
             // added explicitly below to avoid showing it twice.
             return session.prepareStatement(
@@ -502,7 +519,11 @@ public class MimerDataSource extends GenericDataSource {
 
         @NotNull
         @Override
-        protected MimerGroup fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerGroup fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerGroup(dataSource, resultSet);
         }
     }
@@ -510,7 +531,10 @@ public class MimerDataSource extends GenericDataSource {
     static class DatabankCache extends JDBCObjectCache<MimerDataSource, MimerDatabank> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             // A multi-file databank has one row per file; DISTINCT collapses them.
             // DATABANK_TYPE = 'PART' rows are the individual files of such databanks - the
             // remaining (non-PART) row is file #1, whose FILE_NAME/MINSIZE/GOALSIZE/MAXSIZE
@@ -528,7 +552,11 @@ public class MimerDataSource extends GenericDataSource {
 
         @NotNull
         @Override
-        protected MimerDatabank fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerDatabank fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerDatabank(dataSource, resultSet);
         }
     }
@@ -536,7 +564,10 @@ public class MimerDataSource extends GenericDataSource {
     static class ShadowCache extends JDBCObjectCache<MimerDataSource, MimerShadow> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             return session.prepareStatement(
                 "SELECT SHADOW_NAME, SHADOW_CREATOR, DATABANK_NAME, FILE_NAME, IS_ONLINE\n" +
                 "FROM INFORMATION_SCHEMA.EXT_SHADOWS\n" +
@@ -545,7 +576,11 @@ public class MimerDataSource extends GenericDataSource {
 
         @NotNull
         @Override
-        protected MimerShadow fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerShadow fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerShadow(dataSource, resultSet);
         }
     }
@@ -553,7 +588,10 @@ public class MimerDataSource extends GenericDataSource {
     static class LibraryCache extends JDBCObjectCache<MimerDataSource, MimerLibrary> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             return session.prepareStatement(
                 "SELECT LIBRARY_NAME, LIBRARY_CREATOR, LIBRARY_LANGUAGE, LIBRARY_FILENAME\n" +
                 "FROM INFORMATION_SCHEMA.EXT_LIBRARIES\n" +
@@ -562,7 +600,11 @@ public class MimerDataSource extends GenericDataSource {
 
         @NotNull
         @Override
-        protected MimerLibrary fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerLibrary fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerLibrary(dataSource, resultSet);
         }
     }
@@ -570,13 +612,20 @@ public class MimerDataSource extends GenericDataSource {
     static class SqlFeaturesCache extends JDBCObjectCache<MimerDataSource, MimerSqlStandardRow> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SQL_FEATURES");
         }
 
         @NotNull
         @Override
-        protected MimerSqlStandardRow fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerSqlStandardRow fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerSqlStandardRow(dataSource, resultSet);
         }
     }
@@ -584,13 +633,20 @@ public class MimerDataSource extends GenericDataSource {
     static class SqlSizingCache extends JDBCObjectCache<MimerDataSource, MimerSqlStandardRow> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SQL_SIZING");
         }
 
         @NotNull
         @Override
-        protected MimerSqlStandardRow fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerSqlStandardRow fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerSqlStandardRow(dataSource, resultSet);
         }
     }
@@ -598,13 +654,20 @@ public class MimerDataSource extends GenericDataSource {
     static class SqlLanguagesCache extends JDBCObjectCache<MimerDataSource, MimerSqlStandardRow> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource
+        ) throws SQLException {
             return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SQL_LANGUAGES");
         }
 
         @NotNull
         @Override
-        protected MimerSqlStandardRow fetchObject(@NotNull JDBCSession session, @NotNull MimerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerSqlStandardRow fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerSqlStandardRow(dataSource, resultSet);
         }
     }

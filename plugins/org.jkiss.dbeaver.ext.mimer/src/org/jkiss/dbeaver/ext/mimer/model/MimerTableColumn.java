@@ -344,7 +344,11 @@ public class MimerTableColumn extends GenericTableColumn {
      * plain {@code FIELD(leading)}.
      */
     @Nullable
-    static String buildIntervalTypeName(@Nullable String intervalType, @Nullable Integer leadingPrecision, @Nullable Integer fractionalPrecision) {
+    static String buildIntervalTypeName(
+        @Nullable String intervalType,
+        @Nullable Integer leadingPrecision,
+        @Nullable Integer fractionalPrecision
+    ) {
         if (CommonUtils.isEmpty(intervalType) || leadingPrecision == null) {
             return null;
         }
@@ -475,7 +479,8 @@ public class MimerTableColumn extends GenericTableColumn {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerTableColumn owner) throws SQLException {
             JDBCPreparedStatement stmt = session.prepareStatement(
-                "SELECT RCU.ROUTINE_SCHEMA AS USING_OBJECT_SCHEMA, RCU.ROUTINE_NAME AS USING_OBJECT_NAME, R.ROUTINE_TYPE AS USING_OBJECT_TYPE\n" +
+                "SELECT RCU.ROUTINE_SCHEMA AS USING_OBJECT_SCHEMA, RCU.ROUTINE_NAME AS USING_OBJECT_NAME,\n" +
+                "       R.ROUTINE_TYPE AS USING_OBJECT_TYPE\n" +
                 "FROM INFORMATION_SCHEMA.ROUTINE_COLUMN_USAGE RCU JOIN INFORMATION_SCHEMA.ROUTINES R\n" +
                 "  ON RCU.SPECIFIC_SCHEMA = R.SPECIFIC_SCHEMA AND RCU.SPECIFIC_NAME = R.SPECIFIC_NAME\n" +
                 "  AND RCU.ROUTINE_SCHEMA = R.ROUTINE_SCHEMA AND RCU.ROUTINE_NAME = R.ROUTINE_NAME\n" +
@@ -510,7 +515,11 @@ public class MimerTableColumn extends GenericTableColumn {
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerTableColumn owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerTableColumn owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }

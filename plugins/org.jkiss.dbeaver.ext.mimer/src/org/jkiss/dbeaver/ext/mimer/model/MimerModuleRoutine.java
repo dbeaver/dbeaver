@@ -123,14 +123,26 @@ public class MimerModuleRoutine extends GenericProcedure {
     static class UsedByCache extends JDBCObjectCache<MimerModuleRoutine, MimerObjectUsedBy> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerModuleRoutine owner) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerModuleRoutine owner
+        ) throws SQLException {
             String objectType = owner.getProcedureType() == DBSProcedureType.FUNCTION ? "FUNCTION" : "PROCEDURE";
-            return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), objectType);
+            return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(
+                session,
+                owner.getSchema().getName(),
+                owner.getUniqueName(),
+                objectType
+            );
         }
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerModuleRoutine owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerModuleRoutine owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }
@@ -138,14 +150,26 @@ public class MimerModuleRoutine extends GenericProcedure {
     static class UsesCache extends JDBCObjectCache<MimerModuleRoutine, MimerObjectUses> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerModuleRoutine owner) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerModuleRoutine owner
+        ) throws SQLException {
             String objectType = owner.getProcedureType() == DBSProcedureType.FUNCTION ? "FUNCTION" : "PROCEDURE";
-            return MimerObjectUses.prepareUsesStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), objectType);
+            return MimerObjectUses.prepareUsesStatementBySpecificName(
+                session,
+                owner.getSchema().getName(),
+                owner.getUniqueName(),
+                objectType
+            );
         }
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerModuleRoutine owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerModuleRoutine owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }

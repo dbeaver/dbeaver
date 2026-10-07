@@ -117,13 +117,20 @@ public class MimerTableTrigger extends GenericTableTrigger implements DBSObjectW
     static class UsesCache extends JDBCObjectCache<MimerTableTrigger, MimerObjectUses> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerTableTrigger owner) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull MimerTableTrigger owner
+        ) throws SQLException {
             return MimerObjectUses.prepareUsesStatement(session, owner.getTable().getSchema().getName(), owner.getName(), "TRIGGER");
         }
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerTableTrigger owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerTableTrigger owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }

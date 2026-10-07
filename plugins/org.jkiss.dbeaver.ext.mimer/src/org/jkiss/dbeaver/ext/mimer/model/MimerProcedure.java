@@ -91,7 +91,8 @@ import java.util.Map;
  *
  * @author Mimer Information Technology
  */
-public class MimerProcedure extends GenericProcedure implements DBSObjectWithScript, DBSObjectWithType, DBPStatefulObject, MimerCommentable {
+public class MimerProcedure extends GenericProcedure
+    implements DBSObjectWithScript, DBSObjectWithType, DBPStatefulObject, MimerCommentable {
 
     private static final DBSObjectType OBJECT_TYPE_PROCEDURE =
         new AbstractObjectType("Procedure", "Mimer SQL procedure", DBIcon.TREE_PROCEDURE, MimerProcedure.class);
@@ -358,7 +359,11 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
 
         @NotNull
         @Override
-        protected MimerRoutinePrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerProcedure owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerRoutinePrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerProcedure owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerRoutinePrivilege(owner, resultSet);
         }
     }
@@ -368,12 +373,21 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerProcedure owner) throws SQLException {
             String objectType = owner.getProcedureType() == DBSProcedureType.FUNCTION ? "FUNCTION" : "PROCEDURE";
-            return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), objectType);
+            return MimerObjectUsedBy.prepareUsedByStatementBySpecificName(
+                session,
+                owner.getSchema().getName(),
+                owner.getUniqueName(),
+                objectType
+            );
         }
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerProcedure owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerProcedure owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }
@@ -383,12 +397,21 @@ public class MimerProcedure extends GenericProcedure implements DBSObjectWithScr
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MimerProcedure owner) throws SQLException {
             String objectType = owner.getProcedureType() == DBSProcedureType.FUNCTION ? "FUNCTION" : "PROCEDURE";
-            return MimerObjectUses.prepareUsesStatementBySpecificName(session, owner.getSchema().getName(), owner.getUniqueName(), objectType);
+            return MimerObjectUses.prepareUsesStatementBySpecificName(
+                session,
+                owner.getSchema().getName(),
+                owner.getUniqueName(),
+                objectType
+            );
         }
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerProcedure owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerProcedure owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }

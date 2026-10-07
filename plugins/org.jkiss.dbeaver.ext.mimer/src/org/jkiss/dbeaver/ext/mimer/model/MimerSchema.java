@@ -244,7 +244,11 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
      * {@code EXT_ACCESS_PATHS} columns.
      */
     @NotNull
-    synchronized IndexExtInfo getIndexExtInfo(@NotNull DBRProgressMonitor monitor, @NotNull String tableName, @NotNull String indexName) throws DBException {
+    synchronized IndexExtInfo getIndexExtInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String tableName,
+        @NotNull String indexName
+    ) throws DBException {
         if (!(getDataSource() instanceof MimerDataSource ds) || !ds.supportsClusteredIndexes()) {
             return IndexExtInfo.NONE;
         }
@@ -302,7 +306,11 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
 
         @NotNull
         @Override
-        protected MimerDomain fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerDomain fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSchema schema,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerDomain(schema, resultSet);
         }
     }
@@ -322,7 +330,11 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
 
         @NotNull
         @Override
-        protected MimerModule fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerModule fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSchema schema,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerModule(schema, resultSet);
         }
     }
@@ -344,7 +356,11 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
 
         @NotNull
         @Override
-        protected MimerUserDefinedType fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerUserDefinedType fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSchema schema,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerUserDefinedType(schema, resultSet);
         }
     }
@@ -364,7 +380,11 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
 
         @NotNull
         @Override
-        protected MimerStatement fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerStatement fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSchema schema,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerStatement(schema, resultSet);
         }
     }
@@ -388,7 +408,11 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
 
         @NotNull
         @Override
-        protected MimerSchemaIndex fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerSchemaIndex fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSchema schema,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerSchemaIndex(schema, resultSet);
         }
     }
@@ -408,7 +432,11 @@ public class MimerSchema extends GenericSchema implements DBPSaveableObject, Mim
 
         @NotNull
         @Override
-        protected MimerCollation fetchObject(@NotNull JDBCSession session, @NotNull MimerSchema schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerCollation fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSchema schema,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerCollation(schema, resultSet);
         }
     }

@@ -344,7 +344,11 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
 
         @NotNull
         @Override
-        protected MimerSequencePrivilege fetchObject(@NotNull JDBCSession session, @NotNull MimerSequence owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerSequencePrivilege fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSequence owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerSequencePrivilege(owner, resultSet);
         }
     }
@@ -358,7 +362,11 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
 
         @NotNull
         @Override
-        protected MimerObjectUsedBy fetchObject(@NotNull JDBCSession session, @NotNull MimerSequence owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUsedBy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSequence owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUsedBy(owner, resultSet);
         }
     }
@@ -372,7 +380,11 @@ public class MimerSequence extends GenericSequence implements MimerCommentable {
 
         @NotNull
         @Override
-        protected MimerObjectUses fetchObject(@NotNull JDBCSession session, @NotNull MimerSequence owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MimerObjectUses fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull MimerSequence owner,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new MimerObjectUses(owner, resultSet);
         }
     }
