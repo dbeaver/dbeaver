@@ -13,6 +13,7 @@ Require-Bundle: org.eclipse.e4.core.contexts,
  org.jkiss.dbeaver.tasks.native.ui,
  org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.entity,
+ org.jkiss.dbeaver.ui.forms,
  org.jkiss.dbeaver.ui.editors.session,
  org.jkiss.dbeaver.tasks.ui
 Bundle-ActivationPolicy: lazy
@@ -24,4 +25,3 @@ Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.ui.editors
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.postgresql.ui
-

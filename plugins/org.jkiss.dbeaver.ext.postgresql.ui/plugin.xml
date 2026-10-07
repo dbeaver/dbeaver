@@ -41,6 +41,13 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
 
+        <editor id="postgresql.publication.tableSelection"
+                class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgrePublicationTablesEditor"
+                label="%db.editor.publication.tables.name" description="%db.editor.publication.tables.description"
+                icon="#table" position="additions_middle" type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgrePublication" if="!object.persisted"/>
+        </editor>
+
         <editor id="postgresql.role.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.privileges.RolePermissionsEditor"
                 label="%db.editor.role.permission.name" description="%db.editor.role.permission.description" icon="#permissions" position="additions_middle" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
@@ -65,6 +72,8 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgrePublication"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSubscription"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignServer"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreUserMapping"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper"/>
@@ -131,6 +140,9 @@
         </configurator>
         <configurator class="org.jkiss.dbeaver.ui.editors.object.config.PropertyObjectConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePolicy"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreSubscriptionConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSubscription"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreExplainPlanConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner"/>
