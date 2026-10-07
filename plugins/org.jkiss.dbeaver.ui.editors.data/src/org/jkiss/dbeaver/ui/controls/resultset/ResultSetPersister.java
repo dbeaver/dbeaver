@@ -588,7 +588,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                         "Data error", "Error synchronizing data with database", error);
                     viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                 }
-                if (hasZeroRowChanges && !viewer.getControl().isDisposed()) {
+                if (hasZeroRowChanges && error == null && !viewer.getControl().isDisposed()) {
                     // Execution succeeded and may have caused side effects even when no rows were affected.
                     ConfirmationDialog.confirmAction(
                         viewer.getControl().getShell(),
