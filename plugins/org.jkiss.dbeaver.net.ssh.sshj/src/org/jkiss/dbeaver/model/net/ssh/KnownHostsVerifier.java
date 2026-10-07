@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.function.ThrowableSupplier;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,46 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
     public KnownHostsVerifier(@NotNull File khFile, @NotNull SSHHostConfiguration actualHostConfiguration) throws IOException {
         super(khFile);
         this.actualHostConfiguration = actualHostConfiguration;
+    }
+
+    @NotNull
+    static KnownHostsVerifier create(
+        @NotNull File knownHostsFile,
+        @NotNull SSHHostConfiguration actualHostConfiguration
+    ) throws DBException {
+        return load(knownHostsFile, () -> new KnownHostsVerifier(knownHostsFile, actualHostConfiguration));
+    }
+
+    @NotNull
+    static OpenSSHKnownHosts load(@NotNull File knownHostsFile) throws DBException {
+        return load(knownHostsFile, () -> new OpenSSHKnownHosts(knownHostsFile));
+    }
+
+    @NotNull
+    private static <T extends OpenSSHKnownHosts> T load(
+        @NotNull File knownHostsFile,
+        @NotNull ThrowableSupplier<T, IOException> loader
+    ) throws DBException {
+        final T verifier;
+        try {
+            verifier = loader.get();
+        } catch (IOException | RuntimeException e) {
+            throw new DBException(
+                "Could not load SSH known hosts file '" + knownHostsFile.getAbsolutePath() +
+                    "'. Check that the file is readable and contains valid OpenSSH host keys.",
+                e
+            );
+        }
+        // SSHJ may preserve malformed lines instead of throwing a decoding exception.
+        if (verifier.entries().stream().anyMatch(entry ->
+            entry instanceof BadHostEntry && !entry.getLine().isBlank() && !entry.getLine().stripLeading().startsWith("#")
+        )) {
+            throw new DBException(
+                "SSH known hosts file '" + knownHostsFile.getAbsolutePath() +
+                    "' contains invalid host key entries. Correct or remove the invalid entries and try again."
+            );
+        }
+        return verifier;
     }
 
     @Override

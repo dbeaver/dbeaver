@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.model.net.ssh;
 import com.jcraft.jsch.Identity;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.LoggerFactory;
+import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
@@ -35,13 +36,13 @@ import org.jkiss.utils.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.helpers.NOPLogger;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class SSHJSessionController extends AbstractSessionController<SSHJSession> {
-    private static final Log log = Log.getLog(SSHJSessionController.class);
+    private static final String SECONDARY_KNOWN_HOSTS_FILE_NAME = "known_hosts2";
 
     @NotNull
     @Override
@@ -67,11 +68,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         client.getConnection().getKeepAlive().setKeepAliveInterval(keepAliveInterval);
         client.getTransport().getConfig().setLoggerFactory(new FilterLoggerFactory());
 
-        try {
-            setupHostKeyVerification(client, configuration, host);
-        } catch (IOException e) {
-            log.debug("Error loading known hosts: " + e.getMessage());
-        }
+        setupHostKeyVerification(client, configuration, host);
 
         monitor.subTask(String.format("Instantiate tunnel to %s:%d", host.hostname(), host.port()));
 
@@ -129,17 +126,29 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         @NotNull SSHClient client,
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration actualHostConfiguration
-    ) throws IOException {
+    ) throws DBException {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() ||
             configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)
         ) {
             client.addHostKeyVerifier(new PromiscuousVerifier());
             client.getTransport().getConfig().setVerifyHostKeyCertificates(false);
         } else {
-            client.addHostKeyVerifier(new KnownHostsVerifier(SSHUtils.getKnownSshHostsFileOrDefault(), actualHostConfiguration));
+            loadKnownHosts(client, SSHUtils.getKnownSshHostsFileOrDefault(), OpenSSHKnownHosts.detectSSHDir(), actualHostConfiguration);
         }
+    }
 
-        client.loadKnownHosts();
+    static void loadKnownHosts(
+        @NotNull SSHClient client,
+        @NotNull File knownHostsFile,
+        @Nullable File defaultSshDirectory,
+        @NotNull SSHHostConfiguration actualHostConfiguration
+    ) throws DBException {
+        KnownHostsVerifier verifier = KnownHostsVerifier.create(knownHostsFile, actualHostConfiguration);
+        if (defaultSshDirectory != null) {
+            // Check previously trusted secondary keys before asking the user to accept an unknown host.
+            client.addHostKeyVerifier(KnownHostsVerifier.load(new File(defaultSshDirectory, SECONDARY_KNOWN_HOSTS_FILE_NAME)));
+        }
+        client.addHostKeyVerifier(verifier);
     }
 
     private static class FilterLoggerFactory implements LoggerFactory {
