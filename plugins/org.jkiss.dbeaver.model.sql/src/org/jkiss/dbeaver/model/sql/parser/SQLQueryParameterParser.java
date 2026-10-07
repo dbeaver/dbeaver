@@ -14,19 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.sql.parser;
 
-package org.jkiss.dbeaver.ext.mssql.auth;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
+import java.util.List;
 
-/**
- * SQL Server abstract auth model.
- */
-public abstract class SQLServerAuthModelAbstract extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+/** Allows a data source to specialize SQL parameter discovery without replacing the script parser. */
+public interface SQLQueryParameterParser {
 
-    @Override
-    public boolean isCredentialsPromptRequired() {
-        return isUserNameApplicable() || isUserPasswordApplicable();
-    }
+    @Nullable
+    List<SQLQueryParameter> parseParametersAndVariables(@NotNull SQLParserContext context, int offset, int length);
 }
