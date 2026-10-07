@@ -16,34 +16,44 @@
  */
 package org.jkiss.dbeaver.ui.ai.chat.controls;
 
-import org.eclipse.jface.action.LegacyActionTools;
-import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UITextUtils;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.IntConsumer;
 
 final class AIImageAttachmentsComposite extends ScrolledComposite {
-    private static final int MAX_LINK_WIDTH = 180;
+    private static final Log log = Log.getLog(AIImageAttachmentsComposite.class);
     private static final int MAX_VISIBLE_ROWS = 2;
 
     private final Composite attachments;
     private final IntConsumer removeImage;
+    private final Map<AIImageAttachment, ImageData> thumbnails = new HashMap<>();
+    @Nullable
+    private AbstractJob thumbnailJob;
 
     AIImageAttachmentsComposite(@NotNull Composite parent, @NotNull IntConsumer removeImage) {
         super(parent, SWT.V_SCROLL);
@@ -59,54 +69,90 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
         layout.marginTop = 0;
         layout.marginBottom = 0;
         layout.spacing = 6;
-        layout.center = true;
         attachments.setLayout(layout);
         setContent(attachments);
         addListener(SWT.Resize, event -> updateContentSize());
+        addDisposeListener(event -> {
+            if (thumbnailJob != null) {
+                thumbnailJob.cancel();
+            }
+            thumbnails.clear();
+        });
     }
 
     void setImages(@NotNull List<AIImageAttachment> images) {
+        if (thumbnailJob != null) {
+            thumbnailJob.cancel();
+            thumbnailJob = null;
+        }
         for (Control control : attachments.getChildren()) {
             control.dispose();
         }
+        thumbnails.keySet().retainAll(images);
+        List<ThumbnailRequest> pending = new ArrayList<>();
         for (int index = 0; index < images.size(); index++) {
             AIImageAttachment image = images.get(index);
-            Composite attachment = new Composite(attachments, SWT.NONE);
-            attachment.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(2, 0).create());
-            Link link = new Link(attachment, SWT.NONE);
-            link.setToolTipText(image.name());
-            link.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(event ->
-                AIImageAttachmentViewer.open(getShell(), image)));
             int imageIndex = index;
-            ToolBar toolbar = new ToolBar(attachment, SWT.FLAT);
-            toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-            UIUtils.createToolItem(toolbar, AIChatMessagesUI.ai_chat_image_remove + ": " + image.name(), UIIcon.CLOSE,
-                SelectionListener.widgetSelectedAdapter(event -> {
-                    if (isEnabled()) {
-                        removeImage.accept(imageIndex);
-                    }
-                }));
+            AIImageAttachmentTile tile = new AIImageAttachmentTile(attachments, image, () -> removeImage.accept(imageIndex));
+            ImageData cached = thumbnails.get(image);
+            if (cached != null) {
+                tile.setThumbnail(cached);
+            } else {
+                pending.add(new ThumbnailRequest(image, tile));
+            }
         }
         setOrigin(0, 0);
         updateContentSize();
+        if (!pending.isEmpty()) {
+            loadThumbnails(pending);
+        }
+    }
+
+    private void loadThumbnails(@NotNull List<ThumbnailRequest> requests) {
+        thumbnailJob = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                for (ThumbnailRequest request : requests) {
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    try {
+                        ImageData[] decoded = new ImageLoader().load(new ByteArrayInputStream(request.image().getBytes()));
+                        if (decoded.length == 0) {
+                            continue;
+                        }
+                        ImageData source = decoded[0];
+                        double scale = Math.min(1, (double) (AIImageAttachmentTile.PREVIEW_SIZE * 2)
+                            / Math.max(source.width, source.height));
+                        ImageData thumbnail = source.scaledTo(Math.max(1, (int) Math.round(source.width * scale)),
+                            Math.max(1, (int) Math.round(source.height * scale)));
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
+                        }
+                        UIUtils.asyncExec(() -> {
+                            if (!isDisposed() && !request.tile().isDisposed()) {
+                                thumbnails.put(request.image(), thumbnail);
+                                request.tile().setThumbnail(thumbnail);
+                            }
+                        });
+                    } catch (SWTException | IllegalArgumentException exception) {
+                        log.debug("Cannot create image attachment thumbnail", exception);
+                    }
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        thumbnailJob.setSystem(true);
+        thumbnailJob.schedule();
     }
 
     private void updateContentSize() {
-        int width = Math.max(1, getClientArea().width);
-        int rowHeight = 0;
         RowLayout layout = (RowLayout) attachments.getLayout();
-        for (Control control : attachments.getChildren()) {
-            Composite attachment = (Composite) control;
-            Link link = (Link) attachment.getChildren()[0];
-            ToolBar toolbar = (ToolBar) attachment.getChildren()[1];
-            int linkWidth = Math.max(1, Math.min(MAX_LINK_WIDTH, width - toolbar.computeSize(SWT.DEFAULT, SWT.DEFAULT).x - 2));
-            updateLinkText(link, linkWidth);
-            attachment.layout(true, true);
-            rowHeight = Math.max(rowHeight, attachment.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-        }
-        Point size = attachments.computeSize(width, SWT.DEFAULT, true);
+        Point size = attachments.computeSize(Math.max(1, getClientArea().width), SWT.DEFAULT, true);
         setMinSize(size);
+        int rowHeight = attachments.getChildren().length == 0 ? 0 : ((RowData)
+            attachments.getChildren()[0].getLayoutData()).height;
         int height = Math.max(0, Math.min(size.y, MAX_VISIBLE_ROWS * (rowHeight + layout.spacing) - layout.spacing));
         if (getLayoutData() instanceof GridData layoutData && layoutData.heightHint != height) {
             layoutData.heightHint = height;
@@ -115,18 +161,6 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
         attachments.layout(true, true);
     }
 
-    private void updateLinkText(@NotNull Link link, int width) {
-        String name = link.getToolTipText();
-        int textWidth = width;
-        // account for native link sizing so abbreviated names stay on one line
-        while (true) {
-            String text = UITextUtils.getShortText(link, name, textWidth);
-            link.setText("<a>" + LegacyActionTools.escapeMnemonics(text) + "</a>");
-            int preferredWidth = link.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-            if (preferredWidth <= width || textWidth == 1) {
-                break;
-            }
-            textWidth = Math.max(1, textWidth - preferredWidth + width);
-        }
+    private record ThumbnailRequest(@NotNull AIImageAttachment image, @NotNull AIImageAttachmentTile tile) {
     }
 }
