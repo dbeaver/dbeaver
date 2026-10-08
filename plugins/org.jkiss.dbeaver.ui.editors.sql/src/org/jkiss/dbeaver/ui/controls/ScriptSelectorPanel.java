@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -97,8 +99,8 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         @NotNull List<ResourceInfo> scriptFiles) {
         super(workbenchWindow.getShell(),
             navigatorContext.getDataSourceContainer() == null ?
-                "Choose SQL script" :
-                "Choose SQL script for '" + navigatorContext.getDataSourceContainer().getName() + "'");
+                SQLEditorMessages.script_selector_panel_dialog_title :
+                NLS.bind(SQLEditorMessages.script_selector_panel_dialog_title_datasource, navigatorContext.getDataSourceContainer().getName()));
 
         this.workbenchWindow = workbenchWindow;
         this.navigatorContext = navigatorContext;
@@ -129,7 +131,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
 
         patternText = new Text(composite, SWT.BORDER);
         patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.addEmptyTextHint(patternText, text -> "Enter a part of script name here");
+        UIUtils.addEmptyTextHint(patternText, text -> SQLEditorMessages.script_selector_panel_hint_text);
 
         patternText.addModifyListener(e -> {
             if (filterJob != null) {
