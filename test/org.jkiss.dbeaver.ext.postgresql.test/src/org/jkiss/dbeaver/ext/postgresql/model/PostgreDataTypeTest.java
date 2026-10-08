@@ -46,7 +46,7 @@ public class PostgreDataTypeTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void getFullyQualifiedName_whenCatalogType_returnsSqlTypeName() {
+    public void getFullyQualifiedNameOfCatalogTypeReturnsSqlName() {
         assertCatalogTypeSqlName("int4", "integer");
         assertCatalogTypeSqlName("int8", "bigint");
         assertCatalogTypeSqlName("int2", "smallint");
@@ -57,19 +57,19 @@ public class PostgreDataTypeTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void getFullyQualifiedName_whenCatalogTypeHasNoSqlName_returnsTypeName() {
+    public void getFullyQualifiedNameOfCatalogTypeWithoutSqlNameReturnsTypeName() {
         assertCatalogTypeSqlName("varchar", "varchar");
         assertCatalogTypeSqlName("text", "text");
     }
 
     @Test
-    public void getFullyQualifiedName_whenTypeIsNotInCatalogSchema_returnsQualifiedName() {
+    public void getFullyQualifiedNameOfTypeOutsideCatalogSchemaReturnsQualifiedName() {
         PostgreDataType dataType = new PostgreDataType(testSchema, Types.OTHER, "int4");
         Assertions.assertEquals("test_schema.int4", dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
     }
 
     @Test
-    public void resolveTypeFullName_whenSqlNameProvided_returnsCatalogType() throws Exception {
+    public void resolveTypeFullNameWithSqlNameReturnsCatalogType() throws Exception {
         PostgreDataType dataType = PostgreUtils.resolveTypeFullName(monitor, testSchema, "double precision");
         Assertions.assertNotNull(dataType);
         Assertions.assertEquals(PostgreOid.FLOAT8, dataType.getObjectId());
@@ -77,7 +77,7 @@ public class PostgreDataTypeTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void getFullTypeName_whenColumnHasCatalogType_returnsSqlTypeName() throws Exception {
+    public void getFullTypeNameOfColumnWithCatalogTypeReturnsSqlName() throws Exception {
         PostgreTableRegular table = new PostgreTableRegular(testSchema);
         table.setName("test_table");
         PostgreTestUtils.addColumn(table, "column1", "int4", 1);
