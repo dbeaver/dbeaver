@@ -228,4 +228,25 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
         profile.setGlobal(false);
         Assertions.assertFalse(properties.isGlobal());
     }
+
+    @Test
+    public void generatesUniqueIdentityForProfileCopy() throws Exception {
+        AISettings settings = new AISettings();
+        AIEngineDescriptor engine = AIEngineRegistry.getInstance().getEngineDescriptor(OpenAIConstants.OPENAI_ENGINE);
+        Assertions.assertNotNull(engine);
+
+        AIConfigurationProfile source = settings.createConfiguration("source", engine);
+        source.setProfileName("Profile");
+        AIConfigurationProfile existing = settings.createConfiguration(OpenAIConstants.OPENAI_ENGINE, engine);
+        existing.setProfileName("Profile (1)");
+
+        AIConfigurationProfile copy = settings.copyConfiguration(source);
+
+        Assertions.assertEquals(OpenAIConstants.OPENAI_ENGINE + "_1", copy.getProfileId());
+        Assertions.assertEquals("Profile (2)", copy.getProfileName());
+
+        AIConfigurationProfile copyWithProvidedId = settings.copyConfiguration(source, "provided-copy-id");
+        Assertions.assertEquals("provided-copy-id", copyWithProvidedId.getProfileId());
+        Assertions.assertEquals("Profile (3)", copyWithProvidedId.getProfileName());
+    }
 }

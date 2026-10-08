@@ -112,7 +112,10 @@ public class DBExecUtils {
         // Note: authenticator may be changed by Eclipse framework on startup or later.
         // That's why we set new default authenticator on connection initiation
         boolean hasProxy = false;
-        for (DBWHandlerConfiguration handler : context.getConnectionConfiguration().getHandlers()) {
+        DBPConnectionConfiguration configuration = DBWorkbench.isDistributed()
+            ? context.getActualConnectionConfiguration()
+            : context.getConnectionConfiguration();
+        for (DBWHandlerConfiguration handler : configuration.getHandlers()) {
             if (handler.isEnabled() && handler.getType() == DBWHandlerType.PROXY) {
                 hasProxy = true;
                 break;
