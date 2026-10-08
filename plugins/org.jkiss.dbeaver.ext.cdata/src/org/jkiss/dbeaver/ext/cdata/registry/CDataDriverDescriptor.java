@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriverLicense;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyLogo;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -44,9 +45,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriverWithLicense, DBPDriverWithLazyIcon {
+public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriverWithLicense, DBPDriverWithLazyIcon, DBPDriverWithLazyLogo {
     private static final Log log = Log.getLog(CDataDriverDescriptor.class);
-    private static final long ICON_RETRY_NANOS = TimeUnit.MINUTES.toNanos(5);
+    private static final long IMAGE_RETRY_NANOS = TimeUnit.MINUTES.toNanos(5);
 
     private final CDataDriverInfo driverInfo;
     private DBPDataSourceType dataSourceType;
@@ -58,6 +59,10 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     private final Set<Runnable> iconUpdateCallbacks = ConcurrentHashMap.newKeySet();
     private volatile boolean iconLoaded;
     private volatile long iconRetryAfterNanos;
+    private final AtomicBoolean logoLoadStarted = new AtomicBoolean();
+    private final Set<Runnable> logoUpdateCallbacks = ConcurrentHashMap.newKeySet();
+    private volatile DBPImage logoImage;
+    private volatile long logoRetryAfterNanos;
     private volatile CDataDriverLicense currentLicense = new CDataDriverLicense(
         CDataLicenseStatus.VALIDATION_UNAVAILABLE,
         "",
@@ -112,7 +117,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
                     iconUpdateCallbacks.clear();
                 } else {
                     iconUpdateCallbacks.clear();
-                    iconRetryAfterNanos = System.nanoTime() + ICON_RETRY_NANOS;
+                    iconRetryAfterNanos = System.nanoTime() + IMAGE_RETRY_NANOS;
                     iconLoadStarted.set(false);
                 }
             });
@@ -123,6 +128,35 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     @Override
     protected DriverLoaderDescriptor createDriverLoader(@NotNull String loaderId) {
         return new CDataDriverLoaderDescriptor(loaderId, this);
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getLogoImage() {
+        return logoImage;
+    }
+
+    @Override
+    public void loadLogo(@NotNull Runnable onUpdate) {
+        if (logoImage != null || System.nanoTime() < logoRetryAfterNanos) {
+            return;
+        }
+        logoUpdateCallbacks.add(onUpdate);
+        if (logoLoadStarted.compareAndSet(false, true)) {
+            CDataDriverIconLoader.loadLogo(driverInfo.dataSource(), logo -> {
+                if (logo != null) {
+                    logoImage = logo;
+                    for (Runnable callback : logoUpdateCallbacks) {
+                        callback.run();
+                    }
+                    logoUpdateCallbacks.clear();
+                } else {
+                    logoUpdateCallbacks.clear();
+                    logoRetryAfterNanos = System.nanoTime() + IMAGE_RETRY_NANOS;
+                    logoLoadStarted.set(false);
+                }
+            });
+        }
     }
 
     @NotNull
