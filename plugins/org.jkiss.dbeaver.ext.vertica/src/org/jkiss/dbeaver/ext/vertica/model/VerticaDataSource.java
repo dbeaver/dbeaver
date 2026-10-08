@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
+import org.jkiss.dbeaver.ext.vertica.VerticaSSLUtils;
 import org.jkiss.dbeaver.ext.vertica.internal.VerticaMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -44,11 +46,16 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Properties;
 
 public class VerticaDataSource extends GenericDataSource {
 
@@ -71,6 +78,31 @@ public class VerticaDataSource extends GenericDataSource {
     @Override
     protected boolean isPopulateClientAppName() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        // Java 25 treats File("") as the current directory. Vertica then tries to read the absent default keystore
+        // from an empty filename (#41625). Supply an actual empty store without changing JVM-wide SSL settings.
+        if (new File("").exists() && VerticaSSLUtils.needsEmptyKeyStore(
+            properties, connectionInfo.getUrl(), System.getProperty(VerticaConstants.PROP_SYSTEM_KEYSTORE)
+        )) {
+            try {
+                Path tempFolder = DBWorkbench.getPlatform().getTempFolder(monitor, "vertica");
+                properties.setProperty(VerticaConstants.PROP_KEYSTORE_PATH, VerticaSSLUtils.getEmptyKeyStore(tempFolder).toString());
+                properties.setProperty(VerticaConstants.PROP_KEYSTORE_PASSWORD, VerticaSSLUtils.EMPTY_KEYSTORE_PASSWORD);
+            } catch (IOException | GeneralSecurityException e) {
+                throw new DBCException("Error creating an empty Vertica TLS keystore", e);
+            }
+        }
+        return properties;
     }
 
     @Override
