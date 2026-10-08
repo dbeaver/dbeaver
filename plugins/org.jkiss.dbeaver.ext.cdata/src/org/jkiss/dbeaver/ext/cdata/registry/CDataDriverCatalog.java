@@ -45,18 +45,22 @@ import java.util.Set;
 
 public final class CDataDriverCatalog {
     private static final Log log = Log.getLog(CDataDriverCatalog.class);
-    public static final int SCHEMA_VERSION = 2;
     private static final String CATALOG_FILE_NAME = "cdata-drivers.json";
     private static final String CATALOG_URL = "https://dbeaver.io/product/cdata-drivers.json";
     private static final String CATALOG_URL_PROPERTY = "cdataDriversURL";
     private static final int CONNECTION_TIMEOUT = 10_000;
+    private static final int LEGACY_SCHEMA_VERSION = 2;
+    private static final String ARTIFACT_SUFFIX = "-jdbc";
     private static volatile List<CDataDriverInfo> drivers = List.of();
     private static final AbstractJob UPDATE_JOB = new AbstractJob("Load CData driver catalog") {
         @NotNull
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             var product = Platform.getProduct();
-            String catalogUrl = product == null ? null : product.getProperty(CATALOG_URL_PROPERTY);
+            String catalogUrl = System.getProperty(CATALOG_URL_PROPERTY);
+            if (catalogUrl == null || catalogUrl.isBlank()) {
+                catalogUrl = product == null ? null : product.getProperty(CATALOG_URL_PROPERTY);
+            }
             if (catalogUrl == null || catalogUrl.isBlank()) {
                 catalogUrl = CATALOG_URL;
             }
@@ -114,7 +118,7 @@ public final class CDataDriverCatalog {
         List<CDataDriverInfo> cachedDrivers = List.of();
         if (Files.isRegularFile(cacheFile)) {
             try {
-                cachedDrivers = read(cacheFile);
+                cachedDrivers = read(cacheFile, true);
             } catch (IOException | IllegalStateException | IllegalArgumentException e) {
                 log.warn("Error reading cached CData driver catalog", e);
             }
@@ -159,7 +163,7 @@ public final class CDataDriverCatalog {
                         output.write(buffer, 0, count);
                     }
                 }
-                List<CDataDriverInfo> downloadedDrivers = read(temporary);
+                final List<CDataDriverInfo> downloadedDrivers = read(temporary, false);
                 Files.setLastModifiedTime(temporary, FileTime.fromMillis(connection.getLastModified()));
                 checkCanceled(monitor);
                 try {
@@ -177,12 +181,34 @@ public final class CDataDriverCatalog {
     }
 
     @NotNull
-    private static List<CDataDriverInfo> read(@NotNull Path file) throws IOException {
+    private static List<CDataDriverInfo> read(@NotNull Path file, boolean allowLegacyCache) throws IOException {
         try (Reader reader = Files.newBufferedReader(file)) {
-            return validate(JSONUtils.GSON.fromJson(reader, CatalogFile.class));
+            CatalogFile catalog = JSONUtils.GSON.fromJson(reader, CatalogFile.class);
+            if (allowLegacyCache && catalog != null && catalog.items == null && catalog.schemaVersion == LEGACY_SCHEMA_VERSION
+                && catalog.drivers != null) {
+                catalog.items = catalog.drivers.stream().map(CDataDriverCatalog::migrateDriver).toList();
+            }
+            return validate(catalog);
         } catch (JsonParseException e) {
             throw new IllegalStateException("Error reading CData driver catalog", e);
         }
+    }
+
+    @NotNull
+    private static CDataDriverInfo migrateDriver(@Nullable LegacyDriverInfo driver) {
+        if (driver == null) {
+            throw new IllegalStateException("CData driver catalog contains an empty entry");
+        }
+        requireText(driver.artifactId(), "artifactId");
+        requireText(driver.tier(), "tier");
+        if (!driver.artifactId().endsWith(ARTIFACT_SUFFIX) || driver.artifactId().length() == ARTIFACT_SUFFIX.length()) {
+            throw new IllegalStateException("Invalid legacy CData Maven artifact ID: " + driver.artifactId());
+        }
+        return new CDataDriverInfo(
+            driver.dataSource(), driver.artifactId().substring(0, driver.artifactId().length() - ARTIFACT_SUFFIX.length()),
+            driver.driverName(), driver.versionYear(), CDataDriverTier.valueOf(driver.tier()), driver.purchaseUrl(),
+            driver.dataSource(), null
+        );
     }
 
     private static void checkCanceled(@NotNull DBRProgressMonitor monitor) throws InterruptedException {
@@ -202,32 +228,24 @@ public final class CDataDriverCatalog {
         if (catalog == null) {
             throw new IllegalStateException("CData driver catalog is empty");
         }
-        if (catalog.schemaVersion != SCHEMA_VERSION) {
-            throw new IllegalStateException("Unsupported CData driver catalog schema: " + catalog.schemaVersion);
-        }
-        if (catalog.drivers == null || catalog.drivers.isEmpty()) {
+        if (catalog.items == null || catalog.items.isEmpty()) {
             throw new IllegalStateException("CData driver catalog contains no drivers");
         }
 
         Set<String> dataSources = new HashSet<>();
         Set<String> artifactIds = new HashSet<>();
-        for (CDataDriverInfo driver : catalog.drivers) {
+        for (CDataDriverInfo driver : catalog.items) {
             if (driver == null) {
                 throw new IllegalStateException("CData driver catalog contains an empty entry");
             }
-            requireText(driver.dataSource(), "dataSource");
-            requireText(driver.artifactId(), "artifactId");
+            requireText(driver.dataSource(), "datasource");
+            requireText(driver.objectName(), "objname");
+            requireText(driver.dataTypeId(), "datatype_id");
             if (!driver.artifactId().matches("[a-zA-Z0-9_][a-zA-Z0-9_.-]*") || driver.artifactId().contains("..")) {
                 throw new IllegalStateException("Invalid CData Maven artifact ID: " + driver.artifactId());
             }
-            if (!driver.artifactId().endsWith(CDataDriverInfo.ARTIFACT_SUFFIX) ||
-                driver.artifactId().length() == CDataDriverInfo.ARTIFACT_SUFFIX.length()) {
-                throw new IllegalStateException(
-                    "CData Maven artifact must be named <source>" + CDataDriverInfo.ARTIFACT_SUFFIX +
-                        ": " + driver.artifactId());
-            }
-            requireText(driver.driverName(), "driverName");
-            requireText(driver.purchaseUrl(), "purchaseUrl");
+            requireText(driver.driverName(), "driver_name");
+            requireText(driver.purchaseUrl(), "purchase_url");
             if (driver.tier() == null) {
                 throw new IllegalStateException("CData driver tier is missing for " + driver.dataSource());
             }
@@ -241,7 +259,7 @@ public final class CDataDriverCatalog {
             requireUnique(dataSources, driver.dataSource(), "data source");
             requireUnique(artifactIds, driver.artifactId(), "Maven artifact");
         }
-        return List.copyOf(catalog.drivers);
+        return List.copyOf(catalog.items);
     }
 
     private static void requireText(@Nullable String value, @NotNull String field) {
@@ -257,7 +275,18 @@ public final class CDataDriverCatalog {
     }
 
     private static final class CatalogFile {
+        private List<CDataDriverInfo> items;
         private int schemaVersion;
-        private List<CDataDriverInfo> drivers;
+        private List<LegacyDriverInfo> drivers;
+    }
+
+    private record LegacyDriverInfo(
+        @NotNull String dataSource,
+        @NotNull String artifactId,
+        @NotNull String driverName,
+        int versionYear,
+        @NotNull String tier,
+        @NotNull String purchaseUrl
+    ) {
     }
 }
