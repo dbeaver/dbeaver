@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
@@ -75,7 +77,10 @@ public enum SQLScriptBindingType {
             if (!CommonUtils.isEmpty(cfg.getUserName())) {
                 params.put(DataSourceUtils.PARAM_USER, cfg.getUserName());
             }
-            for (DBWHandlerConfiguration handler : cfg.getHandlers()) {
+            var handlers = DBWorkbench.isDistributed()
+                ? DBWUtils.getActualNetworkHandlers(dataSource)
+                : cfg.getHandlers();
+            for (DBWHandlerConfiguration handler : handlers) {
                 if (!handler.isEnabled()) {
                     continue;
                 }

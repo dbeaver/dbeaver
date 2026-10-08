@@ -37,6 +37,7 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
     private final DBPImage icon;
     private final DBPImage iconBig;
     private final DBPImage logoImage;
+    private final DBPDriver iconDriver;
     private final List<DBPDriver> drivers = new ArrayList<>();
 
     DataSourceTypeDescriptor(
@@ -54,6 +55,7 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
         this.icon = icon;
         this.iconBig = icon;
         this.logoImage = null;
+        this.iconDriver = null;
     }
 
     DataSourceTypeDescriptor(@NotNull IConfigurationElement config) {
@@ -69,6 +71,7 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
         DBPImage largeIcon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG));
         iconBig = largeIcon == null ? icon : largeIcon;
         logoImage = iconToImage(config.getAttribute("logoImage"));
+        iconDriver = null;
     }
 
     DataSourceTypeDescriptor(@NotNull String id, @NotNull DBPDriver driver) {
@@ -80,6 +83,7 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
         icon = driver.getPlainIcon();
         iconBig = driver.getIconBig();
         logoImage = driver.getLogoImage();
+        iconDriver = driver;
     }
 
     void addDriver(@NotNull DBPDriver driver) {
@@ -114,12 +118,12 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
 
     @Override
     public @NotNull DBPImage getIcon() {
-        return icon;
+        return iconDriver == null ? icon : iconDriver.getPlainIcon();
     }
 
     @Override
     public @NotNull DBPImage getIconBig() {
-        return iconBig;
+        return iconDriver == null ? iconBig : iconDriver.getIconBig();
     }
 
     @Override
