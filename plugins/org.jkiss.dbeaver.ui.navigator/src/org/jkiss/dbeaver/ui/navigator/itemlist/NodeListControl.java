@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.navigator.itemlist;
 
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -53,6 +56,7 @@ import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeContainer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -358,21 +362,44 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         return new NodeRenderer();
     }
 
+    protected static boolean isHyperlinkValue(
+        @Nullable Object cellValue,
+        @Nullable Object ownerObject,
+        @Nullable IWorkbenchSite workbenchSite
+    ) {
+        return cellValue != ownerObject
+            && (cellValue instanceof DBSObject || workbenchSite != null && cellValue instanceof DBSObjectReference);
+    }
+
+    protected static void navigateHyperlinkValue(@Nullable Object cellValue, @Nullable IWorkbenchSite workbenchSite) {
+        if (cellValue instanceof DBSObject object) {
+            NavigatorHandlerObjectOpen.openEntityEditor(object);
+        } else if (cellValue instanceof DBSObjectReference reference && workbenchSite != null) {
+            new EntityHyperlink(workbenchSite, reference, new Region(0, 0)).open();
+        }
+    }
+
     private class NodeRenderer extends ViewerRenderer {
+        @Override
+        protected boolean isHyperlinkActivation(@Nullable Object cellValue, int stateMask) {
+            if (cellValue instanceof DBSObjectReference && !(cellValue instanceof DBSObject)) {
+                return (stateMask & (SWT.SHIFT | SWT.COMMAND)) == 0;
+            }
+            return super.isHyperlinkActivation(cellValue, stateMask);
+        }
+
         @Override
         public boolean isHyperlink(Object element, Object cellValue) {
             Object ownerObject = null;
             if (rootNode instanceof DBNDatabaseNode node) {
                 ownerObject = node.getValueObject();
             }
-            return cellValue instanceof DBSObject && cellValue != ownerObject;
+            return isHyperlinkValue(cellValue, ownerObject, workbenchSite);
         }
 
         @Override
         public void navigateHyperlink(Object cellValue) {
-            if (cellValue instanceof DBSObject object) {
-                NavigatorHandlerObjectOpen.openEntityEditor(object);
-            }
+            navigateHyperlinkValue(cellValue, workbenchSite);
         }
 
     }

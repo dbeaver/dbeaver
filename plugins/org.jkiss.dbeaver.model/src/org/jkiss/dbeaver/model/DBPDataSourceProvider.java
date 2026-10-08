@@ -42,6 +42,13 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
     void init(@NotNull DBPPlatform platform);
 
     /**
+     * Applies defaults once to a fresh connection in the creation wizard, without network access.
+     * Must preserve explicitly supplied settings. Not called for existing connections or copies.
+     */
+    default void initializeNewConnection(@NotNull DBPDataSourceContainer container) throws DBException {
+    }
+
+    /**
      * Supported features
      * @return features
      */

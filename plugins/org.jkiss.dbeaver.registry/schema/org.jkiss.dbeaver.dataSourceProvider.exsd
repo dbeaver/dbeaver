@@ -265,6 +265,11 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="labelTerm" type="string">
+            <annotation>
+               <documentation>Optional term identifier passed to DBPTermProvider with the first child item's path and multiple=true. A nonempty term overrides the folder label; otherwise the localized label is used.</documentation>
+            </annotation>
+         </attribute>
          <attribute name="icon" type="string">
             <annotation>
                <documentation>Folder icon</documentation>
