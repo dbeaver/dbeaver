@@ -20,6 +20,7 @@ import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OpenAiUtils {
+    private static final Log log = Log.getLog(OpenAiUtils.class);
     private static final int MINI_IMAGE_BASE_TOKENS = 2833;
     private static final int MINI_IMAGE_TILE_TOKENS = 5667;
     private static final int MAX_IMAGE_TILES = 8;
@@ -68,7 +70,7 @@ public class OpenAiUtils {
             scale = Math.min(1, IMAGE_SHORT_SIDE / Math.min(width, height));
             tiles = (int) (Math.ceil(width * scale / IMAGE_TILE_SIZE) * Math.ceil(height * scale / IMAGE_TILE_SIZE));
         } catch (IOException | IllegalArgumentException exception) {
-            org.jkiss.dbeaver.Log.getLog(OpenAiUtils.class).debug("Cannot estimate image tokens from dimensions", exception);
+            log.debug("Cannot estimate image tokens from dimensions", exception);
         }
         // auto detail can use the high-detail tile budget
         return MINI_IMAGE_BASE_TOKENS + Math.min(MAX_IMAGE_TILES, tiles) * MINI_IMAGE_TILE_TOKENS;

@@ -26,6 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 public final class ChatMessageContent {
+    private static final String TYPE = "type"; //$NON-NLS-1$
+    private static final String TEXT = "text"; //$NON-NLS-1$
+    private static final String IMAGE_URL = "image_url"; //$NON-NLS-1$
+    private static final String URL = "url"; //$NON-NLS-1$
+
     private ChatMessageContent() {
     }
 
@@ -36,10 +41,10 @@ public final class ChatMessageContent {
         }
         List<Map<String, Object>> content = new ArrayList<>();
         if (!message.getContent().isEmpty()) {
-            content.add(Map.of("type", "text", "text", message.getContent()));
+            content.add(Map.of(TYPE, TEXT, TEXT, message.getContent()));
         }
         message.getImages().forEach(image -> content.add(
-            Map.of("type", "image_url", "image_url", Map.of("url", image.toDataUrl()))));
+            Map.of(TYPE, IMAGE_URL, IMAGE_URL, Map.of(URL, image.toDataUrl()))));
         return content;
     }
 
@@ -50,9 +55,9 @@ public final class ChatMessageContent {
         }
         return message.content.stream().map(content -> {
             if (OAIMessageContent.TYPE_INPUT_IMAGE.equals(content.type)) {
-                return Map.of("type", "image_url", "image_url", Map.of("url", content.imageUrl));
+                return Map.of(TYPE, IMAGE_URL, IMAGE_URL, Map.of(URL, content.imageUrl));
             }
-            return Map.of("type", "text", "text", content.text);
+            return Map.of(TYPE, TEXT, TEXT, content.text);
         }).toList();
     }
 }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -28,6 +29,8 @@ import java.util.List;
  * Completion engine
  */
 public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseable {
+
+    Log log = Log.getLog(AIEngine.class);
 
     @NotNull
     List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException;
@@ -80,7 +83,7 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
                 .map(AIModel::imageInputSupported)
                 .orElse(true);
         } catch (DBException exception) {
-            org.jkiss.dbeaver.Log.getLog(AIEngine.class).debug("Cannot determine image input capability", exception);
+            log.debug("Cannot determine image input capability", exception);
             return true;
         }
     }
