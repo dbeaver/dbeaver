@@ -42,10 +42,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
-import org.jkiss.dbeaver.tools.transfer.DTConstants;
-import org.jkiss.dbeaver.tools.transfer.DTUtils;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
@@ -378,7 +375,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 this.outputBuffer = new StringWriter(2048);
                 this.writer = new PrintWriter(this.outputBuffer, true);
             } else {
-                openOutputStreams(session.getProgressMonitor());
+                try {
+                    openOutputStreams(session.getProgressMonitor());
+                } finally {
+                    if (outputFile != null) {
+                        // Conflict resolution may rename the file; keep the recorded path in sync.
+                        outputFiles.set(outputFiles.size() - 1, outputFile);
+                    }
+                }
             }
         } catch (IOException e) {
             try {
@@ -583,6 +587,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         outputFiles.add(outputFile);
 
         openOutputStreams(monitor);
+        // The same rename can happen when opening a split file.
+        outputFiles.set(outputFiles.size() - 1, outputFile);
     }
 
     @Override
@@ -661,6 +667,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             try {
                 final IDataTransferEventProcessor<StreamTransferConsumer> processor = descriptor.create();
 
+                // Batch processors run once from the task handler; local error processors have already run per pipe.
+                if (processor instanceof IDataTransferBatchEventProcessor<?> || (last && error != null)) {
+                    continue;
+                }
                 if (error == null) {
                     processor.processEvent(monitor, IDataTransferEventProcessor.Event.FINISH, this, task, entry.getValue());
                 } else {

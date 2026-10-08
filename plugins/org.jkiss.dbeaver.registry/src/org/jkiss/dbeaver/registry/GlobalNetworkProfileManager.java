@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileUsageProvider;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -43,7 +44,7 @@ import java.util.Map;
 /**
  * Global network profile manager.
  */
-public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager {
+public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager implements DBWNetworkProfileUsageProvider {
     public static final String CONFIG_FILE_NAME = "network-profiles.json";
 
     private static final Log log = Log.getLog(GlobalNetworkProfileManager.class);
@@ -53,6 +54,29 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
     GlobalNetworkProfileManager(@NotNull DBPPlatform platform) {
         this.platform = platform;
         WorkspaceConfigEventManager.addConfigChangedListener(CONFIG_FILE_NAME, o -> reloadProfiles());
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException {
+        return getUsageProvider().findLocalProfileConflicts(profileName);
+    }
+
+    @NotNull
+    @Override
+    public List<ProjectConnections> findGlobalProfileConnections(@NotNull String profileName) throws DBException {
+        return getUsageProvider().findGlobalProfileConnections(profileName);
+    }
+
+    @NotNull
+    private DBWNetworkProfileUsageProvider getUsageProvider() {
+        DBWNetworkProfileUsageProvider provider = RuntimeUtils.getObjectAdapter(
+            platform.getWorkspace(), DBWNetworkProfileUsageProvider.class, true);
+        if (provider == null) {
+            log.warn("Workspace does not provide network profile usage queries; using project registries");
+            return new LegacyNetworkProfileUsageProvider(platform.getWorkspace());
+        }
+        return provider;
     }
 
     @NotNull

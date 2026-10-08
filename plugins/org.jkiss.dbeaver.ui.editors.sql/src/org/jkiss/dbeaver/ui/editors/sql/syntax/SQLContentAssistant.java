@@ -98,6 +98,11 @@ public class SQLContentAssistant extends ContentAssistant {
     }
 
     @Override
+    public boolean isProposalPopupActive() {
+        return super.isProposalPopupActive();
+    }
+
+    @Override
     public void install(@NotNull ITextViewer textViewer) {
         super.install(textViewer);
         installedTextViewer = textViewer;
