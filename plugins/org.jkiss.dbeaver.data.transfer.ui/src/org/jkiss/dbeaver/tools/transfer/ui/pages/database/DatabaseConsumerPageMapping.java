@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
@@ -57,12 +58,14 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -225,8 +228,29 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 getWizard().getProject(),
                 "container.data-transfer.database-consumer",
                 DTMessages.data_transfer_db_consumer_target_container,
-                DTMessages.data_transfer_db_consumer_choose_container)
-            {
+                DTMessages.data_transfer_db_consumer_choose_container) {
+                @Nullable
+                @Override
+                protected DBNNode selectContainer(@NotNull DBNNode rootNode, @Nullable DBNNode selectedNode) {
+                    return ObjectBrowserDialog.selectObject(
+                        getShell(),
+                        DTMessages.data_transfer_db_consumer_choose_container,
+                        rootNode,
+                        selectedNode,
+                        new Class[] {DBSInstance.class, DBSObjectContainer.class},
+                        new Class[] {DBSObjectContainer.class},
+                        new Class[] {DBSSchema.class},
+                        null,
+                        this::isContainerSelectable
+                    );
+                }
+
+                @Override
+                protected boolean isContainerSelectable(@NotNull DBNNode node) {
+                    return !(node instanceof DBNDatabaseNode databaseNode)
+                        || DataImportPropertyTester.supportsImport(databaseNode.getDataSource());
+                }
+
                 @Nullable
                 @Override
                 protected DBNNode getSelectedNode() {
@@ -253,6 +277,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     try {
                         node.initializeNode(null, status -> {
                             if (!status.isOK()) {
+                                return;
+                            }
+                            if (!isContainerSelectable(node)) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    DTUIMessages.database_consumer_page_mapping_title_mapping_error,
+                                    DTUIMessages.database_consumer_page_mapping_error_message_import_not_supported
+                                );
                                 return;
                             }
                             settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));

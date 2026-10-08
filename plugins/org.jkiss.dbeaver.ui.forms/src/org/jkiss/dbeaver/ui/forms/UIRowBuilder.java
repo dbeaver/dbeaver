@@ -49,6 +49,19 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     UIRowBuilder panel(@NotNull Consumer<? super UIPanelBuilder> handler);
 
+    /**
+     * Groups a row of controls with a description below it. The description is
+     * indented and follows the row's enabled and visible state.
+     */
+    @NotNull
+    default UIRowBuilder withHint(@NotNull String hint, @NotNull Consumer<? super UIRowBuilder> handler) {
+        return panel(pb -> pb
+            .margins(0, 0)
+            .spacing(0, 2)
+            .row(handler)
+            .indent(p -> p.row(rb -> rb.control(parent -> new HintLabel(parent, hint)))));
+    }
+
     @NotNull
     default UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
         return expandablePanel(text, expanded, identityConsumer(), handler);
@@ -179,6 +192,15 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     default UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
         return checkBox(UIObservable.of(text), handler);
+    }
+
+    @NotNull
+    default UIRowBuilder checkBox(
+        @NotNull String text,
+        @NotNull String hint,
+        @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
+    ) {
+        return withHint(hint, rb -> rb.checkBox(text, handler));
     }
 
     @NotNull

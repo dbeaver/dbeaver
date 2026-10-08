@@ -29,6 +29,28 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class StringTemplateTest extends DBeaverUnitTest {
+    private static final String URL_TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
+    private static final String URL_TEMPLATE_WITH_PARAMS =
+        URL_TEMPLATE + "[?{prop}={value}[&{prop}={value}...]]";
+    private static final String URL_TEMPLATE_WITH_PARAM_GROUPS =
+        URL_TEMPLATE + "[?{param:{prop}={value}}[&{param:{prop}={value}}...]]";
+
+    @Test
+    public void matchesEntirePlainTemplateWhenRequested() throws Exception {
+        var template = StringTemplate.parseTemplate("jdbc:test:{host}");
+        Assertions.assertNotNull(template.extractAllParametersTree("jdbc:test:localhost", true));
+        Assertions.assertNull(template.extractAllParametersTree("jdbc:test:localhost;invalid", true));
+        Assertions.assertNotNull(template.extractAllParametersTree("jdbc:test:localhost;invalid"));
+    }
+
+    @Test
+    public void stopsRepeatingEmptyMatches() throws Exception {
+        var template = StringTemplate.parseTemplate("[{group:{value}}...]", param -> "[^;]*");
+        var entries = template.extractAllParametersTree("", true);
+        Assertions.assertNotNull(entries);
+        Assertions.assertEquals(1, entries.getGroups().get("group").size());
+        Assertions.assertEquals("", entries.getGroups().get("group").getFirst().getFirstParamValue("value"));
+    }
 
     static final String[] ALL_URL_TEMPLATES = new String[] {
         "jdbc:Altibase://{host}:{port}/{database}",
@@ -118,7 +140,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
     @Test
     public void testOptionals() throws StringTemplate.StringTemplateException {
         evaluatePlainUrl(
-            DatabaseURL.Generic.TEMPLATE, "wtf://user:pwd@myhost:1234", Map.of(
+            URL_TEMPLATE, "wtf://user:pwd@myhost:1234", Map.of(
                 DBConstants.PROP_USER, DBConstants.PROP_USER,
                 DBConstants.PROP_PASSWORD, "pwd",
                 "driver", "wtf",
@@ -127,7 +149,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
             )
         );
         evaluatePlainUrl(
-            DatabaseURL.Generic.TEMPLATE, "wtf://myhost/dbname", Map.of(
+            URL_TEMPLATE, "wtf://myhost/dbname", Map.of(
                 "driver", "wtf",
                 DBConstants.PROP_HOST, "myhost",
                 DBConstants.PROP_DATABASE, "dbname"
@@ -137,7 +159,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
 
     @Test
     public void testGetMissingOptionalParamValue() throws StringTemplate.StringTemplateException {
-        StringTemplate template = StringTemplate.parseTemplate(DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS);
+        StringTemplate template = StringTemplate.parseTemplate(URL_TEMPLATE_WITH_PARAM_GROUPS);
         StringTemplate.ParamEntries parameters = template.extractAllParametersTree("jdbc:as400://myhost");
 
         Assertions.assertNotNull(parameters);
@@ -156,7 +178,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
     @Test
     public void testRepeatingsFlat() throws StringTemplate.StringTemplateException {
         evaluatePlainUrl(
-            DatabaseURL.Generic.TEMPLATE_WITH_PARAMS,
+            URL_TEMPLATE_WITH_PARAMS,
             "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC",
             Map.of(
                 "driver", "mysql",
@@ -168,7 +190,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
             )
         );
         evaluateFlat(
-            DatabaseURL.Generic.TEMPLATE_WITH_PARAMS,
+            URL_TEMPLATE_WITH_PARAMS,
             "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC",
             List.of(
                 Map.entry("driver", "mysql"),
@@ -186,7 +208,7 @@ public class StringTemplateTest extends DBeaverUnitTest {
     @Test
     public void testRepeatingsWithGroups() throws StringTemplate.StringTemplateException {
         evaluateHierarchicalUrl(
-            DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS,
+            URL_TEMPLATE_WITH_PARAM_GROUPS,
             "jdbc:mysql://mysql.db.server:3306/my_database?1useSSL=1false&2serverTimezone=2UTC",
             Map.of(
                 "driver", "mysql",

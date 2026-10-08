@@ -283,6 +283,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_group_location;
 
     public static String dialog_connection_driver_project;
+    public static String dialog_connection_show_cdata;
 
     public static String dialog_edit_driver_edit_maven_raw;
     public static String dialog_edit_driver_edit_maven_settings;
