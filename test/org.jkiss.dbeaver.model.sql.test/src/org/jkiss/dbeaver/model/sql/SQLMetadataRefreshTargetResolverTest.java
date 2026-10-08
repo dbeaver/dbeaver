@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshLevel;
 import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshTarget;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -58,30 +57,30 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
     @EnumSource(value = SQLObjectOperation.Operation.class, names = {"CREATE", "DROP", "RENAME"})
     void databaseAndCatalogStructuralChangesRefreshDataSource(SQLObjectOperation.Operation operation) {
         assertTarget(operation, SQLObjectOperation.ObjectKind.DATABASE, List.of("database"),
-            target(RefreshLevel.DATA_SOURCE, null, null));
+            dataSourceTarget());
         assertTarget(operation, SQLObjectOperation.ObjectKind.CATALOG, List.of("catalog"),
-            target(RefreshLevel.DATA_SOURCE, null, null));
+            dataSourceTarget());
     }
 
     @Test
     void databaseAndCatalogAlterRefreshesNamedCatalog() {
         assertTarget(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.DATABASE, List.of("database"),
-            target(RefreshLevel.CATALOG, "DATABASE", null));
+            catalogTarget("DATABASE"));
         assertTarget(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.CATALOG, List.of("catalog"),
-            target(RefreshLevel.CATALOG, "CATALOG", null));
+            catalogTarget("CATALOG"));
     }
 
     @ParameterizedTest
     @EnumSource(value = SQLObjectOperation.Operation.class, names = {"CREATE", "DROP", "RENAME"})
     void schemaStructuralChangesRefreshContainingCatalog(SQLObjectOperation.Operation operation) {
         assertTarget(operation, SQLObjectOperation.ObjectKind.SCHEMA, List.of("catalog", "schema"),
-            target(RefreshLevel.CATALOG, "CATALOG", null));
+            catalogTarget("CATALOG"));
     }
 
     @Test
     void schemaAlterRefreshesNamedSchema() {
         assertTarget(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.SCHEMA,
-            List.of("catalog", "schema"), target(RefreshLevel.SCHEMA, "CATALOG", "SCHEMA"));
+            List.of("catalog", "schema"), schemaTarget("CATALOG", "SCHEMA"));
     }
 
     @Test
@@ -101,7 +100,7 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
             }
         );
 
-        Assertions.assertEquals(target(RefreshLevel.CATALOG, "current_catalog", null), actual);
+        Assertions.assertEquals(catalogTarget("current_catalog"), actual);
     }
 
     @Test
@@ -111,16 +110,16 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
         Mockito.doReturn(defaultCatalog).when(defaults).getDefaultCatalog();
 
         assertTarget(SQLObjectOperation.Operation.CREATE, SQLObjectOperation.ObjectKind.SCHEMA, List.of(),
-            target(RefreshLevel.CATALOG, "default_catalog", null));
+            catalogTarget("default_catalog"));
         assertTarget(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.SCHEMA, List.of(),
-            target(RefreshLevel.DATA_SOURCE, null, null));
+            dataSourceTarget());
     }
 
     @ParameterizedTest
     @EnumSource(SQLObjectOperation.Operation.class)
     void qualifiedOrdinaryObjectRefreshesContainingSchema(SQLObjectOperation.Operation operation) {
         assertTarget(operation, SQLObjectOperation.ObjectKind.TABLE, List.of("catalog", "schema", "table"),
-            target(RefreshLevel.SCHEMA, "CATALOG", "SCHEMA"));
+            schemaTarget("CATALOG", "SCHEMA"));
     }
 
     @ParameterizedTest
@@ -134,7 +133,7 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
             operation,
             SQLObjectOperation.ObjectKind.OTHER,
             List.of("role_name"),
-            target(RefreshLevel.DATA_SOURCE, null, null)
+            dataSourceTarget()
         );
     }
 
@@ -144,7 +143,7 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
             SQLObjectOperation.Operation.CREATE,
             SQLObjectOperation.ObjectKind.TABLE,
             List.of("\"cat\"\"alog\"", "\"sche\"\"ma\"", "\"table\""),
-            target(RefreshLevel.SCHEMA, "cat\"alog", "sche\"ma")
+            schemaTarget("cat\"alog", "sche\"ma")
         );
     }
 
@@ -169,7 +168,7 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
             SQLObjectOperation.Operation.CREATE,
             SQLObjectOperation.ObjectKind.TABLE,
             List.of("\"MySchema\"", "table"),
-            target(RefreshLevel.SCHEMA, null, "myschema")
+            schemaTarget(null, "myschema")
         );
     }
 
@@ -185,7 +184,7 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
         Mockito.doReturn(null, defaultSchema).when(defaults).getDefaultSchema();
 
         assertTarget(SQLObjectOperation.Operation.ALTER, SQLObjectOperation.ObjectKind.TABLE, List.of("table"),
-            target(RefreshLevel.SCHEMA, "default_catalog", "default_schema"));
+            schemaTarget("default_catalog", "default_schema"));
     }
 
     @Test
@@ -201,7 +200,7 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
             }
         );
 
-        Assertions.assertEquals(target(RefreshLevel.DATA_SOURCE, null, null), actual);
+        Assertions.assertEquals(dataSourceTarget(), actual);
     }
 
     private void assertTarget(
@@ -225,7 +224,15 @@ public class SQLMetadataRefreshTargetResolverTest extends DBeaverUnitTest {
         return new SQLObjectOperation(operation, objectKind, nameParts);
     }
 
-    private static RefreshTarget target(RefreshLevel level, String catalogName, String schemaName) {
-        return new RefreshTarget(level, catalogName, schemaName);
+    private static RefreshTarget dataSourceTarget() {
+        return new RefreshTarget.DataSource();
+    }
+
+    private static RefreshTarget catalogTarget(String catalogName) {
+        return new RefreshTarget.Catalog(catalogName);
+    }
+
+    private static RefreshTarget schemaTarget(String catalogName, String schemaName) {
+        return new RefreshTarget.Schema(catalogName, schemaName);
     }
 }

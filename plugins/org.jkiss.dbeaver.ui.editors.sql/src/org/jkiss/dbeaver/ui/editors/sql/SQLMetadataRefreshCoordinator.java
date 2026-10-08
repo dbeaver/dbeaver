@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshLevel;
 import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshTarget;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -154,29 +153,30 @@ final class SQLMetadataRefreshCoordinator {
             DBSObjectContainer.class,
             executionContext.getDataSource()
         );
-        if (target.level() == RefreshLevel.DATA_SOURCE) {
-            return dataSourceContainer;
+        String catalogName;
+        switch (target) {
+            case RefreshTarget.DataSource ignored -> {
+                return dataSourceContainer;
+            }
+            case RefreshTarget.Catalog catalog -> catalogName = catalog.catalogName();
+            case RefreshTarget.Schema schema -> catalogName = schema.catalogName();
         }
         DBCExecutionContextDefaults<?, ?> defaults = executionContext.getContextDefaults();
         DBSCatalog defaultCatalog = defaults == null ? null : defaults.getDefaultCatalog();
         DBSObject catalog = defaultCatalog;
-        if (target.catalogName() != null &&
-            (defaultCatalog == null || !target.catalogName().equals(defaultCatalog.getName()))) {
-            catalog = dataSourceContainer == null ? null : dataSourceContainer.getChild(monitor, target.catalogName());
+        if (catalogName != null && (defaultCatalog == null || !catalogName.equals(defaultCatalog.getName()))) {
+            catalog = dataSourceContainer == null ? null : dataSourceContainer.getChild(monitor, catalogName);
         }
-        if (target.level() == RefreshLevel.CATALOG) {
+        if (target instanceof RefreshTarget.Catalog) {
             return catalog != null ? catalog : dataSourceContainer;
         }
-        if (target.catalogName() != null && catalog == null) {
+        if (catalogName != null && catalog == null) {
             return dataSourceContainer;
         }
-        String schemaName = target.schemaName();
-        if (schemaName == null) {
-            return catalog != null ? catalog : dataSourceContainer;
-        }
+        String schemaName = ((RefreshTarget.Schema) target).schemaName();
         DBSSchema defaultSchema = defaults == null ? null : defaults.getDefaultSchema();
         if (defaultSchema != null && schemaName.equals(defaultSchema.getName()) &&
-            (target.catalogName() == null || catalog == defaultCatalog)) {
+            (catalogName == null || catalog == defaultCatalog)) {
             return defaultSchema;
         }
         DBSObjectContainer schemaContainer = catalog instanceof DBSObjectContainer objectContainer ?

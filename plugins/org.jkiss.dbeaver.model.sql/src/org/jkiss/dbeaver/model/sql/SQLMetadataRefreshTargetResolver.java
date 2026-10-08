@@ -56,7 +56,7 @@ public final class SQLMetadataRefreshTargetResolver {
             return doCreateTarget(monitor, executionContext, operation, defaultsRefresher);
         } catch (DBException e) {
             log.debug("Error resolving metadata refresh target", e);
-            return new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null);
+            return new RefreshTarget.DataSource();
         }
     }
 
@@ -78,11 +78,11 @@ public final class SQLMetadataRefreshTargetResolver {
         if (operation.objectKind() == SQLObjectOperation.ObjectKind.DATABASE ||
             operation.objectKind() == SQLObjectOperation.ObjectKind.CATALOG) {
             if (operation.operation() != SQLObjectOperation.Operation.ALTER) {
-                return new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null);
+                return new RefreshTarget.DataSource();
             }
             return nameParts.isEmpty()
-                ? new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null)
-                : new RefreshTarget(RefreshLevel.CATALOG, nameParts.getLast(), null);
+                ? new RefreshTarget.DataSource()
+                : new RefreshTarget.Catalog(nameParts.getLast());
         }
         if (operation.objectKind() == SQLObjectOperation.ObjectKind.SCHEMA) {
             if (nameParts.size() < 2 && defaults != null && defaults.supportsCatalogChange()) {
@@ -92,17 +92,16 @@ public final class SQLMetadataRefreshTargetResolver {
             String catalogName = nameParts.size() > 1 ? nameParts.get(nameParts.size() - 2) :
                 defaultCatalog == null ? null : defaultCatalog.getName();
             if (operation.operation() != SQLObjectOperation.Operation.ALTER) {
-                return new RefreshTarget(
-                    catalogName == null ? RefreshLevel.DATA_SOURCE : RefreshLevel.CATALOG,
-                    catalogName,
-                    null
-                );
+                return catalogName == null
+                    ? new RefreshTarget.DataSource()
+                    : new RefreshTarget.Catalog(catalogName);
             }
-            return nameParts.isEmpty() ? new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null) :
-                new RefreshTarget(RefreshLevel.SCHEMA, catalogName, nameParts.getLast());
+            return nameParts.isEmpty()
+                ? new RefreshTarget.DataSource()
+                : new RefreshTarget.Schema(catalogName, nameParts.getLast());
         }
         if (operation.objectKind() == SQLObjectOperation.ObjectKind.OTHER) {
-            return new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null);
+            return new RefreshTarget.DataSource();
         }
 
         String catalogName = null;
@@ -126,25 +125,39 @@ public final class SQLMetadataRefreshTargetResolver {
         }
         catalogName = catalogName != null ? catalogName : defaultCatalog == null ? null : defaultCatalog.getName();
         schemaName = schemaName != null ? schemaName : defaultSchema == null ? null : defaultSchema.getName();
-        return new RefreshTarget(
-            schemaName != null ? RefreshLevel.SCHEMA :
-                catalogName != null ? RefreshLevel.CATALOG : RefreshLevel.DATA_SOURCE,
-            catalogName,
-            schemaName
-        );
+        if (schemaName != null) {
+            return new RefreshTarget.Schema(catalogName, schemaName);
+        }
+        if (catalogName != null) {
+            return new RefreshTarget.Catalog(catalogName);
+        }
+        return new RefreshTarget.DataSource();
     }
 
-    public enum RefreshLevel {
-        DATA_SOURCE,
-        CATALOG,
-        SCHEMA
-    }
+    /**
+     * Identifies the narrowest metadata container affected by an SQL object operation.
+     * The permitted states have the following interpretations:
+     * <ul>
+     *     <li>{@link DataSource} refreshes the entire data source and carries no object names;</li>
+     *     <li>{@link Catalog} refreshes one catalog identified by its required name;</li>
+     *     <li>{@link Schema} refreshes one schema identified by its required name and optional catalog name.</li>
+     * </ul>
+     */
+    public sealed interface RefreshTarget {
+        /** Refreshes the entire data source when no narrower container can be identified. */
+        record DataSource() implements RefreshTarget {
+        }
 
-    public record RefreshTarget(
-        @NotNull RefreshLevel level,
-        @Nullable String catalogName,
-        @Nullable String schemaName
-    ) {
+        /** Refreshes the catalog identified by the required {@code catalogName}. */
+        record Catalog(@NotNull String catalogName) implements RefreshTarget {
+        }
+
+        /**
+         * Refreshes the schema identified by the required {@code schemaName}. The {@code catalogName} is absent when
+         * the data source has no catalog level or the containing catalog cannot be determined.
+         */
+        record Schema(@Nullable String catalogName, @NotNull String schemaName) implements RefreshTarget {
+        }
     }
 
     @FunctionalInterface
