@@ -61,7 +61,7 @@ public class ArrayCellHintProvider implements DBDCellHintProvider {
                 }
 
                 return new DBDValueHint[] {
-                    new ValueHintText(text, "Size", null, DBDValueHint.OPTION_OMISSION)
+                    new ValueHintText(text, "Size", null, DBDValueHint.OPTION_HIDE_WITH_FULL_ARRAY_PREVIEW)
                 };
             }
         }
