@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -32,11 +31,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.driver.DataSourceTypeViewer;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StringUtils;
@@ -44,14 +44,13 @@ import org.jkiss.utils.StringUtils;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
-    private static final int VIEWER_MARGIN_WIDTH = 20;
-    private static final int VIEWER_MARGIN_HEIGHT = 24;
-
     private DBPDataSourceType dataSourceType;
     private DBPDriver selectedDriver;
     private ConnectorViewer viewer;
+    private boolean showCData;
 
     ConnectionPageConnector(@NotNull NewConnectionWizard wizard) {
         super("newConnectionDriverChoice");
@@ -62,9 +61,6 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
     @Override
     public void createControl(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
-        GridLayout layout = (GridLayout) composite.getLayout();
-        layout.marginWidth = VIEWER_MARGIN_WIDTH;
-        layout.marginHeight = VIEWER_MARGIN_HEIGHT;
 
         viewer = new ConnectorViewer(composite);
         viewer.addSelectionChangedListener(event -> {
@@ -82,10 +78,14 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
     }
 
     void setDataSourceType(@NotNull DBPDataSourceType dataSourceType) {
-        if (this.dataSourceType != dataSourceType) {
+        boolean typeChanged = this.dataSourceType != dataSourceType;
+        if (typeChanged) {
             this.dataSourceType = dataSourceType;
             this.selectedDriver = null;
             setDescription(NLS.bind(UIConnectionMessages.dialog_new_connection_wizard_driver_description, dataSourceType.getName()));
+        }
+        if (typeChanged || showCData != DataSourceTypeViewer.isShowCData()) {
+            showCData = DataSourceTypeViewer.isShowCData();
             refreshDrivers();
         }
     }
@@ -105,18 +105,26 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             return;
         }
         List<DBPDriver> drivers = new ArrayList<>(dataSourceType.getEnabledDrivers());
-        if (DBWorkbench.isDistributed()) {
-            drivers.removeIf(driver -> !driver.getDefaultDriverLoader().isDriverInstalled());
-        }
+        drivers.removeIf(driver -> !DataSourceTypeViewer.isDriverVisible(driver));
         drivers.sort(new DriverUtils.DriverScoreComparator(DataSourceRegistry.getAllDataSources()));
-        selectedDriver = drivers.isEmpty() ? null : drivers.get(0);
+        DBPDriver driverToSelect = drivers.contains(selectedDriver) ? selectedDriver : drivers.isEmpty() ? null : drivers.getFirst();
         if (viewer == null) {
+            selectedDriver = driverToSelect;
             return;
         }
         viewer.setDrivers(drivers);
-        if (selectedDriver != null) {
+        viewer.setSelection(driverToSelect == null ? StructuredSelection.EMPTY : new StructuredSelection(driverToSelect), true);
+        selectedDriver = driverToSelect;
+    }
+
+    @Override
+    public void activatePage() {
+        if (selectedDriver != null && viewer != null &&
+            !Objects.equals(viewer.getStructuredSelection().getFirstElement(), selectedDriver)
+        ) {
             viewer.setSelection(new StructuredSelection(selectedDriver), true);
         }
+        getContainer().updateButtons();
     }
 
     private static class ConnectorViewer extends TableViewer {
@@ -149,7 +157,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
                 }
             });
             setContentProvider(ArrayContentProvider.getInstance());
-            setLabelProvider(new LabelProvider() {
+            setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public @NotNull String getText(@NotNull Object element) {
                     DBPDriver driver = (DBPDriver) element;
@@ -162,7 +170,13 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
                         gc.dispose();
                     }
                 }
+
+                @Override
+                public @Nullable String getToolTipText(@NotNull Object element) {
+                    return ((DBPDriver) element).getDescription();
+                }
             });
+            ColumnViewerToolTipSupport.enableFor(this);
 
             table.addListener(SWT.MeasureItem, this::measureItem);
             table.addListener(SWT.EraseItem, this::eraseItem);
@@ -219,7 +233,11 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             event.gc.fillRectangle(0, bounds.y, width, bounds.height);
             if (selected) {
                 event.gc.setBackground(table.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
+                if (UIStyles.isDarkTheme() && !UIStyles.isHighContrastTheme()) {
+                    event.gc.setAlpha(70);
+                }
                 event.gc.fillRectangle(0, bounds.y, width, bounds.height);
+                event.gc.setAlpha(255);
             }
 
             Image image = DBeaverIcons.getImage(driver.getIconBig());
@@ -236,7 +254,8 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             String description = getDescription(driver, event.gc);
             int textX = HORIZONTAL_PADDING + IMAGE_AREA_WIDTH + HORIZONTAL_PADDING;
             event.gc.setFont(BaseThemeSettings.instance.baseFontBold);
-            event.gc.setForeground(selected ?
+            boolean useSelectionText = selected && (!UIStyles.isDarkTheme() || UIStyles.isHighContrastTheme());
+            event.gc.setForeground(useSelectionText ?
                 table.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT) : table.getForeground());
             int titleHeight = event.gc.getFontMetrics().getHeight();
             int descriptionHeight = 0;
@@ -250,9 +269,8 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             event.gc.drawText(driver.getName(), textX, textY, true);
             if (!description.isEmpty()) {
                 event.gc.setFont(table.getFont());
-                event.gc.setForeground(selected ?
-                    table.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT) :
-                    table.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                event.gc.setForeground(useSelectionText ?
+                    table.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT) : table.getForeground());
                 event.gc.drawText(description, textX, textY + titleHeight + TEXT_SPACING, true);
             }
 

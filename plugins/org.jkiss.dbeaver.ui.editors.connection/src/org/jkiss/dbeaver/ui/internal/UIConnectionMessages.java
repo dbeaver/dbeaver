@@ -283,6 +283,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_group_location;
 
     public static String dialog_connection_driver_project;
+    public static String dialog_connection_show_cdata;
 
     public static String dialog_edit_driver_edit_maven_raw;
     public static String dialog_edit_driver_edit_maven_settings;
@@ -328,6 +329,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_no_profile_error_information;
     public static String pref_page_network_profiles_global_project_label;
     public static String pref_page_network_profiles_global_project_hint;
+    public static String pref_page_network_profiles_project_global_hint;
     public static String pref_page_network_profiles_global_project_name_used_in_local_label;
     public static String pref_page_network_profiles_global_project_name_used_in_local_question;
     public static String pref_page_network_profiles_local_name_used_in_global_label;

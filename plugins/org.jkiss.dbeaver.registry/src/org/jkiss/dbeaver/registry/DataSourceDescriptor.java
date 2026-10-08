@@ -1204,6 +1204,12 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
+                if (monitor.isCanceled()) {
+                    // A driver may return successfully after ignoring interruption during initialization.
+                    // Throw so the connection failure path releases the partially initialized data source.
+                    throw new DBException("Connection has been canceled");
+                }
+
                 if (dataSource != null) {
                     DBPDataSourceInfo info = dataSource.getInfo();
                     log.debug(
@@ -2091,6 +2097,9 @@ public class DataSourceDescriptor
 
         if (networkHandler == null) {
             DBAAuthModel<?> authModel = actualConfig.getAuthModel();
+            if (!authModel.isCredentialsPromptRequired()) {
+                return true;
+            }
             if (authModel.getClass() != AuthModelDatabaseNative.class) {
                 boolean savedPasswordState = dataSourceContainer.isSavePassword();
                 DBPConnectionConfiguration savedConnectionInfo = new DBPConnectionConfiguration(connConfig);

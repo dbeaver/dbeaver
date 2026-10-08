@@ -369,7 +369,7 @@ public class EditorUtils {
                 (forceRegistryLoad || dataSourceProject.isRegistryLoaded())) {
                 DBPDataSourceContainer dataSource = dataSourceProject.getDataSourceRegistry().getDataSource(dataSourceId);
                 if (dataSource == null) {
-                    log.debug("Datasource " + dataSourceId + " not found in project " + dataSourceProject.getName() +
+                    log.trace("Datasource " + dataSourceId + " not found in project " + dataSourceProject.getName() +
                         " (" + file.getFullPath() + ")");
                 }
                 return dataSource;

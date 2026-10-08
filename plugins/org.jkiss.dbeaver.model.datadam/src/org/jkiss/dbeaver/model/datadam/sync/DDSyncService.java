@@ -24,18 +24,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDConfiguration;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationPart;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationSummary;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncStore;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDUpdateConfigurationResult;
+import org.jkiss.dbeaver.model.datadam.sync.core.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sync.DBPSyncRegistry;
-import org.jkiss.dbeaver.model.sync.DBPSyncScope;
-import org.jkiss.dbeaver.model.sync.DBPSyncSettings;
-import org.jkiss.dbeaver.model.sync.DBPSyncTarget;
-import org.jkiss.dbeaver.model.sync.DBPSyncUnit;
+import org.jkiss.dbeaver.model.sync.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -43,14 +34,7 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class DDSyncService {
 
@@ -88,7 +72,7 @@ public class DDSyncService {
         // Account-level sync units (AI, cloud config) are disabled - see pro#9577. Projects
         // get their own separate sync, not this configuration-parts list.
         List<DDPartSelection> parts = new ArrayList<>();
-        if (!enabledUnits(DBPSyncScope.PROJECT).isEmpty()) {
+        if (isLegacySyncSupported(DDConfigurationPartKind.PROJECT) && !enabledUnits(DBPSyncScope.PROJECT).isEmpty()) {
             for (DBPProject project : workspace.getProjects()) {
                 if (DBPSyncSettings.isEnabled(project)) {
                     parts.add(new DDPartSelection(
@@ -223,7 +207,7 @@ public class DDSyncService {
             if (monitor.isCanceled()) {
                 return new DDSyncResult(binding.name(), List.of());
             }
-            DDConfiguration remote = store.getConfiguration(binding.configurationId());
+            DDConfiguration remote = getLegacyConfiguration(binding.configurationId());
             List<DDConfigurationPart> toApply = new ArrayList<>();
             List<String> conflicts = new ArrayList<>();
             Map<String, DDSyncPartState> baselines = new LinkedHashMap<>(binding.parts());
@@ -269,7 +253,7 @@ public class DDSyncService {
     @NotNull
     public DDSyncResult downloadAndBind(@NotNull String configurationId) throws DBException {
         synchronized (SYNC_LOCK) {
-            DDConfiguration remote = store.getConfiguration(configurationId);
+            DDConfiguration remote = getLegacyConfiguration(configurationId);
             validateParts(remote.parts());
             Map<String, DDSyncPartState> baselines = new LinkedHashMap<>();
             try {
@@ -292,7 +276,7 @@ public class DDSyncService {
             if (binding == null) {
                 return List.of();
             }
-            DDConfiguration remote = store.getConfiguration(binding.configurationId());
+            DDConfiguration remote = getLegacyConfiguration(binding.configurationId());
             List<DDSyncConflict> conflicts = new ArrayList<>();
             for (DDConfigurationPart remotePart : remote.parts()) {
                 DDConfigurationPart local = readCurrentPart(remotePart);
@@ -313,7 +297,7 @@ public class DDSyncService {
     public DDSyncResult forceUpload(@NotNull String partKey) throws DBException {
         synchronized (SYNC_LOCK) {
             DDSyncBinding binding = requireBinding();
-            DDConfiguration remote = store.getConfiguration(binding.configurationId());
+            DDConfiguration remote = getLegacyConfiguration(binding.configurationId());
             DDConfigurationPart remotePart = findPart(remote, partKey);
             DDSyncPartState baseline = binding.parts().get(partKey);
             DDConfigurationPart local = readLocalPart(partKey, baseline != null ? baseline.unitIds() : null);
@@ -342,7 +326,7 @@ public class DDSyncService {
     public DDSyncResult forceDownload(@NotNull String partKey) throws DBException {
         synchronized (SYNC_LOCK) {
             DDSyncBinding binding = requireBinding();
-            DDConfiguration remote = store.getConfiguration(binding.configurationId());
+            DDConfiguration remote = getLegacyConfiguration(binding.configurationId());
             DDConfigurationPart remotePart = findPart(remote, partKey);
             DDConfigurationPart local = readCurrentPart(remotePart);
             if (local != null) {
@@ -405,6 +389,9 @@ public class DDSyncService {
     }
 
     private void apply(@NotNull DDConfigurationPart part) throws DBException {
+        if (!isLegacySyncSupported(part.kind())) {
+            throw new DBException("Part is not supported by legacy synchronization: " + part.key());
+        }
         DBPProject project = part.kind() == DDConfigurationPartKind.PROJECT
             ? resolveProject(part.projectId(), part.name())
             : null;
@@ -428,6 +415,9 @@ public class DDSyncService {
 
     @Nullable
     private DDConfigurationPart readCurrentPart(@NotNull DDConfigurationPart remote) throws DBException {
+        if (!isLegacySyncSupported(remote.kind())) {
+            throw new DBException("Part is not supported by legacy synchronization: " + remote.key());
+        }
         if (remote.kind() == DDConfigurationPartKind.ACCOUNT) {
             if (!remote.key().startsWith(KEY_ACCOUNT_PREFIX)) {
                 throw new DBException("Invalid synchronization part key: " + remote.key());
@@ -454,6 +444,17 @@ public class DDSyncService {
 
     @Nullable
     private DDConfigurationPart readLocalPart(@NotNull String key, @Nullable Set<String> unitIds) throws DBException {
+        DDConfigurationPartKind kind;
+        if (key.startsWith(KEY_ACCOUNT_PREFIX)) {
+            kind = DDConfigurationPartKind.ACCOUNT;
+        } else if (key.startsWith(KEY_PROJECT_PREFIX)) {
+            kind = DDConfigurationPartKind.PROJECT;
+        } else {
+            throw new DBException("Invalid synchronization part key: " + key);
+        }
+        if (!isLegacySyncSupported(kind)) {
+            return null;
+        }
         if (key.startsWith(KEY_ACCOUNT_PREFIX)) {
             String unitId = key.substring(KEY_ACCOUNT_PREFIX.length());
             DBPSyncUnit unit = DBPSyncRegistry.getInstance().findById(unitId);
@@ -511,6 +512,20 @@ public class DDSyncService {
             throw new DBException("No configuration is bound to this workspace");
         }
         return binding;
+    }
+
+    private static boolean isLegacySyncSupported(@NotNull DDConfigurationPartKind kind) {
+        // Projects are synchronized exclusively by DDProjectSyncService.
+        return kind == DDConfigurationPartKind.ACCOUNT;
+    }
+
+    @NotNull
+    private DDConfiguration getLegacyConfiguration(@NotNull String configurationId) throws DBException {
+        DDConfiguration configuration = store.getConfiguration(configurationId);
+        return new DDConfiguration(
+            configuration.configurationId(), configuration.name(), configuration.version(),
+            configuration.parts().stream().filter(part -> isLegacySyncSupported(part.kind())).toList()
+        );
     }
 
     private void bind(

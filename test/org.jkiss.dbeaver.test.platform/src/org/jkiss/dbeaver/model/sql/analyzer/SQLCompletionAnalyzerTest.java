@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
@@ -93,6 +96,35 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
             Assertions.assertEquals(1, proposals.size());
             Assertions.assertEquals("WHERE", proposals.get(0).getReplacementString());
         }
+    }
+
+    @Test
+    public void testCompletionOnlyStatementStarterOnEmptyLine() throws DBException {
+        GenericSQLDialect dialect = new GenericSQLDialect() {
+            {
+                addSQLKeyword("NATIVE");
+            }
+
+            @Override
+            public List<String> getCompletionStatementKeywords() {
+                return List.of("SELECT", "NATIVE");
+            }
+        };
+        RequestResult request = RequestBuilder.empty().dialect(dialect).prepare();
+
+        List<SQLCompletionProposalBase> proposals = request.request("|");
+        List<String> emptyLine = proposals.stream()
+            .map(SQLCompletionProposalBase::getReplacementString)
+            .toList();
+        Assertions.assertTrue(emptyLine.contains("SELECT"));
+        Assertions.assertTrue(emptyLine.contains("NATIVE"));
+        Assertions.assertFalse(emptyLine.contains("WHERE"));
+        Assertions.assertFalse(emptyLine.contains("EXEC"));
+        Assertions.assertEquals(DBPKeywordType.KEYWORD, proposals.stream()
+            .filter(proposal -> proposal.getReplacementString().equals("NATIVE"))
+            .findFirst().orElseThrow().getProposalType());
+        Assertions.assertEquals("NATIVE", request.request("NAT|").get(0).getReplacementString());
+        Assertions.assertFalse(SQLUtils.isExecKeyword(dialect, "NATIVE"));
     }
 
     @Test

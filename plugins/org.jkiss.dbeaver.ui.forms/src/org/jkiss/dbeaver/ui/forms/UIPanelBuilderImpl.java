@@ -24,6 +24,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -35,7 +36,11 @@ import java.util.function.Consumer;
 
 final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Control> implements UIPanelBuilder {
     sealed interface Kind {
-        record Expandable(@NotNull String text, boolean expanded) implements Kind {
+        record Expandable(
+            @NotNull String text,
+            boolean expanded,
+            @NotNull Consumer<ExpandableComposite> onExpansionChanged
+        ) implements Kind {
         }
 
         record Titled(@NotNull String text) implements Kind {
@@ -55,6 +60,8 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
     private int marginTop = 0;
     private int marginRight = 0;
     private int marginBottom = 0;
+    private int horizontalSpacing = -1;
+    private int verticalSpacing = -1;
 
     private UIPanelBuilderImpl(@NotNull Kind kind) {
         this.kind = kind;
@@ -66,8 +73,12 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
     }
 
     @NotNull
-    static UIPanelBuilderImpl expandable(@NotNull String text, boolean expanded) {
-        return new UIPanelBuilderImpl(new Kind.Expandable(text, expanded));
+    static UIPanelBuilderImpl expandable(
+        @NotNull String text,
+        boolean expanded,
+        @NotNull Consumer<ExpandableComposite> onExpansionChanged
+    ) {
+        return new UIPanelBuilderImpl(new Kind.Expandable(text, expanded, onExpansionChanged));
     }
 
     @NotNull
@@ -95,6 +106,14 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
         marginTop = top;
         marginRight = right;
         marginBottom = bottom;
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIPanelBuilder spacing(int horizontal, int vertical) {
+        horizontalSpacing = horizontal;
+        verticalSpacing = vertical;
         return this;
     }
 
@@ -139,11 +158,14 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
             .mapToInt(row -> row.controls.size())
             .max().orElseThrow();
 
-        GridLayoutFactory.fillDefaults()
+        GridLayoutFactory layout = GridLayoutFactory.fillDefaults()
             .numColumns(columns)
             .margins(0, 0)
-            .extendedMargins(marginLeft, marginRight, marginTop, marginBottom)
-            .applyTo(client);
+            .extendedMargins(marginLeft, marginRight, marginTop, marginBottom);
+        if (horizontalSpacing >= 0 && verticalSpacing >= 0) {
+            layout.spacing(horizontalSpacing, verticalSpacing);
+        }
+        layout.applyTo(client);
 
         for (UIRowBuilderImpl row : rows) {
             buildRow(context, row, client, columns);
@@ -154,6 +176,9 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
                 var composite = (ExpandableComposite) host;
                 composite.setClient(client);
                 composite.setExpanded(k.expanded(), true);
+                composite.addExpansionListener(IExpansionListener.expansionStateChangedAdapter(
+                    e -> k.onExpansionChanged().accept(composite)
+                ));
                 yield composite;
             }
             case Kind.Titled ignored -> {
@@ -209,7 +234,11 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
                 data.horizontalSpan = columns - row.controls.size() + 1;
             }
 
+            // The visibility binding is installed before layout data exists. Set
+            // the initial layout state from the observables, not from the widget.
+            data.exclude = !builder.isInitiallyVisible(row);
             control.setLayoutData(data);
+            control.setVisible(!data.exclude);
         }
     }
 }

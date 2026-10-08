@@ -5,13 +5,14 @@ Bundle-Name: DBeaver Application Standalone
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.app.standalone;singleton:=true
 Bundle-Activator: org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 26.2.2.qualifier
-Bundle-Release-Date: 20261005
+Bundle-Version: 26.2.3.qualifier
+Bundle-Release-Date: 20261019
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.ui.app.standalone.rpc,
  org.jkiss.dbeaver.ui.app.standalone.update
-Require-Bundle: org.eclipse.e4.ui.css.core,
+Require-Bundle: org.eclipse.e4.core.services,
+ org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.ui.workbench,
@@ -25,5 +26,6 @@ Require-Bundle: org.eclipse.e4.ui.css.core,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.app.config,
- org.eclipse.ui.views.log
+ org.eclipse.ui.views.log,
+ org.osgi.service.event
 Automatic-Module-Name: org.jkiss.dbeaver.ui.app.standalone
