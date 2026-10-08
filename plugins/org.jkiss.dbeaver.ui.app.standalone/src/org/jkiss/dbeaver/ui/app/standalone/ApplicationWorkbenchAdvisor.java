@@ -264,6 +264,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         super.initialize(configurer);
 
+        ThemeColorOverridePreserver.initialize(configurer.getWorkbench());
+
         // Initialize app preferences
         DefaultScope.INSTANCE.getNode(CoreApplicationActivator.getDefault().getBundle().getSymbolicName());
 
