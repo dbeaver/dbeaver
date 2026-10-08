@@ -91,15 +91,17 @@ public class VerticaDataSource extends GenericDataSource {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
         // Java 25 treats File("") as the current directory. Vertica then tries to read the absent default keystore
         // from an empty filename (#41625). Supply an actual empty store without changing JVM-wide SSL settings.
-        if (new File("").exists() && VerticaSSLUtils.needsEmptyKeyStore(
-            properties, connectionInfo.getUrl(), System.getProperty(VerticaConstants.PROP_SYSTEM_KEYSTORE)
-        )) {
+        if (new File("").exists()) {
             try {
-                Path tempFolder = DBWorkbench.getPlatform().getTempFolder(monitor, "vertica");
-                properties.setProperty(VerticaConstants.PROP_KEYSTORE_PATH, VerticaSSLUtils.getEmptyKeyStore(tempFolder).toString());
-                properties.setProperty(VerticaConstants.PROP_KEYSTORE_PASSWORD, VerticaSSLUtils.EMPTY_KEYSTORE_PASSWORD);
-            } catch (IOException | GeneralSecurityException e) {
-                throw new DBCException("Error creating an empty Vertica TLS keystore", e);
+                if (VerticaSSLUtils.needsEmptyKeyStore(
+                    properties, getConnectionURL(connectionInfo), System.getProperty(VerticaConstants.PROP_SYSTEM_KEYSTORE)
+                )) {
+                    Path tempFolder = DBWorkbench.getPlatform().getTempFolder(monitor, "vertica");
+                    properties.setProperty(VerticaConstants.PROP_KEYSTORE_PATH, VerticaSSLUtils.getEmptyKeyStore(tempFolder).toString());
+                    properties.setProperty(VerticaConstants.PROP_KEYSTORE_PASSWORD, VerticaSSLUtils.EMPTY_KEYSTORE_PASSWORD);
+                }
+            } catch (DBException | IOException | GeneralSecurityException e) {
+                throw new DBCException("Error preparing the Vertica TLS keystore", e);
             }
         }
         return properties;

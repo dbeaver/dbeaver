@@ -17,11 +17,21 @@
 package org.jkiss.dbeaver.ext.generic.test;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
 import org.jkiss.dbeaver.ext.vertica.VerticaSSLUtils;
+import org.jkiss.dbeaver.ext.vertica.model.VerticaDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +39,8 @@ import java.security.KeyStore;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.*;
 
 public class VerticaSSLUtilsTest {
 
@@ -90,6 +102,27 @@ public class VerticaSSLUtilsTest {
     }
 
     @Test
+    public void generatedConnectionUrlOverridesSavedUrl() throws Exception {
+        assumeTrue(new File("").exists(), "The connection workaround is only used with the Java 25 empty-path behavior");
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        configuration.setUrl(URL + "?tlsmode=require");
+        DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
+        DBPDriver driver = mock(DBPDriver.class);
+        when(container.getDriver()).thenReturn(driver);
+        when(driver.getConnectionURL(configuration)).thenReturn(URL + "?tlsmode=verify-full");
+        when(driver.isSampleURLApplicable()).thenReturn(true);
+        TestVerticaDataSource dataSource = mock(TestVerticaDataSource.class, CALLS_REAL_METHODS);
+        doReturn(container).when(dataSource).getContainer();
+
+        Properties properties = dataSource.getAllConnectionProperties(
+            mock(DBRProgressMonitor.class), mock(JDBCExecutionContext.class), "Test", configuration);
+
+        assertFalse(properties.containsKey(VerticaConstants.PROP_KEYSTORE_PATH));
+        assertFalse(properties.containsKey(VerticaConstants.PROP_KEYSTORE_PASSWORD));
+        verify(driver).getConnectionURL(configuration);
+    }
+
+    @Test
     public void generatedKeyStoreIsEmptyAndReused(@TempDir @NotNull Path tempFolder) throws Exception {
         Path path = VerticaSSLUtils.getEmptyKeyStore(tempFolder);
         assertTrue(Files.isRegularFile(path));
@@ -108,5 +141,31 @@ public class VerticaSSLUtilsTest {
         Properties properties = new Properties();
         properties.setProperty(VerticaConstants.PROP_TLS_MODE, VerticaConstants.TLS_MODE_REQUIRE);
         return properties;
+    }
+
+    public static class TestVerticaDataSource extends VerticaDataSource {
+        public TestVerticaDataSource(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBPDataSourceContainer container,
+            @NotNull GenericMetaModel metaModel
+        ) throws DBException {
+            super(monitor, container, metaModel);
+        }
+
+        @NotNull
+        @Override
+        public Properties getAllConnectionProperties(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull JDBCExecutionContext context,
+            @NotNull String purpose,
+            @NotNull DBPConnectionConfiguration connectionInfo
+        ) throws DBCException {
+            return super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        }
+
+        @Override
+        protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
+            // This test exercises URL generation without constructing a live data source or using its container field.
+        }
     }
 }
