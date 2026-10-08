@@ -76,7 +76,6 @@ public class CDataDataSourceProvider extends GenericDataSourceProvider<CDataData
         driver.setDescription("CData " + driverInfo.tier().name().toLowerCase(Locale.ENGLISH) + " JDBC driver");
         driver.setSampleURL("jdbc:" + driverInfo.jdbcName() + ":");
         driver.setSingleConnection(true);
-        driver.setCategories(List.of("cdata"));
         driver.setWebURL(driverInfo.purchaseUrl());
         DriverLibraryMavenArtifact jarLib = new DriverLibraryMavenArtifact(
             driver,

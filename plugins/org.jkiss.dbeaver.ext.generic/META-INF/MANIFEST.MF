@@ -14,6 +14,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.ext.generic.data,
  org.jkiss.dbeaver.ext.generic.edit,
  org.jkiss.dbeaver.ext.generic.model,
  org.jkiss.dbeaver.ext.generic.model.meta

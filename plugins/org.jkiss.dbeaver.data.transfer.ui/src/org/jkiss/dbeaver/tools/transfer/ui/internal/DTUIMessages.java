@@ -22,6 +22,18 @@ public class DTUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages"; //$NON-NLS-1$
 
     public static String data_transfer_wizard_name;
+    public static String data_transfer_wizard_format_group;
+    public static String data_transfer_wizard_migration_group;
+    public static String data_transfer_wizard_source_table;
+    public static String data_transfer_wizard_data_source;
+    public static String data_transfer_wizard_configure_columns;
+    public static String data_transfer_wizard_choose_data_source;
+    public static String data_transfer_wizard_confirm_remove_sources;
+    public static String data_transfer_wizard_empty_sources;
+    public static String data_transfer_wizard_sources_locked;
+    public static String data_transfer_wizard_select_source;
+    public static String data_transfer_wizard_select_query;
+    public static String data_transfer_wizard_columns_unavailable;
     public static String data_transfer_wizard_final_column_source;
     public static String data_transfer_wizard_final_column_source_container;
     public static String data_transfer_wizard_final_column_source_format;
@@ -143,6 +155,7 @@ public class DTUIMessages extends NLS {
     public static String stream_consumer_page_warning_not_enough_sources_chosen;
     public static String stream_consumer_page_mapping_title;
     public static String stream_consumer_page_mapping_name_column_name;
+    public static String stream_consumer_page_mapping_type_column_name;
     public static String stream_consumer_page_mapping_label_error_no_columns_selected_text;
 
     public static String data_transfer_task_configurator_group_label_export_tables;
@@ -200,6 +213,7 @@ public class DTUIMessages extends NLS {
     public static String data_transfer_error_target_not_specified;
     public static String data_transfer_error_no_objects_selected;
     public static String database_consumer_page_mapping_error_message_set_target_container;
+    public static String database_consumer_page_mapping_error_message_import_not_supported;
     public static String database_consumer_page_mapping_error_message_set_all_tables_mappings;
     public static String database_consumer_page_mapping_error_no_schema_changes_info;
     public static String database_consumer_page_mapping_error_schema_save_title;
