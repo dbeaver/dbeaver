@@ -80,8 +80,9 @@ public final class SQLMetadataRefreshTargetResolver {
             if (operation.operation() != SQLObjectOperation.Operation.ALTER) {
                 return new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null);
             }
-            return nameParts.isEmpty() ? new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null) :
-                new RefreshTarget(RefreshLevel.CATALOG, nameParts.getLast(), null);
+            return nameParts.isEmpty()
+                ? new RefreshTarget(RefreshLevel.DATA_SOURCE, null, null)
+                : new RefreshTarget(RefreshLevel.CATALOG, nameParts.getLast(), null);
         }
         if (operation.objectKind() == SQLObjectOperation.ObjectKind.SCHEMA) {
             if (nameParts.size() < 2 && defaults != null && defaults.supportsCatalogChange()) {

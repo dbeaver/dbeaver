@@ -40,6 +40,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -66,7 +67,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
     private transient volatile boolean txnIsolationLevelReadInProgress;
-    private final CopyOnWriteArrayList<DBCTransactionListener> transactionListeners = new CopyOnWriteArrayList<>();
+    private final List<DBCTransactionListener> transactionListeners = new CopyOnWriteArrayList<>();
 
     private StatementLock statementLock = NoOpLock.INSTANCE;
 
@@ -196,9 +197,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     protected void disconnect(boolean removeContext) {
         notifyTransactionListeners(DBCTransactionListener::transactionContextClosed);
-        synchronized (this) {
-            transactionListeners.clear();
-        }
+        transactionListeners.clear();
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
@@ -516,7 +515,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public DBCDDLTransactionBehavior getDDLTransactionBehavior() {
         try {
             return DBCDDLTransactionBehavior.resolve(this.getConnection().getMetaData());
-        } catch (SQLException | DBCException e) {
+        } catch (Throwable e) {
             log.debug("Error determining DDL transaction behavior", e);
             return DBCDDLTransactionBehavior.TRANSACTIONAL;
         }
@@ -528,24 +527,20 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public synchronized void addTransactionListener(@NotNull DBCTransactionListener listener) {
-        transactionListeners.addIfAbsent(listener);
+    public void addTransactionListener(@NotNull DBCTransactionListener listener) {
+        transactionListeners.add(listener);
     }
 
     @Override
-    public synchronized void removeTransactionListener(@NotNull DBCTransactionListener listener) {
+    public void removeTransactionListener(@NotNull DBCTransactionListener listener) {
         transactionListeners.remove(listener);
     }
 
     private void notifyTransactionListeners(@NotNull Consumer<DBCTransactionListener> notification) {
-        DBCTransactionListener[] listeners;
-        synchronized (this) {
-            listeners = transactionListeners.toArray(DBCTransactionListener[]::new);
-        }
-        for (DBCTransactionListener listener : listeners) {
+        for (DBCTransactionListener listener : transactionListeners) {
             try {
                 notification.accept(listener);
-            } catch (RuntimeException e) {
+            } catch (Throwable e) {
                 log.debug("Error notifying transaction listener", e);
             }
         }

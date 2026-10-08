@@ -42,8 +42,6 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -89,8 +87,11 @@ final class SQLMetadataRefreshCoordinator {
                         }
                     }
                     notifyRefreshed(completionHandler, directlyRefreshedTargets);
-                    List<DBNDatabaseNode> nodes = new ArrayList<>(nodeTargets.keySet());
-                    nodes.sort(Comparator.comparingInt(SQLMetadataRefreshCoordinator::getNodeDepth));
+                    List<DBNDatabaseNode> nodes = nodeTargets.keySet().stream()
+                        .map(node -> Map.entry(node, getNodeDepth(node)))
+                        .sorted(Map.Entry.comparingByValue())
+                        .map(Map.Entry::getKey)
+                        .toList();
                     if (!nodes.isEmpty()) {
                         NavigatorHandlerRefresh.refreshNavigator(nodes, (refreshMonitor, refreshedNodes) -> {
                             Set<RefreshTarget> successfullyRefreshedTargets = new LinkedHashSet<>();

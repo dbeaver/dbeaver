@@ -31,6 +31,9 @@ public interface DBCTransactionListener {
     default void autoCommitChanged(boolean autoCommit) {
     }
 
+    /**
+     * Invoked before the transaction context is closed. The listener is automatically removed afterwards.
+     */
     default void transactionContextClosed() {
     }
 }
