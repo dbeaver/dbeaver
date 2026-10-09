@@ -21,19 +21,8 @@ import org.jkiss.dbeaver.DBException;
 
 import javax.crypto.SecretKey;
 
-/**
- * Encryption credentials. Legacy signature methods remain for bundle compatibility, not Storage authentication.
- */
+/** Encryption credentials; API requests use the desktop SSO session. */
 public interface DDSyncCredentials {
-
-    @NotNull
-    String buildToken(
-        @NotNull String method,
-        @NotNull String pathAndQuery,
-        @NotNull byte[] body
-    ) throws DBException;
-
-    void updateServerTime(long serverTimeMillis);
 
     @NotNull
     SecretKey getDataKey() throws DBException;
