@@ -38,7 +38,9 @@ Command line parameters
 
   -vm <java vm path>
     Use Java VM installed in <java vm path> folder instead of default
-    location.
+    location. On Windows, pointing to jre/bin/server/jvm.dll loads the
+    JVM in-process and prevents a duplicate taskbar icon when the app
+    is pinned.
 
   -vmargs <jvm parameters>
     Allows to pass any number of additional parameters to JVM.
