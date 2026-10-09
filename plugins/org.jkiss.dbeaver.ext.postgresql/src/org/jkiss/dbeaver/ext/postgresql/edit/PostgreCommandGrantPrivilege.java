@@ -225,14 +225,15 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
     /**
      * Returns the grantee name for the generated DDL.
-     * The PUBLIC pseudo-role is a PostgreSQL keyword and must never be quoted:
-     * {@code GRANT SELECT ON TABLE mytab TO "PUBLIC"} is invalid,
-     * the only correct form is {@code GRANT SELECT ON TABLE mytab TO PUBLIC}.
+     * The PUBLIC pseudo-role has the reserved lowercase name "public" and must be generated
+     * without quotes: {@code GRANT SELECT ON TABLE mytab TO public}. Real roles with any
+     * other letter case (e.g. "PUBLIC") are regular identifiers and must be quoted,
+     * otherwise PostgreSQL resolves them to the pseudo-role.
      */
     @NotNull
     private static String getGranteeName(@NotNull PostgrePrivilegeOwner object, @Nullable String roleName) {
-        if (PostgreConstants.PUBLIC_ROLE_NAME.equalsIgnoreCase(roleName)) {
-            return PostgreConstants.PUBLIC_ROLE_NAME.toUpperCase();
+        if (PostgreConstants.PUBLIC_ROLE_NAME.equals(roleName)) {
+            return PostgreConstants.PUBLIC_ROLE_NAME;
         }
         return DBUtils.getQuotedIdentifier(object.getDataSource(), roleName);
     }
