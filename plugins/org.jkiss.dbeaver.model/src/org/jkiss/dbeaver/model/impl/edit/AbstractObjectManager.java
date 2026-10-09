@@ -49,10 +49,22 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         }
         protected void cacheModelObject(OBJECT_TYPE object)
         {
+            cacheModelObject(object, -1);
+        }
+        protected void cacheModelObject(OBJECT_TYPE object, int index)
+        {
             DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = objectMaker.getObjectsCache(object);
             if (cache != null) {
-                cache.cacheObject(object);
+                cache.cacheObject(object, index);
             }
+        }
+        protected int getModelObjectIndex(OBJECT_TYPE object)
+        {
+            DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = objectMaker.getObjectsCache(object);
+            if (cache != null) {
+                return cache.getCachedObjects().indexOf(object);
+            }
+            return -1;
         }
         protected void removeModelObject(OBJECT_TYPE object)
         {
@@ -89,6 +101,8 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
     }
 
     public static class DeleteObjectReflector<OBJECT_TYPE extends DBSObject> extends AbstractObjectReflector<OBJECT_TYPE> {
+        private int savedIndex = -1;
+
         public DeleteObjectReflector(DBEObjectMaker<OBJECT_TYPE, ? extends DBSObject> objectMaker)
         {
             super(objectMaker);
@@ -97,6 +111,7 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         @Override
         public void redoCommand(@NotNull DBECommand<OBJECT_TYPE> command)
         {
+            savedIndex = getModelObjectIndex(command.getObject());
             DBUtils.fireObjectRemove(command.getObject());
             removeModelObject(command.getObject());
         }
@@ -104,7 +119,7 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         @Override
         public void undoCommand(@NotNull DBECommand<OBJECT_TYPE> command)
         {
-            cacheModelObject(command.getObject());
+            cacheModelObject(command.getObject(), savedIndex);
             Map<String, Object> options = null;
             if (command instanceof DBECommandWithOptions) {
                 options = ((DBECommandWithOptions) command).getOptions();
