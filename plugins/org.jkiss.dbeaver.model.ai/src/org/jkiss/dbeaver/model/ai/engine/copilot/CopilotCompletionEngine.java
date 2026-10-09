@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
@@ -60,6 +61,11 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
     public CopilotCompletionEngine(@NotNull P properties) {
         super(properties);
+    }
+
+    @Override
+    public int estimateImageTokens(@NotNull AIImageAttachment image) {
+        return OpenAiUtils.estimateImageTokens(properties.getModel(), image);
     }
 
     @NotNull
