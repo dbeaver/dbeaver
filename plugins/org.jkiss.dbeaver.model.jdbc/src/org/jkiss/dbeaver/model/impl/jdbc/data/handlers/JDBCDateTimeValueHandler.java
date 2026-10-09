@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -200,14 +200,15 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                         log.error("Error formatting date", e);
                     }
                 }
-            } else if (value instanceof String strValue) {
-                if (!strValue.startsWith("'") && !strValue.endsWith("'")) {
-                    strValue = "'" + strValue + "'";
-                }
-                return super.getValueDisplayString(column, strValue, format);
             }
         }
-        return super.getValueDisplayString(column, value, format);
+        String strValue = super.getValueDisplayString(column, value, format);
+        // Native formatters return SQL expressions; fallback formatters return display text.
+        if (format == DBDDisplayFormat.NATIVE && !DBUtils.isNullValue(value)
+            && !strValue.startsWith("'") && !strValue.endsWith("'")) {
+            strValue = "'" + strValue + "'";
+        }
+        return strValue;
     }
 
     @Nullable
